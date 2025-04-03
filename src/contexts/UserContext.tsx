@@ -7,6 +7,8 @@ interface UserContextType {
   setCurrentUser: (user: User | null) => void;
   annualLeaveBalance: AnnualLeaveBalance | null;
   setAnnualLeaveBalance: (balance: AnnualLeaveBalance | null) => void;
+  isAdmin: () => boolean;
+  canManageUser: (userId: string) => boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -18,6 +20,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     position: '資深工程師',
     department: '技術部',
     onboard_date: '2023-01-15',
+    role: 'user', // Default to 'user' role
   });
   
   const [annualLeaveBalance, setAnnualLeaveBalance] = useState<AnnualLeaveBalance | null>({
@@ -28,12 +31,30 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     used_days: 0,
   });
 
+  // Helper function to check if the current user is an admin
+  const isAdmin = (): boolean => {
+    return currentUser?.role === 'admin';
+  };
+
+  // Helper function to check if the current user can manage a specific user
+  const canManageUser = (userId: string): boolean => {
+    if (!currentUser) return false;
+    
+    // Admins can manage all users
+    if (currentUser.role === 'admin') return true;
+    
+    // Regular users can only manage themselves
+    return currentUser.id === userId;
+  };
+
   return (
     <UserContext.Provider value={{ 
       currentUser, 
       setCurrentUser, 
       annualLeaveBalance, 
-      setAnnualLeaveBalance 
+      setAnnualLeaveBalance,
+      isAdmin,
+      canManageUser
     }}>
       {children}
     </UserContext.Provider>

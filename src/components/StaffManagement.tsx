@@ -34,19 +34,24 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { PlusCircle, Edit2, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit2, Trash2, Shield } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { useUser } from '@/contexts/UserContext';
 
 // 模擬的員工資料
 const mockStaffList = [
-  { id: '1', name: '王小明', position: '主管', department: '人資部', contact: '0912-345-678' },
-  { id: '2', name: '李小華', position: '工程師', department: '技術部', contact: '0923-456-789' },
-  { id: '3', name: '張小美', position: '設計師', department: '設計部', contact: '0934-567-890' },
-  { id: '4', name: '廖俊雄', position: '資深工程師', department: '技術部', contact: '0945-678-901' },
+  { id: '1', name: '王小明', position: '主管', department: '人資部', contact: '0912-345-678', role: 'admin' },
+  { id: '2', name: '李小華', position: '工程師', department: '技術部', contact: '0923-456-789', role: 'user' },
+  { id: '3', name: '張小美', position: '設計師', department: '設計部', contact: '0934-567-890', role: 'user' },
+  { id: '4', name: '廖俊雄', position: '資深工程師', department: '技術部', contact: '0945-678-901', role: 'user' },
 ];
 
 const departments = ['人資部', '技術部', '設計部', '行銷部', '客服部'];
 const positions = ['主管', '工程師', '設計師', '專員', '資深工程師', '行銷專員', '客服專員'];
+const roles = [
+  { value: 'user', label: '一般使用者' },
+  { value: 'admin', label: '管理員' }
+];
 
 const StaffManagement = () => {
   const [staffList, setStaffList] = useState(mockStaffList);
@@ -57,15 +62,32 @@ const StaffManagement = () => {
     name: '',
     position: '',
     department: '',
-    contact: ''
+    contact: '',
+    role: 'user'
   });
   const { toast } = useToast();
+  const { currentUser, isAdmin, canManageUser } = useUser();
+
+  // Filter staff list based on permissions
+  const filteredStaffList = isAdmin() 
+    ? staffList 
+    : staffList.filter(staff => staff.id === currentUser?.id);
 
   const handleAddStaff = () => {
     if (!newStaff.name || !newStaff.position || !newStaff.department) {
       toast({
         title: "資料不完整",
         description: "請填寫所有必填欄位",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Only admins can add new staff
+    if (!isAdmin()) {
+      toast({
+        title: "權限不足",
+        description: "只有管理員可以新增人員",
         variant: "destructive"
       });
       return;
@@ -81,7 +103,8 @@ const StaffManagement = () => {
       name: '',
       position: '',
       department: '',
-      contact: ''
+      contact: '',
+      role: 'user'
     });
     setIsAddDialogOpen(false);
     
@@ -101,6 +124,16 @@ const StaffManagement = () => {
       return;
     }
 
+    // Check if user has permission to edit this staff member
+    if (!canManageUser(currentStaff.id)) {
+      toast({
+        title: "權限不足",
+        description: "您沒有權限編輯此人員",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setStaffList(staffList.map(staff => 
       staff.id === currentStaff.id ? currentStaff : staff
     ));
@@ -113,6 +146,16 @@ const StaffManagement = () => {
   };
 
   const handleDeleteStaff = (id: string) => {
+    // Check if user has permission to delete this staff member
+    if (!canManageUser(id)) {
+      toast({
+        title: "權限不足",
+        description: "您沒有權限刪除此人員",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setStaffList(staffList.filter(staff => staff.id !== id));
     
     toast({
@@ -122,6 +165,16 @@ const StaffManagement = () => {
   };
 
   const openEditDialog = (staff: any) => {
+    // Check if user has permission to edit this staff member
+    if (!canManageUser(staff.id)) {
+      toast({
+        title: "權限不足",
+        description: "您沒有權限編輯此人員",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setCurrentStaff({...staff});
     setIsEditDialogOpen(true);
   };
@@ -132,89 +185,113 @@ const StaffManagement = () => {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>人員管理</CardTitle>
-            <CardDescription>管理排班系統中的員工資料</CardDescription>
+            <CardDescription>
+              {isAdmin() 
+                ? "管理排班系統中的所有員工資料" 
+                : "查看和管理您自己的員工資料"}
+            </CardDescription>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                新增人員
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>新增人員</DialogTitle>
-                <DialogDescription>
-                  請填寫新員工的資料，帶 * 的欄位為必填。
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    姓名 *
-                  </Label>
-                  <Input
-                    id="name"
-                    value={newStaff.name}
-                    onChange={(e) => setNewStaff({...newStaff, name: e.target.value})}
-                    className="col-span-3"
-                  />
+          {isAdmin() && (
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  新增人員
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>新增人員</DialogTitle>
+                  <DialogDescription>
+                    請填寫新員工的資料，帶 * 的欄位為必填。
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                      姓名 *
+                    </Label>
+                    <Input
+                      id="name"
+                      value={newStaff.name}
+                      onChange={(e) => setNewStaff({...newStaff, name: e.target.value})}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="position" className="text-right">
+                      職位 *
+                    </Label>
+                    <Select 
+                      onValueChange={(value) => setNewStaff({...newStaff, position: value})}
+                      value={newStaff.position}
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="選擇職位" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {positions.map((pos) => (
+                          <SelectItem key={pos} value={pos}>{pos}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="department" className="text-right">
+                      部門 *
+                    </Label>
+                    <Select 
+                      onValueChange={(value) => setNewStaff({...newStaff, department: value})}
+                      value={newStaff.department}
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="選擇部門" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {departments.map((dep) => (
+                          <SelectItem key={dep} value={dep}>{dep}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="role" className="text-right">
+                      角色 *
+                    </Label>
+                    <Select 
+                      onValueChange={(value) => setNewStaff({...newStaff, role: value})}
+                      value={newStaff.role}
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="選擇角色" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roles.map((role) => (
+                          <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="contact" className="text-right">
+                      聯絡電話
+                    </Label>
+                    <Input
+                      id="contact"
+                      value={newStaff.contact}
+                      onChange={(e) => setNewStaff({...newStaff, contact: e.target.value})}
+                      className="col-span-3"
+                      placeholder="例：0912-345-678"
+                    />
+                  </div>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="position" className="text-right">
-                    職位 *
-                  </Label>
-                  <Select 
-                    onValueChange={(value) => setNewStaff({...newStaff, position: value})}
-                    value={newStaff.position}
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="選擇職位" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {positions.map((pos) => (
-                        <SelectItem key={pos} value={pos}>{pos}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="department" className="text-right">
-                    部門 *
-                  </Label>
-                  <Select 
-                    onValueChange={(value) => setNewStaff({...newStaff, department: value})}
-                    value={newStaff.department}
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="選擇部門" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {departments.map((dep) => (
-                        <SelectItem key={dep} value={dep}>{dep}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="contact" className="text-right">
-                    聯絡電話
-                  </Label>
-                  <Input
-                    id="contact"
-                    value={newStaff.contact}
-                    onChange={(e) => setNewStaff({...newStaff, contact: e.target.value})}
-                    className="col-span-3"
-                    placeholder="例：0912-345-678"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>取消</Button>
-                <Button onClick={handleAddStaff}>新增</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>取消</Button>
+                  <Button onClick={handleAddStaff}>新增</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </CardHeader>
         <CardContent>
           <Table>
@@ -224,38 +301,51 @@ const StaffManagement = () => {
                 <TableHead>職位</TableHead>
                 <TableHead>部門</TableHead>
                 <TableHead>聯絡電話</TableHead>
+                {isAdmin() && <TableHead>角色</TableHead>}
                 <TableHead className="text-right">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {staffList.length === 0 ? (
+              {filteredStaffList.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={isAdmin() ? 6 : 5} className="h-24 text-center">
                     目前沒有人員資料
                   </TableCell>
                 </TableRow>
               ) : (
-                staffList.map((staff) => (
+                filteredStaffList.map((staff) => (
                   <TableRow key={staff.id}>
                     <TableCell className="font-medium">{staff.name}</TableCell>
                     <TableCell>{staff.position}</TableCell>
                     <TableCell>{staff.department}</TableCell>
                     <TableCell>{staff.contact || '未設定'}</TableCell>
+                    {isAdmin() && (
+                      <TableCell>
+                        <div className="flex items-center">
+                          {staff.role === 'admin' && <Shield className="h-4 w-4 mr-1 text-blue-500" />}
+                          {staff.role === 'admin' ? '管理員' : '一般使用者'}
+                        </div>
+                      </TableCell>
+                    )}
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEditDialog(staff)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteStaff(staff.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {canManageUser(staff.id) && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditDialog(staff)}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteStaff(staff.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
@@ -323,6 +413,26 @@ const StaffManagement = () => {
                   </SelectContent>
                 </Select>
               </div>
+              {isAdmin() && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-role" className="text-right">
+                    角色 *
+                  </Label>
+                  <Select 
+                    onValueChange={(value) => setCurrentStaff({...currentStaff, role: value})}
+                    value={currentStaff.role}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="選擇角色" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((role) => (
+                        <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-contact" className="text-right">
                   聯絡電話

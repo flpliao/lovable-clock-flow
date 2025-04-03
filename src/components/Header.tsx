@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell, Menu, Check } from 'lucide-react';
+import { Bell, Menu, Check, Shield } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ApolloLogo from './ApolloLogo';
 import { Link, useLocation } from 'react-router-dom';
@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useUser } from '@/contexts/UserContext';
 
 interface HeaderProps {
   notificationCount?: number;
@@ -17,6 +18,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
   const location = useLocation();
+  const { currentUser, isAdmin } = useUser();
   
   const navItems = [
     { path: '/', label: '首頁' },
@@ -27,8 +29,14 @@ const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
   
   return (
     <header className="w-full py-4 px-5 flex justify-between items-center">
-      <div>
+      <div className="flex items-center">
         <ApolloLogo />
+        {isAdmin() && (
+          <Badge className="ml-2 bg-blue-500 hover:bg-blue-600">
+            <Shield className="w-3 h-3 mr-1" />
+            管理員
+          </Badge>
+        )}
       </div>
       <div className="flex items-center gap-4">
         <div className="relative">

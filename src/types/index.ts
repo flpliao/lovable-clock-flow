@@ -1,10 +1,10 @@
-
 export interface User {
   id: string;
   name: string;
   position: string;
   department: string;
   onboard_date: string;
+  role?: 'user' | 'admin';
 }
 
 export interface AnnualLeaveBalance {

@@ -9,13 +9,13 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Edit2, Trash2, Shield } from 'lucide-react';
+import { Edit2, Trash2, Shield, UserRound } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { useStaffManagementContext } from './StaffManagementContext';
 
 const StaffTable = () => {
   const { isAdmin, canManageUser } = useUser();
-  const { filteredStaffList, openEditDialog, handleDeleteStaff } = useStaffManagementContext();
+  const { filteredStaffList, openEditDialog, handleDeleteStaff, getSupervisorName } = useStaffManagementContext();
 
   return (
     <Table>
@@ -24,6 +24,7 @@ const StaffTable = () => {
           <TableHead>姓名</TableHead>
           <TableHead>職位</TableHead>
           <TableHead>部門</TableHead>
+          <TableHead>上級主管</TableHead>
           <TableHead>聯絡電話</TableHead>
           {isAdmin() && <TableHead>角色</TableHead>}
           <TableHead className="text-right">操作</TableHead>
@@ -32,7 +33,7 @@ const StaffTable = () => {
       <TableBody>
         {filteredStaffList.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={isAdmin() ? 6 : 5} className="h-24 text-center">
+            <TableCell colSpan={isAdmin() ? 7 : 6} className="h-24 text-center">
               目前沒有人員資料
             </TableCell>
           </TableRow>
@@ -42,6 +43,12 @@ const StaffTable = () => {
               <TableCell className="font-medium">{staff.name}</TableCell>
               <TableCell>{staff.position}</TableCell>
               <TableCell>{staff.department}</TableCell>
+              <TableCell>
+                <div className="flex items-center">
+                  <UserRound className="h-3 w-3 mr-1 text-gray-400" />
+                  {getSupervisorName(staff.supervisor_id)}
+                </div>
+              </TableCell>
               <TableCell>{staff.contact || '未設定'}</TableCell>
               {isAdmin() && (
                 <TableCell>

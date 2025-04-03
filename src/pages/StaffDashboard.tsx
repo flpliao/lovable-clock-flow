@@ -23,15 +23,15 @@ const StaffDashboard = () => {
       
       <main className="flex-1 p-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">員工考勤分析儀表板</h1>
-          <p className="text-gray-500">查看所有員工的考勤、請假和打卡狀況</p>
+          <h1 className="text-2xl font-bold">員工管理儀表板</h1>
+          <p className="text-gray-500">管理所有員工、部門和考勤數據</p>
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="analytics">考勤分析</TabsTrigger>
-            <TabsTrigger value="staff">人員管理</TabsTrigger>
-            <TabsTrigger value="departments">部門門市管理</TabsTrigger>
+            <TabsTrigger value="staff">人員及組織</TabsTrigger>
+            <TabsTrigger value="departments">部門門市</TabsTrigger>
           </TabsList>
           
           <TabsContent value="analytics">

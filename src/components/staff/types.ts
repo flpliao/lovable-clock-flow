@@ -6,6 +6,7 @@ export interface Staff {
   department: string;
   contact: string;
   role: 'user' | 'admin';
+  supervisor_id?: string; // Added supervisor relationship
 }
 
 export interface NewStaff {
@@ -14,6 +15,7 @@ export interface NewStaff {
   department: string;
   contact: string;
   role: 'user' | 'admin';
+  supervisor_id?: string; // Added supervisor relationship
 }
 
 export interface StaffManagementContextType {
@@ -31,4 +33,6 @@ export interface StaffManagementContextType {
   handleEditStaff: () => void;
   handleDeleteStaff: (id: string) => void;
   openEditDialog: (staff: Staff) => void;
+  getSupervisorName: (supervisorId?: string) => string;
+  getSubordinates: (staffId: string) => Staff[];
 }

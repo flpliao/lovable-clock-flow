@@ -87,6 +87,42 @@ export const useStaffManagement = () => {
       return;
     }
 
+    // Check for circular reference in supervision hierarchy
+    if (currentStaff.supervisor_id && currentStaff.supervisor_id === currentStaff.id) {
+      toast({
+        title: "設置錯誤",
+        description: "不能設置自己為上級主管",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if this would create a circular reference in the hierarchy
+    const wouldCreateCircularReference = (staffId: string, supervisorId: string): boolean => {
+      let current = supervisorId;
+      const visited = new Set<string>();
+      
+      while (current) {
+        if (current === staffId) return true;
+        if (visited.has(current)) return true;
+        
+        visited.add(current);
+        const supervisor = staffList.find(s => s.id === current);
+        current = supervisor?.supervisor_id || '';
+      }
+      
+      return false;
+    };
+
+    if (currentStaff.supervisor_id && wouldCreateCircularReference(currentStaff.id, currentStaff.supervisor_id)) {
+      toast({
+        title: "設置錯誤",
+        description: "此設置將導致組織結構循環引用",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setStaffList(staffList.map(staff => 
       staff.id === currentStaff.id ? currentStaff : staff
     ));
@@ -104,6 +140,17 @@ export const useStaffManagement = () => {
       toast({
         title: "權限不足",
         description: "您沒有權限刪除此人員",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if this staff is a supervisor to others
+    const hasSubordinates = staffList.some(staff => staff.supervisor_id === id);
+    if (hasSubordinates) {
+      toast({
+        title: "無法刪除",
+        description: "此人員是其他員工的上級主管，請先調整組織結構",
         variant: "destructive"
       });
       return;
@@ -132,6 +179,18 @@ export const useStaffManagement = () => {
     setIsEditDialogOpen(true);
   };
 
+  // Get supervisor name from supervisor ID
+  const getSupervisorName = (supervisorId?: string): string => {
+    if (!supervisorId) return '無上級主管';
+    const supervisor = staffList.find(staff => staff.id === supervisorId);
+    return supervisor ? supervisor.name : '未知主管';
+  };
+
+  // Get all direct subordinates for a staff member
+  const getSubordinates = (staffId: string): Staff[] => {
+    return staffList.filter(staff => staff.supervisor_id === staffId);
+  };
+
   return {
     staffList,
     filteredStaffList,
@@ -146,6 +205,8 @@ export const useStaffManagement = () => {
     handleAddStaff,
     handleEditStaff,
     handleDeleteStaff,
-    openEditDialog
+    openEditDialog,
+    getSupervisorName,
+    getSubordinates
   };
 };

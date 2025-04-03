@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell, Menu, Check, Shield, LogOut, BarChart3 } from 'lucide-react';
+import { Bell, Menu, Check, Shield, LogOut, BarChart3, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ApolloLogo from './ApolloLogo';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -35,9 +35,12 @@ const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
     { path: '/scheduling', label: '排班' },
   ];
   
-  // 如果是管理員或人資部門，新增儀表板選項
+  // 如果是管理員或人資部門，新增管理選項
   if (isAdminOrHR()) {
-    navItems.push({ path: '/staff-dashboard', label: '員工考勤儀表板' });
+    navItems.push(
+      { path: '/personnel-management', label: '人員與部門管理' },
+      { path: '/staff-dashboard', label: '員工考勤儀表板' }
+    );
   }
   
   const handleLogout = () => {

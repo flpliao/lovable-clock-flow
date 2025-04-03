@@ -11,6 +11,7 @@ import LeaveRequest from "./pages/LeaveRequest";
 import PersonalAttendance from "./pages/PersonalAttendance";
 import Scheduling from "./pages/Scheduling";
 import StaffDashboard from "./pages/StaffDashboard";
+import PersonnelManagement from "./pages/PersonnelManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/personal-attendance" element={<PersonalAttendance />} />
             <Route path="/scheduling" element={<Scheduling />} />
             <Route path="/staff-dashboard" element={<StaffDashboard />} />
+            <Route path="/personnel-management" element={<PersonnelManagement />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

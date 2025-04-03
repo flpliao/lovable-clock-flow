@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell, Menu, Check, Shield, LogOut, BarChart3, Users } from 'lucide-react';
+import { Menu, Shield, LogOut, BarChart3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ApolloLogo from './ApolloLogo';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -12,12 +12,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import NotificationCenter from './notifications/NotificationCenter';
 
 interface HeaderProps {
   notificationCount?: number;
 }
 
-const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
+const Header: React.FC<HeaderProps> = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, isAdmin, setCurrentUser } = useUser();
@@ -72,14 +73,7 @@ const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
       <div className="flex items-center gap-4">
         {currentUser ? (
           <>
-            <div className="relative">
-              <Bell className="w-6 h-6 text-gray-400" />
-              {notificationCount > 0 && (
-                <Badge className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white text-xs px-1.5 py-0.5 min-w-[1.5rem] flex items-center justify-center rounded-full">
-                  {notificationCount}
-                </Badge>
-              )}
-            </div>
+            <NotificationCenter />
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -91,7 +85,7 @@ const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
                 {navItems.map((item) => (
                   <DropdownMenuItem key={item.path} asChild className="py-2 px-4 focus:bg-gray-800 focus:text-white">
                     <Link to={item.path} className="flex items-center">
-                      {location.pathname === item.path && <Check className="mr-2 h-4 w-4" />}
+                      {location.pathname === item.path && <Menu className="mr-2 h-4 w-4" />}
                       <span className={location.pathname === item.path ? "ml-2" : "ml-8"}>
                         {item.label}
                       </span>

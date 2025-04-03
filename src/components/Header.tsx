@@ -1,14 +1,31 @@
 
-import React from 'react';
-import { Bell } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, Menu } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ApolloLogo from './ApolloLogo';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import PaginationControl from './PaginationControl';
 
 interface HeaderProps {
   notificationCount?: number;
 }
 
 const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = 10; // This should be dynamic based on your actual data
+  
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // You would typically fetch data for the new page here
+    console.log(`Navigating to page ${page}`);
+  };
+  
   return (
     <header className="w-full py-4 px-5 flex justify-between items-center">
       <div>
@@ -23,23 +40,26 @@ const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
             </Badge>
           )}
         </div>
-        <button className="text-gray-400">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="4" x2="20" y1="12" y2="12" />
-            <line x1="4" x2="20" y1="6" y2="6" />
-            <line x1="4" x2="20" y1="18" y2="18" />
-          </svg>
-        </button>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="text-gray-400">
+              <Menu className="w-6 h-6" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <PaginationControl 
+              currentPage={currentPage} 
+              totalPages={totalPages} 
+              onPageChange={handlePageChange} 
+            />
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>設定</DropdownMenuItem>
+            <DropdownMenuItem>幫助</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>登出</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

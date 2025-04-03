@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Dialog, 
@@ -20,7 +19,7 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { PlusCircle } from 'lucide-react';
-import { useStaffManagement } from './StaffManagementContext';
+import { useStaffManagementContext } from './StaffManagementContext';
 import { departments, positions, roles } from './StaffConstants';
 import { useUser } from '@/contexts/UserContext';
 
@@ -32,7 +31,7 @@ const AddStaffDialog = () => {
     newStaff, 
     setNewStaff, 
     handleAddStaff 
-  } = useStaffManagement();
+  } = useStaffManagementContext();
 
   if (!isAdmin()) return null;
 

@@ -15,10 +15,10 @@ export const StaffManagementProvider: React.FC<{ children: ReactNode }> = ({ chi
   );
 };
 
-export const useStaffManagement = (): StaffManagementContextType => {
+export const useStaffManagementContext = (): StaffManagementContextType => {
   const context = useContext(StaffManagementContext);
   if (context === undefined) {
-    throw new Error('useStaffManagement must be used within a StaffManagementProvider');
+    throw new Error('useStaffManagementContext must be used within a StaffManagementProvider');
   }
   return context;
 };

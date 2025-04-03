@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Dialog, 
@@ -18,7 +17,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { useStaffManagement } from './StaffManagementContext';
+import { useStaffManagementContext } from './StaffManagementContext';
 import { departments, positions, roles } from './StaffConstants';
 import { useUser } from '@/contexts/UserContext';
 
@@ -30,7 +29,7 @@ const EditStaffDialog = () => {
     currentStaff, 
     setCurrentStaff, 
     handleEditStaff 
-  } = useStaffManagement();
+  } = useStaffManagementContext();
 
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

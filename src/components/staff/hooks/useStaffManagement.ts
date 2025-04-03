@@ -3,6 +3,7 @@ import { useStaffOperations } from './useStaffOperations';
 import { useStaffHierarchy } from './useStaffHierarchy';
 import { useStaffDialogs } from './useStaffDialogs';
 import { useRoleManagement } from './useRoleManagement';
+import { useCredentialManagement } from './useCredentialManagement';
 
 export const useStaffManagement = () => {
   const {

@@ -9,16 +9,16 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { UserCog } from 'lucide-react';
 import CredentialManagement from './CredentialManagement';
 import { Staff } from './types';
 import { useToast } from '@/hooks/use-toast';
 
 interface CredentialManagementDialogProps {
   staff: Staff;
+  children?: React.ReactNode;
 }
 
-const CredentialManagementDialog: React.FC<CredentialManagementDialogProps> = ({ staff }) => {
+const CredentialManagementDialog: React.FC<CredentialManagementDialogProps> = ({ staff, children }) => {
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
   
@@ -36,10 +36,7 @@ const CredentialManagementDialog: React.FC<CredentialManagementDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="ml-2">
-          <UserCog className="h-4 w-4 mr-2" />
-          帳號設定
-        </Button>
+        {children}
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>

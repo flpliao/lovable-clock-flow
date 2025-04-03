@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
-import { Clock, Calendar } from 'lucide-react';
+import { Clock, Calendar, ListChecks } from 'lucide-react';
 
 interface FeatureCardProps {
   abnormalCount?: number;
@@ -11,7 +11,7 @@ interface FeatureCardProps {
 
 const FeatureCards: React.FC<FeatureCardProps> = ({ abnormalCount = 0, annualLeaveBalance = 216 }) => {
   return (
-    <div className="grid grid-cols-2 gap-4 px-5">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-5">
       <Link to="/personal-attendance">
         <Card className="bg-gray-50 p-5 rounded-lg relative overflow-hidden hover:bg-gray-100 transition-colors">
           <div className="absolute top-2 right-2 h-16 w-16 rounded-full bg-white flex items-center justify-center">
@@ -35,6 +35,20 @@ const FeatureCards: React.FC<FeatureCardProps> = ({ abnormalCount = 0, annualLea
             <h3 className="text-lg font-semibold">請假</h3>
             <p className="text-[#7A8999]">
               特休 <span className="font-bold text-black">{annualLeaveBalance}</span> 時
+            </p>
+          </div>
+        </Card>
+      </Link>
+
+      <Link to="/scheduling">
+        <Card className="bg-gray-50 p-5 rounded-lg relative overflow-hidden hover:bg-gray-100 transition-colors">
+          <div className="absolute top-2 right-2 h-16 w-16 rounded-full bg-white flex items-center justify-center">
+            <ListChecks className="h-8 w-8 text-[#0091D0]" />
+          </div>
+          <div className="mt-16">
+            <h3 className="text-lg font-semibold">排班管理</h3>
+            <p className="text-[#7A8999]">
+              安排 <span className="font-bold text-black">員工班表</span>
             </p>
           </div>
         </Card>

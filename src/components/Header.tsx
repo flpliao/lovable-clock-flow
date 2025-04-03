@@ -19,10 +19,10 @@ const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
   const location = useLocation();
   
   const navItems = [
-    { path: '/', label: '首頁', description: '/' },
-    { path: '/leave-request', label: '請假申請', description: '/leave-request' },
-    { path: '/personal-attendance', label: '個人考勤', description: '/personal-attendance' },
-    { path: '/scheduling', label: '排班', description: '/scheduling' },
+    { path: '/', label: '首頁' },
+    { path: '/leave-request', label: '請假申請' },
+    { path: '/personal-attendance', label: '個人考勤' },
+    { path: '/scheduling', label: '排班' },
   ];
   
   return (
@@ -53,9 +53,6 @@ const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
                   {location.pathname === item.path && <Check className="mr-2 h-4 w-4" />}
                   <span className={location.pathname === item.path ? "ml-2" : "ml-8"}>
                     {item.label}
-                  </span>
-                  <span className="text-gray-400 ml-2">
-                    {item.description}
                   </span>
                 </Link>
               </DropdownMenuItem>

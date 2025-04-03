@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Edit2, Trash2, Shield, UserRound } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
-import { useStaffManagementContext } from './StaffManagementContext';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 
 const StaffTable = () => {
   const { isAdmin, canManageUser } = useUser();

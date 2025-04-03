@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { useStaffManagementContext } from './StaffManagementContext';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { Staff } from './types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserRound, ChevronDown, Users } from 'lucide-react';

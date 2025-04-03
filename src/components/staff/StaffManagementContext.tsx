@@ -1,14 +1,13 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useUser } from '@/contexts/UserContext';
 
 // 模擬的員工資料
 const mockStaffList = [
-  { id: '1', name: '王小明', position: '主管', department: '人資部', contact: '0912-345-678', role: 'admin' },
-  { id: '2', name: '李小華', position: '工程師', department: '技術部', contact: '0923-456-789', role: 'user' },
-  { id: '3', name: '張小美', position: '設計師', department: '設計部', contact: '0934-567-890', role: 'user' },
-  { id: '4', name: '廖俊雄', position: '資深工程師', department: '技術部', contact: '0945-678-901', role: 'user' },
+  { id: '1', name: '王小明', position: '主管', department: '人資部', contact: '0912-345-678', role: 'admin' as const },
+  { id: '2', name: '李小華', position: '工程師', department: '技術部', contact: '0923-456-789', role: 'user' as const },
+  { id: '3', name: '張小美', position: '設計師', department: '設計部', contact: '0934-567-890', role: 'user' as const },
+  { id: '4', name: '廖俊雄', position: '資深工程師', department: '技術部', contact: '0945-678-901', role: 'user' as const },
 ];
 
 interface Staff {
@@ -48,7 +47,7 @@ interface StaffManagementContextType {
 const StaffManagementContext = createContext<StaffManagementContextType | undefined>(undefined);
 
 export const StaffManagementProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [staffList, setStaffList] = useState(mockStaffList);
+  const [staffList, setStaffList] = useState<Staff[]>(mockStaffList);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentStaff, setCurrentStaff] = useState<Staff | null>(null);

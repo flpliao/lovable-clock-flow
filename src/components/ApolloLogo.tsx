@@ -1,16 +1,19 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const ApolloLogo: React.FC = () => {
   return (
     <div className="flex items-center">
-      <div className="flex items-center">
-        <img 
-          src="/lovable-uploads/7b238701-8df5-4a06-9559-6e080e1567c9.png" 
-          alt="Sharing Logo" 
-          className="h-24 text-[#003366]" // Changed from text-[#0091D0] to text-[#003366] for dark blue
-        />
-      </div>
+      <Link to="/" className="cursor-pointer">
+        <div className="flex items-center">
+          <img 
+            src="/lovable-uploads/7b238701-8df5-4a06-9559-6e080e1567c9.png" 
+            alt="Sharing Logo" 
+            className="h-24 text-[#003366]" // Changed from text-[#0091D0] to text-[#003366] for dark blue
+          />
+        </div>
+      </Link>
     </div>
   );
 };

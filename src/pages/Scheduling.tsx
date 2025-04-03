@@ -7,6 +7,7 @@ import ScheduleCalendar from '@/components/ScheduleCalendar';
 import ScheduleForm from '@/components/ScheduleForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import StaffManagement from '@/components/staff/StaffManagement';
+import ShiftReminder from '@/components/ShiftReminder';
 
 const Scheduling = () => {
   const navigate = useNavigate();
@@ -24,6 +25,8 @@ const Scheduling = () => {
         </Button>
         <h1 className="text-2xl font-bold">排班管理</h1>
       </div>
+
+      <ShiftReminder />
 
       <Tabs defaultValue="view" className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-4">

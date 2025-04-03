@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   name: string;
@@ -66,4 +67,21 @@ export interface Approver {
   name: string;
   position: string;
   level: number;
+}
+
+// Check-in record type
+export interface CheckInRecord {
+  id: string;
+  userId: string;
+  timestamp: string;
+  type: 'location' | 'ip';
+  status: 'success' | 'failed';
+  action: 'check-in' | 'check-out';  // Field to track check-in or check-out
+  details: {
+    latitude?: number;
+    longitude?: number;
+    distance?: number;
+    ip?: string;
+    locationName?: string;
+  };
 }

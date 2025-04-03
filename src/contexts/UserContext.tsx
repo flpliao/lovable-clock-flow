@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User, AnnualLeaveBalance } from '@/types';
 
 interface UserContextType {
@@ -14,36 +14,75 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>({
-    id: '1',
-    name: '廖俊雄',
-    position: '資深工程師',
-    department: '技術部',
-    onboard_date: '2023-01-15',
-    role: 'user', // Default to 'user' role
-  });
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   
-  const [annualLeaveBalance, setAnnualLeaveBalance] = useState<AnnualLeaveBalance | null>({
-    id: '1',
-    user_id: '1',
-    year: 2024,
-    total_days: 7,
-    used_days: 0,
-  });
+  const [annualLeaveBalance, setAnnualLeaveBalance] = useState<AnnualLeaveBalance | null>(null);
 
-  // Helper function to check if the current user is an admin
+  // 從本地存儲恢復用戶會話（如果有）
+  useEffect(() => {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+      try {
+        setCurrentUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Failed to parse saved user:', error);
+        localStorage.removeItem('currentUser');
+      }
+    }
+
+    const savedBalance = localStorage.getItem('annualLeaveBalance');
+    if (savedBalance) {
+      try {
+        setAnnualLeaveBalance(JSON.parse(savedBalance));
+      } catch (error) {
+        console.error('Failed to parse saved balance:', error);
+        localStorage.removeItem('annualLeaveBalance');
+      }
+    }
+  }, []);
+
+  // 保存用戶資訊到本地存儲
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      
+      // 如果用戶登錄，但沒有年假餘額，則設置默認值
+      if (!annualLeaveBalance) {
+        const defaultBalance = {
+          id: '1',
+          user_id: currentUser.id,
+          year: new Date().getFullYear(),
+          total_days: 7,
+          used_days: 0,
+        };
+        setAnnualLeaveBalance(defaultBalance);
+        localStorage.setItem('annualLeaveBalance', JSON.stringify(defaultBalance));
+      }
+    } else {
+      localStorage.removeItem('currentUser');
+    }
+  }, [currentUser]);
+
+  // 保存年假餘額到本地存儲
+  useEffect(() => {
+    if (annualLeaveBalance) {
+      localStorage.setItem('annualLeaveBalance', JSON.stringify(annualLeaveBalance));
+    }
+  }, [annualLeaveBalance]);
+
+  // 檢查用戶是否為管理員
   const isAdmin = (): boolean => {
     return currentUser?.role === 'admin';
   };
 
-  // Helper function to check if the current user can manage a specific user
+  // 檢查當前用戶是否可以管理特定用戶
   const canManageUser = (userId: string): boolean => {
     if (!currentUser) return false;
     
-    // Admins can manage all users
+    // 管理員可以管理所有用戶
     if (currentUser.role === 'admin') return true;
     
-    // Regular users can only manage themselves
+    // 普通用戶只能管理自己
     return currentUser.id === userId;
   };
 

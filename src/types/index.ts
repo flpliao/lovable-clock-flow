@@ -34,6 +34,23 @@ export interface LeaveRequest {
   status: 'pending' | 'approved' | 'rejected';
   hours: number;
   reason: string;
+  approvals?: ApprovalRecord[];
+  current_approver?: string;
+  approval_level?: number;
+  rejection_reason?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ApprovalRecord {
+  id: string;
+  leave_request_id: string;
+  approver_id: string;
+  approver_name: string;
+  status: 'pending' | 'approved' | 'rejected';
+  comment?: string;
+  approval_date?: string;
+  level: number;
 }
 
 export interface Shift {
@@ -42,4 +59,11 @@ export interface Shift {
   work_date: string;
   start_time: string;
   end_time: string;
+}
+
+export interface Approver {
+  id: string;
+  name: string;
+  position: string;
+  level: number;
 }

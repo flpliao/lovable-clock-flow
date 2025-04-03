@@ -35,3 +35,11 @@ export interface LeaveRequest {
   hours: number;
   reason: string;
 }
+
+export interface Shift {
+  id: string;
+  user_id: string;
+  work_date: string;
+  start_time: string;
+  end_time: string;
+}

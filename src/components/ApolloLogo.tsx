@@ -8,7 +8,7 @@ const ApolloLogo: React.FC = () => {
         <img 
           src="/lovable-uploads/7b238701-8df5-4a06-9559-6e080e1567c9.png" 
           alt="Sharing Logo" 
-          className="h-24 text-[#0091D0]" // Changed from text-apollo-blue to text-[#0091D0] to match the location check-in button color
+          className="h-24 text-[#003366]" // Changed from text-[#0091D0] to text-[#003366] for dark blue
         />
       </div>
     </div>

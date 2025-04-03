@@ -21,10 +21,7 @@ const PaginationControl = ({
   onPageChange 
 }: PaginationControlProps) => {
   return (
-    <div className="flex flex-col gap-2 py-2">
-      <p className="text-sm font-medium text-center text-gray-400">
-        第 {currentPage} 頁，共 {totalPages} 頁
-      </p>
+    <div className="py-2">
       <Pagination>
         <PaginationContent>
           <PaginationItem>

@@ -6,6 +6,7 @@ import { ChevronLeft } from 'lucide-react';
 import ScheduleCalendar from '@/components/ScheduleCalendar';
 import ScheduleForm from '@/components/ScheduleForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import StaffManagement from '@/components/StaffManagement';
 
 const Scheduling = () => {
   const navigate = useNavigate();
@@ -25,15 +26,19 @@ const Scheduling = () => {
       </div>
 
       <Tabs defaultValue="view" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-4">
+        <TabsList className="grid w-full grid-cols-3 mb-4">
           <TabsTrigger value="view">查看班表</TabsTrigger>
           <TabsTrigger value="create">創建排班</TabsTrigger>
+          <TabsTrigger value="staff">人員管理</TabsTrigger>
         </TabsList>
         <TabsContent value="view">
           <ScheduleCalendar />
         </TabsContent>
         <TabsContent value="create">
           <ScheduleForm />
+        </TabsContent>
+        <TabsContent value="staff">
+          <StaffManagement />
         </TabsContent>
       </Tabs>
     </div>

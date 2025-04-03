@@ -5,9 +5,15 @@ import { ArrowLeft } from 'lucide-react';
 import Header from '@/components/Header';
 import LeaveRequestForm from '@/components/LeaveRequestForm';
 import { Button } from '@/components/ui/button';
+import { useUser } from '@/contexts/UserContext';
 
 const LeaveRequest: React.FC = () => {
   const navigate = useNavigate();
+  const { annualLeaveBalance } = useUser();
+  
+  const availableHours = annualLeaveBalance 
+    ? (annualLeaveBalance.total_days - annualLeaveBalance.used_days) * 8 
+    : 0;
   
   return (
     <div className="min-h-screen bg-white">
@@ -27,6 +33,15 @@ const LeaveRequest: React.FC = () => {
         <div className="mb-6">
           <h1 className="text-2xl font-bold">請假申請</h1>
           <p className="text-gray-500">填寫以下表單申請請假</p>
+          {annualLeaveBalance && (
+            <div className="mt-2 text-sm">
+              <span className="text-gray-600">特休假剩餘：</span>
+              <span className="font-medium text-blue-600">
+                {annualLeaveBalance.total_days - annualLeaveBalance.used_days} 天
+                ({availableHours} 小時)
+              </span>
+            </div>
+          )}
         </div>
         
         <LeaveRequestForm />

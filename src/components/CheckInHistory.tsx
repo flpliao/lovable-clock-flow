@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { getUserCheckInRecords, CheckInRecord } from './LocationCheckIn';
+import { getUserCheckInRecords } from '@/utils/checkInUtils';
+import { CheckInRecord } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { MapPin, Wifi } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';

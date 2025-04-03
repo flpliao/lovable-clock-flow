@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
@@ -9,7 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Wifi, Calendar, Users } from 'lucide-react';
 import { format } from 'date-fns';
-import { getCheckInRecords, CheckInRecord } from '@/components/LocationCheckIn';
+import { getCheckInRecords } from '@/utils/checkInUtils';
+import { CheckInRecord } from '@/types';
 
 const TeamCheckInManagement: React.FC = () => {
   const { currentUser, isAdmin } = useUser();
@@ -17,20 +17,16 @@ const TeamCheckInManagement: React.FC = () => {
   const [filter, setFilter] = useState<'today' | 'week' | 'month'>('today');
   const [departmentFilter, setDepartmentFilter] = useState<string>('all');
   
-  // Get all check-in records
   const allCheckInRecords = getCheckInRecords();
   
-  // Get departments from staff list
   const departments = Array.from(new Set(staffList.map(staff => staff.department)));
   
-  // Get team members based on user role
   const teamMembers = isAdmin() 
-    ? staffList // Admin can see all staff
+    ? staffList
     : currentUser?.id 
-      ? getSubordinates(currentUser.id) // Manager can see their subordinates
+      ? getSubordinates(currentUser.id)
       : [];
   
-  // Filter records by date
   const getFilteredByDate = (records: CheckInRecord[]): CheckInRecord[] => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -52,12 +48,10 @@ const TeamCheckInManagement: React.FC = () => {
     });
   };
   
-  // Filter team members by department
   const filteredTeamMembers = departmentFilter === 'all'
     ? teamMembers
     : teamMembers.filter(member => member.department === departmentFilter);
   
-  // Get check-in data for the filtered team members
   const teamCheckInData = filteredTeamMembers.map(member => {
     const userRecords = allCheckInRecords.filter(record => record.userId === member.id);
     const filteredRecords = getFilteredByDate(userRecords);
@@ -75,7 +69,6 @@ const TeamCheckInManagement: React.FC = () => {
     };
   });
   
-  // Check if user has permission to view this component
   const hasPermission = isAdmin() || (currentUser && getSubordinates(currentUser.id).length > 0);
   
   if (!hasPermission) {

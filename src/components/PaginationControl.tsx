@@ -22,7 +22,7 @@ const PaginationControl = ({
 }: PaginationControlProps) => {
   return (
     <div className="flex flex-col gap-2 py-2">
-      <p className="text-sm font-medium text-center text-gray-600">
+      <p className="text-sm font-medium text-center text-gray-400">
         第 {currentPage} 頁，共 {totalPages} 頁
       </p>
       <Pagination>
@@ -30,7 +30,7 @@ const PaginationControl = ({
           <PaginationItem>
             <PaginationPrevious 
               onClick={() => currentPage > 1 && onPageChange(currentPage - 1)} 
-              className={`${currentPage <= 1 ? 'opacity-50 pointer-events-none' : ''}`}
+              className={`${currentPage <= 1 ? 'opacity-50 pointer-events-none' : ''} bg-transparent hover:bg-gray-800 text-white`}
             />
           </PaginationItem>
           
@@ -51,6 +51,7 @@ const PaginationControl = ({
                 <PaginationLink
                   isActive={pageNumber === currentPage}
                   onClick={() => onPageChange(pageNumber)}
+                  className={pageNumber === currentPage ? 'bg-gray-700 text-white' : 'bg-transparent text-white hover:bg-gray-800'}
                 >
                   {pageNumber}
                 </PaginationLink>
@@ -61,7 +62,7 @@ const PaginationControl = ({
           <PaginationItem>
             <PaginationNext 
               onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)} 
-              className={`${currentPage >= totalPages ? 'opacity-50 pointer-events-none' : ''}`}
+              className={`${currentPage >= totalPages ? 'opacity-50 pointer-events-none' : ''} bg-transparent hover:bg-gray-800 text-white`}
             />
           </PaginationItem>
         </PaginationContent>

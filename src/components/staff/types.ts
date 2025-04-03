@@ -1,3 +1,4 @@
+
 export interface Staff {
   id: string;
   name: string;
@@ -65,6 +66,7 @@ export interface StaffManagementContextType {
   addRole: (role: NewStaffRole) => Promise<boolean>;
   updateRole: (role: StaffRole) => Promise<boolean>;
   deleteRole: (roleId: string) => Promise<boolean>;
+  getRole: (roleId?: string) => StaffRole | undefined;
   
   assignRoleToStaff: (staffId: string, roleId: string) => Promise<boolean>;
   

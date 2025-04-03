@@ -4,17 +4,25 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Mail } from 'lucide-react';
+import { Mail, User, KeyRound } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
+import CredentialManagement from '@/components/staff/CredentialManagement';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('login');
   
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setCurrentUser } = useUser();
+  const { currentUser, setCurrentUser } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,50 +72,84 @@ const Login = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">登入</h1>
+          <h1 className="text-3xl font-bold">帳號管理</h1>
           <p className="mt-2 text-gray-600">
-            輸入您的電子郵件和密碼以登錄到您的帳戶
+            登入或管理您的帳號設定
           </p>
         </div>
         
-        <form onSubmit={handleLogin} className="mt-8 space-y-6">
-          <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              電子郵件
-            </label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="email@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full"
-            />
-          </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="login" className="flex items-center">
+              <User className="mr-2 h-4 w-4" />
+              登入
+            </TabsTrigger>
+            <TabsTrigger value="manage" className="flex items-center" disabled={!currentUser}>
+              <KeyRound className="mr-2 h-4 w-4" />
+              帳號設定
+            </TabsTrigger>
+          </TabsList>
           
-          <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              密碼
-            </label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full"
-            />
-          </div>
+          <TabsContent value="login">
+            <form onSubmit={handleLogin} className="mt-8 space-y-6">
+              <div className="space-y-2">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  電子郵件
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="email@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  密碼
+                </label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full"
+                />
+              </div>
+              
+              <Button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700"
+                disabled={isLoading}
+              >
+                {isLoading ? '登入中...' : '登入'}
+              </Button>
+            </form>
+          </TabsContent>
           
-          <Button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700"
-            disabled={isLoading}
-          >
-            {isLoading ? '登入中...' : '登入'}
-          </Button>
-        </form>
+          <TabsContent value="manage">
+            {currentUser ? (
+              <div className="mt-4">
+                <CredentialManagement />
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-600">請先登入以管理您的帳號設定</p>
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={() => setActiveTab('login')}
+                >
+                  返回登入頁面
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

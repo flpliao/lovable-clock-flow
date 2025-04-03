@@ -34,31 +34,6 @@ const PaginationControl = ({
             />
           </PaginationItem>
           
-          {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
-            let pageNumber;
-            if (totalPages <= 3) {
-              pageNumber = i + 1;
-            } else if (currentPage === 1) {
-              pageNumber = i + 1;
-            } else if (currentPage === totalPages) {
-              pageNumber = totalPages - 2 + i;
-            } else {
-              pageNumber = currentPage - 1 + i;
-            }
-            
-            return (
-              <PaginationItem key={pageNumber}>
-                <PaginationLink
-                  isActive={pageNumber === currentPage}
-                  onClick={() => onPageChange(pageNumber)}
-                  className={pageNumber === currentPage ? 'bg-gray-700 text-white' : 'bg-transparent text-white hover:bg-gray-800'}
-                >
-                  {pageNumber}
-                </PaginationLink>
-              </PaginationItem>
-            );
-          })}
-          
           <PaginationItem>
             <PaginationNext 
               onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)} 

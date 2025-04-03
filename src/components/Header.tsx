@@ -8,7 +8,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -20,10 +19,10 @@ const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
   const location = useLocation();
   
   const navItems = [
-    { path: '/', label: 'Index' },
-    { path: '/leave-request', label: 'LeaveRequest' },
-    { path: '/personal-attendance', label: 'PersonalAttendance' },
-    { path: '/scheduling', label: 'Scheduling' },
+    { path: '/', label: '首頁', description: '/' },
+    { path: '/leave-request', label: '請假申請', description: '/leave-request' },
+    { path: '/personal-attendance', label: '個人考勤', description: '/personal-attendance' },
+    { path: '/scheduling', label: '排班', description: '/scheduling' },
   ];
   
   return (
@@ -56,7 +55,7 @@ const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
                     {item.label}
                   </span>
                   <span className="text-gray-400 ml-2">
-                    {item.path === '/' ? '/' : item.path}
+                    {item.description}
                   </span>
                 </Link>
               </DropdownMenuItem>

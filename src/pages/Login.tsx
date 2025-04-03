@@ -76,7 +76,8 @@ const Login = () => {
           position: userFound.userId === '1' ? '資深工程師' : '一般員工',
           department: userFound.userId === '1' ? '技術部' : 'HR',
           onboard_date: '2023-01-15',
-          role: userFound.userId === '1' ? 'admin' : 'user',
+          // Fix: Explicitly type the role as 'admin' | 'user' instead of string
+          role: userFound.userId === '1' ? 'admin' as const : 'user' as const,
         };
         
         setCurrentUser(mockUserData);

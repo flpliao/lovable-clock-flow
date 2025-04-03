@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { StaffRole, NewStaffRole, Staff, Permission } from '../types';
 import { defaultSystemRoles, availablePermissions } from '../RoleConstants';
 
@@ -74,34 +74,46 @@ export const useRoleManagement = (staffList: Staff[]) => {
   
   // Update an existing role
   const updateRole = async (updatedRole: StaffRole): Promise<boolean> => {
-    // Check if trying to update system role
+    // For system roles, only allow updating permissions
     const existingRole = roles.find(role => role.id === updatedRole.id);
-    if (existingRole?.is_system_role) {
+    if (!existingRole) {
       toast({
-        title: "無法修改",
-        description: "系統預設角色無法修改",
+        title: "角色不存在",
+        description: "找不到要更新的角色",
         variant: "destructive"
       });
       return false;
     }
     
-    // Check if name already exists (excluding the current role)
-    if (roles.some(role => role.name === updatedRole.name && role.id !== updatedRole.id)) {
-      toast({
-        title: "角色已存在",
-        description: "已存在相同名稱的角色",
-        variant: "destructive"
-      });
-      return false;
+    let roleToUpdate = { ...updatedRole };
+    
+    // For system roles, preserve the original name and description
+    if (existingRole.is_system_role) {
+      roleToUpdate = {
+        ...roleToUpdate,
+        name: existingRole.name,
+        description: existingRole.description,
+        is_system_role: true
+      };
+    } else {
+      // For custom roles, check if name already exists (excluding the current role)
+      if (roles.some(role => role.name === updatedRole.name && role.id !== updatedRole.id)) {
+        toast({
+          title: "角色已存在",
+          description: "已存在相同名稱的角色",
+          variant: "destructive"
+        });
+        return false;
+      }
     }
     
     setRoles(roles.map(role => 
-      role.id === updatedRole.id ? updatedRole : role
+      role.id === roleToUpdate.id ? roleToUpdate : role
     ));
     
     toast({
       title: "編輯成功",
-      description: `已成功更新 ${updatedRole.name} 角色`
+      description: `已成功更新 ${roleToUpdate.name} 角色權限`
     });
     
     return true;

@@ -17,6 +17,7 @@ import { StaffRole, Permission } from './types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getPermissionCategories, getPermissionsByCategory } from './RoleConstants';
+import { Shield } from 'lucide-react';
 
 interface EditRoleDialogProps {
   open: boolean;
@@ -66,19 +67,20 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
     return editedRole.permissions.some(p => p.id === permissionId);
   };
   
-  // Disable editing for system roles
-  const isDisabled = editedRole.is_system_role;
+  // Disable editing of name/description for system roles, but allow permission editing
+  const isSystemRole = editedRole.is_system_role;
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>
-            {isDisabled ? '查看角色' : '編輯角色'}
+          <DialogTitle className="flex items-center">
+            {isSystemRole && <Shield className="h-5 w-5 text-blue-500 mr-2" />}
+            {isSystemRole ? '編輯系統角色權限' : '編輯角色'}
           </DialogTitle>
           <DialogDescription>
-            {isDisabled 
-              ? '系統預設角色無法修改，僅供查看權限'
+            {isSystemRole 
+              ? '系統預設角色的名稱和描述無法修改，但您可以調整權限設定'
               : '編輯此角色的資訊與權限設定'}
           </DialogDescription>
         </DialogHeader>
@@ -99,7 +101,7 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
                 value={editedRole.name}
                 onChange={(e) => setEditedRole({...editedRole, name: e.target.value})}
                 className="col-span-3"
-                disabled={isDisabled}
+                disabled={isSystemRole}
               />
             </div>
             
@@ -113,7 +115,7 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
                 onChange={(e) => setEditedRole({...editedRole, description: e.target.value})}
                 className="col-span-3"
                 rows={3}
-                disabled={isDisabled}
+                disabled={isSystemRole}
               />
             </div>
             
@@ -122,13 +124,11 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
                 variant="outline" 
                 onClick={() => onOpenChange(false)}
               >
-                {isDisabled ? '關閉' : '取消'}
+                取消
               </Button>
-              {!isDisabled && (
-                <Button onClick={() => setActiveTab('權限設定')}>
-                  下一步：設定權限
-                </Button>
-              )}
+              <Button onClick={() => setActiveTab('權限設定')}>
+                下一步：設定權限
+              </Button>
             </div>
           </TabsContent>
           
@@ -144,7 +144,6 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
                           id={`edit-${permission.id}`} 
                           checked={isPermissionSelected(permission.id)}
                           onCheckedChange={() => togglePermission(permission)}
-                          disabled={isDisabled}
                         />
                         <div>
                           <Label 
@@ -167,13 +166,11 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
                 variant="outline" 
                 onClick={() => setActiveTab('基本資料')}
               >
-                {isDisabled ? '返回' : '上一步'}
+                上一步
               </Button>
-              {!isDisabled && (
-                <Button onClick={handleSubmit}>
-                  儲存變更
-                </Button>
-              )}
+              <Button onClick={handleSubmit}>
+                儲存變更
+              </Button>
             </DialogFooter>
           </TabsContent>
         </Tabs>

@@ -45,7 +45,7 @@ const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
             <TableRow key={role.id}>
               <TableCell className="font-medium">
                 <div className="flex items-center">
-                  {role.is_system_role && <Lock className="h-3.5 w-3.5 mr-2 text-blue-500" />}
+                  {role.is_system_role && <Shield className="h-3.5 w-3.5 mr-2 text-blue-500" />}
                   {role.name}
                 </div>
               </TableCell>
@@ -71,7 +71,6 @@ const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
                   variant="ghost"
                   size="icon"
                   onClick={() => onEdit(role)}
-                  disabled={role.is_system_role}
                 >
                   <Edit2 className="h-4 w-4" />
                 </Button>

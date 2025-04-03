@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { MapPin, Wifi, Clock, AlertCircle } from 'lucide-react';
@@ -217,36 +216,17 @@ const LocationCheckIn: React.FC = () => {
     try {
       const ip = await getClientIp();
       
-      // Check if IP is in any of the allowed ranges
-      const matchedRange = OFFICE_IP_RANGES.find(range => isIpInRange(ip, range.cidr));
+      // Modified: Allow any IP address to check in
+      // Create a success record for any IP
+      const record = createCheckInRecord('ip', 'success', {
+        ip,
+        locationName: '遠端辦公'
+      });
       
-      let record: CheckInRecord;
-      
-      if (matchedRange) {
-        // Success: IP is in an allowed range
-        record = createCheckInRecord('ip', 'success', {
-          ip,
-          locationName: matchedRange.name
-        });
-        
-        toast({
-          title: "打卡成功！",
-          description: `您已成功在${matchedRange.name}打卡。IP: ${ip}`,
-        });
-      } else {
-        // Error: IP is not in an allowed range
-        record = createCheckInRecord('ip', 'failed', {
-          ip
-        });
-        
-        setError(`您的網路IP (${ip}) 不在公司允許範圍內，無法打卡。`);
-        
-        toast({
-          title: "打卡失敗",
-          description: "您不在公司網路範圍內，無法打卡",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "打卡成功！",
+        description: `您已成功遠端打卡。IP: ${ip}`,
+      });
       
       saveCheckInRecord(record);
       setTodayCheckIn(record);

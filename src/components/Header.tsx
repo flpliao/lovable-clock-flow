@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Bell, Menu, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ApolloLogo from './ApolloLogo';
@@ -10,22 +11,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import PaginationControl from './PaginationControl';
 
 interface HeaderProps {
   notificationCount?: number;
 }
 
 const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 10; // This should be dynamic based on your actual data
   const location = useLocation();
-  
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // You would typically fetch data for the new page here
-    console.log(`Navigating to page ${page}`);
-  };
   
   const navItems = [
     { path: '/', label: 'Index' },
@@ -69,14 +61,6 @@ const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
                 </Link>
               </DropdownMenuItem>
             ))}
-            <DropdownMenuSeparator className="bg-gray-700" />
-            <div className="px-2">
-              <PaginationControl 
-                currentPage={currentPage} 
-                totalPages={totalPages} 
-                onPageChange={handlePageChange} 
-              />
-            </div>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

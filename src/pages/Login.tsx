@@ -14,6 +14,26 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 
+// Define a type for the global userCredentialsStore
+declare global {
+  interface Window {
+    userCredentialsStore: {
+      [key: string]: {
+        userId: string;
+        email: string;
+        password: string;
+      }
+    }
+  }
+}
+
+// Initialize the credentials store if it doesn't exist
+if (!window.userCredentialsStore) {
+  window.userCredentialsStore = {
+    '1': { userId: '1', email: 'admin@example.com', password: 'password' }
+  };
+}
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,46 +44,63 @@ const Login = () => {
   const { toast } = useToast();
   const { currentUser, setCurrentUser } = useUser();
 
+  // Function to find a user by email
+  const findUserByEmail = (email: string) => {
+    // Convert to lowercase for case-insensitive comparison
+    const lowerEmail = email.toLowerCase();
+    
+    // Search through the credentials store
+    for (const userId in window.userCredentialsStore) {
+      const creds = window.userCredentialsStore[userId];
+      if (creds.email.toLowerCase() === lowerEmail) {
+        return { userId, credentials: creds };
+      }
+    }
+    
+    return null;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      // 模擬登錄請求
-      setTimeout(() => {
-        // 簡單的驗證 - 實際應用中應使用更安全的方法
-        if (email === 'admin@example.com' && password === 'password') {
-          setCurrentUser({
-            id: '1',
-            name: '廖俊雄',
-            position: '資深工程師',
-            department: '技術部',
-            onboard_date: '2023-01-15',
-            role: 'admin',
-          });
-          
-          toast({
-            title: '登錄成功',
-            description: '歡迎回來，廖俊雄',
-          });
-          
-          navigate('/');
-        } else {
-          toast({
-            variant: 'destructive',
-            title: '登錄失敗',
-            description: '電子郵件或密碼不正確',
-          });
-        }
+      // Find user by email in our credentials store
+      const userFound = findUserByEmail(email);
+      
+      if (userFound && userFound.credentials.password === password) {
+        // Mock user data based on the found credentials
+        const mockUserData = {
+          id: userFound.userId,
+          name: userFound.userId === '1' ? '廖俊雄' : `User ${userFound.userId}`,
+          position: userFound.userId === '1' ? '資深工程師' : '一般員工',
+          department: userFound.userId === '1' ? '技術部' : 'HR',
+          onboard_date: '2023-01-15',
+          role: userFound.userId === '1' ? 'admin' : 'user',
+        };
         
-        setIsLoading(false);
-      }, 1000);
+        setCurrentUser(mockUserData);
+        
+        toast({
+          title: '登錄成功',
+          description: `歡迎回來，${mockUserData.name}`,
+        });
+        
+        navigate('/');
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '登錄失敗',
+          description: '電子郵件或密碼不正確',
+        });
+      }
     } catch (error) {
       toast({
         variant: 'destructive',
         title: '登錄失敗',
         description: '發生錯誤，請稍後再試',
       });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -134,7 +171,15 @@ const Login = () => {
           <TabsContent value="manage">
             {currentUser ? (
               <div className="mt-4">
-                <CredentialManagement />
+                <CredentialManagement 
+                  userId={currentUser.id} 
+                  onSuccess={() => {
+                    toast({
+                      title: "帳號設定已更新",
+                      description: "請使用新的帳號設定登錄",
+                    });
+                  }}
+                />
               </div>
             ) : (
               <div className="text-center py-8">

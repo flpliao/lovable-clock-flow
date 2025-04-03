@@ -6,7 +6,8 @@ import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import StaffManagement from '@/components/staff/StaffManagement';
 import DepartmentManagement from '@/components/departments/DepartmentManagement';
-import { Key } from 'lucide-react';
+import { Key, Info } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const PersonnelManagement = () => {
   const { currentUser, isAdmin } = useUser();
@@ -26,6 +27,13 @@ const PersonnelManagement = () => {
           <h1 className="text-2xl font-bold">人員與部門管理</h1>
           <p className="text-gray-500 flex items-center">管理排班系統中的所有員工與部門資料，包含 <Key className="h-4 w-4 ml-1 mr-1 text-blue-500" /> 帳號密碼設定</p>
         </div>
+        
+        <Alert className="mb-4 bg-blue-50 border-blue-200">
+          <Info className="h-4 w-4 text-blue-500" />
+          <AlertDescription className="text-blue-700">
+            您可以更改員工的帳號和密碼。更改後，員工將需要使用新的登錄憑據進行登錄。
+          </AlertDescription>
+        </Alert>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-4">

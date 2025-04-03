@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +20,20 @@ interface CredentialManagementProps {
   onSuccess?: () => void;
 }
 
+// Mock database for credentials - in a real app this would be stored in a database
+interface UserCredentials {
+  userId: string;
+  email: string;
+  password: string;
+}
+
+// Create a global store for credentials to simulate a database
+if (!window.userCredentialsStore) {
+  window.userCredentialsStore = {
+    '1': { userId: '1', email: 'admin@example.com', password: 'password' }
+  };
+}
+
 const CredentialManagement: React.FC<CredentialManagementProps> = ({ 
   userId,
   onSuccess 
@@ -36,6 +50,14 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
   // Determine if this is admin managing someone else or user managing own account
   const managingOwnAccount = !userId || userId === currentUser?.id;
   const targetUserId = userId || currentUser?.id;
+  
+  // Get current email for the user
+  useEffect(() => {
+    if (targetUserId && window.userCredentialsStore[targetUserId]) {
+      // Only set placeholder email, don't fill the field
+      setEmail('');
+    }
+  }, [targetUserId]);
   
   // Validate permissions
   const hasPermission = targetUserId && (
@@ -76,15 +98,32 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
     
     setIsSubmitting(true);
     
-    // Simulate API call
+    // Update email in our mock database
     setTimeout(() => {
-      toast({
-        title: "電子郵件已更新",
-        description: "帳號電子郵件地址已成功更新",
-      });
-      setEmail('');
-      setIsSubmitting(false);
-      if (onSuccess) onSuccess();
+      if (targetUserId) {
+        // Initialize if not exists
+        if (!window.userCredentialsStore[targetUserId]) {
+          window.userCredentialsStore[targetUserId] = {
+            userId: targetUserId,
+            email: email,
+            password: 'password' // Default password
+          };
+        } else {
+          // Update existing
+          window.userCredentialsStore[targetUserId].email = email;
+        }
+        
+        // Log for debugging
+        console.log('Updated credentials:', window.userCredentialsStore);
+        
+        toast({
+          title: "電子郵件已更新",
+          description: "帳號電子郵件地址已成功更新，請使用新的電子郵件地址登錄。",
+        });
+        setEmail('');
+        setIsSubmitting(false);
+        if (onSuccess) onSuccess();
+      }
     }, 1000);
   };
   
@@ -141,34 +180,58 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
     
     // Simulate password verification and update
     setTimeout(() => {
-      // For demonstration, we'll assume the current password is 'password'
-      if (managingOwnAccount && currentPassword !== 'password') {
+      if (targetUserId) {
+        const userCreds = window.userCredentialsStore[targetUserId];
+        
+        // For demonstration, verify current password if managing own account
+        if (managingOwnAccount && userCreds && userCreds.password !== currentPassword) {
+          toast({
+            title: "當前密碼錯誤",
+            description: "請輸入正確的當前密碼",
+            variant: "destructive"
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        
+        // Initialize if not exists
+        if (!window.userCredentialsStore[targetUserId]) {
+          window.userCredentialsStore[targetUserId] = {
+            userId: targetUserId,
+            email: `user-${targetUserId}@example.com`, // Default email
+            password: newPassword
+          };
+        } else {
+          // Update existing
+          window.userCredentialsStore[targetUserId].password = newPassword;
+        }
+        
+        // Log for debugging
+        console.log('Updated credentials:', window.userCredentialsStore);
+        
         toast({
-          title: "當前密碼錯誤",
-          description: "請輸入正確的當前密碼",
-          variant: "destructive"
+          title: "密碼已更新",
+          description: "帳號密碼已成功更新，請使用新密碼登錄。",
         });
+        
+        // Reset form
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
         setIsSubmitting(false);
-        return;
+        if (onSuccess) onSuccess();
       }
-      
-      toast({
-        title: "密碼已更新",
-        description: "帳號密碼已成功更新",
-      });
-      
-      // Reset form
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setIsSubmitting(false);
-      if (onSuccess) onSuccess();
     }, 1000);
   };
 
   if (!targetUserId) {
     return <div className="text-center p-4">無法管理帳號：用戶未登入</div>;
   }
+  
+  // Get current user's email from store to display as placeholder
+  const currentEmail = targetUserId && window.userCredentialsStore[targetUserId] 
+    ? window.userCredentialsStore[targetUserId].email 
+    : '';
   
   return (
     <div className="space-y-6">
@@ -190,7 +253,7 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="new-email@example.com"
+                  placeholder={currentEmail || "new-email@example.com"}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />

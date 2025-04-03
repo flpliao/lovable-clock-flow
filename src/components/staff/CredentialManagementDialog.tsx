@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { UserCog } from 'lucide-react';
 import CredentialManagement from './CredentialManagement';
 import { Staff } from './types';
+import { useToast } from '@/hooks/use-toast';
 
 interface CredentialManagementDialogProps {
   staff: Staff;
@@ -19,8 +20,15 @@ interface CredentialManagementDialogProps {
 
 const CredentialManagementDialog: React.FC<CredentialManagementDialogProps> = ({ staff }) => {
   const [open, setOpen] = React.useState(false);
+  const { toast } = useToast();
   
   const handleSuccess = () => {
+    // Show success toast
+    toast({
+      title: "帳號設定已更新",
+      description: "用戶需要使用新的憑據登錄。",
+    });
+    
     // Close dialog after successful update
     setOpen(false);
   };

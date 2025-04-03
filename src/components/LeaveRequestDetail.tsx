@@ -83,7 +83,7 @@ const LeaveRequestDetail: React.FC<LeaveRequestDetailProps> = ({
       // All levels approved
       updatedRequest = {
         ...leaveRequest,
-        status: 'approved',
+        status: 'approved' as const, // Explicitly type as const to match the LeaveRequest type
         approvals: updatedApprovals,
         approval_level: undefined,
         current_approver: undefined,
@@ -149,9 +149,9 @@ const LeaveRequestDetail: React.FC<LeaveRequestDetailProps> = ({
       approval_date: new Date().toISOString()
     };
     
-    const updatedRequest = {
+    const updatedRequest: LeaveRequest = {
       ...leaveRequest,
-      status: 'rejected',
+      status: 'rejected' as const, // Explicitly type as const to match the LeaveRequest type
       approvals: updatedApprovals,
       rejection_reason: reason,
       updated_at: new Date().toISOString()

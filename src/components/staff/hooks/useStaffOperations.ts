@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { Staff, NewStaff } from '../types';
 import { mockStaffList } from '../mockData';

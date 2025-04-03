@@ -1,12 +1,13 @@
-
 export interface Staff {
   id: string;
   name: string;
   position: string;
   department: string;
   contact: string;
-  role: 'user' | 'admin';
-  supervisor_id?: string; // Added supervisor relationship
+  role: 'user' | 'admin' | string;
+  role_id?: string;
+  supervisor_id?: string;
+  permissions?: string[];
 }
 
 export interface NewStaff {
@@ -14,8 +15,32 @@ export interface NewStaff {
   position: string;
   department: string;
   contact: string;
-  role: 'user' | 'admin';
-  supervisor_id?: string; // Added supervisor relationship
+  role: 'user' | 'admin' | string;
+  role_id?: string;
+  supervisor_id?: string;
+  permissions?: string[];
+}
+
+export interface StaffRole {
+  id: string;
+  name: string;
+  description: string;
+  permissions: Permission[];
+  is_system_role: boolean;
+}
+
+export interface NewStaffRole {
+  name: string;
+  description: string;
+  permissions: Permission[];
+}
+
+export interface Permission {
+  id: string;
+  name: string;
+  code: string;
+  description: string;
+  category: string;
 }
 
 export interface StaffManagementContextType {
@@ -35,4 +60,13 @@ export interface StaffManagementContextType {
   openEditDialog: (staff: Staff) => void;
   getSupervisorName: (supervisorId?: string) => string;
   getSubordinates: (staffId: string) => Staff[];
+  
+  roles: StaffRole[];
+  addRole: (role: NewStaffRole) => Promise<boolean>;
+  updateRole: (role: StaffRole) => Promise<boolean>;
+  deleteRole: (roleId: string) => Promise<boolean>;
+  
+  assignRoleToStaff: (staffId: string, roleId: string) => Promise<boolean>;
+  
+  hasPermission: (staffId: string, permissionCode: string) => boolean;
 }

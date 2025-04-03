@@ -12,10 +12,39 @@ import { Button } from '@/components/ui/button';
 import { Edit2, Trash2, Shield, UserRound } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { Badge } from '@/components/ui/badge';
 
 const StaffTable = () => {
   const { isAdmin, canManageUser } = useUser();
-  const { filteredStaffList, openEditDialog, handleDeleteStaff, getSupervisorName } = useStaffManagementContext();
+  const { 
+    filteredStaffList, 
+    openEditDialog, 
+    handleDeleteStaff, 
+    getSupervisorName,
+    roles,
+    getRole 
+  } = useStaffManagementContext();
+
+  // Function to get role name display
+  const getRoleDisplay = (staff: any) => {
+    // If using new role_id reference
+    if (staff.role_id) {
+      const role = getRole(staff.role_id);
+      if (role) {
+        return role.name;
+      }
+    }
+    
+    // Fallback to legacy role
+    if (staff.role === 'admin') {
+      return '系統管理員';
+    } else if (staff.role === 'user') {
+      return '一般使用者';
+    }
+    
+    // If custom role name stored in role property
+    return staff.role;
+  };
 
   return (
     <Table>
@@ -53,8 +82,12 @@ const StaffTable = () => {
               {isAdmin() && (
                 <TableCell>
                   <div className="flex items-center">
-                    {staff.role === 'admin' && <Shield className="h-4 w-4 mr-1 text-blue-500" />}
-                    {staff.role === 'admin' ? '管理員' : '一般使用者'}
+                    {(staff.role === 'admin' || staff.role_id === 'admin') && (
+                      <Shield className="h-4 w-4 mr-1 text-blue-500" />
+                    )}
+                    <Badge variant="outline" className="font-normal">
+                      {getRoleDisplay(staff)}
+                    </Badge>
                   </div>
                 </TableCell>
               )}

@@ -13,6 +13,7 @@ import StaffTable from './StaffTable';
 import OrganizationChart from './OrganizationChart';
 import AddStaffDialog from './AddStaffDialog';
 import EditStaffDialog from './EditStaffDialog';
+import RoleManagement from './RoleManagement';
 
 const StaffManagement = () => {
   const { isAdmin } = useUser();
@@ -34,9 +35,10 @@ const StaffManagement = () => {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsList className="grid w-full grid-cols-3 mb-4">
               <TabsTrigger value="list">人員列表</TabsTrigger>
               <TabsTrigger value="org-chart">公司組織圖</TabsTrigger>
+              {isAdmin() && <TabsTrigger value="roles">角色與權限</TabsTrigger>}
             </TabsList>
             
             <TabsContent value="list">
@@ -46,6 +48,12 @@ const StaffManagement = () => {
             <TabsContent value="org-chart">
               <OrganizationChart />
             </TabsContent>
+            
+            {isAdmin() && (
+              <TabsContent value="roles">
+                <RoleManagement />
+              </TabsContent>
+            )}
           </Tabs>
         </CardContent>
       </Card>

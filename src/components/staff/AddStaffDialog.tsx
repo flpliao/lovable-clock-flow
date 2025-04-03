@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Dialog,
@@ -15,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { departments, positions, roles } from './StaffConstants';
+import { departments, positions } from './StaffConstants';
 import { useUser } from '@/contexts/UserContext';
 
 const AddStaffDialog = () => {
@@ -25,7 +24,8 @@ const AddStaffDialog = () => {
     newStaff, 
     setNewStaff, 
     handleAddStaff,
-    staffList
+    staffList,
+    roles
   } = useStaffManagementContext();
   
   const { isAdmin } = useUser();
@@ -141,16 +141,27 @@ const AddStaffDialog = () => {
               角色
             </Label>
             <Select 
-              value={newStaff.role} 
-              onValueChange={(value: 'user' | 'admin') => setNewStaff({...newStaff, role: value})}
+              value={newStaff.role_id || newStaff.role} 
+              onValueChange={(value) => {
+                if (value === 'admin' || value === 'user') {
+                  setNewStaff({...newStaff, role: value, role_id: value});
+                } else {
+                  const selectedRole = roles.find(r => r.id === value);
+                  setNewStaff({
+                    ...newStaff, 
+                    role_id: value,
+                    role: selectedRole ? selectedRole.name : 'custom'
+                  });
+                }
+              }}
             >
               <SelectTrigger className="col-span-3" id="role">
                 <SelectValue placeholder="選擇角色" />
               </SelectTrigger>
               <SelectContent>
                 {roles.map((role) => (
-                  <SelectItem key={role.value} value={role.value}>
-                    {role.label}
+                  <SelectItem key={role.id} value={role.id}>
+                    {role.name}
                   </SelectItem>
                 ))}
               </SelectContent>

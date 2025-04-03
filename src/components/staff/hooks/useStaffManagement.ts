@@ -2,6 +2,7 @@
 import { useStaffOperations } from './useStaffOperations';
 import { useStaffHierarchy } from './useStaffHierarchy';
 import { useStaffDialogs } from './useStaffDialogs';
+import { useRoleManagement } from './useRoleManagement';
 
 export const useStaffManagement = () => {
   const {
@@ -29,6 +30,16 @@ export const useStaffManagement = () => {
     openEditDialog,
     resetNewStaff
   } = useStaffDialogs();
+  
+  const {
+    roles,
+    addRole,
+    updateRole,
+    deleteRole,
+    getRole,
+    hasPermission,
+    assignRoleToStaff
+  } = useRoleManagement(staffList);
 
   // Combine the add staff functionality
   const handleAddStaffSubmit = () => {
@@ -50,6 +61,7 @@ export const useStaffManagement = () => {
   };
 
   return {
+    // Staff management
     staffList,
     filteredStaffList,
     isAddDialogOpen,
@@ -65,6 +77,15 @@ export const useStaffManagement = () => {
     handleDeleteStaff,
     openEditDialog,
     getSupervisorName,
-    getSubordinates
+    getSubordinates,
+    
+    // Role management
+    roles,
+    addRole,
+    updateRole,
+    deleteRole,
+    getRole,
+    hasPermission,
+    assignRoleToStaff
   };
 };

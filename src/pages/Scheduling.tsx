@@ -6,7 +6,7 @@ import { ChevronLeft } from 'lucide-react';
 import ScheduleCalendar from '@/components/ScheduleCalendar';
 import ScheduleForm from '@/components/ScheduleForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import StaffManagement from '@/components/StaffManagement';
+import StaffManagement from '@/components/staff/StaffManagement';
 
 const Scheduling = () => {
   const navigate = useNavigate();

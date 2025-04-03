@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell, Menu, Check, Shield, LogOut } from 'lucide-react';
+import { Bell, Menu, Check, Shield, LogOut, BarChart3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ApolloLogo from './ApolloLogo';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -23,12 +23,22 @@ const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
   const { currentUser, isAdmin, setCurrentUser } = useUser();
   const { toast } = useToast();
   
-  const navItems = [
+  // 判斷是否為管理員或人資部門
+  const isAdminOrHR = () => {
+    return currentUser && (isAdmin() || currentUser.department === 'HR');
+  };
+  
+  let navItems = [
     { path: '/', label: '首頁' },
     { path: '/leave-request', label: '請假申請' },
     { path: '/personal-attendance', label: '個人考勤' },
     { path: '/scheduling', label: '排班' },
   ];
+  
+  // 如果是管理員或人資部門，新增儀表板選項
+  if (isAdminOrHR()) {
+    navItems.push({ path: '/staff-dashboard', label: '員工考勤儀表板' });
+  }
   
   const handleLogout = () => {
     setCurrentUser(null);
@@ -47,6 +57,12 @@ const Header: React.FC<HeaderProps> = ({ notificationCount = 29 }) => {
           <Badge className="ml-2 bg-blue-500 hover:bg-blue-600">
             <Shield className="w-3 h-3 mr-1" />
             管理員
+          </Badge>
+        )}
+        {!isAdmin() && currentUser?.department === 'HR' && (
+          <Badge className="ml-2 bg-violet-500 hover:bg-violet-600">
+            <BarChart3 className="w-3 h-3 mr-1" />
+            人資管理
           </Badge>
         )}
       </div>

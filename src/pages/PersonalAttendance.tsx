@@ -77,7 +77,7 @@ const PersonalAttendance = () => {
                   <CardTitle>打卡歷史</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {currentUser?.id && <CheckInHistory userId={currentUser.id} />}
+                  <CheckInHistory />
                 </CardContent>
               </Card>
             </TabsContent>

@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { getCheckInRecords } from '@/utils/checkInUtils';
-import { useStaffManagement } from '../useStaffManagement';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { CheckInRecord } from '@/types';
 import { Staff } from '../types';
 
@@ -14,32 +14,32 @@ export interface TeamMemberCheckInData {
 }
 
 export const useTeamCheckInData = () => {
-  const { currentUser, isAdmin, isManager } = useUser();
-  const { staffMembers } = useStaffManagement();
+  const { currentUser, isAdmin } = useUser();
+  const { staffList } = useStaffManagementContext();
   const [filter, setFilter] = useState<'today' | 'week' | 'month'>('today');
   const [departmentFilter, setDepartmentFilter] = useState('all');
 
-  // Check if user has permission to view this page
-  const hasPermission = isAdmin() || isManager();
+  // Check if user has permission to view this page - admin users can view
+  const hasPermission = isAdmin();
 
   // Get all departments
   const departments = useMemo(() => {
     const deptSet = new Set<string>();
-    staffMembers.forEach(staff => {
+    staffList.forEach(staff => {
       if (staff.department) {
         deptSet.add(staff.department);
       }
     });
     return Array.from(deptSet);
-  }, [staffMembers]);
+  }, [staffList]);
 
   // Filter staff members by department
   const filteredStaff = useMemo(() => {
     if (departmentFilter === 'all') {
-      return staffMembers;
+      return staffList;
     }
-    return staffMembers.filter(staff => staff.department === departmentFilter);
-  }, [staffMembers, departmentFilter]);
+    return staffList.filter(staff => staff.department === departmentFilter);
+  }, [staffList, departmentFilter]);
 
   // Process check-in data
   const teamCheckInData = useMemo(() => {

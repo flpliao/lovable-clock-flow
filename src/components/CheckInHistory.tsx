@@ -1,13 +1,12 @@
 
 import React from 'react';
-import { format } from 'date-fns';
 import { MapPin, Wifi } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useUser } from '@/contexts/UserContext';
 import { CheckInRecord } from '@/types';
-// Import from utils/checkInUtils instead of LocationCheckIn
+// 从 utils/checkInUtils 导入，而不是 LocationCheckIn
 import { getUserCheckInRecords, formatDate, formatTime } from '@/utils/checkInUtils';
 
 const CheckInHistory: React.FC = () => {

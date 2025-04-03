@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { Staff, NewStaff } from '../types';
 import { mockStaffList } from '../mockData';
+import { syncStaffDataChanges, handleStaffDeletion } from '@/utils/dataSync';
 
 export const useStaffOperations = () => {
   const [staffList, setStaffList] = useState<Staff[]>(mockStaffList);
@@ -106,9 +107,18 @@ export const useStaffOperations = () => {
       return false;
     }
 
+    // 找到当前数据库中的员工记录，用于数据同步比较
+    const oldStaffData = staffList.find(staff => staff.id === currentStaff.id);
+    
+    // 更新员工列表
     setStaffList(staffList.map(staff => 
       staff.id === currentStaff.id ? currentStaff : staff
     ));
+    
+    // 同步相关数据
+    if (oldStaffData) {
+      syncStaffDataChanges(oldStaffData, currentStaff);
+    }
     
     toast({
       title: "編輯成功",
@@ -140,6 +150,9 @@ export const useStaffOperations = () => {
       return;
     }
 
+    // 处理关联数据（标记为已删除员工）
+    handleStaffDeletion(id, 'mark');
+    
     setStaffList(staffList.filter(staff => staff.id !== id));
     
     toast({

@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { MapPin, Wifi, Clock, AlertCircle } from 'lucide-react';
+import { MapPin, Wifi, Clock, AlertCircle, LogIn, LogOut } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUser } from '@/contexts/UserContext';
 
@@ -27,6 +27,7 @@ export interface CheckInRecord {
   timestamp: string;
   type: 'location' | 'ip';
   status: 'success' | 'failed';
+  action: 'check-in' | 'check-out';  // New field to track check-in or check-out
   details: {
     latitude?: number;
     longitude?: number;
@@ -92,9 +93,26 @@ export const getUserCheckInRecords = (userId: string): CheckInRecord[] => {
 // Get today's check-in record for a user
 export const getUserTodayCheckIn = (userId: string): CheckInRecord | undefined => {
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-  return getUserCheckInRecords(userId).find(record => 
+  const todayRecords = getUserCheckInRecords(userId).filter(record => 
     record.timestamp.startsWith(today)
   );
+  // Return the most recent check-in (if any)
+  return todayRecords.sort((a, b) => 
+    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  )[0];
+};
+
+// Get today's check-in and check-out records for a user
+export const getUserTodayRecords = (userId: string): { checkIn?: CheckInRecord, checkOut?: CheckInRecord } => {
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  const todayRecords = getUserCheckInRecords(userId).filter(record => 
+    record.timestamp.startsWith(today)
+  );
+  
+  return {
+    checkIn: todayRecords.find(record => record.action === 'check-in'),
+    checkOut: todayRecords.find(record => record.action === 'check-out')
+  };
 };
 
 const LocationCheckIn: React.FC = () => {
@@ -104,18 +122,20 @@ const LocationCheckIn: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
   const [checkInMethod, setCheckInMethod] = useState<'location' | 'ip'>('location');
-  const [todayCheckIn, setTodayCheckIn] = useState<CheckInRecord | undefined>(undefined);
+  const [actionType, setActionType] = useState<'check-in' | 'check-out'>('check-in');
+  const [todayRecords, setTodayRecords] = useState<{ checkIn?: CheckInRecord, checkOut?: CheckInRecord }>({});
 
   useEffect(() => {
     if (currentUser?.id) {
-      const checkIn = getUserTodayCheckIn(currentUser.id);
-      setTodayCheckIn(checkIn);
+      const records = getUserTodayRecords(currentUser.id);
+      setTodayRecords(records);
     }
   }, [currentUser?.id]);
 
   const createCheckInRecord = (
     type: 'location' | 'ip', 
-    status: 'success' | 'failed', 
+    status: 'success' | 'failed',
+    action: 'check-in' | 'check-out',
     details: any
   ): CheckInRecord => {
     return {
@@ -124,6 +144,7 @@ const LocationCheckIn: React.FC = () => {
       timestamp: new Date().toISOString(),
       type,
       status,
+      action,
       details
     };
   };
@@ -151,20 +172,22 @@ const LocationCheckIn: React.FC = () => {
           // Check if user is within the allowed radius
           if (calculatedDistance <= OFFICE_LOCATION.maxDistanceMeters) {
             // Success: User is within the allowed radius
-            record = createCheckInRecord('location', 'success', {
+            record = createCheckInRecord('location', 'success', actionType, {
               latitude: userLatitude,
               longitude: userLongitude,
               distance: calculatedDistance,
               locationName: OFFICE_LOCATION.name
             });
             
+            const actionMsg = actionType === 'check-in' ? '上班打卡' : '下班打卡';
+            
             toast({
-              title: "打卡成功！",
-              description: `您已成功在${OFFICE_LOCATION.name}打卡。距離: ${Math.round(calculatedDistance)}公尺`,
+              title: `${actionMsg}成功！`,
+              description: `您已成功在${OFFICE_LOCATION.name}${actionMsg}。距離: ${Math.round(calculatedDistance)}公尺`,
             });
           } else {
             // Error: User is too far from the office
-            record = createCheckInRecord('location', 'failed', {
+            record = createCheckInRecord('location', 'failed', actionType, {
               latitude: userLatitude,
               longitude: userLongitude,
               distance: calculatedDistance,
@@ -181,7 +204,16 @@ const LocationCheckIn: React.FC = () => {
           }
           
           saveCheckInRecord(record);
-          setTodayCheckIn(record);
+          
+          // Update today's records
+          if (record.status === 'success') {
+            if (actionType === 'check-in') {
+              setTodayRecords(prev => ({ ...prev, checkIn: record }));
+            } else {
+              setTodayRecords(prev => ({ ...prev, checkOut: record }));
+            }
+          }
+          
           setLoading(false);
         },
         (positionError) => {
@@ -218,18 +250,27 @@ const LocationCheckIn: React.FC = () => {
       
       // Modified: Allow any IP address to check in
       // Create a success record for any IP
-      const record = createCheckInRecord('ip', 'success', {
+      const record = createCheckInRecord('ip', 'success', actionType, {
         ip,
         locationName: '遠端辦公'
       });
       
+      const actionMsg = actionType === 'check-in' ? '上班打卡' : '下班打卡';
+      
       toast({
-        title: "打卡成功！",
-        description: `您已成功遠端打卡。IP: ${ip}`,
+        title: `${actionMsg}成功！`,
+        description: `您已成功遠端${actionMsg}。IP: ${ip}`,
       });
       
       saveCheckInRecord(record);
-      setTodayCheckIn(record);
+      
+      // Update today's records
+      if (actionType === 'check-in') {
+        setTodayRecords(prev => ({ ...prev, checkIn: record }));
+      } else {
+        setTodayRecords(prev => ({ ...prev, checkOut: record }));
+      }
+      
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -245,6 +286,84 @@ const LocationCheckIn: React.FC = () => {
     }
   };
   
+  // Helper to format time
+  const formatTime = (timestamp: string) => {
+    return new Date(timestamp).toLocaleTimeString('zh-TW', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+  
+  // Helper to format date
+  const formatDate = (timestamp: string) => {
+    return new Date(timestamp).toLocaleDateString('zh-TW');
+  };
+  
+  // Generate action options for the UI
+  const getActionOptions = () => {
+    const { checkIn, checkOut } = todayRecords;
+    
+    // If no check-in yet, only show check-in option
+    if (!checkIn) {
+      return (
+        <Tabs 
+          value={actionType} 
+          onValueChange={(value) => setActionType(value as 'check-in' | 'check-out')}
+          className="w-full max-w-md mb-6"
+        >
+          <TabsList className="grid w-full grid-cols-1">
+            <TabsTrigger value="check-in" className="text-center">
+              <LogIn className="h-4 w-4 mr-2" />
+              上班打卡
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      );
+    }
+    
+    // If already checked in but not checked out, show both options
+    if (checkIn && !checkOut) {
+      return (
+        <Tabs 
+          value={actionType} 
+          onValueChange={(value) => setActionType(value as 'check-in' | 'check-out')}
+          className="w-full max-w-md mb-6"
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="check-in" className="text-center" disabled>
+              <LogIn className="h-4 w-4 mr-2" />
+              上班打卡
+            </TabsTrigger>
+            <TabsTrigger value="check-out" className="text-center">
+              <LogOut className="h-4 w-4 mr-2" />
+              下班打卡
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      );
+    }
+    
+    // If already checked in and out, all options disabled
+    return (
+      <Tabs 
+        value={actionType} 
+        onValueChange={(value) => setActionType(value as 'check-in' | 'check-out')}
+        className="w-full max-w-md mb-6"
+      >
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="check-in" className="text-center" disabled>
+            <LogIn className="h-4 w-4 mr-2" />
+            上班打卡
+          </TabsTrigger>
+          <TabsTrigger value="check-out" className="text-center" disabled>
+            <LogOut className="h-4 w-4 mr-2" />
+            下班打卡
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+    );
+  };
+  
   return (
     <div className="mt-10 flex flex-col items-center justify-center relative">
       <div className="bg-pattern bg-repeat-x w-full h-64 absolute -bottom-10 opacity-10 z-0"></div>
@@ -256,108 +375,173 @@ const LocationCheckIn: React.FC = () => {
         </Alert>
       )}
       
-      {todayCheckIn ? (
-        <div className="bg-white rounded-lg shadow-md p-6 max-w-md mx-auto z-10">
-          <div className="flex items-center justify-center mb-4">
-            <Clock className="h-10 w-10 text-green-500 mr-2" />
-            <h2 className="text-xl font-bold">今日已打卡</h2>
-          </div>
+      {/* Today's Check-in and Check-out Status */}
+      {(todayRecords.checkIn || todayRecords.checkOut) && (
+        <div className="bg-white rounded-lg shadow-md p-6 max-w-md mx-auto z-10 mb-6 w-full">
+          <h2 className="text-xl font-bold text-center mb-4">今日打卡紀錄</h2>
           
-          <div className="text-center mb-4">
-            <p className="text-lg font-medium">
-              {new Date(todayCheckIn.timestamp).toLocaleTimeString('zh-TW', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
-            </p>
-            <p className="text-sm text-gray-500">
-              {new Date(todayCheckIn.timestamp).toLocaleDateString('zh-TW')}
-            </p>
-          </div>
-          
-          <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-            {todayCheckIn.type === 'location' ? (
-              <>
-                <MapPin className="h-4 w-4" />
-                <span>位置打卡</span>
-                {todayCheckIn.details.locationName && (
-                  <span className="ml-1">- {todayCheckIn.details.locationName}</span>
-                )}
-              </>
-            ) : (
-              <>
-                <Wifi className="h-4 w-4" />
-                <span>IP打卡</span>
-                {todayCheckIn.details.locationName && (
-                  <span className="ml-1">- {todayCheckIn.details.locationName}</span>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      ) : (
-        <Tabs 
-          value={checkInMethod} 
-          onValueChange={(value) => setCheckInMethod(value as 'location' | 'ip')}
-          className="w-full max-w-md z-10"
-        >
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="location" className="text-center">
-              <MapPin className="h-4 w-4 mr-2" />
-              位置打卡
-            </TabsTrigger>
-            <TabsTrigger value="ip" className="text-center">
-              <Wifi className="h-4 w-4 mr-2" />
-              IP打卡
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="location" className="mt-0">
-            <button
-              onClick={handleLocationCheckIn}
-              disabled={loading}
-              className="relative h-40 w-40 mx-auto rounded-full bg-white border-8 border-[#E6F4F9] flex items-center justify-center z-10 focus:outline-none transition-all duration-300 hover:border-[#0091D0]/50"
-            >
-              <div className="location-ring bg-[#0091D0]/20 h-32 w-32"></div>
-              <div className="location-ring bg-[#0091D0]/10 h-36 w-36" style={{ animationDelay: "0.5s" }}></div>
-              
-              <div className="h-24 w-24 rounded-full bg-[#0091D0] flex items-center justify-center">
-                <MapPin className="h-12 w-12 text-white" />
+          <div className="grid grid-cols-2 gap-4">
+            {/* Check-in record display */}
+            <div className={`p-4 rounded-lg ${todayRecords.checkIn ? 'bg-green-50' : 'bg-gray-100'}`}>
+              <div className="flex items-center mb-2">
+                <LogIn className="h-5 w-5 text-green-600 mr-2" />
+                <h3 className="text-lg font-medium">上班打卡</h3>
               </div>
-            </button>
-            
-            <div className="mt-6 text-center">
-              <p className="text-xl font-bold">上班了！<span className="text-[#0091D0]">定位打卡</span></p>
-              {distance !== null && !error && (
-                <p className="text-sm text-gray-600 mt-2">
-                  距離公司: <span className="font-medium">{Math.round(distance)} 公尺</span>
-                </p>
+              
+              {todayRecords.checkIn ? (
+                <>
+                  <p className="text-lg font-medium">
+                    {formatTime(todayRecords.checkIn.timestamp)}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {formatDate(todayRecords.checkIn.timestamp)}
+                  </p>
+                  <div className="flex items-center mt-2 text-sm text-gray-600">
+                    {todayRecords.checkIn.type === 'location' ? (
+                      <>
+                        <MapPin className="h-4 w-4 mr-1" />
+                        <span>{todayRecords.checkIn.details.locationName}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Wifi className="h-4 w-4 mr-1" />
+                        <span>{todayRecords.checkIn.details.locationName}</span>
+                      </>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <p className="text-gray-500 italic">尚未打卡</p>
               )}
             </div>
-          </TabsContent>
-          
-          <TabsContent value="ip" className="mt-0">
-            <button
-              onClick={handleIpCheckIn}
-              disabled={loading}
-              className="relative h-40 w-40 mx-auto rounded-full bg-white border-8 border-[#E6F4F9] flex items-center justify-center z-10 focus:outline-none transition-all duration-300 hover:border-[#0091D0]/50"
-            >
-              <div className="location-ring bg-[#0091D0]/20 h-32 w-32"></div>
-              <div className="location-ring bg-[#0091D0]/10 h-36 w-36" style={{ animationDelay: "0.5s" }}></div>
-              
-              <div className="h-24 w-24 rounded-full bg-[#0091D0] flex items-center justify-center">
-                <Wifi className="h-12 w-12 text-white" />
-              </div>
-            </button>
             
-            <div className="mt-6 text-center">
-              <p className="text-xl font-bold">上班了！<span className="text-[#0091D0]">IP打卡</span></p>
-              <p className="text-sm text-gray-600 mt-2">
-                使用公司網路自動打卡
-              </p>
+            {/* Check-out record display */}
+            <div className={`p-4 rounded-lg ${todayRecords.checkOut ? 'bg-blue-50' : 'bg-gray-100'}`}>
+              <div className="flex items-center mb-2">
+                <LogOut className="h-5 w-5 text-blue-600 mr-2" />
+                <h3 className="text-lg font-medium">下班打卡</h3>
+              </div>
+              
+              {todayRecords.checkOut ? (
+                <>
+                  <p className="text-lg font-medium">
+                    {formatTime(todayRecords.checkOut.timestamp)}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {formatDate(todayRecords.checkOut.timestamp)}
+                  </p>
+                  <div className="flex items-center mt-2 text-sm text-gray-600">
+                    {todayRecords.checkOut.type === 'location' ? (
+                      <>
+                        <MapPin className="h-4 w-4 mr-1" />
+                        <span>{todayRecords.checkOut.details.locationName}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Wifi className="h-4 w-4 mr-1" />
+                        <span>{todayRecords.checkOut.details.locationName}</span>
+                      </>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <p className="text-gray-500 italic">尚未打卡</p>
+              )}
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
+      )}
+      
+      {/* If both check-in and check-out are done, show a message */}
+      {todayRecords.checkIn && todayRecords.checkOut ? (
+        <div className="bg-white rounded-lg shadow-md p-6 max-w-md mx-auto z-10 text-center">
+          <Clock className="h-12 w-12 text-green-500 mx-auto mb-2" />
+          <h2 className="text-xl font-bold">今日打卡完成</h2>
+          <p className="text-gray-600 mt-2">您已完成今日的上班與下班打卡</p>
+        </div>
+      ) : (
+        <>
+          {/* Action type selection (check-in or check-out) */}
+          {getActionOptions()}
+          
+          {/* Method selection (location or IP) and action buttons */}
+          <Tabs 
+            value={checkInMethod} 
+            onValueChange={(value) => setCheckInMethod(value as 'location' | 'ip')}
+            className="w-full max-w-md z-10"
+          >
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="location" className="text-center">
+                <MapPin className="h-4 w-4 mr-2" />
+                位置打卡
+              </TabsTrigger>
+              <TabsTrigger value="ip" className="text-center">
+                <Wifi className="h-4 w-4 mr-2" />
+                IP打卡
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="location" className="mt-0">
+              <button
+                onClick={handleLocationCheckIn}
+                disabled={loading}
+                className="relative h-40 w-40 mx-auto rounded-full bg-white border-8 border-[#E6F4F9] flex items-center justify-center z-10 focus:outline-none transition-all duration-300 hover:border-[#0091D0]/50"
+              >
+                <div className="location-ring bg-[#0091D0]/20 h-32 w-32"></div>
+                <div className="location-ring bg-[#0091D0]/10 h-36 w-36" style={{ animationDelay: "0.5s" }}></div>
+                
+                <div className="h-24 w-24 rounded-full bg-[#0091D0] flex items-center justify-center">
+                  {actionType === 'check-in' ? (
+                    <LogIn className="h-12 w-12 text-white" />
+                  ) : (
+                    <LogOut className="h-12 w-12 text-white" />
+                  )}
+                </div>
+              </button>
+              
+              <div className="mt-6 text-center">
+                <p className="text-xl font-bold">
+                  {actionType === 'check-in' ? '上班了！' : '下班了！'}
+                  <span className="text-[#0091D0]">定位打卡</span>
+                </p>
+                {distance !== null && !error && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    距離公司: <span className="font-medium">{Math.round(distance)} 公尺</span>
+                  </p>
+                )}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="ip" className="mt-0">
+              <button
+                onClick={handleIpCheckIn}
+                disabled={loading}
+                className="relative h-40 w-40 mx-auto rounded-full bg-white border-8 border-[#E6F4F9] flex items-center justify-center z-10 focus:outline-none transition-all duration-300 hover:border-[#0091D0]/50"
+              >
+                <div className="location-ring bg-[#0091D0]/20 h-32 w-32"></div>
+                <div className="location-ring bg-[#0091D0]/10 h-36 w-36" style={{ animationDelay: "0.5s" }}></div>
+                
+                <div className="h-24 w-24 rounded-full bg-[#0091D0] flex items-center justify-center">
+                  {actionType === 'check-in' ? (
+                    <LogIn className="h-12 w-12 text-white" />
+                  ) : (
+                    <LogOut className="h-12 w-12 text-white" />
+                  )}
+                </div>
+              </button>
+              
+              <div className="mt-6 text-center">
+                <p className="text-xl font-bold">
+                  {actionType === 'check-in' ? '上班了！' : '下班了！'}
+                  <span className="text-[#0091D0]">IP打卡</span>
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  使用公司網路自動打卡
+                </p>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </>
       )}
       
       <div className="absolute bottom-0 right-5 z-10">

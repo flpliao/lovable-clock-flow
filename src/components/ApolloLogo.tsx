@@ -8,7 +8,7 @@ const ApolloLogo: React.FC = () => {
         <img 
           src="/lovable-uploads/7b238701-8df5-4a06-9559-6e080e1567c9.png" 
           alt="Sharing Logo" 
-          className="h-16" // Changed from h-8 to h-16 (doubling the size)
+          className="h-24 text-apollo-blue" // Changed from h-16 to h-24 (increasing size by 50%)
         />
       </div>
     </div>

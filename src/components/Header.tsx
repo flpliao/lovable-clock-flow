@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Menu, Shield, LogOut, BarChart3 } from 'lucide-react';
+import { Menu, Shield, LogOut, BarChart3, Bell, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ApolloLogo from './ApolloLogo';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -31,6 +31,7 @@ const Header: React.FC<HeaderProps> = () => {
   
   let navItems = [
     { path: '/', label: '首頁' },
+    { path: '/announcements', label: '公司公告', icon: <FileText className="mr-2 h-4 w-4" /> },
     { path: '/leave-request', label: '請假申請' },
     { path: '/personal-attendance', label: '個人考勤' },
     { path: '/scheduling', label: '排班' },
@@ -40,7 +41,8 @@ const Header: React.FC<HeaderProps> = () => {
   if (isAdminOrHR()) {
     navItems.push(
       { path: '/personnel-management', label: '人員與部門管理' },
-      { path: '/staff-dashboard', label: '員工考勤儀表板' }
+      { path: '/staff-dashboard', label: '員工考勤儀表板' },
+      { path: '/announcement-management', label: '公告管理系統', icon: <FileText className="mr-2 h-4 w-4" /> }
     );
   }
   
@@ -86,8 +88,8 @@ const Header: React.FC<HeaderProps> = () => {
                   <DropdownMenuItem key={item.path} asChild className="py-2 px-4 focus:bg-gray-800 focus:text-white">
                     <Link to={item.path} className="flex items-center">
                       {location.pathname === item.path && <Menu className="mr-2 h-4 w-4" />}
-                      <span className={location.pathname === item.path ? "ml-2" : "ml-8"}>
-                        {item.label}
+                      <span className={location.pathname === item.path ? "ml-0 flex items-center" : "ml-8 flex items-center"}>
+                        {item.icon} {item.label}
                       </span>
                     </Link>
                   </DropdownMenuItem>

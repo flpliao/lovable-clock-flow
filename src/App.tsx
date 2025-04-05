@@ -16,6 +16,8 @@ import StaffDashboard from "./pages/StaffDashboard";
 import PersonnelManagement from "./pages/PersonnelManagement";
 import LeaveApprovalView from "./pages/LeaveApprovalView";
 import NotFound from "./pages/NotFound";
+import CompanyAnnouncements from "./pages/CompanyAnnouncements";
+import AnnouncementManagementPage from "./pages/AnnouncementManagementPage";
 
 // Create a new QueryClient instance outside of the component
 const queryClient = new QueryClient();
@@ -38,6 +40,8 @@ const App = () => (
                 <Route path="/staff-dashboard" element={<StaffDashboard />} />
                 <Route path="/personnel-management" element={<PersonnelManagement />} />
                 <Route path="/leave-approval/:requestId" element={<LeaveApprovalView />} />
+                <Route path="/announcements" element={<CompanyAnnouncements />} />
+                <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   name: string;
@@ -31,10 +30,11 @@ export interface LeaveRequest {
   user_id: string;
   start_date: string;
   end_date: string;
-  leave_type: 'annual' | 'sick' | 'personal' | 'other';
+  leave_type: 'annual' | 'sick' | 'personal' | 'marriage' | 'bereavement' | 'maternity' | 'paternity' | 'parental' | 'occupational' | 'other';
   status: 'pending' | 'approved' | 'rejected';
   hours: number;
   reason: string;
+  attachment_url?: string;
   approvals?: ApprovalRecord[];
   current_approver?: string;
   approval_level?: number;

@@ -1,10 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { format, differenceInHours } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Upload } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import * as z from 'zod';
 import { toast } from '@/components/ui/use-toast';
 import { useUser } from '@/contexts/UserContext';
 
@@ -42,6 +41,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { 
+  LEAVE_TYPES, 
+  leaveFormSchema, 
+  LeaveFormValues,
+  getLeaveTypeById
+} from '@/utils/leaveTypes';
 
 // Mock approvers data
 const approversData = [
@@ -49,28 +55,6 @@ const approversData = [
   { id: '3', name: '李經理', position: '經理', level: 2 },
   { id: '4', name: '人事部 張小姐', position: '人事專員', level: 3 }
 ];
-
-const leaveFormSchema = z.object({
-  start_date: z.date({
-    required_error: "請選擇請假開始日期",
-  }),
-  end_date: z.date({
-    required_error: "請選擇請假結束日期",
-  }).refine(date => date, {
-    message: "請選擇請假結束日期",
-  }),
-  leave_type: z.enum(['annual', 'sick', 'personal', 'other'], {
-    required_error: "請選擇請假類型",
-  }),
-  reason: z.string().min(1, {
-    message: "請輸入請假事由",
-  }),
-}).refine((data) => data.end_date >= data.start_date, {
-  message: "結束日期不能早於開始日期",
-  path: ["end_date"],
-});
-
-type LeaveFormValues = z.infer<typeof leaveFormSchema>;
 
 interface LeaveRequestFormProps {
   onSubmit?: (leaveRequest: LeaveRequest) => void;
@@ -80,6 +64,7 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
   const [calculatedHours, setCalculatedHours] = useState<number>(0);
   const [showApprovalDialog, setShowApprovalDialog] = useState<boolean>(false);
   const [pendingRequest, setPendingRequest] = useState<Partial<LeaveRequest> | null>(null);
+  const [selectedLeaveType, setSelectedLeaveType] = useState<string | null>(null);
   const { annualLeaveBalance, setAnnualLeaveBalance, currentUser } = useUser();
   
   const form = useForm<LeaveFormValues>({
@@ -104,6 +89,17 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
     }
   }, [form.watch('start_date'), form.watch('end_date')]);
 
+  // Update selected leave type when the form value changes
+  useEffect(() => {
+    const leaveType = form.watch('leave_type');
+    if (leaveType) {
+      setSelectedLeaveType(leaveType);
+    }
+  }, [form.watch('leave_type')]);
+
+  // Get current selected leave type details
+  const currentLeaveType = selectedLeaveType ? getLeaveTypeById(selectedLeaveType) : null;
+
   function handleSubmit(data: LeaveFormValues) {
     // Create approval records for the leave request
     const approvals: ApprovalRecord[] = approversData.map(approver => ({
@@ -121,10 +117,10 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
       user_id: currentUser?.id || '1',
       start_date: format(data.start_date, 'yyyy-MM-dd'),
       end_date: format(data.end_date, 'yyyy-MM-dd'),
-      leave_type: data.leave_type,
-      reason: data.reason,
-      hours: calculatedHours,
+      leave_type: data.leave_type as 'annual' | 'sick' | 'personal' | 'other',
       status: 'pending',
+      hours: calculatedHours,
+      reason: data.reason,
       approvals: approvals,
       approval_level: 1, // Start at the first approval level
       current_approver: approversData[0].id,
@@ -256,12 +252,22 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="annual">特休假</SelectItem>
-                  <SelectItem value="sick">病假</SelectItem>
-                  <SelectItem value="personal">事假</SelectItem>
-                  <SelectItem value="other">其他</SelectItem>
+                  {LEAVE_TYPES.map((type) => (
+                    <SelectItem key={type.id} value={type.id}>
+                      {type.name}{' '}
+                      {!type.isPaid && <span className="text-gray-400 text-xs">(無薪)</span>}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              {currentLeaveType && (
+                <FormDescription>
+                  {currentLeaveType.description}
+                  {currentLeaveType.maxDaysPerYear && (
+                    <span> (每年上限 {currentLeaveType.maxDaysPerYear} 天)</span>
+                  )}
+                </FormDescription>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -285,6 +291,36 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
             </FormItem>
           )}
         />
+
+        {/* Attachment field for leave types that require it */}
+        {currentLeaveType?.requiresAttachment && (
+          <FormField
+            control={form.control}
+            name="attachment"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>附件上傳</FormLabel>
+                <FormControl>
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      type="file" 
+                      className="flex-1" 
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          field.onChange(e.target.files[0]);
+                        }
+                      }} 
+                    />
+                  </div>
+                </FormControl>
+                <FormDescription>
+                  請上傳相關證明文件 (如: 醫師診斷證明、證書等)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         
         {/* Approvers information */}
         <div className="space-y-2 rounded-lg border p-4">

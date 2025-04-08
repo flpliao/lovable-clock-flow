@@ -1,14 +1,10 @@
 
-// Helper functions for leave-related operations
+import { LEAVE_TYPES, getLeaveTypeById } from '@/utils/leaveTypes';
 
 // Helper to get leave type in Chinese
 export const getLeaveTypeText = (type: string): string => {
-  switch (type) {
-    case 'annual': return '特休';
-    case 'sick': return '病假';
-    case 'personal': return '事假';
-    default: return '其他';
-  }
+  const leaveType = getLeaveTypeById(type);
+  return leaveType?.name || '其他';
 };
 
 // Helper to get status badge color

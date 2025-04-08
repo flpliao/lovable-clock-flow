@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 // Define the leave type structure
@@ -21,6 +20,7 @@ export const LEAVE_TYPES: LeaveType[] = [
     name_en: "annual",
     isPaid: true,
     annualReset: true,
+    requiresAttachment: false,
     description: "根據年資分配天數"
   },
   {

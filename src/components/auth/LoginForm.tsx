@@ -24,6 +24,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
     e.preventDefault();
     setIsLoading(true);
     
+    console.log('Login attempt with email:', email);
+    
     try {
       // Find user by email in our credentials store
       const userFound = findUserByEmail(email);
@@ -32,18 +34,32 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
         // Create user data based on the found credentials
         // Use email as the primary identifier for display name
         const emailLocalPart = userFound.credentials.email.split('@')[0];
-        const displayName = emailLocalPart === 'admin' ? '廖俊雄' : 
-                           emailLocalPart === 'flpliao' ? '王小明' : 
-                           `User ${userFound.userId}`;
+        let displayName, position, department, role;
+        
+        if (emailLocalPart === 'admin') {
+          displayName = '廖俊雄';
+          position = '資深工程師';
+          department = '技術部';
+          role = 'admin' as const;
+        } else if (emailLocalPart === 'flpliao') {
+          displayName = '王小明';
+          position = '一般員工';
+          department = 'HR';
+          role = 'user' as const;
+        } else {
+          displayName = `User ${userFound.userId}`;
+          position = '一般員工';
+          department = 'HR';
+          role = 'user' as const;
+        }
         
         const mockUserData = {
           id: userFound.userId,
           name: displayName,
-          position: userFound.userId === '1' ? '資深工程師' : '一般員工',
-          department: userFound.userId === '1' ? '技術部' : 'HR',
+          position: position,
+          department: department,
           onboard_date: '2023-01-15',
-          // Admin role based on userId or email pattern
-          role: userFound.userId === '1' || userFound.credentials.email.includes('admin') ? 'admin' as const : 'user' as const,
+          role: role,
         };
         
         console.log('Login successful for:', mockUserData);
@@ -56,6 +72,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
         
         navigate('/');
       } else {
+        console.log('Login failed - invalid credentials');
         toast({
           variant: 'destructive',
           title: '登錄失敗',
@@ -63,6 +80,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
         });
       }
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         variant: 'destructive',
         title: '登錄失敗',

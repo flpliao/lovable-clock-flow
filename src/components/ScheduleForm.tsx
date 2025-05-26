@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { format, getDaysInMonth, startOfMonth } from 'date-fns';
@@ -230,52 +229,59 @@ const ScheduleForm = () => {
               </div>
             </div>
 
-            {/* 日期選擇 */}
+            {/* 日期選擇 - 新的日曆風格設計 */}
             <div>
-              <FormLabel className="text-base font-medium">
-                選擇工作日期 ({selectedYear}年{selectedMonth}月)
+              <FormLabel className="text-lg font-medium mb-4 block">
+                {selectedYear}年 {selectedMonth}月
               </FormLabel>
-              <div className="mt-2 border rounded-md p-2 bg-white">
+              <div className="bg-white rounded-lg border border-gray-200">
                 {/* 星期標題 */}
-                <div className="grid grid-cols-7 gap-0.5 mb-1">
-                  {['日', '一', '二', '三', '四', '五', '六'].map(day => (
-                    <div key={day} className="text-center text-xs font-medium text-gray-500 py-1">
+                <div className="grid grid-cols-7 border-b border-gray-100">
+                  {['日', '一', '二', '三', '四', '五', '六'].map((day, index) => (
+                    <div 
+                      key={day} 
+                      className={`text-center text-sm font-medium py-3 ${
+                        index === 0 || index === 6 ? 'text-red-500' : 'text-gray-700'
+                      }`}
+                    >
                       {day}
                     </div>
                   ))}
                 </div>
                 
                 {/* 日期網格 */}
-                <div className="grid grid-cols-7 gap-0.5">
+                <div className="grid grid-cols-7">
                   {daysInMonth.map((day, index) => (
-                    <div key={index} className="aspect-square">
+                    <div key={index} className="border-r border-b border-gray-50 last:border-r-0">
                       {day ? (
                         <button
                           type="button"
                           onClick={() => handleDateToggle(day.value)}
-                          className={`w-full h-7 flex items-center justify-center text-xs rounded transition-colors ${
+                          className={`w-full h-12 flex flex-col items-center justify-center text-sm transition-all hover:bg-gray-50 ${
                             selectedDates.includes(day.value)
-                              ? 'bg-blue-500 text-white font-medium'
+                              ? 'bg-blue-500 text-white font-medium hover:bg-blue-600'
                               : day.isWeekend
-                              ? 'text-red-500 hover:bg-red-50'
-                              : 'text-gray-700 hover:bg-gray-100'
+                              ? 'text-red-500'
+                              : 'text-gray-900'
                           }`}
                         >
-                          {day.label}
+                          <span className={selectedDates.includes(day.value) ? 'font-bold' : ''}>
+                            {day.label}
+                          </span>
                         </button>
                       ) : (
-                        <div className="w-full h-7"></div>
+                        <div className="w-full h-12"></div>
                       )}
                     </div>
                   ))}
                 </div>
-                
-                {selectedDates.length > 0 && (
-                  <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-700 border-l-2 border-blue-400">
-                    已選擇 {selectedDates.length} 天：{selectedDates.sort((a, b) => parseInt(a) - parseInt(b)).join('、')}日
-                  </div>
-                )}
               </div>
+              
+              {selectedDates.length > 0 && (
+                <div className="mt-3 p-3 bg-blue-50 rounded-lg text-sm text-blue-700 border border-blue-200">
+                  已選擇 {selectedDates.length} 天：{selectedDates.sort((a, b) => parseInt(a) - parseInt(b)).join('、')}日
+                </div>
+              )}
             </div>
 
             {/* 時間段選擇 */}

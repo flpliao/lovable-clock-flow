@@ -37,17 +37,27 @@ const Header: React.FC<HeaderProps> = () => {
   let navItems = [
     { path: '/', label: '首頁' },
     { path: '/announcements', label: '公司公告', icon: <FileText className="mr-2 h-4 w-4" /> },
-    { path: '/leave-request', label: '請假申請' },
-    { path: '/personal-attendance', label: '個人考勤' },
-    { path: '/scheduling', label: '排班' },
   ];
   
-  // 如果是管理員或人資部門，新增管理選項
+  // 如果是管理員或人資部門，在公司公告後添加公告管理系統
+  if (isAdminOrHR()) {
+    navItems.push(
+      { path: '/announcement-management', label: '公告管理系統', icon: <FileText className="mr-2 h-4 w-4" /> }
+    );
+  }
+  
+  // 添加其他選項
+  navItems.push(
+    { path: '/leave-request', label: '請假申請' },
+    { path: '/personal-attendance', label: '個人考勤' },
+    { path: '/scheduling', label: '排班' }
+  );
+  
+  // 如果是管理員或人資部門，新增其他管理選項
   if (isAdminOrHR()) {
     navItems.push(
       { path: '/personnel-management', label: '人員與部門管理' },
-      { path: '/staff-dashboard', label: '員工考勤儀表板' },
-      { path: '/announcement-management', label: '公告管理系統', icon: <FileText className="mr-2 h-4 w-4" /> }
+      { path: '/staff-dashboard', label: '員工考勤儀表板' }
     );
   }
   

@@ -1,14 +1,15 @@
 
 import React, { useState } from 'react';
-import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Trash2 } from 'lucide-react';
-import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
+import { format, startOfWeek, addDays, isSameDay, getDaysInMonth, startOfMonth } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { useScheduling } from '@/contexts/SchedulingContext';
 import { useToast } from '@/hooks/use-toast';
+import { Lunar } from 'lunar-javascript';
 
 // 模擬的用戶數據
 const mockUsers = [
@@ -19,6 +20,12 @@ const mockUsers = [
 
 const ScheduleCalendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+  
+  const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth.toString());
+  
   const { schedules, getSchedulesForDate, removeSchedule } = useScheduling();
   const { toast } = useToast();
   
@@ -66,20 +73,184 @@ const ScheduleCalendar = () => {
     });
   };
 
+  // 生成年份選項
+  const generateYears = () => {
+    const years = [];
+    for (let i = currentYear - 1; i <= currentYear + 2; i++) {
+      years.push(i.toString());
+    }
+    return years;
+  };
+
+  // 生成月份選項
+  const generateMonths = () => {
+    return Array.from({ length: 12 }, (_, i) => ({
+      value: (i + 1).toString(),
+      label: `${i + 1}月`,
+    }));
+  };
+
+  // 獲取農曆日期
+  const getLunarDate = (year: number, month: number, day: number) => {
+    try {
+      const lunar = Lunar.fromDate(new Date(year, month - 1, day));
+      return lunar.getDayInChinese();
+    } catch (error) {
+      return '';
+    }
+  };
+
+  // 生成該月份的日期
+  const generateDaysInMonth = () => {
+    const year = parseInt(selectedYear);
+    const month = parseInt(selectedMonth);
+    const daysCount = getDaysInMonth(new Date(year, month - 1));
+    const firstDay = startOfMonth(new Date(year, month - 1));
+    const firstDayOfWeek = firstDay.getDay();
+    
+    const days = [];
+    
+    // 添加空白格子來對齊第一天
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      days.push(null);
+    }
+    
+    // 添加該月的實際日期
+    for (let i = 1; i <= daysCount; i++) {
+      const date = new Date(year, month - 1, i);
+      const dayOfWeek = date.getDay();
+      const dayName = ['日', '一', '二', '三', '四', '五', '六'][dayOfWeek];
+      const lunarDay = getLunarDate(year, month, i);
+      const scheduleCount = getScheduleCountForDate(date);
+      
+      days.push({
+        value: i.toString(),
+        label: `${i}`,
+        fullLabel: `${i}日 (${dayName})`,
+        isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
+        lunarDay: lunarDay,
+        scheduleCount: scheduleCount,
+        date: date,
+      });
+    }
+    return days;
+  };
+
+  const handleDateClick = (day: any) => {
+    if (day && day.date) {
+      setSelectedDate(day.date);
+    }
+  };
+
+  const daysInMonth = generateDaysInMonth();
+
   return (
     <div className="space-y-4">
+      {/* 日曆式日期選擇器 */}
       <Card>
         <CardHeader>
           <CardTitle>選擇日期</CardTitle>
         </CardHeader>
         <CardContent>
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={(date) => date && setSelectedDate(date)}
-            className="rounded-md border"
-            locale={zhTW}
-          />
+          {/* 年月選擇 */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <Select value={selectedYear} onValueChange={setSelectedYear}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {generateYears().map(year => (
+                    <SelectItem key={year} value={year}>
+                      {year}年
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {generateMonths().map(month => (
+                    <SelectItem key={month.value} value={month.value}>
+                      {month.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* 日曆網格 */}
+          <div>
+            <div className="text-lg font-medium mb-4 text-center">
+              {selectedYear}年 {selectedMonth}月
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200">
+              {/* 星期標題 */}
+              <div className="grid grid-cols-7 border-b border-gray-100">
+                {['日', '一', '二', '三', '四', '五', '六'].map((day, index) => (
+                  <div 
+                    key={day} 
+                    className={`text-center text-sm font-medium py-3 ${
+                      index === 0 || index === 6 ? 'text-red-500' : 'text-gray-700'
+                    }`}
+                  >
+                    {day}
+                  </div>
+                ))}
+              </div>
+              
+              {/* 日期網格 */}
+              <div className="grid grid-cols-7">
+                {daysInMonth.map((day, index) => (
+                  <div key={index} className="border-r border-b border-gray-50 last:border-r-0">
+                    {day ? (
+                      <button
+                        type="button"
+                        onClick={() => handleDateClick(day)}
+                        className={`w-full h-16 flex flex-col items-center justify-center text-sm transition-all hover:bg-gray-50 ${
+                          isSameDay(day.date, selectedDate)
+                            ? 'bg-blue-500 text-white font-medium hover:bg-blue-600'
+                            : day.isWeekend
+                            ? 'text-red-500'
+                            : 'text-gray-900'
+                        }`}
+                      >
+                        <span className={`text-sm ${isSameDay(day.date, selectedDate) ? 'font-bold' : ''}`}>
+                          {day.label}
+                        </span>
+                        {day.lunarDay && (
+                          <span className={`text-xs mt-0.5 ${
+                            isSameDay(day.date, selectedDate) 
+                              ? 'text-blue-100' 
+                              : 'text-gray-500'
+                          }`}>
+                            {day.lunarDay}
+                          </span>
+                        )}
+                        {day.scheduleCount > 0 && (
+                          <span className={`text-xs mt-0.5 ${
+                            isSameDay(day.date, selectedDate) 
+                              ? 'text-blue-100' 
+                              : 'text-green-600'
+                          } font-medium`}>
+                            {day.scheduleCount}人
+                          </span>
+                        )}
+                      </button>
+                    ) : (
+                      <div className="w-full h-16"></div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
       

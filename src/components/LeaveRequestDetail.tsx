@@ -2,6 +2,7 @@
 import React from 'react';
 import { LeaveRequest } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
 import LeaveApprovalFlow from './LeaveApprovalFlow';
 import LeaveApprovalActions from './LeaveApprovalActions';
 import LeaveStatusBadge from './LeaveStatusBadge';
@@ -10,25 +11,24 @@ import { useLeaveApproval } from '@/hooks/useLeaveApproval';
 
 interface LeaveRequestDetailProps {
   leaveRequest: LeaveRequest;
-  onRequestChange: (updatedRequest: LeaveRequest) => void;
   isApprover?: boolean;
 }
 
 const LeaveRequestDetail: React.FC<LeaveRequestDetailProps> = ({
   leaveRequest,
-  onRequestChange,
   isApprover = false
 }) => {
+  const { updateLeaveRequest } = useLeaveManagementContext();
   const { handleApprove, handleReject } = useLeaveApproval();
   
   // Wrapped approval handler
   const onApprove = (comment: string) => {
-    handleApprove(leaveRequest, comment, onRequestChange);
+    handleApprove(leaveRequest, comment, updateLeaveRequest);
   };
   
   // Wrapped reject handler
   const onReject = (reason: string) => {
-    handleReject(leaveRequest, reason, onRequestChange);
+    handleReject(leaveRequest, reason, updateLeaveRequest);
   };
   
   return (

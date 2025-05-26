@@ -78,8 +78,16 @@ const ScheduleForm = () => {
     const month = parseInt(selectedMonth);
     const daysCount = getDaysInMonth(new Date(year, month - 1));
     const firstDay = startOfMonth(new Date(year, month - 1));
+    const firstDayOfWeek = firstDay.getDay();
     
     const days = [];
+    
+    // 添加空白格子來對齊第一天
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      days.push(null);
+    }
+    
+    // 添加該月的實際日期
     for (let i = 1; i <= daysCount; i++) {
       const date = new Date(year, month - 1, i);
       const dayOfWeek = date.getDay();
@@ -87,7 +95,8 @@ const ScheduleForm = () => {
       
       days.push({
         value: i.toString(),
-        label: `${i}日 (${dayName})`,
+        label: `${i}`,
+        fullLabel: `${i}日 (${dayName})`,
         isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
       });
     }
@@ -226,27 +235,41 @@ const ScheduleForm = () => {
               <FormLabel className="text-base font-medium">
                 選擇工作日期 ({selectedYear}年{selectedMonth}月)
               </FormLabel>
-              <div className="mt-3 max-h-64 overflow-y-auto border rounded-md p-4 bg-gray-50">
-                <div className="space-y-2">
-                  {daysInMonth.map(day => (
-                    <div key={day.value} className="flex items-center space-x-3 py-1">
-                      <Checkbox
-                        id={`date-${day.value}`}
-                        checked={selectedDates.includes(day.value)}
-                        onCheckedChange={() => handleDateToggle(day.value)}
-                        className="flex-shrink-0"
-                      />
-                      <label
-                        htmlFor={`date-${day.value}`}
-                        className={`text-sm cursor-pointer flex-1 ${
-                          day.isWeekend ? 'text-red-500 font-medium' : 'text-gray-700'
-                        }`}
-                      >
-                        {day.label}
-                      </label>
+              <div className="mt-3 border rounded-md p-4 bg-gray-50">
+                {/* 星期標題 */}
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                  {['日', '一', '二', '三', '四', '五', '六'].map(day => (
+                    <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
+                      {day}
                     </div>
                   ))}
                 </div>
+                
+                {/* 日期網格 */}
+                <div className="grid grid-cols-7 gap-1">
+                  {daysInMonth.map((day, index) => (
+                    <div key={index} className="aspect-square">
+                      {day ? (
+                        <button
+                          type="button"
+                          onClick={() => handleDateToggle(day.value)}
+                          className={`w-full h-full flex items-center justify-center text-sm rounded-md transition-colors ${
+                            selectedDates.includes(day.value)
+                              ? 'bg-blue-500 text-white font-medium'
+                              : day.isWeekend
+                              ? 'text-red-500 hover:bg-red-50'
+                              : 'text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {day.label}
+                        </button>
+                      ) : (
+                        <div className="w-full h-full"></div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
                 {selectedDates.length > 0 && (
                   <div className="mt-4 p-3 bg-blue-50 rounded text-sm text-blue-700 border-l-4 border-blue-400">
                     已選擇 {selectedDates.length} 天：{selectedDates.sort((a, b) => parseInt(a) - parseInt(b)).join('、')}日

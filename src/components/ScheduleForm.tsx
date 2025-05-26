@@ -226,19 +226,20 @@ const ScheduleForm = () => {
               <FormLabel className="text-base font-medium">
                 選擇工作日期 ({selectedYear}年{selectedMonth}月)
               </FormLabel>
-              <div className="mt-3 max-h-48 overflow-y-auto border rounded-md p-3 bg-gray-50">
-                <div className="grid grid-cols-4 gap-2">
+              <div className="mt-3 max-h-64 overflow-y-auto border rounded-md p-4 bg-gray-50">
+                <div className="space-y-2">
                   {daysInMonth.map(day => (
-                    <div key={day.value} className="flex items-center space-x-2">
+                    <div key={day.value} className="flex items-center space-x-3 py-1">
                       <Checkbox
                         id={`date-${day.value}`}
                         checked={selectedDates.includes(day.value)}
                         onCheckedChange={() => handleDateToggle(day.value)}
+                        className="flex-shrink-0"
                       />
                       <label
                         htmlFor={`date-${day.value}`}
-                        className={`text-sm cursor-pointer ${
-                          day.isWeekend ? 'text-red-500' : 'text-gray-700'
+                        className={`text-sm cursor-pointer flex-1 ${
+                          day.isWeekend ? 'text-red-500 font-medium' : 'text-gray-700'
                         }`}
                       >
                         {day.label}
@@ -247,7 +248,7 @@ const ScheduleForm = () => {
                   ))}
                 </div>
                 {selectedDates.length > 0 && (
-                  <div className="mt-3 p-2 bg-blue-50 rounded text-sm text-blue-700">
+                  <div className="mt-4 p-3 bg-blue-50 rounded text-sm text-blue-700 border-l-4 border-blue-400">
                     已選擇 {selectedDates.length} 天：{selectedDates.sort((a, b) => parseInt(a) - parseInt(b)).join('、')}日
                   </div>
                 )}

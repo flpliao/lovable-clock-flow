@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Menu, Shield, LogOut, BarChart3, Bell, FileText } from 'lucide-react';
+import { Menu, Shield, LogOut, BarChart3, Bell, FileText, Home, Calendar, User, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ApolloLogo from './ApolloLogo';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -35,7 +35,7 @@ const Header: React.FC<HeaderProps> = () => {
   };
   
   let navItems = [
-    { path: '/', label: '首頁' },
+    { path: '/', label: '首頁', icon: <Home className="mr-2 h-4 w-4" /> },
     { path: '/announcements', label: '公司公告', icon: <FileText className="mr-2 h-4 w-4" /> },
   ];
   
@@ -48,16 +48,16 @@ const Header: React.FC<HeaderProps> = () => {
   
   // 添加其他選項
   navItems.push(
-    { path: '/leave-request', label: '請假申請' },
-    { path: '/personal-attendance', label: '個人考勤' },
-    { path: '/scheduling', label: '排班' }
+    { path: '/leave-request', label: '請假申請', icon: <Calendar className="mr-2 h-4 w-4" /> },
+    { path: '/personal-attendance', label: '個人考勤', icon: <Clock className="mr-2 h-4 w-4" /> },
+    { path: '/scheduling', label: '排班', icon: <Calendar className="mr-2 h-4 w-4" /> }
   );
   
   // 如果是管理員或人資部門，新增其他管理選項
   if (isAdminOrHR()) {
     navItems.push(
-      { path: '/personnel-management', label: '人員與部門管理' },
-      { path: '/staff-dashboard', label: '員工考勤儀表板' }
+      { path: '/personnel-management', label: '人員與部門管理', icon: <User className="mr-2 h-4 w-4" /> },
+      { path: '/staff-dashboard', label: '員工考勤儀表板', icon: <BarChart3 className="mr-2 h-4 w-4" /> }
     );
   }
   

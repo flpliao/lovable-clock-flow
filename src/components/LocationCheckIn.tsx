@@ -71,10 +71,6 @@ const LocationCheckIn: React.FC = () => {
           />
         </>
       )}
-      
-      <div className="absolute bottom-0 right-5 z-10">
-        <img src="/lovable-uploads/25eb8e3e-34ff-43a3-a4fc-f9aecbc2f9f5.png" alt="StayFun" className="h-12" />
-      </div>
     </div>
   );
 };

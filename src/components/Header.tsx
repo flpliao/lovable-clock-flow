@@ -56,23 +56,25 @@ const Header: React.FC<HeaderProps> = () => {
   };
   
   return (
-    <header className="w-full py-4 px-5 flex justify-between items-center">
+    <header className="w-full py-2 px-3 md:py-4 md:px-5 flex justify-between items-center">
       <div className="flex items-center">
         <ApolloLogo />
         {isAdmin() && (
-          <Badge className="ml-2 bg-blue-500 hover:bg-blue-600">
-            <Shield className="w-3 h-3 mr-1" />
-            管理員
+          <Badge className="ml-1 md:ml-2 bg-blue-500 hover:bg-blue-600 text-xs px-1.5 py-0.5">
+            <Shield className="w-2.5 h-2.5 md:w-3 md:h-3 mr-0.5 md:mr-1" />
+            <span className="hidden sm:inline">管理員</span>
+            <span className="sm:hidden">管</span>
           </Badge>
         )}
         {!isAdmin() && currentUser?.department === 'HR' && (
-          <Badge className="ml-2 bg-violet-500 hover:bg-violet-600">
-            <BarChart3 className="w-3 h-3 mr-1" />
-            人資管理
+          <Badge className="ml-1 md:ml-2 bg-violet-500 hover:bg-violet-600 text-xs px-1.5 py-0.5">
+            <BarChart3 className="w-2.5 h-2.5 md:w-3 md:h-3 mr-0.5 md:mr-1" />
+            <span className="hidden sm:inline">人資管理</span>
+            <span className="sm:hidden">人資</span>
           </Badge>
         )}
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         {currentUser ? (
           <>
             <NotificationCenter />
@@ -80,7 +82,7 @@ const Header: React.FC<HeaderProps> = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="text-gray-400">
-                  <Menu className="w-6 h-6" />
+                  <Menu className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-60 bg-gray-900 text-white">
@@ -108,7 +110,7 @@ const Header: React.FC<HeaderProps> = () => {
           </>
         ) : (
           <Link to="/login">
-            <Badge className="bg-blue-600 hover:bg-blue-700 cursor-pointer">
+            <Badge className="bg-blue-600 hover:bg-blue-700 cursor-pointer text-xs px-2 py-1">
               登入
             </Badge>
           </Link>

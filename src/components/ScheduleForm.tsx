@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
+import { Lunar } from 'lunar-javascript';
 
 // 模擬的用戶數據
 const mockUsers = [
@@ -71,6 +72,16 @@ const ScheduleForm = () => {
     }));
   };
 
+  // 獲取農曆日期
+  const getLunarDate = (year: number, month: number, day: number) => {
+    try {
+      const lunar = Lunar.fromDate(new Date(year, month - 1, day));
+      return lunar.getDayInChinese();
+    } catch (error) {
+      return '';
+    }
+  };
+
   // 生成該月份的日期
   const generateDaysInMonth = () => {
     const year = parseInt(selectedYear);
@@ -91,12 +102,14 @@ const ScheduleForm = () => {
       const date = new Date(year, month - 1, i);
       const dayOfWeek = date.getDay();
       const dayName = ['日', '一', '二', '三', '四', '五', '六'][dayOfWeek];
+      const lunarDay = getLunarDate(year, month, i);
       
       days.push({
         value: i.toString(),
         label: `${i}`,
         fullLabel: `${i}日 (${dayName})`,
         isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
+        lunarDay: lunarDay,
       });
     }
     return days;
@@ -257,7 +270,7 @@ const ScheduleForm = () => {
                         <button
                           type="button"
                           onClick={() => handleDateToggle(day.value)}
-                          className={`w-full h-12 flex flex-col items-center justify-center text-sm transition-all hover:bg-gray-50 ${
+                          className={`w-full h-16 flex flex-col items-center justify-center text-sm transition-all hover:bg-gray-50 ${
                             selectedDates.includes(day.value)
                               ? 'bg-blue-500 text-white font-medium hover:bg-blue-600'
                               : day.isWeekend
@@ -265,12 +278,21 @@ const ScheduleForm = () => {
                               : 'text-gray-900'
                           }`}
                         >
-                          <span className={selectedDates.includes(day.value) ? 'font-bold' : ''}>
+                          <span className={`text-sm ${selectedDates.includes(day.value) ? 'font-bold' : ''}`}>
                             {day.label}
                           </span>
+                          {day.lunarDay && (
+                            <span className={`text-xs mt-0.5 ${
+                              selectedDates.includes(day.value) 
+                                ? 'text-blue-100' 
+                                : 'text-gray-500'
+                            }`}>
+                              {day.lunarDay}
+                            </span>
+                          )}
                         </button>
                       ) : (
-                        <div className="w-full h-12"></div>
+                        <div className="w-full h-16"></div>
                       )}
                     </div>
                   ))}

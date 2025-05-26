@@ -59,13 +59,13 @@ const CheckInMethodSelector: React.FC<CheckInMethodSelectorProps> = ({
           </div>
         </button>
         
-        <div className="mt-6 text-center">
+        <div className="mt-8 mb-12 text-center px-6">
           <p className="text-xl font-bold">
             {actionType === 'check-in' ? '上班了！' : '下班了！'}
             <span className="text-[#0091D0]">定位打卡</span>
           </p>
           {distance !== null && !error && (
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-gray-600 mt-3">
               距離公司: <span className="font-medium">{Math.round(distance)} 公尺</span>
             </p>
           )}
@@ -90,12 +90,12 @@ const CheckInMethodSelector: React.FC<CheckInMethodSelectorProps> = ({
           </div>
         </button>
         
-        <div className="mt-6 text-center">
+        <div className="mt-8 mb-12 text-center px-6">
           <p className="text-xl font-bold">
             {actionType === 'check-in' ? '上班了！' : '下班了！'}
             <span className="text-[#0091D0]">IP打卡</span>
           </p>
-          <p className="text-sm text-gray-600 mt-2">
+          <p className="text-sm text-gray-600 mt-3">
             使用公司網路自動打卡
           </p>
         </div>

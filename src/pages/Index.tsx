@@ -4,7 +4,6 @@ import Header from '@/components/Header';
 import WelcomeSection from '@/components/WelcomeSection';
 import FeatureCards from '@/components/FeatureCards';
 import LocationCheckIn from '@/components/LocationCheckIn';
-import ShiftReminder from '@/components/ShiftReminder';
 import { useUser } from '@/contexts/UserContext';
 
 const Index = () => {
@@ -21,9 +20,6 @@ const Index = () => {
       
       <main className="flex-1 flex flex-col">
         <WelcomeSection userName={currentUser?.name || '訪客'} />
-        
-        {/* Add shift reminder */}
-        {currentUser && <ShiftReminder />}
         
         <FeatureCards 
           abnormalCount={0} 

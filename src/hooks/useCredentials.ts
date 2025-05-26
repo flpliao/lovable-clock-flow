@@ -28,6 +28,19 @@ export const useCredentials = ({ userId, onSuccess }: UseCredentialsProps) => {
       setTimeout(() => {
         try {
           if (userId) {
+            // Check if email already exists for another user
+            for (const [existingUserId, credentials] of Object.entries(window.userCredentialsStore)) {
+              if (existingUserId !== userId && credentials.email.toLowerCase() === email.toLowerCase()) {
+                toast({
+                  title: "電子郵件已存在",
+                  description: "此電子郵件地址已被其他用戶使用",
+                  variant: "destructive"
+                });
+                reject(new Error("Email already exists"));
+                return;
+              }
+            }
+
             // Initialize if not exists
             if (!window.userCredentialsStore[userId]) {
               window.userCredentialsStore[userId] = {
@@ -74,7 +87,7 @@ export const useCredentials = ({ userId, onSuccess }: UseCredentialsProps) => {
           if (userId) {
             const userCreds = window.userCredentialsStore[userId];
             
-            // For demonstration, verify current password
+            // Only verify current password if it's provided (i.e., user managing own account)
             if (currentPassword && userCreds && userCreds.password !== currentPassword) {
               toast({
                 title: "當前密碼錯誤",

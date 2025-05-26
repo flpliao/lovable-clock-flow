@@ -51,10 +51,10 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
       return;
     }
     
-    if (newPassword.length < 8) {
+    if (newPassword.length < 6) {
       toast({
         title: "密碼太短",
-        description: "新密碼至少需要8個字符",
+        description: "新密碼至少需要6個字符",
         variant: "destructive"
       });
       return;
@@ -72,17 +72,18 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
     setIsSubmitting(true);
     
     try {
-      await onPasswordChange(currentPassword, newPassword);
+      // For admin managing other users, pass empty string as current password
+      // For users managing their own account, pass the actual current password
+      const currentPwd = managingOwnAccount ? currentPassword : '';
+      await onPasswordChange(currentPwd, newPassword);
+      
       // Reset form
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (error) {
-      toast({
-        title: "更新失敗",
-        description: "密碼更新失敗，請稍後再試",
-        variant: "destructive"
-      });
+      // Error handling is done in the hook
+      console.error('Password update failed:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -110,6 +111,7 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="請輸入當前密碼"
                 />
               </div>
             )}
@@ -121,6 +123,7 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="請輸入新密碼（至少6個字符）"
               />
             </div>
             
@@ -131,11 +134,12 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="請再次輸入新密碼"
               />
             </div>
             
             {!managingOwnAccount && (
-              <div className="flex items-center mt-4 p-2 bg-amber-50 border border-amber-200 rounded-md">
+              <div className="flex items-center mt-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
                 <ShieldAlert className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0" />
                 <p className="text-sm text-amber-700">
                   注意：您正在以管理員身份更改其他用戶的密碼。該用戶不會收到密碼變更通知。

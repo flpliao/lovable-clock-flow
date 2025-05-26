@@ -235,11 +235,11 @@ const ScheduleForm = () => {
               <FormLabel className="text-base font-medium">
                 選擇工作日期 ({selectedYear}年{selectedMonth}月)
               </FormLabel>
-              <div className="mt-3 border rounded-md p-4 bg-gray-50">
+              <div className="mt-3 border rounded-md p-3 bg-white">
                 {/* 星期標題 */}
                 <div className="grid grid-cols-7 gap-1 mb-2">
                   {['日', '一', '二', '三', '四', '五', '六'].map(day => (
-                    <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
+                    <div key={day} className="text-center text-xs font-medium text-gray-500 py-1">
                       {day}
                     </div>
                   ))}
@@ -253,25 +253,25 @@ const ScheduleForm = () => {
                         <button
                           type="button"
                           onClick={() => handleDateToggle(day.value)}
-                          className={`w-full h-full flex items-center justify-center text-sm rounded-md transition-colors ${
+                          className={`w-full h-8 flex items-center justify-center text-xs rounded transition-colors ${
                             selectedDates.includes(day.value)
                               ? 'bg-blue-500 text-white font-medium'
                               : day.isWeekend
                               ? 'text-red-500 hover:bg-red-50'
-                              : 'text-gray-700 hover:bg-gray-200'
+                              : 'text-gray-700 hover:bg-gray-100'
                           }`}
                         >
                           {day.label}
                         </button>
                       ) : (
-                        <div className="w-full h-full"></div>
+                        <div className="w-full h-8"></div>
                       )}
                     </div>
                   ))}
                 </div>
                 
                 {selectedDates.length > 0 && (
-                  <div className="mt-4 p-3 bg-blue-50 rounded text-sm text-blue-700 border-l-4 border-blue-400">
+                  <div className="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-700 border-l-2 border-blue-400">
                     已選擇 {selectedDates.length} 天：{selectedDates.sort((a, b) => parseInt(a) - parseInt(b)).join('、')}日
                   </div>
                 )}

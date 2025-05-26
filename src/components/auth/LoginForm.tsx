@@ -25,10 +25,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
     setIsLoading(true);
     
     console.log('Login attempt with email:', email);
+    console.log('Password provided:', password ? 'Yes' : 'No');
     
     try {
       // Find user by email in our credentials store
       const userFound = findUserByEmail(email);
+      console.log('User search result:', userFound);
       
       if (userFound && userFound.credentials.password === password) {
         // Create user data based on the found credentials
@@ -73,6 +75,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
         navigate('/');
       } else {
         console.log('Login failed - invalid credentials');
+        console.log('Expected password: password, received:', password);
         toast({
           variant: 'destructive',
           title: '登錄失敗',
@@ -115,11 +118,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
         <Input
           id="password"
           type="password"
+          placeholder="請輸入密碼"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           className="w-full"
         />
+      </div>
+      
+      <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+        <p><strong>測試帳號：</strong></p>
+        <p>管理員：admin@example.com / password</p>
+        <p>一般用戶：flpliao@gmail.com / password</p>
       </div>
       
       <Button

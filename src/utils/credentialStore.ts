@@ -19,12 +19,16 @@ export const initCredentialStore = (): void => {
       '1': { userId: '1', email: 'admin@example.com', password: 'password' },
       '2': { userId: '2', email: 'flpliao@gmail.com', password: 'password' }
     };
+    console.log('Credential store initialized with default accounts');
   }
-  console.log('Initialized credential store:', window.userCredentialsStore);
+  console.log('Current credential store:', window.userCredentialsStore);
 };
 
 // Function to find a user by email
 export const findUserByEmail = (email: string) => {
+  console.log('Searching for user with email:', email);
+  console.log('Available credentials:', window.userCredentialsStore);
+  
   // Convert to lowercase for case-insensitive comparison
   const lowerEmail = email.toLowerCase();
   

@@ -21,12 +21,12 @@ const Index = () => {
       <main className="flex-1 flex flex-col">
         <WelcomeSection userName={currentUser?.name || '訪客'} />
         
+        <LocationCheckIn />
+        
         <FeatureCards 
           abnormalCount={0} 
           annualLeaveBalance={leaveHours} 
         />
-        
-        <LocationCheckIn />
       </main>
     </div>
   );

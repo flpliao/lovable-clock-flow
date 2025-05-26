@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from 'react';
-import { differenceInHours } from 'date-fns';
 import { UseFormWatch } from 'react-hook-form';
 import { LeaveFormValues } from '@/utils/leaveTypes';
+import { calculateWorkHours } from '@/utils/leaveUtils';
 
 export function useLeaveFormCalculations(watch: UseFormWatch<LeaveFormValues>) {
   const [calculatedHours, setCalculatedHours] = useState<number>(0);
@@ -13,13 +13,12 @@ export function useLeaveFormCalculations(watch: UseFormWatch<LeaveFormValues>) {
     const start = watch('start_date');
     const end = watch('end_date');
     
-    if (start && end) {
-      // Calculate work hours (assuming 8 hours per workday)
-      const hoursDiff = differenceInHours(end, start);
-      // Simplified calculation - in a real app, this would account for
-      // weekends, holidays, and working hours
-      const workHours = Math.max(hoursDiff, 0);
+    if (start && end && end >= start) {
+      // Use the new work hours calculation function
+      const workHours = calculateWorkHours(start, end);
       setCalculatedHours(workHours);
+    } else {
+      setCalculatedHours(0);
     }
   }, [watch('start_date'), watch('end_date')]);
 

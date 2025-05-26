@@ -26,3 +26,29 @@ export const getStatusText = (status: string): string => {
     default: return '未知';
   }
 };
+
+// Calculate work hours between two dates (excluding weekends)
+export const calculateWorkHours = (startDate: Date, endDate: Date): number => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  // Reset time to start of day for accurate calculation
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+  
+  let workDays = 0;
+  const current = new Date(start);
+  
+  // Include both start and end dates
+  while (current <= end) {
+    const dayOfWeek = current.getDay();
+    // Only count weekdays (Monday=1 to Friday=5)
+    if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+      workDays++;
+    }
+    current.setDate(current.getDate() + 1);
+  }
+  
+  // Convert work days to hours (8 hours per work day)
+  return workDays * 8;
+};

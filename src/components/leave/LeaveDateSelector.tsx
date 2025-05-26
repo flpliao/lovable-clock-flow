@@ -16,6 +16,8 @@ interface LeaveDateSelectorProps {
 }
 
 export function LeaveDateSelector({ form, calculatedHours }: LeaveDateSelectorProps) {
+  const calculatedDays = calculatedHours / 8;
+  
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -101,10 +103,15 @@ export function LeaveDateSelector({ form, calculatedHours }: LeaveDateSelectorPr
       </div>
 
       <div className="bg-gray-50 p-4 rounded-lg">
-        <p className="text-sm text-gray-500">計算請假時數: <span className="font-bold text-black">{calculatedHours}</span> 小時</p>
-        {form.watch('leave_type') === 'annual' && (
-          <p className="text-sm text-gray-500 mt-1">
-            換算請假天數: <span className="font-bold text-black">{(calculatedHours / 8).toFixed(1)}</span> 天
+        <p className="text-sm text-gray-500">
+          計算請假時數: <span className="font-bold text-black">{calculatedHours} 小時</span>
+          {calculatedDays > 0 && (
+            <span> ({calculatedDays} 天)</span>
+          )}
+        </p>
+        {form.watch('leave_type') === 'annual' && calculatedHours > 0 && (
+          <p className="text-sm text-blue-600 mt-1">
+            * 以工作日計算，每個工作天 8 小時，不含週末
           </p>
         )}
       </div>

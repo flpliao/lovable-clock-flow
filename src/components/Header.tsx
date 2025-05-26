@@ -26,6 +26,7 @@ const Header: React.FC<HeaderProps> = () => {
   // 添加調試信息
   console.log('Header - currentUser:', currentUser);
   console.log('Header - isAdmin():', isAdmin());
+  console.log('Rendering admin badge check - isAdmin():', isAdmin());
   
   // 判斷是否為管理員或人資部門
   const isAdminOrHR = () => {
@@ -62,7 +63,6 @@ const Header: React.FC<HeaderProps> = () => {
     <header className="w-full py-2 px-3 md:py-4 md:px-5 flex justify-between items-center">
       <div className="flex items-center min-w-0 flex-1 mr-2">
         <ApolloLogo />
-        {console.log('Rendering admin badge check - isAdmin():', isAdmin())}
         {isAdmin() && (
           <Badge className="ml-2 bg-blue-500 hover:bg-blue-600 text-xs px-2 py-1 flex-shrink-0 flex items-center">
             <Shield className="w-3 h-3 mr-1 flex-shrink-0" />

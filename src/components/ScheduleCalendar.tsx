@@ -5,39 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
-import { Shift } from '@/types';
-
-// 模擬的排班數據
-const mockShifts: Shift[] = [
-  {
-    id: '1',
-    user_id: '1',
-    work_date: '2023-07-15',
-    start_time: '09:00',
-    end_time: '18:00',
-  },
-  {
-    id: '2',
-    user_id: '2',
-    work_date: '2023-07-15',
-    start_time: '09:00',
-    end_time: '18:00',
-  },
-  {
-    id: '3',
-    user_id: '1',
-    work_date: '2023-07-16',
-    start_time: '09:00',
-    end_time: '18:00',
-  },
-  {
-    id: '4',
-    user_id: '3',
-    work_date: '2023-07-16',
-    start_time: '13:00',
-    end_time: '22:00',
-  },
-];
+import { useScheduling } from '@/contexts/SchedulingContext';
 
 // 模擬的用戶數據
 const mockUsers = [
@@ -48,14 +16,11 @@ const mockUsers = [
 
 const ScheduleCalendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const { schedules, getSchedulesForDate } = useScheduling();
   
   // 獲取選定日期的排班
-  const shiftsForSelectedDate = mockShifts.filter(
-    (shift) => {
-      const shiftDate = new Date(shift.work_date);
-      return isSameDay(shiftDate, selectedDate);
-    }
-  );
+  const selectedDateString = format(selectedDate, 'yyyy-MM-dd');
+  const shiftsForSelectedDate = getSchedulesForDate(selectedDateString);
 
   // 獲取用戶名稱
   const getUserName = (userId: string) => {
@@ -74,6 +39,12 @@ const ScheduleCalendar = () => {
   };
 
   const weekDays = getWeekDays(selectedDate);
+
+  // 獲取某日期的排班數量
+  const getScheduleCountForDate = (date: Date) => {
+    const dateString = format(date, 'yyyy-MM-dd');
+    return getSchedulesForDate(dateString).length;
+  };
 
   return (
     <div className="space-y-4">
@@ -104,6 +75,7 @@ const ScheduleCalendar = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>員工</TableHead>
+                  <TableHead>時間段</TableHead>
                   <TableHead>開始時間</TableHead>
                   <TableHead>結束時間</TableHead>
                 </TableRow>
@@ -111,9 +83,10 @@ const ScheduleCalendar = () => {
               <TableBody>
                 {shiftsForSelectedDate.map((shift) => (
                   <TableRow key={shift.id}>
-                    <TableCell>{getUserName(shift.user_id)}</TableCell>
-                    <TableCell>{shift.start_time}</TableCell>
-                    <TableCell>{shift.end_time}</TableCell>
+                    <TableCell>{getUserName(shift.userId)}</TableCell>
+                    <TableCell>{shift.timeSlot}</TableCell>
+                    <TableCell>{shift.startTime}</TableCell>
+                    <TableCell>{shift.endTime}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -135,16 +108,17 @@ const ScheduleCalendar = () => {
             {weekDays.map((day, index) => (
               <div 
                 key={index}
-                className={`p-2 rounded-md ${
+                className={`p-2 rounded-md cursor-pointer ${
                   isSameDay(day, selectedDate) 
                     ? 'bg-primary text-primary-foreground' 
-                    : 'bg-muted'
+                    : 'bg-muted hover:bg-muted/80'
                 }`}
+                onClick={() => setSelectedDate(day)}
               >
                 <div className="text-xs mb-1">{format(day, 'E', { locale: zhTW })}</div>
                 <div className="font-medium">{format(day, 'd')}</div>
                 <div className="text-xs mt-2">
-                  {mockShifts.filter(shift => isSameDay(new Date(shift.work_date), day)).length} 人
+                  {getScheduleCountForDate(day)} 人
                 </div>
               </div>
             ))}

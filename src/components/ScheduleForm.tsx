@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
+import { useScheduling } from '@/contexts/SchedulingContext';
 import { Lunar } from 'lunar-javascript';
 
 // 模擬的用戶數據
@@ -37,6 +38,7 @@ type FormValues = {
 
 const ScheduleForm = () => {
   const { toast } = useToast();
+  const { addSchedules } = useScheduling();
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   
@@ -142,6 +144,7 @@ const ScheduleForm = () => {
         selectedTimeSlots.map(timeSlot => {
           const timeOption = timeOptions.find(opt => opt.value === timeSlot);
           return {
+            userId: data.userId,
             workDate: `${selectedYear}-${selectedMonth.padStart(2, '0')}-${date.padStart(2, '0')}`,
             startTime: timeOption?.start || '09:30',
             endTime: timeOption?.end || '17:30',
@@ -152,6 +155,9 @@ const ScheduleForm = () => {
     };
 
     console.log('排班數據：', scheduleData);
+    
+    // 保存到上下文
+    addSchedules(scheduleData.schedules);
     
     toast({
       title: "排班成功",

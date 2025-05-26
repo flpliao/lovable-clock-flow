@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Upload, Calendar, Trash2, Save } from 'lucide-react';
+import { Upload, Calendar, Trash2, Save, X } from 'lucide-react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -53,6 +53,8 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
   const { toast } = useToast();
   const { currentUser } = useUser();
   const [fileName, setFileName] = useState<string>('');
+  const [existingFile, setExistingFile] = useState<{url: string, name: string, type: string} | null>(null);
+  const [newFile, setNewFile] = useState<File | null>(null);
   const isEditMode = !!announcement;
   
   const {
@@ -84,10 +86,13 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
       });
       
       if (announcement.file) {
+        setExistingFile(announcement.file);
         setFileName(announcement.file.name);
       } else {
+        setExistingFile(null);
         setFileName('');
       }
+      setNewFile(null);
     } else {
       reset({
         title: '',
@@ -96,7 +101,9 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
         is_active: true,
         category: undefined
       });
+      setExistingFile(null);
       setFileName('');
+      setNewFile(null);
     }
   }, [announcement, reset]);
 
@@ -110,14 +117,15 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
       return;
     }
 
-    // Mock file upload
-    let fileData = announcement?.file;
-    if (data.file && data.file[0]) {
-      // In a real app, upload the file to a server and get the URL
+    // Handle file data
+    let fileData = existingFile; // Keep existing file by default
+    
+    // If a new file was uploaded, use it instead
+    if (newFile) {
       fileData = {
-        url: URL.createObjectURL(data.file[0]),
-        name: data.file[0].name,
-        type: data.file[0].type
+        url: URL.createObjectURL(newFile),
+        name: newFile.name,
+        type: newFile.type
       };
     }
 
@@ -156,9 +164,25 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFileName(e.target.files[0].name);
+      const file = e.target.files[0];
+      setNewFile(file);
+      setFileName(file.name);
     }
   };
+
+  const handleRemoveFile = () => {
+    setExistingFile(null);
+    setNewFile(null);
+    setFileName('');
+    // Clear the file input
+    const fileInput = document.getElementById('file') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  const displayFileName = fileName || '未選擇檔案';
+  const hasFile = existingFile || newFile;
 
   return (
     <Dialog open={isOpen} onOpenChange={() => onClose()}>
@@ -232,7 +256,6 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
                 id="file"
                 type="file"
                 className="hidden"
-                {...register('file')}
                 onChange={handleFileChange}
               />
               <Button
@@ -243,10 +266,33 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
                 <Upload className="h-4 w-4 mr-2" />
                 選擇檔案
               </Button>
-              <span className="text-sm text-gray-500 truncate">
-                {fileName || '未選擇檔案'}
-              </span>
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <span className="text-sm text-gray-500 truncate">
+                  {displayFileName}
+                </span>
+                {hasFile && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveFile}
+                    className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
+            {existingFile && !newFile && (
+              <p className="text-xs text-blue-600">
+                目前檔案: {existingFile.name}
+              </p>
+            )}
+            {newFile && (
+              <p className="text-xs text-green-600">
+                新檔案: {newFile.name}
+              </p>
+            )}
           </div>
 
           <div className="flex items-center justify-between">

@@ -85,18 +85,7 @@ export const useCredentials = ({ userId, onSuccess }: UseCredentialsProps) => {
       setTimeout(() => {
         try {
           if (userId) {
-            const userCreds = window.userCredentialsStore[userId];
-            
-            // Only verify current password if it's provided (i.e., user managing own account)
-            if (currentPassword && userCreds && userCreds.password !== currentPassword) {
-              toast({
-                title: "當前密碼錯誤",
-                description: "請輸入正確的當前密碼",
-                variant: "destructive"
-              });
-              reject(new Error("Current password incorrect"));
-              return;
-            }
+            // No current password verification needed - directly update password
             
             // Initialize if not exists
             if (!window.userCredentialsStore[userId]) {

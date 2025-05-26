@@ -24,23 +24,12 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
   onPasswordChange
 }) => {
   const { toast } = useToast();
-  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // For own account, require current password
-    if (managingOwnAccount && !currentPassword) {
-      toast({
-        title: "請輸入當前密碼",
-        description: "更改密碼需要先驗證當前密碼",
-        variant: "destructive"
-      });
-      return;
-    }
     
     if (!newPassword) {
       toast({
@@ -72,13 +61,10 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
     setIsSubmitting(true);
     
     try {
-      // For admin managing other users, pass empty string as current password
-      // For users managing their own account, pass the actual current password
-      const currentPwd = managingOwnAccount ? currentPassword : '';
-      await onPasswordChange(currentPwd, newPassword);
+      // No current password required - pass empty string
+      await onPasswordChange('', newPassword);
       
       // Reset form
-      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (error) {
@@ -103,19 +89,6 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
       <form onSubmit={handlePasswordChange}>
         <CardContent>
           <div className="space-y-4">
-            {managingOwnAccount && (
-              <div className="space-y-2">
-                <Label htmlFor="current-password">當前密碼</Label>
-                <Input
-                  id="current-password"
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="請輸入當前密碼"
-                />
-              </div>
-            )}
-            
             <div className="space-y-2">
               <Label htmlFor="new-password">新密碼</Label>
               <Input

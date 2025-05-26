@@ -57,24 +57,24 @@ const Header: React.FC<HeaderProps> = () => {
   
   return (
     <header className="w-full py-2 px-3 md:py-4 md:px-5 flex justify-between items-center">
-      <div className="flex items-center">
+      <div className="flex items-center min-w-0 flex-1 mr-2">
         <ApolloLogo />
         {isAdmin() && (
-          <Badge className="ml-1 md:ml-2 bg-blue-500 hover:bg-blue-600 text-xs px-1.5 py-0.5">
-            <Shield className="w-2.5 h-2.5 md:w-3 md:h-3 mr-0.5 md:mr-1" />
-            <span className="hidden sm:inline">管理員</span>
-            <span className="sm:hidden">管</span>
+          <Badge className="ml-1 md:ml-2 bg-blue-500 hover:bg-blue-600 text-xs px-2 py-1 flex-shrink-0">
+            <Shield className="w-3 h-3 mr-1" />
+            <span className="hidden xs:inline">管理員</span>
+            <span className="xs:hidden">管</span>
           </Badge>
         )}
         {!isAdmin() && currentUser?.department === 'HR' && (
-          <Badge className="ml-1 md:ml-2 bg-violet-500 hover:bg-violet-600 text-xs px-1.5 py-0.5">
-            <BarChart3 className="w-2.5 h-2.5 md:w-3 md:h-3 mr-0.5 md:mr-1" />
-            <span className="hidden sm:inline">人資管理</span>
-            <span className="sm:hidden">人資</span>
+          <Badge className="ml-1 md:ml-2 bg-violet-500 hover:bg-violet-600 text-xs px-2 py-1 flex-shrink-0">
+            <BarChart3 className="w-3 h-3 mr-1" />
+            <span className="hidden xs:inline">人資管理</span>
+            <span className="xs:hidden">人資</span>
           </Badge>
         )}
       </div>
-      <div className="flex items-center gap-2 md:gap-4">
+      <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
         {currentUser ? (
           <>
             <NotificationCenter />

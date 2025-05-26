@@ -29,17 +29,24 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
       const userFound = findUserByEmail(email);
       
       if (userFound && userFound.credentials.password === password) {
-        // Mock user data based on the found credentials
+        // Create user data based on the found credentials
+        // Use email as the primary identifier for display name
+        const emailLocalPart = userFound.credentials.email.split('@')[0];
+        const displayName = emailLocalPart === 'admin' ? '廖俊雄' : 
+                           emailLocalPart === 'flpliao' ? '王小明' : 
+                           `User ${userFound.userId}`;
+        
         const mockUserData = {
           id: userFound.userId,
-          name: userFound.userId === '1' ? '廖俊雄' : `User ${userFound.userId}`,
+          name: displayName,
           position: userFound.userId === '1' ? '資深工程師' : '一般員工',
           department: userFound.userId === '1' ? '技術部' : 'HR',
           onboard_date: '2023-01-15',
-          // Explicitly type the role as 'admin' | 'user' instead of string
-          role: userFound.userId === '1' ? 'admin' as const : 'user' as const,
+          // Admin role based on userId or email pattern
+          role: userFound.userId === '1' || userFound.credentials.email.includes('admin') ? 'admin' as const : 'user' as const,
         };
         
+        console.log('Login successful for:', mockUserData);
         setCurrentUser(mockUserData);
         
         toast({

@@ -20,6 +20,12 @@ export const initCredentialStore = (): void => {
       '2': { userId: '2', email: 'flpliao@gmail.com', password: 'password' }
     };
     console.log('Credential store initialized with default accounts');
+  } else {
+    // Ensure flpliao account exists even if store was already initialized
+    if (!window.userCredentialsStore['2']) {
+      window.userCredentialsStore['2'] = { userId: '2', email: 'flpliao@gmail.com', password: 'password' };
+      console.log('Added missing flpliao account to existing credential store');
+    }
   }
   console.log('Current credential store:', window.userCredentialsStore);
 };

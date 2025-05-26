@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Menu, Shield, LogOut, BarChart3, Bell, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +22,10 @@ const Header: React.FC<HeaderProps> = () => {
   const navigate = useNavigate();
   const { currentUser, isAdmin, setCurrentUser } = useUser();
   const { toast } = useToast();
+  
+  // 添加調試信息
+  console.log('Header - currentUser:', currentUser);
+  console.log('Header - isAdmin():', isAdmin());
   
   // 判斷是否為管理員或人資部門
   const isAdminOrHR = () => {
@@ -59,18 +62,19 @@ const Header: React.FC<HeaderProps> = () => {
     <header className="w-full py-2 px-3 md:py-4 md:px-5 flex justify-between items-center">
       <div className="flex items-center min-w-0 flex-1 mr-2">
         <ApolloLogo />
+        {console.log('Rendering admin badge check - isAdmin():', isAdmin())}
         {isAdmin() && (
-          <Badge className="ml-1 md:ml-2 bg-blue-500 hover:bg-blue-600 text-xs px-2 py-1 flex-shrink-0">
-            <Shield className="w-3 h-3 mr-1" />
-            <span className="hidden xs:inline">管理員</span>
-            <span className="xs:hidden">管</span>
+          <Badge className="ml-2 bg-blue-500 hover:bg-blue-600 text-xs px-2 py-1 flex-shrink-0 flex items-center">
+            <Shield className="w-3 h-3 mr-1 flex-shrink-0" />
+            <span className="hidden sm:inline whitespace-nowrap">管理員</span>
+            <span className="sm:hidden">管</span>
           </Badge>
         )}
         {!isAdmin() && currentUser?.department === 'HR' && (
-          <Badge className="ml-1 md:ml-2 bg-violet-500 hover:bg-violet-600 text-xs px-2 py-1 flex-shrink-0">
-            <BarChart3 className="w-3 h-3 mr-1" />
-            <span className="hidden xs:inline">人資管理</span>
-            <span className="xs:hidden">人資</span>
+          <Badge className="ml-2 bg-violet-500 hover:bg-violet-600 text-xs px-2 py-1 flex-shrink-0 flex items-center">
+            <BarChart3 className="w-3 h-3 mr-1 flex-shrink-0" />
+            <span className="hidden sm:inline whitespace-nowrap">人資管理</span>
+            <span className="sm:hidden">人資</span>
           </Badge>
         )}
       </div>

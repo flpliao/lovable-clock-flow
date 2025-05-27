@@ -2,8 +2,13 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
-import { supabase } from '@/integrations/supabase/client';
 import { CompanyAnnouncement } from '@/types/announcement';
+import { 
+  getActiveAnnouncements, 
+  addAnnouncement,
+  updateAnnouncement,
+  deleteAnnouncement
+} from '@/utils/announcementUtils';
 
 export const useSupabaseAnnouncements = () => {
   const [announcements, setAnnouncements] = useState<CompanyAnnouncement[]>([]);
@@ -11,53 +16,12 @@ export const useSupabaseAnnouncements = () => {
   const { toast } = useToast();
   const { currentUser, isAdmin } = useUser();
 
-  // 載入公告
+  // 載入公告 - Using mock data system
   const loadAnnouncements = async () => {
     try {
-      // Use RPC function first, then fallback to direct query with proper type casting
-      let data: any[] = [];
-      let error: any = null;
-
-      try {
-        const rpcResult = await supabase.rpc('get_announcements');
-        data = rpcResult.data;
-        error = rpcResult.error;
-      } catch (rpcError) {
-        console.log('RPC failed, trying direct query:', rpcError);
-        
-        // Use type assertion to bypass TypeScript checking for new tables
-        const directResult = await (supabase as any)
-          .from('announcements')
-          .select('*')
-          .eq('is_published', true)
-          .order('created_at', { ascending: false });
-
-        data = directResult.data;
-        error = directResult.error;
-      }
-
-      if (error) {
-        console.error('Failed to load announcements:', error);
-        setAnnouncements([]);
-        return;
-      }
-
-      const formattedAnnouncements = (data || []).map((announcement: any) => ({
-        id: announcement.id,
-        title: announcement.title,
-        content: announcement.content,
-        created_at: announcement.created_at,
-        created_by: {
-          id: announcement.author_id || '',
-          name: announcement.author_name || 'Unknown'
-        },
-        company_id: '550e8400-e29b-41d4-a716-446655440000',
-        is_pinned: false,
-        is_active: true,
-        category: announcement.type as any
-      }));
-
-      setAnnouncements(formattedAnnouncements);
+      console.log('Loading announcements from mock data');
+      const mockAnnouncements = getActiveAnnouncements();
+      setAnnouncements(mockAnnouncements);
     } catch (error) {
       console.error('載入公告失敗:', error);
       toast({
@@ -69,7 +33,7 @@ export const useSupabaseAnnouncements = () => {
     }
   };
 
-  // 建立公告
+  // 建立公告 - Using mock data system
   const createAnnouncement = async (newAnnouncement: Omit<CompanyAnnouncement, 'id' | 'created_at' | 'created_by' | 'company_id'>) => {
     if (!isAdmin()) {
       toast({
@@ -90,42 +54,17 @@ export const useSupabaseAnnouncements = () => {
     }
 
     try {
-      let error: any = null;
+      const announcementData = {
+        ...newAnnouncement,
+        created_at: new Date().toISOString(),
+        created_by: {
+          id: currentUser.id,
+          name: currentUser.name
+        },
+        company_id: '550e8400-e29b-41d4-a716-446655440000'
+      };
 
-      try {
-        const rpcResult = await supabase.rpc('create_announcement', {
-          p_title: newAnnouncement.title,
-          p_content: newAnnouncement.content,
-          p_type: newAnnouncement.category || 'general',
-          p_author_id: currentUser.id,
-          p_author_name: currentUser.name
-        });
-        error = rpcResult.error;
-      } catch (rpcError) {
-        console.error('RPC failed, trying direct insert:', rpcError);
-        
-        // Use type assertion for direct database access
-        const insertResult = await (supabase as any)
-          .from('announcements')
-          .insert({
-            title: newAnnouncement.title,
-            content: newAnnouncement.content,
-            type: newAnnouncement.category || 'general',
-            priority: 'normal',
-            target_audience: 'all',
-            author_id: currentUser.id,
-            author_name: currentUser.name,
-            is_published: true,
-            publish_date: new Date().toISOString()
-          });
-
-        error = insertResult.error;
-      }
-
-      if (error) {
-        throw error;
-      }
-
+      addAnnouncement(announcementData);
       await loadAnnouncements();
       
       toast({
@@ -145,8 +84,8 @@ export const useSupabaseAnnouncements = () => {
     }
   };
 
-  // 更新公告
-  const updateAnnouncement = async (id: string, updatedAnnouncement: Partial<CompanyAnnouncement>) => {
+  // 更新公告 - Using mock data system
+  const updateAnnouncementData = async (id: string, updatedAnnouncement: Partial<CompanyAnnouncement>) => {
     if (!isAdmin()) {
       toast({
         title: "權限不足",
@@ -157,17 +96,17 @@ export const useSupabaseAnnouncements = () => {
     }
 
     try {
-      const { error } = await (supabase as any)
-        .from('announcements')
-        .update({
-          title: updatedAnnouncement.title,
-          content: updatedAnnouncement.content,
-          type: updatedAnnouncement.category || 'general'
-        })
-        .eq('id', id);
+      const existingAnnouncement = announcements.find(a => a.id === id);
+      if (!existingAnnouncement) {
+        throw new Error('公告不存在');
+      }
 
-      if (error) throw error;
+      const updated = {
+        ...existingAnnouncement,
+        ...updatedAnnouncement
+      };
 
+      updateAnnouncement(updated);
       await loadAnnouncements();
       
       toast({
@@ -187,8 +126,8 @@ export const useSupabaseAnnouncements = () => {
     }
   };
 
-  // 刪除公告
-  const deleteAnnouncement = async (id: string) => {
+  // 刪除公告 - Using mock data system
+  const deleteAnnouncementData = async (id: string) => {
     if (!isAdmin()) {
       toast({
         title: "權限不足",
@@ -199,12 +138,10 @@ export const useSupabaseAnnouncements = () => {
     }
 
     try {
-      const { error } = await (supabase as any)
-        .from('announcements')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      const result = deleteAnnouncement(id);
+      if (!result) {
+        throw new Error('刪除失敗');
+      }
 
       await loadAnnouncements();
       
@@ -239,8 +176,8 @@ export const useSupabaseAnnouncements = () => {
     announcements,
     loading,
     createAnnouncement,
-    updateAnnouncement,
-    deleteAnnouncement,
+    updateAnnouncement: updateAnnouncementData,
+    deleteAnnouncement: deleteAnnouncementData,
     refreshData: loadAnnouncements
   };
 };

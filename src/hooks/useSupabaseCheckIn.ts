@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,18 +10,25 @@ export const useSupabaseCheckIn = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { currentUser } = useUser();
+  const loadingRef = useRef(false);
 
   // 載入打卡記錄
   const loadCheckInRecords = async (userId?: string) => {
+    if (loadingRef.current) return; // 防止重複載入
+    
     try {
       const targetUserId = userId || currentUser?.id;
       if (!targetUserId) return;
+
+      loadingRef.current = true;
+      setLoading(true);
 
       const { data, error } = await supabase
         .from('check_in_records')
         .select('*')
         .eq('user_id', targetUserId)
-        .order('timestamp', { ascending: false });
+        .order('timestamp', { ascending: false })
+        .limit(100); // 限制載入數量
 
       if (error) {
         console.error('Error loading check-in records:', error);
@@ -49,6 +56,9 @@ export const useSupabaseCheckIn = () => {
     } catch (error) {
       console.error('載入打卡記錄失敗:', error);
       setCheckInRecords([]);
+    } finally {
+      setLoading(false);
+      loadingRef.current = false;
     }
   };
 
@@ -161,12 +171,12 @@ export const useSupabaseCheckIn = () => {
     }
   };
 
-  // 初始載入
+  // 初始載入 - 使用 useEffect 但避免重複載入
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && !loadingRef.current) {
       loadCheckInRecords();
     }
-  }, [currentUser]);
+  }, [currentUser?.id]); // 只在 currentUser.id 改變時載入
 
   return {
     checkInRecords,

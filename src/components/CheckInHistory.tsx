@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { CheckInRecord } from '@/types';
 import { formatDate, formatTime } from '@/utils/checkInUtils';
@@ -15,6 +16,7 @@ const CheckInHistory: React.FC = () => {
   const { currentUser } = useUser();
   const { checkInRecords, loadCheckInRecords, loading } = useSupabaseCheckIn();
   const [refreshing, setRefreshing] = useState(false);
+  const { toast } = useToast();
   
   useEffect(() => {
     if (currentUser?.id) {
@@ -29,8 +31,18 @@ const CheckInHistory: React.FC = () => {
       setRefreshing(true);
       try {
         await loadCheckInRecords();
+        // 只在手動重新載入時顯示成功通知
+        toast({
+          title: "重新載入成功",
+          description: `載入了 ${checkInRecords.length} 筆打卡記錄`,
+        });
       } catch (error) {
         console.error('重新載入失敗:', error);
+        toast({
+          title: "重新載入失敗",
+          description: "無法重新載入打卡記錄",
+          variant: "destructive"
+        });
       } finally {
         setRefreshing(false);
       }

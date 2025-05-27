@@ -82,10 +82,8 @@ export const useCheckInRecords = () => {
       console.log('格式化後的記錄:', formattedRecords);
       setCheckInRecords(formattedRecords);
       
-      toast({
-        title: "載入成功",
-        description: `載入了 ${formattedRecords.length} 筆打卡記錄`,
-      });
+      // 移除自動彈出的成功通知，避免重複通知
+      console.log(`載入了 ${formattedRecords.length} 筆打卡記錄`);
     } catch (error) {
       console.error('載入打卡記錄失敗:', error);
       toast({

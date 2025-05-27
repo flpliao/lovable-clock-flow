@@ -1,9 +1,10 @@
 
 import React, { useEffect } from 'react';
-import { MapPin, Wifi } from 'lucide-react';
+import { MapPin, Wifi, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import { useUser } from '@/contexts/UserContext';
 import { CheckInRecord } from '@/types';
 import { formatDate, formatTime } from '@/utils/checkInUtils';
@@ -20,14 +21,33 @@ const CheckInHistory: React.FC = () => {
     }
   }, [currentUser?.id, loadCheckInRecords]);
 
+  const handleRefresh = () => {
+    if (currentUser?.id) {
+      console.log('手動重新載入打卡記錄');
+      loadCheckInRecords();
+    }
+  };
+
   console.log('打卡記錄數量:', checkInRecords.length);
   console.log('打卡記錄:', checkInRecords);
+  console.log('載入狀態:', loading);
   
   if (loading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>打卡記錄</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            打卡記錄
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              重新載入
+            </Button>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-6 text-gray-500">
@@ -41,12 +61,24 @@ const CheckInHistory: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>打卡記錄</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          打卡記錄
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh}
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            重新載入
+          </Button>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {checkInRecords.length === 0 ? (
           <div className="text-center py-6 text-gray-500">
-            沒有找到任何打卡記錄
+            <p>沒有找到任何打卡記錄</p>
+            <p className="text-sm mt-2">請確認您已經完成打卡，或嘗試重新載入</p>
           </div>
         ) : (
           <Table>

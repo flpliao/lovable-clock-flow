@@ -10,8 +10,19 @@ export const useCheckInRecords = () => {
   const { toast } = useToast();
   const loadingRef = useRef(false);
 
-  const loadCheckInRecords = async (userId: string) => {
-    if (loadingRef.current || !userId) return;
+  const loadCheckInRecords = async (userId?: string) => {
+    // 如果沒有提供 userId，則不執行查詢
+    if (!userId) {
+      console.log('沒有使用者 ID，跳過載入打卡記錄');
+      setCheckInRecords([]);
+      return;
+    }
+
+    // 防止重複載入
+    if (loadingRef.current) {
+      console.log('正在載入中，跳過重複請求');
+      return;
+    }
     
     try {
       loadingRef.current = true;
@@ -39,7 +50,13 @@ export const useCheckInRecords = () => {
         return;
       }
 
-      const formattedRecords = (data || []).map((record: any) => ({
+      if (!data) {
+        console.log('查詢結果為空');
+        setCheckInRecords([]);
+        return;
+      }
+
+      const formattedRecords = data.map((record: any) => ({
         id: record.id,
         userId: record.user_id,
         timestamp: record.timestamp,

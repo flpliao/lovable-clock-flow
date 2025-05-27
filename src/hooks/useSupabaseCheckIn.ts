@@ -43,6 +43,7 @@ export const useSupabaseCheckIn = () => {
     }
   }, [currentUser?.id, loadCheckInRecords]);
 
+  // 初始載入
   useEffect(() => {
     if (currentUser?.id) {
       console.log('useEffect 觸發載入記錄，使用者ID:', currentUser.id);

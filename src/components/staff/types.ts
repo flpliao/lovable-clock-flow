@@ -4,47 +4,44 @@ export interface Staff {
   name: string;
   position: string;
   department: string;
+  branch_id?: string; // 新增營業處ID
+  branch_name?: string; // 新增營業處名稱
   contact: string;
-  role: 'user' | 'admin' | string;
+  role: 'admin' | 'user' | string;
   role_id?: string;
   supervisor_id?: string;
-  permissions?: string[];
+  username?: string;
+  email?: string;
 }
 
 export interface NewStaff {
   name: string;
   position: string;
   department: string;
+  branch_id?: string;
   contact: string;
-  role: 'user' | 'admin' | string;
+  role: 'admin' | 'user';
   role_id?: string;
   supervisor_id?: string;
-  permissions?: string[];
+  username?: string;
+  email?: string;
 }
 
-export interface StaffRole {
+export interface Role {
   id: string;
   name: string;
-  description: string;
   permissions: Permission[];
-  is_system_role: boolean;
-}
-
-export interface NewStaffRole {
-  name: string;
-  description: string;
-  permissions: Permission[];
+  description?: string;
 }
 
 export interface Permission {
   id: string;
   name: string;
-  code: string;
-  description: string;
-  category: string;
+  description?: string;
 }
 
 export interface StaffManagementContextType {
+  // Staff management
   staffList: Staff[];
   filteredStaffList: Staff[];
   isAddDialogOpen: boolean;
@@ -55,20 +52,19 @@ export interface StaffManagementContextType {
   setCurrentStaff: (staff: Staff | null) => void;
   newStaff: NewStaff;
   setNewStaff: (staff: NewStaff) => void;
-  handleAddStaff: () => void;
-  handleEditStaff: () => void;
+  handleAddStaff: () => boolean;
+  handleEditStaff: () => boolean;
   handleDeleteStaff: (id: string) => void;
   openEditDialog: (staff: Staff) => void;
   getSupervisorName: (supervisorId?: string) => string;
   getSubordinates: (staffId: string) => Staff[];
   
-  roles: StaffRole[];
-  addRole: (role: NewStaffRole) => Promise<boolean>;
-  updateRole: (role: StaffRole) => Promise<boolean>;
-  deleteRole: (roleId: string) => Promise<boolean>;
-  getRole: (roleId?: string) => StaffRole | undefined;
-  
-  assignRoleToStaff: (staffId: string, roleId: string) => Promise<boolean>;
-  
-  hasPermission: (staffId: string, permissionCode: string) => boolean;
+  // Role management
+  roles: Role[];
+  addRole: (role: Omit<Role, 'id'>) => void;
+  updateRole: (role: Role) => void;
+  deleteRole: (id: string) => void;
+  getRole: (id: string) => Role | undefined;
+  hasPermission: (roleId: string, permissionId: string) => boolean;
+  assignRoleToStaff: (staffId: string, roleId: string) => void;
 }

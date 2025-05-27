@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUser } from '@/contexts/UserContext';
+import { CompanyManagementProvider } from '@/components/company/CompanyManagementContext';
 import StaffTable from './StaffTable';
 import OrganizationChart from './OrganizationChart';
 import AddStaffDialog from './AddStaffDialog';
@@ -20,46 +21,48 @@ const StaffManagement = () => {
   const [activeTab, setActiveTab] = useState('list');
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <div>
-            <CardTitle>人員管理</CardTitle>
-            <CardDescription>
-              {isAdmin() 
-                ? "管理排班系統中的所有員工資料" 
-                : "查看和管理您自己的員工資料"}
-            </CardDescription>
-          </div>
-          <AddStaffDialog />
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-            <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger value="list">人員列表</TabsTrigger>
-              <TabsTrigger value="org-chart">公司組織圖</TabsTrigger>
-              {isAdmin() && <TabsTrigger value="roles">角色與權限</TabsTrigger>}
-            </TabsList>
-            
-            <TabsContent value="list">
-              <StaffTable />
-            </TabsContent>
-            
-            <TabsContent value="org-chart">
-              <OrganizationChart />
-            </TabsContent>
-            
-            {isAdmin() && (
-              <TabsContent value="roles">
-                <RoleManagement />
+    <CompanyManagementProvider>
+      <div className="space-y-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle>人員管理</CardTitle>
+              <CardDescription>
+                {isAdmin() 
+                  ? "管理排班系統中的所有員工資料，包含營業處歸屬管理" 
+                  : "查看和管理您自己的員工資料"}
+              </CardDescription>
+            </div>
+            <AddStaffDialog />
+          </CardHeader>
+          <CardContent>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
+              <TabsList className="grid w-full grid-cols-3 mb-4">
+                <TabsTrigger value="list">人員列表</TabsTrigger>
+                <TabsTrigger value="org-chart">公司組織圖</TabsTrigger>
+                {isAdmin() && <TabsTrigger value="roles">角色與權限</TabsTrigger>}
+              </TabsList>
+              
+              <TabsContent value="list">
+                <StaffTable />
               </TabsContent>
-            )}
-          </Tabs>
-        </CardContent>
-      </Card>
+              
+              <TabsContent value="org-chart">
+                <OrganizationChart />
+              </TabsContent>
+              
+              {isAdmin() && (
+                <TabsContent value="roles">
+                  <RoleManagement />
+                </TabsContent>
+              )}
+            </Tabs>
+          </CardContent>
+        </Card>
 
-      <EditStaffDialog />
-    </div>
+        <EditStaffDialog />
+      </div>
+    </CompanyManagementProvider>
   );
 };
 

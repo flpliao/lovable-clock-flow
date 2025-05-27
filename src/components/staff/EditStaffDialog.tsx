@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Dialog,
@@ -12,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useCompanyManagementContext } from '@/components/company/CompanyManagementContext';
 import { departments, positions } from './StaffConstants';
 
 const EditStaffDialog = () => {
@@ -25,10 +27,15 @@ const EditStaffDialog = () => {
     roles
   } = useStaffManagementContext();
 
+  const { branches } = useCompanyManagementContext();
+
   if (!currentStaff) return null;
 
   // Filter out the current staff from potential supervisors to prevent self-supervision
-  const potentialSupervisors = staffList.filter(staff => staff.id !== currentStaff.id);
+  const potentialSupervisors = staffList.filter(staff => 
+    staff.id !== currentStaff.id && 
+    (currentStaff.branch_id ? staff.branch_id === currentStaff.branch_id || staff.branch_id === '1' : true)
+  );
 
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -51,6 +58,35 @@ const EditStaffDialog = () => {
               onChange={(e) => setCurrentStaff({...currentStaff, name: e.target.value})}
               className="col-span-3"
             />
+          </div>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="branch" className="text-right">
+              所屬營業處
+            </Label>
+            <Select 
+              value={currentStaff.branch_id || ''} 
+              onValueChange={(value) => {
+                const selectedBranch = branches.find(b => b.id === value);
+                setCurrentStaff({
+                  ...currentStaff, 
+                  branch_id: value,
+                  branch_name: selectedBranch?.name,
+                  supervisor_id: undefined // 清除主管設定，因為可能跨營業處
+                });
+              }}
+            >
+              <SelectTrigger className="col-span-3" id="branch">
+                <SelectValue placeholder="選擇營業處" />
+              </SelectTrigger>
+              <SelectContent>
+                {branches.map((branch) => (
+                  <SelectItem key={branch.id} value={branch.id}>
+                    {branch.name} ({branch.type === 'headquarters' ? '總公司' : branch.type === 'branch' ? '分公司' : '門市'})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="grid grid-cols-4 items-center gap-4">
@@ -110,7 +146,7 @@ const EditStaffDialog = () => {
                 <SelectItem value="">無上級主管</SelectItem>
                 {potentialSupervisors.map((staff) => (
                   <SelectItem key={staff.id} value={staff.id}>
-                    {staff.name} ({staff.position})
+                    {staff.name} ({staff.position}) - {staff.branch_name}
                   </SelectItem>
                 ))}
               </SelectContent>

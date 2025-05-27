@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Dialog,
@@ -14,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useCompanyManagementContext } from '@/components/company/CompanyManagementContext';
 import { departments, positions } from './StaffConstants';
 import { useUser } from '@/contexts/UserContext';
 
@@ -28,6 +30,7 @@ const AddStaffDialog = () => {
     roles
   } = useStaffManagementContext();
   
+  const { branches } = useCompanyManagementContext();
   const { isAdmin } = useUser();
   
   if (!isAdmin()) return null;
@@ -58,6 +61,34 @@ const AddStaffDialog = () => {
               onChange={(e) => setNewStaff({...newStaff, name: e.target.value})}
               className="col-span-3"
             />
+          </div>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="branch" className="text-right">
+              所屬營業處
+            </Label>
+            <Select 
+              value={newStaff.branch_id || ''} 
+              onValueChange={(value) => {
+                const selectedBranch = branches.find(b => b.id === value);
+                setNewStaff({
+                  ...newStaff, 
+                  branch_id: value,
+                  branch_name: selectedBranch?.name
+                });
+              }}
+            >
+              <SelectTrigger className="col-span-3" id="branch">
+                <SelectValue placeholder="選擇營業處" />
+              </SelectTrigger>
+              <SelectContent>
+                {branches.map((branch) => (
+                  <SelectItem key={branch.id} value={branch.id}>
+                    {branch.name} ({branch.type === 'headquarters' ? '總公司' : branch.type === 'branch' ? '分公司' : '門市'})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="grid grid-cols-4 items-center gap-4">
@@ -115,9 +146,11 @@ const AddStaffDialog = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">無上級主管</SelectItem>
-                {staffList.map((staff) => (
+                {staffList
+                  .filter(staff => newStaff.branch_id ? staff.branch_id === newStaff.branch_id || staff.branch_id === '1' : true)
+                  .map((staff) => (
                   <SelectItem key={staff.id} value={staff.id}>
-                    {staff.name} ({staff.position})
+                    {staff.name} ({staff.position}) - {staff.branch_name}
                   </SelectItem>
                 ))}
               </SelectContent>

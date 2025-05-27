@@ -3,6 +3,7 @@ import { useCompanyState } from './hooks/useCompanyState';
 import { useBranchOperations } from './hooks/useBranchOperations';
 import { useCompanyOperations } from './hooks/useCompanyOperations';
 import { useBranchUtils } from './hooks/useBranchUtils';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 
 export const useCompanyManagement = () => {
   const {
@@ -22,6 +23,16 @@ export const useCompanyManagement = () => {
     setNewBranch
   } = useCompanyState();
 
+  // Get staff list for branch operations
+  let staffList: any[] = [];
+  try {
+    const staffContext = useStaffManagementContext();
+    staffList = staffContext.staffList;
+  } catch (error) {
+    // StaffManagementContext not available, use empty array
+    staffList = [];
+  }
+
   const {
     handleAddBranch,
     handleEditBranch,
@@ -36,7 +47,8 @@ export const useCompanyManagement = () => {
     setCurrentBranch,
     setIsAddBranchDialogOpen,
     setIsEditBranchDialogOpen,
-    company
+    company,
+    staffList
   });
 
   const { handleUpdateCompany } = useCompanyOperations({

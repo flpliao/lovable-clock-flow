@@ -27,6 +27,7 @@ const StaffTable: React.FC = () => {
                 <TableHead>姓名</TableHead>
                 <TableHead>職位</TableHead>
                 <TableHead>部門</TableHead>
+                <TableHead>所屬營業處</TableHead>
                 <TableHead>上級主管</TableHead>
                 <TableHead>操作</TableHead>
               </TableRow>
@@ -37,6 +38,11 @@ const StaffTable: React.FC = () => {
                   <TableCell className="font-medium">{staff.name}</TableCell>
                   <TableCell>{staff.position}</TableCell>
                   <TableCell>{staff.department}</TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                      {staff.branch_name || '未設定'}
+                    </span>
+                  </TableCell>
                   <TableCell>{getSupervisorName(staff.supervisor_id)}</TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">

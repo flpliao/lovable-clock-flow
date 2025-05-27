@@ -13,6 +13,7 @@ interface UseBranchOperationsProps {
   setIsAddBranchDialogOpen: (isOpen: boolean) => void;
   setIsEditBranchDialogOpen: (isOpen: boolean) => void;
   company: any;
+  staffList?: any[];
 }
 
 export const useBranchOperations = ({
@@ -24,7 +25,8 @@ export const useBranchOperations = ({
   setCurrentBranch,
   setIsAddBranchDialogOpen,
   setIsEditBranchDialogOpen,
-  company
+  company,
+  staffList = []
 }: UseBranchOperationsProps) => {
   const { toast } = useToast();
   const { isAdmin } = useUser();
@@ -130,10 +132,12 @@ export const useBranchOperations = ({
     }
 
     const branchToDelete = branches.find(branch => branch.id === id);
-    if (branchToDelete && branchToDelete.staff_count > 0) {
+    const branchStaffCount = staffList.filter(staff => staff.branch_id === id).length;
+    
+    if (branchToDelete && branchStaffCount > 0) {
       toast({
         title: "無法刪除",
-        description: `「${branchToDelete.name}」中還有 ${branchToDelete.staff_count} 名員工，請先將員工移至其他營業處`,
+        description: `「${branchToDelete.name}」中還有 ${branchStaffCount} 名員工，請先將員工移至其他營業處`,
         variant: "destructive"
       });
       return;

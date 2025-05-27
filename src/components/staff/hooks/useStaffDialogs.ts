@@ -1,7 +1,5 @@
 
 import { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
-import { useUser } from '@/contexts/UserContext';
 import { Staff, NewStaff } from '../types';
 
 export const useStaffDialogs = () => {
@@ -12,24 +10,13 @@ export const useStaffDialogs = () => {
     name: '',
     position: '',
     department: '',
+    branch_id: '',
     contact: '',
-    role: 'user'
+    role: 'user',
+    role_id: 'user'
   });
 
-  const { toast } = useToast();
-  const { canManageUser } = useUser();
-
   const openEditDialog = (staff: Staff) => {
-    // Check if user has permission to edit this staff member
-    if (!canManageUser(staff.id)) {
-      toast({
-        title: "權限不足",
-        description: "您沒有權限編輯此人員",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setCurrentStaff({...staff});
     setIsEditDialogOpen(true);
   };
@@ -39,8 +26,10 @@ export const useStaffDialogs = () => {
       name: '',
       position: '',
       department: '',
+      branch_id: '',
       contact: '',
-      role: 'user'
+      role: 'user',
+      role_id: 'user'
     });
   };
 

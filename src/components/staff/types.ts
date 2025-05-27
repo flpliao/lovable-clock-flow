@@ -12,6 +12,7 @@ export interface Staff {
   supervisor_id?: string;
   username?: string;
   email?: string;
+  permissions?: string[]; // 直接權限列表
 }
 
 export interface NewStaff {
@@ -19,25 +20,35 @@ export interface NewStaff {
   position: string;
   department: string;
   branch_id?: string;
+  branch_name?: string; // 新增營業處名稱
   contact: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | string;
   role_id?: string;
   supervisor_id?: string;
   username?: string;
   email?: string;
 }
 
-export interface Role {
+export interface StaffRole {
   id: string;
   name: string;
   permissions: Permission[];
   description?: string;
+  is_system_role?: boolean;
+}
+
+export interface NewStaffRole {
+  name: string;
+  description?: string;
+  permissions: Permission[];
 }
 
 export interface Permission {
   id: string;
   name: string;
+  code: string; // 新增權限代碼
   description?: string;
+  category: string; // 新增權限分類
 }
 
 export interface StaffManagementContextType {
@@ -60,11 +71,11 @@ export interface StaffManagementContextType {
   getSubordinates: (staffId: string) => Staff[];
   
   // Role management
-  roles: Role[];
-  addRole: (role: Omit<Role, 'id'>) => void;
-  updateRole: (role: Role) => void;
-  deleteRole: (id: string) => void;
-  getRole: (id: string) => Role | undefined;
+  roles: StaffRole[];
+  addRole: (role: NewStaffRole) => Promise<boolean>;
+  updateRole: (role: StaffRole) => Promise<boolean>;
+  deleteRole: (id: string) => Promise<boolean>;
+  getRole: (id: string) => StaffRole | undefined;
   hasPermission: (roleId: string, permissionId: string) => boolean;
-  assignRoleToStaff: (staffId: string, roleId: string) => void;
+  assignRoleToStaff: (staffId: string, roleId: string) => Promise<boolean>;
 }

@@ -11,6 +11,7 @@ export const useStaffDialogs = () => {
     position: '',
     department: '',
     branch_id: '',
+    branch_name: '',
     contact: '',
     role: 'user',
     role_id: 'user'
@@ -27,6 +28,7 @@ export const useStaffDialogs = () => {
       position: '',
       department: '',
       branch_id: '',
+      branch_name: '',
       contact: '',
       role: 'user',
       role_id: 'user'

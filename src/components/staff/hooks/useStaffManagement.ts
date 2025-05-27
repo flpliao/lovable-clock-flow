@@ -3,7 +3,6 @@ import { useStaffOperations } from './useStaffOperations';
 import { useStaffHierarchy } from './useStaffHierarchy';
 import { useStaffDialogs } from './useStaffDialogs';
 import { useRoleManagement } from './useRoleManagement';
-import { useCredentialManagement } from './useCredentialManagement';
 
 export const useStaffManagement = () => {
   const {
@@ -43,22 +42,25 @@ export const useStaffManagement = () => {
   } = useRoleManagement(staffList);
 
   // Combine the add staff functionality
-  const handleAddStaffSubmit = () => {
+  const handleAddStaffSubmit = (): boolean => {
     const success = handleAddStaff(newStaff);
     if (success) {
       resetNewStaff();
       setIsAddDialogOpen(false);
     }
+    return success;
   };
 
   // Combine the edit staff functionality
-  const handleEditStaffSubmit = () => {
+  const handleEditStaffSubmit = (): boolean => {
     if (currentStaff) {
       const success = handleEditStaff(currentStaff);
       if (success) {
         setIsEditDialogOpen(false);
       }
+      return success;
     }
+    return false;
   };
 
   return {

@@ -16,7 +16,7 @@ const CheckInHistory: React.FC = () => {
   useEffect(() => {
     if (currentUser) {
       console.log('載入打卡記錄，使用者ID:', currentUser.id);
-      loadCheckInRecords(currentUser.id);
+      loadCheckInRecords(); // Remove the argument since the function now handles user ID internally
     }
   }, [currentUser, loadCheckInRecords]);
 

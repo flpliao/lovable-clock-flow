@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
+import { LeaveRequest } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { LeaveRequest, ApprovalRecord } from '@/types';
 
 export const useSupabaseLeaveManagement = () => {
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
@@ -11,77 +11,30 @@ export const useSupabaseLeaveManagement = () => {
   const { toast } = useToast();
   const { currentUser } = useUser();
 
-  // 載入請假申請資料
-  const loadLeaveRequests = async () => {
+  // 載入年假餘額
+  const loadAnnualLeaveBalance = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('leave_requests')
-        .select(`
-          *,
-          approval_records (*)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Database error:', error);
-        setLeaveRequests([]);
-        return;
+      console.log('Loading annual leave balance for user:', userId);
+      
+      // 檢查 userId 是否為有效的 UUID 格式
+      if (!userId || userId.length < 30) {
+        console.error('Invalid user ID format:', userId);
+        return null;
       }
 
-      const formattedRequests = (data || []).map((request: any) => ({
-        id: request.id,
-        user_id: request.user_id,
-        staff_id: request.staff_id,
-        start_date: request.start_date,
-        end_date: request.end_date,
-        leave_type: request.leave_type,
-        status: request.status,
-        hours: request.hours,
-        reason: request.reason,
-        approval_level: request.approval_level,
-        current_approver: request.current_approver,
-        rejection_reason: request.rejection_reason,
-        created_at: request.created_at,
-        updated_at: request.updated_at,
-        approvals: (request.approval_records || []).map((record: any) => ({
-          id: record.id,
-          leave_request_id: record.leave_request_id,
-          approver_id: record.approver_id,
-          approver_name: record.approver_name,
-          status: record.status,
-          comment: record.comment,
-          approval_date: record.approval_date,
-          level: record.level
-        }))
-      }));
-
-      setLeaveRequests(formattedRequests);
-    } catch (error) {
-      console.error('載入請假申請失敗:', error);
-      toast({
-        title: "載入失敗",
-        description: "無法載入請假申請資料",
-        variant: "destructive"
-      });
-      setLeaveRequests([]);
-    }
-  };
-
-  // 載入年假餘額
-  const loadAnnualLeaveBalance = async (staffId: string) => {
-    try {
       const currentYear = new Date().getFullYear();
       const { data, error } = await supabase
         .from('annual_leave_balance')
         .select('*')
-        .eq('staff_id', staffId)
+        .eq('staff_id', userId)
         .eq('year', currentYear)
         .maybeSingle();
 
       if (error) {
-        console.error('年假餘額查詢錯誤:', error);
+        console.error('載入年假餘額失敗:', error);
         return null;
       }
+
       return data;
     } catch (error) {
       console.error('載入年假餘額失敗:', error);
@@ -89,8 +42,106 @@ export const useSupabaseLeaveManagement = () => {
     }
   };
 
+  // 初始化年假餘額
+  const initializeAnnualLeaveBalance = async (userId: string) => {
+    try {
+      console.log('Initializing annual leave balance for user:', userId);
+      
+      // 檢查 userId 是否為有效的 UUID 格式
+      if (!userId || userId.length < 30) {
+        console.error('Invalid user ID format:', userId);
+        return false;
+      }
+
+      const currentYear = new Date().getFullYear();
+      
+      // 呼叫 Supabase 函數初始化年假餘額
+      const { error } = await supabase.rpc('initialize_annual_leave_balance', {
+        staff_uuid: userId,
+        target_year: currentYear
+      });
+
+      if (error) {
+        console.error('初始化年假餘額失敗:', error);
+        return false;
+      }
+
+      console.log('年假餘額初始化成功');
+      return true;
+    } catch (error) {
+      console.error('初始化年假餘額失敗:', error);
+      return false;
+    }
+  };
+
+  // 載入請假記錄
+  const loadLeaveRequests = async () => {
+    if (!currentUser) return;
+
+    try {
+      setLoading(true);
+      console.log('Loading leave requests for user:', currentUser.id);
+
+      const { data, error } = await supabase
+        .from('leave_requests')
+        .select(`
+          *,
+          approval_records (*)
+        `)
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('載入請假記錄失敗:', error);
+        toast({
+          title: "載入失敗",
+          description: "無法載入請假記錄",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // 轉換資料格式以符合前端介面
+      const formattedRequests: LeaveRequest[] = (data || []).map((request: any) => ({
+        id: request.id,
+        user_id: request.user_id,
+        start_date: request.start_date,
+        end_date: request.end_date,
+        leave_type: request.leave_type,
+        status: request.status,
+        hours: Number(request.hours),
+        reason: request.reason,
+        approval_level: request.approval_level,
+        current_approver: request.current_approver,
+        created_at: request.created_at,
+        updated_at: request.updated_at,
+        approvals: (request.approval_records || []).map((approval: any) => ({
+          id: approval.id,
+          leave_request_id: approval.leave_request_id,
+          approver_id: approval.approver_id,
+          approver_name: approval.approver_name,
+          status: approval.status,
+          level: approval.level,
+          approval_date: approval.approval_date,
+          comment: approval.comment
+        }))
+      }));
+
+      setLeaveRequests(formattedRequests);
+    } catch (error) {
+      console.error('載入請假記錄失敗:', error);
+      toast({
+        title: "載入失敗",
+        description: "無法載入請假記錄",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // 建立請假申請
-  const createLeaveRequest = async (newRequest: Omit<LeaveRequest, 'id' | 'created_at' | 'updated_at'>) => {
+  const createLeaveRequest = async (request: Omit<LeaveRequest, 'id' | 'created_at' | 'updated_at'>) => {
     if (!currentUser) {
       toast({
         title: "錯誤",
@@ -101,48 +152,55 @@ export const useSupabaseLeaveManagement = () => {
     }
 
     try {
-      const { data, error } = await supabase
+      console.log('Creating leave request:', request);
+
+      // 建立請假申請
+      const { data: leaveData, error: leaveError } = await supabase
         .from('leave_requests')
         .insert({
           user_id: currentUser.id,
-          staff_id: currentUser.id,
-          start_date: newRequest.start_date,
-          end_date: newRequest.end_date,
-          leave_type: newRequest.leave_type,
-          status: newRequest.status,
-          hours: newRequest.hours,
-          reason: newRequest.reason,
-          approval_level: newRequest.approval_level,
-          current_approver: newRequest.current_approver
+          start_date: request.start_date,
+          end_date: request.end_date,
+          leave_type: request.leave_type,
+          status: request.status,
+          hours: request.hours,
+          reason: request.reason,
+          approval_level: request.approval_level,
+          current_approver: request.current_approver
         })
         .select()
         .single();
 
-      if (error) {
-        console.error('Database error:', error);
-        throw error;
+      if (leaveError) {
+        console.error('建立請假申請失敗:', leaveError);
+        throw leaveError;
       }
 
-      // 如果有審核流程，建立審核記錄
-      if (newRequest.approvals && newRequest.approvals.length > 0) {
-        const approvalRecords = newRequest.approvals.map(approval => ({
-          leave_request_id: data.id,
+      // 建立審批記錄
+      if (request.approvals && request.approvals.length > 0) {
+        const approvalRecords = request.approvals.map(approval => ({
+          leave_request_id: leaveData.id,
           approver_id: approval.approver_id,
           approver_name: approval.approver_name,
-          status: 'pending' as const,
+          status: approval.status,
           level: approval.level
         }));
 
-        await supabase
+        const { error: approvalError } = await supabase
           .from('approval_records')
           .insert(approvalRecords);
+
+        if (approvalError) {
+          console.error('建立審批記錄失敗:', approvalError);
+          // 不拋出錯誤，因為請假申請已成功建立
+        }
       }
 
       await loadLeaveRequests();
       
       toast({
         title: "申請成功",
-        description: "請假申請已成功送出",
+        description: "請假申請已送出，等待審核",
       });
       
       return true;
@@ -150,104 +208,26 @@ export const useSupabaseLeaveManagement = () => {
       console.error('建立請假申請失敗:', error);
       toast({
         title: "申請失敗",
-        description: "無法建立請假申請",
+        description: "無法提交請假申請",
         variant: "destructive"
       });
-      return false;
-    }
-  };
-
-  // 更新請假申請狀態
-  const updateLeaveRequestStatus = async (requestId: string, status: 'approved' | 'rejected', comment?: string, rejectionReason?: string) => {
-    try {
-      const updateData: any = { status };
-      if (rejectionReason) {
-        updateData.rejection_reason = rejectionReason;
-      }
-
-      const { error } = await supabase
-        .from('leave_requests')
-        .update(updateData)
-        .eq('id', requestId);
-
-      if (error) throw error;
-
-      // 更新審核記錄
-      if (currentUser) {
-        await supabase
-          .from('approval_records')
-          .update({
-            status,
-            comment,
-            approval_date: new Date().toISOString()
-          })
-          .eq('leave_request_id', requestId)
-          .eq('approver_id', currentUser.id);
-      }
-
-      await loadLeaveRequests();
-      
-      toast({
-        title: status === 'approved' ? "審核通過" : "審核拒絕",
-        description: `請假申請已${status === 'approved' ? '核准' : '拒絕'}`,
-      });
-      
-      return true;
-    } catch (error) {
-      console.error('更新請假申請失敗:', error);
-      toast({
-        title: "更新失敗",
-        description: "無法更新請假申請狀態",
-        variant: "destructive"
-      });
-      return false;
-    }
-  };
-
-  // 初始化年假餘額
-  const initializeAnnualLeaveBalance = async (staffId: string) => {
-    try {
-      const currentYear = new Date().getFullYear();
-      const { error } = await supabase.rpc('initialize_annual_leave_balance', {
-        staff_uuid: staffId,
-        target_year: currentYear
-      });
-
-      if (error) {
-        console.error('初始化年假餘額失敗:', error);
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error('初始化年假餘額失敗:', error);
       return false;
     }
   };
 
   // 初始載入
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await loadLeaveRequests();
-      
-      // 如果有當前使用者，初始化其年假餘額
-      if (currentUser) {
-        await initializeAnnualLeaveBalance(currentUser.id);
-      }
-      
-      setLoading(false);
-    };
-    loadData();
+    if (currentUser) {
+      loadLeaveRequests();
+    }
   }, [currentUser]);
 
   return {
     leaveRequests,
     loading,
-    createLeaveRequest,
-    updateLeaveRequestStatus,
     loadAnnualLeaveBalance,
     initializeAnnualLeaveBalance,
+    createLeaveRequest,
     refreshData: loadLeaveRequests
   };
 };

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
@@ -81,6 +80,8 @@ export const useSupabaseAnnouncements = () => {
     }
 
     try {
+      console.log('Creating announcement for user:', currentUser.id);
+      
       const { data, error } = await supabase
         .from('announcements')
         .insert({
@@ -219,6 +220,8 @@ export const useSupabaseAnnouncements = () => {
     if (!currentUser) return;
 
     try {
+      console.log('Marking announcement as read:', announcementId, 'for user:', currentUser.id);
+      
       const { error } = await supabase.rpc('mark_announcement_as_read', {
         user_uuid: currentUser.id,
         announcement_uuid: announcementId

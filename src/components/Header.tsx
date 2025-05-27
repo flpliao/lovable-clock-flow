@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Menu, Shield, LogOut, BarChart3, Bell, FileText, Home, Calendar, User, Clock } from 'lucide-react';
+import { Menu, Shield, LogOut, BarChart3, Bell, FileText, Home, Calendar, User, Clock, Building2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ApolloLogo from './ApolloLogo';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -29,7 +28,7 @@ const Header: React.FC<HeaderProps> = () => {
   console.log('Header - isAdmin():', isAdmin());
   console.log('Rendering admin badge check - isAdmin():', isAdmin());
   
-  // 判斷是否為管理員或人資部門
+  // �判斷是否為管理員或人資部門
   const isAdminOrHR = () => {
     return currentUser && (isAdmin() || currentUser.department === 'HR');
   };
@@ -56,6 +55,7 @@ const Header: React.FC<HeaderProps> = () => {
   // 如果是管理員或人資部門，新增其他管理選項
   if (isAdminOrHR()) {
     navItems.push(
+      { path: '/company-branch-management', label: '公司基本資料與營業處管理', icon: <Building2 className="mr-2 h-4 w-4" /> },
       { path: '/personnel-management', label: '人員與部門管理', icon: <User className="mr-2 h-4 w-4" /> },
       { path: '/staff-dashboard', label: '員工考勤儀表板', icon: <BarChart3 className="mr-2 h-4 w-4" /> }
     );

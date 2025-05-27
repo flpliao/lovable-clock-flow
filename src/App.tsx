@@ -17,6 +17,7 @@ import Scheduling from "./pages/Scheduling";
 import PersonnelManagement from "./pages/PersonnelManagement";
 import StaffDashboard from "./pages/StaffDashboard";
 import AnnouncementManagementPage from "./pages/AnnouncementManagementPage";
+import CompanyBranchManagement from "./pages/CompanyBranchManagement";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -41,6 +42,7 @@ function App() {
                     <Route path="/leave-request" element={<LeaveRequest />} />
                     <Route path="/leave-approval/:requestId" element={<LeaveApprovalView />} />
                     <Route path="/scheduling" element={<Scheduling />} />
+                    <Route path="/company-branch-management" element={<CompanyBranchManagement />} />
                     <Route path="/personnel-management" element={<PersonnelManagement />} />
                     <Route path="/staff-dashboard" element={<StaffDashboard />} />
                     <Route path="/announcement-management" element={<AnnouncementManagementPage />} />

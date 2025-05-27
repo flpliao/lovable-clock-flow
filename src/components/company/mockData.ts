@@ -1,0 +1,106 @@
+
+import { Company, Branch } from '@/types/company';
+
+export const mockCompany: Company = {
+  id: '1',
+  name: 'Apollo 科技股份有限公司',
+  registration_number: '12345678',
+  address: '台北市信義區信義路五段7號',
+  phone: '02-1234-5678',
+  email: 'info@apollo.com.tw',
+  website: 'https://apollo.com.tw',
+  established_date: '2020-01-15',
+  capital: 10000000,
+  business_type: '資訊軟體服務業',
+  legal_representative: '王大明',
+  created_at: '2020-01-15T00:00:00Z',
+  updated_at: '2024-01-15T00:00:00Z'
+};
+
+export const mockBranches: Branch[] = [
+  {
+    id: '1',
+    company_id: '1',
+    name: '總公司',
+    code: 'HQ001',
+    type: 'headquarters',
+    address: '台北市信義區信義路五段7號',
+    phone: '02-1234-5678',
+    email: 'hq@apollo.com.tw',
+    manager_name: '王大明',
+    manager_contact: '02-1234-5678',
+    business_license: 'BL-001',
+    is_active: true,
+    staff_count: 25,
+    created_at: '2020-01-15T00:00:00Z',
+    updated_at: '2024-01-15T00:00:00Z'
+  },
+  {
+    id: '2',
+    company_id: '1',
+    name: '台中分公司',
+    code: 'TC001',
+    type: 'branch',
+    address: '台中市西屯區台灣大道四段925號',
+    phone: '04-2345-6789',
+    email: 'taichung@apollo.com.tw',
+    manager_name: '李小華',
+    manager_contact: '04-2345-6789',
+    business_license: 'BL-002',
+    is_active: true,
+    staff_count: 15,
+    created_at: '2021-03-10T00:00:00Z',
+    updated_at: '2024-01-15T00:00:00Z'
+  },
+  {
+    id: '3',
+    company_id: '1',
+    name: '信義門市',
+    code: 'XY001',
+    type: 'store',
+    address: '台北市信義區松高路12號1樓',
+    phone: '02-2345-6789',
+    email: 'xinyi@apollo.com.tw',
+    manager_name: '張美玲',
+    manager_contact: '02-2345-6789',
+    business_license: 'BL-003',
+    is_active: true,
+    staff_count: 8,
+    created_at: '2021-06-20T00:00:00Z',
+    updated_at: '2024-01-15T00:00:00Z'
+  },
+  {
+    id: '4',
+    company_id: '1',
+    name: '板橋門市',
+    code: 'BQ001',
+    type: 'store',
+    address: '新北市板橋區中山路一段10號',
+    phone: '02-3456-7890',
+    email: 'banqiao@apollo.com.tw',
+    manager_name: '陳志強',
+    manager_contact: '02-3456-7890',
+    business_license: 'BL-004',
+    is_active: true,
+    staff_count: 6,
+    created_at: '2022-01-10T00:00:00Z',
+    updated_at: '2024-01-15T00:00:00Z'
+  },
+  {
+    id: '5',
+    company_id: '1',
+    name: '高雄分公司',
+    code: 'KH001',
+    type: 'branch',
+    address: '高雄市前鎮區中山二路5號',
+    phone: '07-1234-5678',
+    email: 'kaohsiung@apollo.com.tw',
+    manager_name: '林雅婷',
+    manager_contact: '07-1234-5678',
+    business_license: 'BL-005',
+    is_active: false,
+    staff_count: 0,
+    created_at: '2023-05-15T00:00:00Z',
+    updated_at: '2024-01-15T00:00:00Z'
+  }
+];

@@ -45,7 +45,7 @@ const CheckInMethodSelector: React.FC<CheckInMethodSelectorProps> = ({
         <button
           onClick={onLocationCheckIn}
           disabled={loading}
-          className="relative h-40 w-40 mx-auto rounded-full bg-white border-8 border-[#E6F4F9] flex items-center justify-center z-10 focus:outline-none transition-all duration-300 hover:border-[#0091D0]/50"
+          className={`relative h-40 w-40 mx-auto rounded-full bg-white border-8 border-[#E6F4F9] flex items-center justify-center z-10 focus:outline-none transition-all duration-300 hover:border-[#0091D0]/50 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
           <div className="location-ring bg-[#0091D0]/20 h-32 w-32"></div>
           <div className="location-ring bg-[#0091D0]/10 h-36 w-36" style={{ animationDelay: "0.5s" }}></div>
@@ -64,7 +64,12 @@ const CheckInMethodSelector: React.FC<CheckInMethodSelectorProps> = ({
             {actionType === 'check-in' ? '上班了！' : '下班了！'}
             <span className="text-[#0091D0]">定位打卡</span>
           </p>
-          {distance !== null && !error && (
+          {loading && (
+            <p className="text-sm text-blue-600 animate-pulse mt-2">
+              處理中...請稍候
+            </p>
+          )}
+          {distance !== null && !error && !loading && (
             <p className="text-sm text-gray-600 mt-3">
               距離公司: <span className="font-medium">{Math.round(distance)} 公尺</span>
             </p>
@@ -76,7 +81,7 @@ const CheckInMethodSelector: React.FC<CheckInMethodSelectorProps> = ({
         <button
           onClick={onIpCheckIn}
           disabled={loading}
-          className="relative h-40 w-40 mx-auto rounded-full bg-white border-8 border-[#E6F4F9] flex items-center justify-center z-10 focus:outline-none transition-all duration-300 hover:border-[#0091D0]/50"
+          className={`relative h-40 w-40 mx-auto rounded-full bg-white border-8 border-[#E6F4F9] flex items-center justify-center z-10 focus:outline-none transition-all duration-300 hover:border-[#0091D0]/50 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
           <div className="location-ring bg-[#0091D0]/20 h-32 w-32"></div>
           <div className="location-ring bg-[#0091D0]/10 h-36 w-36" style={{ animationDelay: "0.5s" }}></div>
@@ -95,9 +100,16 @@ const CheckInMethodSelector: React.FC<CheckInMethodSelectorProps> = ({
             {actionType === 'check-in' ? '上班了！' : '下班了！'}
             <span className="text-[#0091D0]">IP打卡</span>
           </p>
-          <p className="text-sm text-gray-600 mt-3">
-            使用公司網路自動打卡
-          </p>
+          {loading && (
+            <p className="text-sm text-blue-600 animate-pulse mt-2">
+              處理中...請稍候
+            </p>
+          )}
+          {!loading && (
+            <p className="text-sm text-gray-600 mt-3">
+              使用公司網路自動打卡
+            </p>
+          )}
         </div>
       </TabsContent>
     </Tabs>

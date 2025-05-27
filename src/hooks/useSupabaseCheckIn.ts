@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
@@ -93,24 +94,37 @@ export const useSupabaseCheckIn = () => {
     try {
       console.log('建立打卡記錄:', record);
 
-      const { error } = await supabase
+      // 資料轉換和檢查
+      const distance = record.details.distance 
+        ? Math.round(record.details.distance) 
+        : null;
+      
+      console.log('處理後的距離:', distance);
+      
+      // 檢查資料類型
+      const recordData = {
+        user_id: currentUser.id,
+        staff_id: currentUser.id,
+        timestamp: record.timestamp,
+        type: record.type,
+        status: record.status,
+        action: record.action,
+        latitude: record.details.latitude || null,
+        longitude: record.details.longitude || null,
+        distance: distance,
+        ip_address: record.details.ip || null,
+        location_name: record.details.locationName || null
+      };
+      
+      console.log('即將插入資料庫的記錄:', recordData);
+
+      const { data, error } = await supabase
         .from('check_in_records')
-        .insert({
-          user_id: currentUser.id,
-          staff_id: currentUser.id,
-          timestamp: record.timestamp,
-          type: record.type,
-          status: record.status,
-          action: record.action,
-          latitude: record.details.latitude,
-          longitude: record.details.longitude,
-          distance: record.details.distance ? Math.round(record.details.distance) : null, // 轉換為整數
-          ip_address: record.details.ip,
-          location_name: record.details.locationName
-        });
+        .insert(recordData)
+        .select();
 
       if (error) {
-        console.error('Error creating check-in record:', error);
+        console.error('打卡記錄儲存失敗:', error);
         toast({
           title: "打卡失敗",
           description: "無法記錄打卡資料",
@@ -119,10 +133,16 @@ export const useSupabaseCheckIn = () => {
         return false;
       }
 
-      console.log('打卡記錄建立成功');
+      console.log('打卡記錄建立成功:', data);
       
       // 重新載入記錄
       await loadCheckInRecords();
+      
+      toast({
+        title: record.action === 'check-in' ? "上班打卡成功" : "下班打卡成功",
+        description: "打卡記錄已儲存",
+      });
+      
       return true;
     } catch (error) {
       console.error('建立打卡記錄失敗:', error);
@@ -143,6 +163,8 @@ export const useSupabaseCheckIn = () => {
 
       const today = new Date().toISOString().split('T')[0];
       
+      console.log('查詢今日記錄，日期:', today, '使用者ID:', targetUserId);
+      
       const { data, error } = await supabase
         .from('check_in_records')
         .select('*')
@@ -152,6 +174,8 @@ export const useSupabaseCheckIn = () => {
         .eq('status', 'success')
         .order('timestamp', { ascending: true });
 
+      console.log('今日記錄查詢結果:', { data, error });
+      
       if (error) {
         console.error('Error getting today records:', error);
         return { checkIn: undefined, checkOut: undefined };

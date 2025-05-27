@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Bell, Check, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import NotificationItem, { Notification } from './NotificationItem';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from '@/hooks/useNotifications';
 
 const NotificationCenter: React.FC = () => {
@@ -22,6 +21,7 @@ const NotificationCenter: React.FC = () => {
     clearNotifications 
   } = useNotifications();
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   
   const handleNotificationClick = (notification: Notification) => {
@@ -36,14 +36,14 @@ const NotificationCenter: React.FC = () => {
       // Navigate to leave request page to view status
       navigate('/leave-request');
     } else if (notification.type === 'announcement' || notification.type === 'system') {
-      // For announcement notifications, navigate to company announcements page
-      // Add a timestamp to force refresh
-      navigate('/company-announcements', { replace: true });
-      
-      // Force page reload to ensure fresh data
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
+      // Check if we're already on the announcements page
+      if (location.pathname === '/company-announcements') {
+        // Force a refresh by dispatching a custom event
+        window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
+      } else {
+        // Navigate to company announcements page
+        navigate('/company-announcements');
+      }
     }
   };
   

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -34,8 +33,23 @@ export const useAnnouncements = (adminMode: boolean = false) => {
 
   // Force refresh function
   const forceRefresh = useCallback(() => {
+    console.log('Forcing refresh of announcements');
     setRefreshKey(prev => prev + 1);
   }, []);
+
+  // Listen for custom refresh events
+  useEffect(() => {
+    const handleRefresh = () => {
+      console.log('Received refresh event, updating announcements');
+      forceRefresh();
+    };
+    
+    window.addEventListener('refreshAnnouncements', handleRefresh);
+    
+    return () => {
+      window.removeEventListener('refreshAnnouncements', handleRefresh);
+    };
+  }, [forceRefresh]);
 
   // Load announcements
   useEffect(() => {
@@ -108,6 +122,9 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     
     // Force refresh to ensure all users see the new announcement
     forceRefresh();
+    
+    // Also dispatch the custom event for external listeners
+    window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
     
     return newAnnouncement;
   };

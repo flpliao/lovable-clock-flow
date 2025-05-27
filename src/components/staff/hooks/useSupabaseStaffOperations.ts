@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
@@ -15,12 +14,18 @@ export const useSupabaseStaffOperations = () => {
   // 載入員工資料
   const loadStaff = async () => {
     try {
+      console.log('正在載入員工資料...');
       const { data, error } = await supabase
         .from('staff')
         .select('*')
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('載入員工資料錯誤:', error);
+        throw error;
+      }
+      
+      console.log('載入的員工資料:', data);
       setStaffList(data || []);
     } catch (error) {
       console.error('載入員工資料失敗:', error);

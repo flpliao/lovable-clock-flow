@@ -1,6 +1,6 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { useUser } from '@/contexts/UserContext';
+import { useNotifications } from '@/hooks/useNotifications';
 import { CompanyAnnouncement, AnnouncementCategory } from '@/types/announcement';
 import { 
   getActiveAnnouncements, 
@@ -18,11 +18,13 @@ import {
 
 export const useAnnouncements = (adminMode: boolean = false) => {
   const { currentUser, isAdmin } = useUser();
+  const { addNotification } = useNotifications();
   const [announcements, setAnnouncements] = useState<CompanyAnnouncement[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<AnnouncementCategory | 'all'>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<CompanyAnnouncement | null>(null);
+  const [lastAnnouncementCount, setLastAnnouncementCount] = useState(0);
   
   // Check if user has admin access
   const hasAdminAccess = useMemo(() => {
@@ -34,14 +36,40 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     setIsLoading(true);
     // Small delay to simulate loading from an API
     setTimeout(() => {
-      if (adminMode && hasAdminAccess) {
-        setAnnouncements(getAllAnnouncements());
-      } else {
-        setAnnouncements(getActiveAnnouncements());
+      const newAnnouncements = adminMode && hasAdminAccess ? getAllAnnouncements() : getActiveAnnouncements();
+      
+      // Check for new announcements and create notifications
+      if (currentUser && !adminMode && announcements.length > 0) {
+        const newAnnouncementCount = newAnnouncements.length;
+        if (newAnnouncementCount > lastAnnouncementCount) {
+          // Find the newly added announcements
+          const newerAnnouncements = newAnnouncements.slice(0, newAnnouncementCount - lastAnnouncementCount);
+          
+          newerAnnouncements.forEach(announcement => {
+            // Only create notification if this announcement wasn't seen before
+            const existingAnnouncement = announcements.find(a => a.id === announcement.id);
+            if (!existingAnnouncement) {
+              addNotification({
+                title: '新公告發布',
+                message: `${announcement.title}`,
+                type: 'system',
+                data: {
+                  announcementId: announcement.id
+                }
+              });
+            }
+          });
+        }
+        setLastAnnouncementCount(newAnnouncementCount);
+      } else if (currentUser && announcements.length === 0) {
+        // First time loading - set the count without notifications
+        setLastAnnouncementCount(newAnnouncements.length);
       }
+      
+      setAnnouncements(newAnnouncements);
       setIsLoading(false);
     }, 300);
-  }, [adminMode, hasAdminAccess]);
+  }, [adminMode, hasAdminAccess, currentUser, addNotification, lastAnnouncementCount]);
 
   // Filtered and searched announcements
   const filteredAnnouncements = useMemo(() => {
@@ -87,7 +115,23 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     if (!currentUser) return null;
     
     const newAnnouncement = addAnnouncement(announcement);
-    setAnnouncements(adminMode ? getAllAnnouncements() : getActiveAnnouncements());
+    
+    // Refresh announcements list
+    const updatedAnnouncements = adminMode ? getAllAnnouncements() : getActiveAnnouncements();
+    setAnnouncements(updatedAnnouncements);
+    
+    // Create notification for new announcement (will be picked up by the useEffect above)
+    if (!adminMode) {
+      addNotification({
+        title: '新公告發布',
+        message: `${newAnnouncement.title}`,
+        type: 'system',
+        data: {
+          announcementId: newAnnouncement.id
+        }
+      });
+    }
+    
     return newAnnouncement;
   };
 

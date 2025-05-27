@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, FileText } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -9,13 +9,14 @@ export interface Notification {
   id: string;
   title: string;
   message: string;
-  type: 'leave_approval' | 'leave_status' | 'system';
+  type: 'leave_approval' | 'leave_status' | 'system' | 'announcement';
   createdAt: string;
   isRead: boolean;
   data?: {
     leaveRequestId?: string;
     userId?: string;
     actionRequired?: boolean;
+    announcementId?: string;
   };
 }
 
@@ -36,6 +37,8 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onCli
         return <Calendar className="h-5 w-5 text-blue-500" />;
       case 'leave_status':
         return <Clock className="h-5 w-5 text-green-500" />;
+      case 'announcement':
+        return <FileText className="h-5 w-5 text-purple-500" />;
       default:
         return <Clock className="h-5 w-5 text-gray-500" />;
     }

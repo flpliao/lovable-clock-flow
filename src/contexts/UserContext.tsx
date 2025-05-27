@@ -82,9 +82,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     switch (permission) {
       case 'view_staff':
       case 'manage_leave':
-        return currentUser.role === 'manager' || currentUser.role === 'admin';
+        return currentUser.role === 'manager';
       case 'create_announcement':
-        return currentUser.role === 'admin' || currentUser.department === 'HR';
+        return currentUser.department === 'HR';
       default:
         return false;
     }

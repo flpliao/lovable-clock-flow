@@ -37,7 +37,13 @@ const NotificationCenter: React.FC = () => {
       navigate('/leave-request');
     } else if (notification.type === 'announcement' || notification.type === 'system') {
       // For announcement notifications, navigate to company announcements page
-      navigate('/company-announcements');
+      // Add a timestamp to force refresh
+      navigate('/company-announcements', { replace: true });
+      
+      // Force page reload to ensure fresh data
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     }
   };
   

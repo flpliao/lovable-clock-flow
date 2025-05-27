@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import { CompanyAnnouncement, AnnouncementCategory } from '@/types/announcement';
@@ -25,11 +25,17 @@ export const useAnnouncements = (adminMode: boolean = false) => {
   const [selectedCategory, setSelectedCategory] = useState<AnnouncementCategory | 'all'>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<CompanyAnnouncement | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   
   // Check if user has admin access
   const hasAdminAccess = useMemo(() => {
     return isAdmin() || (currentUser?.department === 'HR');
   }, [currentUser, isAdmin]);
+
+  // Force refresh function
+  const forceRefresh = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+  }, []);
 
   // Load announcements
   useEffect(() => {
@@ -37,10 +43,11 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     // Small delay to simulate loading from an API
     setTimeout(() => {
       const newAnnouncements = adminMode && hasAdminAccess ? getAllAnnouncements() : getActiveAnnouncements();
+      console.log('Loading announcements:', newAnnouncements.length, 'items');
       setAnnouncements(newAnnouncements);
       setIsLoading(false);
     }, 300);
-  }, [adminMode, hasAdminAccess, currentUser]);
+  }, [adminMode, hasAdminAccess, currentUser, refreshKey]);
 
   // Filtered and searched announcements
   const filteredAnnouncements = useMemo(() => {
@@ -88,10 +95,6 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     console.log('Creating new announcement:', announcement.title);
     const newAnnouncement = addAnnouncement(announcement);
     
-    // Refresh announcements list
-    const updatedAnnouncements = adminMode ? getAllAnnouncements() : getActiveAnnouncements();
-    setAnnouncements(updatedAnnouncements);
-    
     // Always create notification for new announcement
     console.log('Adding notification for new announcement');
     addNotification({
@@ -103,6 +106,9 @@ export const useAnnouncements = (adminMode: boolean = false) => {
       }
     });
     
+    // Force refresh to ensure all users see the new announcement
+    forceRefresh();
+    
     return newAnnouncement;
   };
 
@@ -111,7 +117,7 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     if (!hasAdminAccess) return null;
     
     const updatedAnnouncement = updateAnnouncement(announcement);
-    setAnnouncements(adminMode ? getAllAnnouncements() : getActiveAnnouncements());
+    forceRefresh();
     return updatedAnnouncement;
   };
 
@@ -121,7 +127,7 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     
     const result = deleteAnnouncement(id);
     if (result) {
-      setAnnouncements(adminMode ? getAllAnnouncements() : getActiveAnnouncements());
+      forceRefresh();
     }
     return result;
   };
@@ -147,6 +153,7 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     editAnnouncement,
     removeAnnouncement,
     categories,
-    hasAdminAccess
+    hasAdminAccess,
+    forceRefresh
   };
 };

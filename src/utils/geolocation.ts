@@ -1,9 +1,9 @@
 
-// 公司位置 (假設為台北101)
+// 公司位置 (台南北區總公司)
 export const COMPANY_LOCATION = {
-  latitude: 25.033671,
-  longitude: 121.564427,
-  name: "公司總部"
+  latitude: 23.012896,
+  longitude: 120.213896,
+  name: "總公司 - 台南北區"
 };
 
 // 允許的打卡距離 (公尺)

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
@@ -105,7 +104,7 @@ export const useSupabaseCheckIn = () => {
           action: record.action,
           latitude: record.details.latitude,
           longitude: record.details.longitude,
-          distance: record.details.distance,
+          distance: record.details.distance ? Math.round(record.details.distance) : null, // 轉換為整數
           ip_address: record.details.ip,
           location_name: record.details.locationName
         });

@@ -150,30 +150,93 @@ export const useSupabaseStaffOperations = () => {
       return false;
     }
 
+    // 驗證必填欄位
+    if (!updatedStaff.name || !updatedStaff.position || !updatedStaff.department || !updatedStaff.contact) {
+      toast({
+        title: "資料不完整",
+        description: "請填寫所有必要的員工資料",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    // 如果沒有營業處ID，使用預設值
+    if (!updatedStaff.branch_id) {
+      toast({
+        title: "營業處資料錯誤",
+        description: "請選擇員工所屬的營業處",
+        variant: "destructive"
+      });
+      return false;
+    }
+
     try {
-      const { error } = await supabase
+      console.log('正在更新員工資料:', updatedStaff);
+
+      // 準備更新資料，只包含可更新的欄位
+      const updateData = {
+        name: updatedStaff.name.trim(),
+        position: updatedStaff.position,
+        department: updatedStaff.department,
+        branch_id: updatedStaff.branch_id,
+        branch_name: updatedStaff.branch_name || '',
+        contact: updatedStaff.contact.trim(),
+        role: updatedStaff.role || 'user',
+        role_id: updatedStaff.role_id || 'user',
+        supervisor_id: updatedStaff.supervisor_id || null,
+        username: updatedStaff.username || null,
+        email: updatedStaff.email || null,
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('準備更新的資料:', updateData);
+
+      const { data, error } = await supabase
         .from('staff')
-        .update(updatedStaff)
-        .eq('id', updatedStaff.id);
+        .update(updateData)
+        .eq('id', updatedStaff.id)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase 更新錯誤:', error);
+        throw error;
+      }
 
+      console.log('更新成功的資料:', data);
+
+      // 更新本地狀態
       setStaffList(prev => 
         prev.map(staff => 
-          staff.id === updatedStaff.id ? updatedStaff : staff
+          staff.id === updatedStaff.id ? data : staff
         )
       );
       
       toast({
         title: "編輯成功",
-        description: `已成功更新員工「${updatedStaff.name}」的資料`
+        description: `已成功更新員工「${data.name}」的資料`
       });
       return true;
     } catch (error) {
       console.error('更新員工失敗:', error);
+      
+      // 提供更詳細的錯誤訊息
+      let errorMessage = "無法更新員工資料";
+      if (error instanceof Error) {
+        if (error.message.includes('duplicate key')) {
+          errorMessage = "員工資料重複，請檢查姓名或聯絡資訊";
+        } else if (error.message.includes('foreign key')) {
+          errorMessage = "營業處資料錯誤，請重新選擇營業處";
+        } else if (error.message.includes('not null')) {
+          errorMessage = "必填欄位不能為空";
+        } else {
+          errorMessage = `更新失敗: ${error.message}`;
+        }
+      }
+      
       toast({
         title: "更新失敗",
-        description: "無法更新員工資料",
+        description: errorMessage,
         variant: "destructive"
       });
       return false;

@@ -37,6 +37,11 @@ const EditStaffDialog = () => {
     (currentStaff.branch_id ? staff.branch_id === currentStaff.branch_id || staff.branch_id === '1' : true)
   );
 
+  const handleSaveClick = async () => {
+    const success = await handleEditStaff();
+    // Dialog will be closed automatically if successful
+  };
+
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
       <DialogContent className="sm:max-w-[425px]">
@@ -50,19 +55,20 @@ const EditStaffDialog = () => {
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
-              姓名
+              姓名 <span className="text-red-500">*</span>
             </Label>
             <Input
               id="name"
-              value={currentStaff.name}
+              value={currentStaff.name || ''}
               onChange={(e) => setCurrentStaff({...currentStaff, name: e.target.value})}
               className="col-span-3"
+              placeholder="請輸入姓名"
             />
           </div>
           
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="branch" className="text-right">
-              所屬營業處
+              所屬營業處 <span className="text-red-500">*</span>
             </Label>
             <Select 
               value={currentStaff.branch_id || ''} 
@@ -71,7 +77,7 @@ const EditStaffDialog = () => {
                 setCurrentStaff({
                   ...currentStaff, 
                   branch_id: value,
-                  branch_name: selectedBranch?.name,
+                  branch_name: selectedBranch?.name || '',
                   supervisor_id: undefined // 清除主管設定，因為可能跨營業處
                 });
               }}
@@ -91,10 +97,10 @@ const EditStaffDialog = () => {
           
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="position" className="text-right">
-              職位
+              職位 <span className="text-red-500">*</span>
             </Label>
             <Select 
-              value={currentStaff.position} 
+              value={currentStaff.position || ''} 
               onValueChange={(value) => setCurrentStaff({...currentStaff, position: value})}
             >
               <SelectTrigger className="col-span-3" id="position">
@@ -112,10 +118,10 @@ const EditStaffDialog = () => {
           
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="department" className="text-right">
-              部門
+              部門 <span className="text-red-500">*</span>
             </Label>
             <Select 
-              value={currentStaff.department} 
+              value={currentStaff.department || ''} 
               onValueChange={(value) => setCurrentStaff({...currentStaff, department: value})}
             >
               <SelectTrigger className="col-span-3" id="department">
@@ -155,13 +161,14 @@ const EditStaffDialog = () => {
           
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="contact" className="text-right">
-              聯絡電話
+              聯絡電話 <span className="text-red-500">*</span>
             </Label>
             <Input
               id="contact"
-              value={currentStaff.contact}
+              value={currentStaff.contact || ''}
               onChange={(e) => setCurrentStaff({...currentStaff, contact: e.target.value})}
               className="col-span-3"
+              placeholder="請輸入聯絡電話"
             />
           </div>
           
@@ -170,7 +177,7 @@ const EditStaffDialog = () => {
               角色
             </Label>
             <Select 
-              value={currentStaff.role_id || currentStaff.role} 
+              value={currentStaff.role_id || currentStaff.role || ''} 
               onValueChange={(value) => {
                 // If it's a system role ID, set both role and role_id
                 if (value === 'admin' || value === 'user') {
@@ -202,7 +209,7 @@ const EditStaffDialog = () => {
         
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>取消</Button>
-          <Button onClick={handleEditStaff}>儲存變更</Button>
+          <Button onClick={handleSaveClick}>儲存變更</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

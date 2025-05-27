@@ -14,46 +14,34 @@ export const useSupabaseAnnouncements = () => {
   // 載入公告
   const loadAnnouncements = async () => {
     try {
-      // Use raw SQL query since the table might not be in the types yet
-      const { data, error } = await supabase.rpc('get_announcements');
-      
-      if (error) {
-        // Fallback to direct query if RPC doesn't exist
-        console.log('RPC failed, trying direct query:', error);
+      // Use RPC function first, then fallback to direct query with proper type casting
+      let data: any[] = [];
+      let error: any = null;
+
+      try {
+        const rpcResult = await supabase.rpc('get_announcements');
+        data = rpcResult.data;
+        error = rpcResult.error;
+      } catch (rpcError) {
+        console.log('RPC failed, trying direct query:', rpcError);
         
-        // Try direct query using any type to bypass TypeScript checking
-        const { data: directData, error: directError } = await (supabase as any)
+        // Use type assertion to bypass TypeScript checking for new tables
+        const directResult = await (supabase as any)
           .from('announcements')
           .select('*')
           .eq('is_published', true)
           .order('created_at', { ascending: false });
 
-        if (directError) {
-          console.error('Direct query also failed:', directError);
-          setAnnouncements([]);
-          return;
-        }
+        data = directResult.data;
+        error = directResult.error;
+      }
 
-        const formattedAnnouncements = directData?.map((announcement: any) => ({
-          id: announcement.id,
-          title: announcement.title,
-          content: announcement.content,
-          created_at: announcement.created_at,
-          created_by: {
-            id: announcement.author_id || '',
-            name: announcement.author_name
-          },
-          company_id: '550e8400-e29b-41d4-a716-446655440000',
-          is_pinned: false,
-          is_active: true,
-          category: announcement.type as any
-        })) || [];
-
-        setAnnouncements(formattedAnnouncements);
+      if (error) {
+        console.error('Failed to load announcements:', error);
+        setAnnouncements([]);
         return;
       }
 
-      // Process RPC response if successful
       const formattedAnnouncements = (data || []).map((announcement: any) => ({
         id: announcement.id,
         title: announcement.title,
@@ -61,7 +49,7 @@ export const useSupabaseAnnouncements = () => {
         created_at: announcement.created_at,
         created_by: {
           id: announcement.author_id || '',
-          name: announcement.author_name
+          name: announcement.author_name || 'Unknown'
         },
         company_id: '550e8400-e29b-41d4-a716-446655440000',
         is_pinned: false,
@@ -102,20 +90,22 @@ export const useSupabaseAnnouncements = () => {
     }
 
     try {
-      // Use raw SQL insert since the table might not be in types yet
-      const { error } = await supabase.rpc('create_announcement', {
-        p_title: newAnnouncement.title,
-        p_content: newAnnouncement.content,
-        p_type: newAnnouncement.category || 'general',
-        p_author_id: currentUser.id,
-        p_author_name: currentUser.name
-      });
+      let error: any = null;
 
-      if (error) {
-        console.error('RPC failed, trying direct insert:', error);
+      try {
+        const rpcResult = await supabase.rpc('create_announcement', {
+          p_title: newAnnouncement.title,
+          p_content: newAnnouncement.content,
+          p_type: newAnnouncement.category || 'general',
+          p_author_id: currentUser.id,
+          p_author_name: currentUser.name
+        });
+        error = rpcResult.error;
+      } catch (rpcError) {
+        console.error('RPC failed, trying direct insert:', rpcError);
         
-        // Fallback to direct insert using any type
-        const { error: directError } = await (supabase as any)
+        // Use type assertion for direct database access
+        const insertResult = await (supabase as any)
           .from('announcements')
           .insert({
             title: newAnnouncement.title,
@@ -129,7 +119,11 @@ export const useSupabaseAnnouncements = () => {
             publish_date: new Date().toISOString()
           });
 
-        if (directError) throw directError;
+        error = insertResult.error;
+      }
+
+      if (error) {
+        throw error;
       }
 
       await loadAnnouncements();

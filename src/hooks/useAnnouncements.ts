@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -135,17 +134,15 @@ export const useAnnouncements = (adminMode: boolean = false) => {
       }
     });
     
-    // Immediately refresh local state
+    // Immediately refresh local state to ensure the new announcement appears
     console.log('Refreshing announcements after creation');
+    loadAnnouncements();
     
-    // Use setTimeout to ensure the data is properly updated
-    setTimeout(() => {
-      loadAnnouncements();
-      window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
-      window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
-        detail: { type: 'added', announcement: newAnnouncement }
-      }));
-    }, 50);
+    // Dispatch events to notify other components
+    window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
+    window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
+      detail: { type: 'added', announcement: newAnnouncement }
+    }));
     
     return newAnnouncement;
   };

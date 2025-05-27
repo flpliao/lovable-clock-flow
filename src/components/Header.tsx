@@ -36,7 +36,7 @@ const Header: React.FC<HeaderProps> = () => {
   
   let navItems = [
     { path: '/', label: '首頁', icon: <Home className="mr-2 h-4 w-4" /> },
-    { path: '/announcements', label: '公司公告', icon: <FileText className="mr-2 h-4 w-4" /> },
+    { path: '/company-announcements', label: '公司公告', icon: <FileText className="mr-2 h-4 w-4" /> },
   ];
   
   // 如果是管理員或人資部門，在公司公告後添加公告管理系統

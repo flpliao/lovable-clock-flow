@@ -35,8 +35,8 @@ const NotificationCenter: React.FC = () => {
       // Navigate to leave request page to view status
       navigate('/leave-request');
     } else if (notification.type === 'announcement' || notification.type === 'system') {
-      // Navigate to announcements page for announcement notifications
-      navigate('/announcements');
+      // Navigate to company announcements page for announcement notifications
+      navigate('/company-announcements');
     }
   };
   

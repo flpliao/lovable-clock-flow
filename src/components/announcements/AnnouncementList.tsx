@@ -5,28 +5,52 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AnnouncementCard from './AnnouncementCard';
 import AnnouncementDetail from './AnnouncementDetail';
-import { useAnnouncements } from '@/hooks/useAnnouncements';
+import { useSupabaseAnnouncements } from '@/hooks/useSupabaseAnnouncements';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CompanyAnnouncement } from '@/types/announcement';
 
 const AnnouncementList: React.FC = () => {
   const {
     announcements,
-    isLoading,
-    searchQuery,
-    setSearchQuery,
-    selectedCategory,
-    setSelectedCategory,
-    checkIfRead,
-    markAsRead,
-    categories
-  } = useAnnouncements();
+    loading,
+    markAnnouncementAsRead,
+    checkAnnouncementRead
+  } = useSupabaseAnnouncements();
   
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [openAnnouncement, setOpenAnnouncement] = useState<CompanyAnnouncement | null>(null);
+  const [readStatus, setReadStatus] = useState<Record<string, boolean>>({});
 
-  const handleOpenAnnouncement = (announcement: CompanyAnnouncement) => {
+  const categories = ['HR', 'Administration', 'Meeting', 'Official', 'General'];
+
+  // Filter announcements based on search and category
+  const filteredAnnouncements = announcements.filter(announcement => {
+    const matchesSearch = !searchQuery || 
+      announcement.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      announcement.content.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesCategory = selectedCategory === 'all' || 
+      announcement.category === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  });
+
+  const handleOpenAnnouncement = async (announcement: CompanyAnnouncement) => {
     setOpenAnnouncement(announcement);
-    markAsRead(announcement.id);
+    await markAnnouncementAsRead(announcement.id);
+    setReadStatus(prev => ({ ...prev, [announcement.id]: true }));
+  };
+
+  // Check if announcement is read
+  const checkIfRead = async (announcementId: string): Promise<boolean> => {
+    if (readStatus[announcementId] !== undefined) {
+      return readStatus[announcementId];
+    }
+    
+    const isRead = await checkAnnouncementRead(announcementId);
+    setReadStatus(prev => ({ ...prev, [announcementId]: isRead }));
+    return isRead;
   };
 
   return (
@@ -43,7 +67,7 @@ const AnnouncementList: React.FC = () => {
         </div>
         <Select
           value={selectedCategory}
-          onValueChange={(value) => setSelectedCategory(value as any)}
+          onValueChange={setSelectedCategory}
         >
           <SelectTrigger className="w-full md:w-[180px]">
             <SelectValue placeholder="選擇分類" />
@@ -57,7 +81,7 @@ const AnnouncementList: React.FC = () => {
         </Select>
       </div>
 
-      {isLoading ? (
+      {loading ? (
         // Loading skeleton
         <>
           {[1, 2, 3].map((i) => (
@@ -66,18 +90,18 @@ const AnnouncementList: React.FC = () => {
             </div>
           ))}
         </>
-      ) : announcements.length === 0 ? (
+      ) : filteredAnnouncements.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           沒有找到符合條件的公告
         </div>
       ) : (
         // Announcement cards
         <div>
-          {announcements.map((announcement) => (
+          {filteredAnnouncements.map((announcement) => (
             <AnnouncementCard
               key={announcement.id}
               announcement={announcement}
-              isRead={checkIfRead(announcement.id)}
+              isRead={readStatus[announcement.id] || false}
               onClick={handleOpenAnnouncement}
             />
           ))}
@@ -88,7 +112,7 @@ const AnnouncementList: React.FC = () => {
         announcement={openAnnouncement}
         isOpen={!!openAnnouncement}
         onClose={() => setOpenAnnouncement(null)}
-        onMarkAsRead={markAsRead}
+        onMarkAsRead={markAnnouncementAsRead}
       />
     </div>
   );

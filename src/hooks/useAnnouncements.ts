@@ -1,180 +1,146 @@
+
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import { CompanyAnnouncement, AnnouncementCategory } from '@/types/announcement';
-import { 
-  getActiveAnnouncements, 
-  getAllAnnouncements, 
-  searchAnnouncements, 
-  filterAnnouncementsByCategory,
-  markAnnouncementAsRead,
-  isAnnouncementRead,
-  getAnnouncementById,
-  addAnnouncement,
-  updateAnnouncement,
-  deleteAnnouncement,
-  getAnnouncementCategories
-} from '@/utils/announcementUtils';
+import { useSupabaseAnnouncements } from '@/hooks/useSupabaseAnnouncements';
 
 export const useAnnouncements = (adminMode: boolean = false) => {
   const { currentUser, isAdmin } = useUser();
   const { addNotification } = useNotifications();
-  const [announcements, setAnnouncements] = useState<CompanyAnnouncement[]>([]);
+  const {
+    announcements: supabaseAnnouncements,
+    loading: supabaseLoading,
+    createAnnouncement: supabaseCreate,
+    updateAnnouncement: supabaseUpdate,
+    deleteAnnouncement: supabaseDelete,
+    markAnnouncementAsRead: supabaseMark,
+    checkAnnouncementRead: supabaseCheck,
+    refreshData: supabaseRefresh
+  } = useSupabaseAnnouncements();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<AnnouncementCategory | 'all'>('all');
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<CompanyAnnouncement | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [readStatus, setReadStatus] = useState<Record<string, boolean>>({});
   
   // Check if user has admin access
   const hasAdminAccess = useMemo(() => {
     return isAdmin() || (currentUser?.department === 'HR');
   }, [currentUser, isAdmin]);
 
-  // Force refresh function
-  const forceRefresh = useCallback(() => {
-    console.log('Forcing refresh of announcements');
-    setRefreshKey(prev => prev + 1);
-  }, []);
-
-  // Load announcements function
-  const loadAnnouncements = useCallback(() => {
-    console.log('Loading announcements for mode:', adminMode ? 'admin' : 'user');
-    setIsLoading(true);
-    
-    // Get fresh data
-    const newAnnouncements = adminMode && hasAdminAccess ? getAllAnnouncements() : getActiveAnnouncements();
-    console.log('Loaded announcements:', newAnnouncements.length, 'items');
-    
-    setAnnouncements(newAnnouncements);
-    setIsLoading(false);
-  }, [adminMode, hasAdminAccess]);
-
-  // Listen for custom refresh events and data updates
+  // Load read status for announcements
   useEffect(() => {
-    const handleRefresh = () => {
-      console.log('Received refresh event, reloading announcements');
-      loadAnnouncements();
+    const loadReadStatus = async () => {
+      if (!currentUser || supabaseAnnouncements.length === 0) return;
+      
+      const statusMap: Record<string, boolean> = {};
+      for (const announcement of supabaseAnnouncements) {
+        try {
+          const isRead = await supabaseCheck(announcement.id);
+          statusMap[announcement.id] = isRead;
+        } catch (error) {
+          console.error('Error checking read status:', error);
+          statusMap[announcement.id] = false;
+        }
+      }
+      setReadStatus(statusMap);
     };
-    
-    const handleDataUpdate = (event: CustomEvent) => {
-      console.log('Received data update event:', event.detail);
-      // Force immediate refresh
-      loadAnnouncements();
-    };
-    
-    window.addEventListener('refreshAnnouncements', handleRefresh);
-    window.addEventListener('announcementDataUpdated', handleDataUpdate as EventListener);
-    
-    return () => {
-      window.removeEventListener('refreshAnnouncements', handleRefresh);
-      window.removeEventListener('announcementDataUpdated', handleDataUpdate as EventListener);
-    };
-  }, [loadAnnouncements]);
 
-  // Load announcements on initial mount and when dependencies change
-  useEffect(() => {
-    loadAnnouncements();
-  }, [loadAnnouncements, refreshKey]);
+    loadReadStatus();
+  }, [supabaseAnnouncements, currentUser, supabaseCheck]);
 
   // Filtered and searched announcements
   const filteredAnnouncements = useMemo(() => {
-    if (!searchQuery && selectedCategory === 'all') {
-      return announcements;
-    }
-    
-    let filtered = announcements;
+    let filtered = supabaseAnnouncements;
     
     // Apply category filter
     if (selectedCategory !== 'all') {
-      filtered = filterAnnouncementsByCategory(selectedCategory, !adminMode);
+      filtered = filtered.filter(a => a.category === selectedCategory);
     }
     
     // Apply search filter
     if (searchQuery) {
-      const searchResults = searchAnnouncements(searchQuery, !adminMode);
-      filtered = filtered.filter(a => searchResults.some(s => s.id === a.id));
+      const lowerQuery = searchQuery.toLowerCase();
+      filtered = filtered.filter(a => 
+        a.title.toLowerCase().includes(lowerQuery) || 
+        a.content.toLowerCase().includes(lowerQuery)
+      );
     }
     
     return filtered;
-  }, [announcements, searchQuery, selectedCategory, adminMode]);
+  }, [supabaseAnnouncements, searchQuery, selectedCategory]);
 
   // Mark an announcement as read
-  const markAsRead = (announcementId: string) => {
+  const markAsRead = async (announcementId: string) => {
     if (currentUser) {
-      markAnnouncementAsRead(currentUser.id, announcementId);
+      await supabaseMark(announcementId);
+      setReadStatus(prev => ({ ...prev, [announcementId]: true }));
     }
   };
 
   // Check if announcement is read
   const checkIfRead = (announcementId: string): boolean => {
-    return currentUser ? isAnnouncementRead(currentUser.id, announcementId) : false;
+    return readStatus[announcementId] || false;
   };
 
   // Get a specific announcement
   const getAnnouncement = (id: string): CompanyAnnouncement | undefined => {
-    return getAnnouncementById(id);
+    return supabaseAnnouncements.find(a => a.id === id);
   };
 
   // Create a new announcement
-  const createAnnouncement = (announcement: Omit<CompanyAnnouncement, 'id'>) => {
+  const createAnnouncement = async (announcement: Omit<CompanyAnnouncement, 'id'>) => {
     if (!currentUser) return null;
     
     console.log('Creating new announcement:', announcement.title);
-    const newAnnouncement = addAnnouncement(announcement);
+    const success = await supabaseCreate(announcement);
     
-    // Always create notification for new announcement
-    console.log('Adding notification for new announcement with ID:', newAnnouncement.id);
-    addNotification({
-      title: '新公告發布',
-      message: `${newAnnouncement.title}`,
-      type: 'announcement',
-      data: {
-        announcementId: newAnnouncement.id
-      }
-    });
+    if (success) {
+      // Add notification for new announcement
+      console.log('Adding notification for new announcement');
+      addNotification({
+        title: '新公告發布',
+        message: `${announcement.title}`,
+        type: 'announcement',
+        data: {
+          announcementId: 'new' // Will be updated when we refresh
+        }
+      });
+      
+      return announcement as CompanyAnnouncement;
+    }
     
-    // Immediately refresh local state to ensure the new announcement appears
-    console.log('Refreshing announcements after creation');
-    loadAnnouncements();
-    
-    // Dispatch events to notify other components
-    window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
-    window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
-      detail: { type: 'added', announcement: newAnnouncement }
-    }));
-    
-    return newAnnouncement;
+    return null;
   };
 
   // Update an announcement
-  const editAnnouncement = (announcement: CompanyAnnouncement) => {
+  const editAnnouncement = async (announcement: CompanyAnnouncement) => {
     if (!hasAdminAccess) return null;
     
-    const updatedAnnouncement = updateAnnouncement(announcement);
-    loadAnnouncements();
-    return updatedAnnouncement;
+    const success = await supabaseUpdate(announcement.id, announcement);
+    return success ? announcement : null;
   };
 
   // Delete an announcement (set is_active to false)
-  const removeAnnouncement = (id: string): boolean => {
+  const removeAnnouncement = async (id: string): Promise<boolean> => {
     if (!hasAdminAccess) return false;
     
-    const result = deleteAnnouncement(id);
-    if (result) {
-      loadAnnouncements();
-    }
-    return result;
+    return await supabaseDelete(id);
   };
 
   // Get available categories
-  const categories = useMemo(() => {
-    return getAnnouncementCategories();
-  }, []);
+  const categories: AnnouncementCategory[] = ['HR', 'Administration', 'Meeting', 'Official', 'General'];
+
+  // Force refresh function
+  const forceRefresh = useCallback(async () => {
+    console.log('Forcing refresh of announcements');
+    await supabaseRefresh();
+  }, [supabaseRefresh]);
 
   return {
     announcements: filteredAnnouncements,
-    isLoading,
+    isLoading: supabaseLoading,
     searchQuery,
     setSearchQuery,
     selectedCategory,

@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
-import { Plus, Search, Filter, Check, X, Eye } from 'lucide-react';
+import { Plus, Search, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { CompanyAnnouncement } from '@/types/announcement';
-import { useAnnouncements } from '@/hooks/useAnnouncements';
+import { useSupabaseAnnouncements } from '@/hooks/useSupabaseAnnouncements';
 import AnnouncementDetail from './AnnouncementDetail';
 import AnnouncementForm from './AnnouncementForm';
 import {
@@ -25,53 +25,65 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { formatAnnouncementDate } from '@/utils/announcementUtils';
+import { useUser } from '@/contexts/UserContext';
 
 const AnnouncementManagement: React.FC = () => {
   const { toast } = useToast();
+  const { isAdmin } = useUser();
   const {
     announcements,
-    searchQuery,
-    setSearchQuery,
-    selectedCategory,
-    setSelectedCategory,
-    categories,
+    loading,
     createAnnouncement,
-    editAnnouncement,
-    removeAnnouncement,
-    hasAdminAccess
-  } = useAnnouncements(true);
+    updateAnnouncement,
+    deleteAnnouncement
+  } = useSupabaseAnnouncements();
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<CompanyAnnouncement | null>(null);
   const [viewAnnouncement, setViewAnnouncement] = useState<CompanyAnnouncement | null>(null);
 
+  const categories = ['HR', 'Administration', 'Meeting', 'Official', 'General'];
+
+  // Check admin access
+  const hasAdminAccess = isAdmin();
+
+  // Filter announcements based on search and category
+  const filteredAnnouncements = announcements.filter(announcement => {
+    const matchesSearch = !searchQuery || 
+      announcement.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      announcement.content.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesCategory = selectedCategory === 'all' || 
+      announcement.category === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  });
+
   // Handle saving announcement (create or edit)
-  const handleSaveAnnouncement = (data: CompanyAnnouncement | Omit<CompanyAnnouncement, 'id'>) => {
+  const handleSaveAnnouncement = async (data: CompanyAnnouncement | Omit<CompanyAnnouncement, 'id'>) => {
     if ('id' in data) {
       // Update existing announcement
-      editAnnouncement(data);
-      toast({
-        title: '成功',
-        description: '公告已更新'
-      });
+      const success = await updateAnnouncement(data.id, data);
+      if (success) {
+        toast({
+          title: '成功',
+          description: '公告已更新'
+        });
+        setIsFormOpen(false);
+        setSelectedAnnouncement(null);
+      }
     } else {
       // Create new announcement
-      createAnnouncement(data);
-      toast({
-        title: '成功',
-        description: '公告已發布'
-      });
-    }
-  };
-
-  // Handle deleting announcement
-  const handleDeleteAnnouncement = (id: string) => {
-    if (confirm('確定要刪除此公告？')) {
-      removeAnnouncement(id);
-      toast({
-        title: '成功',
-        description: '公告已刪除'
-      });
+      const success = await createAnnouncement(data);
+      if (success) {
+        toast({
+          title: '成功',
+          description: '公告已發布'
+        });
+        setIsFormOpen(false);
+      }
     }
   };
 
@@ -80,6 +92,14 @@ const AnnouncementManagement: React.FC = () => {
       <div className="text-center py-12">
         <h2 className="text-xl font-semibold mb-2">無權限訪問</h2>
         <p className="text-gray-500">您沒有權限管理公司公告</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">載入中...</p>
       </div>
     );
   }
@@ -109,7 +129,7 @@ const AnnouncementManagement: React.FC = () => {
         </div>
         <Select
           value={selectedCategory}
-          onValueChange={(value) => setSelectedCategory(value as any)}
+          onValueChange={setSelectedCategory}
         >
           <SelectTrigger className="w-full md:w-[180px]">
             <SelectValue placeholder="選擇分類" />
@@ -138,14 +158,14 @@ const AnnouncementManagement: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {announcements.length === 0 ? (
+            {filteredAnnouncements.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                   沒有找到符合條件的公告
                 </TableCell>
               </TableRow>
             ) : (
-              announcements.map((announcement) => (
+              filteredAnnouncements.map((announcement) => (
                 <TableRow key={announcement.id}>
                   <TableCell className="font-medium">
                     <div className="truncate max-w-[280px]" title={announcement.title}>
@@ -163,9 +183,9 @@ const AnnouncementManagement: React.FC = () => {
                   <TableCell>{announcement.created_by.name}</TableCell>
                   <TableCell className="text-center">
                     {announcement.is_pinned ? (
-                      <Check className="h-5 w-5 text-green-500 mx-auto" />
+                      <Badge className="bg-yellow-500">置頂</Badge>
                     ) : (
-                      <X className="h-5 w-5 text-gray-300 mx-auto" />
+                      <span className="text-gray-400">—</span>
                     )}
                   </TableCell>
                   <TableCell className="text-center">
@@ -177,9 +197,9 @@ const AnnouncementManagement: React.FC = () => {
                   </TableCell>
                   <TableCell className="text-center">
                     {announcement.file ? (
-                      <Check className="h-5 w-5 text-blue-500 mx-auto" />
+                      <Badge variant="outline">有附件</Badge>
                     ) : (
-                      <X className="h-5 w-5 text-gray-300 mx-auto" />
+                      <span className="text-gray-400">—</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
@@ -213,7 +233,10 @@ const AnnouncementManagement: React.FC = () => {
       {/* Create/Edit Form */}
       <AnnouncementForm
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={() => {
+          setIsFormOpen(false);
+          setSelectedAnnouncement(null);
+        }}
         announcement={selectedAnnouncement || undefined}
         onSave={handleSaveAnnouncement}
       />

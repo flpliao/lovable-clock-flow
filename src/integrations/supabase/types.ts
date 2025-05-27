@@ -9,6 +9,111 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      announcement_reads: {
+        Row: {
+          announcement_id: string | null
+          created_at: string
+          id: string
+          read_at: string
+          user_id: string | null
+        }
+        Insert: {
+          announcement_id?: string | null
+          created_at?: string
+          id?: string
+          read_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          announcement_id?: string | null
+          created_at?: string
+          id?: string
+          read_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_reads_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "announcement_reads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          category: string | null
+          company_id: string | null
+          content: string
+          created_at: string
+          created_by_id: string | null
+          created_by_name: string
+          file_name: string | null
+          file_type: string | null
+          file_url: string | null
+          id: string
+          is_active: boolean
+          is_pinned: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          company_id?: string | null
+          content: string
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name: string
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          is_active?: boolean
+          is_pinned?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          company_id?: string | null
+          content?: string
+          created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          is_active?: boolean
+          is_pinned?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "announcements_created_by_id_fkey"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       annual_leave_balance: {
         Row: {
           created_at: string
@@ -518,8 +623,21 @@ export type Database = {
         Args: { hire_date: string; target_year: number }
         Returns: number
       }
+      get_announcement_read_stats: {
+        Args: { announcement_uuid: string }
+        Returns: {
+          total_staff: number
+          read_count: number
+          unread_count: number
+          read_percentage: number
+        }[]
+      }
       initialize_annual_leave_balance: {
         Args: { staff_uuid: string; target_year: number }
+        Returns: undefined
+      }
+      mark_announcement_as_read: {
+        Args: { user_uuid: string; announcement_uuid: string }
         Returns: undefined
       }
     }

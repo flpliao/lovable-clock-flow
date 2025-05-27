@@ -3,12 +3,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { CompanyAnnouncement } from '@/types/announcement';
-import { 
-  getActiveAnnouncements, 
-  addAnnouncement,
-  updateAnnouncement,
-  deleteAnnouncement
-} from '@/utils/announcementUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useSupabaseAnnouncements = () => {
   const [announcements, setAnnouncements] = useState<CompanyAnnouncement[]>([]);
@@ -16,12 +11,44 @@ export const useSupabaseAnnouncements = () => {
   const { toast } = useToast();
   const { currentUser, isAdmin } = useUser();
 
-  // 載入公告 - Using mock data system
+  // 載入公告 - Using Supabase database
   const loadAnnouncements = async () => {
     try {
-      console.log('Loading announcements from mock data');
-      const mockAnnouncements = getActiveAnnouncements();
-      setAnnouncements(mockAnnouncements);
+      console.log('Loading announcements from Supabase database');
+      const { data, error } = await supabase
+        .from('announcements')
+        .select('*')
+        .eq('is_active', true)
+        .order('is_pinned', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Database error:', error);
+        setAnnouncements([]);
+        return;
+      }
+
+      const formattedAnnouncements = (data || []).map((announcement: any) => ({
+        id: announcement.id,
+        title: announcement.title,
+        content: announcement.content,
+        category: announcement.category,
+        file: announcement.file_url ? {
+          url: announcement.file_url,
+          name: announcement.file_name || '',
+          type: announcement.file_type || ''
+        } : undefined,
+        created_at: announcement.created_at,
+        created_by: {
+          id: announcement.created_by_id || '',
+          name: announcement.created_by_name
+        },
+        company_id: announcement.company_id || '',
+        is_pinned: announcement.is_pinned,
+        is_active: announcement.is_active
+      }));
+
+      setAnnouncements(formattedAnnouncements);
     } catch (error) {
       console.error('載入公告失敗:', error);
       toast({
@@ -33,7 +60,7 @@ export const useSupabaseAnnouncements = () => {
     }
   };
 
-  // 建立公告 - Using mock data system
+  // 建立公告 - Using Supabase database
   const createAnnouncement = async (newAnnouncement: Omit<CompanyAnnouncement, 'id' | 'created_at' | 'created_by' | 'company_id'>) => {
     if (!isAdmin()) {
       toast({
@@ -54,17 +81,29 @@ export const useSupabaseAnnouncements = () => {
     }
 
     try {
-      const announcementData = {
-        ...newAnnouncement,
-        created_at: new Date().toISOString(),
-        created_by: {
-          id: currentUser.id,
-          name: currentUser.name
-        },
-        company_id: '550e8400-e29b-41d4-a716-446655440000'
-      };
+      const { data, error } = await supabase
+        .from('announcements')
+        .insert({
+          title: newAnnouncement.title,
+          content: newAnnouncement.content,
+          category: newAnnouncement.category,
+          file_url: newAnnouncement.file?.url,
+          file_name: newAnnouncement.file?.name,
+          file_type: newAnnouncement.file?.type,
+          created_by_id: currentUser.id,
+          created_by_name: currentUser.name,
+          company_id: '550e8400-e29b-41d4-a716-446655440000', // Default company ID
+          is_pinned: newAnnouncement.is_pinned,
+          is_active: newAnnouncement.is_active
+        })
+        .select()
+        .single();
 
-      addAnnouncement(announcementData);
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
       await loadAnnouncements();
       
       toast({
@@ -84,7 +123,7 @@ export const useSupabaseAnnouncements = () => {
     }
   };
 
-  // 更新公告 - Using mock data system
+  // 更新公告 - Using Supabase database
   const updateAnnouncementData = async (id: string, updatedAnnouncement: Partial<CompanyAnnouncement>) => {
     if (!isAdmin()) {
       toast({
@@ -96,17 +135,25 @@ export const useSupabaseAnnouncements = () => {
     }
 
     try {
-      const existingAnnouncement = announcements.find(a => a.id === id);
-      if (!existingAnnouncement) {
-        throw new Error('公告不存在');
+      const { error } = await supabase
+        .from('announcements')
+        .update({
+          title: updatedAnnouncement.title,
+          content: updatedAnnouncement.content,
+          category: updatedAnnouncement.category,
+          file_url: updatedAnnouncement.file?.url,
+          file_name: updatedAnnouncement.file?.name,
+          file_type: updatedAnnouncement.file?.type,
+          is_pinned: updatedAnnouncement.is_pinned,
+          is_active: updatedAnnouncement.is_active
+        })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
       }
 
-      const updated = {
-        ...existingAnnouncement,
-        ...updatedAnnouncement
-      };
-
-      updateAnnouncement(updated);
       await loadAnnouncements();
       
       toast({
@@ -126,7 +173,7 @@ export const useSupabaseAnnouncements = () => {
     }
   };
 
-  // 刪除公告 - Using mock data system
+  // 刪除公告 - Using Supabase database (soft delete)
   const deleteAnnouncementData = async (id: string) => {
     if (!isAdmin()) {
       toast({
@@ -138,9 +185,14 @@ export const useSupabaseAnnouncements = () => {
     }
 
     try {
-      const result = deleteAnnouncement(id);
-      if (!result) {
-        throw new Error('刪除失敗');
+      const { error } = await supabase
+        .from('announcements')
+        .update({ is_active: false })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
       }
 
       await loadAnnouncements();
@@ -162,6 +214,48 @@ export const useSupabaseAnnouncements = () => {
     }
   };
 
+  // 標記公告為已讀
+  const markAnnouncementAsRead = async (announcementId: string) => {
+    if (!currentUser) return;
+
+    try {
+      const { error } = await supabase.rpc('mark_announcement_as_read', {
+        user_uuid: currentUser.id,
+        announcement_uuid: announcementId
+      });
+
+      if (error) {
+        console.error('標記已讀失敗:', error);
+      }
+    } catch (error) {
+      console.error('標記已讀失敗:', error);
+    }
+  };
+
+  // 檢查公告是否已讀
+  const checkAnnouncementRead = async (announcementId: string): Promise<boolean> => {
+    if (!currentUser) return false;
+
+    try {
+      const { data, error } = await supabase
+        .from('announcement_reads')
+        .select('id')
+        .eq('user_id', currentUser.id)
+        .eq('announcement_id', announcementId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('檢查已讀狀態失敗:', error);
+        return false;
+      }
+
+      return !!data;
+    } catch (error) {
+      console.error('檢查已讀狀態失敗:', error);
+      return false;
+    }
+  };
+
   // 初始載入
   useEffect(() => {
     const loadData = async () => {
@@ -178,6 +272,8 @@ export const useSupabaseAnnouncements = () => {
     createAnnouncement,
     updateAnnouncement: updateAnnouncementData,
     deleteAnnouncement: deleteAnnouncementData,
+    markAnnouncementAsRead,
+    checkAnnouncementRead,
     refreshData: loadAnnouncements
   };
 };

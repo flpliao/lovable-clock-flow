@@ -1,9 +1,8 @@
-
-// 公司位置 (台南北區總公司)
+// 公司位置 (台南市永康區振興路132號)
 export const COMPANY_LOCATION = {
-  latitude: 23.012896,
-  longitude: 120.213896,
-  name: "總公司 - 台南北區"
+  latitude: 23.031503,
+  longitude: 120.232849,
+  name: "總公司 - 台南市永康區振興路132號"
 };
 
 // 允許的打卡距離 (公尺)

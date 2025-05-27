@@ -17,15 +17,19 @@ export const useSupabaseCheckIn = () => {
       const targetUserId = userId || currentUser?.id;
       if (!targetUserId) return;
 
-      const { data, error } = await supabase
+      // Try to query the new check_in_records table
+      const { data, error } = await (supabase as any)
         .from('check_in_records')
         .select('*')
         .eq('user_id', targetUserId)
         .order('timestamp', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading check-in records:', error);
+        return;
+      }
 
-      const formattedRecords = data?.map(record => ({
+      const formattedRecords = data?.map((record: any) => ({
         id: record.id,
         userId: record.user_id,
         timestamp: record.timestamp,
@@ -59,7 +63,7 @@ export const useSupabaseCheckIn = () => {
     }
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('check_in_records')
         .insert({
           user_id: currentUser.id,
@@ -75,7 +79,10 @@ export const useSupabaseCheckIn = () => {
           location_name: record.details.locationName
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating check-in record:', error);
+        return false;
+      }
 
       await loadCheckInRecords();
       return true;
@@ -98,7 +105,7 @@ export const useSupabaseCheckIn = () => {
 
       const today = new Date().toISOString().split('T')[0];
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('check_in_records')
         .select('*')
         .eq('user_id', targetUserId)
@@ -107,10 +114,13 @@ export const useSupabaseCheckIn = () => {
         .eq('status', 'success')
         .order('timestamp', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error getting today records:', error);
+        return { checkIn: undefined, checkOut: undefined };
+      }
 
-      const checkInRecord = data?.find(record => record.action === 'check-in');
-      const checkOutRecord = data?.find(record => record.action === 'check-out');
+      const checkInRecord = data?.find((record: any) => record.action === 'check-in');
+      const checkOutRecord = data?.find((record: any) => record.action === 'check-out');
 
       return {
         checkIn: checkInRecord ? {

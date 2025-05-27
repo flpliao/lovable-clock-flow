@@ -172,6 +172,22 @@ export const getUserCheckInRecords = (userId: string): CheckInRecord[] => {
   return records ? JSON.parse(records) : [];
 };
 
+// Export alias for backward compatibility
+export const getCheckInRecords = (): CheckInRecord[] => {
+  // Return all records from localStorage for all users
+  const allRecords: CheckInRecord[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('checkInRecords_')) {
+      const records = localStorage.getItem(key);
+      if (records) {
+        allRecords.push(...JSON.parse(records));
+      }
+    }
+  }
+  return allRecords;
+};
+
 // 取得使用者今日打卡記錄（暫時保留本地存儲邏輯以便向後兼容）
 export const getUserTodayRecords = (userId: string): { checkIn?: CheckInRecord, checkOut?: CheckInRecord } => {
   const allRecords = getUserCheckInRecords(userId);

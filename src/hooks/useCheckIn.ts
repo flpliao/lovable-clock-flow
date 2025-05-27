@@ -5,7 +5,7 @@ import { CheckInRecord } from '@/types';
 import { 
   handleLocationCheckIn, 
   handleIpCheckIn
-} from '@/utils/checkInUtils';
+} from '@/utils/checkInHandlers';
 import { useSupabaseCheckIn } from './useSupabaseCheckIn';
 
 export const useCheckIn = (userId: string) => {

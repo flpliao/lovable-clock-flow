@@ -1,10 +1,12 @@
 
 import { useUser } from '@/contexts/UserContext';
+import { useNotifications } from '@/hooks/useNotifications';
 import { LeaveRequest } from '@/types';
 import { toast } from '@/components/ui/use-toast';
 
 export const useLeaveApproval = () => {
   const { annualLeaveBalance, setAnnualLeaveBalance } = useUser();
+  const { addNotification } = useNotifications();
   
   // Handle approve action
   const handleApprove = (leaveRequest: LeaveRequest, comment: string, onRequestChange: (updatedRequest: LeaveRequest) => void) => {
@@ -44,6 +46,17 @@ export const useLeaveApproval = () => {
         updated_at: new Date().toISOString()
       };
       
+      // Send notification to the original applicant
+      addNotification({
+        title: '請假已核准',
+        message: '您的請假申請已獲得所有主管核准',
+        type: 'leave_status',
+        data: {
+          leaveRequestId: leaveRequest.id,
+          userId: leaveRequest.user_id
+        }
+      });
+      
       // If it's annual leave, deduct from balance
       if (leaveRequest.leave_type === 'annual' && annualLeaveBalance) {
         const daysToDeduct = leaveRequest.hours / 8;
@@ -73,6 +86,29 @@ export const useLeaveApproval = () => {
         current_approver: updatedApprovals[nextLevelIndex].approver_id,
         updated_at: new Date().toISOString()
       };
+      
+      // Send notification to the original applicant about progress
+      addNotification({
+        title: '請假審核進度更新',
+        message: `您的請假申請已通過第${leaveRequest.approval_level}級審核，正在等待下一級主管審核`,
+        type: 'leave_status',
+        data: {
+          leaveRequestId: leaveRequest.id,
+          userId: leaveRequest.user_id
+        }
+      });
+      
+      // Send notification to the next approver
+      addNotification({
+        title: '請假申請等待審核',
+        message: `有新的請假申請需要您的審核`,
+        type: 'leave_approval',
+        data: {
+          leaveRequestId: leaveRequest.id,
+          userId: updatedApprovals[nextLevelIndex].approver_id,
+          actionRequired: true
+        }
+      });
       
       toast({
         title: "審核成功",
@@ -110,6 +146,17 @@ export const useLeaveApproval = () => {
       rejection_reason: reason,
       updated_at: new Date().toISOString()
     };
+    
+    // Send notification to the original applicant
+    addNotification({
+      title: '請假已拒絕',
+      message: `您的請假申請已被拒絕，拒絕原因：${reason}`,
+      type: 'leave_status',
+      data: {
+        leaveRequestId: leaveRequest.id,
+        userId: leaveRequest.user_id
+      }
+    });
     
     toast({
       title: "請假已拒絕",

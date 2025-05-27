@@ -31,6 +31,9 @@ const NotificationCenter: React.FC = () => {
     // Handle different notification types
     if (notification.type === 'leave_approval' && notification.data?.leaveRequestId) {
       navigate(`/leave-approval/${notification.data.leaveRequestId}`);
+    } else if (notification.type === 'leave_status' && notification.data?.leaveRequestId) {
+      // Navigate to leave request page to view status
+      navigate('/leave-request');
     } else if (notification.type === 'announcement' || notification.type === 'system') {
       // Navigate to announcements page for announcement notifications
       navigate('/announcements');

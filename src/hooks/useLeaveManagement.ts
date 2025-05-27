@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { LeaveRequest } from '@/types';
 import { useUser } from '@/contexts/UserContext';
+import { useNotifications } from '@/hooks/useNotifications';
 import { toast } from '@/components/ui/use-toast';
 
 // Mock data - in a real app this would come from API
@@ -89,6 +89,7 @@ export const useLeaveManagement = () => {
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(mockLeaveRequests);
   const [currentLeaveRequest, setCurrentLeaveRequest] = useState<LeaveRequest | null>(null);
   const { currentUser, annualLeaveBalance, setAnnualLeaveBalance } = useUser();
+  const { addNotification } = useNotifications();
 
   // Initialize current leave request (pending one)
   useEffect(() => {
@@ -119,6 +120,23 @@ export const useLeaveManagement = () => {
     const updatedRequests = [...leaveRequests, newRequest];
     setLeaveRequests(updatedRequests);
     setCurrentLeaveRequest(newRequest);
+    
+    // Send notification to the first approver
+    if (newRequest.approvals && newRequest.approvals.length > 0) {
+      const firstApprover = newRequest.approvals.find(a => a.level === 1);
+      if (firstApprover) {
+        addNotification({
+          title: '請假申請等待審核',
+          message: `有新的請假申請需要您的審核`,
+          type: 'leave_approval',
+          data: {
+            leaveRequestId: newRequest.id,
+            userId: firstApprover.approver_id,
+            actionRequired: true
+          }
+        });
+      }
+    }
     
     toast({
       title: "請假申請已送出",

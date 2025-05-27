@@ -1,7 +1,8 @@
+
 // 公司位置 (台南市永康區振興路132號)
 export const COMPANY_LOCATION = {
-  latitude: 23.031503,
-  longitude: 120.232849,
+  latitude: 23.031574,
+  longitude: 120.232805,
   name: "總公司 - 台南市永康區振興路132號"
 };
 

@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { AnnualLeaveBalance } from '@/types';
 
 export interface User {
   id: string;
@@ -13,15 +14,19 @@ export interface User {
 interface UserContextType {
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
+  annualLeaveBalance: AnnualLeaveBalance | null;
+  setAnnualLeaveBalance: (balance: AnnualLeaveBalance | null) => void;
   isAdmin: () => boolean;
   isManager: () => boolean;
   hasPermission: (permission: string) => boolean;
+  canManageUser: (userId: string) => boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [annualLeaveBalance, setAnnualLeaveBalance] = useState<AnnualLeaveBalance | null>(null);
 
   useEffect(() => {
     // 使用正確的 UUID 格式初始化用戶
@@ -34,6 +39,16 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       role: "admin"
     };
     setCurrentUser(mockUser);
+
+    // 初始化年假餘額
+    const mockBalance: AnnualLeaveBalance = {
+      id: "balance-1",
+      user_id: mockUser.id,
+      year: new Date().getFullYear(),
+      total_days: 14,
+      used_days: 3
+    };
+    setAnnualLeaveBalance(mockBalance);
   }, []);
 
   const isAdmin = () => {
@@ -42,6 +57,19 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const isManager = () => {
     return currentUser?.role === 'manager' || currentUser?.role === 'admin';
+  };
+
+  const canManageUser = (userId: string): boolean => {
+    if (!currentUser) return false;
+    
+    // Admin can manage all users
+    if (currentUser.role === 'admin') return true;
+    
+    // Manager can manage users in same department (this is simplified logic)
+    if (currentUser.role === 'manager') return true;
+    
+    // Users can only manage themselves
+    return currentUser.id === userId;
   };
 
   const hasPermission = (permission: string): boolean => {
@@ -66,9 +94,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     <UserContext.Provider value={{
       currentUser,
       setCurrentUser,
+      annualLeaveBalance,
+      setAnnualLeaveBalance,
       isAdmin,
       isManager,
-      hasPermission
+      hasPermission,
+      canManageUser
     }}>
       {children}
     </UserContext.Provider>

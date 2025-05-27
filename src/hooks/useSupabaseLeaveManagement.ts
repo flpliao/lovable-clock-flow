@@ -215,6 +215,54 @@ export const useSupabaseLeaveManagement = () => {
     }
   };
 
+  // 更新請假申請狀態
+  const updateLeaveRequestStatus = async (
+    requestId: string, 
+    status: 'approved' | 'rejected',
+    comment?: string,
+    rejectionReason?: string
+  ) => {
+    try {
+      console.log('Updating leave request status:', requestId, status);
+
+      const updateData: any = {
+        status,
+        updated_at: new Date().toISOString()
+      };
+
+      if (rejectionReason) {
+        updateData.rejection_reason = rejectionReason;
+      }
+
+      const { error } = await supabase
+        .from('leave_requests')
+        .update(updateData)
+        .eq('id', requestId);
+
+      if (error) {
+        console.error('更新請假狀態失敗:', error);
+        throw error;
+      }
+
+      await loadLeaveRequests();
+      
+      toast({
+        title: status === 'approved' ? "審核成功" : "拒絕成功",
+        description: status === 'approved' ? "請假申請已核准" : "請假申請已拒絕",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('更新請假狀態失敗:', error);
+      toast({
+        title: "更新失敗",
+        description: "無法更新請假狀態",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   // 初始載入
   useEffect(() => {
     if (currentUser) {
@@ -228,6 +276,7 @@ export const useSupabaseLeaveManagement = () => {
     loadAnnualLeaveBalance,
     initializeAnnualLeaveBalance,
     createLeaveRequest,
+    updateLeaveRequestStatus,
     refreshData: loadLeaveRequests
   };
 };

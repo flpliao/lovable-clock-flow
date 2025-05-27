@@ -5,18 +5,27 @@ import { CheckInRecord } from '@/types';
 export const useTodayCheckInRecords = () => {
   const getTodayCheckInRecords = async (userId: string) => {
     try {
-      if (!userId) return { checkIn: undefined, checkOut: undefined };
+      if (!userId) {
+        console.log('無使用者 ID，返回空記錄');
+        return { checkIn: undefined, checkOut: undefined };
+      }
 
-      const today = new Date().toISOString().split('T')[0];
+      // 使用當地時間計算今日範圍
+      const today = new Date();
+      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
       
-      console.log('查詢今日記錄，日期:', today, '使用者ID:', userId);
+      const startOfDayISO = startOfDay.toISOString();
+      const endOfDayISO = endOfDay.toISOString();
+      
+      console.log('查詢今日記錄範圍:', { startOfDayISO, endOfDayISO, userId });
       
       const { data, error } = await supabase
         .from('check_in_records')
         .select('*')
         .eq('user_id', userId)
-        .gte('timestamp', `${today}T00:00:00.000Z`)
-        .lt('timestamp', `${today}T23:59:59.999Z`)
+        .gte('timestamp', startOfDayISO)
+        .lt('timestamp', endOfDayISO)
         .eq('status', 'success')
         .order('timestamp', { ascending: true });
 
@@ -27,8 +36,13 @@ export const useTodayCheckInRecords = () => {
         return { checkIn: undefined, checkOut: undefined };
       }
 
-      const checkInRecord = (data || []).find((record: any) => record.action === 'check-in');
-      const checkOutRecord = (data || []).find((record: any) => record.action === 'check-out');
+      if (!data || data.length === 0) {
+        console.log('今日無打卡記錄');
+        return { checkIn: undefined, checkOut: undefined };
+      }
+
+      const checkInRecord = data.find((record: any) => record.action === 'check-in');
+      const checkOutRecord = data.find((record: any) => record.action === 'check-out');
 
       const formatRecord = (record: any): CheckInRecord | undefined => {
         if (!record) return undefined;
@@ -50,10 +64,13 @@ export const useTodayCheckInRecords = () => {
         };
       };
 
-      return {
+      const result = {
         checkIn: formatRecord(checkInRecord),
         checkOut: formatRecord(checkOutRecord)
       };
+
+      console.log('格式化後的今日記錄:', result);
+      return result;
     } catch (error) {
       console.error('取得今日打卡記錄失敗:', error);
       return { checkIn: undefined, checkOut: undefined };

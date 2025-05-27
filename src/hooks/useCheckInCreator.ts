@@ -26,7 +26,7 @@ export const useCheckInCreator = () => {
       console.log('處理後的距離:', distance);
       
       const recordData = {
-        user_id: currentUserId,
+        user_id: currentUserId, // 確保使用正確的 user_id
         staff_id: currentUserId,
         timestamp: record.timestamp,
         type: record.type,
@@ -50,7 +50,7 @@ export const useCheckInCreator = () => {
         console.error('打卡記錄儲存失敗:', error);
         toast({
           title: "打卡失敗",
-          description: "無法記錄打卡資料",
+          description: `無法記錄打卡資料: ${error.message}`,
           variant: "destructive"
         });
         return false;

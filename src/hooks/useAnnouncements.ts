@@ -38,16 +38,29 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     setRefreshKey(prev => prev + 1);
   }, []);
 
+  // Load announcements function
+  const loadAnnouncements = useCallback(() => {
+    console.log('Loading announcements for mode:', adminMode ? 'admin' : 'user');
+    setIsLoading(true);
+    
+    // Get fresh data
+    const newAnnouncements = adminMode && hasAdminAccess ? getAllAnnouncements() : getActiveAnnouncements();
+    console.log('Loaded announcements:', newAnnouncements.length, 'items');
+    
+    setAnnouncements(newAnnouncements);
+    setIsLoading(false);
+  }, [adminMode, hasAdminAccess]);
+
   // Listen for custom refresh events and data updates
   useEffect(() => {
     const handleRefresh = () => {
-      console.log('Received refresh event, updating announcements');
-      forceRefresh();
+      console.log('Received refresh event, reloading announcements');
+      loadAnnouncements();
     };
     
     const handleDataUpdate = (event: CustomEvent) => {
       console.log('Received data update event:', event.detail);
-      forceRefresh();
+      loadAnnouncements();
     };
     
     window.addEventListener('refreshAnnouncements', handleRefresh);
@@ -57,23 +70,12 @@ export const useAnnouncements = (adminMode: boolean = false) => {
       window.removeEventListener('refreshAnnouncements', handleRefresh);
       window.removeEventListener('announcementDataUpdated', handleDataUpdate as EventListener);
     };
-  }, [forceRefresh]);
+  }, [loadAnnouncements]);
 
-  // Load announcements
+  // Load announcements on initial mount and when dependencies change
   useEffect(() => {
-    const loadAnnouncements = () => {
-      setIsLoading(true);
-      // Use setTimeout to ensure the data is fresh
-      setTimeout(() => {
-        const newAnnouncements = adminMode && hasAdminAccess ? getAllAnnouncements() : getActiveAnnouncements();
-        console.log('Loading announcements:', newAnnouncements.length, 'items for mode:', adminMode ? 'admin' : 'user');
-        setAnnouncements(newAnnouncements);
-        setIsLoading(false);
-      }, 100);
-    };
-
     loadAnnouncements();
-  }, [adminMode, hasAdminAccess, currentUser, refreshKey]);
+  }, [loadAnnouncements, refreshKey]);
 
   // Filtered and searched announcements
   const filteredAnnouncements = useMemo(() => {
@@ -132,12 +134,17 @@ export const useAnnouncements = (adminMode: boolean = false) => {
       }
     });
     
-    // Force refresh to ensure all users see the new announcement
+    // Immediately refresh local state and force global refresh
+    console.log('Refreshing announcements after creation');
+    loadAnnouncements();
+    
+    // Also dispatch events for other components
     setTimeout(() => {
-      forceRefresh();
-      // Also dispatch the custom event for external listeners
       window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
-    }, 200);
+      window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
+        detail: { type: 'added', announcement: newAnnouncement }
+      }));
+    }, 100);
     
     return newAnnouncement;
   };
@@ -147,7 +154,7 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     if (!hasAdminAccess) return null;
     
     const updatedAnnouncement = updateAnnouncement(announcement);
-    forceRefresh();
+    loadAnnouncements();
     return updatedAnnouncement;
   };
 
@@ -157,7 +164,7 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     
     const result = deleteAnnouncement(id);
     if (result) {
-      forceRefresh();
+      loadAnnouncements();
     }
     return result;
   };

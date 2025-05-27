@@ -9,6 +9,111 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      annual_leave_balance: {
+        Row: {
+          created_at: string
+          id: string
+          remaining_days: number | null
+          staff_id: string | null
+          total_days: number
+          updated_at: string
+          used_days: number
+          user_id: string | null
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          remaining_days?: number | null
+          staff_id?: string | null
+          total_days?: number
+          updated_at?: string
+          used_days?: number
+          user_id?: string | null
+          year: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          remaining_days?: number | null
+          staff_id?: string | null
+          total_days?: number
+          updated_at?: string
+          used_days?: number
+          user_id?: string | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "annual_leave_balance_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "annual_leave_balance_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      approval_records: {
+        Row: {
+          approval_date: string | null
+          approver_id: string | null
+          approver_name: string
+          comment: string | null
+          created_at: string
+          id: string
+          leave_request_id: string | null
+          level: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approval_date?: string | null
+          approver_id?: string | null
+          approver_name: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          leave_request_id?: string | null
+          level: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approval_date?: string | null
+          approver_id?: string | null
+          approver_name?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          leave_request_id?: string | null
+          level?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_records_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approval_records_leave_request_id_fkey"
+            columns: ["leave_request_id"]
+            isOneToOne: false
+            referencedRelation: "leave_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branches: {
         Row: {
           address: string
@@ -178,6 +283,82 @@ export type Database = {
         }
         Relationships: []
       }
+      leave_requests: {
+        Row: {
+          approval_level: number | null
+          attachment_url: string | null
+          created_at: string
+          current_approver: string | null
+          end_date: string
+          hours: number
+          id: string
+          leave_type: string
+          reason: string
+          rejection_reason: string | null
+          staff_id: string | null
+          start_date: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          approval_level?: number | null
+          attachment_url?: string | null
+          created_at?: string
+          current_approver?: string | null
+          end_date: string
+          hours: number
+          id?: string
+          leave_type: string
+          reason: string
+          rejection_reason?: string | null
+          staff_id?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          approval_level?: number | null
+          attachment_url?: string | null
+          created_at?: string
+          current_approver?: string | null
+          end_date?: string
+          hours?: number
+          id?: string
+          leave_type?: string
+          reason?: string
+          rejection_reason?: string | null
+          staff_id?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_current_approver_fkey"
+            columns: ["current_approver"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissions: {
         Row: {
           category: string
@@ -333,7 +514,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_annual_leave_days: {
+        Args: { hire_date: string; target_year: number }
+        Returns: number
+      }
+      initialize_annual_leave_balance: {
+        Args: { staff_uuid: string; target_year: number }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

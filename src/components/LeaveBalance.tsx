@@ -1,15 +1,58 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
+import { useSupabaseLeaveManagement } from '@/hooks/useSupabaseLeaveManagement';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const LeaveBalance: React.FC = () => {
-  const { annualLeaveBalance } = useUser();
+  const { currentUser } = useUser();
+  const { loadAnnualLeaveBalance, initializeAnnualLeaveBalance } = useSupabaseLeaveManagement();
+  const [balance, setBalance] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const loadBalance = async () => {
+      if (!currentUser) return;
+      
+      setLoading(true);
+      try {
+        // 先嘗試載入現有餘額
+        let balanceData = await loadAnnualLeaveBalance(currentUser.id);
+        
+        // 如果沒有餘額記錄，先初始化
+        if (!balanceData) {
+          await initializeAnnualLeaveBalance(currentUser.id);
+          balanceData = await loadAnnualLeaveBalance(currentUser.id);
+        }
+        
+        setBalance(balanceData);
+      } catch (error) {
+        console.error('載入年假餘額失敗:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadBalance();
+  }, [currentUser, loadAnnualLeaveBalance, initializeAnnualLeaveBalance]);
+  
+  if (loading) {
+    return (
+      <Card className="w-full">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-medium">特休假餘額</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4">載入中...</div>
+        </CardContent>
+      </Card>
+    );
+  }
   
   // Calculate remaining hours and percentage
-  const totalDays = annualLeaveBalance?.total_days || 0;
-  const usedDays = annualLeaveBalance?.used_days || 0;
-  const remainingDays = totalDays - usedDays;
+  const totalDays = balance?.total_days || 0;
+  const usedDays = balance?.used_days || 0;
+  const remainingDays = balance?.remaining_days || (totalDays - usedDays);
   
   // Convert to hours (8 hours per day)
   const totalHours = totalDays * 8;

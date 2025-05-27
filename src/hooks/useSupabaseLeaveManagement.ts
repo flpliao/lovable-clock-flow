@@ -14,8 +14,7 @@ export const useSupabaseLeaveManagement = () => {
   // 載入請假申請資料
   const loadLeaveRequests = async () => {
     try {
-      // Use any type to bypass TypeScript checking for new tables
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('leave_requests')
         .select(`
           *,
@@ -41,6 +40,7 @@ export const useSupabaseLeaveManagement = () => {
         reason: request.reason,
         approval_level: request.approval_level,
         current_approver: request.current_approver,
+        rejection_reason: request.rejection_reason,
         created_at: request.created_at,
         updated_at: request.updated_at,
         approvals: (request.approval_records || []).map((record: any) => ({
@@ -71,7 +71,7 @@ export const useSupabaseLeaveManagement = () => {
   const loadAnnualLeaveBalance = async (staffId: string) => {
     try {
       const currentYear = new Date().getFullYear();
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('annual_leave_balance')
         .select('*')
         .eq('staff_id', staffId)
@@ -101,7 +101,7 @@ export const useSupabaseLeaveManagement = () => {
     }
 
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('leave_requests')
         .insert({
           user_id: currentUser.id,
@@ -133,7 +133,7 @@ export const useSupabaseLeaveManagement = () => {
           level: approval.level
         }));
 
-        await (supabase as any)
+        await supabase
           .from('approval_records')
           .insert(approvalRecords);
       }
@@ -165,7 +165,7 @@ export const useSupabaseLeaveManagement = () => {
         updateData.rejection_reason = rejectionReason;
       }
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('leave_requests')
         .update(updateData)
         .eq('id', requestId);
@@ -174,7 +174,7 @@ export const useSupabaseLeaveManagement = () => {
 
       // 更新審核記錄
       if (currentUser) {
-        await (supabase as any)
+        await supabase
           .from('approval_records')
           .update({
             status,
@@ -204,15 +204,42 @@ export const useSupabaseLeaveManagement = () => {
     }
   };
 
+  // 初始化年假餘額
+  const initializeAnnualLeaveBalance = async (staffId: string) => {
+    try {
+      const currentYear = new Date().getFullYear();
+      const { error } = await supabase.rpc('initialize_annual_leave_balance', {
+        staff_uuid: staffId,
+        target_year: currentYear
+      });
+
+      if (error) {
+        console.error('初始化年假餘額失敗:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('初始化年假餘額失敗:', error);
+      return false;
+    }
+  };
+
   // 初始載入
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       await loadLeaveRequests();
+      
+      // 如果有當前使用者，初始化其年假餘額
+      if (currentUser) {
+        await initializeAnnualLeaveBalance(currentUser.id);
+      }
+      
       setLoading(false);
     };
     loadData();
-  }, []);
+  }, [currentUser]);
 
   return {
     leaveRequests,
@@ -220,6 +247,7 @@ export const useSupabaseLeaveManagement = () => {
     createLeaveRequest,
     updateLeaveRequestStatus,
     loadAnnualLeaveBalance,
+    initializeAnnualLeaveBalance,
     refreshData: loadLeaveRequests
   };
 };

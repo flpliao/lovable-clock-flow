@@ -18,10 +18,15 @@ export const useSupabaseCheckIn = () => {
     
     try {
       const targetUserId = userId || currentUser?.id;
-      if (!targetUserId) return;
+      if (!targetUserId) {
+        console.log('無使用者ID，無法載入記錄');
+        return;
+      }
 
       loadingRef.current = true;
       setLoading(true);
+      
+      console.log('開始載入打卡記錄，使用者ID:', targetUserId);
 
       const { data, error } = await supabase
         .from('check_in_records')
@@ -30,8 +35,15 @@ export const useSupabaseCheckIn = () => {
         .order('timestamp', { ascending: false })
         .limit(100); // 限制載入數量
 
+      console.log('Supabase 查詢結果:', { data, error });
+
       if (error) {
         console.error('Error loading check-in records:', error);
+        toast({
+          title: "載入失敗",
+          description: "無法載入打卡記錄",
+          variant: "destructive"
+        });
         setCheckInRecords([]);
         return;
       }
@@ -52,9 +64,15 @@ export const useSupabaseCheckIn = () => {
         }
       }));
 
+      console.log('格式化後的記錄:', formattedRecords);
       setCheckInRecords(formattedRecords);
     } catch (error) {
       console.error('載入打卡記錄失敗:', error);
+      toast({
+        title: "載入失敗",
+        description: "載入打卡記錄時發生錯誤",
+        variant: "destructive"
+      });
       setCheckInRecords([]);
     } finally {
       setLoading(false);
@@ -74,6 +92,8 @@ export const useSupabaseCheckIn = () => {
     }
 
     try {
+      console.log('建立打卡記錄:', record);
+
       const { error } = await supabase
         .from('check_in_records')
         .insert({
@@ -92,9 +112,17 @@ export const useSupabaseCheckIn = () => {
 
       if (error) {
         console.error('Error creating check-in record:', error);
+        toast({
+          title: "打卡失敗",
+          description: "無法記錄打卡資料",
+          variant: "destructive"
+        });
         return false;
       }
 
+      console.log('打卡記錄建立成功');
+      
+      // 重新載入記錄
       await loadCheckInRecords();
       return true;
     } catch (error) {
@@ -174,6 +202,7 @@ export const useSupabaseCheckIn = () => {
   // 初始載入 - 使用 useEffect 但避免重複載入
   useEffect(() => {
     if (currentUser && !loadingRef.current) {
+      console.log('useEffect 觸發載入記錄，使用者ID:', currentUser.id);
       loadCheckInRecords();
     }
   }, [currentUser?.id]); // 只在 currentUser.id 改變時載入

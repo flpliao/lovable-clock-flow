@@ -11,13 +11,32 @@ import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 
 const CheckInHistory: React.FC = () => {
   const { currentUser } = useUser();
-  const { checkInRecords, loadCheckInRecords } = useSupabaseCheckIn();
+  const { checkInRecords, loadCheckInRecords, loading } = useSupabaseCheckIn();
   
   useEffect(() => {
     if (currentUser) {
+      console.log('載入打卡記錄，使用者ID:', currentUser.id);
       loadCheckInRecords(currentUser.id);
     }
   }, [currentUser, loadCheckInRecords]);
+
+  console.log('打卡記錄數量:', checkInRecords.length);
+  console.log('打卡記錄:', checkInRecords);
+  
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>打卡記錄</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-6 text-gray-500">
+            載入中...
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
   
   return (
     <Card>

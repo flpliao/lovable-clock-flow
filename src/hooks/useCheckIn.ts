@@ -3,10 +3,10 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { CheckInRecord } from '@/types';
 import { 
-  getUserTodayRecords, 
   handleLocationCheckIn, 
   handleIpCheckIn
 } from '@/utils/checkInUtils';
+import { useSupabaseCheckIn } from './useSupabaseCheckIn';
 
 export const useCheckIn = (userId: string) => {
   const { toast } = useToast();
@@ -17,17 +17,26 @@ export const useCheckIn = (userId: string) => {
   const [actionType, setActionType] = useState<'check-in' | 'check-out'>('check-in');
   const [todayRecords, setTodayRecords] = useState<{ checkIn?: CheckInRecord, checkOut?: CheckInRecord }>({});
 
-  useEffect(() => {
-    if (userId) {
-      const records = getUserTodayRecords(userId);
-      setTodayRecords(records);
+  const { createCheckInRecord, getTodayCheckInRecords } = useSupabaseCheckIn();
 
-      // Set actionType based on existing records
-      if (records.checkIn && !records.checkOut) {
-        setActionType('check-out');
+  // 載入今日打卡記錄
+  useEffect(() => {
+    const loadTodayRecords = async () => {
+      if (userId) {
+        const records = await getTodayCheckInRecords(userId);
+        setTodayRecords(records);
+
+        // 設定下一個動作類型
+        if (records.checkIn && !records.checkOut) {
+          setActionType('check-out');
+        } else {
+          setActionType('check-in');
+        }
       }
-    }
-  }, [userId]);
+    };
+
+    loadTodayRecords();
+  }, [userId, getTodayCheckInRecords]);
 
   const onLocationCheckIn = () => {
     setLoading(true);
@@ -36,20 +45,25 @@ export const useCheckIn = (userId: string) => {
     handleLocationCheckIn(
       userId,
       actionType,
-      (record) => {
+      async (record) => {
         setLoading(false);
         const actionMsg = actionType === 'check-in' ? '上班打卡' : '下班打卡';
         
-        toast({
-          title: `${actionMsg}成功！`,
-          description: `您已成功在${record.details.locationName}${actionMsg}。距離: ${Math.round(record.details.distance || 0)}公尺`,
-        });
+        // 儲存到 Supabase
+        const success = await createCheckInRecord(record);
+        if (success) {
+          toast({
+            title: `${actionMsg}成功！`,
+            description: `您已成功在${record.details.locationName}${actionMsg}。距離: ${Math.round(record.details.distance || 0)}公尺`,
+          });
 
-        // Update records
-        if (actionType === 'check-in') {
-          setTodayRecords(prev => ({ ...prev, checkIn: record }));
-        } else {
-          setTodayRecords(prev => ({ ...prev, checkOut: record }));
+          // 更新本地狀態
+          if (actionType === 'check-in') {
+            setTodayRecords(prev => ({ ...prev, checkIn: record }));
+            setActionType('check-out');
+          } else {
+            setTodayRecords(prev => ({ ...prev, checkOut: record }));
+          }
         }
       },
       (errorMessage) => {
@@ -73,20 +87,25 @@ export const useCheckIn = (userId: string) => {
     handleIpCheckIn(
       userId,
       actionType,
-      (record) => {
+      async (record) => {
         setLoading(false);
         const actionMsg = actionType === 'check-in' ? '上班打卡' : '下班打卡';
         
-        toast({
-          title: `${actionMsg}成功！`,
-          description: `您已成功遠端${actionMsg}。IP: ${record.details.ip}`,
-        });
+        // 儲存到 Supabase
+        const success = await createCheckInRecord(record);
+        if (success) {
+          toast({
+            title: `${actionMsg}成功！`,
+            description: `您已成功遠端${actionMsg}。IP: ${record.details.ip}`,
+          });
 
-        // Update records
-        if (actionType === 'check-in') {
-          setTodayRecords(prev => ({ ...prev, checkIn: record }));
-        } else {
-          setTodayRecords(prev => ({ ...prev, checkOut: record }));
+          // 更新本地狀態
+          if (actionType === 'check-in') {
+            setTodayRecords(prev => ({ ...prev, checkIn: record }));
+            setActionType('check-out');
+          } else {
+            setTodayRecords(prev => ({ ...prev, checkOut: record }));
+          }
         }
       },
       (errorMessage) => {

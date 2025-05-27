@@ -39,7 +39,11 @@ export const useSupabaseCheckIn = () => {
   const refreshData = useCallback(async () => {
     if (currentUser?.id) {
       console.log('重新整理打卡資料，使用者 ID:', currentUser.id);
-      await loadCheckInRecords(currentUser.id);
+      try {
+        await loadCheckInRecords(currentUser.id);
+      } catch (error) {
+        console.error('重新整理資料失敗:', error);
+      }
     }
   }, [currentUser?.id, loadCheckInRecords]);
 

@@ -30,6 +30,13 @@ export const useCheckInRecords = () => {
       
       console.log('開始載入打卡記錄，使用者ID:', userId);
 
+      // 確保 userId 是正確的 UUID 格式
+      if (!userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        console.error('無效的 UUID 格式:', userId);
+        setCheckInRecords([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('check_in_records')
         .select('*')
@@ -43,7 +50,7 @@ export const useCheckInRecords = () => {
         console.error('Error loading check-in records:', error);
         toast({
           title: "載入失敗",
-          description: "無法載入打卡記錄",
+          description: `無法載入打卡記錄: ${error.message}`,
           variant: "destructive"
         });
         setCheckInRecords([]);
@@ -74,6 +81,11 @@ export const useCheckInRecords = () => {
 
       console.log('格式化後的記錄:', formattedRecords);
       setCheckInRecords(formattedRecords);
+      
+      toast({
+        title: "載入成功",
+        description: `載入了 ${formattedRecords.length} 筆打卡記錄`,
+      });
     } catch (error) {
       console.error('載入打卡記錄失敗:', error);
       toast({

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -120,17 +121,15 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     const updatedAnnouncements = adminMode ? getAllAnnouncements() : getActiveAnnouncements();
     setAnnouncements(updatedAnnouncements);
     
-    // Create notification for new announcement (will be picked up by the useEffect above)
-    if (!adminMode) {
-      addNotification({
-        title: '新公告發布',
-        message: `${newAnnouncement.title}`,
-        type: 'system',
-        data: {
-          announcementId: newAnnouncement.id
-        }
-      });
-    }
+    // Always create notification for new announcement, regardless of mode
+    addNotification({
+      title: '新公告發布',
+      message: `${newAnnouncement.title}`,
+      type: 'system',
+      data: {
+        announcementId: newAnnouncement.id
+      }
+    });
     
     return newAnnouncement;
   };

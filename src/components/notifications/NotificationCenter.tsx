@@ -25,17 +25,18 @@ const NotificationCenter: React.FC = () => {
   const [open, setOpen] = useState(false);
   
   const handleNotificationClick = (notification: Notification) => {
+    console.log('Notification clicked:', notification);
     markAsRead(notification.id);
     setOpen(false);
     
-    // Handle different notification types
+    // Handle different notification types with proper navigation
     if (notification.type === 'leave_approval' && notification.data?.leaveRequestId) {
       navigate(`/leave-approval/${notification.data.leaveRequestId}`);
     } else if (notification.type === 'leave_status' && notification.data?.leaveRequestId) {
       // Navigate to leave request page to view status
       navigate('/leave-request');
     } else if (notification.type === 'announcement' || notification.type === 'system') {
-      // Navigate to company announcements page for announcement notifications
+      // For announcement notifications, navigate to company announcements page
       navigate('/company-announcements');
     }
   };

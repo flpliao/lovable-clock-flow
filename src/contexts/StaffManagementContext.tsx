@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { StaffManagementContextType } from '@/components/staff/types';
-import { useStaffManagement } from '@/components/staff/useStaffManagement';
+import { useStaffManagement } from '@/components/staff/hooks/useStaffManagement';
 
 const StaffManagementContext = createContext<StaffManagementContextType | undefined>(undefined);
 

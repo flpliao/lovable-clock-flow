@@ -9,7 +9,266 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      branches: {
+        Row: {
+          address: string
+          business_license: string | null
+          code: string
+          company_id: string
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          manager_contact: string | null
+          manager_name: string | null
+          name: string
+          phone: string
+          staff_count: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          business_license?: string | null
+          code: string
+          company_id: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          manager_contact?: string | null
+          manager_name?: string | null
+          name: string
+          phone: string
+          staff_count?: number
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          business_license?: string | null
+          code?: string
+          company_id?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          manager_contact?: string | null
+          manager_name?: string | null
+          name?: string
+          phone?: string
+          staff_count?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branches_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      companies: {
+        Row: {
+          address: string
+          business_type: string
+          capital: number | null
+          created_at: string
+          email: string
+          established_date: string | null
+          id: string
+          legal_representative: string
+          name: string
+          phone: string
+          registration_number: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address: string
+          business_type: string
+          capital?: number | null
+          created_at?: string
+          email: string
+          established_date?: string | null
+          id?: string
+          legal_representative: string
+          name: string
+          phone: string
+          registration_number: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string
+          business_type?: string
+          capital?: number | null
+          created_at?: string
+          email?: string
+          established_date?: string | null
+          id?: string
+          legal_representative?: string
+          name?: string
+          phone?: string
+          registration_number?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      permissions: {
+        Row: {
+          category: string
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          category: string
+          code: string
+          created_at?: string
+          description?: string | null
+          id: string
+          name: string
+        }
+        Update: {
+          category?: string
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          permission_id: string
+          role_id: string
+        }
+        Insert: {
+          permission_id: string
+          role_id: string
+        }
+        Update: {
+          permission_id?: string
+          role_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "staff_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff: {
+        Row: {
+          branch_id: string
+          branch_name: string
+          contact: string
+          created_at: string
+          department: string
+          email: string | null
+          id: string
+          name: string
+          position: string
+          role: string
+          role_id: string
+          supervisor_id: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          branch_id: string
+          branch_name: string
+          contact: string
+          created_at?: string
+          department: string
+          email?: string | null
+          id?: string
+          name: string
+          position: string
+          role?: string
+          role_id?: string
+          supervisor_id?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          branch_id?: string
+          branch_name?: string
+          contact?: string
+          created_at?: string
+          department?: string
+          email?: string | null
+          id?: string
+          name?: string
+          position?: string
+          role?: string
+          role_id?: string
+          supervisor_id?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_roles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_system_role: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id: string
+          is_system_role?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system_role?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

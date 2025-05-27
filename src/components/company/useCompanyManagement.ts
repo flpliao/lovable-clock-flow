@@ -1,68 +1,95 @@
 
-import { useCompanyState } from './hooks/useCompanyState';
-import { useBranchOperations } from './hooks/useBranchOperations';
-import { useCompanyOperations } from './hooks/useCompanyOperations';
-import { useBranchUtils } from './hooks/useBranchUtils';
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useState } from 'react';
+import { Company, Branch, NewBranch, CompanyManagementContextType } from '@/types/company';
+import { useSupabaseCompanyOperations } from './hooks/useSupabaseCompanyOperations';
 
-export const useCompanyManagement = () => {
+export const useCompanyManagement = (): CompanyManagementContextType => {
   const {
     company,
-    setCompany,
     branches,
-    setBranches,
-    isAddBranchDialogOpen,
-    setIsAddBranchDialogOpen,
-    isEditBranchDialogOpen,
-    setIsEditBranchDialogOpen,
-    isEditCompanyDialogOpen,
-    setIsEditCompanyDialogOpen,
-    currentBranch,
-    setCurrentBranch,
-    newBranch,
-    setNewBranch
-  } = useCompanyState();
+    loading,
+    updateCompany,
+    addBranch,
+    updateBranch,
+    deleteBranch
+  } = useSupabaseCompanyOperations();
 
-  // Get staff list for branch operations
-  let staffList: any[] = [];
-  try {
-    const staffContext = useStaffManagementContext();
-    staffList = staffContext.staffList;
-  } catch (error) {
-    // StaffManagementContext not available, use empty array
-    staffList = [];
-  }
-
-  const {
-    handleAddBranch,
-    handleEditBranch,
-    handleDeleteBranch,
-    openEditBranchDialog
-  } = useBranchOperations({
-    branches,
-    setBranches,
-    newBranch,
-    setNewBranch,
-    currentBranch,
-    setCurrentBranch,
-    setIsAddBranchDialogOpen,
-    setIsEditBranchDialogOpen,
-    company,
-    staffList
+  // Dialog states
+  const [isAddBranchDialogOpen, setIsAddBranchDialogOpen] = useState(false);
+  const [isEditBranchDialogOpen, setIsEditBranchDialogOpen] = useState(false);
+  const [isEditCompanyDialogOpen, setIsEditCompanyDialogOpen] = useState(false);
+  
+  // Form states
+  const [currentBranch, setCurrentBranch] = useState<Branch | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
+  const [newBranch, setNewBranch] = useState<NewBranch>({
+    name: '',
+    code: '',
+    type: 'store',
+    address: '',
+    phone: '',
+    email: '',
+    manager_name: '',
+    manager_contact: '',
+    business_license: ''
   });
 
-  const { handleUpdateCompany } = useCompanyOperations({
-    setCompany,
-    setIsEditCompanyDialogOpen
-  });
+  // Filtered branches (可以在這裡加入搜尋邏輯)
+  const filteredBranches = branches;
 
-  const {
-    getBranchByCode,
-    getActiveBranches,
-    filteredBranches
-  } = useBranchUtils(branches);
+  // Handlers
+  const handleAddBranch = async () => {
+    const success = await addBranch(newBranch);
+    if (success) {
+      setNewBranch({
+        name: '',
+        code: '',
+        type: 'store',
+        address: '',
+        phone: '',
+        email: '',
+        manager_name: '',
+        manager_contact: '',
+        business_license: ''
+      });
+      setIsAddBranchDialogOpen(false);
+    }
+  };
 
-  const selectedBranch = currentBranch;
+  const handleEditBranch = async () => {
+    if (currentBranch) {
+      const success = await updateBranch(currentBranch);
+      if (success) {
+        setIsEditBranchDialogOpen(false);
+        setCurrentBranch(null);
+      }
+    }
+  };
+
+  const handleDeleteBranch = async (id: string) => {
+    await deleteBranch(id);
+  };
+
+  const handleUpdateCompany = async (updatedCompany: Company) => {
+    const success = await updateCompany(updatedCompany);
+    if (success) {
+      setIsEditCompanyDialogOpen(false);
+    }
+  };
+
+  const openEditBranchDialog = (branch: Branch) => {
+    setCurrentBranch({ ...branch });
+    setIsEditBranchDialogOpen(true);
+  };
+
+  // Utility functions
+  const getBranchByCode = (code: string) => {
+    return branches.find(branch => branch.code === code);
+  };
+
+  const getActiveBranches = () => {
+    return branches.filter(branch => branch.is_active);
+  };
 
   return {
     company,

@@ -21,16 +21,15 @@ export const useSupabaseAnnouncements = () => {
         // Fallback to direct query if RPC doesn't exist
         console.log('RPC failed, trying direct query:', error);
         
-        // Try direct query (this might fail if table doesn't exist in types)
-        const { data: directData, error: directError } = await supabase
-          .from('announcements' as any)
+        // Try direct query using any type to bypass TypeScript checking
+        const { data: directData, error: directError } = await (supabase as any)
+          .from('announcements')
           .select('*')
           .eq('is_published', true)
           .order('created_at', { ascending: false });
 
         if (directError) {
           console.error('Direct query also failed:', directError);
-          // Use mock data as fallback
           setAnnouncements([]);
           return;
         }
@@ -55,7 +54,7 @@ export const useSupabaseAnnouncements = () => {
       }
 
       // Process RPC response if successful
-      const formattedAnnouncements = data?.map((announcement: any) => ({
+      const formattedAnnouncements = (data || []).map((announcement: any) => ({
         id: announcement.id,
         title: announcement.title,
         content: announcement.content,
@@ -68,7 +67,7 @@ export const useSupabaseAnnouncements = () => {
         is_pinned: false,
         is_active: true,
         category: announcement.type as any
-      })) || [];
+      }));
 
       setAnnouncements(formattedAnnouncements);
     } catch (error) {
@@ -78,7 +77,6 @@ export const useSupabaseAnnouncements = () => {
         description: "無法載入公告資料",
         variant: "destructive"
       });
-      // Use empty array as fallback
       setAnnouncements([]);
     }
   };
@@ -116,7 +114,7 @@ export const useSupabaseAnnouncements = () => {
       if (error) {
         console.error('RPC failed, trying direct insert:', error);
         
-        // Fallback to direct insert
+        // Fallback to direct insert using any type
         const { error: directError } = await (supabase as any)
           .from('announcements')
           .insert({

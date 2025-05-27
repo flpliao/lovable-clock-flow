@@ -17,7 +17,7 @@ export const useSupabaseCheckIn = () => {
       const targetUserId = userId || currentUser?.id;
       if (!targetUserId) return;
 
-      // Try to query the new check_in_records table
+      // Try to query the new check_in_records table using any type
       const { data, error } = await (supabase as any)
         .from('check_in_records')
         .select('*')
@@ -26,10 +26,11 @@ export const useSupabaseCheckIn = () => {
 
       if (error) {
         console.error('Error loading check-in records:', error);
+        setCheckInRecords([]);
         return;
       }
 
-      const formattedRecords = data?.map((record: any) => ({
+      const formattedRecords = (data || []).map((record: any) => ({
         id: record.id,
         userId: record.user_id,
         timestamp: record.timestamp,
@@ -43,11 +44,12 @@ export const useSupabaseCheckIn = () => {
           ip: record.ip_address,
           locationName: record.location_name
         }
-      })) || [];
+      }));
 
       setCheckInRecords(formattedRecords);
     } catch (error) {
       console.error('載入打卡記錄失敗:', error);
+      setCheckInRecords([]);
     }
   };
 
@@ -119,8 +121,8 @@ export const useSupabaseCheckIn = () => {
         return { checkIn: undefined, checkOut: undefined };
       }
 
-      const checkInRecord = data?.find((record: any) => record.action === 'check-in');
-      const checkOutRecord = data?.find((record: any) => record.action === 'check-out');
+      const checkInRecord = (data || []).find((record: any) => record.action === 'check-in');
+      const checkOutRecord = (data || []).find((record: any) => record.action === 'check-out');
 
       return {
         checkIn: checkInRecord ? {

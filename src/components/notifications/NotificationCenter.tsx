@@ -37,8 +37,9 @@ const NotificationCenter: React.FC = () => {
       // Navigate to leave request page to view status
       navigate('/leave-request');
     } else if (notification.type === 'announcement' || notification.type === 'system') {
-      // Force refresh the announcements data first
-      console.log('Dispatching announcement refresh events');
+      console.log('Announcement notification clicked, dispatching refresh events');
+      
+      // First dispatch refresh events
       window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
       window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
         detail: { type: 'refresh', source: 'notification_click' }
@@ -46,10 +47,12 @@ const NotificationCenter: React.FC = () => {
       
       // Check if we're already on the announcements page
       if (location.pathname === '/company-announcements') {
-        // Already on the page, events should refresh the list
-        console.log('Already on announcements page, dispatched refresh events');
+        console.log('Already on announcements page, events dispatched');
+        // Force a refresh after a short delay to ensure data is loaded
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
+        }, 100);
       } else {
-        // Navigate to company announcements page
         console.log('Navigating to announcements page');
         navigate('/company-announcements');
       }

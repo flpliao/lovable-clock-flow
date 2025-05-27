@@ -60,6 +60,7 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     
     const handleDataUpdate = (event: CustomEvent) => {
       console.log('Received data update event:', event.detail);
+      // Force immediate refresh
       loadAnnouncements();
     };
     
@@ -124,7 +125,7 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     const newAnnouncement = addAnnouncement(announcement);
     
     // Always create notification for new announcement
-    console.log('Adding notification for new announcement');
+    console.log('Adding notification for new announcement with ID:', newAnnouncement.id);
     addNotification({
       title: '新公告發布',
       message: `${newAnnouncement.title}`,
@@ -134,17 +135,17 @@ export const useAnnouncements = (adminMode: boolean = false) => {
       }
     });
     
-    // Immediately refresh local state and force global refresh
+    // Immediately refresh local state
     console.log('Refreshing announcements after creation');
-    loadAnnouncements();
     
-    // Also dispatch events for other components
+    // Use setTimeout to ensure the data is properly updated
     setTimeout(() => {
+      loadAnnouncements();
       window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
       window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
         detail: { type: 'added', announcement: newAnnouncement }
       }));
-    }, 100);
+    }, 50);
     
     return newAnnouncement;
   };

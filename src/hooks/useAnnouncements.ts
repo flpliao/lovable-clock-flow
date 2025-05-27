@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -37,30 +38,41 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     setRefreshKey(prev => prev + 1);
   }, []);
 
-  // Listen for custom refresh events
+  // Listen for custom refresh events and data updates
   useEffect(() => {
     const handleRefresh = () => {
       console.log('Received refresh event, updating announcements');
       forceRefresh();
     };
     
+    const handleDataUpdate = (event: CustomEvent) => {
+      console.log('Received data update event:', event.detail);
+      forceRefresh();
+    };
+    
     window.addEventListener('refreshAnnouncements', handleRefresh);
+    window.addEventListener('announcementDataUpdated', handleDataUpdate as EventListener);
     
     return () => {
       window.removeEventListener('refreshAnnouncements', handleRefresh);
+      window.removeEventListener('announcementDataUpdated', handleDataUpdate as EventListener);
     };
   }, [forceRefresh]);
 
   // Load announcements
   useEffect(() => {
-    setIsLoading(true);
-    // Small delay to simulate loading from an API
-    setTimeout(() => {
-      const newAnnouncements = adminMode && hasAdminAccess ? getAllAnnouncements() : getActiveAnnouncements();
-      console.log('Loading announcements:', newAnnouncements.length, 'items');
-      setAnnouncements(newAnnouncements);
-      setIsLoading(false);
-    }, 300);
+    const loadAnnouncements = () => {
+      setIsLoading(true);
+      // Use setTimeout to ensure the data is fresh
+      setTimeout(() => {
+        const newAnnouncements = adminMode && hasAdminAccess ? getAllAnnouncements() : getActiveAnnouncements();
+        console.log('Loading announcements:', newAnnouncements.length, 'items for mode:', adminMode ? 'admin' : 'user');
+        setAnnouncements(newAnnouncements);
+        setIsLoading(false);
+      }, 100);
+    };
+
+    loadAnnouncements();
   }, [adminMode, hasAdminAccess, currentUser, refreshKey]);
 
   // Filtered and searched announcements
@@ -121,10 +133,11 @@ export const useAnnouncements = (adminMode: boolean = false) => {
     });
     
     // Force refresh to ensure all users see the new announcement
-    forceRefresh();
-    
-    // Also dispatch the custom event for external listeners
-    window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
+    setTimeout(() => {
+      forceRefresh();
+      // Also dispatch the custom event for external listeners
+      window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
+    }, 200);
     
     return newAnnouncement;
   };

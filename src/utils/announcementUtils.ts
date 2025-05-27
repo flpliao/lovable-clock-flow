@@ -4,7 +4,7 @@ import { CompanyAnnouncement, AnnouncementRead, AnnouncementCategory } from '@/t
 import { User } from '@/types';
 
 // Mock data for company announcements
-const mockAnnouncements: CompanyAnnouncement[] = [
+let mockAnnouncements: CompanyAnnouncement[] = [
   {
     id: '1',
     title: '公司年度旅遊計劃',
@@ -90,10 +90,11 @@ const mockAnnouncements: CompanyAnnouncement[] = [
 // Mock data for announcement reads
 let announcementReads: AnnouncementRead[] = [];
 
-// Get all announcements (for employees)
+// Get all announcements (for employees) - ensure fresh data
 export const getActiveAnnouncements = (): CompanyAnnouncement[] => {
+  console.log('getActiveAnnouncements called, total announcements:', mockAnnouncements.length);
   // In a real app, filter by company_id and is_active
-  return mockAnnouncements
+  const activeAnnouncements = [...mockAnnouncements]
     .filter(announcement => announcement.is_active)
     .sort((a, b) => {
       // First sort by is_pinned (pinned first)
@@ -103,6 +104,9 @@ export const getActiveAnnouncements = (): CompanyAnnouncement[] => {
       // Then sort by created_at (newest first)
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
+  
+  console.log('Filtered active announcements:', activeAnnouncements.length);
+  return activeAnnouncements;
 };
 
 // Get announcement by ID
@@ -110,11 +114,14 @@ export const getAnnouncementById = (id: string): CompanyAnnouncement | undefined
   return mockAnnouncements.find(announcement => announcement.id === id);
 };
 
-// Get all announcements (for admin)
+// Get all announcements (for admin) - ensure fresh data
 export const getAllAnnouncements = (): CompanyAnnouncement[] => {
-  return [...mockAnnouncements].sort(
+  console.log('getAllAnnouncements called, total announcements:', mockAnnouncements.length);
+  const allAnnouncements = [...mockAnnouncements].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
+  console.log('Sorted all announcements:', allAnnouncements.length);
+  return allAnnouncements;
 };
 
 // Add new announcement
@@ -124,7 +131,15 @@ export const addAnnouncement = (announcement: Omit<CompanyAnnouncement, 'id'>): 
     id: uuidv4()
   };
   
+  console.log('Adding new announcement to mockAnnouncements:', newAnnouncement.title);
   mockAnnouncements.unshift(newAnnouncement);
+  console.log('Total announcements after adding:', mockAnnouncements.length);
+  
+  // Trigger a global event to notify all components about the update
+  window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
+    detail: { type: 'added', announcement: newAnnouncement }
+  }));
+  
   return newAnnouncement;
 };
 
@@ -133,6 +148,12 @@ export const updateAnnouncement = (announcement: CompanyAnnouncement): CompanyAn
   const index = mockAnnouncements.findIndex(a => a.id === announcement.id);
   if (index !== -1) {
     mockAnnouncements[index] = announcement;
+    console.log('Updated announcement:', announcement.title);
+    
+    // Trigger a global event to notify all components about the update
+    window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
+      detail: { type: 'updated', announcement }
+    }));
   }
   return announcement;
 };
@@ -142,6 +163,12 @@ export const deleteAnnouncement = (id: string): boolean => {
   const index = mockAnnouncements.findIndex(a => a.id === id);
   if (index !== -1) {
     mockAnnouncements[index].is_active = false;
+    console.log('Deleted announcement:', mockAnnouncements[index].title);
+    
+    // Trigger a global event to notify all components about the update
+    window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
+      detail: { type: 'deleted', announcement: mockAnnouncements[index] }
+    }));
     return true;
   }
   return false;

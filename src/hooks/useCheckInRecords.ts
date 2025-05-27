@@ -1,0 +1,79 @@
+
+import { useState, useRef } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { CheckInRecord } from '@/types';
+
+export const useCheckInRecords = () => {
+  const [checkInRecords, setCheckInRecords] = useState<CheckInRecord[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const loadingRef = useRef(false);
+
+  const loadCheckInRecords = async (userId: string) => {
+    if (loadingRef.current || !userId) return;
+    
+    try {
+      loadingRef.current = true;
+      setLoading(true);
+      
+      console.log('開始載入打卡記錄，使用者ID:', userId);
+
+      const { data, error } = await supabase
+        .from('check_in_records')
+        .select('*')
+        .eq('user_id', userId)
+        .order('timestamp', { ascending: false })
+        .limit(100);
+
+      console.log('Supabase 查詢結果:', { data, error });
+
+      if (error) {
+        console.error('Error loading check-in records:', error);
+        toast({
+          title: "載入失敗",
+          description: "無法載入打卡記錄",
+          variant: "destructive"
+        });
+        setCheckInRecords([]);
+        return;
+      }
+
+      const formattedRecords = (data || []).map((record: any) => ({
+        id: record.id,
+        userId: record.user_id,
+        timestamp: record.timestamp,
+        type: record.type as 'location' | 'ip',
+        status: record.status as 'success' | 'failed',
+        action: record.action as 'check-in' | 'check-out',
+        details: {
+          latitude: record.latitude,
+          longitude: record.longitude,
+          distance: record.distance,
+          ip: record.ip_address,
+          locationName: record.location_name
+        }
+      }));
+
+      console.log('格式化後的記錄:', formattedRecords);
+      setCheckInRecords(formattedRecords);
+    } catch (error) {
+      console.error('載入打卡記錄失敗:', error);
+      toast({
+        title: "載入失敗",
+        description: "載入打卡記錄時發生錯誤",
+        variant: "destructive"
+      });
+      setCheckInRecords([]);
+    } finally {
+      setLoading(false);
+      loadingRef.current = false;
+    }
+  };
+
+  return {
+    checkInRecords,
+    loading,
+    loadCheckInRecords
+  };
+};

@@ -41,7 +41,6 @@ export const useCheckInCreator = () => {
       
       console.log('即將插入資料庫的記錄:', recordData);
 
-      // 暫時關閉 RLS 來測試插入
       const { data, error } = await supabase
         .from('check_in_records')
         .insert(recordData)
@@ -49,21 +48,11 @@ export const useCheckInCreator = () => {
 
       if (error) {
         console.error('打卡記錄儲存失敗:', error);
-        
-        // 如果是 RLS 錯誤，提供更詳細的訊息
-        if (error.message.includes('row-level security policy')) {
-          toast({
-            title: "打卡失敗",
-            description: "資料庫權限問題，請聯繫管理員",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "打卡失敗",
-            description: `無法記錄打卡資料: ${error.message}`,
-            variant: "destructive"
-          });
-        }
+        toast({
+          title: "打卡失敗",
+          description: `無法記錄打卡資料: ${error.message}`,
+          variant: "destructive"
+        });
         return false;
       }
 

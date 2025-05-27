@@ -632,6 +632,10 @@ export type Database = {
           read_percentage: number
         }[]
       }
+      get_current_user_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       initialize_annual_leave_balance: {
         Args: { staff_uuid: string; target_year: number }
         Returns: undefined

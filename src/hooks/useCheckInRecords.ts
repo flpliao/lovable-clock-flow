@@ -19,7 +19,6 @@ export const useCheckInRecords = () => {
       
       console.log('開始載入打卡記錄，使用者ID:', userId);
 
-      // 暫時移除 RLS 限制來測試查詢
       const { data, error } = await supabase
         .from('check_in_records')
         .select('*')

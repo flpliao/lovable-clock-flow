@@ -20,7 +20,6 @@ export const useTodayCheckInRecords = () => {
       
       console.log('查詢今日記錄範圍:', { startOfDayISO, endOfDayISO, userId });
       
-      // 暫時使用 .select('*') 並移除 RLS 相關的過濾
       const { data, error } = await supabase
         .from('check_in_records')
         .select('*')

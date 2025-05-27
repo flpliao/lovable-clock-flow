@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { MapPin, Wifi } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,11 +14,11 @@ const CheckInHistory: React.FC = () => {
   const { checkInRecords, loadCheckInRecords, loading } = useSupabaseCheckIn();
   
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser?.id) {
       console.log('載入打卡記錄，使用者ID:', currentUser.id);
-      loadCheckInRecords(); // Remove the argument since the function now handles user ID internally
+      loadCheckInRecords();
     }
-  }, [currentUser, loadCheckInRecords]);
+  }, [currentUser?.id, loadCheckInRecords]);
 
   console.log('打卡記錄數量:', checkInRecords.length);
   console.log('打卡記錄:', checkInRecords);

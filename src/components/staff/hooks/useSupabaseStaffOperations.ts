@@ -84,19 +84,34 @@ export const useSupabaseStaffOperations = () => {
       return false;
     }
 
-    if (!newStaff.name || !newStaff.position || !newStaff.department || !newStaff.contact) {
+    if (!newStaff.name || !newStaff.position || !newStaff.department || !newStaff.contact || !newStaff.branch_id) {
       toast({
         title: "資料不完整",
-        description: "請填寫員工基本資料",
+        description: "請填寫員工基本資料包含營業處",
         variant: "destructive"
       });
       return false;
     }
 
     try {
+      // 確保所有必填欄位都有值
+      const staffData = {
+        name: newStaff.name,
+        position: newStaff.position,
+        department: newStaff.department,
+        branch_id: newStaff.branch_id,
+        branch_name: newStaff.branch_name,
+        contact: newStaff.contact,
+        role: newStaff.role || 'user',
+        role_id: newStaff.role_id || 'user',
+        supervisor_id: newStaff.supervisor_id || null,
+        username: newStaff.username || null,
+        email: newStaff.email || null
+      };
+
       const { data, error } = await supabase
         .from('staff')
-        .insert(newStaff)
+        .insert(staffData)
         .select()
         .single();
 

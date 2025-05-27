@@ -4,11 +4,11 @@ export interface Staff {
   name: string;
   position: string;
   department: string;
-  branch_id?: string; // 新增營業處ID
-  branch_name?: string; // 新增營業處名稱
+  branch_id: string; // 改為必填
+  branch_name: string;
   contact: string;
   role: 'admin' | 'user' | string;
-  role_id?: string;
+  role_id: string;
   supervisor_id?: string;
   username?: string;
   email?: string;
@@ -19,11 +19,11 @@ export interface NewStaff {
   name: string;
   position: string;
   department: string;
-  branch_id?: string;
-  branch_name?: string; // 新增營業處名稱
+  branch_id: string; // 改為必填
+  branch_name: string;
   contact: string;
   role: 'admin' | 'user' | string;
-  role_id?: string;
+  role_id: string;
   supervisor_id?: string;
   username?: string;
   email?: string;
@@ -63,8 +63,8 @@ export interface StaffManagementContextType {
   setCurrentStaff: (staff: Staff | null) => void;
   newStaff: NewStaff;
   setNewStaff: (staff: NewStaff) => void;
-  handleAddStaff: () => boolean;
-  handleEditStaff: () => boolean;
+  handleAddStaff: () => Promise<boolean>; // 改為 async
+  handleEditStaff: () => Promise<boolean>; // 改為 async
   handleDeleteStaff: (id: string) => void;
   openEditDialog: (staff: Staff) => void;
   getSupervisorName: (supervisorId?: string) => string;

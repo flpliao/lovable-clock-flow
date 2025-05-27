@@ -23,11 +23,11 @@ export const useStaffOperations = () => {
     staff.position.toLowerCase().includes(searchFilter.toLowerCase())
   );
 
-  const handleAddStaff = async (newStaff: NewStaff) => {
+  const handleAddStaff = async (newStaff: NewStaff): Promise<boolean> => {
     return await addStaff(newStaff);
   };
 
-  const handleEditStaff = async (staff: Staff) => {
+  const handleEditStaff = async (staff: Staff): Promise<boolean> => {
     return await updateStaff(staff);
   };
 

@@ -42,7 +42,14 @@ export const useSupabaseCompanyOperations = () => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setBranches(data || []);
+      
+      // 確保 type 欄位符合 TypeScript 類型
+      const formattedBranches = data?.map(branch => ({
+        ...branch,
+        type: branch.type as 'headquarters' | 'branch' | 'store'
+      })) || [];
+      
+      setBranches(formattedBranches);
     } catch (error) {
       console.error('載入營業處資料失敗:', error);
       toast({
@@ -147,7 +154,13 @@ export const useSupabaseCompanyOperations = () => {
 
       if (error) throw error;
 
-      setBranches(prev => [...prev, data]);
+      // 確保新增的 branch 有正確的 type
+      const formattedBranch = {
+        ...data,
+        type: data.type as 'headquarters' | 'branch' | 'store'
+      };
+
+      setBranches(prev => [...prev, formattedBranch]);
       toast({
         title: "新增成功",
         description: `已成功新增營業處「${data.name}」`

@@ -42,8 +42,8 @@ export const useStaffManagement = () => {
   } = useRoleManagement(staffList);
 
   // Combine the add staff functionality
-  const handleAddStaffSubmit = (): boolean => {
-    const success = handleAddStaff(newStaff);
+  const handleAddStaffSubmit = async (): Promise<boolean> => {
+    const success = await handleAddStaff(newStaff);
     if (success) {
       resetNewStaff();
       setIsAddDialogOpen(false);
@@ -52,9 +52,9 @@ export const useStaffManagement = () => {
   };
 
   // Combine the edit staff functionality
-  const handleEditStaffSubmit = (): boolean => {
+  const handleEditStaffSubmit = async (): Promise<boolean> => {
     if (currentStaff) {
-      const success = handleEditStaff(currentStaff);
+      const success = await handleEditStaff(currentStaff);
       if (success) {
         setIsEditDialogOpen(false);
       }

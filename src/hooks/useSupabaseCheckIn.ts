@@ -17,8 +17,7 @@ export const useSupabaseCheckIn = () => {
       const targetUserId = userId || currentUser?.id;
       if (!targetUserId) return;
 
-      // Try to query the new check_in_records table using any type
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('check_in_records')
         .select('*')
         .eq('user_id', targetUserId)
@@ -65,7 +64,7 @@ export const useSupabaseCheckIn = () => {
     }
 
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('check_in_records')
         .insert({
           user_id: currentUser.id,
@@ -107,7 +106,7 @@ export const useSupabaseCheckIn = () => {
 
       const today = new Date().toISOString().split('T')[0];
       
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('check_in_records')
         .select('*')
         .eq('user_id', targetUserId)

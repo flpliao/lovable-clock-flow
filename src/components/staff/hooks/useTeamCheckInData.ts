@@ -1,10 +1,10 @@
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
-import { getCheckInRecords } from '@/utils/checkInUtils';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { CheckInRecord } from '@/types';
 import { Staff } from '../types';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface TeamMemberCheckInData {
   staff: Staff;
@@ -18,9 +18,51 @@ export const useTeamCheckInData = () => {
   const { staffList } = useStaffManagementContext();
   const [filter, setFilter] = useState<'today' | 'week' | 'month'>('today');
   const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [allRecords, setAllRecords] = useState<CheckInRecord[]>([]);
 
   // Check if user has permission to view this page - admin users can view
   const hasPermission = isAdmin();
+
+  // Load check-in records from Supabase
+  useEffect(() => {
+    const loadRecords = async () => {
+      if (!hasPermission) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('check_in_records')
+          .select('*')
+          .order('timestamp', { ascending: false });
+
+        if (error) {
+          console.error('Error loading team check-in records:', error);
+          return;
+        }
+
+        const formattedRecords = (data || []).map((record: any) => ({
+          id: record.id,
+          userId: record.user_id,
+          timestamp: record.timestamp,
+          type: record.type as 'location' | 'ip',
+          status: record.status as 'success' | 'failed',
+          action: record.action as 'check-in' | 'check-out',
+          details: {
+            latitude: record.latitude,
+            longitude: record.longitude,
+            distance: record.distance,
+            ip: record.ip_address,
+            locationName: record.location_name
+          }
+        }));
+
+        setAllRecords(formattedRecords);
+      } catch (error) {
+        console.error('載入團隊打卡記錄失敗:', error);
+      }
+    };
+
+    loadRecords();
+  }, [hasPermission]);
 
   // Get all departments
   const departments = useMemo(() => {
@@ -45,7 +87,6 @@ export const useTeamCheckInData = () => {
   const teamCheckInData = useMemo(() => {
     if (!hasPermission) return [];
 
-    const allRecords = getCheckInRecords();
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const weekStart = new Date(today - (now.getDay() > 0 ? now.getDay() - 1 : 6) * 86400000).getTime();
@@ -85,7 +126,7 @@ export const useTeamCheckInData = () => {
         latestRecord
       };
     });
-  }, [filteredStaff, filter, hasPermission]);
+  }, [filteredStaff, filter, hasPermission, allRecords]);
 
   return {
     filter,

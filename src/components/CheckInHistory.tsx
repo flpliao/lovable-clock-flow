@@ -1,22 +1,23 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapPin, Wifi } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useUser } from '@/contexts/UserContext';
 import { CheckInRecord } from '@/types';
-// 从 utils/checkInUtils 导入，而不是 LocationCheckIn
-import { getUserCheckInRecords, formatDate, formatTime } from '@/utils/checkInUtils';
+import { formatDate, formatTime } from '@/utils/checkInUtils';
+import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 
 const CheckInHistory: React.FC = () => {
   const { currentUser } = useUser();
-  const userId = currentUser?.id || '';
+  const { checkInRecords, loadCheckInRecords } = useSupabaseCheckIn();
   
-  // Get the user's check-in records
-  const checkInRecords = getUserCheckInRecords(userId).sort((a, b) => 
-    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
+  useEffect(() => {
+    if (currentUser) {
+      loadCheckInRecords(currentUser.id);
+    }
+  }, [currentUser, loadCheckInRecords]);
   
   return (
     <Card>
@@ -34,6 +35,7 @@ const CheckInHistory: React.FC = () => {
               <TableRow>
                 <TableHead>日期</TableHead>
                 <TableHead>時間</TableHead>
+                <TableHead>動作</TableHead>
                 <TableHead>類型</TableHead>
                 <TableHead>狀態</TableHead>
                 <TableHead>詳情</TableHead>
@@ -44,6 +46,11 @@ const CheckInHistory: React.FC = () => {
                 <TableRow key={record.id}>
                   <TableCell>{formatDate(record.timestamp)}</TableCell>
                   <TableCell>{formatTime(record.timestamp)}</TableCell>
+                  <TableCell>
+                    <span className={record.action === 'check-in' ? 'text-green-600' : 'text-blue-600'}>
+                      {record.action === 'check-in' ? '上班打卡' : '下班打卡'}
+                    </span>
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center">
                       {record.type === 'location' ? (

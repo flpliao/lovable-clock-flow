@@ -71,6 +71,65 @@ export type Database = {
           },
         ]
       }
+      check_in_records: {
+        Row: {
+          action: string
+          created_at: string
+          distance: number | null
+          id: string
+          ip_address: string | null
+          latitude: number | null
+          location_name: string | null
+          longitude: number | null
+          staff_id: string | null
+          status: string
+          timestamp: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          distance?: number | null
+          id?: string
+          ip_address?: string | null
+          latitude?: number | null
+          location_name?: string | null
+          longitude?: number | null
+          staff_id?: string | null
+          status: string
+          timestamp?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          distance?: number | null
+          id?: string
+          ip_address?: string | null
+          latitude?: number | null
+          location_name?: string | null
+          longitude?: number | null
+          staff_id?: string | null
+          status?: string
+          timestamp?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "check_in_records_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string

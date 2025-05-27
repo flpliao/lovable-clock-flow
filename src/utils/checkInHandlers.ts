@@ -27,9 +27,17 @@ export const handleLocationCheckIn = async (
       setDistance(distance);
     }
     
-    if (distance > ALLOWED_DISTANCE) {
+    // 檢查是否為管理員（簡單的開發模式檢查）
+    const isAdmin = userId === '550e8400-e29b-41d4-a716-446655440001'; // 廖俊雄的ID
+    
+    if (distance > ALLOWED_DISTANCE && !isAdmin) {
       onError(`您距離公司 ${Math.round(distance)} 公尺，超過允許範圍 ${ALLOWED_DISTANCE} 公尺`);
       return;
+    }
+    
+    // 如果是管理員且超過距離，給予警告但允許打卡
+    if (distance > ALLOWED_DISTANCE && isAdmin) {
+      console.warn(`管理員模式：允許遠距離打卡 (${Math.round(distance)} 公尺)`);
     }
     
     const record: CheckInRecord = {

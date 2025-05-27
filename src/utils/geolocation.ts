@@ -6,8 +6,8 @@ export const COMPANY_LOCATION = {
   name: "總公司 - 台南市永康區振興路132號"
 };
 
-// 允許的打卡距離 (公尺)
-export const ALLOWED_DISTANCE = 100;
+// 允許的打卡距離 (公尺) - 擴大到合理範圍
+export const ALLOWED_DISTANCE = 500;
 
 // 計算兩點間距離的函數
 export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -45,6 +45,7 @@ export const getCurrentPosition = (): Promise<GeolocationPosition> => {
           COMPANY_LOCATION.longitude
         );
         console.log('計算的距離:', distance, '公尺');
+        console.log('允許的距離:', ALLOWED_DISTANCE, '公尺');
         
         resolve(position);
       },

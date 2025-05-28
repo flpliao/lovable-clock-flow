@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogIn, LogOut } from 'lucide-react';
+import { LogIn, LogOut, CheckCircle } from 'lucide-react';
 import { CheckInRecord } from '@/types';
 
 interface ActionTypeSelectorProps {
@@ -48,8 +48,8 @@ const ActionTypeSelector: React.FC<ActionTypeSelectorProps> = ({
       >
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="check-in" className="text-center" disabled>
-            <LogIn className="h-4 w-4 mr-2" />
-            上班打卡
+            <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+            已上班
           </TabsTrigger>
           <TabsTrigger value="check-out" className="text-center">
             <LogOut className="h-4 w-4 mr-2" />
@@ -60,24 +60,29 @@ const ActionTypeSelector: React.FC<ActionTypeSelectorProps> = ({
     );
   }
   
-  // If already checked in and out, all options disabled
+  // If both completed, show status but allow re-selection for viewing
   return (
-    <Tabs 
-      value={actionType} 
-      onValueChange={(value) => setActionType(value as 'check-in' | 'check-out')}
-      className="w-full max-w-md mb-6"
-    >
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="check-in" className="text-center" disabled>
-          <LogIn className="h-4 w-4 mr-2" />
-          上班打卡
-        </TabsTrigger>
-        <TabsTrigger value="check-out" className="text-center" disabled>
-          <LogOut className="h-4 w-4 mr-2" />
-          下班打卡
-        </TabsTrigger>
-      </TabsList>
-    </Tabs>
+    <div className="w-full max-w-md mb-6">
+      <Tabs 
+        value={actionType} 
+        onValueChange={(value) => setActionType(value as 'check-in' | 'check-out')}
+        className="w-full"
+      >
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="check-in" className="text-center">
+            <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+            已上班
+          </TabsTrigger>
+          <TabsTrigger value="check-out" className="text-center">
+            <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+            已下班
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+      <div className="mt-4 text-center text-sm text-green-600 font-medium">
+        ✅ 今日打卡已完成
+      </div>
+    </div>
   );
 };
 

@@ -46,30 +46,28 @@ const LocationCheckIn: React.FC = () => {
         <CheckInStatusDisplay todayRecords={todayRecords} />
       )}
       
-      {/* If both check-in and check-out are done, show a message */}
+      {/* Action type selection (check-in or check-out) */}
+      <ActionTypeSelector
+        actionType={actionType}
+        setActionType={setActionType}
+        todayRecords={todayRecords}
+      />
+      
+      {/* If both check-in and check-out are done, show completion message */}
       {todayRecords.checkIn && todayRecords.checkOut ? (
         <CheckInCompletedMessage />
       ) : (
-        <>
-          {/* Action type selection (check-in or check-out) */}
-          <ActionTypeSelector
-            actionType={actionType}
-            setActionType={setActionType}
-            todayRecords={todayRecords}
-          />
-          
-          {/* Method selection (location or IP) and action buttons */}
-          <CheckInMethodSelector
-            checkInMethod={checkInMethod}
-            setCheckInMethod={setCheckInMethod}
-            onLocationCheckIn={onLocationCheckIn}
-            onIpCheckIn={onIpCheckIn}
-            loading={loading}
-            actionType={actionType}
-            distance={distance}
-            error={error}
-          />
-        </>
+        /* Method selection (location or IP) and action buttons */
+        <CheckInMethodSelector
+          checkInMethod={checkInMethod}
+          setCheckInMethod={setCheckInMethod}
+          onLocationCheckIn={onLocationCheckIn}
+          onIpCheckIn={onIpCheckIn}
+          loading={loading}
+          actionType={actionType}
+          distance={distance}
+          error={error}
+        />
       )}
     </div>
   );

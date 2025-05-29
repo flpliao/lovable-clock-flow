@@ -17,7 +17,7 @@ const CheckInCompletedMessage: React.FC = () => {
         variant="ghost"
         size="lg"
         onClick={handleViewAttendance}
-        className="mx-auto bg-blue-500 hover:bg-blue-600 border-2 border-blue-600 text-white h-16 w-16 rounded-full p-0 mb-3 shadow-lg hover:shadow-xl transition-all duration-200"
+        className="mx-auto bg-green-600 hover:bg-green-700 border-2 border-green-700 text-white h-16 w-16 rounded-full p-0 mb-3 shadow-lg hover:shadow-xl transition-all duration-200"
         title="查看個人出勤"
       >
         <Clock className="h-8 w-8" />

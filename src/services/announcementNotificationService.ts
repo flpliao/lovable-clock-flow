@@ -2,32 +2,9 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { NotificationBulkOperations, NotificationDatabaseTesting } from '@/services/notifications';
+import { UserIdValidationService } from '@/services/userIdValidationService';
 
 export class AnnouncementNotificationService {
-  /**
-   * Validate and format user ID to ensure it's a valid UUID
-   */
-  static validateUserId(userId: string): string {
-    console.log('Validating user ID for notifications:', userId);
-    
-    // Check if it's already a valid UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (uuidRegex.test(userId)) {
-      console.log('User ID is already valid UUID:', userId);
-      return userId;
-    }
-    
-    // If it's a simple string like "1", convert it to a valid UUID format
-    if (userId === "1" || userId === "admin") {
-      const validUUID = '550e8400-e29b-41d4-a716-446655440001';
-      console.log('Converting simple user ID to valid UUID for notifications:', validUUID);
-      return validUUID;
-    }
-    
-    console.warn('User ID is not valid UUID format, using fallback for notifications:', userId);
-    return '550e8400-e29b-41d4-a716-446655440001';
-  }
-
   /**
    * Creates notifications for all users when a new announcement is published
    */
@@ -42,8 +19,8 @@ export class AnnouncementNotificationService {
       console.log('公告標題:', announcementTitle);
       console.log('當前用戶ID (原始):', currentUserId);
 
-      // Validate current user ID
-      const validCurrentUserId = currentUserId ? this.validateUserId(currentUserId) : null;
+      // 使用統一的驗證服務
+      const validCurrentUserId = currentUserId ? UserIdValidationService.validateUserId(currentUserId) : null;
       console.log('當前用戶ID (驗證後):', validCurrentUserId);
 
       // Get all active staff (excluding the current user who created the announcement)
@@ -82,8 +59,8 @@ export class AnnouncementNotificationService {
 
       console.log('通知模板:', notificationTemplate);
 
-      // Validate all user IDs before creating notifications
-      const userIds = staffData.map(staff => this.validateUserId(staff.id));
+      // 使用統一的驗證服務驗證所有用戶ID
+      const userIds = staffData.map(staff => UserIdValidationService.validateUserId(staff.id));
       console.log('目標用戶ID列表 (驗證後):', userIds);
 
       // 使用批量創建通知功能
@@ -138,8 +115,8 @@ export class AnnouncementNotificationService {
       console.log('=== 測試通知創建功能 ===');
       console.log('測試用戶ID (原始):', userId);
       
-      // Validate user ID
-      const validUserId = this.validateUserId(userId);
+      // 使用統一的驗證服務
+      const validUserId = UserIdValidationService.validateUserId(userId);
       console.log('測試用戶ID (驗證後):', validUserId);
       
       // 先測試資料庫連接

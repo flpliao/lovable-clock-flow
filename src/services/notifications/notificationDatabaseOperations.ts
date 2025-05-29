@@ -1,32 +1,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/components/notifications/NotificationItem';
+import { UserIdValidationService } from '@/services/userIdValidationService';
 
 export class NotificationDatabaseOperations {
-  /**
-   * Validate and format user ID to ensure it's a valid UUID
-   */
-  static validateUserId(userId: string): string {
-    console.log('Validating user ID in database operations:', userId);
-    
-    // Check if it's already a valid UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (uuidRegex.test(userId)) {
-      console.log('User ID is already valid UUID:', userId);
-      return userId;
-    }
-    
-    // If it's a simple string like "1", convert it to a valid UUID format
-    if (userId === "1" || userId === "admin") {
-      const validUUID = '550e8400-e29b-41d4-a716-446655440001';
-      console.log('Converting simple user ID to valid UUID in database operations:', validUUID);
-      return validUUID;
-    }
-    
-    console.warn('User ID is not valid UUID format, using fallback in database operations:', userId);
-    return '550e8400-e29b-41d4-a716-446655440001';
-  }
-
   /**
    * Load notifications from database for a specific user
    */
@@ -34,8 +11,8 @@ export class NotificationDatabaseOperations {
     try {
       console.log('Loading notifications for user (原始):', userId);
       
-      // Validate user ID
-      const validUserId = this.validateUserId(userId);
+      // 使用統一的驗證服務
+      const validUserId = UserIdValidationService.validateUserId(userId);
       console.log('Loading notifications for user (驗證後):', validUserId);
       
       const { data, error } = await supabase
@@ -90,8 +67,8 @@ export class NotificationDatabaseOperations {
     try {
       console.log('Adding notification for user (原始):', userId, 'notification:', notification);
       
-      // Validate user ID
-      const validUserId = this.validateUserId(userId);
+      // 使用統一的驗證服務
+      const validUserId = UserIdValidationService.validateUserId(userId);
       console.log('Adding notification for user (驗證後):', validUserId);
       
       // Use the database function to create notification
@@ -125,8 +102,8 @@ export class NotificationDatabaseOperations {
     try {
       console.log('Marking notification as read:', notificationId, 'for user (原始):', userId);
       
-      // Validate user ID
-      const validUserId = this.validateUserId(userId);
+      // 使用統一的驗證服務
+      const validUserId = UserIdValidationService.validateUserId(userId);
       console.log('Marking notification as read for user (驗證後):', validUserId);
       
       const { error } = await supabase
@@ -152,8 +129,8 @@ export class NotificationDatabaseOperations {
     try {
       console.log('Marking all notifications as read for user (原始):', userId);
       
-      // Validate user ID
-      const validUserId = this.validateUserId(userId);
+      // 使用統一的驗證服務
+      const validUserId = UserIdValidationService.validateUserId(userId);
       console.log('Marking all notifications as read for user (驗證後):', validUserId);
       
       const { error } = await supabase
@@ -179,8 +156,8 @@ export class NotificationDatabaseOperations {
     try {
       console.log('Clearing all notifications for user (原始):', userId);
       
-      // Validate user ID
-      const validUserId = this.validateUserId(userId);
+      // 使用統一的驗證服務
+      const validUserId = UserIdValidationService.validateUserId(userId);
       console.log('Clearing all notifications for user (驗證後):', validUserId);
       
       const { error } = await supabase

@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { CompanyAnnouncement } from '@/types/announcement';
+import { UserIdValidationService } from '@/services/userIdValidationService';
 
 export class AnnouncementCrudService {
   /**
@@ -55,31 +56,6 @@ export class AnnouncementCrudService {
   }
 
   /**
-   * Validate and format user ID to ensure it's a valid UUID
-   */
-  static validateUserId(userId: string): string {
-    console.log('Validating user ID:', userId);
-    
-    // Check if it's already a valid UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (uuidRegex.test(userId)) {
-      console.log('User ID is already valid UUID:', userId);
-      return userId;
-    }
-    
-    // If it's a simple string like "1", convert it to a valid UUID format
-    if (userId === "1" || userId === "admin") {
-      const validUUID = '550e8400-e29b-41d4-a716-446655440001';
-      console.log('Converting simple user ID to valid UUID:', validUUID);
-      return validUUID;
-    }
-    
-    // For other cases, generate a UUID based on the input
-    console.warn('User ID is not valid UUID format, using fallback:', userId);
-    return '550e8400-e29b-41d4-a716-446655440001';
-  }
-
-  /**
    * Create a new announcement in the database
    */
   static async createAnnouncement(
@@ -91,8 +67,8 @@ export class AnnouncementCrudService {
       console.log('Creating announcement for user:', currentUserId);
       console.log('Announcement data:', announcement);
       
-      // Validate and format user ID
-      const validUserId = this.validateUserId(currentUserId);
+      // 使用統一的驗證服務
+      const validUserId = UserIdValidationService.validateUserId(currentUserId);
       console.log('Using validated user ID:', validUserId);
       
       // Create the announcement

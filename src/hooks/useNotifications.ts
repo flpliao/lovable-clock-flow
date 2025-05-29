@@ -10,6 +10,7 @@ export const useNotifications = () => {
   const { currentUser } = useUser();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Load notifications from database
   const loadNotifications = async () => {
@@ -20,7 +21,10 @@ export const useNotifications = () => {
       return;
     }
 
+    console.log('=== 開始載入通知 ===');
     console.log('Loading notifications for user:', currentUser.id);
+    setIsLoading(true);
+
     try {
       const formattedNotifications = await NotificationDatabaseService.loadNotifications(currentUser.id);
       const unread = formattedNotifications.filter(n => !n.isRead).length;
@@ -28,8 +32,11 @@ export const useNotifications = () => {
       setNotifications(formattedNotifications);
       setUnreadCount(unread);
       console.log('Updated notifications state - total:', formattedNotifications.length, 'unread:', unread);
+      console.log('=== 通知載入完成 ===');
     } catch (error) {
       console.error('Error loading notifications:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,6 +75,35 @@ export const useNotifications = () => {
     return cleanup;
   }, [currentUser]);
 
+  // 監聽自定義通知更新事件
+  useEffect(() => {
+    const handleNotificationUpdate = (event: CustomEvent) => {
+      console.log('收到通知更新事件:', event.detail);
+      // 延遲重新載入以確保資料庫更新完成
+      setTimeout(() => {
+        loadNotifications();
+      }, 500);
+    };
+
+    window.addEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
+    };
+  }, [currentUser]);
+
+  // 定期重新載入通知（作為備用機制）
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const interval = setInterval(() => {
+      console.log('定期刷新通知 (每30秒)');
+      loadNotifications();
+    }, 30000); // 每30秒刷新一次
+
+    return () => clearInterval(interval);
+  }, [currentUser]);
+
   // Get notification actions
   const actions = useNotificationActions(
     currentUser?.id || null,
@@ -79,7 +115,8 @@ export const useNotifications = () => {
 
   return { 
     notifications, 
-    unreadCount, 
+    unreadCount,
+    isLoading,
     refreshNotifications: loadNotifications,
     ...actions
   };

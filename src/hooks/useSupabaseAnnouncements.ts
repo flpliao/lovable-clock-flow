@@ -46,7 +46,9 @@ export const useSupabaseAnnouncements = () => {
     }
 
     try {
+      console.log('=== 開始創建公告 ===');
       console.log('Creating announcement:', newAnnouncement.title);
+      console.log('公告狀態 - is_active:', newAnnouncement.is_active);
       
       const result = await AnnouncementCrudService.createAnnouncement(
         newAnnouncement, 
@@ -55,32 +57,43 @@ export const useSupabaseAnnouncements = () => {
       );
 
       if (result.success && result.data) {
-        console.log('Announcement created successfully with ID:', result.data.id);
+        console.log('公告創建成功，ID:', result.data.id);
         
         // 重新載入公告列表
         await loadAnnouncements();
         
         // 如果公告是啟用狀態，創建通知
         if (newAnnouncement.is_active) {
-          console.log('Creating notifications for active announcement');
+          console.log('公告為啟用狀態，開始創建通知...');
           try {
             await AnnouncementNotificationService.createAnnouncementNotifications(
               result.data.id, 
               newAnnouncement.title, 
               currentUser.id
             );
-            console.log('Notifications created successfully');
+            console.log('通知創建流程完成');
+            
+            toast({
+              title: "公告已發布",
+              description: `公告「${newAnnouncement.title}」已成功發布並通知相關用戶`,
+            });
           } catch (notificationError) {
-            console.error('Failed to create notifications:', notificationError);
-            // 即使通知創建失敗，公告仍然創建成功
+            console.error('通知創建失敗:', notificationError);
             toast({
               title: "公告已創建",
-              description: "公告已成功創建，但通知發送可能失敗",
+              description: "公告已成功創建，但通知發送失敗",
               variant: "default"
             });
           }
+        } else {
+          console.log('公告為停用狀態，跳過通知創建');
+          toast({
+            title: "公告已創建",
+            description: "公告已成功創建（未啟用狀態）",
+          });
         }
         
+        console.log('=== 公告創建流程完成 ===');
         return true;
       } else {
         console.error('Failed to create announcement:', result);

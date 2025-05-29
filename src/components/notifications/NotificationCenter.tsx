@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Bell, Check, X } from 'lucide-react';
+import { Bell, Check, X, TestTube } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Popover,
@@ -12,16 +12,20 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import NotificationItem, { Notification } from './NotificationItem';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from '@/hooks/useNotifications';
+import { AnnouncementNotificationService } from '@/services/announcementNotificationService';
+import { useUser } from '@/contexts/UserContext';
 
 const NotificationCenter: React.FC = () => {
   const { 
     notifications, 
     unreadCount, 
+    isLoading,
     markAsRead, 
     markAllAsRead,
     clearNotifications,
     refreshNotifications
   } = useNotifications();
+  const { currentUser } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -30,8 +34,9 @@ const NotificationCenter: React.FC = () => {
   useEffect(() => {
     console.log('NotificationCenter render - notifications count:', notifications.length);
     console.log('NotificationCenter render - unreadCount:', unreadCount);
+    console.log('NotificationCenter render - isLoading:', isLoading);
     console.log('NotificationCenter render - notifications:', notifications);
-  }, [notifications, unreadCount]);
+  }, [notifications, unreadCount, isLoading]);
 
   // Refresh notifications when component mounts or when returning from other pages
   useEffect(() => {
@@ -39,12 +44,12 @@ const NotificationCenter: React.FC = () => {
     refreshNotifications();
   }, [location.pathname, refreshNotifications]);
 
-  // Set up an interval to periodically refresh notifications (increased frequency for testing)
+  // Set up an interval to periodically refresh notifications
   useEffect(() => {
     const interval = setInterval(() => {
-      console.log('NotificationCenter - periodic refresh (every 10 seconds)');
+      console.log('NotificationCenter - periodic refresh (every 15 seconds)');
       refreshNotifications();
-    }, 10000); // Refresh every 10 seconds for testing
+    }, 15000); // Refresh every 15 seconds
 
     return () => clearInterval(interval);
   }, [refreshNotifications]);
@@ -94,12 +99,33 @@ const NotificationCenter: React.FC = () => {
       refreshNotifications();
     }
   };
+
+  // 測試通知創建功能
+  const handleTestNotification = async () => {
+    if (!currentUser) {
+      console.log('No current user for test notification');
+      return;
+    }
+
+    console.log('開始測試通知創建...');
+    const success = await AnnouncementNotificationService.testNotificationCreation(currentUser.id);
+    
+    if (success) {
+      console.log('測試通知創建成功');
+      // 重新載入通知
+      setTimeout(() => {
+        refreshNotifications();
+      }, 1000);
+    } else {
+      console.log('測試通知創建失敗');
+    }
+  };
   
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button className="relative">
-          <Bell className="w-6 h-6 text-gray-400" />
+          <Bell className={`w-6 h-6 ${isLoading ? 'text-blue-400 animate-pulse' : 'text-gray-400'}`} />
           {unreadCount > 0 && (
             <Badge className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white text-xs px-1.5 py-0.5 min-w-[1.5rem] flex items-center justify-center rounded-full">
               {unreadCount}
@@ -111,6 +137,16 @@ const NotificationCenter: React.FC = () => {
         <div className="flex items-center justify-between border-b p-3">
           <h3 className="text-sm font-medium">通知 ({notifications.length})</h3>
           <div className="flex gap-1">
+            {/* 測試按鈕 */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-xs"
+              onClick={handleTestNotification}
+              title="測試通知創建"
+            >
+              <TestTube className="h-3.5 w-3.5" />
+            </Button>
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
@@ -135,7 +171,11 @@ const NotificationCenter: React.FC = () => {
             )}
           </div>
         </div>
-        {notifications.length === 0 ? (
+        {isLoading ? (
+          <div className="py-8 text-center text-sm text-gray-500">
+            載入通知中...
+          </div>
+        ) : notifications.length === 0 ? (
           <div className="py-8 text-center text-sm text-gray-500">
             沒有新通知
           </div>

@@ -133,7 +133,7 @@ export class NotificationDatabaseService {
     try {
       console.log('Adding notification for user:', userId, 'notification:', notification);
       
-      // 確保資料完整性
+      // 確保資料完整性，直接使用 UUID 格式的 userId
       const notificationData = {
         user_id: userId,
         title: notification.title || '新通知',
@@ -156,6 +156,12 @@ export class NotificationDatabaseService {
 
       if (error) {
         console.error('Error adding notification:', error);
+        console.error('Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         return '';
       }
 
@@ -168,7 +174,7 @@ export class NotificationDatabaseService {
   }
 
   /**
-   * 批量創建通知 - 用於公告發布
+   * 批量創建通知 - 修復版本，確保能正確批量插入
    */
   static async createBulkNotifications(
     userIds: string[],
@@ -176,6 +182,11 @@ export class NotificationDatabaseService {
   ): Promise<boolean> {
     try {
       console.log('Creating bulk notifications for users:', userIds.length, 'template:', notificationTemplate);
+
+      if (userIds.length === 0) {
+        console.log('No users to notify');
+        return true;
+      }
 
       const notifications = userIds.map(userId => ({
         user_id: userId,
@@ -198,6 +209,12 @@ export class NotificationDatabaseService {
 
       if (error) {
         console.error('Error creating bulk notifications:', error);
+        console.error('Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         return false;
       }
 
@@ -205,6 +222,66 @@ export class NotificationDatabaseService {
       return true;
     } catch (error) {
       console.error('Error creating bulk notifications:', error);
+      return false;
+    }
+  }
+
+  /**
+   * 測試資料庫連接和權限
+   */
+  static async testDatabaseConnection(userId: string): Promise<boolean> {
+    try {
+      console.log('Testing database connection for user:', userId);
+      
+      // 測試讀取權限
+      const { data: readTest, error: readError } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1);
+
+      if (readError) {
+        console.error('Read test failed:', readError);
+        return false;
+      }
+
+      console.log('Read test passed:', readTest);
+
+      // 測試寫入權限
+      const testNotification = {
+        user_id: userId,
+        title: '測試通知',
+        message: '這是一個測試通知',
+        type: 'system',
+        is_read: false,
+        action_required: false,
+        created_at: new Date().toISOString()
+      };
+
+      const { data: writeTest, error: writeError } = await supabase
+        .from('notifications')
+        .insert(testNotification)
+        .select()
+        .single();
+
+      if (writeError) {
+        console.error('Write test failed:', writeError);
+        return false;
+      }
+
+      console.log('Write test passed:', writeTest);
+
+      // 清理測試資料
+      if (writeTest?.id) {
+        await supabase
+          .from('notifications')
+          .delete()
+          .eq('id', writeTest.id);
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Database connection test failed:', error);
       return false;
     }
   }

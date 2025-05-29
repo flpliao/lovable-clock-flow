@@ -13,9 +13,19 @@ export class AnnouncementNotificationService {
     currentUserId?: string
   ): Promise<void> {
     try {
-      console.log('Creating notifications for announcement:', announcementId, 'with title:', announcementTitle);
+      console.log('=== 開始創建公告通知 ===');
+      console.log('公告ID:', announcementId);
+      console.log('公告標題:', announcementTitle);
+      console.log('當前用戶ID:', currentUserId);
       
+      // 測試資料庫連接
+      if (currentUserId) {
+        const connectionTest = await NotificationDatabaseService.testDatabaseConnection(currentUserId);
+        console.log('資料庫連接測試結果:', connectionTest);
+      }
+
       // Get all active staff (excluding the current user who created the announcement)
+      console.log('正在獲取員工列表...');
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
         .select('id, name')
@@ -27,11 +37,15 @@ export class AnnouncementNotificationService {
       }
 
       if (!staffData || staffData.length === 0) {
-        console.log('No staff found for notifications');
+        console.log('沒有找到需要通知的員工');
+        toast({
+          title: "提醒",
+          description: "沒有找到需要通知的員工",
+        });
         return;
       }
 
-      console.log(`Found ${staffData.length} staff members for notifications:`, staffData);
+      console.log(`找到 ${staffData.length} 位員工需要通知:`, staffData);
 
       // 使用批量創建通知的新方法
       const notificationTemplate = {
@@ -44,28 +58,85 @@ export class AnnouncementNotificationService {
         }
       };
 
+      console.log('通知模板:', notificationTemplate);
+
       const userIds = staffData.map(staff => staff.id);
+      console.log('目標用戶ID列表:', userIds);
+
       const success = await NotificationDatabaseService.createBulkNotifications(userIds, notificationTemplate);
 
       if (success) {
-        console.log(`Successfully created notifications for ${userIds.length} users`);
+        console.log(`成功為 ${userIds.length} 位用戶創建通知`);
         
         // Show success message
         toast({
           title: "通知已發送",
           description: `已為 ${userIds.length} 位用戶創建通知`,
         });
+
+        // 強制刷新通知 - 觸發實時更新事件
+        console.log('觸發實時更新事件...');
+        window.dispatchEvent(new CustomEvent('notificationUpdated', { 
+          detail: { 
+            type: 'announcement_created',
+            announcementId: announcementId,
+            userIds: userIds
+          }
+        }));
+
       } else {
         throw new Error('Failed to create bulk notifications');
       }
+
+      console.log('=== 公告通知創建完成 ===');
     } catch (error) {
       console.error('Error in createAnnouncementNotifications:', error);
       toast({
         title: "通知發送失敗",
-        description: "無法為用戶創建通知",
+        description: `無法為用戶創建通知: ${error instanceof Error ? error.message : '未知錯誤'}`,
         variant: "destructive"
       });
       throw error;
+    }
+  }
+
+  /**
+   * 測試通知創建功能
+   */
+  static async testNotificationCreation(userId: string): Promise<boolean> {
+    try {
+      console.log('測試通知創建功能...');
+      
+      const testNotification = {
+        title: '測試通知',
+        message: '這是一個測試通知，用於驗證通知系統是否正常運作',
+        type: 'system' as const,
+        data: {
+          actionRequired: false
+        }
+      };
+
+      const notificationId = await NotificationDatabaseService.addNotification(userId, testNotification);
+      
+      if (notificationId) {
+        console.log('測試通知創建成功，ID:', notificationId);
+        
+        // 觸發實時更新
+        window.dispatchEvent(new CustomEvent('notificationUpdated', { 
+          detail: { 
+            type: 'test_notification',
+            notificationId: notificationId
+          }
+        }));
+        
+        return true;
+      } else {
+        console.log('測試通知創建失敗');
+        return false;
+      }
+    } catch (error) {
+      console.error('測試通知創建時發生錯誤:', error);
+      return false;
     }
   }
 }

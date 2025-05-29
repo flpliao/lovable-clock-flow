@@ -15,8 +15,14 @@ export const useSupabaseAnnouncements = () => {
 
   // Load announcements
   const loadAnnouncements = async () => {
-    const data = await AnnouncementCrudService.loadAnnouncements();
-    setAnnouncements(data);
+    try {
+      console.log('Loading announcements...');
+      const data = await AnnouncementCrudService.loadAnnouncements();
+      console.log('Loaded announcements:', data.length);
+      setAnnouncements(data);
+    } catch (error) {
+      console.error('Error loading announcements:', error);
+    }
   };
 
   // Create announcement with notifications
@@ -39,30 +45,56 @@ export const useSupabaseAnnouncements = () => {
       return false;
     }
 
-    const result = await AnnouncementCrudService.createAnnouncement(
-      newAnnouncement, 
-      currentUser.id, 
-      currentUser.name
-    );
+    try {
+      console.log('Creating announcement:', newAnnouncement.title);
+      
+      const result = await AnnouncementCrudService.createAnnouncement(
+        newAnnouncement, 
+        currentUser.id, 
+        currentUser.name
+      );
 
-    if (result.success && newAnnouncement.is_active && result.data) {
-      console.log('Creating notifications for active announcement with ID:', result.data.id);
-      try {
-        await AnnouncementNotificationService.createAnnouncementNotifications(
-          result.data.id, 
-          newAnnouncement.title, 
-          currentUser.id
-        );
-      } catch (notificationError) {
-        console.error('Failed to create notifications, but announcement was created:', notificationError);
-        // Even if notification creation fails, show that announcement was created
+      if (result.success && result.data) {
+        console.log('Announcement created successfully with ID:', result.data.id);
+        
+        // 重新載入公告列表
+        await loadAnnouncements();
+        
+        // 如果公告是啟用狀態，創建通知
+        if (newAnnouncement.is_active) {
+          console.log('Creating notifications for active announcement');
+          try {
+            await AnnouncementNotificationService.createAnnouncementNotifications(
+              result.data.id, 
+              newAnnouncement.title, 
+              currentUser.id
+            );
+            console.log('Notifications created successfully');
+          } catch (notificationError) {
+            console.error('Failed to create notifications:', notificationError);
+            // 即使通知創建失敗，公告仍然創建成功
+            toast({
+              title: "公告已創建",
+              description: "公告已成功創建，但通知發送可能失敗",
+              variant: "default"
+            });
+          }
+        }
+        
+        return true;
+      } else {
+        console.error('Failed to create announcement:', result);
+        return false;
       }
+    } catch (error) {
+      console.error('Error in createAnnouncement:', error);
+      toast({
+        title: "創建失敗",
+        description: "無法創建公告",
+        variant: "destructive"
+      });
+      return false;
     }
-    
-    // Reload announcements list
-    await loadAnnouncements();
-    
-    return result.success;
   };
 
   // Update announcement

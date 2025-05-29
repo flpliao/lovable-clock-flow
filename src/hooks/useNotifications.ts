@@ -20,12 +20,17 @@ export const useNotifications = () => {
       return;
     }
 
-    const formattedNotifications = await NotificationDatabaseService.loadNotifications(currentUser.id);
-    const unread = formattedNotifications.filter(n => !n.isRead).length;
-    
-    setNotifications(formattedNotifications);
-    setUnreadCount(unread);
-    console.log('Updated notifications state - total:', formattedNotifications.length, 'unread:', unread);
+    console.log('Loading notifications for user:', currentUser.id);
+    try {
+      const formattedNotifications = await NotificationDatabaseService.loadNotifications(currentUser.id);
+      const unread = formattedNotifications.filter(n => !n.isRead).length;
+      
+      setNotifications(formattedNotifications);
+      setUnreadCount(unread);
+      console.log('Updated notifications state - total:', formattedNotifications.length, 'unread:', unread);
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    }
   };
 
   // Load notifications when user changes
@@ -47,9 +52,17 @@ export const useNotifications = () => {
       return;
     }
 
+    console.log('Setting up real-time subscription for user:', currentUser.id);
+    
+    // 測試實時連接
+    NotificationRealtimeService.testRealtimeConnection();
+    
     const cleanup = NotificationRealtimeService.setupRealtimeSubscription(
       currentUser.id,
-      loadNotifications
+      () => {
+        console.log('Real-time event triggered, reloading notifications');
+        loadNotifications();
+      }
     );
 
     return cleanup;

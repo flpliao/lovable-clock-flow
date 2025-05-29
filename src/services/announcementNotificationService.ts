@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { NotificationDatabaseService } from '@/services/notificationDatabaseService';
 
 export class AnnouncementNotificationService {
   /**
@@ -32,38 +33,30 @@ export class AnnouncementNotificationService {
 
       console.log(`Found ${staffData.length} staff members for notifications:`, staffData);
 
-      // Create notification records for each staff member
-      const notifications = staffData.map(staff => ({
-        user_id: staff.id,
+      // 使用批量創建通知的新方法
+      const notificationTemplate = {
         title: '新公告發布',
         message: `新公告已發布: ${announcementTitle}`,
-        type: 'announcement',
-        announcement_id: announcementId,
-        is_read: false,
-        action_required: false,
-        created_at: new Date().toISOString()
-      }));
+        type: 'announcement' as const,
+        data: {
+          announcementId: announcementId,
+          actionRequired: false
+        }
+      };
 
-      console.log('Inserting notifications:', notifications);
+      const userIds = staffData.map(staff => staff.id);
+      const success = await NotificationDatabaseService.createBulkNotifications(userIds, notificationTemplate);
 
-      // Batch insert notifications to database
-      const { data: insertedData, error: notificationError } = await supabase
-        .from('notifications')
-        .insert(notifications)
-        .select();
-
-      if (notificationError) {
-        console.error('Error creating notifications:', notificationError);
-        throw notificationError;
-      } else {
-        console.log(`Successfully created ${notifications.length} notifications for announcement`);
-        console.log('Inserted notification data:', insertedData);
+      if (success) {
+        console.log(`Successfully created notifications for ${userIds.length} users`);
         
         // Show success message
         toast({
           title: "通知已發送",
-          description: `已為 ${notifications.length} 位用戶創建通知`,
+          description: `已為 ${userIds.length} 位用戶創建通知`,
         });
+      } else {
+        throw new Error('Failed to create bulk notifications');
       }
     } catch (error) {
       console.error('Error in createAnnouncementNotifications:', error);

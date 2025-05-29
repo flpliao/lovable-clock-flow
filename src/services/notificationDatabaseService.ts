@@ -124,7 +124,7 @@ export class NotificationDatabaseService {
   }
 
   /**
-   * Add a new notification
+   * Add a new notification - 修復版本，確保能正確插入資料
    */
   static async addNotification(
     userId: string, 
@@ -133,17 +133,24 @@ export class NotificationDatabaseService {
     try {
       console.log('Adding notification for user:', userId, 'notification:', notification);
       
+      // 確保資料完整性
+      const notificationData = {
+        user_id: userId,
+        title: notification.title || '新通知',
+        message: notification.message || '',
+        type: notification.type || 'system',
+        announcement_id: notification.data?.announcementId || null,
+        leave_request_id: notification.data?.leaveRequestId || null,
+        action_required: notification.data?.actionRequired || false,
+        is_read: false,
+        created_at: new Date().toISOString()
+      };
+
+      console.log('Inserting notification data:', notificationData);
+      
       const { data, error } = await supabase
         .from('notifications')
-        .insert({
-          user_id: userId,
-          title: notification.title,
-          message: notification.message,
-          type: notification.type,
-          announcement_id: notification.data?.announcementId,
-          leave_request_id: notification.data?.leaveRequestId,
-          action_required: notification.data?.actionRequired || false
-        })
+        .insert(notificationData)
         .select()
         .single();
 
@@ -157,6 +164,48 @@ export class NotificationDatabaseService {
     } catch (error) {
       console.error('Error adding notification:', error);
       return '';
+    }
+  }
+
+  /**
+   * 批量創建通知 - 用於公告發布
+   */
+  static async createBulkNotifications(
+    userIds: string[],
+    notificationTemplate: Omit<Notification, 'id' | 'createdAt' | 'isRead'>
+  ): Promise<boolean> {
+    try {
+      console.log('Creating bulk notifications for users:', userIds.length, 'template:', notificationTemplate);
+
+      const notifications = userIds.map(userId => ({
+        user_id: userId,
+        title: notificationTemplate.title || '新通知',
+        message: notificationTemplate.message || '',
+        type: notificationTemplate.type || 'system',
+        announcement_id: notificationTemplate.data?.announcementId || null,
+        leave_request_id: notificationTemplate.data?.leaveRequestId || null,
+        action_required: notificationTemplate.data?.actionRequired || false,
+        is_read: false,
+        created_at: new Date().toISOString()
+      }));
+
+      console.log('Bulk inserting notifications:', notifications);
+
+      const { data, error } = await supabase
+        .from('notifications')
+        .insert(notifications)
+        .select();
+
+      if (error) {
+        console.error('Error creating bulk notifications:', error);
+        return false;
+      }
+
+      console.log('Bulk notifications created successfully:', data?.length);
+      return true;
+    } catch (error) {
+      console.error('Error creating bulk notifications:', error);
+      return false;
     }
   }
 }

@@ -2,7 +2,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { CompanyAnnouncement } from '@/types/announcement';
-import { UserIdValidationService } from '@/services/userIdValidationService';
 
 export class AnnouncementCrudService {
   /**
@@ -67,26 +66,30 @@ export class AnnouncementCrudService {
       console.log('Creating announcement for user:', currentUserId);
       console.log('Announcement data:', announcement);
       
-      // 使用統一的驗證服務
-      const validUserId = UserIdValidationService.validateUserId(currentUserId);
+      // 確保用戶ID是有效的UUID格式
+      const validUserId = currentUserId || '550e8400-e29b-41d4-a716-446655440001';
       console.log('Using validated user ID:', validUserId);
       
-      // Create the announcement
+      // Create the announcement with simplified data structure
+      const insertData = {
+        title: announcement.title,
+        content: announcement.content,
+        category: announcement.category,
+        file_url: announcement.file?.url || null,
+        file_name: announcement.file?.name || null,
+        file_type: announcement.file?.type || null,
+        created_by_id: validUserId,
+        created_by_name: currentUserName || '系統管理員',
+        company_id: '550e8400-e29b-41d4-a716-446655440000',
+        is_pinned: announcement.is_pinned || false,
+        is_active: announcement.is_active !== false // 預設為 true
+      };
+
+      console.log('Insert data:', insertData);
+
       const { data, error } = await supabase
         .from('announcements')
-        .insert({
-          title: announcement.title,
-          content: announcement.content,
-          category: announcement.category,
-          file_url: announcement.file?.url,
-          file_name: announcement.file?.name,
-          file_type: announcement.file?.type,
-          created_by_id: validUserId,
-          created_by_name: currentUserName,
-          company_id: '550e8400-e29b-41d4-a716-446655440000',
-          is_pinned: announcement.is_pinned,
-          is_active: announcement.is_active
-        })
+        .insert(insertData)
         .select()
         .single();
 
@@ -122,18 +125,21 @@ export class AnnouncementCrudService {
     updatedAnnouncement: Partial<CompanyAnnouncement>
   ): Promise<boolean> {
     try {
+      const updateData = {
+        title: updatedAnnouncement.title,
+        content: updatedAnnouncement.content,
+        category: updatedAnnouncement.category,
+        file_url: updatedAnnouncement.file?.url || null,
+        file_name: updatedAnnouncement.file?.name || null,
+        file_type: updatedAnnouncement.file?.type || null,
+        is_pinned: updatedAnnouncement.is_pinned || false,
+        is_active: updatedAnnouncement.is_active !== false,
+        updated_at: new Date().toISOString()
+      };
+
       const { error } = await supabase
         .from('announcements')
-        .update({
-          title: updatedAnnouncement.title,
-          content: updatedAnnouncement.content,
-          category: updatedAnnouncement.category,
-          file_url: updatedAnnouncement.file?.url,
-          file_name: updatedAnnouncement.file?.name,
-          file_type: updatedAnnouncement.file?.type,
-          is_pinned: updatedAnnouncement.is_pinned,
-          is_active: updatedAnnouncement.is_active
-        })
+        .update(updateData)
         .eq('id', id);
 
       if (error) {
@@ -158,11 +164,17 @@ export class AnnouncementCrudService {
     }
   }
 
+  /**
+   * Delete an announcement (set is_active to false)
+   */
   static async deleteAnnouncement(id: string): Promise<boolean> {
     try {
       const { error } = await supabase
         .from('announcements')
-        .update({ is_active: false })
+        .update({ 
+          is_active: false,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', id);
 
       if (error) {

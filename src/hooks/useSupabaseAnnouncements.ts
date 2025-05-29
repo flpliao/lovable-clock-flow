@@ -17,12 +17,15 @@ export const useSupabaseAnnouncements = () => {
   const loadAnnouncements = async () => {
     try {
       console.log('Loading announcements...');
+      setLoading(true);
       const data = await AnnouncementCrudService.loadAnnouncements();
       console.log('Loaded announcements:', data.length);
       setAnnouncements(data);
     } catch (error) {
       console.error('Error loading announcements:', error);
-      setAnnouncements([]); // 設置為空陣列避免顯示錯誤
+      setAnnouncements([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -64,7 +67,7 @@ export const useSupabaseAnnouncements = () => {
         await loadAnnouncements();
         
         // 如果公告是啟用狀態，創建通知
-        if (newAnnouncement.is_active) {
+        if (newAnnouncement.is_active !== false) {
           console.log('公告為啟用狀態，開始創建通知...');
           try {
             await AnnouncementNotificationService.createAnnouncementNotifications(
@@ -127,11 +130,16 @@ export const useSupabaseAnnouncements = () => {
       return false;
     }
 
-    const success = await AnnouncementCrudService.updateAnnouncement(id, updatedAnnouncement);
-    if (success) {
-      await loadAnnouncements();
+    try {
+      const success = await AnnouncementCrudService.updateAnnouncement(id, updatedAnnouncement);
+      if (success) {
+        await loadAnnouncements();
+      }
+      return success;
+    } catch (error) {
+      console.error('Error updating announcement:', error);
+      return false;
     }
-    return success;
   };
 
   // Delete announcement
@@ -145,31 +153,43 @@ export const useSupabaseAnnouncements = () => {
       return false;
     }
 
-    const success = await AnnouncementCrudService.deleteAnnouncement(id);
-    if (success) {
-      await loadAnnouncements();
+    try {
+      const success = await AnnouncementCrudService.deleteAnnouncement(id);
+      if (success) {
+        await loadAnnouncements();
+      }
+      return success;
+    } catch (error) {
+      console.error('Error deleting announcement:', error);
+      return false;
     }
-    return success;
   };
 
   // Mark announcement as read
   const markAnnouncementAsRead = async (announcementId: string) => {
     if (!currentUser) return;
-    await AnnouncementReadService.markAnnouncementAsRead(announcementId, currentUser.id);
+    try {
+      await AnnouncementReadService.markAnnouncementAsRead(announcementId, currentUser.id);
+    } catch (error) {
+      console.error('Error marking announcement as read:', error);
+    }
   };
 
   // Check if announcement is read
   const checkAnnouncementRead = async (announcementId: string): Promise<boolean> => {
     if (!currentUser) return false;
-    return await AnnouncementReadService.checkAnnouncementRead(announcementId, currentUser.id);
+    try {
+      return await AnnouncementReadService.checkAnnouncementRead(announcementId, currentUser.id);
+    } catch (error) {
+      console.error('Error checking announcement read status:', error);
+      return false;
+    }
   };
 
   // 強制刷新函數
   const forceRefresh = async () => {
     console.log('強制刷新公告列表...');
-    setLoading(true);
     await loadAnnouncements();
-    setLoading(false);
   };
 
   // Listen for refresh events
@@ -190,12 +210,7 @@ export const useSupabaseAnnouncements = () => {
 
   // Initial load
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await loadAnnouncements();
-      setLoading(false);
-    };
-    loadData();
+    loadAnnouncements();
   }, []);
 
   return {

@@ -5,6 +5,7 @@ import { useCheckInRecords } from './useCheckInRecords';
 import { useCheckInCreator } from './useCheckInCreator';
 import { useTodayCheckInRecords } from './useTodayCheckInRecords';
 import { CheckInRecord } from '@/types';
+import { UserIdValidationService } from '@/services/userIdValidationService';
 
 export const useSupabaseCheckIn = () => {
   const { currentUser } = useUser();
@@ -19,7 +20,8 @@ export const useSupabaseCheckIn = () => {
       return false;
     }
     
-    const success = await createRecord(record, currentUser.id);
+    const validatedUserId = UserIdValidationService.validateUserId(currentUser.id);
+    const success = await createRecord(record, validatedUserId);
     if (success) {
       // 重新載入記錄
       await refreshData();
@@ -34,25 +36,28 @@ export const useSupabaseCheckIn = () => {
       return { checkIn: undefined, checkOut: undefined };
     }
     
-    return await getTodayCheckInRecords(targetUserId);
+    const validatedUserId = UserIdValidationService.validateUserId(targetUserId);
+    return await getTodayCheckInRecords(validatedUserId);
   }, [currentUser?.id, getTodayCheckInRecords]);
 
   const refreshData = useCallback(async () => {
     if (currentUser?.id) {
-      console.log('重新整理打卡資料，使用者 ID:', currentUser.id);
+      const validatedUserId = UserIdValidationService.validateUserId(currentUser.id);
+      console.log('重新整理打卡資料，使用者 ID:', validatedUserId);
       try {
-        await loadCheckInRecords(currentUser.id);
+        await loadCheckInRecords(validatedUserId);
       } catch (error) {
         console.error('重新整理資料失敗:', error);
       }
     }
   }, [currentUser?.id, loadCheckInRecords]);
 
-  // 移除自動初始載入，由組件控制
+  // 手動載入記錄
   const manualLoadRecords = useCallback(async () => {
     if (currentUser?.id && !loading) {
-      console.log('手動載入打卡記錄，使用者ID:', currentUser.id);
-      await loadCheckInRecords(currentUser.id);
+      const validatedUserId = UserIdValidationService.validateUserId(currentUser.id);
+      console.log('手動載入打卡記錄，使用者ID:', validatedUserId);
+      await loadCheckInRecords(validatedUserId);
     }
   }, [currentUser?.id, loadCheckInRecords, loading]);
 

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from '@/components/Header';
 import WelcomeSection from '@/components/WelcomeSection';
 import FeatureCards from '@/components/FeatureCards';
@@ -7,7 +7,15 @@ import LocationCheckIn from '@/components/LocationCheckIn';
 import { useUser } from '@/contexts/UserContext';
 
 const Index = () => {
-  const { currentUser, annualLeaveBalance } = useUser();
+  const { currentUser, annualLeaveBalance, userError, clearUserError } = useUser();
+  
+  // 清除可能的錯誤狀態當頁面載入時
+  useEffect(() => {
+    if (userError) {
+      console.log('Clearing user error on Index page load:', userError);
+      clearUserError();
+    }
+  }, [userError, clearUserError]);
   
   // Calculate leave balance in hours (1 day = 8 hours)
   const leaveHours = annualLeaveBalance 

@@ -75,7 +75,7 @@ const LocationCheckIn: React.FC = () => {
     return () => subscription.unsubscribe();
   }, [currentUser]);
   
-  // 使用有效的用戶 ID
+  // 使用有效的用戶 ID，確保認證正確
   const effectiveUserId = authUserId || currentUser?.id || '';
   
   console.log('LocationCheckIn - Current user:', currentUser);
@@ -104,8 +104,8 @@ const LocationCheckIn: React.FC = () => {
     );
   }
   
-  // 如果沒有用戶登入，顯示登入提示
-  if (!currentUser && !isAuthenticated) {
+  // 確保有有效的用戶且認證通過才顯示打卡功能
+  if (!currentUser || !isAuthenticated || !effectiveUserId) {
     return (
       <div className="mt-10 flex flex-col items-center justify-center relative">
         <Alert variant="destructive" className="mb-4 max-w-md mx-auto">

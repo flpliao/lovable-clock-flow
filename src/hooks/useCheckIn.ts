@@ -7,6 +7,7 @@ import {
   handleIpCheckIn
 } from '@/utils/checkInHandlers';
 import { useSupabaseCheckIn } from './useSupabaseCheckIn';
+import { UserIdValidationService } from '@/services/userIdValidationService';
 
 export const useCheckIn = (userId: string) => {
   const { toast } = useToast();
@@ -28,10 +29,12 @@ export const useCheckIn = (userId: string) => {
         return;
       }
 
-      console.log('Loading today records for user:', userId);
+      // 驗證用戶ID
+      const validatedUserId = UserIdValidationService.validateUserId(userId);
+      console.log('Loading today records for validated user:', validatedUserId);
       
       try {
-        const records = await getTodayCheckInRecords(userId);
+        const records = await getTodayCheckInRecords(validatedUserId);
         console.log('Loaded today records:', records);
         setTodayRecords(records);
 
@@ -43,7 +46,7 @@ export const useCheckIn = (userId: string) => {
         }
       } catch (error) {
         console.error('Error loading today records:', error);
-        // 不顯示錯誤訊息，避免干擾用戶體驗
+        // 靜默處理錯誤，不顯示通知避免干擾用戶體驗
         setTodayRecords({});
       }
     };
@@ -61,13 +64,14 @@ export const useCheckIn = (userId: string) => {
       return;
     }
 
-    console.log('Location check-in with user ID:', userId);
+    const validatedUserId = UserIdValidationService.validateUserId(userId);
+    console.log('Location check-in with validated user ID:', validatedUserId);
 
     setLoading(true);
     setError(null);
 
     handleLocationCheckIn(
-      userId,
+      validatedUserId,
       actionType,
       async (record) => {
         setLoading(false);
@@ -90,12 +94,6 @@ export const useCheckIn = (userId: string) => {
           } else {
             setTodayRecords(prev => ({ ...prev, checkOut: record }));
           }
-        } else {
-          toast({
-            title: "打卡失敗",
-            description: "無法儲存打卡記錄，請稍後再試",
-            variant: "destructive",
-          });
         }
       },
       (errorMessage) => {
@@ -122,13 +120,14 @@ export const useCheckIn = (userId: string) => {
       return;
     }
 
-    console.log('IP check-in with user ID:', userId);
+    const validatedUserId = UserIdValidationService.validateUserId(userId);
+    console.log('IP check-in with validated user ID:', validatedUserId);
 
     setLoading(true);
     setError(null);
 
     handleIpCheckIn(
-      userId,
+      validatedUserId,
       actionType,
       async (record) => {
         setLoading(false);
@@ -151,12 +150,6 @@ export const useCheckIn = (userId: string) => {
           } else {
             setTodayRecords(prev => ({ ...prev, checkOut: record }));
           }
-        } else {
-          toast({
-            title: "打卡失敗",
-            description: "無法儲存打卡記錄，請稍後再試",
-            variant: "destructive",
-          });
         }
       },
       (errorMessage) => {

@@ -1,11 +1,19 @@
 
 import { useUser } from '@/contexts/UserContext';
+import { UserIdValidationService } from '@/services/userIdValidationService';
 
 export const useCurrentUser = () => {
-  const { currentUser } = useUser();
+  const { currentUser, userError, clearUserError } = useUser();
+  
+  // 使用驗證服務確保 userId 正確
+  const validatedUserId = currentUser?.id 
+    ? UserIdValidationService.validateUserId(currentUser.id)
+    : null;
   
   return {
-    userId: currentUser?.id || null,
-    user: currentUser
+    userId: validatedUserId,
+    user: currentUser,
+    userError,
+    clearUserError
   };
 };

@@ -21,6 +21,8 @@ interface UserContextType {
   hasPermission: (permission: string) => boolean;
   canManageUser: (userId: string) => boolean;
   isUserLoaded: boolean;
+  userError: string | null;
+  clearUserError: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -29,19 +31,23 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [annualLeaveBalance, setAnnualLeaveBalance] = useState<AnnualLeaveBalance | null>(null);
   const [isUserLoaded, setIsUserLoaded] = useState(false);
+  const [userError, setUserError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 標記用戶上下文已加載
+    // 標記用戶上下文已加載，但不要自動載入資料避免錯誤
     setIsUserLoaded(true);
     console.log('UserProvider initialized, user loaded state:', true);
   }, []);
 
-  // 當用戶改變時，重置年假餘額
+  // 當用戶改變時的處理
   useEffect(() => {
     if (!currentUser) {
       setAnnualLeaveBalance(null);
+      setUserError(null); // 清除錯誤狀態
     } else {
       console.log('Current user changed to:', currentUser);
+      // 不在這裡自動載入資料，避免錯誤通知
+      setUserError(null); // 清除錯誤狀態
     }
   }, [currentUser]);
 
@@ -84,6 +90,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const clearUserError = () => {
+    setUserError(null);
+  };
+
   return (
     <UserContext.Provider value={{
       currentUser,
@@ -94,7 +104,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       isManager,
       hasPermission,
       canManageUser,
-      isUserLoaded
+      isUserLoaded,
+      userError,
+      clearUserError
     }}>
       {children}
     </UserContext.Provider>

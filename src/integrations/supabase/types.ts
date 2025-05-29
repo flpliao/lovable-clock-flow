@@ -464,6 +464,70 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          action_required: boolean
+          announcement_id: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          leave_request_id: string | null
+          message: string
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_required?: boolean
+          announcement_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          leave_request_id?: string | null
+          message: string
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_required?: boolean
+          announcement_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          leave_request_id?: string | null
+          message?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_leave_request_id_fkey"
+            columns: ["leave_request_id"]
+            isOneToOne: false
+            referencedRelation: "leave_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissions: {
         Row: {
           category: string

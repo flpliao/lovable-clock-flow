@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
@@ -64,11 +65,11 @@ export const useSupabaseAnnouncements = () => {
     try {
       console.log('Creating notifications for announcement:', announcementId);
       
-      // 取得所有活躍的員工
+      // 取得所有活躍的員工（排除目前建立公告的管理員）
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
         .select('id, name')
-        .neq('role', 'admin'); // 排除管理員（可能不需要通知自己）
+        .neq('id', currentUser?.id || ''); // 排除目前的用戶
 
       if (staffError) {
         console.error('Error fetching staff for notifications:', staffError);
@@ -88,11 +89,12 @@ export const useSupabaseAnnouncements = () => {
         type: 'announcement',
         announcement_id: announcementId,
         is_read: false,
+        action_required: false,
         created_at: new Date().toISOString()
       }));
 
       // 批量插入通知到資料庫
-      const { error: notificationError } = await supabase
+      const { error: notificationError } = await (supabase as any)
         .from('notifications')
         .insert(notifications);
 
@@ -164,7 +166,7 @@ export const useSupabaseAnnouncements = () => {
       
       toast({
         title: "建立成功",
-        description: "公告已成功發佈",
+        description: "公告已成功發佈，通知已發送給所有用戶",
       });
       
       return true;

@@ -21,7 +21,8 @@ export const useNotifications = () => {
     try {
       console.log('Loading notifications for user:', currentUser.id);
       
-      const { data, error } = await supabase
+      // 使用 any 類型暫時解決 TypeScript 類型問題
+      const { data, error } = await (supabase as any)
         .from('notifications')
         .select('*')
         .eq('user_id', currentUser.id)
@@ -67,7 +68,7 @@ export const useNotifications = () => {
     if (!currentUser) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('notifications')
         .update({ is_read: true })
         .eq('id', id)
@@ -84,6 +85,9 @@ export const useNotifications = () => {
           notification.id === id ? { ...notification, isRead: true } : notification
         )
       );
+      
+      // Update unread count
+      setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
@@ -93,7 +97,7 @@ export const useNotifications = () => {
     if (!currentUser) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('notifications')
         .update({ is_read: true })
         .eq('user_id', currentUser.id)
@@ -108,6 +112,8 @@ export const useNotifications = () => {
       setNotifications(prev => 
         prev.map(notification => ({ ...notification, isRead: true }))
       );
+      
+      setUnreadCount(0);
 
       toast({
         title: "已標記為已讀",
@@ -122,7 +128,7 @@ export const useNotifications = () => {
     if (!currentUser) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('notifications')
         .delete()
         .eq('user_id', currentUser.id);
@@ -133,6 +139,8 @@ export const useNotifications = () => {
       }
 
       setNotifications([]);
+      setUnreadCount(0);
+      
       toast({
         title: "通知已清空",
         description: "所有通知已被清空"
@@ -146,7 +154,7 @@ export const useNotifications = () => {
     if (!currentUser) return '';
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('notifications')
         .insert({
           user_id: currentUser.id,
@@ -175,7 +183,7 @@ export const useNotifications = () => {
         duration: 5000
       });
       
-      return data.id;
+      return data?.id || '';
     } catch (error) {
       console.error('Error adding notification:', error);
       return '';

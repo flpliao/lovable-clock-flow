@@ -17,7 +17,7 @@ export const useSupabaseLeaveManagement = () => {
       console.log('Loading annual leave balance for user:', userId);
       
       // 檢查 userId 是否為有效的 UUID 格式
-      if (!userId || userId.length < 30) {
+      if (!userId || !userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
         console.error('Invalid user ID format:', userId);
         return null;
       }
@@ -48,7 +48,7 @@ export const useSupabaseLeaveManagement = () => {
       console.log('Initializing annual leave balance for user:', userId);
       
       // 檢查 userId 是否為有效的 UUID 格式
-      if (!userId || userId.length < 30) {
+      if (!userId || !userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
         console.error('Invalid user ID format:', userId);
         return false;
       }
@@ -76,7 +76,13 @@ export const useSupabaseLeaveManagement = () => {
 
   // 載入請假記錄
   const loadLeaveRequests = async () => {
-    if (!currentUser) return;
+    // 檢查用戶是否存在且有有效的 UUID
+    if (!currentUser || !currentUser.id || !currentUser.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      console.log('No valid current user, skipping leave requests load');
+      setLeaveRequests([]);
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -142,10 +148,10 @@ export const useSupabaseLeaveManagement = () => {
 
   // 建立請假申請
   const createLeaveRequest = async (request: Omit<LeaveRequest, 'id' | 'created_at' | 'updated_at'>) => {
-    if (!currentUser) {
+    if (!currentUser || !currentUser.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
       toast({
         title: "錯誤",
-        description: "請先登入",
+        description: "請先登入或用戶ID無效",
         variant: "destructive"
       });
       return false;
@@ -263,10 +269,15 @@ export const useSupabaseLeaveManagement = () => {
     }
   };
 
-  // 初始載入
+  // 初始載入 - 僅在有有效用戶時載入
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && currentUser.id && currentUser.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      console.log('Valid user detected, loading leave requests');
       loadLeaveRequests();
+    } else {
+      console.log('No valid user, setting loading to false');
+      setLoading(false);
+      setLeaveRequests([]);
     }
   }, [currentUser]);
 

@@ -36,10 +36,27 @@ const NotificationCenter: React.FC = () => {
     console.log('NotificationCenter render - notifications:', notifications);
   }, [notifications, unreadCount, isLoading]);
 
+  // 監聽公告相關的更新事件
+  useEffect(() => {
+    const handleAnnouncementUpdate = () => {
+      console.log('收到公告更新事件，刷新通知');
+      refreshNotifications();
+      setLastRefresh(new Date());
+    };
+
+    window.addEventListener('refreshAnnouncements', handleAnnouncementUpdate);
+    window.addEventListener('announcementDataUpdated', handleAnnouncementUpdate);
+    
+    return () => {
+      window.removeEventListener('refreshAnnouncements', handleAnnouncementUpdate);
+      window.removeEventListener('announcementDataUpdated', handleAnnouncementUpdate);
+    };
+  }, [refreshNotifications]);
+
   // Refresh notifications when location changes (但限制頻率)
   useEffect(() => {
     const now = new Date();
-    if (now.getTime() - lastRefresh.getTime() > 3000) { // 減少到3秒
+    if (now.getTime() - lastRefresh.getTime() > 3000) { // 3秒限制
       console.log('NotificationCenter - refreshing notifications due to location change');
       refreshNotifications();
       setLastRefresh(now);
@@ -78,7 +95,7 @@ const NotificationCenter: React.FC = () => {
     setOpen(newOpen);
     if (newOpen) {
       const now = new Date();
-      if (now.getTime() - lastRefresh.getTime() > 2000) { // 減少到2秒
+      if (now.getTime() - lastRefresh.getTime() > 2000) { // 2秒限制
         console.log('NotificationCenter - popover opened, refreshing notifications');
         refreshNotifications();
         setLastRefresh(now);
@@ -97,9 +114,9 @@ const NotificationCenter: React.FC = () => {
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button className="relative">
-          <Bell className={`w-6 h-6 ${isLoading ? 'text-blue-400 animate-pulse' : 'text-gray-400'}`} />
+          <Bell className={`w-6 h-6 ${isLoading ? 'text-blue-400 animate-pulse' : unreadCount > 0 ? 'text-red-500' : 'text-gray-400'}`} />
           {unreadCount > 0 && (
-            <Badge className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white text-xs px-1.5 py-0.5 min-w-[1.5rem] flex items-center justify-center rounded-full">
+            <Badge className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white text-xs px-1.5 py-0.5 min-w-[1.5rem] flex items-center justify-center rounded-full animate-pulse">
               {unreadCount}
             </Badge>
           )}

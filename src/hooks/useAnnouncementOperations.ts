@@ -33,6 +33,7 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
       console.log('=== 開始創建公告 ===');
       console.log('Creating announcement:', newAnnouncement.title);
       console.log('公告狀態 - is_active:', newAnnouncement.is_active);
+      console.log('當前用戶:', currentUser);
       
       const result = await AnnouncementCrudService.createAnnouncement(
         newAnnouncement, 
@@ -56,6 +57,15 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
               currentUser.id
             );
             console.log('通知創建流程完成');
+            
+            // 觸發全域通知更新事件
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
+              window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
+                detail: { type: 'new_announcement', announcementId: result.data?.id }
+              }));
+              console.log('全域事件已觸發');
+            }, 500);
             
             toast({
               title: "公告已發布",

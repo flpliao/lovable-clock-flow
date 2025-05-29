@@ -17,16 +17,12 @@ export class AnnouncementNotificationService {
       console.log('公告標題:', announcementTitle);
       console.log('當前用戶ID:', currentUserId);
 
-      // 使用固定的用戶ID作為創建者（模擬系統）
-      const validCurrentUserId = '550e8400-e29b-41d4-a716-446655440001';
-      console.log('使用系統用戶ID:', validCurrentUserId);
-
       // Get all active staff (excluding the current user who created the announcement)
       console.log('正在獲取員工列表...');
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
         .select('id, name')
-        .neq('id', validCurrentUserId);
+        .neq('id', currentUserId || '');
 
       if (staffError) {
         console.error('Error fetching staff for notifications:', staffError);
@@ -84,16 +80,22 @@ export class AnnouncementNotificationService {
 
       // 立即觸發實時更新事件
       console.log('觸發實時更新事件...');
-      window.dispatchEvent(new CustomEvent('notificationUpdated', { 
-        detail: { 
-          type: 'announcement_created',
-          announcementId: announcementId,
-          timestamp: new Date().toISOString(),
-          count: successCount
-        }
-      }));
       
-      window.dispatchEvent(new CustomEvent('forceNotificationRefresh'));
+      // 使用 setTimeout 確保事件在下一個事件循環中觸發
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('notificationUpdated', { 
+          detail: { 
+            type: 'announcement_created',
+            announcementId: announcementId,
+            timestamp: new Date().toISOString(),
+            count: successCount
+          }
+        }));
+        
+        window.dispatchEvent(new CustomEvent('forceNotificationRefresh'));
+        
+        console.log('實時更新事件已觸發');
+      }, 100);
 
       console.log('=== 公告通知創建完成 ===');
     } catch (error) {

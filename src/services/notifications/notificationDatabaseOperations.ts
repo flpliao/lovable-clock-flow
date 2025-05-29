@@ -10,14 +10,10 @@ export class NotificationDatabaseOperations {
     try {
       console.log('Loading notifications for user:', userId);
       
-      // 使用固定的用戶ID進行查詢
-      const validUserId = '550e8400-e29b-41d4-a716-446655440001';
-      console.log('Using validated user ID:', validUserId);
-      
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', validUserId)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -29,7 +25,7 @@ export class NotificationDatabaseOperations {
       console.log('Raw notifications data from database:', data);
 
       if (!data || data.length === 0) {
-        console.log('No notifications found for user:', validUserId);
+        console.log('No notifications found for user:', userId);
         return [];
       }
 
@@ -66,13 +62,9 @@ export class NotificationDatabaseOperations {
     try {
       console.log('Adding notification for user:', userId, 'notification:', notification);
       
-      // 使用固定的用戶ID
-      const validUserId = '550e8400-e29b-41d4-a716-446655440001';
-      console.log('Using validated user ID:', validUserId);
-      
       // Use the database function to create notification
       const { data, error } = await supabase.rpc('create_notification', {
-        p_user_id: validUserId,
+        p_user_id: userId,
         p_title: notification.title || '新通知',
         p_message: notification.message || '',
         p_type: notification.type || 'system',
@@ -101,15 +93,11 @@ export class NotificationDatabaseOperations {
     try {
       console.log('Marking notification as read:', notificationId, 'for user:', userId);
       
-      // 使用固定的用戶ID
-      const validUserId = '550e8400-e29b-41d4-a716-446655440001';
-      console.log('Using validated user ID:', validUserId);
-      
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
         .eq('id', notificationId)
-        .eq('user_id', validUserId);
+        .eq('user_id', userId);
 
       if (error) {
         console.error('Error marking notification as read:', error);
@@ -128,14 +116,10 @@ export class NotificationDatabaseOperations {
     try {
       console.log('Marking all notifications as read for user:', userId);
       
-      // 使用固定的用戶ID
-      const validUserId = '550e8400-e29b-41d4-a716-446655440001';
-      console.log('Using validated user ID:', validUserId);
-      
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
-        .eq('user_id', validUserId)
+        .eq('user_id', userId)
         .eq('is_read', false);
 
       if (error) {
@@ -155,14 +139,10 @@ export class NotificationDatabaseOperations {
     try {
       console.log('Clearing all notifications for user:', userId);
       
-      // 使用固定的用戶ID
-      const validUserId = '550e8400-e29b-41d4-a716-446655440001';
-      console.log('Using validated user ID:', validUserId);
-      
       const { error } = await supabase
         .from('notifications')
         .delete()
-        .eq('user_id', validUserId);
+        .eq('user_id', userId);
 
       if (error) {
         console.error('Error clearing notifications:', error);

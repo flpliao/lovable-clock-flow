@@ -14,11 +14,9 @@ export const useNotificationActions = (
   const markAsRead = async (id: string) => {
     if (!currentUserId) return;
 
-    // 使用固定的用戶ID
-    const validUserId = '550e8400-e29b-41d4-a716-446655440001';
-    console.log('Marking notification as read with validated user ID:', validUserId);
+    console.log('Marking notification as read with user ID:', currentUserId);
 
-    const success = await NotificationDatabaseOperations.markNotificationAsRead(id, validUserId);
+    const success = await NotificationDatabaseOperations.markNotificationAsRead(id, currentUserId);
     if (success) {
       // Update local state immediately
       setNotifications(prev => 
@@ -35,11 +33,9 @@ export const useNotificationActions = (
   const markAllAsRead = async () => {
     if (!currentUserId) return;
 
-    // 使用固定的用戶ID
-    const validUserId = '550e8400-e29b-41d4-a716-446655440001';
-    console.log('Marking all notifications as read with validated user ID:', validUserId);
+    console.log('Marking all notifications as read with user ID:', currentUserId);
 
-    const success = await NotificationDatabaseOperations.markAllNotificationsAsRead(validUserId);
+    const success = await NotificationDatabaseOperations.markAllNotificationsAsRead(currentUserId);
     if (success) {
       // Update local state
       setNotifications(prev => 
@@ -58,11 +54,9 @@ export const useNotificationActions = (
   const clearNotifications = async () => {
     if (!currentUserId) return;
 
-    // 使用固定的用戶ID
-    const validUserId = '550e8400-e29b-41d4-a716-446655440001';
-    console.log('Clearing all notifications with validated user ID:', validUserId);
+    console.log('Clearing all notifications with user ID:', currentUserId);
 
-    const success = await NotificationDatabaseOperations.clearAllNotifications(validUserId);
+    const success = await NotificationDatabaseOperations.clearAllNotifications(currentUserId);
     if (success) {
       setNotifications([]);
       setUnreadCount(0);
@@ -80,11 +74,9 @@ export const useNotificationActions = (
       return '';
     }
 
-    // 使用固定的用戶ID
-    const validUserId = '550e8400-e29b-41d4-a716-446655440001';
-    console.log('Adding notification with validated user ID:', validUserId);
+    console.log('Adding notification with user ID:', currentUserId);
 
-    const notificationId = await NotificationDatabaseOperations.addNotification(validUserId, notification);
+    const notificationId = await NotificationDatabaseOperations.addNotification(currentUserId, notification);
     
     if (notificationId) {
       // Reload notifications to get the latest data

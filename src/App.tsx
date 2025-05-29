@@ -100,17 +100,25 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <UserProvider>
-          <LeaveManagementProvider>
-            <StaffManagementProvider>
-              <SchedulingProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <AppRoutes />
-                </BrowserRouter>
-              </SchedulingProvider>
-            </StaffManagementProvider>
-          </LeaveManagementProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* 登錄頁面不需要其他 Provider */}
+              <Route path="/login" element={<Login />} />
+              
+              {/* 其他頁面才需要完整的 Provider 包裝 */}
+              <Route path="/*" element={
+                <LeaveManagementProvider>
+                  <StaffManagementProvider>
+                    <SchedulingProvider>
+                      <AppRoutes />
+                    </SchedulingProvider>
+                  </StaffManagementProvider>
+                </LeaveManagementProvider>
+              } />
+            </Routes>
+          </BrowserRouter>
+          <Toaster />
+          <Sonner />
         </UserProvider>
       </TooltipProvider>
     </QueryClientProvider>

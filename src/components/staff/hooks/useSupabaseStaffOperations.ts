@@ -2,8 +2,10 @@
 import { useEffect } from 'react';
 import { useStaffDataLoader } from './useStaffDataLoader';
 import { useStaffCrudOperations } from './useStaffCrudOperations';
+import { useUser } from '@/contexts/UserContext';
 
 export const useSupabaseStaffOperations = () => {
+  const { currentUser } = useUser();
   const {
     staffList,
     setStaffList,
@@ -22,10 +24,16 @@ export const useSupabaseStaffOperations = () => {
     deleteStaff
   } = useStaffCrudOperations(staffList, setStaffList);
 
-  // 初始載入
+  // 只有當有用戶登錄時才載入資料
   useEffect(() => {
-    refreshData();
-  }, []);
+    if (currentUser?.id) {
+      console.log('User logged in, loading staff data for:', currentUser.name);
+      refreshData();
+    } else {
+      console.log('No user logged in, skipping staff data load');
+      setLoading(false);
+    }
+  }, [currentUser?.id]);
 
   return {
     staffList,

@@ -3,15 +3,24 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Staff, StaffRole } from '../types';
+import { useUser } from '@/contexts/UserContext';
 
 export const useStaffDataLoader = () => {
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [roles, setRoles] = useState<StaffRole[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // 改為 false，避免初始載入
   const { toast } = useToast();
+  const { currentUser } = useUser();
 
   // 載入員工資料
   const loadStaff = async () => {
+    // 如果沒有用戶登錄，直接返回
+    if (!currentUser?.id) {
+      console.log('No user logged in, skipping staff load');
+      setStaffList([]);
+      return;
+    }
+
     try {
       console.log('正在載入員工資料...');
       const { data, error } = await supabase
@@ -21,23 +30,29 @@ export const useStaffDataLoader = () => {
 
       if (error) {
         console.error('載入員工資料錯誤:', error);
-        throw error;
+        // 靜默處理錯誤，不顯示通知，避免在登錄頁面出現錯誤
+        setStaffList([]);
+        return;
       }
       
       console.log('載入的員工資料:', data);
       setStaffList(data || []);
     } catch (error) {
       console.error('載入員工資料失敗:', error);
-      toast({
-        title: "載入失敗",
-        description: "無法載入員工資料",
-        variant: "destructive"
-      });
+      // 靜默處理錯誤
+      setStaffList([]);
     }
   };
 
   // 載入角色資料
   const loadRoles = async () => {
+    // 如果沒有用戶登錄，直接返回
+    if (!currentUser?.id) {
+      console.log('No user logged in, skipping roles load');
+      setRoles([]);
+      return;
+    }
+
     try {
       const { data: rolesData, error: rolesError } = await supabase
         .from('staff_roles')
@@ -49,7 +64,12 @@ export const useStaffDataLoader = () => {
         `)
         .order('name', { ascending: true });
 
-      if (rolesError) throw rolesError;
+      if (rolesError) {
+        console.error('載入角色資料錯誤:', rolesError);
+        // 靜默處理錯誤
+        setRoles([]);
+        return;
+      }
 
       const formattedRoles = rolesData?.map(role => ({
         ...role,
@@ -59,16 +79,19 @@ export const useStaffDataLoader = () => {
       setRoles(formattedRoles);
     } catch (error) {
       console.error('載入角色資料失敗:', error);
-      toast({
-        title: "載入失敗",
-        description: "無法載入角色資料",
-        variant: "destructive"
-      });
+      // 靜默處理錯誤
+      setRoles([]);
     }
   };
 
   // 刷新資料
   const refreshData = async () => {
+    if (!currentUser?.id) {
+      console.log('No user logged in, skipping data refresh');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     await Promise.all([loadStaff(), loadRoles()]);
     setLoading(false);

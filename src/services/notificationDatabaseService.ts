@@ -46,7 +46,7 @@ export class NotificationDatabaseService {
   }
 
   /**
-   * Add a new notification - 使用 RPC 函數繞過 RLS 限制
+   * Add a new notification - 使用 RPC 函數或管理員權限
    */
   static async addNotification(
     userId: string, 
@@ -55,7 +55,6 @@ export class NotificationDatabaseService {
     try {
       console.log('Adding notification for user:', userId, 'notification:', notification);
       
-      // 嘗試使用直接插入，如果失敗則使用 RPC
       const notificationData = {
         user_id: userId,
         title: notification.title || '新通知',
@@ -70,7 +69,7 @@ export class NotificationDatabaseService {
 
       console.log('Inserting notification data:', notificationData);
       
-      // 先嘗試直接插入
+      // 嘗試使用 service role 模式進行插入
       const { data, error } = await supabase
         .from('notifications')
         .insert(notificationData)
@@ -78,25 +77,36 @@ export class NotificationDatabaseService {
         .single();
 
       if (error) {
-        console.error('Direct insert failed, error:', error);
+        console.error('Notification insert failed:', error);
         
-        // 如果直接插入失敗，嘗試使用 service role 模式
-        console.log('Attempting insert with service role permissions...');
-        
-        // 使用管理員權限進行插入
-        const { data: adminData, error: adminError } = await supabase
-          .from('notifications')
-          .insert(notificationData)
-          .select()
-          .single();
+        // 如果是 RLS 錯誤，嘗試使用不同的方法
+        if (error.message.includes('row-level security')) {
+          console.log('嘗試使用管理員權限插入通知...');
+          
+          // 使用 SQL 函數方式插入（如果存在）
+          try {
+            const { data: rpcData, error: rpcError } = await supabase.rpc('create_notification', {
+              p_user_id: userId,
+              p_title: notification.title || '新通知',
+              p_message: notification.message || '',
+              p_type: notification.type || 'system',
+              p_announcement_id: notification.data?.announcementId || null,
+              p_leave_request_id: notification.data?.leaveRequestId || null,
+              p_action_required: notification.data?.actionRequired || false
+            });
 
-        if (adminError) {
-          console.error('Admin insert also failed:', adminError);
-          return '';
+            if (!rpcError && rpcData) {
+              console.log('RPC notification insert successful:', rpcData);
+              return rpcData;
+            } else {
+              console.error('RPC insert also failed:', rpcError);
+            }
+          } catch (rpcError) {
+            console.error('RPC method not available:', rpcError);
+          }
         }
         
-        console.log('Admin notification insert successful:', adminData);
-        return adminData?.id || '';
+        return '';
       }
 
       console.log('Notification added successfully:', data);
@@ -185,7 +195,7 @@ export class NotificationDatabaseService {
   }
 
   /**
-   * 批量創建通知 - 使用管理員權限
+   * 批量創建通知 - 改進版本
    */
   static async createBulkNotifications(
     userIds: string[],
@@ -199,55 +209,30 @@ export class NotificationDatabaseService {
         return true;
       }
 
-      const notifications = userIds.map(userId => ({
-        user_id: userId,
-        title: notificationTemplate.title || '新通知',
-        message: notificationTemplate.message || '',
-        type: notificationTemplate.type || 'system',
-        announcement_id: notificationTemplate.data?.announcementId || null,
-        leave_request_id: notificationTemplate.data?.leaveRequestId || null,
-        action_required: notificationTemplate.data?.actionRequired || false,
-        is_read: false,
-        created_at: new Date().toISOString()
-      }));
-
-      console.log('Bulk inserting notifications:', notifications);
-
-      // 嘗試批量插入，使用管理員權限
-      const { data, error } = await supabase
-        .from('notifications')
-        .insert(notifications)
-        .select();
-
-      if (error) {
-        console.error('Bulk insert failed:', error);
-        
-        // 如果批量插入失敗，嘗試逐個插入
-        console.log('Attempting individual inserts...');
-        let successCount = 0;
-        
-        for (const notificationData of notifications) {
-          try {
-            const { error: individualError } = await supabase
-              .from('notifications')
-              .insert(notificationData);
-              
-            if (!individualError) {
-              successCount++;
-            } else {
-              console.error('Individual insert failed for user:', notificationData.user_id, individualError);
-            }
-          } catch (individualError) {
-            console.error('Individual insert exception for user:', notificationData.user_id, individualError);
+      // 嘗試逐個創建通知，確保每個都能成功
+      let successCount = 0;
+      
+      for (const userId of userIds) {
+        try {
+          console.log(`Creating notification for user: ${userId}`);
+          const notificationId = await this.addNotification(userId, notificationTemplate);
+          
+          if (notificationId) {
+            successCount++;
+            console.log(`✓ Notification created for user ${userId}: ${notificationId}`);
+          } else {
+            console.error(`✗ Failed to create notification for user ${userId}`);
           }
+          
+          // 添加小延遲以避免過快請求
+          await new Promise(resolve => setTimeout(resolve, 50));
+        } catch (error) {
+          console.error(`Error creating notification for user ${userId}:`, error);
         }
-        
-        console.log(`Individual inserts completed: ${successCount}/${notifications.length} successful`);
-        return successCount > 0;
       }
-
-      console.log('Bulk notifications created successfully:', data?.length);
-      return true;
+      
+      console.log(`Bulk notifications completed: ${successCount}/${userIds.length} successful`);
+      return successCount > 0;
     } catch (error) {
       console.error('Error creating bulk notifications:', error);
       return false;
@@ -276,38 +261,33 @@ export class NotificationDatabaseService {
       console.log('Read test passed:', readTest);
 
       // 測試寫入權限
-      const testNotification = {
-        user_id: userId,
+      const testNotificationId = await this.addNotification(userId, {
         title: '測試通知',
         message: '這是一個測試通知',
         type: 'system',
-        is_read: false,
-        action_required: false,
-        created_at: new Date().toISOString()
-      };
+        data: {
+          actionRequired: false
+        }
+      });
 
-      const { data: writeTest, error: writeError } = await supabase
-        .from('notifications')
-        .insert(testNotification)
-        .select()
-        .single();
-
-      if (writeError) {
-        console.error('Write test failed:', writeError);
+      if (testNotificationId) {
+        console.log('Write test passed, notification ID:', testNotificationId);
+        
+        // 清理測試資料
+        try {
+          await supabase
+            .from('notifications')
+            .delete()
+            .eq('id', testNotificationId);
+        } catch (cleanupError) {
+          console.log('Could not cleanup test notification:', cleanupError);
+        }
+        
+        return true;
+      } else {
+        console.error('Write test failed - no notification ID returned');
         return false;
       }
-
-      console.log('Write test passed:', writeTest);
-
-      // 清理測試資料
-      if (writeTest?.id) {
-        await supabase
-          .from('notifications')
-          .delete()
-          .eq('id', writeTest.id);
-      }
-
-      return true;
     } catch (error) {
       console.error('Database connection test failed:', error);
       return false;

@@ -15,7 +15,12 @@ import { useCheckIn } from '@/hooks/useCheckIn';
 
 const LocationCheckIn: React.FC = () => {
   const { currentUser } = useUser();
-  const userId = currentUser?.id || 'unknown';
+  
+  // 確保 userId 正確傳遞，如果沒有用戶則使用空字符串
+  const userId = currentUser?.id || '';
+  
+  console.log('LocationCheckIn - Current user:', currentUser);
+  console.log('LocationCheckIn - Using userId:', userId);
   
   const {
     loading,
@@ -29,6 +34,18 @@ const LocationCheckIn: React.FC = () => {
     onLocationCheckIn,
     onIpCheckIn
   } = useCheckIn(userId);
+  
+  // 如果沒有用戶登入，顯示登入提示
+  if (!currentUser) {
+    return (
+      <div className="mt-10 flex flex-col items-center justify-center relative">
+        <Alert variant="destructive" className="mb-4 max-w-md mx-auto">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>請先登入才能使用打卡功能</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
   
   return (
     <div className="mt-10 flex flex-col items-center justify-center relative">

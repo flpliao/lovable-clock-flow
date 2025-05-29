@@ -25,7 +25,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
     setIsLoading(true);
     
     console.log('Login attempt with email:', email);
-    console.log('Password provided:', password ? 'Yes' : 'No');
     
     try {
       // Find user by email in our credentials store
@@ -34,7 +33,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
       
       if (userFound && userFound.credentials.password === password) {
         // Create user data based on the found credentials
-        // Use email as the primary identifier for display name
+        // 確保使用正確的 UUID 格式
         const emailLocalPart = userFound.credentials.email.split('@')[0];
         let displayName, position, department, role;
         
@@ -56,7 +55,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
         }
         
         const mockUserData = {
-          id: userFound.userId, // 使用正確的 UUID
+          id: userFound.userId, // 使用來自 credentialStore 的正確 UUID
           name: displayName,
           position: position,
           department: department,
@@ -64,7 +63,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
           role: role,
         };
         
-        console.log('Login successful for:', mockUserData);
+        console.log('Setting current user with correct UUID:', mockUserData);
         setCurrentUser(mockUserData);
         
         toast({
@@ -75,7 +74,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
         navigate('/');
       } else {
         console.log('Login failed - invalid credentials');
-        console.log('Expected password: password, received:', password);
         toast({
           variant: 'destructive',
           title: '登錄失敗',

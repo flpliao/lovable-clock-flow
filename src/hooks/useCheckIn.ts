@@ -7,6 +7,7 @@ import {
   handleIpCheckIn
 } from '@/utils/checkInHandlers';
 import { useSupabaseCheckIn } from './useSupabaseCheckIn';
+import { UserIdValidationService } from '@/services/userIdValidationService';
 
 export const useCheckIn = (userId: string) => {
   const { toast } = useToast();
@@ -22,21 +23,24 @@ export const useCheckIn = (userId: string) => {
   // 載入今日打卡記錄
   useEffect(() => {
     const loadTodayRecords = async () => {
-      // 檢查 userId 是否為有效的 UUID 格式
-      if (userId && userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        console.log('Loading today records for valid UUID:', userId);
-        const records = await getTodayCheckInRecords(userId);
-        setTodayRecords(records);
-
-        // 設定下一個動作類型
-        if (records.checkIn && !records.checkOut) {
-          setActionType('check-out');
-        } else {
-          setActionType('check-in');
-        }
-      } else {
-        console.log('Invalid UUID or no userId provided:', userId);
+      if (!userId) {
+        console.log('No userId provided');
         setTodayRecords({});
+        return;
+      }
+
+      // 使用統一的驗證服務處理用戶ID
+      const validatedUserId = UserIdValidationService.validateUserId(userId);
+      console.log('Loading today records for user:', { original: userId, validated: validatedUserId });
+      
+      const records = await getTodayCheckInRecords(validatedUserId);
+      setTodayRecords(records);
+
+      // 設定下一個動作類型
+      if (records.checkIn && !records.checkOut) {
+        setActionType('check-out');
+      } else {
+        setActionType('check-in');
       }
     };
 
@@ -44,20 +48,24 @@ export const useCheckIn = (userId: string) => {
   }, [userId, getTodayCheckInRecords]);
 
   const onLocationCheckIn = () => {
-    if (!userId || !userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+    if (!userId) {
       toast({
         title: "打卡失敗",
-        description: "無效的用戶ID，請重新登入",
+        description: "請先登入",
         variant: "destructive",
       });
       return;
     }
 
+    // 使用統一的驗證服務
+    const validatedUserId = UserIdValidationService.validateUserId(userId);
+    console.log('Location check-in with validated user ID:', validatedUserId);
+
     setLoading(true);
     setError(null);
 
     handleLocationCheckIn(
-      userId,
+      validatedUserId,
       actionType,
       async (record) => {
         setLoading(false);
@@ -95,20 +103,24 @@ export const useCheckIn = (userId: string) => {
   };
 
   const onIpCheckIn = () => {
-    if (!userId || !userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+    if (!userId) {
       toast({
         title: "打卡失敗",
-        description: "無效的用戶ID，請重新登入",
+        description: "請先登入",
         variant: "destructive",
       });
       return;
     }
 
+    // 使用統一的驗證服務
+    const validatedUserId = UserIdValidationService.validateUserId(userId);
+    console.log('IP check-in with validated user ID:', validatedUserId);
+
     setLoading(true);
     setError(null);
 
     handleIpCheckIn(
-      userId,
+      validatedUserId,
       actionType,
       async (record) => {
         setLoading(false);

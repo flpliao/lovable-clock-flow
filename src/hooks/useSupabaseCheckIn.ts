@@ -1,5 +1,5 @@
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useCheckInRecords } from './useCheckInRecords';
 import { useCheckInCreator } from './useCheckInCreator';
@@ -11,6 +11,7 @@ export const useSupabaseCheckIn = () => {
   const { checkInRecords, loading, loadCheckInRecords } = useCheckInRecords();
   const { createCheckInRecord: createRecord } = useCheckInCreator();
   const { getTodayCheckInRecords } = useTodayCheckInRecords();
+  const initialLoadRef = useRef(false);
 
   const createCheckInRecord = async (record: Omit<CheckInRecord, 'id'>) => {
     if (!currentUser?.id) {
@@ -47,20 +48,20 @@ export const useSupabaseCheckIn = () => {
     }
   }, [currentUser?.id, loadCheckInRecords]);
 
-  // 初始載入
-  useEffect(() => {
-    if (currentUser?.id) {
-      console.log('useEffect 觸發載入記錄，使用者ID:', currentUser.id);
-      loadCheckInRecords(currentUser.id);
+  // 移除自動初始載入，由組件控制
+  const manualLoadRecords = useCallback(async () => {
+    if (currentUser?.id && !loading) {
+      console.log('手動載入打卡記錄，使用者ID:', currentUser.id);
+      await loadCheckInRecords(currentUser.id);
     }
-  }, [currentUser?.id, loadCheckInRecords]);
+  }, [currentUser?.id, loadCheckInRecords, loading]);
 
   return {
     checkInRecords,
     loading,
     createCheckInRecord,
     getTodayCheckInRecords: getTodayRecords,
-    loadCheckInRecords: refreshData,
+    loadCheckInRecords: manualLoadRecords,
     refreshData
   };
 };

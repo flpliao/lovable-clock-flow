@@ -1,4 +1,3 @@
-
 export interface Company {
   id: string;
   name: string;
@@ -7,8 +6,8 @@ export interface Company {
   phone: string;
   email: string;
   website?: string;
-  established_date: string;
-  capital?: number; // 資本額
+  established_date: string | null;
+  capital?: number | null; // 資本額
   business_type: string; // 營業項目
   legal_representative: string; // 法定代表人
   created_at: string;

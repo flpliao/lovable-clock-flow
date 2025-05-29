@@ -218,7 +218,7 @@ const EditCompanyDialog = () => {
               <Input
                 id="established-date"
                 type="date"
-                value={editedCompany.established_date}
+                value={editedCompany.established_date || ''}
                 onChange={(e) => setEditedCompany({ ...editedCompany, established_date: e.target.value })}
                 disabled={isSubmitting}
               />
@@ -231,7 +231,7 @@ const EditCompanyDialog = () => {
               id="capital"
               type="number"
               value={editedCompany.capital || ''}
-              onChange={(e) => setEditedCompany({ ...editedCompany, capital: Number(e.target.value) })}
+              onChange={(e) => setEditedCompany({ ...editedCompany, capital: e.target.value ? Number(e.target.value) : null })}
               placeholder="請輸入資本額"
               disabled={isSubmitting}
             />

@@ -89,20 +89,26 @@ export const useSupabaseCompanyOperations = () => {
     try {
       console.log('正在更新公司資料:', updatedCompany);
       
-      // 準備更新資料，移除 id 以避免更新衝突
-      const { id, created_at, ...updateData } = updatedCompany;
-      
-      // 確保 updated_at 使用當前時間
-      const finalUpdateData = {
-        ...updateData,
+      // 準備更新資料，確保欄位類型正確
+      const updateData = {
+        name: updatedCompany.name,
+        registration_number: updatedCompany.registration_number,
+        address: updatedCompany.address,
+        phone: updatedCompany.phone,
+        email: updatedCompany.email,
+        website: updatedCompany.website || null,
+        established_date: updatedCompany.established_date || null,
+        capital: updatedCompany.capital ? Number(updatedCompany.capital) : null,
+        business_type: updatedCompany.business_type,
+        legal_representative: updatedCompany.legal_representative,
         updated_at: new Date().toISOString()
       };
       
-      console.log('準備更新的資料:', finalUpdateData);
+      console.log('準備更新的資料:', updateData);
 
       const { data, error } = await supabase
         .from('companies')
-        .update(finalUpdateData)
+        .update(updateData)
         .eq('id', updatedCompany.id)
         .select()
         .single();

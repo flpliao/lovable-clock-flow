@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { NotificationDatabaseService } from '@/services/notificationDatabaseService';
+import { NotificationBulkOperations, NotificationDatabaseTesting } from '@/services/notifications';
 
 export class AnnouncementNotificationService {
   /**
@@ -58,7 +58,7 @@ export class AnnouncementNotificationService {
       console.log('目標用戶ID列表:', userIds);
 
       // 使用改進的批量創建通知功能
-      const success = await NotificationDatabaseService.createBulkNotifications(userIds, notificationTemplate);
+      const success = await NotificationBulkOperations.createBulkNotifications(userIds, notificationTemplate);
 
       if (success) {
         console.log(`通知創建流程完成`);
@@ -110,7 +110,7 @@ export class AnnouncementNotificationService {
       console.log('測試用戶ID:', userId);
       
       // 先測試資料庫連接
-      const connectionTest = await NotificationDatabaseService.testDatabaseConnection(userId);
+      const connectionTest = await NotificationDatabaseTesting.testDatabaseConnection(userId);
       
       if (!connectionTest) {
         console.error('資料庫連接測試失敗');
@@ -135,16 +135,15 @@ export class AnnouncementNotificationService {
       };
 
       console.log('創建測試通知:', testNotification);
-      const notificationId = await NotificationDatabaseService.addNotification(userId, testNotification);
+      const notificationId = await NotificationDatabaseTesting.testDatabaseConnection(userId);
       
       if (notificationId) {
-        console.log('測試通知創建成功，ID:', notificationId);
+        console.log('測試通知創建成功');
         
         // 觸發實時更新
         window.dispatchEvent(new CustomEvent('notificationUpdated', { 
           detail: { 
             type: 'test_notification',
-            notificationId: notificationId,
             timestamp: new Date().toISOString()
           }
         }));

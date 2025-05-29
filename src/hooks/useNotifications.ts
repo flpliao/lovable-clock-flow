@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Notification } from '@/components/notifications/NotificationItem';
 import { useUser } from '@/contexts/UserContext';
-import { NotificationDatabaseService } from '@/services/notificationDatabaseService';
+import { NotificationDatabaseOperations } from '@/services/notifications';
 import { NotificationRealtimeService } from '@/services/notificationRealtimeService';
 import { useNotificationActions } from '@/hooks/useNotificationActions';
 
@@ -26,7 +26,7 @@ export const useNotifications = () => {
     setIsLoading(true);
 
     try {
-      const formattedNotifications = await NotificationDatabaseService.loadNotifications(currentUser.id);
+      const formattedNotifications = await NotificationDatabaseOperations.loadNotifications(currentUser.id);
       const unread = formattedNotifications.filter(n => !n.isRead).length;
       
       setNotifications(formattedNotifications);

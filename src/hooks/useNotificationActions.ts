@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Notification } from '@/components/notifications/NotificationItem';
-import { NotificationDatabaseService } from '@/services/notificationDatabaseService';
+import { NotificationDatabaseOperations } from '@/services/notifications';
 import { toast } from '@/hooks/use-toast';
 
 export const useNotificationActions = (
@@ -14,7 +14,7 @@ export const useNotificationActions = (
   const markAsRead = async (id: string) => {
     if (!currentUserId) return;
 
-    const success = await NotificationDatabaseService.markNotificationAsRead(id, currentUserId);
+    const success = await NotificationDatabaseOperations.markNotificationAsRead(id, currentUserId);
     if (success) {
       // Update local state immediately
       setNotifications(prev => 
@@ -31,7 +31,7 @@ export const useNotificationActions = (
   const markAllAsRead = async () => {
     if (!currentUserId) return;
 
-    const success = await NotificationDatabaseService.markAllNotificationsAsRead(currentUserId);
+    const success = await NotificationDatabaseOperations.markAllNotificationsAsRead(currentUserId);
     if (success) {
       // Update local state
       setNotifications(prev => 
@@ -50,7 +50,7 @@ export const useNotificationActions = (
   const clearNotifications = async () => {
     if (!currentUserId) return;
 
-    const success = await NotificationDatabaseService.clearAllNotifications(currentUserId);
+    const success = await NotificationDatabaseOperations.clearAllNotifications(currentUserId);
     if (success) {
       setNotifications([]);
       setUnreadCount(0);
@@ -68,7 +68,7 @@ export const useNotificationActions = (
       return '';
     }
 
-    const notificationId = await NotificationDatabaseService.addNotification(currentUserId, notification);
+    const notificationId = await NotificationDatabaseOperations.addNotification(currentUserId, notification);
     
     if (notificationId) {
       // Reload notifications to get the latest data

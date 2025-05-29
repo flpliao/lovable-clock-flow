@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/components/notifications/NotificationItem';
 
-export class NotificationDatabaseService {
+export class NotificationDatabaseOperations {
   /**
    * Load notifications from database for a specific user
    */
@@ -153,106 +153,6 @@ export class NotificationDatabaseService {
       return true;
     } catch (error) {
       console.error('Error clearing notifications:', error);
-      return false;
-    }
-  }
-
-  /**
-   * 批量創建通知 - 使用數據庫函數
-   */
-  static async createBulkNotifications(
-    userIds: string[],
-    notificationTemplate: Omit<Notification, 'id' | 'createdAt' | 'isRead'>
-  ): Promise<boolean> {
-    try {
-      console.log('Creating bulk notifications for users:', userIds.length, 'template:', notificationTemplate);
-
-      if (userIds.length === 0) {
-        console.log('No users to notify');
-        return true;
-      }
-
-      // 使用數據庫函數逐個創建通知
-      let successCount = 0;
-      
-      for (const userId of userIds) {
-        try {
-          console.log(`Creating notification for user: ${userId}`);
-          const notificationId = await this.addNotification(userId, notificationTemplate);
-          
-          if (notificationId) {
-            successCount++;
-            console.log(`✓ Notification created for user ${userId}: ${notificationId}`);
-          } else {
-            console.error(`✗ Failed to create notification for user ${userId}`);
-          }
-          
-          // 添加小延遲以避免過快請求
-          await new Promise(resolve => setTimeout(resolve, 50));
-        } catch (error) {
-          console.error(`Error creating notification for user ${userId}:`, error);
-        }
-      }
-      
-      console.log(`Bulk notifications completed: ${successCount}/${userIds.length} successful`);
-      return successCount > 0;
-    } catch (error) {
-      console.error('Error creating bulk notifications:', error);
-      return false;
-    }
-  }
-
-  /**
-   * 測試資料庫連接和權限
-   */
-  static async testDatabaseConnection(userId: string): Promise<boolean> {
-    try {
-      console.log('Testing database connection for user:', userId);
-      
-      // 測試讀取權限
-      const { data: readTest, error: readError } = await supabase
-        .from('notifications')
-        .select('id')
-        .eq('user_id', userId)
-        .limit(1);
-
-      if (readError) {
-        console.error('Read test failed:', readError);
-        return false;
-      }
-
-      console.log('Read test passed:', readTest);
-
-      // 測試寫入權限 - 使用數據庫函數
-      const testNotificationId = await this.addNotification(userId, {
-        title: '測試通知',
-        message: '這是一個測試通知',
-        type: 'system',
-        data: {
-          actionRequired: false
-        }
-      });
-
-      if (testNotificationId) {
-        console.log('Write test passed, notification ID:', testNotificationId);
-        
-        // 清理測試資料
-        try {
-          await supabase
-            .from('notifications')
-            .delete()
-            .eq('id', testNotificationId);
-        } catch (cleanupError) {
-          console.log('Could not cleanup test notification:', cleanupError);
-        }
-        
-        return true;
-      } else {
-        console.error('Write test failed - no notification ID returned');
-        return false;
-      }
-    } catch (error) {
-      console.error('Database connection test failed:', error);
       return false;
     }
   }

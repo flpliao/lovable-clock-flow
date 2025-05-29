@@ -2,14 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar } from '@/components/ui/calendar';
-import { ChevronLeft, Clock } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import Header from '@/components/Header';
 import { useUser } from '@/contexts/UserContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CheckInHistory from '@/components/CheckInHistory';
-import LocationCheckIn from '@/components/LocationCheckIn';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 import { CheckInRecord } from '@/types';
 import { formatTime } from '@/utils/checkInUtils';
@@ -18,7 +17,7 @@ const PersonalAttendance = () => {
   const navigate = useNavigate();
   const { currentUser } = useUser();
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [activeTab, setActiveTab] = useState('today');
+  const [activeTab, setActiveTab] = useState('history'); // 預設為打卡歷史
   const [selectedDateRecords, setSelectedDateRecords] = useState<{
     checkIn?: CheckInRecord;
     checkOut?: CheckInRecord;
@@ -115,24 +114,9 @@ const PersonalAttendance = () => {
           
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="w-full sm:w-auto mb-6">
-              <TabsTrigger value="today">今日打卡</TabsTrigger>
               <TabsTrigger value="history">打卡歷史</TabsTrigger>
               <TabsTrigger value="calendar">月曆視圖</TabsTrigger>
             </TabsList>
-            
-            <TabsContent value="today" className="mt-0">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Clock className="mr-2 h-5 w-5" />
-                    今日打卡
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <LocationCheckIn />
-                </CardContent>
-              </Card>
-            </TabsContent>
             
             <TabsContent value="history" className="mt-0">
               <Card>

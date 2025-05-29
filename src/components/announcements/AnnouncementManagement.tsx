@@ -62,28 +62,38 @@ const AnnouncementManagement: React.FC = () => {
   });
 
   // Handle saving announcement (create or edit)
-  const handleSaveAnnouncement = async (data: CompanyAnnouncement | Omit<CompanyAnnouncement, 'id'>) => {
-    if ('id' in data) {
-      // Update existing announcement
-      const success = await updateAnnouncement(data.id, data);
-      if (success) {
-        toast({
-          title: '成功',
-          description: '公告已更新'
-        });
-        setIsFormOpen(false);
-        setSelectedAnnouncement(null);
+  const handleSaveAnnouncement = async (data: CompanyAnnouncement | Omit<CompanyAnnouncement, 'id' | 'created_at' | 'created_by' | 'company_id'>): Promise<boolean> => {
+    try {
+      console.log('handleSaveAnnouncement called with:', data);
+      
+      if ('id' in data) {
+        // Update existing announcement
+        console.log('Updating announcement with ID:', data.id);
+        const success = await updateAnnouncement(data.id, data);
+        if (success) {
+          setIsFormOpen(false);
+          setSelectedAnnouncement(null);
+          return true;
+        }
+        return false;
+      } else {
+        // Create new announcement
+        console.log('Creating new announcement');
+        const success = await createAnnouncement(data);
+        if (success) {
+          setIsFormOpen(false);
+          return true;
+        }
+        return false;
       }
-    } else {
-      // Create new announcement
-      const success = await createAnnouncement(data);
-      if (success) {
-        toast({
-          title: '成功',
-          description: '公告已發布'
-        });
-        setIsFormOpen(false);
-      }
+    } catch (error) {
+      console.error('Error in handleSaveAnnouncement:', error);
+      toast({
+        title: '錯誤',
+        description: '儲存公告時發生錯誤',
+        variant: 'destructive'
+      });
+      return false;
     }
   };
 
@@ -109,6 +119,7 @@ const AnnouncementManagement: React.FC = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">公告管理</h2>
         <Button onClick={() => {
+          console.log('Opening form for new announcement');
           setSelectedAnnouncement(null);
           setIsFormOpen(true);
         }}>
@@ -215,6 +226,7 @@ const AnnouncementManagement: React.FC = () => {
                         size="sm"
                         variant="ghost"
                         onClick={() => {
+                          console.log('Opening form for edit announcement:', announcement.id);
                           setSelectedAnnouncement(announcement);
                           setIsFormOpen(true);
                         }}
@@ -234,6 +246,7 @@ const AnnouncementManagement: React.FC = () => {
       <AnnouncementForm
         isOpen={isFormOpen}
         onClose={() => {
+          console.log('Closing form');
           setIsFormOpen(false);
           setSelectedAnnouncement(null);
         }}

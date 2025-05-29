@@ -712,6 +712,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_role_safe: {
+        Args: { user_uuid: string }
+        Returns: string
+      }
       initialize_annual_leave_balance: {
         Args: { staff_uuid: string; target_year: number }
         Returns: undefined

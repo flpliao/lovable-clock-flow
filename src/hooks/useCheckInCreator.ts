@@ -6,18 +6,23 @@ import { CheckInRecord } from '@/types';
 export const useCheckInCreator = () => {
   const { toast } = useToast();
 
-  const createCheckInRecord = async (record: Omit<CheckInRecord, 'id'>, currentUserId: string) => {
-    if (!currentUserId) {
-      toast({
-        title: "錯誤",
-        description: "請先登入",
-        variant: "destructive"
-      });
-      return false;
-    }
-
+  const createCheckInRecord = async (record: Omit<CheckInRecord, 'id'>, currentUserId?: string) => {
     try {
-      console.log('建立打卡記錄:', record);
+      // 檢查用戶是否已登入
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        console.error('Authentication error:', authError);
+        toast({
+          title: "打卡失敗",
+          description: "請先登入",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      console.log('Creating check-in record for authenticated user:', user.id);
+      console.log('Record data:', record);
 
       const distance = record.details.distance 
         ? Math.round(record.details.distance) 
@@ -26,8 +31,8 @@ export const useCheckInCreator = () => {
       console.log('處理後的距離:', distance);
       
       const recordData = {
-        user_id: currentUserId,
-        staff_id: currentUserId,
+        user_id: user.id, // 使用 Supabase 認證的用戶 ID
+        staff_id: user.id, // 同樣使用認證的用戶 ID
         timestamp: record.timestamp,
         type: record.type,
         status: record.status,

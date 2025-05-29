@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useUser } from '@/contexts/UserContext';
+import { supabase } from '@/integrations/supabase/client';
 
 // New components
 import CheckInStatusDisplay from './check-in/CheckInStatusDisplay';
@@ -15,11 +16,46 @@ import { useCheckIn } from '@/hooks/useCheckIn';
 
 const LocationCheckIn: React.FC = () => {
   const { currentUser } = useUser();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
   
-  // 確保 userId 正確傳遞，如果沒有用戶則使用空字符串
-  const userId = currentUser?.id || '';
+  // 檢查 Supabase 認證狀態
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      console.log('Auth check result:', { user, error });
+      
+      if (user && !error) {
+        setIsAuthenticated(true);
+        setAuthUserId(user.id);
+      } else {
+        setIsAuthenticated(false);
+        setAuthUserId(null);
+      }
+    };
+
+    checkAuth();
+
+    // 監聽認證狀態變化
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
+      if (session?.user) {
+        setIsAuthenticated(true);
+        setAuthUserId(session.user.id);
+      } else {
+        setIsAuthenticated(false);
+        setAuthUserId(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+  
+  // 使用 Supabase 認證的用戶 ID
+  const userId = authUserId || '';
   
   console.log('LocationCheckIn - Current user:', currentUser);
+  console.log('LocationCheckIn - Authenticated:', isAuthenticated);
   console.log('LocationCheckIn - Using userId:', userId);
   
   const {
@@ -36,7 +72,7 @@ const LocationCheckIn: React.FC = () => {
   } = useCheckIn(userId);
   
   // 如果沒有用戶登入，顯示登入提示
-  if (!currentUser) {
+  if (!currentUser || !isAuthenticated) {
     return (
       <div className="mt-10 flex flex-col items-center justify-center relative">
         <Alert variant="destructive" className="mb-4 max-w-md mx-auto">

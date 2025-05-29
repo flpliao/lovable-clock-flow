@@ -7,7 +7,7 @@ import {
   handleIpCheckIn
 } from '@/utils/checkInHandlers';
 import { useSupabaseCheckIn } from './useSupabaseCheckIn';
-import { UserIdValidationService } from '@/services/userIdValidationService';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useCheckIn = (userId: string) => {
   const { toast } = useToast();
@@ -29,11 +29,9 @@ export const useCheckIn = (userId: string) => {
         return;
       }
 
-      // 使用統一的驗證服務處理用戶ID
-      const validatedUserId = UserIdValidationService.validateUserId(userId);
-      console.log('Loading today records for user:', { original: userId, validated: validatedUserId });
+      console.log('Loading today records for user:', userId);
       
-      const records = await getTodayCheckInRecords(validatedUserId);
+      const records = await getTodayCheckInRecords(userId);
       setTodayRecords(records);
 
       // 設定下一個動作類型
@@ -57,19 +55,19 @@ export const useCheckIn = (userId: string) => {
       return;
     }
 
-    // 使用統一的驗證服務
-    const validatedUserId = UserIdValidationService.validateUserId(userId);
-    console.log('Location check-in with validated user ID:', validatedUserId);
+    console.log('Location check-in with user ID:', userId);
 
     setLoading(true);
     setError(null);
 
     handleLocationCheckIn(
-      validatedUserId,
+      userId,
       actionType,
       async (record) => {
         setLoading(false);
         const actionMsg = actionType === 'check-in' ? '上班打卡' : '下班打卡';
+        
+        console.log('Creating check-in record:', record);
         
         // 儲存到 Supabase
         const success = await createCheckInRecord(record);
@@ -86,6 +84,12 @@ export const useCheckIn = (userId: string) => {
           } else {
             setTodayRecords(prev => ({ ...prev, checkOut: record }));
           }
+        } else {
+          toast({
+            title: "打卡失敗",
+            description: "無法儲存打卡記錄，請稍後再試",
+            variant: "destructive",
+          });
         }
       },
       (errorMessage) => {
@@ -112,19 +116,19 @@ export const useCheckIn = (userId: string) => {
       return;
     }
 
-    // 使用統一的驗證服務
-    const validatedUserId = UserIdValidationService.validateUserId(userId);
-    console.log('IP check-in with validated user ID:', validatedUserId);
+    console.log('IP check-in with user ID:', userId);
 
     setLoading(true);
     setError(null);
 
     handleIpCheckIn(
-      validatedUserId,
+      userId,
       actionType,
       async (record) => {
         setLoading(false);
         const actionMsg = actionType === 'check-in' ? '上班打卡' : '下班打卡';
+        
+        console.log('Creating IP check-in record:', record);
         
         // 儲存到 Supabase
         const success = await createCheckInRecord(record);
@@ -141,6 +145,12 @@ export const useCheckIn = (userId: string) => {
           } else {
             setTodayRecords(prev => ({ ...prev, checkOut: record }));
           }
+        } else {
+          toast({
+            title: "打卡失敗",
+            description: "無法儲存打卡記錄，請稍後再試",
+            variant: "destructive",
+          });
         }
       },
       (errorMessage) => {

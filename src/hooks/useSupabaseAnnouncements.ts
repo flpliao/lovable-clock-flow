@@ -59,6 +59,53 @@ export const useSupabaseAnnouncements = () => {
     }
   };
 
+  // 為所有用戶創建公告通知
+  const createAnnouncementNotifications = async (announcementId: string, announcementTitle: string) => {
+    try {
+      console.log('Creating notifications for announcement:', announcementId);
+      
+      // 取得所有活躍的員工
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('id, name')
+        .neq('role', 'admin'); // 排除管理員（可能不需要通知自己）
+
+      if (staffError) {
+        console.error('Error fetching staff for notifications:', staffError);
+        return;
+      }
+
+      if (!staffData || staffData.length === 0) {
+        console.log('No staff found for notifications');
+        return;
+      }
+
+      // 為每個員工創建通知記錄
+      const notifications = staffData.map(staff => ({
+        user_id: staff.id,
+        title: '新公告發布',
+        message: `${announcementTitle}`,
+        type: 'announcement',
+        announcement_id: announcementId,
+        is_read: false,
+        created_at: new Date().toISOString()
+      }));
+
+      // 批量插入通知到資料庫
+      const { error: notificationError } = await supabase
+        .from('notifications')
+        .insert(notifications);
+
+      if (notificationError) {
+        console.error('Error creating notifications:', notificationError);
+      } else {
+        console.log(`Created ${notifications.length} notifications for announcement`);
+      }
+    } catch (error) {
+      console.error('Error in createAnnouncementNotifications:', error);
+    }
+  };
+
   // 建立公告 - Using Supabase database
   const createAnnouncement = async (newAnnouncement: Omit<CompanyAnnouncement, 'id' | 'created_at' | 'created_by' | 'company_id'>) => {
     if (!isAdmin()) {
@@ -107,6 +154,12 @@ export const useSupabaseAnnouncements = () => {
       }
 
       console.log('Announcement created successfully:', data);
+      
+      // 如果公告是啟用狀態，為所有用戶創建通知
+      if (newAnnouncement.is_active) {
+        await createAnnouncementNotifications(data.id, newAnnouncement.title);
+      }
+      
       await loadAnnouncements();
       
       toast({

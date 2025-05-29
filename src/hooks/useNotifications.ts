@@ -3,134 +3,183 @@ import { useState, useEffect } from 'react';
 import { Notification } from '@/components/notifications/NotificationItem';
 import { useUser } from '@/contexts/UserContext';
 import { toast } from '@/hooks/use-toast';
-import { v4 as uuidv4 } from 'uuid';
-
-// Mock notifications for demo
-const generateMockNotifications = (currentUserId: string): Notification[] => [
-  {
-    id: '1',
-    title: '請假申請等待審核',
-    message: '王小明的年假申請需要您的審核',
-    type: 'leave_approval',
-    createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 minutes ago
-    isRead: false,
-    data: {
-      leaveRequestId: '4',
-      actionRequired: true
-    }
-  },
-  {
-    id: '2',
-    title: '請假已核准',
-    message: '您的請假申請已被主管核准',
-    type: 'leave_status',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(), // 3 hours ago
-    isRead: true,
-    data: {
-      leaveRequestId: '2'
-    }
-  },
-  {
-    id: '3',
-    title: '系統公告',
-    message: '系統將於本週末進行維護，請提前完成您的工作',
-    type: 'system',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-    isRead: false
-  }
-];
+import { supabase } from '@/integrations/supabase/client';
 
 export const useNotifications = () => {
   const { currentUser } = useUser();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Load notifications
-  useEffect(() => {
-    if (currentUser) {
-      // In a real app, we would fetch from API
-      const savedNotifications = localStorage.getItem(`notifications-${currentUser.id}`);
+  // Load notifications from database
+  const loadNotifications = async () => {
+    if (!currentUser) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
+
+    try {
+      console.log('Loading notifications for user:', currentUser.id);
       
-      if (savedNotifications) {
-        try {
-          const parsed = JSON.parse(savedNotifications);
-          setNotifications(parsed);
-          setUnreadCount(parsed.filter((n: Notification) => !n.isRead).length);
-        } catch (e) {
-          console.error('Failed to parse saved notifications', e);
-          
-          // Fallback to mock data
-          const mockData = generateMockNotifications(currentUser.id);
-          setNotifications(mockData);
-          setUnreadCount(mockData.filter(n => !n.isRead).length);
-        }
-      } else {
-        // Use mock data for demo
-        const mockData = generateMockNotifications(currentUser.id);
-        setNotifications(mockData);
-        setUnreadCount(mockData.filter(n => !n.isRead).length);
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading notifications:', error);
+        setNotifications([]);
+        setUnreadCount(0);
+        return;
       }
-    } else {
+
+      const formattedNotifications: Notification[] = (data || []).map((notification: any) => ({
+        id: notification.id,
+        title: notification.title,
+        message: notification.message,
+        type: notification.type as Notification['type'],
+        createdAt: notification.created_at,
+        isRead: notification.is_read,
+        data: {
+          announcementId: notification.announcement_id,
+          leaveRequestId: notification.leave_request_id,
+          userId: notification.user_id,
+          actionRequired: notification.action_required || false
+        }
+      }));
+
+      setNotifications(formattedNotifications);
+      setUnreadCount(formattedNotifications.filter(n => !n.isRead).length);
+    } catch (error) {
+      console.error('Error loading notifications:', error);
       setNotifications([]);
       setUnreadCount(0);
     }
+  };
+
+  // Load notifications when user changes
+  useEffect(() => {
+    loadNotifications();
   }, [currentUser]);
 
-  // Save notifications to localStorage
-  useEffect(() => {
-    if (currentUser && notifications.length > 0) {
-      localStorage.setItem(`notifications-${currentUser.id}`, JSON.stringify(notifications));
-      setUnreadCount(notifications.filter(n => !n.isRead).length);
+  const markAsRead = async (id: string) => {
+    if (!currentUser) return;
+
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', id)
+        .eq('user_id', currentUser.id);
+
+      if (error) {
+        console.error('Error marking notification as read:', error);
+        return;
+      }
+
+      // Update local state
+      setNotifications(prev => 
+        prev.map(notification => 
+          notification.id === id ? { ...notification, isRead: true } : notification
+        )
+      );
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
     }
-  }, [notifications, currentUser]);
-
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id ? { ...notification, isRead: true } : notification
-      )
-    );
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, isRead: true }))
-    );
-    toast({
-      title: "已標記為已讀",
-      description: "所有通知已標記為已讀"
-    });
-  };
+  const markAllAsRead = async () => {
+    if (!currentUser) return;
 
-  const clearNotifications = () => {
-    setNotifications([]);
-    if (currentUser) {
-      localStorage.removeItem(`notifications-${currentUser.id}`);
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', currentUser.id)
+        .eq('is_read', false);
+
+      if (error) {
+        console.error('Error marking all notifications as read:', error);
+        return;
+      }
+
+      // Update local state
+      setNotifications(prev => 
+        prev.map(notification => ({ ...notification, isRead: true }))
+      );
+
+      toast({
+        title: "已標記為已讀",
+        description: "所有通知已標記為已讀"
+      });
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
     }
-    toast({
-      title: "通知已清空",
-      description: "所有通知已被清空"
-    });
   };
 
-  const addNotification = (notification: Omit<Notification, 'id' | 'createdAt' | 'isRead'>) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: uuidv4(),
-      createdAt: new Date().toISOString(),
-      isRead: false
-    };
-    
-    setNotifications(prev => [newNotification, ...prev]);
-    
-    // Also show a toast for real-time feedback
-    toast({
-      title: notification.title,
-      description: notification.message,
-      duration: 5000
-    });
-    
-    return newNotification.id;
+  const clearNotifications = async () => {
+    if (!currentUser) return;
+
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('user_id', currentUser.id);
+
+      if (error) {
+        console.error('Error clearing notifications:', error);
+        return;
+      }
+
+      setNotifications([]);
+      toast({
+        title: "通知已清空",
+        description: "所有通知已被清空"
+      });
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+    }
+  };
+
+  const addNotification = async (notification: Omit<Notification, 'id' | 'createdAt' | 'isRead'>) => {
+    if (!currentUser) return '';
+
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: currentUser.id,
+          title: notification.title,
+          message: notification.message,
+          type: notification.type,
+          announcement_id: notification.data?.announcementId,
+          leave_request_id: notification.data?.leaveRequestId,
+          action_required: notification.data?.actionRequired || false
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding notification:', error);
+        return '';
+      }
+
+      // Reload notifications to get the latest data
+      await loadNotifications();
+      
+      // Also show a toast for real-time feedback
+      toast({
+        title: notification.title,
+        description: notification.message,
+        duration: 5000
+      });
+      
+      return data.id;
+    } catch (error) {
+      console.error('Error adding notification:', error);
+      return '';
+    }
   };
 
   return { 
@@ -139,6 +188,7 @@ export const useNotifications = () => {
     markAsRead, 
     markAllAsRead, 
     clearNotifications,
-    addNotification
+    addNotification,
+    refreshNotifications: loadNotifications
   };
 };

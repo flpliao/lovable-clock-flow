@@ -36,12 +36,13 @@ const NotificationCenter: React.FC = () => {
     console.log('NotificationCenter render - notifications count:', notifications.length);
     console.log('NotificationCenter render - unreadCount:', unreadCount);
     console.log('NotificationCenter render - isLoading:', isLoading);
+    console.log('NotificationCenter render - notifications:', notifications);
   }, [notifications, unreadCount, isLoading]);
 
   // Refresh notifications when location changes (但限制頻率)
   useEffect(() => {
     const now = new Date();
-    if (now.getTime() - lastRefresh.getTime() > 5000) { // 限制5秒內只能刷新一次
+    if (now.getTime() - lastRefresh.getTime() > 3000) { // 減少到3秒
       console.log('NotificationCenter - refreshing notifications due to location change');
       refreshNotifications();
       setLastRefresh(now);
@@ -80,7 +81,7 @@ const NotificationCenter: React.FC = () => {
     setOpen(newOpen);
     if (newOpen) {
       const now = new Date();
-      if (now.getTime() - lastRefresh.getTime() > 3000) { // 限制3秒內只能刷新一次
+      if (now.getTime() - lastRefresh.getTime() > 2000) { // 減少到2秒
         console.log('NotificationCenter - popover opened, refreshing notifications');
         refreshNotifications();
         setLastRefresh(now);
@@ -111,7 +112,7 @@ const NotificationCenter: React.FC = () => {
       setTimeout(() => {
         refreshNotifications();
         setLastRefresh(new Date());
-      }, 1000);
+      }, 2000);
     }
   };
   

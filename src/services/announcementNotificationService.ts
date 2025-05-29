@@ -61,7 +61,7 @@ export class AnnouncementNotificationService {
       const success = await NotificationBulkOperations.createBulkNotifications(userIds, notificationTemplate);
 
       if (success) {
-        console.log(`通知創建流程完成`);
+        console.log(`通知創建流程完成，成功為 ${userIds.length} 位用戶創建通知`);
         
         // Show success message
         toast({
@@ -69,16 +69,21 @@ export class AnnouncementNotificationService {
           description: `已為 ${userIds.length} 位用戶創建公告通知`,
         });
 
-        // 觸發實時更新事件
-        console.log('觸發實時更新事件...');
-        window.dispatchEvent(new CustomEvent('notificationUpdated', { 
-          detail: { 
-            type: 'announcement_created',
-            announcementId: announcementId,
-            userIds: userIds,
-            timestamp: new Date().toISOString()
-          }
-        }));
+        // 延遲觸發實時更新事件，確保資料庫操作完成
+        setTimeout(() => {
+          console.log('觸發實時更新事件...');
+          window.dispatchEvent(new CustomEvent('notificationUpdated', { 
+            detail: { 
+              type: 'announcement_created',
+              announcementId: announcementId,
+              userIds: userIds,
+              timestamp: new Date().toISOString()
+            }
+          }));
+          
+          // 也觸發強制刷新
+          window.dispatchEvent(new CustomEvent('forceNotificationRefresh'));
+        }, 1500);
 
       } else {
         throw new Error('Failed to create bulk notifications');
@@ -125,12 +130,16 @@ export class AnnouncementNotificationService {
       });
       
       // 觸發實時更新
-      window.dispatchEvent(new CustomEvent('notificationUpdated', { 
-        detail: { 
-          type: 'test_notification',
-          timestamp: new Date().toISOString()
-        }
-      }));
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('notificationUpdated', { 
+          detail: { 
+            type: 'test_notification',
+            timestamp: new Date().toISOString()
+          }
+        }));
+        
+        window.dispatchEvent(new CustomEvent('forceNotificationRefresh'));
+      }, 1000);
       
       console.log('=== 測試通知創建完成 ===');
       return true;

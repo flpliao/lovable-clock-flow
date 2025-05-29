@@ -29,6 +29,9 @@ export const useNotifications = () => {
       const formattedNotifications = await NotificationDatabaseOperations.loadNotifications(currentUser.id);
       const unread = formattedNotifications.filter(n => !n.isRead).length;
       
+      console.log('Raw loaded notifications:', formattedNotifications);
+      console.log('Unread count:', unread);
+      
       setNotifications(formattedNotifications);
       setUnreadCount(unread);
       console.log('Updated notifications state - total:', formattedNotifications.length, 'unread:', unread);
@@ -65,7 +68,9 @@ export const useNotifications = () => {
       currentUser.id,
       () => {
         console.log('Real-time event triggered, reloading notifications');
-        loadNotifications();
+        setTimeout(() => {
+          loadNotifications();
+        }, 500); // 增加延遲確保資料庫操作完成
       }
     );
 
@@ -76,7 +81,9 @@ export const useNotifications = () => {
   useEffect(() => {
     const handleNotificationUpdate = (event: CustomEvent) => {
       console.log('收到通知更新事件:', event.detail);
-      loadNotifications();
+      setTimeout(() => {
+        loadNotifications();
+      }, 1000); // 增加延遲確保通知已創建
     };
 
     const handleForceRefresh = () => {

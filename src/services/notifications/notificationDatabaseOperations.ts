@@ -14,7 +14,8 @@ export class NotificationDatabaseOperations {
         .from('notifications')
         .select('*')
         .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50); // 限制數量避免載入過多
 
       if (error) {
         console.error('Error loading notifications:', error);
@@ -23,7 +24,12 @@ export class NotificationDatabaseOperations {
 
       console.log('Raw notifications data from database:', data);
 
-      const formattedNotifications: Notification[] = (data || []).map((notification: any) => ({
+      if (!data || data.length === 0) {
+        console.log('No notifications found for user:', userId);
+        return [];
+      }
+
+      const formattedNotifications: Notification[] = data.map((notification: any) => ({
         id: notification.id,
         title: notification.title,
         message: notification.message,
@@ -106,9 +112,6 @@ export class NotificationDatabaseOperations {
     }
   }
 
-  /**
-   * Mark all notifications as read for a user
-   */
   static async markAllNotificationsAsRead(userId: string): Promise<boolean> {
     try {
       console.log('Marking all notifications as read for user:', userId);
@@ -132,9 +135,6 @@ export class NotificationDatabaseOperations {
     }
   }
 
-  /**
-   * Clear all notifications for a user
-   */
   static async clearAllNotifications(userId: string): Promise<boolean> {
     try {
       console.log('Clearing all notifications for user:', userId);

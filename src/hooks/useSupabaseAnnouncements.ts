@@ -81,7 +81,7 @@ export const useSupabaseAnnouncements = () => {
             console.error('通知創建失敗:', notificationError);
             toast({
               title: "公告已創建",
-              description: "公告已成功創建，但通知發送失敗",
+              description: "公告已成功創建，但通知發送失敗，請檢查通知系統",
               variant: "default"
             });
           }
@@ -97,13 +97,18 @@ export const useSupabaseAnnouncements = () => {
         return true;
       } else {
         console.error('Failed to create announcement:', result);
+        toast({
+          title: "創建失敗",
+          description: "無法創建公告，請重試",
+          variant: "destructive"
+        });
         return false;
       }
     } catch (error) {
       console.error('Error in createAnnouncement:', error);
       toast({
         title: "創建失敗",
-        description: "無法創建公告",
+        description: `無法創建公告: ${error instanceof Error ? error.message : '未知錯誤'}`,
         variant: "destructive"
       });
       return false;

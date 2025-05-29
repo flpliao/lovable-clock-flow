@@ -61,9 +61,6 @@ export const useNotifications = () => {
 
     console.log('Setting up real-time subscription for user:', currentUser.id);
     
-    // 測試實時連接
-    NotificationRealtimeService.testRealtimeConnection();
-    
     const cleanup = NotificationRealtimeService.setupRealtimeSubscription(
       currentUser.id,
       () => {
@@ -79,16 +76,21 @@ export const useNotifications = () => {
   useEffect(() => {
     const handleNotificationUpdate = (event: CustomEvent) => {
       console.log('收到通知更新事件:', event.detail);
-      // 延遲重新載入以確保資料庫更新完成
-      setTimeout(() => {
-        loadNotifications();
-      }, 500);
+      // 立即重新載入通知
+      loadNotifications();
+    };
+
+    const handleForceRefresh = () => {
+      console.log('收到強制刷新事件');
+      loadNotifications();
     };
 
     window.addEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
+    window.addEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
     
     return () => {
       window.removeEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
+      window.removeEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
     };
   }, [currentUser]);
 

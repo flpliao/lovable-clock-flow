@@ -17,12 +17,6 @@ export class AnnouncementNotificationService {
       console.log('公告ID:', announcementId);
       console.log('公告標題:', announcementTitle);
       console.log('當前用戶ID:', currentUserId);
-      
-      // 測試資料庫連接
-      if (currentUserId) {
-        const connectionTest = await NotificationDatabaseService.testDatabaseConnection(currentUserId);
-        console.log('資料庫連接測試結果:', connectionTest);
-      }
 
       // Get all active staff (excluding the current user who created the announcement)
       console.log('正在獲取員工列表...');
@@ -47,7 +41,7 @@ export class AnnouncementNotificationService {
 
       console.log(`找到 ${staffData.length} 位員工需要通知:`, staffData);
 
-      // 使用批量創建通知的新方法
+      // 創建通知模板
       const notificationTemplate = {
         title: '新公告發布',
         message: `新公告已發布: ${announcementTitle}`,
@@ -63,6 +57,7 @@ export class AnnouncementNotificationService {
       const userIds = staffData.map(staff => staff.id);
       console.log('目標用戶ID列表:', userIds);
 
+      // 嘗試批量創建通知
       const success = await NotificationDatabaseService.createBulkNotifications(userIds, notificationTemplate);
 
       if (success) {
@@ -74,15 +69,21 @@ export class AnnouncementNotificationService {
           description: `已為 ${userIds.length} 位用戶創建通知`,
         });
 
-        // 強制刷新通知 - 觸發實時更新事件
+        // 觸發實時更新事件
         console.log('觸發實時更新事件...');
         window.dispatchEvent(new CustomEvent('notificationUpdated', { 
           detail: { 
             type: 'announcement_created',
             announcementId: announcementId,
-            userIds: userIds
+            userIds: userIds,
+            timestamp: new Date().toISOString()
           }
         }));
+
+        // 額外觸發通知刷新
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('forceNotificationRefresh'));
+        }, 500);
 
       } else {
         throw new Error('Failed to create bulk notifications');
@@ -105,11 +106,11 @@ export class AnnouncementNotificationService {
    */
   static async testNotificationCreation(userId: string): Promise<boolean> {
     try {
-      console.log('測試通知創建功能...');
+      console.log('測試通知創建功能，用戶ID:', userId);
       
       const testNotification = {
         title: '測試通知',
-        message: '這是一個測試通知，用於驗證通知系統是否正常運作',
+        message: `這是一個測試通知，時間: ${new Date().toLocaleString()}`,
         type: 'system' as const,
         data: {
           actionRequired: false
@@ -125,17 +126,38 @@ export class AnnouncementNotificationService {
         window.dispatchEvent(new CustomEvent('notificationUpdated', { 
           detail: { 
             type: 'test_notification',
-            notificationId: notificationId
+            notificationId: notificationId,
+            timestamp: new Date().toISOString()
           }
         }));
+        
+        // 額外觸發通知刷新
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('forceNotificationRefresh'));
+        }, 200);
+        
+        toast({
+          title: "測試成功",
+          description: "測試通知已創建",
+        });
         
         return true;
       } else {
         console.log('測試通知創建失敗');
+        toast({
+          title: "測試失敗",
+          description: "無法創建測試通知",
+          variant: "destructive"
+        });
         return false;
       }
     } catch (error) {
       console.error('測試通知創建時發生錯誤:', error);
+      toast({
+        title: "測試錯誤",
+        description: `測試過程中發生錯誤: ${error instanceof Error ? error.message : '未知錯誤'}`,
+        variant: "destructive"
+      });
       return false;
     }
   }

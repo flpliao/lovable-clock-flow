@@ -82,6 +82,7 @@ export const useSupabaseAnnouncements = () => {
     try {
       console.log('Creating announcement for user:', currentUser.id);
       
+      // 確保使用與 staff 表格匹配的用戶 ID
       const { data, error } = await supabase
         .from('announcements')
         .insert({
@@ -91,7 +92,7 @@ export const useSupabaseAnnouncements = () => {
           file_url: newAnnouncement.file?.url,
           file_name: newAnnouncement.file?.name,
           file_type: newAnnouncement.file?.type,
-          created_by_id: currentUser.id,
+          created_by_id: currentUser.id, // 使用當前用戶的 ID
           created_by_name: currentUser.name,
           company_id: '550e8400-e29b-41d4-a716-446655440000', // Default company ID
           is_pinned: newAnnouncement.is_pinned,
@@ -101,10 +102,11 @@ export const useSupabaseAnnouncements = () => {
         .single();
 
       if (error) {
-        console.error('Database error:', error);
+        console.error('Database error creating announcement:', error);
         throw error;
       }
 
+      console.log('Announcement created successfully:', data);
       await loadAnnouncements();
       
       toast({
@@ -117,7 +119,7 @@ export const useSupabaseAnnouncements = () => {
       console.error('建立公告失敗:', error);
       toast({
         title: "建立失敗",
-        description: "無法建立公告",
+        description: "無法建立公告，請檢查您的權限",
         variant: "destructive"
       });
       return false;

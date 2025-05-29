@@ -69,6 +69,16 @@ const PersonalAttendance = () => {
       refreshData();
     }
   }, [activeTab, currentUser?.id, refreshData]);
+
+  // 計算當日記錄數量
+  const getDayRecordsCount = () => {
+    if (!date) return 0;
+    const selectedDateStr = format(date, 'yyyy-MM-dd');
+    return checkInRecords.filter(record => {
+      const recordDate = format(new Date(record.timestamp), 'yyyy-MM-dd');
+      return recordDate === selectedDateStr && record.status === 'success';
+    }).length;
+  };
   
   if (!currentUser) {
     return (
@@ -165,7 +175,7 @@ const PersonalAttendance = () => {
                           </h3>
                           
                           <div className="mb-2 text-sm text-gray-500">
-                            打卡記錄總數: {checkInRecords.length}
+                            打卡記錄總數: {getDayRecordsCount()}
                           </div>
                           
                           {selectedDateRecords.checkIn || selectedDateRecords.checkOut ? (

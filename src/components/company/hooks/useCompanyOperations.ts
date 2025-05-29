@@ -39,6 +39,8 @@ export const useCompanyOperations = () => {
 
   // 更新公司資料
   const updateCompany = async (updatedCompany: Company) => {
+    console.log('開始更新公司資料，管理員狀態:', isAdmin());
+    
     if (!isAdmin()) {
       toast({
         title: "權限不足",
@@ -51,22 +53,30 @@ export const useCompanyOperations = () => {
     try {
       console.log('正在更新公司資料:', updatedCompany);
       
-      // 準備更新資料，確保欄位類型正確
+      // 準備更新資料，確保所有欄位都正確對應到資料庫
       const updateData = {
-        name: updatedCompany.name,
-        registration_number: updatedCompany.registration_number,
-        address: updatedCompany.address,
-        phone: updatedCompany.phone,
-        email: updatedCompany.email,
-        website: updatedCompany.website || null,
+        name: updatedCompany.name?.trim() || '',
+        registration_number: updatedCompany.registration_number?.trim() || '',
+        address: updatedCompany.address?.trim() || '',
+        phone: updatedCompany.phone?.trim() || '',
+        email: updatedCompany.email?.trim() || '',
+        website: updatedCompany.website?.trim() || null,
         established_date: updatedCompany.established_date || null,
         capital: updatedCompany.capital ? Number(updatedCompany.capital) : null,
-        business_type: updatedCompany.business_type,
-        legal_representative: updatedCompany.legal_representative,
+        business_type: updatedCompany.business_type?.trim() || '',
+        legal_representative: updatedCompany.legal_representative?.trim() || '',
         updated_at: new Date().toISOString()
       };
       
       console.log('準備更新的資料:', updateData);
+
+      // 檢查必填欄位
+      const requiredFields = ['name', 'registration_number', 'address', 'phone', 'email', 'business_type', 'legal_representative'];
+      for (const field of requiredFields) {
+        if (!updateData[field as keyof typeof updateData]) {
+          throw new Error(`${field} 為必填欄位`);
+        }
+      }
 
       const { data, error } = await supabase
         .from('companies')

@@ -5,8 +5,8 @@ export interface Company {
   address: string;
   phone: string;
   email: string;
-  website?: string;
-  established_date: string | null;
+  website?: string | null;
+  established_date?: string | null;
   capital?: number | null; // 資本額
   business_type: string; // 營業項目
   legal_representative: string; // 法定代表人

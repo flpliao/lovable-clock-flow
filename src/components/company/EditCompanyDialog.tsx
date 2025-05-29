@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { Company } from '@/types/company';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/contexts/UserContext';
 
 const EditCompanyDialog = () => {
   const {
@@ -20,6 +21,10 @@ const EditCompanyDialog = () => {
   const [editedCompany, setEditedCompany] = useState<Company | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { isAdmin } = useUser();
+
+  // 檢查權限
+  const hasPermission = isAdmin();
 
   useEffect(() => {
     if (company && isEditCompanyDialogOpen) {
@@ -44,7 +49,8 @@ const EditCompanyDialog = () => {
     ];
 
     for (const { field, name } of requiredFields) {
-      if (!editedCompany[field as keyof Company] || (editedCompany[field as keyof Company] as string).trim() === '') {
+      const value = editedCompany[field as keyof Company];
+      if (!value || (typeof value === 'string' && value.trim() === '')) {
         toast({
           title: "資料不完整",
           description: `請填寫${name}`,
@@ -82,6 +88,15 @@ const EditCompanyDialog = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!hasPermission) {
+      toast({
+        title: "權限不足",
+        description: "只有管理員可以編輯公司資料",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!validateForm()) {
       return;
     }
@@ -113,16 +128,23 @@ const EditCompanyDialog = () => {
         <DialogHeader>
           <DialogTitle>編輯公司基本資料</DialogTitle>
         </DialogHeader>
+        
+        {!hasPermission && (
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+            <p className="text-yellow-800">您沒有編輯公司資料的權限，只有管理員可以進行此操作。</p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="company-name">公司名稱 *</Label>
             <Input
               id="company-name"
-              value={editedCompany.name}
+              value={editedCompany.name || ''}
               onChange={(e) => setEditedCompany({ ...editedCompany, name: e.target.value })}
               placeholder="請輸入公司名稱"
               required
-              disabled={isSubmitting}
+              disabled={isSubmitting || !hasPermission}
             />
           </div>
 
@@ -131,11 +153,11 @@ const EditCompanyDialog = () => {
               <Label htmlFor="registration-number">統一編號 *</Label>
               <Input
                 id="registration-number"
-                value={editedCompany.registration_number}
+                value={editedCompany.registration_number || ''}
                 onChange={(e) => setEditedCompany({ ...editedCompany, registration_number: e.target.value })}
                 placeholder="請輸入8位數統一編號"
                 required
-                disabled={isSubmitting}
+                disabled={isSubmitting || !hasPermission}
                 maxLength={8}
               />
             </div>
@@ -143,11 +165,11 @@ const EditCompanyDialog = () => {
               <Label htmlFor="legal-representative">法定代表人 *</Label>
               <Input
                 id="legal-representative"
-                value={editedCompany.legal_representative}
+                value={editedCompany.legal_representative || ''}
                 onChange={(e) => setEditedCompany({ ...editedCompany, legal_representative: e.target.value })}
                 placeholder="請輸入法定代表人"
                 required
-                disabled={isSubmitting}
+                disabled={isSubmitting || !hasPermission}
               />
             </div>
           </div>
@@ -156,11 +178,11 @@ const EditCompanyDialog = () => {
             <Label htmlFor="business-type">營業項目 *</Label>
             <Input
               id="business-type"
-              value={editedCompany.business_type}
+              value={editedCompany.business_type || ''}
               onChange={(e) => setEditedCompany({ ...editedCompany, business_type: e.target.value })}
               placeholder="請輸入營業項目"
               required
-              disabled={isSubmitting}
+              disabled={isSubmitting || !hasPermission}
             />
           </div>
 
@@ -168,11 +190,11 @@ const EditCompanyDialog = () => {
             <Label htmlFor="company-address">公司地址 *</Label>
             <Textarea
               id="company-address"
-              value={editedCompany.address}
+              value={editedCompany.address || ''}
               onChange={(e) => setEditedCompany({ ...editedCompany, address: e.target.value })}
               placeholder="請輸入公司完整地址"
               required
-              disabled={isSubmitting}
+              disabled={isSubmitting || !hasPermission}
             />
           </div>
 
@@ -181,11 +203,11 @@ const EditCompanyDialog = () => {
               <Label htmlFor="company-phone">公司電話 *</Label>
               <Input
                 id="company-phone"
-                value={editedCompany.phone}
+                value={editedCompany.phone || ''}
                 onChange={(e) => setEditedCompany({ ...editedCompany, phone: e.target.value })}
                 placeholder="請輸入公司電話"
                 required
-                disabled={isSubmitting}
+                disabled={isSubmitting || !hasPermission}
               />
             </div>
             <div>
@@ -193,11 +215,11 @@ const EditCompanyDialog = () => {
               <Input
                 id="company-email"
                 type="email"
-                value={editedCompany.email}
+                value={editedCompany.email || ''}
                 onChange={(e) => setEditedCompany({ ...editedCompany, email: e.target.value })}
                 placeholder="請輸入公司Email"
                 required
-                disabled={isSubmitting}
+                disabled={isSubmitting || !hasPermission}
               />
             </div>
           </div>
@@ -210,7 +232,7 @@ const EditCompanyDialog = () => {
                 value={editedCompany.website || ''}
                 onChange={(e) => setEditedCompany({ ...editedCompany, website: e.target.value })}
                 placeholder="請輸入公司網站"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !hasPermission}
               />
             </div>
             <div>
@@ -220,7 +242,7 @@ const EditCompanyDialog = () => {
                 type="date"
                 value={editedCompany.established_date || ''}
                 onChange={(e) => setEditedCompany({ ...editedCompany, established_date: e.target.value })}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !hasPermission}
               />
             </div>
           </div>
@@ -233,7 +255,7 @@ const EditCompanyDialog = () => {
               value={editedCompany.capital || ''}
               onChange={(e) => setEditedCompany({ ...editedCompany, capital: e.target.value ? Number(e.target.value) : null })}
               placeholder="請輸入資本額"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !hasPermission}
             />
           </div>
 
@@ -246,7 +268,10 @@ const EditCompanyDialog = () => {
             >
               取消
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting || !hasPermission}
+            >
               {isSubmitting ? '儲存中...' : '儲存'}
             </Button>
           </div>

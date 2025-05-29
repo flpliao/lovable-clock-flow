@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { Company } from '@/types/company';
+import { useToast } from '@/hooks/use-toast';
 
 const EditCompanyDialog = () => {
   const {
@@ -17,9 +18,12 @@ const EditCompanyDialog = () => {
   } = useCompanyManagementContext();
 
   const [editedCompany, setEditedCompany] = useState<Company | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (company && isEditCompanyDialogOpen) {
+      console.log('設定編輯的公司資料:', company);
       setEditedCompany({ ...company });
     }
   }, [company, isEditCompanyDialogOpen]);
@@ -28,9 +32,79 @@ const EditCompanyDialog = () => {
     return null;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    const requiredFields = [
+      { field: 'name', name: '公司名稱' },
+      { field: 'registration_number', name: '統一編號' },
+      { field: 'legal_representative', name: '法定代表人' },
+      { field: 'business_type', name: '營業項目' },
+      { field: 'address', name: '公司地址' },
+      { field: 'phone', name: '公司電話' },
+      { field: 'email', name: '公司Email' }
+    ];
+
+    for (const { field, name } of requiredFields) {
+      if (!editedCompany[field as keyof Company] || (editedCompany[field as keyof Company] as string).trim() === '') {
+        toast({
+          title: "資料不完整",
+          description: `請填寫${name}`,
+          variant: "destructive"
+        });
+        return false;
+      }
+    }
+
+    // 驗證統一編號格式 (台灣統一編號為8位數字)
+    const registrationNumber = editedCompany.registration_number.trim();
+    if (!/^\d{8}$/.test(registrationNumber)) {
+      toast({
+        title: "格式錯誤",
+        description: "統一編號必須為8位數字",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    // 驗證電子郵件格式
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(editedCompany.email)) {
+      toast({
+        title: "格式錯誤",
+        description: "請輸入有效的電子郵件地址",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    handleUpdateCompany(editedCompany);
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    console.log('提交公司資料更新:', editedCompany);
+
+    try {
+      const success = await handleUpdateCompany(editedCompany);
+      if (success) {
+        console.log('公司資料更新成功');
+        setIsEditCompanyDialogOpen(false);
+      }
+    } catch (error) {
+      console.error('提交更新時發生錯誤:', error);
+      toast({
+        title: "提交失敗",
+        description: "提交更新時發生錯誤，請重試",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -48,6 +122,7 @@ const EditCompanyDialog = () => {
               onChange={(e) => setEditedCompany({ ...editedCompany, name: e.target.value })}
               placeholder="請輸入公司名稱"
               required
+              disabled={isSubmitting}
             />
           </div>
 
@@ -58,8 +133,10 @@ const EditCompanyDialog = () => {
                 id="registration-number"
                 value={editedCompany.registration_number}
                 onChange={(e) => setEditedCompany({ ...editedCompany, registration_number: e.target.value })}
-                placeholder="請輸入統一編號"
+                placeholder="請輸入8位數統一編號"
                 required
+                disabled={isSubmitting}
+                maxLength={8}
               />
             </div>
             <div>
@@ -70,6 +147,7 @@ const EditCompanyDialog = () => {
                 onChange={(e) => setEditedCompany({ ...editedCompany, legal_representative: e.target.value })}
                 placeholder="請輸入法定代表人"
                 required
+                disabled={isSubmitting}
               />
             </div>
           </div>
@@ -82,6 +160,7 @@ const EditCompanyDialog = () => {
               onChange={(e) => setEditedCompany({ ...editedCompany, business_type: e.target.value })}
               placeholder="請輸入營業項目"
               required
+              disabled={isSubmitting}
             />
           </div>
 
@@ -93,6 +172,7 @@ const EditCompanyDialog = () => {
               onChange={(e) => setEditedCompany({ ...editedCompany, address: e.target.value })}
               placeholder="請輸入公司完整地址"
               required
+              disabled={isSubmitting}
             />
           </div>
 
@@ -105,6 +185,7 @@ const EditCompanyDialog = () => {
                 onChange={(e) => setEditedCompany({ ...editedCompany, phone: e.target.value })}
                 placeholder="請輸入公司電話"
                 required
+                disabled={isSubmitting}
               />
             </div>
             <div>
@@ -116,6 +197,7 @@ const EditCompanyDialog = () => {
                 onChange={(e) => setEditedCompany({ ...editedCompany, email: e.target.value })}
                 placeholder="請輸入公司Email"
                 required
+                disabled={isSubmitting}
               />
             </div>
           </div>
@@ -128,6 +210,7 @@ const EditCompanyDialog = () => {
                 value={editedCompany.website || ''}
                 onChange={(e) => setEditedCompany({ ...editedCompany, website: e.target.value })}
                 placeholder="請輸入公司網站"
+                disabled={isSubmitting}
               />
             </div>
             <div>
@@ -137,6 +220,7 @@ const EditCompanyDialog = () => {
                 type="date"
                 value={editedCompany.established_date}
                 onChange={(e) => setEditedCompany({ ...editedCompany, established_date: e.target.value })}
+                disabled={isSubmitting}
               />
             </div>
           </div>
@@ -149,6 +233,7 @@ const EditCompanyDialog = () => {
               value={editedCompany.capital || ''}
               onChange={(e) => setEditedCompany({ ...editedCompany, capital: Number(e.target.value) })}
               placeholder="請輸入資本額"
+              disabled={isSubmitting}
             />
           </div>
 
@@ -157,11 +242,12 @@ const EditCompanyDialog = () => {
               type="button"
               variant="outline"
               onClick={() => setIsEditCompanyDialogOpen(false)}
+              disabled={isSubmitting}
             >
               取消
             </Button>
-            <Button type="submit">
-              儲存
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? '儲存中...' : '儲存'}
             </Button>
           </div>
         </form>

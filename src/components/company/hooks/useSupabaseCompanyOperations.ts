@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
@@ -15,13 +14,19 @@ export const useSupabaseCompanyOperations = () => {
   // 載入公司資料
   const loadCompany = async () => {
     try {
+      console.log('正在載入公司資料...');
       const { data, error } = await supabase
         .from('companies')
         .select('*')
         .limit(1)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('載入公司資料錯誤:', error);
+        throw error;
+      }
+      
+      console.log('載入的公司資料:', data);
       setCompany(data);
     } catch (error) {
       console.error('載入公司資料失敗:', error);
@@ -82,14 +87,36 @@ export const useSupabaseCompanyOperations = () => {
     }
 
     try {
-      const { error } = await supabase
+      console.log('正在更新公司資料:', updatedCompany);
+      
+      // 準備更新資料，移除 id 以避免更新衝突
+      const { id, created_at, ...updateData } = updatedCompany;
+      
+      // 確保 updated_at 使用當前時間
+      const finalUpdateData = {
+        ...updateData,
+        updated_at: new Date().toISOString()
+      };
+      
+      console.log('準備更新的資料:', finalUpdateData);
+
+      const { data, error } = await supabase
         .from('companies')
-        .update(updatedCompany)
-        .eq('id', updatedCompany.id);
+        .update(finalUpdateData)
+        .eq('id', updatedCompany.id)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase 更新錯誤:', error);
+        throw error;
+      }
 
-      setCompany(updatedCompany);
+      console.log('更新成功，返回的資料:', data);
+      
+      // 更新本地狀態
+      setCompany(data);
+      
       toast({
         title: "更新成功",
         description: "已成功更新公司基本資料"
@@ -97,9 +124,16 @@ export const useSupabaseCompanyOperations = () => {
       return true;
     } catch (error) {
       console.error('更新公司資料失敗:', error);
+      
+      // 提供更詳細的錯誤訊息
+      let errorMessage = "無法更新公司資料";
+      if (error instanceof Error) {
+        errorMessage = `更新失敗: ${error.message}`;
+      }
+      
       toast({
         title: "更新失敗",
-        description: "無法更新公司資料",
+        description: errorMessage,
         variant: "destructive"
       });
       return false;

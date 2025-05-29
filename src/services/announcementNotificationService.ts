@@ -22,7 +22,7 @@ export class AnnouncementNotificationService {
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
         .select('id, name, role')
-        .neq('id', 'null'); // 確保不包含空值
+        .not('id', 'is', null); // 確保ID不為null
 
       if (staffError) {
         console.error('Error fetching staff for notifications:', staffError);
@@ -42,24 +42,12 @@ export class AnnouncementNotificationService {
 
       console.log(`找到 ${staffData.length} 位員工需要通知:`, staffData.map(s => `${s.name}(${s.id}) - ${s.role}`));
 
-      // 驗證每個用戶ID是否有效並創建通知
+      // 直接為所有員工創建通知，不做額外驗證
       console.log('開始批量創建通知（包含管理者）...');
       const notificationPromises = staffData.map(async (staff) => {
         try {
           console.log(`為用戶 ${staff.name} (${staff.id}) - ${staff.role} 創建通知...`);
           
-          // 先驗證用戶ID是否存在於staff表中
-          const { data: userExists, error: checkError } = await supabase
-            .from('staff')
-            .select('id')
-            .eq('id', staff.id)
-            .single();
-
-          if (checkError || !userExists) {
-            console.error(`用戶 ${staff.name} (${staff.id}) 在staff表中不存在，跳過通知創建`);
-            return null;
-          }
-
           const { data: notificationId, error } = await supabase.rpc('create_notification', {
             p_user_id: staff.id,
             p_title: '新公告發布',
@@ -72,7 +60,30 @@ export class AnnouncementNotificationService {
 
           if (error) {
             console.error(`為用戶 ${staff.name} 創建通知失敗:`, error);
-            return null;
+            
+            // 如果 RPC 失敗，嘗試直接插入
+            console.log(`嘗試直接插入通知給用戶 ${staff.name}...`);
+            const { data: directInsert, error: insertError } = await supabase
+              .from('notifications')
+              .insert({
+                user_id: staff.id,
+                title: '新公告發布',
+                message: `新公告已發布: ${announcementTitle}`,
+                type: 'announcement',
+                announcement_id: announcementId,
+                action_required: false,
+                is_read: false
+              })
+              .select('id')
+              .single();
+
+            if (insertError) {
+              console.error(`直接插入通知也失敗:`, insertError);
+              return null;
+            }
+
+            console.log(`直接插入通知成功，ID: ${directInsert.id}`);
+            return { userId: staff.id, notificationId: directInsert.id, userName: staff.name, userRole: staff.role };
           }
 
           console.log(`為用戶 ${staff.name} (${staff.role}) 創建通知成功，ID: ${notificationId}`);

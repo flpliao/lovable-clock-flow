@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Bell, Check, X, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -53,11 +54,10 @@ const NotificationCenter: React.FC = () => {
     const handleUserNotificationUpdate = (event: CustomEvent) => {
       console.log(`收到用戶專屬通知事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
       
-      if (event.detail?.userId === currentUser.id) {
-        console.log(`用戶專屬通知事件匹配，立即刷新 ${currentUser.name} 的通知`);
-        refreshNotifications();
-        setLastRefresh(new Date());
-      }
+      // 不管是否針對當前用戶，都刷新通知（確保不漏通知）
+      console.log(`立即刷新 ${currentUser.name} 的通知`);
+      refreshNotifications();
+      setLastRefresh(new Date());
     };
 
     const handleUserSpecificRefresh = (event: CustomEvent) => {
@@ -69,25 +69,10 @@ const NotificationCenter: React.FC = () => {
     const handleNotificationUpdate = (event: CustomEvent) => {
       console.log(`收到通知更新事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
       
-      // 檢查是否與當前用戶相關
-      if (event.detail?.affectedUsers && Array.isArray(event.detail.affectedUsers)) {
-        const isUserAffected = event.detail.affectedUsers.some((user: any) => user.id === currentUser.id);
-        if (isUserAffected) {
-          console.log(`通知事件包含當前用戶 ${currentUser.name} (${currentUser.role})，立即刷新`);
-          refreshNotifications();
-          setLastRefresh(new Date());
-        } else {
-          console.log(`通知事件不包含當前用戶 ${currentUser.name} (${currentUser.role})，但仍要刷新通知`);
-          // 對於公告通知，所有用戶都應該刷新
-          refreshNotifications();
-          setLastRefresh(new Date());
-        }
-      } else {
-        // 如果沒有特定用戶列表，則刷新所有用戶的通知
-        console.log(`通用通知事件，為 ${currentUser.name} (${currentUser.role}) 刷新通知`);
-        refreshNotifications();
-        setLastRefresh(new Date());
-      }
+      // 對於公告通知，所有用戶都應該刷新
+      console.log(`通用通知事件，為 ${currentUser.name} (${currentUser.role}) 刷新通知`);
+      refreshNotifications();
+      setLastRefresh(new Date());
     };
 
     const handleForceRefresh = (event: CustomEvent) => {
@@ -123,6 +108,19 @@ const NotificationCenter: React.FC = () => {
       window.removeEventListener('refreshAnnouncements', handleAnnouncementUpdate);
       window.removeEventListener('announcementDataUpdated', handleAnnouncementUpdate);
     };
+  }, [refreshNotifications, currentUser]);
+
+  // 定期自動刷新通知（每30秒）
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const interval = setInterval(() => {
+      console.log(`定期刷新通知 for ${currentUser.name}`);
+      refreshNotifications();
+      setLastRefresh(new Date());
+    }, 30000); // 30秒
+
+    return () => clearInterval(interval);
   }, [refreshNotifications, currentUser]);
 
   // 當路由變更時刷新通知（但限制頻率）
@@ -168,12 +166,9 @@ const NotificationCenter: React.FC = () => {
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     if (newOpen && currentUser) {
-      const now = new Date();
-      if (now.getTime() - lastRefresh.getTime() > 1000) { // 1秒限制
-        console.log(`popover 開啟刷新通知 for ${currentUser.name}`);
-        refreshNotifications();
-        setLastRefresh(now);
-      }
+      console.log(`popover 開啟刷新通知 for ${currentUser.name}`);
+      refreshNotifications();
+      setLastRefresh(new Date());
     }
   };
 

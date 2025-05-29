@@ -19,10 +19,17 @@ export class AnnouncementNotificationService {
 
       // Get all active staff (excluding the current user who created the announcement)
       console.log('正在獲取員工列表...');
-      const { data: staffData, error: staffError } = await supabase
+      let staffQuery = supabase
         .from('staff')
         .select('id, name')
-        .neq('id', currentUserId || '');
+        .neq('role', 'admin'); // 排除管理員
+
+      // 如果有當前用戶ID，排除創建者
+      if (currentUserId) {
+        staffQuery = staffQuery.neq('id', currentUserId);
+      }
+
+      const { data: staffData, error: staffError } = await staffQuery;
 
       if (staffError) {
         console.error('Error fetching staff for notifications:', staffError);
@@ -38,12 +45,14 @@ export class AnnouncementNotificationService {
         return;
       }
 
-      console.log(`找到 ${staffData.length} 位員工需要通知`);
+      console.log(`找到 ${staffData.length} 位員工需要通知:`, staffData.map(s => s.name));
 
       // 使用 create_notification 函數批量創建通知
       console.log('開始批量創建通知...');
       const notificationPromises = staffData.map(async (staff) => {
         try {
+          console.log(`為用戶 ${staff.name} (${staff.id}) 創建通知...`);
+          
           const { data: notificationId, error } = await supabase.rpc('create_notification', {
             p_user_id: staff.id,
             p_title: '新公告發布',
@@ -60,7 +69,7 @@ export class AnnouncementNotificationService {
           }
 
           console.log(`為用戶 ${staff.name} 創建通知成功，ID: ${notificationId}`);
-          return notificationId;
+          return { userId: staff.id, notificationId, userName: staff.name };
         } catch (error) {
           console.error(`為用戶 ${staff.name} 創建通知異常:`, error);
           return null;
@@ -68,9 +77,11 @@ export class AnnouncementNotificationService {
       });
 
       const results = await Promise.all(notificationPromises);
-      const successCount = results.filter(id => id !== null).length;
+      const successResults = results.filter(result => result !== null);
+      const successCount = successResults.length;
 
       console.log(`通知創建完成，成功創建 ${successCount}/${staffData.length} 條通知`);
+      console.log('成功的通知:', successResults);
       
       // Show success message
       toast({
@@ -78,41 +89,58 @@ export class AnnouncementNotificationService {
         description: `已為 ${successCount} 位用戶創建公告通知`,
       });
 
-      // 強制觸發全域通知更新事件 - 改善實時性
+      // 強制觸發實時更新事件 - 立即觸發多次確保所有組件收到
       console.log('觸發實時更新事件...');
       
-      // 立即觸發多個更新事件確保所有組件都能收到
-      const triggerEvents = () => {
-        // 觸發通知更新事件
+      const triggerUpdateEvents = () => {
+        // 為每個成功創建通知的用戶觸發個別更新事件
+        successResults.forEach(result => {
+          if (result) {
+            console.log(`觸發用戶 ${result.userName} 的通知更新事件`);
+            window.dispatchEvent(new CustomEvent('userNotificationUpdated', { 
+              detail: { 
+                userId: result.userId,
+                notificationId: result.notificationId,
+                type: 'announcement_created',
+                announcementId: announcementId,
+                timestamp: new Date().toISOString()
+              }
+            }));
+          }
+        });
+
+        // 觸發全域通知更新事件
         window.dispatchEvent(new CustomEvent('notificationUpdated', { 
           detail: { 
             type: 'announcement_created',
             announcementId: announcementId,
             timestamp: new Date().toISOString(),
             count: successCount,
-            staffList: staffData.map(s => s.id)
+            affectedUsers: successResults.map(r => ({ id: r?.userId, name: r?.userName }))
           }
         }));
         
         // 強制刷新通知
         window.dispatchEvent(new CustomEvent('forceNotificationRefresh', {
-          detail: { reason: 'announcement_created', announcementId }
+          detail: { 
+            reason: 'announcement_created', 
+            announcementId,
+            timestamp: new Date().toISOString(),
+            userCount: successCount
+          }
         }));
-        
-        // 觸發公告更新事件
-        window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
         
         console.log('實時更新事件已觸發');
       };
 
-      // 立即觸發一次
-      triggerEvents();
+      // 立即觸發
+      triggerUpdateEvents();
       
-      // 延遲再觸發一次，確保資料庫操作完成
-      setTimeout(triggerEvents, 500);
+      // 延遲觸發確保資料庫操作完成
+      setTimeout(triggerUpdateEvents, 800);
       
-      // 再延遲觸發一次，確保所有組件都能收到
-      setTimeout(triggerEvents, 1500);
+      // 再延遲觸發確保所有組件都能收到
+      setTimeout(triggerUpdateEvents, 2000);
 
       console.log('=== 公告通知創建完成 ===');
     } catch (error) {

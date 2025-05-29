@@ -26,7 +26,17 @@ export class NotificationRealtimeService {
           // 立即調用以提高響應性
           setTimeout(() => {
             onNotificationChange();
-          }, 200);
+          }, 100);
+          
+          // 觸發用戶專屬事件
+          window.dispatchEvent(new CustomEvent('userNotificationUpdated', {
+            detail: {
+              userId: userId,
+              type: 'INSERT',
+              payload: payload,
+              timestamp: new Date().toISOString()
+            }
+          }));
         }
       )
       .on(
@@ -41,7 +51,16 @@ export class NotificationRealtimeService {
           console.log(`Real-time UPDATE notification received for user ${userId}:`, payload);
           setTimeout(() => {
             onNotificationChange();
-          }, 200);
+          }, 100);
+          
+          window.dispatchEvent(new CustomEvent('userNotificationUpdated', {
+            detail: {
+              userId: userId,
+              type: 'UPDATE',
+              payload: payload,
+              timestamp: new Date().toISOString()
+            }
+          }));
         }
       )
       .on(
@@ -56,7 +75,16 @@ export class NotificationRealtimeService {
           console.log(`Real-time DELETE notification received for user ${userId}:`, payload);
           setTimeout(() => {
             onNotificationChange();
-          }, 200);
+          }, 100);
+          
+          window.dispatchEvent(new CustomEvent('userNotificationUpdated', {
+            detail: {
+              userId: userId,
+              type: 'DELETE',
+              payload: payload,
+              timestamp: new Date().toISOString()
+            }
+          }));
         }
       )
       .subscribe((status) => {
@@ -97,6 +125,15 @@ export class NotificationRealtimeService {
    */
   static triggerNotificationUpdate(userId: string, announcementId?: string): void {
     console.log(`Triggering notification update for user: ${userId}`);
+    
+    window.dispatchEvent(new CustomEvent('userNotificationUpdated', {
+      detail: {
+        userId: userId,
+        type: 'forced_update',
+        announcementId: announcementId,
+        timestamp: new Date().toISOString()
+      }
+    }));
     
     window.dispatchEvent(new CustomEvent('notificationUpdated', { 
       detail: { 

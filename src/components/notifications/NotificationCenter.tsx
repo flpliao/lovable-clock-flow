@@ -41,25 +41,49 @@ const NotificationCenter: React.FC = () => {
     }
   }, [notifications, unreadCount, isLoading, currentUser]);
 
-  // 監聽公告相關的更新事件 - 改善事件處理
+  // 監聽用戶專屬的通知事件
   useEffect(() => {
     if (!currentUser) return;
 
+    const handleUserNotificationUpdate = (event: CustomEvent) => {
+      console.log(`NotificationCenter 收到用戶專屬通知事件 for ${currentUser.name}:`, event.detail);
+      
+      if (event.detail?.userId === currentUser.id) {
+        console.log(`用戶專屬通知事件，立即刷新 ${currentUser.name} 的通知`);
+        refreshNotifications();
+        setLastRefresh(new Date());
+      }
+    };
+
     const handleAnnouncementUpdate = (event: Event | CustomEvent) => {
-      console.log(`收到公告更新事件 for ${currentUser.name}，刷新通知`);
+      console.log(`NotificationCenter 收到公告更新事件 for ${currentUser.name}`);
       if (event instanceof CustomEvent && event.detail) {
         console.log('公告更新詳情:', event.detail);
       }
+      
+      // 延遲刷新以確保資料庫操作完成
+      setTimeout(() => {
+        refreshNotifications();
+        setLastRefresh(new Date());
+      }, 1000);
+    };
+
+    const handleForceRefresh = (event: CustomEvent) => {
+      console.log(`NotificationCenter 收到強制刷新事件 for ${currentUser.name}:`, event.detail);
       refreshNotifications();
       setLastRefresh(new Date());
     };
 
+    window.addEventListener('userNotificationUpdated', handleUserNotificationUpdate as EventListener);
     window.addEventListener('refreshAnnouncements', handleAnnouncementUpdate);
     window.addEventListener('announcementDataUpdated', handleAnnouncementUpdate);
+    window.addEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
     
     return () => {
+      window.removeEventListener('userNotificationUpdated', handleUserNotificationUpdate as EventListener);
       window.removeEventListener('refreshAnnouncements', handleAnnouncementUpdate);
       window.removeEventListener('announcementDataUpdated', handleAnnouncementUpdate);
+      window.removeEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
     };
   }, [refreshNotifications, currentUser]);
 

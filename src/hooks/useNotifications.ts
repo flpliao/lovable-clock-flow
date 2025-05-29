@@ -70,23 +70,36 @@ export const useNotifications = () => {
         console.log(`Real-time event triggered for ${currentUser.name}, reloading notifications`);
         setTimeout(() => {
           loadNotifications();
-        }, 300); // 減少延遲提高響應性
+        }, 200); // 減少延遲提高響應性
       }
     );
 
     return cleanup;
   }, [currentUser, loadNotifications]);
 
-  // 監聽自定義通知更新事件 - 改善事件處理
+  // 監聽用戶專屬的通知更新事件
   useEffect(() => {
     if (!currentUser) return;
+
+    const handleUserNotificationUpdate = (event: CustomEvent) => {
+      console.log(`收到用戶專屬通知更新事件 for ${currentUser.name}:`, event.detail);
+      
+      // 檢查是否為當前用戶的通知
+      if (event.detail?.userId === currentUser.id) {
+        console.log(`通知事件針對當前用戶 ${currentUser.name}，立即刷新`);
+        setTimeout(() => {
+          loadNotifications();
+        }, 300);
+      }
+    };
 
     const handleNotificationUpdate = (event: CustomEvent) => {
       console.log(`收到通知更新事件 for ${currentUser.name}:`, event.detail);
       
       // 檢查是否與當前用戶相關
-      if (event.detail?.staffList && Array.isArray(event.detail.staffList)) {
-        if (event.detail.staffList.includes(currentUser.id)) {
+      if (event.detail?.affectedUsers && Array.isArray(event.detail.affectedUsers)) {
+        const isUserAffected = event.detail.affectedUsers.some((user: any) => user.id === currentUser.id);
+        if (isUserAffected) {
           console.log(`通知事件包含當前用戶 ${currentUser.name}，立即刷新`);
           setTimeout(() => {
             loadNotifications();
@@ -111,10 +124,12 @@ export const useNotifications = () => {
       loadNotifications();
     };
 
+    window.addEventListener('userNotificationUpdated', handleUserNotificationUpdate as EventListener);
     window.addEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
     window.addEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
     
     return () => {
+      window.removeEventListener('userNotificationUpdated', handleUserNotificationUpdate as EventListener);
       window.removeEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
       window.removeEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
     };

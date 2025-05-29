@@ -46,7 +46,7 @@ export class NotificationDatabaseService {
   }
 
   /**
-   * Add a new notification - 使用 RPC 函數或管理員權限
+   * Add a new notification
    */
   static async addNotification(
     userId: string, 
@@ -69,7 +69,6 @@ export class NotificationDatabaseService {
 
       console.log('Inserting notification data:', notificationData);
       
-      // 嘗試使用 service role 模式進行插入
       const { data, error } = await supabase
         .from('notifications')
         .insert(notificationData)
@@ -78,34 +77,6 @@ export class NotificationDatabaseService {
 
       if (error) {
         console.error('Notification insert failed:', error);
-        
-        // 如果是 RLS 錯誤，嘗試使用不同的方法
-        if (error.message.includes('row-level security')) {
-          console.log('嘗試使用管理員權限插入通知...');
-          
-          // 使用 SQL 函數方式插入（如果存在）
-          try {
-            const { data: rpcData, error: rpcError } = await supabase.rpc('create_notification', {
-              p_user_id: userId,
-              p_title: notification.title || '新通知',
-              p_message: notification.message || '',
-              p_type: notification.type || 'system',
-              p_announcement_id: notification.data?.announcementId || null,
-              p_leave_request_id: notification.data?.leaveRequestId || null,
-              p_action_required: notification.data?.actionRequired || false
-            });
-
-            if (!rpcError && rpcData) {
-              console.log('RPC notification insert successful:', rpcData);
-              return rpcData;
-            } else {
-              console.error('RPC insert also failed:', rpcError);
-            }
-          } catch (rpcError) {
-            console.error('RPC method not available:', rpcError);
-          }
-        }
-        
         return '';
       }
 

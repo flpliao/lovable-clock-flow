@@ -17,6 +17,30 @@ export class AnnouncementNotificationService {
       console.log('公告標題:', announcementTitle);
       console.log('當前用戶ID:', currentUserId);
 
+      // 首先檢查公告是否為啟用狀態
+      console.log('檢查公告狀態...');
+      const { data: announcementData, error: announcementError } = await supabase
+        .from('announcements')
+        .select('is_active, title')
+        .eq('id', announcementId)
+        .single();
+
+      if (announcementError) {
+        console.error('無法獲取公告資料:', announcementError);
+        throw announcementError;
+      }
+
+      console.log('公告資料:', announcementData);
+
+      if (!announcementData || !announcementData.is_active) {
+        console.log('公告未啟用，跳過通知發送');
+        toast({
+          title: "提醒",
+          description: "公告未啟用，不會發送通知",
+        });
+        return;
+      }
+
       // Get all active staff (including all roles - admin and user)
       console.log('正在獲取所有員工列表（包含管理者）...');
       const { data: staffData, error: staffError } = await supabase
@@ -42,9 +66,31 @@ export class AnnouncementNotificationService {
 
       console.log(`找到 ${staffData.length} 位員工需要通知:`, staffData.map(s => `${s.name}(${s.id}) - ${s.role}`));
 
-      // 直接為所有員工創建通知，不做額外驗證
+      // 驗證每個員工ID是否有效
+      console.log('驗證員工ID有效性...');
+      const validStaff = staffData.filter(staff => {
+        const isValid = staff.id && staff.id.trim() !== '';
+        if (!isValid) {
+          console.warn(`員工 ${staff.name} 的ID無效:`, staff.id);
+        }
+        return isValid;
+      });
+
+      console.log(`有效員工數量: ${validStaff.length}/${staffData.length}`);
+
+      if (validStaff.length === 0) {
+        console.log('沒有有效的員工ID');
+        toast({
+          title: "錯誤",
+          description: "沒有有效的員工ID，無法發送通知",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // 為所有有效員工創建通知
       console.log('開始批量創建通知（包含管理者）...');
-      const notificationPromises = staffData.map(async (staff) => {
+      const notificationPromises = validStaff.map(async (staff) => {
         try {
           console.log(`為用戶 ${staff.name} (${staff.id}) - ${staff.role} 創建通知...`);
           
@@ -98,7 +144,7 @@ export class AnnouncementNotificationService {
       const successResults = results.filter(result => result !== null);
       const successCount = successResults.length;
 
-      console.log(`通知創建完成，成功創建 ${successCount}/${staffData.length} 條通知`);
+      console.log(`通知創建完成，成功創建 ${successCount}/${validStaff.length} 條通知`);
       console.log('成功的通知:', successResults);
       
       // Show success message

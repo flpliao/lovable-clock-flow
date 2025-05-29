@@ -35,26 +35,35 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
       console.log('公告狀態 - is_active:', newAnnouncement.is_active);
       console.log('當前用戶:', currentUser);
       
+      // 確保公告預設為啟用狀態，除非明確設為false
+      const announcementToCreate = {
+        ...newAnnouncement,
+        is_active: newAnnouncement.is_active !== false // 預設為true，除非明確設為false
+      };
+      
+      console.log('最終公告狀態 - is_active:', announcementToCreate.is_active);
+      
       const result = await AnnouncementCrudService.createAnnouncement(
-        newAnnouncement, 
+        announcementToCreate, 
         currentUser.id, 
         currentUser.name
       );
 
       if (result.success && result.data) {
         console.log('公告創建成功，ID:', result.data.id);
+        console.log('公告啟用狀態:', result.data.is_active);
         
         // 立即重新載入公告列表
         console.log('重新載入公告列表...');
         await refreshData();
         
         // 如果公告是啟用狀態，創建通知
-        if (newAnnouncement.is_active !== false) {
+        if (announcementToCreate.is_active !== false) {
           console.log('公告為啟用狀態，開始創建通知...');
           try {
             await AnnouncementNotificationService.createAnnouncementNotifications(
               result.data.id, 
-              newAnnouncement.title, 
+              announcementToCreate.title, 
               currentUser.id
             );
             console.log('通知創建流程完成');
@@ -80,7 +89,7 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
             
             toast({
               title: "公告已發布",
-              description: `公告「${newAnnouncement.title}」已成功發布並通知相關用戶`,
+              description: `公告「${announcementToCreate.title}」已成功發布並通知相關用戶`,
             });
           } catch (notificationError) {
             console.error('通知創建失敗:', notificationError);

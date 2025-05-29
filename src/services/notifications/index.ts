@@ -1,4 +1,8 @@
 
+import { NotificationDatabaseOperations } from './notificationDatabaseOperations';
+import { NotificationBulkOperations } from './notificationBulkOperations';
+import { NotificationDatabaseTesting } from './notificationDatabaseTesting';
+
 export { NotificationDatabaseOperations } from './notificationDatabaseOperations';
 export { NotificationBulkOperations } from './notificationBulkOperations';
 export { NotificationDatabaseTesting } from './notificationDatabaseTesting';

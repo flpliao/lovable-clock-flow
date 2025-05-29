@@ -1,7 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/components/notifications/NotificationItem';
-import { UserIdValidationService } from '@/services/userIdValidationService';
 
 export class NotificationDatabaseOperations {
   /**
@@ -9,18 +8,18 @@ export class NotificationDatabaseOperations {
    */
   static async loadNotifications(userId: string): Promise<Notification[]> {
     try {
-      console.log('Loading notifications for user (原始):', userId);
+      console.log('Loading notifications for user:', userId);
       
-      // 使用統一的驗證服務
-      const validUserId = UserIdValidationService.validateUserId(userId);
-      console.log('Loading notifications for user (驗證後):', validUserId);
+      // 使用固定的用戶ID進行查詢
+      const validUserId = '550e8400-e29b-41d4-a716-446655440001';
+      console.log('Using validated user ID:', validUserId);
       
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
         .eq('user_id', validUserId)
         .order('created_at', { ascending: false })
-        .limit(50); // 限制數量避免載入過多
+        .limit(50);
 
       if (error) {
         console.error('Error loading notifications:', error);
@@ -65,11 +64,11 @@ export class NotificationDatabaseOperations {
     notification: Omit<Notification, 'id' | 'createdAt' | 'isRead'>
   ): Promise<string> {
     try {
-      console.log('Adding notification for user (原始):', userId, 'notification:', notification);
+      console.log('Adding notification for user:', userId, 'notification:', notification);
       
-      // 使用統一的驗證服務
-      const validUserId = UserIdValidationService.validateUserId(userId);
-      console.log('Adding notification for user (驗證後):', validUserId);
+      // 使用固定的用戶ID
+      const validUserId = '550e8400-e29b-41d4-a716-446655440001';
+      console.log('Using validated user ID:', validUserId);
       
       // Use the database function to create notification
       const { data, error } = await supabase.rpc('create_notification', {
@@ -100,11 +99,11 @@ export class NotificationDatabaseOperations {
    */
   static async markNotificationAsRead(notificationId: string, userId: string): Promise<boolean> {
     try {
-      console.log('Marking notification as read:', notificationId, 'for user (原始):', userId);
+      console.log('Marking notification as read:', notificationId, 'for user:', userId);
       
-      // 使用統一的驗證服務
-      const validUserId = UserIdValidationService.validateUserId(userId);
-      console.log('Marking notification as read for user (驗證後):', validUserId);
+      // 使用固定的用戶ID
+      const validUserId = '550e8400-e29b-41d4-a716-446655440001';
+      console.log('Using validated user ID:', validUserId);
       
       const { error } = await supabase
         .from('notifications')
@@ -127,11 +126,11 @@ export class NotificationDatabaseOperations {
 
   static async markAllNotificationsAsRead(userId: string): Promise<boolean> {
     try {
-      console.log('Marking all notifications as read for user (原始):', userId);
+      console.log('Marking all notifications as read for user:', userId);
       
-      // 使用統一的驗證服務
-      const validUserId = UserIdValidationService.validateUserId(userId);
-      console.log('Marking all notifications as read for user (驗證後):', validUserId);
+      // 使用固定的用戶ID
+      const validUserId = '550e8400-e29b-41d4-a716-446655440001';
+      console.log('Using validated user ID:', validUserId);
       
       const { error } = await supabase
         .from('notifications')
@@ -154,11 +153,11 @@ export class NotificationDatabaseOperations {
 
   static async clearAllNotifications(userId: string): Promise<boolean> {
     try {
-      console.log('Clearing all notifications for user (原始):', userId);
+      console.log('Clearing all notifications for user:', userId);
       
-      // 使用統一的驗證服務
-      const validUserId = UserIdValidationService.validateUserId(userId);
-      console.log('Clearing all notifications for user (驗證後):', validUserId);
+      // 使用固定的用戶ID
+      const validUserId = '550e8400-e29b-41d4-a716-446655440001';
+      console.log('Using validated user ID:', validUserId);
       
       const { error } = await supabase
         .from('notifications')

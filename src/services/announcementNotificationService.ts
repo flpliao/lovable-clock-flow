@@ -17,9 +17,9 @@ export class AnnouncementNotificationService {
       console.log('公告標題:', announcementTitle);
       console.log('當前用戶ID:', currentUserId);
 
-      // 使用簡化的用戶ID驗證
-      const validCurrentUserId = currentUserId || '550e8400-e29b-41d4-a716-446655440001';
-      console.log('使用用戶ID:', validCurrentUserId);
+      // 使用固定的用戶ID作為創建者（模擬系統）
+      const validCurrentUserId = '550e8400-e29b-41d4-a716-446655440001';
+      console.log('使用系統用戶ID:', validCurrentUserId);
 
       // Get all active staff (excluding the current user who created the announcement)
       console.log('正在獲取員工列表...');
@@ -44,50 +44,56 @@ export class AnnouncementNotificationService {
 
       console.log(`找到 ${staffData.length} 位員工需要通知`);
 
-      // 創建通知記錄
-      const notifications = staffData.map(staff => ({
-        user_id: staff.id,
-        title: '新公告發布',
-        message: `新公告已發布: ${announcementTitle}`,
-        type: 'announcement',
-        announcement_id: announcementId,
-        action_required: false,
-        is_read: false
-      }));
+      // 使用 create_notification 函數批量創建通知
+      console.log('開始批量創建通知...');
+      const notificationPromises = staffData.map(async (staff) => {
+        try {
+          const { data: notificationId, error } = await supabase.rpc('create_notification', {
+            p_user_id: staff.id,
+            p_title: '新公告發布',
+            p_message: `新公告已發布: ${announcementTitle}`,
+            p_type: 'announcement',
+            p_announcement_id: announcementId,
+            p_leave_request_id: null,
+            p_action_required: false
+          });
 
-      console.log('準備插入通知:', notifications.length, '條');
+          if (error) {
+            console.error(`為用戶 ${staff.name} 創建通知失敗:`, error);
+            return null;
+          }
 
-      // 批量插入通知
-      const { error: insertError } = await supabase
-        .from('notifications')
-        .insert(notifications);
+          console.log(`為用戶 ${staff.name} 創建通知成功，ID: ${notificationId}`);
+          return notificationId;
+        } catch (error) {
+          console.error(`為用戶 ${staff.name} 創建通知異常:`, error);
+          return null;
+        }
+      });
 
-      if (insertError) {
-        console.error('Error inserting notifications:', insertError);
-        throw insertError;
-      }
+      const results = await Promise.all(notificationPromises);
+      const successCount = results.filter(id => id !== null).length;
 
-      console.log(`通知創建流程完成，成功為 ${staffData.length} 位用戶創建通知`);
+      console.log(`通知創建完成，成功創建 ${successCount}/${staffData.length} 條通知`);
       
       // Show success message
       toast({
         title: "通知已發送",
-        description: `已為 ${staffData.length} 位用戶創建公告通知`,
+        description: `已為 ${successCount} 位用戶創建公告通知`,
       });
 
-      // 延遲觸發實時更新事件
-      setTimeout(() => {
-        console.log('觸發實時更新事件...');
-        window.dispatchEvent(new CustomEvent('notificationUpdated', { 
-          detail: { 
-            type: 'announcement_created',
-            announcementId: announcementId,
-            timestamp: new Date().toISOString()
-          }
-        }));
-        
-        window.dispatchEvent(new CustomEvent('forceNotificationRefresh'));
-      }, 1000);
+      // 立即觸發實時更新事件
+      console.log('觸發實時更新事件...');
+      window.dispatchEvent(new CustomEvent('notificationUpdated', { 
+        detail: { 
+          type: 'announcement_created',
+          announcementId: announcementId,
+          timestamp: new Date().toISOString(),
+          count: successCount
+        }
+      }));
+      
+      window.dispatchEvent(new CustomEvent('forceNotificationRefresh'));
 
       console.log('=== 公告通知創建完成 ===');
     } catch (error) {

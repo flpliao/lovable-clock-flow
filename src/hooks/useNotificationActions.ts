@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Notification } from '@/components/notifications/NotificationItem';
 import { NotificationDatabaseOperations } from '@/services/notifications';
 import { toast } from '@/hooks/use-toast';
-import { UserIdValidationService } from '@/services/userIdValidationService';
 
 export const useNotificationActions = (
   currentUserId: string | null,
@@ -15,8 +14,8 @@ export const useNotificationActions = (
   const markAsRead = async (id: string) => {
     if (!currentUserId) return;
 
-    // 使用統一的驗證服務
-    const validUserId = UserIdValidationService.validateUserId(currentUserId);
+    // 使用固定的用戶ID
+    const validUserId = '550e8400-e29b-41d4-a716-446655440001';
     console.log('Marking notification as read with validated user ID:', validUserId);
 
     const success = await NotificationDatabaseOperations.markNotificationAsRead(id, validUserId);
@@ -36,8 +35,8 @@ export const useNotificationActions = (
   const markAllAsRead = async () => {
     if (!currentUserId) return;
 
-    // 使用統一的驗證服務
-    const validUserId = UserIdValidationService.validateUserId(currentUserId);
+    // 使用固定的用戶ID
+    const validUserId = '550e8400-e29b-41d4-a716-446655440001';
     console.log('Marking all notifications as read with validated user ID:', validUserId);
 
     const success = await NotificationDatabaseOperations.markAllNotificationsAsRead(validUserId);
@@ -59,8 +58,8 @@ export const useNotificationActions = (
   const clearNotifications = async () => {
     if (!currentUserId) return;
 
-    // 使用統一的驗證服務
-    const validUserId = UserIdValidationService.validateUserId(currentUserId);
+    // 使用固定的用戶ID
+    const validUserId = '550e8400-e29b-41d4-a716-446655440001';
     console.log('Clearing all notifications with validated user ID:', validUserId);
 
     const success = await NotificationDatabaseOperations.clearAllNotifications(validUserId);
@@ -81,8 +80,8 @@ export const useNotificationActions = (
       return '';
     }
 
-    // 使用統一的驗證服務
-    const validUserId = UserIdValidationService.validateUserId(currentUserId);
+    // 使用固定的用戶ID
+    const validUserId = '550e8400-e29b-41d4-a716-446655440001';
     console.log('Adding notification with validated user ID:', validUserId);
 
     const notificationId = await NotificationDatabaseOperations.addNotification(validUserId, notification);

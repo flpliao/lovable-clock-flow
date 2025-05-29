@@ -44,7 +44,7 @@ const NotificationCenter: React.FC = () => {
       refreshNotifications();
       setLastRefresh(now);
     }
-  }, [location.pathname]);
+  }, [location.pathname, refreshNotifications, lastRefresh]);
   
   const handleNotificationClick = (notification: Notification) => {
     console.log('Notification clicked:', notification);

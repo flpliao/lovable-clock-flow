@@ -1,8 +1,11 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { CompanyAnnouncement } from '@/types/announcement';
-import { supabase } from '@/integrations/supabase/client';
+import { AnnouncementCrudService } from '@/services/announcementCrudService';
+import { AnnouncementNotificationService } from '@/services/announcementNotificationService';
+import { AnnouncementReadService } from '@/services/announcementReadService';
 
 export const useSupabaseAnnouncements = () => {
   const [announcements, setAnnouncements] = useState<CompanyAnnouncement[]>([]);
@@ -10,123 +13,13 @@ export const useSupabaseAnnouncements = () => {
   const { toast } = useToast();
   const { currentUser, isAdmin } = useUser();
 
-  // 載入公告 - Using Supabase database
+  // Load announcements
   const loadAnnouncements = async () => {
-    try {
-      console.log('Loading announcements from Supabase database');
-      const { data, error } = await supabase
-        .from('announcements')
-        .select('*')
-        .eq('is_active', true)
-        .order('is_pinned', { ascending: false })
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Database error:', error);
-        setAnnouncements([]);
-        return;
-      }
-
-      const formattedAnnouncements = (data || []).map((announcement: any) => ({
-        id: announcement.id,
-        title: announcement.title,
-        content: announcement.content,
-        category: announcement.category,
-        file: announcement.file_url ? {
-          url: announcement.file_url,
-          name: announcement.file_name || '',
-          type: announcement.file_type || ''
-        } : undefined,
-        created_at: announcement.created_at,
-        created_by: {
-          id: announcement.created_by_id || '',
-          name: announcement.created_by_name
-        },
-        company_id: announcement.company_id || '',
-        is_pinned: announcement.is_pinned,
-        is_active: announcement.is_active
-      }));
-
-      setAnnouncements(formattedAnnouncements);
-    } catch (error) {
-      console.error('載入公告失敗:', error);
-      toast({
-        title: "載入失敗",
-        description: "無法載入公告資料",
-        variant: "destructive"
-      });
-      setAnnouncements([]);
-    }
+    const data = await AnnouncementCrudService.loadAnnouncements();
+    setAnnouncements(data);
   };
 
-  // 為所有用戶創建公告通知 - 改進版本
-  const createAnnouncementNotifications = async (announcementId: string, announcementTitle: string) => {
-    try {
-      console.log('Creating notifications for announcement:', announcementId, 'with title:', announcementTitle);
-      
-      // 取得所有活躍的員工（排除目前建立公告的管理員）
-      const { data: staffData, error: staffError } = await supabase
-        .from('staff')
-        .select('id, name')
-        .neq('id', currentUser?.id || ''); // 排除目前的用戶
-
-      if (staffError) {
-        console.error('Error fetching staff for notifications:', staffError);
-        throw staffError;
-      }
-
-      if (!staffData || staffData.length === 0) {
-        console.log('No staff found for notifications');
-        return;
-      }
-
-      console.log(`Found ${staffData.length} staff members for notifications:`, staffData);
-
-      // 為每個員工創建通知記錄
-      const notifications = staffData.map(staff => ({
-        user_id: staff.id,
-        title: '新公告發布',
-        message: `新公告已發布: ${announcementTitle}`,
-        type: 'announcement',
-        announcement_id: announcementId,
-        is_read: false,
-        action_required: false,
-        created_at: new Date().toISOString()
-      }));
-
-      console.log('Inserting notifications:', notifications);
-
-      // 批量插入通知到資料庫
-      const { data: insertedData, error: notificationError } = await supabase
-        .from('notifications')
-        .insert(notifications)
-        .select();
-
-      if (notificationError) {
-        console.error('Error creating notifications:', notificationError);
-        throw notificationError;
-      } else {
-        console.log(`Successfully created ${notifications.length} notifications for announcement`);
-        console.log('Inserted notification data:', insertedData);
-        
-        // 顯示成功提示
-        toast({
-          title: "通知已發送",
-          description: `已為 ${notifications.length} 位用戶創建通知`,
-        });
-      }
-    } catch (error) {
-      console.error('Error in createAnnouncementNotifications:', error);
-      toast({
-        title: "通知發送失敗",
-        description: "無法為用戶創建通知",
-        variant: "destructive"
-      });
-      throw error;
-    }
-  };
-
-  // 建立公告 - 改進版本
+  // Create announcement with notifications
   const createAnnouncement = async (newAnnouncement: Omit<CompanyAnnouncement, 'id' | 'created_at' | 'created_by' | 'company_id'>) => {
     if (!isAdmin()) {
       toast({
@@ -146,68 +39,33 @@ export const useSupabaseAnnouncements = () => {
       return false;
     }
 
-    try {
-      console.log('Creating announcement for user:', currentUser.id);
-      console.log('Announcement data:', newAnnouncement);
-      
-      // 先創建公告
-      const { data, error } = await supabase
-        .from('announcements')
-        .insert({
-          title: newAnnouncement.title,
-          content: newAnnouncement.content,
-          category: newAnnouncement.category,
-          file_url: newAnnouncement.file?.url,
-          file_name: newAnnouncement.file?.name,
-          file_type: newAnnouncement.file?.type,
-          created_by_id: currentUser.id,
-          created_by_name: currentUser.name,
-          company_id: '550e8400-e29b-41d4-a716-446655440000',
-          is_pinned: newAnnouncement.is_pinned,
-          is_active: newAnnouncement.is_active
-        })
-        .select()
-        .single();
+    const result = await AnnouncementCrudService.createAnnouncement(
+      newAnnouncement, 
+      currentUser.id, 
+      currentUser.name
+    );
 
-      if (error) {
-        console.error('Database error creating announcement:', error);
-        throw error;
+    if (result.success && newAnnouncement.is_active && result.data) {
+      console.log('Creating notifications for active announcement with ID:', result.data.id);
+      try {
+        await AnnouncementNotificationService.createAnnouncementNotifications(
+          result.data.id, 
+          newAnnouncement.title, 
+          currentUser.id
+        );
+      } catch (notificationError) {
+        console.error('Failed to create notifications, but announcement was created:', notificationError);
+        // Even if notification creation fails, show that announcement was created
       }
-
-      console.log('Announcement created successfully:', data);
-      
-      // 如果公告是啟用狀態，為所有用戶創建通知
-      if (newAnnouncement.is_active && data) {
-        console.log('Creating notifications for active announcement with ID:', data.id);
-        try {
-          await createAnnouncementNotifications(data.id, newAnnouncement.title);
-        } catch (notificationError) {
-          console.error('Failed to create notifications, but announcement was created:', notificationError);
-          // 即使通知創建失敗，也要顯示公告創建成功
-        }
-      }
-      
-      // 重新載入公告列表
-      await loadAnnouncements();
-      
-      toast({
-        title: "建立成功",
-        description: "公告已成功發佈",
-      });
-      
-      return true;
-    } catch (error) {
-      console.error('建立公告失敗:', error);
-      toast({
-        title: "建立失敗",
-        description: "無法建立公告，請檢查您的權限",
-        variant: "destructive"
-      });
-      return false;
     }
+    
+    // Reload announcements list
+    await loadAnnouncements();
+    
+    return result.success;
   };
 
-  // 更新公告 - Using Supabase database
+  // Update announcement
   const updateAnnouncementData = async (id: string, updatedAnnouncement: Partial<CompanyAnnouncement>) => {
     if (!isAdmin()) {
       toast({
@@ -218,46 +76,14 @@ export const useSupabaseAnnouncements = () => {
       return false;
     }
 
-    try {
-      const { error } = await supabase
-        .from('announcements')
-        .update({
-          title: updatedAnnouncement.title,
-          content: updatedAnnouncement.content,
-          category: updatedAnnouncement.category,
-          file_url: updatedAnnouncement.file?.url,
-          file_name: updatedAnnouncement.file?.name,
-          file_type: updatedAnnouncement.file?.type,
-          is_pinned: updatedAnnouncement.is_pinned,
-          is_active: updatedAnnouncement.is_active
-        })
-        .eq('id', id);
-
-      if (error) {
-        console.error('Database error:', error);
-        throw error;
-      }
-
+    const success = await AnnouncementCrudService.updateAnnouncement(id, updatedAnnouncement);
+    if (success) {
       await loadAnnouncements();
-      
-      toast({
-        title: "更新成功",
-        description: "公告已成功更新",
-      });
-      
-      return true;
-    } catch (error) {
-      console.error('更新公告失敗:', error);
-      toast({
-        title: "更新失敗",
-        description: "無法更新公告",
-        variant: "destructive"
-      });
-      return false;
     }
+    return success;
   };
 
-  // 刪除公告 - Using Supabase database (soft delete)
+  // Delete announcement
   const deleteAnnouncementData = async (id: string) => {
     if (!isAdmin()) {
       toast({
@@ -268,81 +94,26 @@ export const useSupabaseAnnouncements = () => {
       return false;
     }
 
-    try {
-      const { error } = await supabase
-        .from('announcements')
-        .update({ is_active: false })
-        .eq('id', id);
-
-      if (error) {
-        console.error('Database error:', error);
-        throw error;
-      }
-
+    const success = await AnnouncementCrudService.deleteAnnouncement(id);
+    if (success) {
       await loadAnnouncements();
-      
-      toast({
-        title: "刪除成功",
-        description: "公告已成功刪除",
-      });
-      
-      return true;
-    } catch (error) {
-      console.error('刪除公告失敗:', error);
-      toast({
-        title: "刪除失敗",
-        description: "無法刪除公告",
-        variant: "destructive"
-      });
-      return false;
     }
+    return success;
   };
 
-  // 標記公告為已讀
+  // Mark announcement as read
   const markAnnouncementAsRead = async (announcementId: string) => {
     if (!currentUser) return;
-
-    try {
-      console.log('Marking announcement as read:', announcementId, 'for user:', currentUser.id);
-      
-      const { error } = await supabase.rpc('mark_announcement_as_read', {
-        user_uuid: currentUser.id,
-        announcement_uuid: announcementId
-      });
-
-      if (error) {
-        console.error('標記已讀失敗:', error);
-      }
-    } catch (error) {
-      console.error('標記已讀失敗:', error);
-    }
+    await AnnouncementReadService.markAnnouncementAsRead(announcementId, currentUser.id);
   };
 
-  // 檢查公告是否已讀
+  // Check if announcement is read
   const checkAnnouncementRead = async (announcementId: string): Promise<boolean> => {
     if (!currentUser) return false;
-
-    try {
-      const { data, error } = await supabase
-        .from('announcement_reads')
-        .select('id')
-        .eq('user_id', currentUser.id)
-        .eq('announcement_id', announcementId)
-        .maybeSingle();
-
-      if (error) {
-        console.error('檢查已讀狀態失敗:', error);
-        return false;
-      }
-
-      return !!data;
-    } catch (error) {
-      console.error('檢查已讀狀態失敗:', error);
-      return false;
-    }
+    return await AnnouncementReadService.checkAnnouncementRead(announcementId, currentUser.id);
   };
 
-  // 初始載入
+  // Initial load
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);

@@ -41,12 +41,12 @@ export class AnnouncementNotificationService {
         return;
       }
 
-      // 獲取所有員工，包含管理者
+      // 獲取所有員工，不過濾任何條件，確保包含所有人
       console.log('正在獲取所有員工列表...');
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
-        .select('id, name, role, email')
-        .not('id', 'is', null);
+        .select('id, name, role, email, department, position')
+        .order('name');
 
       if (staffError) {
         console.error('Error fetching staff for notifications:', staffError);
@@ -54,29 +54,46 @@ export class AnnouncementNotificationService {
       }
 
       console.log('Staff query result:', staffData);
-      console.log('員工詳細資訊:', staffData?.map(s => ({ 
+      console.log('所有員工詳細資訊:', staffData?.map(s => ({ 
         id: s.id, 
         name: s.name, 
         role: s.role,
-        email: s.email 
+        email: s.email,
+        department: s.department,
+        position: s.position
       })));
 
       if (!staffData || staffData.length === 0) {
-        console.log('沒有找到需要通知的員工');
+        console.log('沒有找到任何員工');
         toast({
           title: "提醒",
-          description: "沒有找到需要通知的員工",
+          description: "沒有找到任何員工",
         });
         return;
       }
 
       console.log(`找到 ${staffData.length} 位員工需要通知`);
 
+      // 特別檢查王小明是否在員工列表中
+      const wangXiaoMing = staffData.find(staff => staff.name === '王小明' || staff.id === '550e8400-e29b-41d4-a716-446655440002');
+      if (wangXiaoMing) {
+        console.log('✅ 王小明在員工列表中:', wangXiaoMing);
+      } else {
+        console.log('❌ 王小明不在員工列表中');
+        console.log('檢查是否有類似姓名的員工:', staffData.filter(s => s.name.includes('王') || s.name.includes('小明')));
+      }
+
       // 為每個員工創建通知
       console.log('開始為所有員工創建通知...');
       const notificationPromises = staffData.map(async (staff) => {
         try {
           console.log(`為員工 ${staff.name} (${staff.id}) 創建通知...`);
+          
+          // 檢查用戶ID是否有效
+          if (!staff.id || staff.id.trim() === '') {
+            console.error(`員工 ${staff.name} 的ID無效:`, staff.id);
+            return null;
+          }
           
           // 直接插入通知表
           const { data: notification, error: insertError } = await supabase
@@ -94,11 +111,11 @@ export class AnnouncementNotificationService {
             .single();
 
           if (insertError) {
-            console.error(`為員工 ${staff.name} 創建通知失敗:`, insertError);
+            console.error(`為員工 ${staff.name} (${staff.id}) 創建通知失敗:`, insertError);
             return null;
           }
 
-          console.log(`為員工 ${staff.name} 創建通知成功，通知ID: ${notification.id}`);
+          console.log(`✅ 為員工 ${staff.name} 創建通知成功，通知ID: ${notification.id}`);
           return { 
             userId: staff.id, 
             notificationId: notification.id, 
@@ -118,6 +135,16 @@ export class AnnouncementNotificationService {
       console.log(`通知創建完成，成功創建 ${successCount}/${staffData.length} 條通知`);
       console.log('成功的通知:', successResults);
       
+      // 特別檢查王小明的通知是否創建成功
+      const wangNotification = successResults.find(result => 
+        result && (result.userName === '王小明' || result.userId === '550e8400-e29b-41d4-a716-446655440002')
+      );
+      if (wangNotification) {
+        console.log('✅ 王小明的通知創建成功:', wangNotification);
+      } else {
+        console.log('❌ 王小明的通知創建失敗');
+      }
+      
       // Show success message
       toast({
         title: "通知已發送",
@@ -131,7 +158,7 @@ export class AnnouncementNotificationService {
         // 為每個成功創建通知的用戶觸發個別更新事件
         successResults.forEach(result => {
           if (result) {
-            console.log(`觸發用戶 ${result.userName} 的通知更新事件`);
+            console.log(`觸發用戶 ${result.userName} (${result.userId}) 的通知更新事件`);
             
             // 用戶專屬通知事件
             window.dispatchEvent(new CustomEvent('userNotificationUpdated', { 
@@ -182,10 +209,11 @@ export class AnnouncementNotificationService {
       // 立即觸發
       triggerUpdateEvents();
       
-      // 延遲觸發確保資料庫操作完成
+      // 延遲觸發確保資料庫操作完成和不同組件都能收到
       setTimeout(triggerUpdateEvents, 100);
       setTimeout(triggerUpdateEvents, 500);
       setTimeout(triggerUpdateEvents, 1000);
+      setTimeout(triggerUpdateEvents, 2000);
 
       console.log('=== 公告通知創建完成 ===');
     } catch (error) {

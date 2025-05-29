@@ -23,6 +23,12 @@ export const useNotifications = () => {
 
     console.log('=== 開始載入通知 ===');
     console.log('Loading notifications for user:', currentUser.id, 'Name:', currentUser.name, 'Role:', currentUser.role);
+    
+    // 特別檢查王小明
+    if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
+      console.log('🔍 正在為王小明載入通知...');
+    }
+    
     setIsLoading(true);
 
     try {
@@ -31,6 +37,19 @@ export const useNotifications = () => {
       
       console.log('Raw loaded notifications:', formattedNotifications);
       console.log('Unread count:', unread);
+      
+      // 特別檢查王小明的通知
+      if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
+        console.log('🔍 王小明的通知詳情:', formattedNotifications.map(n => ({
+          id: n.id,
+          title: n.title,
+          message: n.message,
+          type: n.type,
+          isRead: n.isRead,
+          createdAt: n.createdAt
+        })));
+        console.log('🔍 王小明的未讀通知數量:', unread);
+      }
       
       setNotifications(formattedNotifications);
       setUnreadCount(unread);
@@ -47,6 +66,12 @@ export const useNotifications = () => {
   useEffect(() => {
     if (currentUser) {
       console.log('User changed, loading notifications for:', currentUser.id, currentUser.name, currentUser.role);
+      
+      // 特別提醒王小明的載入
+      if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
+        console.log('🔍 王小明登入，立即載入通知...');
+      }
+      
       loadNotifications();
     } else {
       console.log('No user, clearing notifications');
@@ -68,6 +93,12 @@ export const useNotifications = () => {
       currentUser.id,
       () => {
         console.log(`Real-time event triggered for ${currentUser.name} (${currentUser.role}), reloading notifications`);
+        
+        // 特別標注王小明的實時更新
+        if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
+          console.log('🔍 王小明收到實時通知更新事件');
+        }
+        
         loadNotifications();
       }
     );
@@ -82,6 +113,11 @@ export const useNotifications = () => {
     const handleUserNotificationUpdate = (event: CustomEvent) => {
       console.log(`收到用戶專屬通知更新事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
       
+      // 特別檢查是否為王小明的事件
+      if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
+        console.log('🔍 王小明收到專屬通知更新事件:', event.detail);
+      }
+      
       // 立即刷新通知
       console.log(`立即刷新 ${currentUser.name} (${currentUser.role}) 的通知`);
       loadNotifications();
@@ -89,6 +125,11 @@ export const useNotifications = () => {
 
     const handleUserSpecificRefresh = (event: CustomEvent) => {
       console.log(`收到用戶專屬強制刷新事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
+      
+      if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
+        console.log('🔍 王小明收到強制刷新事件:', event.detail);
+      }
+      
       loadNotifications();
     };
 
@@ -97,6 +138,11 @@ export const useNotifications = () => {
       
       // 對於公告通知，所有用戶都應該刷新
       console.log(`通用通知事件，為 ${currentUser.name} (${currentUser.role}) 刷新通知`);
+      
+      if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
+        console.log('🔍 王小明收到通用通知更新事件:', event.detail);
+      }
+      
       loadNotifications();
     };
 
@@ -104,6 +150,10 @@ export const useNotifications = () => {
       console.log(`收到強制刷新事件 for ${currentUser.name} (${currentUser.role})`);
       if (event instanceof CustomEvent && event.detail) {
         console.log('Force refresh detail:', event.detail);
+        
+        if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
+          console.log('🔍 王小明收到強制刷新事件詳情:', event.detail);
+        }
       }
       loadNotifications();
     };
@@ -122,12 +172,17 @@ export const useNotifications = () => {
     };
   }, [loadNotifications, currentUser]);
 
-  // 定期自動刷新通知（每30秒）
+  // 定期自動刷新通知（每30秒）- 特別為王小明加強
   useEffect(() => {
     if (!currentUser) return;
 
     const interval = setInterval(() => {
       console.log(`定期刷新通知 for ${currentUser.name} (${currentUser.role})`);
+      
+      if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
+        console.log('🔍 王小明定期刷新通知');
+      }
+      
       loadNotifications();
     }, 30000); // 30秒
 

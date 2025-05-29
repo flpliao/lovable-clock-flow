@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const useSupabaseLeaveManagement = () => {
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // 改為 false，避免初始載入
   const { toast } = useToast();
   const { currentUser } = useUser();
 
@@ -74,11 +74,19 @@ export const useSupabaseLeaveManagement = () => {
     }
   };
 
-  // 載入請假記錄
+  // 載入請假記錄 - 重構並優化
   const loadLeaveRequests = async () => {
-    // 檢查用戶是否存在且有有效的 UUID
-    if (!currentUser || !currentUser.id || !currentUser.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-      console.log('No valid current user, skipping leave requests load');
+    // 如果沒有用戶，直接返回，不顯示錯誤
+    if (!currentUser?.id) {
+      console.log('No current user, skipping leave requests load');
+      setLeaveRequests([]);
+      setLoading(false);
+      return;
+    }
+
+    // 檢查用戶ID格式，如果無效則靜默處理
+    if (!currentUser.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      console.log('Invalid user ID format, skipping leave requests load');
       setLeaveRequests([]);
       setLoading(false);
       return;
@@ -99,11 +107,8 @@ export const useSupabaseLeaveManagement = () => {
 
       if (error) {
         console.error('載入請假記錄失敗:', error);
-        toast({
-          title: "載入失敗",
-          description: "無法載入請假記錄",
-          variant: "destructive"
-        });
+        // 不顯示錯誤 toast，靜默處理
+        setLeaveRequests([]);
         return;
       }
 
@@ -134,13 +139,11 @@ export const useSupabaseLeaveManagement = () => {
       }));
 
       setLeaveRequests(formattedRequests);
+      console.log('Successfully loaded leave requests:', formattedRequests.length);
     } catch (error) {
       console.error('載入請假記錄失敗:', error);
-      toast({
-        title: "載入失敗",
-        description: "無法載入請假記錄",
-        variant: "destructive"
-      });
+      // 不顯示錯誤 toast，靜默處理
+      setLeaveRequests([]);
     } finally {
       setLoading(false);
     }
@@ -269,17 +272,39 @@ export const useSupabaseLeaveManagement = () => {
     }
   };
 
-  // 初始載入 - 僅在有有效用戶時載入
-  useEffect(() => {
-    if (currentUser && currentUser.id && currentUser.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-      console.log('Valid user detected, loading leave requests');
-      loadLeaveRequests();
-    } else {
-      console.log('No valid user, setting loading to false');
-      setLoading(false);
-      setLeaveRequests([]);
+  // 手動載入請假記錄的函數
+  const manualLoadLeaveRequests = async () => {
+    if (currentUser?.id) {
+      console.log('Manual load leave requests triggered');
+      await loadLeaveRequests();
     }
-  }, [currentUser]);
+  };
+
+  // 清除所有狀態的函數
+  const clearAllData = () => {
+    console.log('Clearing all leave management data');
+    setLeaveRequests([]);
+    setLoading(false);
+  };
+
+  // 只在有有效用戶時才自動載入
+  useEffect(() => {
+    // 清除之前的狀態
+    clearAllData();
+    
+    // 如果有有效用戶，延遲載入以避免立即錯誤
+    if (currentUser?.id && currentUser.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      console.log('Valid user detected, scheduling leave requests load');
+      // 延遲載入，給系統時間穩定
+      const timeoutId = setTimeout(() => {
+        loadLeaveRequests();
+      }, 1000);
+      
+      return () => clearTimeout(timeoutId);
+    } else {
+      console.log('No valid user, not loading leave requests');
+    }
+  }, [currentUser?.id]);
 
   return {
     leaveRequests,
@@ -288,6 +313,7 @@ export const useSupabaseLeaveManagement = () => {
     initializeAnnualLeaveBalance,
     createLeaveRequest,
     updateLeaveRequestStatus,
-    refreshData: loadLeaveRequests
+    refreshData: manualLoadLeaveRequests,
+    clearAllData // 新增清除功能
   };
 };

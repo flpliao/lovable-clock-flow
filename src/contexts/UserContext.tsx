@@ -23,6 +23,7 @@ interface UserContextType {
   isUserLoaded: boolean;
   userError: string | null;
   clearUserError: () => void;
+  resetUserState: () => void; // 新增重置功能
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -34,20 +35,25 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [userError, setUserError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 標記用戶上下文已加載，但不要自動載入資料避免錯誤
+    // 標記用戶上下文已加載
     setIsUserLoaded(true);
     console.log('UserProvider initialized, user loaded state:', true);
   }, []);
 
-  // 當用戶改變時的處理
+  // 當用戶改變時的處理 - 優化版本
   useEffect(() => {
     if (!currentUser) {
+      // 用戶登出時清除所有相關狀態
       setAnnualLeaveBalance(null);
-      setUserError(null); // 清除錯誤狀態
+      setUserError(null);
+      console.log('User logged out, cleared all states');
     } else {
-      console.log('Current user changed to:', currentUser);
+      console.log('User logged in:', currentUser.name);
+      // 清除任何舊的錯誤狀態
+      setUserError(null);
+      
       // 不在這裡自動載入資料，避免錯誤通知
-      setUserError(null); // 清除錯誤狀態
+      // 讓各個組件自己決定何時載入資料
     }
   }, [currentUser]);
 
@@ -94,6 +100,15 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserError(null);
   };
 
+  // 新增重置功能
+  const resetUserState = () => {
+    console.log('Resetting all user state');
+    setCurrentUser(null);
+    setAnnualLeaveBalance(null);
+    setUserError(null);
+    setIsUserLoaded(true);
+  };
+
   return (
     <UserContext.Provider value={{
       currentUser,
@@ -106,7 +121,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       canManageUser,
       isUserLoaded,
       userError,
-      clearUserError
+      clearUserError,
+      resetUserState
     }}>
       {children}
     </UserContext.Provider>

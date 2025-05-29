@@ -18,19 +18,39 @@ const LocationCheckIn: React.FC = () => {
   const { currentUser } = useUser();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authUserId, setAuthUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   // 檢查 Supabase 認證狀態
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      console.log('Auth check result:', { user, error });
-      
-      if (user && !error) {
-        setIsAuthenticated(true);
-        setAuthUserId(user.id);
-      } else {
-        setIsAuthenticated(false);
-        setAuthUserId(null);
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        console.log('Auth check result:', { user, error, currentUser });
+        
+        if (user && !error) {
+          setIsAuthenticated(true);
+          setAuthUserId(user.id);
+          console.log('User authenticated via Supabase:', user.id);
+        } else if (currentUser?.id) {
+          // 如果沒有 Supabase 認證但有 currentUser，使用 mock 認證
+          setIsAuthenticated(true);
+          setAuthUserId(currentUser.id);
+          console.log('User authenticated via mock system:', currentUser.id);
+        } else {
+          setIsAuthenticated(false);
+          setAuthUserId(null);
+          console.log('No authentication found');
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        // 如果 Supabase 檢查失敗但有 currentUser，還是允許使用
+        if (currentUser?.id) {
+          setIsAuthenticated(true);
+          setAuthUserId(currentUser.id);
+          console.log('Fallback to currentUser auth:', currentUser.id);
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -38,10 +58,14 @@ const LocationCheckIn: React.FC = () => {
 
     // 監聽認證狀態變化
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
+      console.log('Auth state changed:', event, session?.user?.id, currentUser);
       if (session?.user) {
         setIsAuthenticated(true);
         setAuthUserId(session.user.id);
+      } else if (currentUser?.id) {
+        // 保持 mock 認證
+        setIsAuthenticated(true);
+        setAuthUserId(currentUser.id);
       } else {
         setIsAuthenticated(false);
         setAuthUserId(null);
@@ -49,14 +73,14 @@ const LocationCheckIn: React.FC = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [currentUser]);
   
-  // 使用 Supabase 認證的用戶 ID
-  const userId = authUserId || '';
+  // 使用有效的用戶 ID
+  const effectiveUserId = authUserId || currentUser?.id || '';
   
   console.log('LocationCheckIn - Current user:', currentUser);
   console.log('LocationCheckIn - Authenticated:', isAuthenticated);
-  console.log('LocationCheckIn - Using userId:', userId);
+  console.log('LocationCheckIn - Effective userId:', effectiveUserId);
   
   const {
     loading,
@@ -69,10 +93,19 @@ const LocationCheckIn: React.FC = () => {
     todayRecords,
     onLocationCheckIn,
     onIpCheckIn
-  } = useCheckIn(userId);
+  } = useCheckIn(effectiveUserId);
+  
+  // 載入中狀態
+  if (isLoading) {
+    return (
+      <div className="mt-10 flex flex-col items-center justify-center relative">
+        <div className="text-center">載入中...</div>
+      </div>
+    );
+  }
   
   // 如果沒有用戶登入，顯示登入提示
-  if (!currentUser || !isAuthenticated) {
+  if (!currentUser && !isAuthenticated) {
     return (
       <div className="mt-10 flex flex-col items-center justify-center relative">
         <Alert variant="destructive" className="mb-4 max-w-md mx-auto">

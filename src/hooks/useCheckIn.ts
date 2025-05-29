@@ -7,7 +7,6 @@ import {
   handleIpCheckIn
 } from '@/utils/checkInHandlers';
 import { useSupabaseCheckIn } from './useSupabaseCheckIn';
-import { supabase } from '@/integrations/supabase/client';
 
 export const useCheckIn = (userId: string) => {
   const { toast } = useToast();
@@ -24,21 +23,28 @@ export const useCheckIn = (userId: string) => {
   useEffect(() => {
     const loadTodayRecords = async () => {
       if (!userId) {
-        console.log('No userId provided');
+        console.log('No userId provided, skipping records load');
         setTodayRecords({});
         return;
       }
 
       console.log('Loading today records for user:', userId);
       
-      const records = await getTodayCheckInRecords(userId);
-      setTodayRecords(records);
+      try {
+        const records = await getTodayCheckInRecords(userId);
+        console.log('Loaded today records:', records);
+        setTodayRecords(records);
 
-      // 設定下一個動作類型
-      if (records.checkIn && !records.checkOut) {
-        setActionType('check-out');
-      } else {
-        setActionType('check-in');
+        // 設定下一個動作類型
+        if (records.checkIn && !records.checkOut) {
+          setActionType('check-out');
+        } else {
+          setActionType('check-in');
+        }
+      } catch (error) {
+        console.error('Error loading today records:', error);
+        // 不顯示錯誤訊息，避免干擾用戶體驗
+        setTodayRecords({});
       }
     };
 

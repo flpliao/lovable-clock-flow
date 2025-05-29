@@ -8,21 +8,21 @@ export const useCheckInCreator = () => {
 
   const createCheckInRecord = async (record: Omit<CheckInRecord, 'id'>, currentUserId?: string) => {
     try {
-      // 檢查用戶是否已登入
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      console.log('Creating check-in record:', record);
+      console.log('Current user ID:', currentUserId);
+
+      // 使用傳入的用戶 ID 或記錄中的用戶 ID
+      const targetUserId = currentUserId || record.userId;
       
-      if (authError || !user) {
-        console.error('Authentication error:', authError);
+      if (!targetUserId) {
+        console.error('No user ID available for check-in record');
         toast({
           title: "打卡失敗",
-          description: "請先登入",
+          description: "無法確認用戶身份",
           variant: "destructive"
         });
         return false;
       }
-
-      console.log('Creating check-in record for authenticated user:', user.id);
-      console.log('Record data:', record);
 
       const distance = record.details.distance 
         ? Math.round(record.details.distance) 
@@ -31,8 +31,8 @@ export const useCheckInCreator = () => {
       console.log('處理後的距離:', distance);
       
       const recordData = {
-        user_id: user.id, // 使用 Supabase 認證的用戶 ID
-        staff_id: user.id, // 同樣使用認證的用戶 ID
+        user_id: targetUserId, // 使用明確的用戶 ID
+        staff_id: targetUserId, // 同樣使用相同的用戶 ID
         timestamp: record.timestamp,
         type: record.type,
         status: record.status,

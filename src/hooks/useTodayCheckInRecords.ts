@@ -5,16 +5,12 @@ import { CheckInRecord } from '@/types';
 export const useTodayCheckInRecords = () => {
   const getTodayCheckInRecords = async (userId?: string) => {
     try {
-      // 檢查用戶是否已登入，優先使用 Supabase 認證的用戶 ID
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError || !user) {
-        console.log('No authenticated user found');
+      if (!userId) {
+        console.log('No userId provided for getTodayCheckInRecords');
         return { checkIn: undefined, checkOut: undefined };
       }
 
-      const targetUserId = user.id; // 使用認證的用戶 ID
-      console.log('查詢今日記錄，使用者 ID:', targetUserId);
+      console.log('查詢今日記錄，使用者 ID:', userId);
 
       // 使用當地時間計算今日範圍
       const today = new Date();
@@ -24,12 +20,12 @@ export const useTodayCheckInRecords = () => {
       const startOfDayISO = startOfDay.toISOString();
       const endOfDayISO = endOfDay.toISOString();
       
-      console.log('查詢今日記錄範圍:', { startOfDayISO, endOfDayISO, targetUserId });
+      console.log('查詢今日記錄範圍:', { startOfDayISO, endOfDayISO, userId });
       
       const { data, error } = await supabase
         .from('check_in_records')
         .select('*')
-        .eq('user_id', targetUserId)
+        .eq('user_id', userId)
         .gte('timestamp', startOfDayISO)
         .lt('timestamp', endOfDayISO)
         .eq('status', 'success')
@@ -39,6 +35,7 @@ export const useTodayCheckInRecords = () => {
       
       if (error) {
         console.error('Error getting today records:', error);
+        // 不拋出錯誤，只返回空結果
         return { checkIn: undefined, checkOut: undefined };
       }
 
@@ -79,6 +76,7 @@ export const useTodayCheckInRecords = () => {
       return result;
     } catch (error) {
       console.error('取得今日打卡記錄失敗:', error);
+      // 不拋出錯誤，返回空結果
       return { checkIn: undefined, checkOut: undefined };
     }
   };

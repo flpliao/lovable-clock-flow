@@ -26,10 +26,11 @@ const NotificationCenter: React.FC = () => {
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
-  // Debug logging
+  // Debug logging with more details
   useEffect(() => {
-    console.log('NotificationCenter - notifications:', notifications);
-    console.log('NotificationCenter - unreadCount:', unreadCount);
+    console.log('NotificationCenter render - notifications count:', notifications.length);
+    console.log('NotificationCenter render - unreadCount:', unreadCount);
+    console.log('NotificationCenter render - notifications:', notifications);
   }, [notifications, unreadCount]);
 
   // Refresh notifications when component mounts or when returning from other pages
@@ -38,12 +39,12 @@ const NotificationCenter: React.FC = () => {
     refreshNotifications();
   }, [location.pathname, refreshNotifications]);
 
-  // Set up an interval to periodically refresh notifications
+  // Set up an interval to periodically refresh notifications (increased frequency for testing)
   useEffect(() => {
     const interval = setInterval(() => {
-      console.log('NotificationCenter - periodic refresh');
+      console.log('NotificationCenter - periodic refresh (every 10 seconds)');
       refreshNotifications();
-    }, 30000); // Refresh every 30 seconds
+    }, 10000); // Refresh every 10 seconds for testing
 
     return () => clearInterval(interval);
   }, [refreshNotifications]);
@@ -108,7 +109,7 @@ const NotificationCenter: React.FC = () => {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between border-b p-3">
-          <h3 className="text-sm font-medium">通知</h3>
+          <h3 className="text-sm font-medium">通知 ({notifications.length})</h3>
           <div className="flex gap-1">
             {unreadCount > 0 && (
               <Button
@@ -149,6 +150,9 @@ const NotificationCenter: React.FC = () => {
             ))}
           </ScrollArea>
         )}
+        <div className="border-t p-2 text-xs text-gray-500 text-center">
+          最後更新: {new Date().toLocaleTimeString()}
+        </div>
       </PopoverContent>
     </Popover>
   );

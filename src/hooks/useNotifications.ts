@@ -13,6 +13,7 @@ export const useNotifications = () => {
   // Load notifications from database
   const loadNotifications = async () => {
     if (!currentUser) {
+      console.log('No current user, clearing notifications');
       setNotifications([]);
       setUnreadCount(0);
       return;
@@ -34,7 +35,7 @@ export const useNotifications = () => {
         return;
       }
 
-      console.log('Raw notifications data:', data);
+      console.log('Raw notifications data from database:', data);
 
       const formattedNotifications: Notification[] = (data || []).map((notification: any) => ({
         id: notification.id,
@@ -52,9 +53,11 @@ export const useNotifications = () => {
       }));
 
       console.log('Formatted notifications:', formattedNotifications);
+      const unread = formattedNotifications.filter(n => !n.isRead).length;
+      
       setNotifications(formattedNotifications);
-      setUnreadCount(formattedNotifications.filter(n => !n.isRead).length);
-      console.log('Unread count:', formattedNotifications.filter(n => !n.isRead).length);
+      setUnreadCount(unread);
+      console.log('Updated notifications state - total:', formattedNotifications.length, 'unread:', unread);
     } catch (error) {
       console.error('Error loading notifications:', error);
       setNotifications([]);
@@ -67,17 +70,24 @@ export const useNotifications = () => {
     if (currentUser) {
       console.log('User changed, loading notifications for:', currentUser.id);
       loadNotifications();
+    } else {
+      console.log('No user, clearing notifications');
+      setNotifications([]);
+      setUnreadCount(0);
     }
   }, [currentUser]);
 
   // Set up real-time subscription for notifications
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      console.log('No current user for real-time subscription');
+      return;
+    }
 
-    console.log('Setting up real-time subscription for user:', currentUser.id);
+    console.log('Setting up real-time subscription for notifications, user:', currentUser.id);
     
     const channel = supabase
-      .channel('notifications-changes')
+      .channel('notifications-realtime')
       .on(
         'postgres_changes',
         {
@@ -87,7 +97,7 @@ export const useNotifications = () => {
           filter: `user_id=eq.${currentUser.id}`
         },
         (payload) => {
-          console.log('New notification received:', payload);
+          console.log('Real-time INSERT notification received:', payload);
           loadNotifications(); // Reload all notifications
         }
       )
@@ -100,11 +110,26 @@ export const useNotifications = () => {
           filter: `user_id=eq.${currentUser.id}`
         },
         (payload) => {
-          console.log('Notification updated:', payload);
+          console.log('Real-time UPDATE notification received:', payload);
           loadNotifications(); // Reload all notifications
         }
       )
-      .subscribe();
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${currentUser.id}`
+        },
+        (payload) => {
+          console.log('Real-time DELETE notification received:', payload);
+          loadNotifications(); // Reload all notifications
+        }
+      )
+      .subscribe((status) => {
+        console.log('Notification subscription status:', status);
+      });
 
     return () => {
       console.log('Cleaning up notification subscription');
@@ -116,6 +141,8 @@ export const useNotifications = () => {
     if (!currentUser) return;
 
     try {
+      console.log('Marking notification as read:', id);
+      
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
@@ -127,7 +154,7 @@ export const useNotifications = () => {
         return;
       }
 
-      // Update local state
+      // Update local state immediately
       setNotifications(prev => 
         prev.map(notification => 
           notification.id === id ? { ...notification, isRead: true } : notification
@@ -136,6 +163,7 @@ export const useNotifications = () => {
       
       // Update unread count
       setUnreadCount(prev => Math.max(0, prev - 1));
+      console.log('Notification marked as read successfully');
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
@@ -145,6 +173,8 @@ export const useNotifications = () => {
     if (!currentUser) return;
 
     try {
+      console.log('Marking all notifications as read for user:', currentUser.id);
+      
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
@@ -162,6 +192,7 @@ export const useNotifications = () => {
       );
       
       setUnreadCount(0);
+      console.log('All notifications marked as read successfully');
 
       toast({
         title: "已標記為已讀",
@@ -176,6 +207,8 @@ export const useNotifications = () => {
     if (!currentUser) return;
 
     try {
+      console.log('Clearing all notifications for user:', currentUser.id);
+      
       const { error } = await supabase
         .from('notifications')
         .delete()
@@ -188,6 +221,7 @@ export const useNotifications = () => {
 
       setNotifications([]);
       setUnreadCount(0);
+      console.log('All notifications cleared successfully');
       
       toast({
         title: "通知已清空",
@@ -199,9 +233,14 @@ export const useNotifications = () => {
   };
 
   const addNotification = async (notification: Omit<Notification, 'id' | 'createdAt' | 'isRead'>) => {
-    if (!currentUser) return '';
+    if (!currentUser) {
+      console.log('No current user for adding notification');
+      return '';
+    }
 
     try {
+      console.log('Adding notification for user:', currentUser.id, 'notification:', notification);
+      
       const { data, error } = await supabase
         .from('notifications')
         .insert({
@@ -221,6 +260,8 @@ export const useNotifications = () => {
         return '';
       }
 
+      console.log('Notification added successfully:', data);
+      
       // Reload notifications to get the latest data
       await loadNotifications();
       

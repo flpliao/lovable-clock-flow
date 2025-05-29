@@ -59,10 +59,10 @@ export const useSupabaseAnnouncements = () => {
     }
   };
 
-  // 為所有用戶創建公告通知
+  // 為所有用戶創建公告通知 - 改進版本
   const createAnnouncementNotifications = async (announcementId: string, announcementTitle: string) => {
     try {
-      console.log('Creating notifications for announcement:', announcementId);
+      console.log('Creating notifications for announcement:', announcementId, 'with title:', announcementTitle);
       
       // 取得所有活躍的員工（排除目前建立公告的管理員）
       const { data: staffData, error: staffError } = await supabase
@@ -72,7 +72,7 @@ export const useSupabaseAnnouncements = () => {
 
       if (staffError) {
         console.error('Error fetching staff for notifications:', staffError);
-        return;
+        throw staffError;
       }
 
       if (!staffData || staffData.length === 0) {
@@ -80,13 +80,13 @@ export const useSupabaseAnnouncements = () => {
         return;
       }
 
-      console.log('Found staff for notifications:', staffData);
+      console.log(`Found ${staffData.length} staff members for notifications:`, staffData);
 
       // 為每個員工創建通知記錄
       const notifications = staffData.map(staff => ({
         user_id: staff.id,
         title: '新公告發布',
-        message: `${announcementTitle}`,
+        message: `新公告已發布: ${announcementTitle}`,
         type: 'announcement',
         announcement_id: announcementId,
         is_read: false,
@@ -94,24 +94,39 @@ export const useSupabaseAnnouncements = () => {
         created_at: new Date().toISOString()
       }));
 
-      console.log('Creating notifications:', notifications);
+      console.log('Inserting notifications:', notifications);
 
       // 批量插入通知到資料庫
-      const { error: notificationError } = await supabase
+      const { data: insertedData, error: notificationError } = await supabase
         .from('notifications')
-        .insert(notifications);
+        .insert(notifications)
+        .select();
 
       if (notificationError) {
         console.error('Error creating notifications:', notificationError);
+        throw notificationError;
       } else {
         console.log(`Successfully created ${notifications.length} notifications for announcement`);
+        console.log('Inserted notification data:', insertedData);
+        
+        // 顯示成功提示
+        toast({
+          title: "通知已發送",
+          description: `已為 ${notifications.length} 位用戶創建通知`,
+        });
       }
     } catch (error) {
       console.error('Error in createAnnouncementNotifications:', error);
+      toast({
+        title: "通知發送失敗",
+        description: "無法為用戶創建通知",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
-  // 建立公告 - Using Supabase database
+  // 建立公告 - 改進版本
   const createAnnouncement = async (newAnnouncement: Omit<CompanyAnnouncement, 'id' | 'created_at' | 'created_by' | 'company_id'>) => {
     if (!isAdmin()) {
       toast({
@@ -133,8 +148,9 @@ export const useSupabaseAnnouncements = () => {
 
     try {
       console.log('Creating announcement for user:', currentUser.id);
+      console.log('Announcement data:', newAnnouncement);
       
-      // 確保使用與 staff 表格匹配的用戶 ID
+      // 先創建公告
       const { data, error } = await supabase
         .from('announcements')
         .insert({
@@ -144,9 +160,9 @@ export const useSupabaseAnnouncements = () => {
           file_url: newAnnouncement.file?.url,
           file_name: newAnnouncement.file?.name,
           file_type: newAnnouncement.file?.type,
-          created_by_id: currentUser.id, // 使用當前用戶的 ID
+          created_by_id: currentUser.id,
           created_by_name: currentUser.name,
-          company_id: '550e8400-e29b-41d4-a716-446655440000', // Default company ID
+          company_id: '550e8400-e29b-41d4-a716-446655440000',
           is_pinned: newAnnouncement.is_pinned,
           is_active: newAnnouncement.is_active
         })
@@ -161,16 +177,22 @@ export const useSupabaseAnnouncements = () => {
       console.log('Announcement created successfully:', data);
       
       // 如果公告是啟用狀態，為所有用戶創建通知
-      if (newAnnouncement.is_active) {
-        console.log('Creating notifications for active announcement');
-        await createAnnouncementNotifications(data.id, newAnnouncement.title);
+      if (newAnnouncement.is_active && data) {
+        console.log('Creating notifications for active announcement with ID:', data.id);
+        try {
+          await createAnnouncementNotifications(data.id, newAnnouncement.title);
+        } catch (notificationError) {
+          console.error('Failed to create notifications, but announcement was created:', notificationError);
+          // 即使通知創建失敗，也要顯示公告創建成功
+        }
       }
       
+      // 重新載入公告列表
       await loadAnnouncements();
       
       toast({
         title: "建立成功",
-        description: "公告已成功發佈，通知已發送給所有用戶",
+        description: "公告已成功發佈",
       });
       
       return true;

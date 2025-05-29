@@ -44,7 +44,8 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
       if (result.success && result.data) {
         console.log('公告創建成功，ID:', result.data.id);
         
-        // 重新載入公告列表
+        // 立即重新載入公告列表
+        console.log('重新載入公告列表...');
         await refreshData();
         
         // 如果公告是啟用狀態，創建通知
@@ -58,20 +59,17 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
             );
             console.log('通知創建流程完成');
             
-            // 觸發全域通知更新事件 - 加強觸發機制
+            // 觸發全域公告更新事件
             const triggerEvents = () => {
               window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
               window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
-                detail: { type: 'new_announcement', announcementId: result.data?.id }
-              }));
-              window.dispatchEvent(new CustomEvent('forceNotificationRefresh', {
                 detail: { 
-                  reason: 'announcement_created', 
+                  type: 'new_announcement', 
                   announcementId: result.data?.id,
                   timestamp: new Date().toISOString()
                 }
               }));
-              console.log('全域事件已觸發');
+              console.log('全域公告事件已觸發');
             };
             
             // 立即觸發
@@ -79,7 +77,6 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
             
             // 延遲觸發確保所有組件都能收到
             setTimeout(triggerEvents, 300);
-            setTimeout(triggerEvents, 1000);
             
             toast({
               title: "公告已發布",

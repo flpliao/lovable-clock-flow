@@ -17,12 +17,12 @@ export class AnnouncementNotificationService {
       console.log('公告標題:', announcementTitle);
       console.log('當前用戶ID:', currentUserId);
 
-      // Get all active staff (excluding the current user who created the announcement)
+      // Get all active staff (including all roles)
       console.log('正在獲取員工列表...');
       let staffQuery = supabase
         .from('staff')
-        .select('id, name')
-        .neq('role', 'admin'); // 排除管理員
+        .select('id, name, role')
+        .eq('role', 'user'); // 只通知一般用戶，不包括 admin
 
       // 如果有當前用戶ID，排除創建者
       if (currentUserId) {
@@ -36,16 +36,18 @@ export class AnnouncementNotificationService {
         throw staffError;
       }
 
+      console.log('Staff query result:', staffData);
+
       if (!staffData || staffData.length === 0) {
         console.log('沒有找到需要通知的員工');
         toast({
           title: "提醒",
-          description: "沒有找到需要通知的員工",
+          description: "沒有找到需要通知的一般用戶",
         });
         return;
       }
 
-      console.log(`找到 ${staffData.length} 位員工需要通知:`, staffData.map(s => `${s.name}(${s.id})`));
+      console.log(`找到 ${staffData.length} 位一般用戶需要通知:`, staffData.map(s => `${s.name}(${s.id})`));
 
       // 使用 create_notification 函數批量創建通知
       console.log('開始批量創建通知...');
@@ -89,7 +91,7 @@ export class AnnouncementNotificationService {
         description: `已為 ${successCount} 位用戶創建公告通知`,
       });
 
-      // 強制觸發實時更新事件 - 立即觸發多次確保所有組件收到
+      // 立即觸發實時更新事件
       console.log('觸發實時更新事件...');
       
       const triggerUpdateEvents = () => {
@@ -97,6 +99,8 @@ export class AnnouncementNotificationService {
         successResults.forEach(result => {
           if (result) {
             console.log(`觸發用戶 ${result.userName} 的通知更新事件`);
+            
+            // 用戶專屬通知事件
             window.dispatchEvent(new CustomEvent('userNotificationUpdated', { 
               detail: { 
                 userId: result.userId,

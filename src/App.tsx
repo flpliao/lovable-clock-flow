@@ -23,19 +23,37 @@ import CompanyBranchManagement from "./pages/CompanyBranchManagement";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // 受保護的路由組件
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, isUserLoaded } = useUser();
   
+  console.log('ProtectedRoute - User loaded:', isUserLoaded, 'Current user:', currentUser?.name);
+  
   // 如果用戶上下文還未加載，顯示加載中
   if (!isUserLoaded) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p>載入中...</p>
+        </div>
+      </div>
+    );
   }
   
   // 如果沒有用戶登錄，跳轉到登錄頁面
   if (!currentUser) {
+    console.log('No current user, redirecting to login');
     return <Navigate to="/login" replace />;
   }
   
@@ -44,11 +62,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 // 應用路由組件
 const AppRoutes = () => {
-  const { currentUser } = useUser();
+  const { currentUser, isUserLoaded } = useUser();
+  
+  console.log('AppRoutes - User loaded:', isUserLoaded, 'Current user:', currentUser?.name);
   
   return (
     <Routes>
-      <Route path="/login" element={currentUser ? <Navigate to="/" replace /> : <Login />} />
+      <Route 
+        path="/login" 
+        element={
+          currentUser ? <Navigate to="/" replace /> : <Login />
+        } 
+      />
       <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
       <Route path="/personal-attendance" element={<ProtectedRoute><PersonalAttendance /></ProtectedRoute>} />
       <Route path="/company-announcements" element={<ProtectedRoute><CompanyAnnouncements /></ProtectedRoute>} />
@@ -68,6 +93,7 @@ function App() {
   useEffect(() => {
     // 初始化憑證儲存
     initCredentialStore();
+    console.log('App initialized, credential store ready');
   }, []);
 
   return (

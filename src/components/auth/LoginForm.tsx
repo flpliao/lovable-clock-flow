@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, User } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
+import { UserIdValidationService } from '@/services/userIdValidationService';
 
 interface LoginFormProps {
   findUserByEmail: (email: string) => { userId: string, credentials: { userId: string, email: string, password: string } } | null;
@@ -32,8 +33,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
       console.log('User search result:', userFound);
       
       if (userFound && userFound.credentials.password === password) {
+        // 使用統一的用戶ID驗證服務
+        const validatedUserId = UserIdValidationService.validateUserId(userFound.userId);
+        
         // Create user data based on the found credentials
-        // 確保使用正確的 UUID 格式
         const emailLocalPart = userFound.credentials.email.split('@')[0];
         let displayName, position, department, role;
         
@@ -48,14 +51,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
           department = 'HR';
           role = 'user' as const;
         } else {
-          displayName = `User ${userFound.userId}`;
+          displayName = `User ${validatedUserId}`;
           position = '一般員工';
           department = 'HR';
           role = 'user' as const;
         }
         
         const mockUserData = {
-          id: userFound.userId, // 使用來自 credentialStore 的正確 UUID
+          id: validatedUserId, // 使用驗證過的 UUID
           name: displayName,
           position: position,
           department: department,
@@ -63,7 +66,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
           role: role,
         };
         
-        console.log('Setting current user with correct UUID:', mockUserData);
+        console.log('Setting current user with validated UUID:', mockUserData);
         setCurrentUser(mockUserData);
         
         toast({

@@ -15,7 +15,7 @@ declare global {
 // Initialize the credentials store if it doesn't exist
 export const initCredentialStore = (): void => {
   if (!window.userCredentialsStore) {
-    // 使用正確的 UUID 格式
+    // 使用正確的 UUID 格式並確保一致性
     window.userCredentialsStore = {
       '550e8400-e29b-41d4-a716-446655440001': { 
         userId: '550e8400-e29b-41d4-a716-446655440001', 
@@ -31,6 +31,14 @@ export const initCredentialStore = (): void => {
     console.log('Credential store initialized with default accounts');
   } else {
     // 確保帳號存在並使用正確的 UUID
+    if (!window.userCredentialsStore['550e8400-e29b-41d4-a716-446655440001']) {
+      window.userCredentialsStore['550e8400-e29b-41d4-a716-446655440001'] = { 
+        userId: '550e8400-e29b-41d4-a716-446655440001', 
+        email: 'admin@example.com', 
+        password: 'password' 
+      };
+      console.log('Added missing admin account to existing credential store');
+    }
     if (!window.userCredentialsStore['550e8400-e29b-41d4-a716-446655440002']) {
       window.userCredentialsStore['550e8400-e29b-41d4-a716-446655440002'] = { 
         userId: '550e8400-e29b-41d4-a716-446655440002', 

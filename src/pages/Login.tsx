@@ -21,6 +21,7 @@ const Login = () => {
 
   // Initialize the credential store
   useEffect(() => {
+    console.log('Login page initializing credential store');
     initCredentialStore();
   }, []);
 

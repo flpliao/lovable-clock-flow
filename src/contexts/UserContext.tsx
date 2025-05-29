@@ -20,7 +20,7 @@ interface UserContextType {
   isManager: () => boolean;
   hasPermission: (permission: string) => boolean;
   canManageUser: (userId: string) => boolean;
-  isUserLoaded: boolean; // 新增狀態來追蹤用戶是否已加載
+  isUserLoaded: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -31,15 +31,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isUserLoaded, setIsUserLoaded] = useState(false);
 
   useEffect(() => {
-    // 標記用戶上下文已加載（即使沒有預設用戶）
+    // 標記用戶上下文已加載
     setIsUserLoaded(true);
-    console.log('UserProvider initialized, no default user set');
+    console.log('UserProvider initialized, user loaded state:', true);
   }, []);
 
   // 當用戶改變時，重置年假餘額
   useEffect(() => {
     if (!currentUser) {
       setAnnualLeaveBalance(null);
+    } else {
+      console.log('Current user changed to:', currentUser);
     }
   }, [currentUser]);
 

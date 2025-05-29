@@ -22,6 +22,7 @@ export const useSupabaseAnnouncements = () => {
       setAnnouncements(data);
     } catch (error) {
       console.error('Error loading announcements:', error);
+      setAnnouncements([]); // 設置為空陣列避免顯示錯誤
     }
   };
 
@@ -163,6 +164,14 @@ export const useSupabaseAnnouncements = () => {
     return await AnnouncementReadService.checkAnnouncementRead(announcementId, currentUser.id);
   };
 
+  // 強制刷新函數
+  const forceRefresh = async () => {
+    console.log('強制刷新公告列表...');
+    setLoading(true);
+    await loadAnnouncements();
+    setLoading(false);
+  };
+
   // Listen for refresh events
   useEffect(() => {
     const handleRefresh = () => {
@@ -197,6 +206,7 @@ export const useSupabaseAnnouncements = () => {
     deleteAnnouncement: deleteAnnouncementData,
     markAnnouncementAsRead,
     checkAnnouncementRead,
-    refreshData: loadAnnouncements
+    refreshData: loadAnnouncements,
+    forceRefresh
   };
 };

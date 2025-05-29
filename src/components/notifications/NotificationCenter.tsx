@@ -26,14 +26,22 @@ const NotificationCenter: React.FC = () => {
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('NotificationCenter - notifications:', notifications);
+    console.log('NotificationCenter - unreadCount:', unreadCount);
+  }, [notifications, unreadCount]);
+
   // Refresh notifications when component mounts or when returning from other pages
   useEffect(() => {
+    console.log('NotificationCenter - refreshing notifications due to location change');
     refreshNotifications();
-  }, [location.pathname]);
+  }, [location.pathname, refreshNotifications]);
 
   // Set up an interval to periodically refresh notifications
   useEffect(() => {
     const interval = setInterval(() => {
+      console.log('NotificationCenter - periodic refresh');
       refreshNotifications();
     }, 30000); // Refresh every 30 seconds
 
@@ -76,9 +84,18 @@ const NotificationCenter: React.FC = () => {
       }
     }
   };
+
+  // Force refresh when popover opens
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (newOpen) {
+      console.log('NotificationCenter - popover opened, refreshing notifications');
+      refreshNotifications();
+    }
+  };
   
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button className="relative">
           <Bell className="w-6 h-6 text-gray-400" />

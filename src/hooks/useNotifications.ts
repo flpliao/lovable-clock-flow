@@ -34,6 +34,8 @@ export const useNotifications = () => {
         return;
       }
 
+      console.log('Raw notifications data:', data);
+
       const formattedNotifications: Notification[] = (data || []).map((notification: any) => ({
         id: notification.id,
         title: notification.title,
@@ -49,8 +51,10 @@ export const useNotifications = () => {
         }
       }));
 
+      console.log('Formatted notifications:', formattedNotifications);
       setNotifications(formattedNotifications);
       setUnreadCount(formattedNotifications.filter(n => !n.isRead).length);
+      console.log('Unread count:', formattedNotifications.filter(n => !n.isRead).length);
     } catch (error) {
       console.error('Error loading notifications:', error);
       setNotifications([]);
@@ -60,7 +64,52 @@ export const useNotifications = () => {
 
   // Load notifications when user changes
   useEffect(() => {
-    loadNotifications();
+    if (currentUser) {
+      console.log('User changed, loading notifications for:', currentUser.id);
+      loadNotifications();
+    }
+  }, [currentUser]);
+
+  // Set up real-time subscription for notifications
+  useEffect(() => {
+    if (!currentUser) return;
+
+    console.log('Setting up real-time subscription for user:', currentUser.id);
+    
+    const channel = supabase
+      .channel('notifications-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${currentUser.id}`
+        },
+        (payload) => {
+          console.log('New notification received:', payload);
+          loadNotifications(); // Reload all notifications
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${currentUser.id}`
+        },
+        (payload) => {
+          console.log('Notification updated:', payload);
+          loadNotifications(); // Reload all notifications
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('Cleaning up notification subscription');
+      supabase.removeChannel(channel);
+    };
   }, [currentUser]);
 
   const markAsRead = async (id: string) => {

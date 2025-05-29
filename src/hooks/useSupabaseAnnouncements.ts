@@ -80,6 +80,8 @@ export const useSupabaseAnnouncements = () => {
         return;
       }
 
+      console.log('Found staff for notifications:', staffData);
+
       // 為每個員工創建通知記錄
       const notifications = staffData.map(staff => ({
         user_id: staff.id,
@@ -92,6 +94,8 @@ export const useSupabaseAnnouncements = () => {
         created_at: new Date().toISOString()
       }));
 
+      console.log('Creating notifications:', notifications);
+
       // 批量插入通知到資料庫
       const { error: notificationError } = await supabase
         .from('notifications')
@@ -100,7 +104,7 @@ export const useSupabaseAnnouncements = () => {
       if (notificationError) {
         console.error('Error creating notifications:', notificationError);
       } else {
-        console.log(`Created ${notifications.length} notifications for announcement`);
+        console.log(`Successfully created ${notifications.length} notifications for announcement`);
       }
     } catch (error) {
       console.error('Error in createAnnouncementNotifications:', error);
@@ -158,6 +162,7 @@ export const useSupabaseAnnouncements = () => {
       
       // 如果公告是啟用狀態，為所有用戶創建通知
       if (newAnnouncement.is_active) {
+        console.log('Creating notifications for active announcement');
         await createAnnouncementNotifications(data.id, newAnnouncement.title);
       }
       

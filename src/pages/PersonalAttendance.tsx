@@ -23,26 +23,52 @@ const PersonalAttendance = () => {
     checkIn?: CheckInRecord;
     checkOut?: CheckInRecord;
   }>({});
-  const { checkInRecords } = useSupabaseCheckIn();
+  const { checkInRecords, loadCheckInRecords, refreshData } = useSupabaseCheckIn();
+  
+  // 載入打卡記錄
+  useEffect(() => {
+    if (currentUser?.id) {
+      console.log('PersonalAttendance - 載入打卡記錄，使用者ID:', currentUser.id);
+      loadCheckInRecords();
+    }
+  }, [currentUser?.id, loadCheckInRecords]);
   
   // 根據選擇的日期過濾打卡記錄
   useEffect(() => {
+    console.log('過濾打卡記錄 - 選擇日期:', date, '記錄數量:', checkInRecords.length);
+    
     if (date && checkInRecords.length > 0) {
       const selectedDateStr = format(date, 'yyyy-MM-dd');
+      console.log('選擇的日期字串:', selectedDateStr);
       
       const dayRecords = checkInRecords.filter(record => {
         const recordDate = format(new Date(record.timestamp), 'yyyy-MM-dd');
-        return recordDate === selectedDateStr && record.status === 'success';
+        const isMatch = recordDate === selectedDateStr && record.status === 'success';
+        console.log(`記錄 ${record.id}: ${recordDate} === ${selectedDateStr} && ${record.status} === success = ${isMatch}`);
+        return isMatch;
       });
+      
+      console.log('當日記錄:', dayRecords);
       
       const checkIn = dayRecords.find(record => record.action === 'check-in');
       const checkOut = dayRecords.find(record => record.action === 'check-out');
       
+      console.log('找到的記錄:', { checkIn, checkOut });
+      
       setSelectedDateRecords({ checkIn, checkOut });
     } else {
+      console.log('沒有日期或記錄，清空選擇的記錄');
       setSelectedDateRecords({});
     }
   }, [date, checkInRecords]);
+
+  // 當切換到月曆視圖時重新整理資料
+  useEffect(() => {
+    if (activeTab === 'calendar' && currentUser?.id) {
+      console.log('切換到月曆視圖，重新整理資料');
+      refreshData();
+    }
+  }, [activeTab, currentUser?.id, refreshData]);
   
   if (!currentUser) {
     return (
@@ -138,6 +164,10 @@ const PersonalAttendance = () => {
                             {format(date, 'yyyy年MM月dd日')} 出勤記錄
                           </h3>
                           
+                          <div className="mb-2 text-sm text-gray-500">
+                            打卡記錄總數: {checkInRecords.length}
+                          </div>
+                          
                           {selectedDateRecords.checkIn || selectedDateRecords.checkOut ? (
                             <div className="space-y-3">
                               {selectedDateRecords.checkIn && (
@@ -191,6 +221,7 @@ const PersonalAttendance = () => {
                           ) : (
                             <div className="text-gray-500 text-center py-8">
                               <p>此日期無打卡記錄</p>
+                              <p className="text-sm mt-1">選擇的日期: {format(date, 'yyyy-MM-dd')}</p>
                             </div>
                           )}
                         </div>

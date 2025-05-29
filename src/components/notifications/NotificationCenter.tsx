@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Bell, Check, X, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -33,7 +32,7 @@ const NotificationCenter: React.FC = () => {
   // Debug logging
   useEffect(() => {
     if (currentUser) {
-      console.log(`NotificationCenter 狀態更新 - 用戶: ${currentUser.name}`);
+      console.log(`NotificationCenter 狀態更新 - 用戶: ${currentUser.name} (${currentUser.role})`);
       console.log(`  - 通知數量: ${notifications.length}`);
       console.log(`  - 未讀數量: ${unreadCount}`);
       console.log(`  - 載入狀態: ${isLoading}`);
@@ -52,7 +51,7 @@ const NotificationCenter: React.FC = () => {
     if (!currentUser) return;
 
     const handleUserNotificationUpdate = (event: CustomEvent) => {
-      console.log(`收到用戶專屬通知事件 for ${currentUser.name}:`, event.detail);
+      console.log(`收到用戶專屬通知事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
       
       if (event.detail?.userId === currentUser.id) {
         console.log(`用戶專屬通知事件匹配，立即刷新 ${currentUser.name} 的通知`);
@@ -62,46 +61,43 @@ const NotificationCenter: React.FC = () => {
     };
 
     const handleUserSpecificRefresh = (event: CustomEvent) => {
-      console.log(`收到用戶專屬強制刷新事件 for ${currentUser.name}:`, event.detail);
+      console.log(`收到用戶專屬強制刷新事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
       refreshNotifications();
       setLastRefresh(new Date());
     };
 
     const handleNotificationUpdate = (event: CustomEvent) => {
-      console.log(`收到通知更新事件 for ${currentUser.name}:`, event.detail);
+      console.log(`收到通知更新事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
       
       // 檢查是否與當前用戶相關
       if (event.detail?.affectedUsers && Array.isArray(event.detail.affectedUsers)) {
         const isUserAffected = event.detail.affectedUsers.some((user: any) => user.id === currentUser.id);
         if (isUserAffected) {
-          console.log(`通知事件包含當前用戶 ${currentUser.name}，立即刷新`);
+          console.log(`通知事件包含當前用戶 ${currentUser.name} (${currentUser.role})，立即刷新`);
           refreshNotifications();
           setLastRefresh(new Date());
         } else {
-          console.log(`通知事件不包含當前用戶 ${currentUser.name}，檢查是否為一般用戶`);
-          // 如果是一般用戶且沒有特定用戶列表，則刷新
-          if (currentUser.role === 'user') {
-            console.log(`一般用戶 ${currentUser.name} 刷新通知`);
-            refreshNotifications();
-            setLastRefresh(new Date());
-          }
+          console.log(`通知事件不包含當前用戶 ${currentUser.name} (${currentUser.role})，但仍要刷新通知`);
+          // 對於公告通知，所有用戶都應該刷新
+          refreshNotifications();
+          setLastRefresh(new Date());
         }
       } else {
         // 如果沒有特定用戶列表，則刷新所有用戶的通知
-        console.log(`通用通知事件，為 ${currentUser.name} 刷新通知`);
+        console.log(`通用通知事件，為 ${currentUser.name} (${currentUser.role}) 刷新通知`);
         refreshNotifications();
         setLastRefresh(new Date());
       }
     };
 
     const handleForceRefresh = (event: CustomEvent) => {
-      console.log(`收到強制刷新事件 for ${currentUser.name}:`, event.detail);
+      console.log(`收到強制刷新事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
       refreshNotifications();
       setLastRefresh(new Date());
     };
 
     const handleAnnouncementUpdate = (event: Event | CustomEvent) => {
-      console.log(`收到公告更新事件 for ${currentUser.name}`);
+      console.log(`收到公告更新事件 for ${currentUser.name} (${currentUser.role})`);
       if (event instanceof CustomEvent && event.detail) {
         console.log('公告更新詳情:', event.detail);
       }
@@ -142,7 +138,7 @@ const NotificationCenter: React.FC = () => {
   }, [location.pathname, refreshNotifications, lastRefresh, currentUser]);
   
   const handleNotificationClick = (notification: Notification) => {
-    console.log(`通知點擊 by ${currentUser?.name}:`, notification);
+    console.log(`通知點擊 by ${currentUser?.name} (${currentUser?.role}):`, notification);
     markAsRead(notification.id);
     setOpen(false);
     
@@ -152,17 +148,17 @@ const NotificationCenter: React.FC = () => {
     } else if (notification.type === 'leave_status' && notification.data?.leaveRequestId) {
       navigate('/leave-request');
     } else if (notification.type === 'announcement' || notification.type === 'system') {
-      console.log(`公告通知點擊 by ${currentUser?.name}，觸發刷新`);
+      console.log(`公告通知點擊 by ${currentUser?.name} (${currentUser?.role})，觸發刷新`);
       
       // 觸發公告頁面刷新事件
       window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
       window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
-        detail: { type: 'refresh', source: 'notification_click', user: currentUser?.name }
+        detail: { type: 'refresh', source: 'notification_click', user: currentUser?.name, role: currentUser?.role }
       }));
       
       // Navigate to company announcements page
       if (location.pathname !== '/company-announcements') {
-        console.log(`導航到公告頁面 for ${currentUser?.name}`);
+        console.log(`導航到公告頁面 for ${currentUser?.name} (${currentUser?.role})`);
         navigate('/company-announcements');
       }
     }

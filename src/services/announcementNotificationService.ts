@@ -17,19 +17,11 @@ export class AnnouncementNotificationService {
       console.log('公告標題:', announcementTitle);
       console.log('當前用戶ID:', currentUserId);
 
-      // Get all active staff (including all roles)
-      console.log('正在獲取員工列表...');
-      let staffQuery = supabase
+      // Get all active staff (including all roles - admin and user)
+      console.log('正在獲取所有員工列表（包含管理者）...');
+      const { data: staffData, error: staffError } = await supabase
         .from('staff')
-        .select('id, name, role')
-        .eq('role', 'user'); // 只通知一般用戶，不包括 admin
-
-      // 如果有當前用戶ID，排除創建者
-      if (currentUserId) {
-        staffQuery = staffQuery.neq('id', currentUserId);
-      }
-
-      const { data: staffData, error: staffError } = await staffQuery;
+        .select('id, name, role');
 
       if (staffError) {
         console.error('Error fetching staff for notifications:', staffError);
@@ -42,18 +34,18 @@ export class AnnouncementNotificationService {
         console.log('沒有找到需要通知的員工');
         toast({
           title: "提醒",
-          description: "沒有找到需要通知的一般用戶",
+          description: "沒有找到需要通知的員工",
         });
         return;
       }
 
-      console.log(`找到 ${staffData.length} 位一般用戶需要通知:`, staffData.map(s => `${s.name}(${s.id})`));
+      console.log(`找到 ${staffData.length} 位員工需要通知:`, staffData.map(s => `${s.name}(${s.id}) - ${s.role}`));
 
-      // 使用 create_notification 函數批量創建通知
-      console.log('開始批量創建通知...');
+      // 使用 create_notification 函數批量創建通知 - 包含所有人
+      console.log('開始批量創建通知（包含管理者）...');
       const notificationPromises = staffData.map(async (staff) => {
         try {
-          console.log(`為用戶 ${staff.name} (${staff.id}) 創建通知...`);
+          console.log(`為用戶 ${staff.name} (${staff.id}) - ${staff.role} 創建通知...`);
           
           const { data: notificationId, error } = await supabase.rpc('create_notification', {
             p_user_id: staff.id,
@@ -70,8 +62,8 @@ export class AnnouncementNotificationService {
             return null;
           }
 
-          console.log(`為用戶 ${staff.name} 創建通知成功，ID: ${notificationId}`);
-          return { userId: staff.id, notificationId, userName: staff.name };
+          console.log(`為用戶 ${staff.name} (${staff.role}) 創建通知成功，ID: ${notificationId}`);
+          return { userId: staff.id, notificationId, userName: staff.name, userRole: staff.role };
         } catch (error) {
           console.error(`為用戶 ${staff.name} 創建通知異常:`, error);
           return null;
@@ -88,7 +80,7 @@ export class AnnouncementNotificationService {
       // Show success message
       toast({
         title: "通知已發送",
-        description: `已為 ${successCount} 位用戶創建公告通知`,
+        description: `已為 ${successCount} 位用戶創建公告通知（包含管理者）`,
       });
 
       // 立即觸發實時更新事件
@@ -98,7 +90,7 @@ export class AnnouncementNotificationService {
         // 為每個成功創建通知的用戶觸發個別更新事件
         successResults.forEach(result => {
           if (result) {
-            console.log(`觸發用戶 ${result.userName} 的通知更新事件`);
+            console.log(`觸發用戶 ${result.userName} (${result.userRole}) 的通知更新事件`);
             
             // 用戶專屬通知事件
             window.dispatchEvent(new CustomEvent('userNotificationUpdated', { 
@@ -129,7 +121,7 @@ export class AnnouncementNotificationService {
             announcementId: announcementId,
             timestamp: new Date().toISOString(),
             count: successCount,
-            affectedUsers: successResults.map(r => ({ id: r?.userId, name: r?.userName }))
+            affectedUsers: successResults.map(r => ({ id: r?.userId, name: r?.userName, role: r?.userRole }))
           }
         }));
         

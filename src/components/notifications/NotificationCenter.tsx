@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Bell, Check, X, TestTube, RefreshCw } from 'lucide-react';
+import { Bell, Check, X, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Popover,
@@ -12,8 +12,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import NotificationItem, { Notification } from './NotificationItem';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from '@/hooks/useNotifications';
-import { AnnouncementNotificationService } from '@/services/announcementNotificationService';
-import { useUser } from '@/contexts/UserContext';
 
 const NotificationCenter: React.FC = () => {
   const { 
@@ -25,7 +23,6 @@ const NotificationCenter: React.FC = () => {
     clearNotifications,
     refreshNotifications
   } = useNotifications();
-  const { currentUser } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -95,26 +92,6 @@ const NotificationCenter: React.FC = () => {
     refreshNotifications();
     setLastRefresh(new Date());
   };
-
-  // 測試通知創建功能
-  const handleTestNotification = async () => {
-    if (!currentUser) {
-      console.log('No current user for test notification');
-      return;
-    }
-
-    console.log('開始測試通知創建...');
-    const success = await AnnouncementNotificationService.testNotificationCreation(currentUser.id);
-    
-    if (success) {
-      console.log('測試通知創建成功');
-      // 延遲刷新以確保通知已創建
-      setTimeout(() => {
-        refreshNotifications();
-        setLastRefresh(new Date());
-      }, 2000);
-    }
-  };
   
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -142,16 +119,6 @@ const NotificationCenter: React.FC = () => {
               title="手動刷新"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            </Button>
-            {/* 測試按鈕 */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2 text-xs"
-              onClick={handleTestNotification}
-              title="測試通知創建"
-            >
-              <TestTube className="h-3.5 w-3.5" />
             </Button>
             {unreadCount > 0 && (
               <Button

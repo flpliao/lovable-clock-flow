@@ -63,7 +63,7 @@ export interface CompanyManagementContextType {
   handleAddBranch: () => void;
   handleEditBranch: () => void;
   handleDeleteBranch: (id: string) => void;
-  handleUpdateCompany: (company: Company) => void;
+  handleUpdateCompany: (company: Company) => Promise<boolean>;
   openEditBranchDialog: (branch: Branch) => void;
   getBranchByCode: (code: string) => Branch | undefined;
   getActiveBranches: () => Branch[];

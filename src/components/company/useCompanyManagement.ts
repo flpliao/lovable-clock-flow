@@ -70,11 +70,8 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
     await deleteBranch(id);
   };
 
-  const handleUpdateCompany = async (updatedCompany: Company) => {
-    const success = await updateCompany(updatedCompany);
-    if (success) {
-      setIsEditCompanyDialogOpen(false);
-    }
+  const handleUpdateCompany = async (updatedCompany: Company): Promise<boolean> => {
+    return await updateCompany(updatedCompany);
   };
 
   const openEditBranchDialog = (branch: Branch) => {

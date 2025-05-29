@@ -49,7 +49,7 @@ export const useCompanyOperations = () => {
     }
   };
 
-  // 更新公司資料
+  // 更新或新建公司資料
   const updateCompany = async (updatedCompany: Company) => {
     console.log('開始更新公司資料，管理員狀態:', isAdmin());
     
@@ -72,10 +72,10 @@ export const useCompanyOperations = () => {
     }
 
     try {
-      console.log('正在更新公司資料:', updatedCompany);
+      console.log('正在處理公司資料:', updatedCompany);
       
-      // 準備更新資料，確保所有欄位都正確對應到資料庫
-      const updateData = {
+      // 準備資料，確保所有欄位都正確對應到資料庫
+      const companyData = {
         name: updatedCompany.name?.trim() || '',
         registration_number: updatedCompany.registration_number?.trim() || '',
         address: updatedCompany.address?.trim() || '',
@@ -89,53 +89,80 @@ export const useCompanyOperations = () => {
         updated_at: new Date().toISOString()
       };
       
-      console.log('準備更新的資料:', updateData);
+      console.log('準備處理的資料:', companyData);
 
       // 檢查必填欄位
       const requiredFields = ['name', 'registration_number', 'address', 'phone', 'email', 'business_type', 'legal_representative'];
       for (const field of requiredFields) {
-        if (!updateData[field as keyof typeof updateData]) {
+        if (!companyData[field as keyof typeof companyData]) {
           throw new Error(`${field} 為必填欄位`);
         }
       }
 
-      const { data, error } = await supabase
-        .from('companies')
-        .update(updateData)
-        .eq('id', updatedCompany.id)
-        .select()
-        .single();
+      let result;
 
-      if (error) {
-        console.error('Supabase 更新錯誤:', error);
-        throw error;
+      // 檢查是否已存在公司資料
+      if (company && company.id) {
+        // 更新現有公司資料
+        console.log('更新現有公司資料，ID:', company.id);
+        const { data, error } = await supabase
+          .from('companies')
+          .update(companyData)
+          .eq('id', company.id)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Supabase 更新錯誤:', error);
+          throw error;
+        }
+        result = data;
+      } else {
+        // 新增公司資料
+        console.log('新增公司資料');
+        const { data, error } = await supabase
+          .from('companies')
+          .insert({
+            ...companyData,
+            created_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Supabase 新增錯誤:', error);
+          throw error;
+        }
+        result = data;
       }
 
-      console.log('更新成功，返回的資料:', data);
+      console.log('操作成功，返回的資料:', result);
       
       // 更新本地狀態
-      setCompany(data);
+      setCompany(result);
       
       toast({
-        title: "更新成功",
-        description: "已成功更新公司基本資料"
+        title: company ? "更新成功" : "建立成功",
+        description: company ? "已成功更新公司基本資料" : "已成功建立公司基本資料"
       });
       return true;
     } catch (error) {
-      console.error('更新公司資料失敗:', error);
+      console.error('處理公司資料失敗:', error);
       
       // 提供更詳細的錯誤訊息
-      let errorMessage = "無法更新公司資料";
+      let errorMessage = "無法處理公司資料";
       if (error instanceof Error) {
         if (error.message.includes('PGRST301') || error.message.includes('policy')) {
           errorMessage = "權限不足，只有管理員可以更新公司資料";
+        } else if (error.message.includes('duplicate key')) {
+          errorMessage = "統一編號已存在，請使用不同的統一編號";
         } else {
-          errorMessage = `更新失敗: ${error.message}`;
+          errorMessage = `處理失敗: ${error.message}`;
         }
       }
       
       toast({
-        title: "更新失敗",
+        title: "處理失敗",
         description: errorMessage,
         variant: "destructive"
       });

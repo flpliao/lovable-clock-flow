@@ -11,7 +11,8 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
     updateCompany,
     addBranch,
     updateBranch,
-    deleteBranch
+    deleteBranch,
+    refreshData
   } = useSupabaseCompanyOperations();
 
   // Dialog states
@@ -53,6 +54,8 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
         business_license: ''
       });
       setIsAddBranchDialogOpen(false);
+      // 重新載入資料以確保同步
+      await refreshData();
     }
   };
 
@@ -62,16 +65,27 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
       if (success) {
         setIsEditBranchDialogOpen(false);
         setCurrentBranch(null);
+        // 重新載入資料以確保同步
+        await refreshData();
       }
     }
   };
 
   const handleDeleteBranch = async (id: string) => {
-    await deleteBranch(id);
+    const success = await deleteBranch(id);
+    if (success) {
+      // 重新載入資料以確保同步
+      await refreshData();
+    }
   };
 
   const handleUpdateCompany = async (updatedCompany: Company): Promise<boolean> => {
-    return await updateCompany(updatedCompany);
+    const success = await updateCompany(updatedCompany);
+    if (success) {
+      // 重新載入資料以確保同步
+      await refreshData();
+    }
+    return success;
   };
 
   const openEditBranchDialog = (branch: Branch) => {

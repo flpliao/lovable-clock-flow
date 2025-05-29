@@ -41,7 +41,18 @@ const EditCompanyDialog = () => {
     if (isEditCompanyDialogOpen) {
       if (company) {
         console.log('編輯現有公司資料:', company);
-        setEditedCompany({ ...company });
+        setEditedCompany({
+          name: company.name || '',
+          registration_number: company.registration_number || '',
+          legal_representative: company.legal_representative || '',
+          business_type: company.business_type || '',
+          address: company.address || '',
+          phone: company.phone || '',
+          email: company.email || '',
+          website: company.website || '',
+          established_date: company.established_date || '',
+          capital: company.capital || null
+        });
       } else {
         console.log('新建公司資料');
         setEditedCompany({
@@ -128,11 +139,20 @@ const EditCompanyDialog = () => {
     console.log('提交公司資料:', editedCompany);
 
     try {
-      // 如果是新建公司，需要提供 id
-      const companyData = company ? editedCompany as Company : {
-        ...editedCompany,
-        id: crypto.randomUUID(), // 為新公司生成 ID
-        created_at: new Date().toISOString(),
+      // 建立完整的公司資料物件
+      const companyData = {
+        id: company?.id || crypto.randomUUID(),
+        name: editedCompany.name || '',
+        registration_number: editedCompany.registration_number || '',
+        legal_representative: editedCompany.legal_representative || '',
+        business_type: editedCompany.business_type || '',
+        address: editedCompany.address || '',
+        phone: editedCompany.phone || '',
+        email: editedCompany.email || '',
+        website: editedCompany.website || '',
+        established_date: editedCompany.established_date || '',
+        capital: editedCompany.capital || null,
+        created_at: company?.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString()
       } as Company;
 
@@ -157,8 +177,27 @@ const EditCompanyDialog = () => {
     }
   };
 
+  const handleClose = () => {
+    setIsEditCompanyDialogOpen(false);
+    // 重置表單資料
+    if (company) {
+      setEditedCompany({
+        name: company.name || '',
+        registration_number: company.registration_number || '',
+        legal_representative: company.legal_representative || '',
+        business_type: company.business_type || '',
+        address: company.address || '',
+        phone: company.phone || '',
+        email: company.email || '',
+        website: company.website || '',
+        established_date: company.established_date || '',
+        capital: company.capital || null
+      });
+    }
+  };
+
   return (
-    <Dialog open={isEditCompanyDialogOpen} onOpenChange={setIsEditCompanyDialogOpen}>
+    <Dialog open={isEditCompanyDialogOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{company ? '編輯公司基本資料' : '建立公司基本資料'}</DialogTitle>
@@ -298,7 +337,7 @@ const EditCompanyDialog = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setIsEditCompanyDialogOpen(false)}
+              onClick={handleClose}
               disabled={isSubmitting}
             >
               取消

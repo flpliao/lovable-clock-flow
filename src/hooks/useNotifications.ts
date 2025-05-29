@@ -22,7 +22,7 @@ export const useNotifications = () => {
     }
 
     console.log('=== 開始載入通知 ===');
-    console.log('Loading notifications for user:', currentUser.id);
+    console.log('Loading notifications for user:', currentUser.id, 'Name:', currentUser.name);
     setIsLoading(true);
 
     try {
@@ -34,7 +34,7 @@ export const useNotifications = () => {
       
       setNotifications(formattedNotifications);
       setUnreadCount(unread);
-      console.log('Updated notifications state - total:', formattedNotifications.length, 'unread:', unread);
+      console.log(`通知載入完成 - 用戶: ${currentUser.name}, 總計: ${formattedNotifications.length}, 未讀: ${unread}`);
       console.log('=== 通知載入完成 ===');
     } catch (error) {
       console.error('Error loading notifications:', error);
@@ -46,7 +46,7 @@ export const useNotifications = () => {
   // Load notifications when user changes
   useEffect(() => {
     if (currentUser) {
-      console.log('User changed, loading notifications for:', currentUser.id);
+      console.log('User changed, loading notifications for:', currentUser.id, currentUser.name);
       loadNotifications();
     } else {
       console.log('No user, clearing notifications');
@@ -62,32 +62,52 @@ export const useNotifications = () => {
       return;
     }
 
-    console.log('Setting up real-time subscription for user:', currentUser.id);
+    console.log('Setting up real-time subscription for user:', currentUser.id, currentUser.name);
     
     const cleanup = NotificationRealtimeService.setupRealtimeSubscription(
       currentUser.id,
       () => {
-        console.log('Real-time event triggered, reloading notifications');
+        console.log(`Real-time event triggered for ${currentUser.name}, reloading notifications`);
         setTimeout(() => {
           loadNotifications();
-        }, 500); // 增加延遲確保資料庫操作完成
+        }, 300); // 減少延遲提高響應性
       }
     );
 
     return cleanup;
   }, [currentUser, loadNotifications]);
 
-  // 監聽自定義通知更新事件
+  // 監聽自定義通知更新事件 - 改善事件處理
   useEffect(() => {
+    if (!currentUser) return;
+
     const handleNotificationUpdate = (event: CustomEvent) => {
-      console.log('收到通知更新事件:', event.detail);
-      setTimeout(() => {
-        loadNotifications();
-      }, 1000); // 增加延遲確保通知已創建
+      console.log(`收到通知更新事件 for ${currentUser.name}:`, event.detail);
+      
+      // 檢查是否與當前用戶相關
+      if (event.detail?.staffList && Array.isArray(event.detail.staffList)) {
+        if (event.detail.staffList.includes(currentUser.id)) {
+          console.log(`通知事件包含當前用戶 ${currentUser.name}，立即刷新`);
+          setTimeout(() => {
+            loadNotifications();
+          }, 500);
+        } else {
+          console.log(`通知事件不包含當前用戶 ${currentUser.name}，跳過刷新`);
+        }
+      } else {
+        // 如果沒有特定用戶列表，則刷新所有用戶的通知
+        console.log(`通用通知事件，為 ${currentUser.name} 刷新通知`);
+        setTimeout(() => {
+          loadNotifications();
+        }, 800);
+      }
     };
 
-    const handleForceRefresh = () => {
-      console.log('收到強制刷新事件');
+    const handleForceRefresh = (event: Event | CustomEvent) => {
+      console.log(`收到強制刷新事件 for ${currentUser.name}`);
+      if (event instanceof CustomEvent && event.detail) {
+        console.log('Force refresh detail:', event.detail);
+      }
       loadNotifications();
     };
 
@@ -98,7 +118,7 @@ export const useNotifications = () => {
       window.removeEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
       window.removeEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
     };
-  }, [loadNotifications]);
+  }, [loadNotifications, currentUser]);
 
   // Get notification actions
   const actions = useNotificationActions(

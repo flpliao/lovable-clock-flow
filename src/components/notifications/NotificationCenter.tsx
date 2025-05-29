@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import NotificationItem, { Notification } from './NotificationItem';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useUser } from '@/contexts/UserContext';
 
 const NotificationCenter: React.FC = () => {
   const { 
@@ -23,23 +24,32 @@ const NotificationCenter: React.FC = () => {
     clearNotifications,
     refreshNotifications
   } = useNotifications();
+  const { currentUser } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  // Debug logging
+  // Debug logging - 改善調試信息
   useEffect(() => {
-    console.log('NotificationCenter render - notifications count:', notifications.length);
-    console.log('NotificationCenter render - unreadCount:', unreadCount);
-    console.log('NotificationCenter render - isLoading:', isLoading);
-    console.log('NotificationCenter render - notifications:', notifications);
-  }, [notifications, unreadCount, isLoading]);
+    if (currentUser) {
+      console.log(`NotificationCenter render - 用戶: ${currentUser.name}`);
+      console.log(`  - 通知數量: ${notifications.length}`);
+      console.log(`  - 未讀數量: ${unreadCount}`);
+      console.log(`  - 載入狀態: ${isLoading}`);
+      console.log(`  - 通知列表:`, notifications.map(n => ({ id: n.id, title: n.title, isRead: n.isRead })));
+    }
+  }, [notifications, unreadCount, isLoading, currentUser]);
 
-  // 監聽公告相關的更新事件
+  // 監聽公告相關的更新事件 - 改善事件處理
   useEffect(() => {
-    const handleAnnouncementUpdate = () => {
-      console.log('收到公告更新事件，刷新通知');
+    if (!currentUser) return;
+
+    const handleAnnouncementUpdate = (event: Event | CustomEvent) => {
+      console.log(`收到公告更新事件 for ${currentUser.name}，刷新通知`);
+      if (event instanceof CustomEvent && event.detail) {
+        console.log('公告更新詳情:', event.detail);
+      }
       refreshNotifications();
       setLastRefresh(new Date());
     };
@@ -51,20 +61,22 @@ const NotificationCenter: React.FC = () => {
       window.removeEventListener('refreshAnnouncements', handleAnnouncementUpdate);
       window.removeEventListener('announcementDataUpdated', handleAnnouncementUpdate);
     };
-  }, [refreshNotifications]);
+  }, [refreshNotifications, currentUser]);
 
   // Refresh notifications when location changes (但限制頻率)
   useEffect(() => {
+    if (!currentUser) return;
+    
     const now = new Date();
     if (now.getTime() - lastRefresh.getTime() > 3000) { // 3秒限制
-      console.log('NotificationCenter - refreshing notifications due to location change');
+      console.log(`NotificationCenter - 路由變更刷新通知 for ${currentUser.name}`);
       refreshNotifications();
       setLastRefresh(now);
     }
-  }, [location.pathname, refreshNotifications, lastRefresh]);
+  }, [location.pathname, refreshNotifications, lastRefresh, currentUser]);
   
   const handleNotificationClick = (notification: Notification) => {
-    console.log('Notification clicked:', notification);
+    console.log(`通知點擊 by ${currentUser?.name}:`, notification);
     markAsRead(notification.id);
     setOpen(false);
     
@@ -74,17 +86,17 @@ const NotificationCenter: React.FC = () => {
     } else if (notification.type === 'leave_status' && notification.data?.leaveRequestId) {
       navigate('/leave-request');
     } else if (notification.type === 'announcement' || notification.type === 'system') {
-      console.log('Announcement notification clicked, triggering refresh');
+      console.log(`公告通知點擊 by ${currentUser?.name}，觸發刷新`);
       
       // 觸發公告頁面刷新事件
       window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
       window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
-        detail: { type: 'refresh', source: 'notification_click' }
+        detail: { type: 'refresh', source: 'notification_click', user: currentUser?.name }
       }));
       
       // Navigate to company announcements page
       if (location.pathname !== '/company-announcements') {
-        console.log('Navigating to announcements page');
+        console.log(`導航到公告頁面 for ${currentUser?.name}`);
         navigate('/company-announcements');
       }
     }
@@ -93,10 +105,10 @@ const NotificationCenter: React.FC = () => {
   // Force refresh when popover opens (但限制頻率)
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
-    if (newOpen) {
+    if (newOpen && currentUser) {
       const now = new Date();
       if (now.getTime() - lastRefresh.getTime() > 2000) { // 2秒限制
-        console.log('NotificationCenter - popover opened, refreshing notifications');
+        console.log(`NotificationCenter - popover 開啟刷新通知 for ${currentUser.name}`);
         refreshNotifications();
         setLastRefresh(now);
       }
@@ -105,9 +117,11 @@ const NotificationCenter: React.FC = () => {
 
   // 手動刷新功能
   const handleManualRefresh = () => {
-    console.log('手動刷新通知');
-    refreshNotifications();
-    setLastRefresh(new Date());
+    if (currentUser) {
+      console.log(`手動刷新通知 by ${currentUser.name}`);
+      refreshNotifications();
+      setLastRefresh(new Date());
+    }
   };
   
   return (
@@ -181,6 +195,11 @@ const NotificationCenter: React.FC = () => {
           </ScrollArea>
         )}
         <div className="border-t p-2 text-xs text-gray-500 text-center">
+          {currentUser && (
+            <>
+              用戶: {currentUser.name} | 
+            </>
+          )}
           最後更新: {lastRefresh.toLocaleTimeString()}
         </div>
       </PopoverContent>

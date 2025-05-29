@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export class NotificationRealtimeService {
   /**
-   * Set up real-time subscription for notifications - 改進版本
+   * Set up real-time subscription for notifications - 優化版本
    */
   static setupRealtimeSubscription(
     userId: string,
@@ -22,11 +22,11 @@ export class NotificationRealtimeService {
           filter: `user_id=eq.${userId}`
         },
         (payload) => {
-          console.log('Real-time INSERT notification received:', payload);
-          // 延遲一點調用以確保資料庫操作完成
+          console.log(`Real-time INSERT notification received for user ${userId}:`, payload);
+          // 立即調用以提高響應性
           setTimeout(() => {
             onNotificationChange();
-          }, 100);
+          }, 200);
         }
       )
       .on(
@@ -38,10 +38,10 @@ export class NotificationRealtimeService {
           filter: `user_id=eq.${userId}`
         },
         (payload) => {
-          console.log('Real-time UPDATE notification received:', payload);
+          console.log(`Real-time UPDATE notification received for user ${userId}:`, payload);
           setTimeout(() => {
             onNotificationChange();
-          }, 100);
+          }, 200);
         }
       )
       .on(
@@ -53,24 +53,24 @@ export class NotificationRealtimeService {
           filter: `user_id=eq.${userId}`
         },
         (payload) => {
-          console.log('Real-time DELETE notification received:', payload);
+          console.log(`Real-time DELETE notification received for user ${userId}:`, payload);
           setTimeout(() => {
             onNotificationChange();
-          }, 100);
+          }, 200);
         }
       )
       .subscribe((status) => {
-        console.log('Notification subscription status:', status);
+        console.log(`Notification subscription status for user ${userId}:`, status);
         if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to notifications for user:', userId);
+          console.log(`Successfully subscribed to notifications for user: ${userId}`);
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('Error subscribing to notifications channel');
+          console.error(`Error subscribing to notifications channel for user: ${userId}`);
         }
       });
 
     // Return cleanup function
     return () => {
-      console.log('Cleaning up notification subscription for user:', userId);
+      console.log(`Cleaning up notification subscription for user: ${userId}`);
       supabase.removeChannel(channel);
     };
   }
@@ -90,5 +90,25 @@ export class NotificationRealtimeService {
           supabase.removeChannel(testChannel);
         }
       });
+  }
+
+  /**
+   * 強制觸發通知更新事件
+   */
+  static triggerNotificationUpdate(userId: string, announcementId?: string): void {
+    console.log(`Triggering notification update for user: ${userId}`);
+    
+    window.dispatchEvent(new CustomEvent('notificationUpdated', { 
+      detail: { 
+        type: 'forced_update',
+        userId: userId,
+        announcementId: announcementId,
+        timestamp: new Date().toISOString()
+      }
+    }));
+    
+    window.dispatchEvent(new CustomEvent('forceNotificationRefresh', {
+      detail: { userId: userId, reason: 'manual_trigger' }
+    }));
   }
 }

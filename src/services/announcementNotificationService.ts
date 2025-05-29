@@ -78,24 +78,41 @@ export class AnnouncementNotificationService {
         description: `已為 ${successCount} 位用戶創建公告通知`,
       });
 
-      // 立即觸發實時更新事件
+      // 強制觸發全域通知更新事件 - 改善實時性
       console.log('觸發實時更新事件...');
       
-      // 使用 setTimeout 確保事件在下一個事件循環中觸發
-      setTimeout(() => {
+      // 立即觸發多個更新事件確保所有組件都能收到
+      const triggerEvents = () => {
+        // 觸發通知更新事件
         window.dispatchEvent(new CustomEvent('notificationUpdated', { 
           detail: { 
             type: 'announcement_created',
             announcementId: announcementId,
             timestamp: new Date().toISOString(),
-            count: successCount
+            count: successCount,
+            staffList: staffData.map(s => s.id)
           }
         }));
         
-        window.dispatchEvent(new CustomEvent('forceNotificationRefresh'));
+        // 強制刷新通知
+        window.dispatchEvent(new CustomEvent('forceNotificationRefresh', {
+          detail: { reason: 'announcement_created', announcementId }
+        }));
+        
+        // 觸發公告更新事件
+        window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
         
         console.log('實時更新事件已觸發');
-      }, 100);
+      };
+
+      // 立即觸發一次
+      triggerEvents();
+      
+      // 延遲再觸發一次，確保資料庫操作完成
+      setTimeout(triggerEvents, 500);
+      
+      // 再延遲觸發一次，確保所有組件都能收到
+      setTimeout(triggerEvents, 1500);
 
       console.log('=== 公告通知創建完成 ===');
     } catch (error) {

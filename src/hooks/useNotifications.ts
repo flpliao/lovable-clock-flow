@@ -70,7 +70,7 @@ export const useNotifications = () => {
         console.log(`Real-time event triggered for ${currentUser.name}, reloading notifications`);
         setTimeout(() => {
           loadNotifications();
-        }, 200); // 減少延遲提高響應性
+        }, 100); // 減少延遲提高響應性
       }
     );
 
@@ -89,8 +89,13 @@ export const useNotifications = () => {
         console.log(`通知事件針對當前用戶 ${currentUser.name}，立即刷新`);
         setTimeout(() => {
           loadNotifications();
-        }, 300);
+        }, 100);
       }
+    };
+
+    const handleUserSpecificRefresh = (event: CustomEvent) => {
+      console.log(`收到用戶專屬強制刷新事件 for ${currentUser.name}:`, event.detail);
+      loadNotifications();
     };
 
     const handleNotificationUpdate = (event: CustomEvent) => {
@@ -103,7 +108,7 @@ export const useNotifications = () => {
           console.log(`通知事件包含當前用戶 ${currentUser.name}，立即刷新`);
           setTimeout(() => {
             loadNotifications();
-          }, 500);
+          }, 200);
         } else {
           console.log(`通知事件不包含當前用戶 ${currentUser.name}，跳過刷新`);
         }
@@ -112,7 +117,7 @@ export const useNotifications = () => {
         console.log(`通用通知事件，為 ${currentUser.name} 刷新通知`);
         setTimeout(() => {
           loadNotifications();
-        }, 800);
+        }, 300);
       }
     };
 
@@ -125,11 +130,13 @@ export const useNotifications = () => {
     };
 
     window.addEventListener('userNotificationUpdated', handleUserNotificationUpdate as EventListener);
+    window.addEventListener(`forceNotificationRefresh-${currentUser.id}`, handleUserSpecificRefresh as EventListener);
     window.addEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
     window.addEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
     
     return () => {
       window.removeEventListener('userNotificationUpdated', handleUserNotificationUpdate as EventListener);
+      window.removeEventListener(`forceNotificationRefresh-${currentUser.id}`, handleUserSpecificRefresh as EventListener);
       window.removeEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
       window.removeEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
     };

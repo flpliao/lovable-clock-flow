@@ -55,17 +55,21 @@ const NotificationCenter: React.FC = () => {
       }
     };
 
+    const handleUserSpecificRefresh = (event: CustomEvent) => {
+      console.log(`NotificationCenter 收到用戶專屬強制刷新事件 for ${currentUser.name}:`, event.detail);
+      refreshNotifications();
+      setLastRefresh(new Date());
+    };
+
     const handleAnnouncementUpdate = (event: Event | CustomEvent) => {
       console.log(`NotificationCenter 收到公告更新事件 for ${currentUser.name}`);
       if (event instanceof CustomEvent && event.detail) {
         console.log('公告更新詳情:', event.detail);
       }
       
-      // 延遲刷新以確保資料庫操作完成
-      setTimeout(() => {
-        refreshNotifications();
-        setLastRefresh(new Date());
-      }, 1000);
+      // 立即刷新通知
+      refreshNotifications();
+      setLastRefresh(new Date());
     };
 
     const handleForceRefresh = (event: CustomEvent) => {
@@ -75,12 +79,14 @@ const NotificationCenter: React.FC = () => {
     };
 
     window.addEventListener('userNotificationUpdated', handleUserNotificationUpdate as EventListener);
+    window.addEventListener(`forceNotificationRefresh-${currentUser.id}`, handleUserSpecificRefresh as EventListener);
     window.addEventListener('refreshAnnouncements', handleAnnouncementUpdate);
     window.addEventListener('announcementDataUpdated', handleAnnouncementUpdate);
     window.addEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
     
     return () => {
       window.removeEventListener('userNotificationUpdated', handleUserNotificationUpdate as EventListener);
+      window.removeEventListener(`forceNotificationRefresh-${currentUser.id}`, handleUserSpecificRefresh as EventListener);
       window.removeEventListener('refreshAnnouncements', handleAnnouncementUpdate);
       window.removeEventListener('announcementDataUpdated', handleAnnouncementUpdate);
       window.removeEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
@@ -92,7 +98,7 @@ const NotificationCenter: React.FC = () => {
     if (!currentUser) return;
     
     const now = new Date();
-    if (now.getTime() - lastRefresh.getTime() > 3000) { // 3秒限制
+    if (now.getTime() - lastRefresh.getTime() > 2000) { // 2秒限制
       console.log(`NotificationCenter - 路由變更刷新通知 for ${currentUser.name}`);
       refreshNotifications();
       setLastRefresh(now);
@@ -131,7 +137,7 @@ const NotificationCenter: React.FC = () => {
     setOpen(newOpen);
     if (newOpen && currentUser) {
       const now = new Date();
-      if (now.getTime() - lastRefresh.getTime() > 2000) { // 2秒限制
+      if (now.getTime() - lastRefresh.getTime() > 1000) { // 1秒限制
         console.log(`NotificationCenter - popover 開啟刷新通知 for ${currentUser.name}`);
         refreshNotifications();
         setLastRefresh(now);

@@ -45,7 +45,7 @@ export class AnnouncementNotificationService {
         return;
       }
 
-      console.log(`找到 ${staffData.length} 位員工需要通知:`, staffData.map(s => s.name));
+      console.log(`找到 ${staffData.length} 位員工需要通知:`, staffData.map(s => `${s.name}(${s.id})`));
 
       // 使用 create_notification 函數批量創建通知
       console.log('開始批量創建通知...');
@@ -106,6 +106,15 @@ export class AnnouncementNotificationService {
                 timestamp: new Date().toISOString()
               }
             }));
+            
+            // 針對特定用戶觸發強制刷新
+            window.dispatchEvent(new CustomEvent(`forceNotificationRefresh-${result.userId}`, {
+              detail: { 
+                reason: 'announcement_created',
+                announcementId,
+                timestamp: new Date().toISOString()
+              }
+            }));
           }
         });
 
@@ -137,10 +146,10 @@ export class AnnouncementNotificationService {
       triggerUpdateEvents();
       
       // 延遲觸發確保資料庫操作完成
-      setTimeout(triggerUpdateEvents, 800);
+      setTimeout(triggerUpdateEvents, 500);
       
       // 再延遲觸發確保所有組件都能收到
-      setTimeout(triggerUpdateEvents, 2000);
+      setTimeout(triggerUpdateEvents, 1500);
 
       console.log('=== 公告通知創建完成 ===');
     } catch (error) {

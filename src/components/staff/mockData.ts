@@ -1,9 +1,10 @@
 import { Staff, StaffRole } from './types';
 
+// 只保留廖俊雄（管理者）的資料
 export const mockStaffList: Staff[] = [
   {
-    id: '1',
-    name: '張總經理',
+    id: '550e8400-e29b-41d4-a716-446655440001', // 確保使用正確的廖俊雄 ID
+    name: '廖俊雄',
     position: '總經理',
     department: '管理部',
     branch_id: '1',
@@ -11,64 +12,8 @@ export const mockStaffList: Staff[] = [
     contact: '0912-345-678',
     role: 'admin',
     role_id: 'admin',
-    username: 'manager.zhang',
-    email: 'zhang@company.com'
-  },
-  {
-    id: '2',
-    name: '李人資主管',
-    position: '人資主管',
-    department: 'HR',
-    branch_id: '1',
-    branch_name: '總公司',
-    contact: '0923-456-789',
-    role: 'admin',
-    role_id: 'admin',
-    supervisor_id: '1',
-    username: 'hr.lee',
-    email: 'lee@company.com'
-  },
-  {
-    id: '3',
-    name: '王店長',
-    position: '店長',
-    department: '門市',
-    branch_id: '2',
-    branch_name: '台北分店',
-    contact: '0934-567-890',
-    role: 'user',
-    role_id: 'store_manager',
-    supervisor_id: '1',
-    username: 'store.wang',
-    email: 'wang@company.com'
-  },
-  {
-    id: '4',
-    name: '陳服務員',
-    position: '服務員',
-    department: '門市',
-    branch_id: '2',
-    branch_name: '台北分店',
-    contact: '0945-678-901',
-    role: 'user',
-    role_id: 'staff',
-    supervisor_id: '3',
-    username: 'staff.chen',
-    email: 'chen@company.com'
-  },
-  {
-    id: '5',
-    name: '林營業主管',
-    position: '營業主管',
-    department: '營業部',
-    branch_id: '3',
-    branch_name: '高雄分店',
-    contact: '0956-789-012',
-    role: 'user',
-    role_id: 'sales_manager',
-    supervisor_id: '1',
-    username: 'sales.lin',
-    email: 'lin@company.com'
+    username: 'admin',
+    email: 'admin@example.com'
   }
 ];
 

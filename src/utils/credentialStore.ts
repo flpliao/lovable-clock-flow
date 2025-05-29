@@ -15,38 +15,25 @@ declare global {
 // Initialize the credentials store if it doesn't exist
 export const initCredentialStore = (): void => {
   if (!window.userCredentialsStore) {
-    // 使用正確的 UUID 格式並確保一致性
+    // 只保留廖俊雄（管理者）的帳號
     window.userCredentialsStore = {
       '550e8400-e29b-41d4-a716-446655440001': { 
         userId: '550e8400-e29b-41d4-a716-446655440001', 
         email: 'admin@example.com', 
         password: 'password' 
-      },
-      '550e8400-e29b-41d4-a716-446655440002': { 
-        userId: '550e8400-e29b-41d4-a716-446655440002', 
-        email: 'flpliao@gmail.com', 
-        password: 'password' 
       }
     };
-    console.log('Credential store initialized with default accounts');
+    console.log('Credential store initialized with admin account only');
   } else {
-    // 確保帳號存在並使用正確的 UUID
-    if (!window.userCredentialsStore['550e8400-e29b-41d4-a716-446655440001']) {
-      window.userCredentialsStore['550e8400-e29b-41d4-a716-446655440001'] = { 
+    // 清空所有帳號，只保留廖俊雄的帳號
+    window.userCredentialsStore = {
+      '550e8400-e29b-41d4-a716-446655440001': { 
         userId: '550e8400-e29b-41d4-a716-446655440001', 
         email: 'admin@example.com', 
         password: 'password' 
-      };
-      console.log('Added missing admin account to existing credential store');
-    }
-    if (!window.userCredentialsStore['550e8400-e29b-41d4-a716-446655440002']) {
-      window.userCredentialsStore['550e8400-e29b-41d4-a716-446655440002'] = { 
-        userId: '550e8400-e29b-41d4-a716-446655440002', 
-        email: 'flpliao@gmail.com', 
-        password: 'password' 
-      };
-      console.log('Added missing flpliao account to existing credential store');
-    }
+      }
+    };
+    console.log('Credential store cleared and reset to admin account only');
   }
   console.log('Current credential store:', window.userCredentialsStore);
 };

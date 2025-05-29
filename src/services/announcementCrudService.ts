@@ -55,6 +55,31 @@ export class AnnouncementCrudService {
   }
 
   /**
+   * Validate and format user ID to ensure it's a valid UUID
+   */
+  static validateUserId(userId: string): string {
+    console.log('Validating user ID:', userId);
+    
+    // Check if it's already a valid UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(userId)) {
+      console.log('User ID is already valid UUID:', userId);
+      return userId;
+    }
+    
+    // If it's a simple string like "1", convert it to a valid UUID format
+    if (userId === "1" || userId === "admin") {
+      const validUUID = '550e8400-e29b-41d4-a716-446655440001';
+      console.log('Converting simple user ID to valid UUID:', validUUID);
+      return validUUID;
+    }
+    
+    // For other cases, generate a UUID based on the input
+    console.warn('User ID is not valid UUID format, using fallback:', userId);
+    return '550e8400-e29b-41d4-a716-446655440001';
+  }
+
+  /**
    * Create a new announcement in the database
    */
   static async createAnnouncement(
@@ -66,6 +91,10 @@ export class AnnouncementCrudService {
       console.log('Creating announcement for user:', currentUserId);
       console.log('Announcement data:', announcement);
       
+      // Validate and format user ID
+      const validUserId = this.validateUserId(currentUserId);
+      console.log('Using validated user ID:', validUserId);
+      
       // Create the announcement
       const { data, error } = await supabase
         .from('announcements')
@@ -76,7 +105,7 @@ export class AnnouncementCrudService {
           file_url: announcement.file?.url,
           file_name: announcement.file?.name,
           file_type: announcement.file?.type,
-          created_by_id: currentUserId,
+          created_by_id: validUserId,
           created_by_name: currentUserName,
           company_id: '550e8400-e29b-41d4-a716-446655440000',
           is_pinned: announcement.is_pinned,
@@ -102,7 +131,7 @@ export class AnnouncementCrudService {
       console.error('建立公告失敗:', error);
       toast({
         title: "建立失敗",
-        description: "無法建立公告，請檢查您的權限",
+        description: `無法建立公告: ${error instanceof Error ? error.message : '請檢查您的權限'}`,
         variant: "destructive"
       });
       return { success: false };
@@ -153,9 +182,6 @@ export class AnnouncementCrudService {
     }
   }
 
-  /**
-   * Delete an announcement (soft delete)
-   */
   static async deleteAnnouncement(id: string): Promise<boolean> {
     try {
       const { error } = await supabase

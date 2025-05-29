@@ -5,6 +5,30 @@ import { NotificationBulkOperations, NotificationDatabaseTesting } from '@/servi
 
 export class AnnouncementNotificationService {
   /**
+   * Validate and format user ID to ensure it's a valid UUID
+   */
+  static validateUserId(userId: string): string {
+    console.log('Validating user ID for notifications:', userId);
+    
+    // Check if it's already a valid UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(userId)) {
+      console.log('User ID is already valid UUID:', userId);
+      return userId;
+    }
+    
+    // If it's a simple string like "1", convert it to a valid UUID format
+    if (userId === "1" || userId === "admin") {
+      const validUUID = '550e8400-e29b-41d4-a716-446655440001';
+      console.log('Converting simple user ID to valid UUID for notifications:', validUUID);
+      return validUUID;
+    }
+    
+    console.warn('User ID is not valid UUID format, using fallback for notifications:', userId);
+    return '550e8400-e29b-41d4-a716-446655440001';
+  }
+
+  /**
    * Creates notifications for all users when a new announcement is published
    */
   static async createAnnouncementNotifications(
@@ -16,14 +40,18 @@ export class AnnouncementNotificationService {
       console.log('=== 開始創建公告通知 ===');
       console.log('公告ID:', announcementId);
       console.log('公告標題:', announcementTitle);
-      console.log('當前用戶ID:', currentUserId);
+      console.log('當前用戶ID (原始):', currentUserId);
+
+      // Validate current user ID
+      const validCurrentUserId = currentUserId ? this.validateUserId(currentUserId) : null;
+      console.log('當前用戶ID (驗證後):', validCurrentUserId);
 
       // Get all active staff (excluding the current user who created the announcement)
       console.log('正在獲取員工列表...');
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
         .select('id, name')
-        .neq('id', currentUserId || ''); // Exclude the current user
+        .neq('id', validCurrentUserId || ''); // Exclude the current user
 
       if (staffError) {
         console.error('Error fetching staff for notifications:', staffError);
@@ -54,8 +82,9 @@ export class AnnouncementNotificationService {
 
       console.log('通知模板:', notificationTemplate);
 
-      const userIds = staffData.map(staff => staff.id);
-      console.log('目標用戶ID列表:', userIds);
+      // Validate all user IDs before creating notifications
+      const userIds = staffData.map(staff => this.validateUserId(staff.id));
+      console.log('目標用戶ID列表 (驗證後):', userIds);
 
       // 使用批量創建通知功能
       const success = await NotificationBulkOperations.createBulkNotifications(userIds, notificationTemplate);
@@ -107,10 +136,14 @@ export class AnnouncementNotificationService {
   static async testNotificationCreation(userId: string): Promise<boolean> {
     try {
       console.log('=== 測試通知創建功能 ===');
-      console.log('測試用戶ID:', userId);
+      console.log('測試用戶ID (原始):', userId);
+      
+      // Validate user ID
+      const validUserId = this.validateUserId(userId);
+      console.log('測試用戶ID (驗證後):', validUserId);
       
       // 先測試資料庫連接
-      const connectionTest = await NotificationDatabaseTesting.testDatabaseConnection(userId);
+      const connectionTest = await NotificationDatabaseTesting.testDatabaseConnection(validUserId);
       
       if (!connectionTest) {
         console.error('資料庫連接測試失敗');

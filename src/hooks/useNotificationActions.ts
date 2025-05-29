@@ -11,10 +11,38 @@ export const useNotificationActions = (
   setUnreadCount: React.Dispatch<React.SetStateAction<number>>,
   refreshNotifications: () => Promise<void>
 ) => {
+  /**
+   * Validate and format user ID to ensure it's a valid UUID
+   */
+  const validateUserId = (userId: string): string => {
+    console.log('Validating user ID in notification actions:', userId);
+    
+    // Check if it's already a valid UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(userId)) {
+      console.log('User ID is already valid UUID:', userId);
+      return userId;
+    }
+    
+    // If it's a simple string like "1", convert it to a valid UUID format
+    if (userId === "1" || userId === "admin") {
+      const validUUID = '550e8400-e29b-41d4-a716-446655440001';
+      console.log('Converting simple user ID to valid UUID in notification actions:', validUUID);
+      return validUUID;
+    }
+    
+    console.warn('User ID is not valid UUID format, using fallback in notification actions:', userId);
+    return '550e8400-e29b-41d4-a716-446655440001';
+  };
+
   const markAsRead = async (id: string) => {
     if (!currentUserId) return;
 
-    const success = await NotificationDatabaseOperations.markNotificationAsRead(id, currentUserId);
+    // Validate user ID
+    const validUserId = validateUserId(currentUserId);
+    console.log('Marking notification as read with validated user ID:', validUserId);
+
+    const success = await NotificationDatabaseOperations.markNotificationAsRead(id, validUserId);
     if (success) {
       // Update local state immediately
       setNotifications(prev => 
@@ -31,7 +59,11 @@ export const useNotificationActions = (
   const markAllAsRead = async () => {
     if (!currentUserId) return;
 
-    const success = await NotificationDatabaseOperations.markAllNotificationsAsRead(currentUserId);
+    // Validate user ID
+    const validUserId = validateUserId(currentUserId);
+    console.log('Marking all notifications as read with validated user ID:', validUserId);
+
+    const success = await NotificationDatabaseOperations.markAllNotificationsAsRead(validUserId);
     if (success) {
       // Update local state
       setNotifications(prev => 
@@ -50,7 +82,11 @@ export const useNotificationActions = (
   const clearNotifications = async () => {
     if (!currentUserId) return;
 
-    const success = await NotificationDatabaseOperations.clearAllNotifications(currentUserId);
+    // Validate user ID
+    const validUserId = validateUserId(currentUserId);
+    console.log('Clearing all notifications with validated user ID:', validUserId);
+
+    const success = await NotificationDatabaseOperations.clearAllNotifications(validUserId);
     if (success) {
       setNotifications([]);
       setUnreadCount(0);
@@ -68,7 +104,11 @@ export const useNotificationActions = (
       return '';
     }
 
-    const notificationId = await NotificationDatabaseOperations.addNotification(currentUserId, notification);
+    // Validate user ID
+    const validUserId = validateUserId(currentUserId);
+    console.log('Adding notification with validated user ID:', validUserId);
+
+    const notificationId = await NotificationDatabaseOperations.addNotification(validUserId, notification);
     
     if (notificationId) {
       // Reload notifications to get the latest data

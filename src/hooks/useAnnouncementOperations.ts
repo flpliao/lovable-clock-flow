@@ -1,4 +1,3 @@
-
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { CompanyAnnouncement } from '@/types/announcement';
@@ -32,13 +31,13 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
     try {
       console.log('=== 開始創建公告 ===');
       console.log('Creating announcement:', newAnnouncement.title);
-      console.log('公告狀態 - is_active:', newAnnouncement.is_active);
+      console.log('原始公告狀態 - is_active:', newAnnouncement.is_active);
       console.log('當前用戶:', currentUser);
       
-      // 確保公告預設為啟用狀態，除非明確設為false
+      // 確保公告預設為啟用狀態
       const announcementToCreate = {
         ...newAnnouncement,
-        is_active: newAnnouncement.is_active !== false // 預設為true，除非明確設為false
+        is_active: true // 強制設為啟用狀態
       };
       
       console.log('最終公告狀態 - is_active:', announcementToCreate.is_active);
@@ -57,53 +56,46 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
         console.log('重新載入公告列表...');
         await refreshData();
         
-        // 如果公告是啟用狀態，創建通知
-        if (announcementToCreate.is_active !== false) {
-          console.log('公告為啟用狀態，開始創建通知...');
-          try {
-            await AnnouncementNotificationService.createAnnouncementNotifications(
-              result.data.id, 
-              announcementToCreate.title, 
-              currentUser.id
-            );
-            console.log('通知創建流程完成');
-            
-            // 觸發全域公告更新事件
-            const triggerEvents = () => {
-              window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
-              window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
-                detail: { 
-                  type: 'new_announcement', 
-                  announcementId: result.data?.id,
-                  timestamp: new Date().toISOString()
-                }
-              }));
-              console.log('全域公告事件已觸發');
-            };
-            
-            // 立即觸發
-            triggerEvents();
-            
-            // 延遲觸發確保所有組件都能收到
-            setTimeout(triggerEvents, 300);
-            
-            toast({
-              title: "公告已發布",
-              description: `公告「${announcementToCreate.title}」已成功發布並通知相關用戶`,
-            });
-          } catch (notificationError) {
-            console.error('通知創建失敗:', notificationError);
-            toast({
-              title: "公告已創建",
-              description: "公告已成功創建，但通知發送失敗",
-              variant: "default"
-            });
-          }
-        } else {
-          console.log('公告為停用狀態，跳過通知創建');
+        // 為所有用戶創建通知（包含管理者）
+        console.log('開始為所有用戶創建通知...');
+        try {
+          await AnnouncementNotificationService.createAnnouncementNotifications(
+            result.data.id, 
+            announcementToCreate.title, 
+            currentUser.id
+          );
+          console.log('通知創建流程完成');
+          
+          // 觸發全域公告更新事件
+          const triggerEvents = () => {
+            window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
+            window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
+              detail: { 
+                type: 'new_announcement', 
+                announcementId: result.data?.id,
+                timestamp: new Date().toISOString()
+              }
+            }));
+            console.log('全域公告事件已觸發');
+          };
+          
+          // 立即觸發
+          triggerEvents();
+          
+          // 延遲觸發確保所有組件都能收到
+          setTimeout(triggerEvents, 100);
+          setTimeout(triggerEvents, 300);
+          
+          toast({
+            title: "公告已發布",
+            description: `公告「${announcementToCreate.title}」已成功發布並通知所有用戶`,
+          });
+        } catch (notificationError) {
+          console.error('通知創建失敗:', notificationError);
           toast({
             title: "公告已創建",
-            description: "公告已成功創建（未啟用狀態）",
+            description: "公告已成功創建，但通知發送失敗",
+            variant: "default"
           });
         }
         

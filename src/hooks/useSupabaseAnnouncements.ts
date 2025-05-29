@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
@@ -94,7 +93,7 @@ export const useSupabaseAnnouncements = () => {
       }));
 
       // 批量插入通知到資料庫
-      const { error: notificationError } = await (supabase as any)
+      const { error: notificationError } = await supabase
         .from('notifications')
         .insert(notifications);
 

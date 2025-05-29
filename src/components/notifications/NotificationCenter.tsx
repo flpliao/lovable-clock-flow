@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, Check, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -19,11 +19,26 @@ const NotificationCenter: React.FC = () => {
     unreadCount, 
     markAsRead, 
     markAllAsRead,
-    clearNotifications 
+    clearNotifications,
+    refreshNotifications
   } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+
+  // Refresh notifications when component mounts or when returning from other pages
+  useEffect(() => {
+    refreshNotifications();
+  }, [location.pathname]);
+
+  // Set up an interval to periodically refresh notifications
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refreshNotifications();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [refreshNotifications]);
   
   const handleNotificationClick = (notification: Notification) => {
     console.log('Notification clicked:', notification);

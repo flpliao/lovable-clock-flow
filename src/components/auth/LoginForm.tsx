@@ -56,7 +56,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
         }
         
         const mockUserData = {
-          id: userFound.userId,
+          id: userFound.userId, // 使用正確的 UUID
           name: displayName,
           position: position,
           department: department,

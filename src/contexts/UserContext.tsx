@@ -29,26 +29,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [annualLeaveBalance, setAnnualLeaveBalance] = useState<AnnualLeaveBalance | null>(null);
 
   useEffect(() => {
-    // 使用正確的 UUID 格式初始化用戶
-    const mockUser: User = {
-      id: "550e8400-e29b-41d4-a716-446655440001", // 使用 UUID 格式
-      name: "廖俊雄",
-      position: "資深工程師",
-      department: "技術部",
-      onboard_date: "2023-01-15",
-      role: "admin"
-    };
-    setCurrentUser(mockUser);
-
-    // 初始化年假餘額
-    const mockBalance: AnnualLeaveBalance = {
-      id: "balance-1",
-      user_id: mockUser.id,
-      year: new Date().getFullYear(),
-      total_days: 14,
-      used_days: 3
-    };
-    setAnnualLeaveBalance(mockBalance);
+    // 登錄時才設置用戶，這裡不預設用戶
+    console.log('UserProvider initialized, no default user set');
   }, []);
 
   const isAdmin = () => {

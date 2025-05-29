@@ -22,7 +22,9 @@ export const useCheckIn = (userId: string) => {
   // 載入今日打卡記錄
   useEffect(() => {
     const loadTodayRecords = async () => {
-      if (userId) {
+      // 檢查 userId 是否為有效的 UUID 格式
+      if (userId && userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        console.log('Loading today records for valid UUID:', userId);
         const records = await getTodayCheckInRecords(userId);
         setTodayRecords(records);
 
@@ -32,6 +34,9 @@ export const useCheckIn = (userId: string) => {
         } else {
           setActionType('check-in');
         }
+      } else {
+        console.log('Invalid UUID or no userId provided:', userId);
+        setTodayRecords({});
       }
     };
 
@@ -39,6 +44,15 @@ export const useCheckIn = (userId: string) => {
   }, [userId, getTodayCheckInRecords]);
 
   const onLocationCheckIn = () => {
+    if (!userId || !userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      toast({
+        title: "打卡失敗",
+        description: "無效的用戶ID，請重新登入",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -81,6 +95,15 @@ export const useCheckIn = (userId: string) => {
   };
 
   const onIpCheckIn = () => {
+    if (!userId || !userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      toast({
+        title: "打卡失敗",
+        description: "無效的用戶ID，請重新登入",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     setError(null);
 

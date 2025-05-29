@@ -7,8 +7,8 @@ import { toast } from '@/hooks/use-toast';
 export const useNotificationActions = (
   currentUserId: string | null,
   notifications: Notification[],
-  setNotifications: (notifications: Notification[]) => void,
-  setUnreadCount: (count: number) => void,
+  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>,
+  setUnreadCount: React.Dispatch<React.SetStateAction<number>>,
   refreshNotifications: () => Promise<void>
 ) => {
   const markAsRead = async (id: string) => {

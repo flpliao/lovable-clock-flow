@@ -21,7 +21,8 @@ export class AnnouncementNotificationService {
       console.log('正在獲取所有員工列表（包含管理者）...');
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
-        .select('id, name, role');
+        .select('id, name, role')
+        .neq('id', 'null'); // 確保不包含空值
 
       if (staffError) {
         console.error('Error fetching staff for notifications:', staffError);
@@ -41,12 +42,24 @@ export class AnnouncementNotificationService {
 
       console.log(`找到 ${staffData.length} 位員工需要通知:`, staffData.map(s => `${s.name}(${s.id}) - ${s.role}`));
 
-      // 使用 create_notification 函數批量創建通知 - 包含所有人
+      // 驗證每個用戶ID是否有效並創建通知
       console.log('開始批量創建通知（包含管理者）...');
       const notificationPromises = staffData.map(async (staff) => {
         try {
           console.log(`為用戶 ${staff.name} (${staff.id}) - ${staff.role} 創建通知...`);
           
+          // 先驗證用戶ID是否存在於staff表中
+          const { data: userExists, error: checkError } = await supabase
+            .from('staff')
+            .select('id')
+            .eq('id', staff.id)
+            .single();
+
+          if (checkError || !userExists) {
+            console.error(`用戶 ${staff.name} (${staff.id}) 在staff表中不存在，跳過通知創建`);
+            return null;
+          }
+
           const { data: notificationId, error } = await supabase.rpc('create_notification', {
             p_user_id: staff.id,
             p_title: '新公告發布',

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Notification } from '@/components/notifications/NotificationItem';
 import { useUser } from '@/contexts/UserContext';
 import { NotificationDatabaseOperations } from '@/services/notifications';
@@ -13,7 +13,7 @@ export const useNotifications = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Load notifications from database
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     if (!currentUser) {
       console.log('No current user, clearing notifications');
       setNotifications([]);
@@ -38,7 +38,7 @@ export const useNotifications = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentUser]);
 
   // Load notifications when user changes
   useEffect(() => {
@@ -50,7 +50,7 @@ export const useNotifications = () => {
       setNotifications([]);
       setUnreadCount(0);
     }
-  }, [currentUser]);
+  }, [currentUser, loadNotifications]);
 
   // Set up real-time subscription for notifications
   useEffect(() => {
@@ -70,13 +70,12 @@ export const useNotifications = () => {
     );
 
     return cleanup;
-  }, [currentUser]);
+  }, [currentUser, loadNotifications]);
 
   // 監聽自定義通知更新事件
   useEffect(() => {
     const handleNotificationUpdate = (event: CustomEvent) => {
       console.log('收到通知更新事件:', event.detail);
-      // 立即重新載入通知
       loadNotifications();
     };
 
@@ -92,19 +91,7 @@ export const useNotifications = () => {
       window.removeEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
       window.removeEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
     };
-  }, [currentUser]);
-
-  // 定期重新載入通知（作為備用機制）
-  useEffect(() => {
-    if (!currentUser) return;
-
-    const interval = setInterval(() => {
-      console.log('定期刷新通知 (每30秒)');
-      loadNotifications();
-    }, 30000); // 每30秒刷新一次
-
-    return () => clearInterval(interval);
-  }, [currentUser]);
+  }, [loadNotifications]);
 
   // Get notification actions
   const actions = useNotificationActions(

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Bell, Check, X, TestTube } from 'lucide-react';
+import { Bell, Check, X, TestTube, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Popover,
@@ -29,30 +29,24 @@ const NotificationCenter: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  // Debug logging with more details
+  // Debug logging
   useEffect(() => {
     console.log('NotificationCenter render - notifications count:', notifications.length);
     console.log('NotificationCenter render - unreadCount:', unreadCount);
     console.log('NotificationCenter render - isLoading:', isLoading);
-    console.log('NotificationCenter render - notifications:', notifications);
   }, [notifications, unreadCount, isLoading]);
 
-  // Refresh notifications when component mounts or when returning from other pages
+  // Refresh notifications when location changes (但限制頻率)
   useEffect(() => {
-    console.log('NotificationCenter - refreshing notifications due to location change');
-    refreshNotifications();
-  }, [location.pathname, refreshNotifications]);
-
-  // Set up an interval to periodically refresh notifications
-  useEffect(() => {
-    const interval = setInterval(() => {
-      console.log('NotificationCenter - periodic refresh (every 15 seconds)');
+    const now = new Date();
+    if (now.getTime() - lastRefresh.getTime() > 5000) { // 限制5秒內只能刷新一次
+      console.log('NotificationCenter - refreshing notifications due to location change');
       refreshNotifications();
-    }, 15000); // Refresh every 15 seconds
-
-    return () => clearInterval(interval);
-  }, [refreshNotifications]);
+      setLastRefresh(now);
+    }
+  }, [location.pathname]);
   
   const handleNotificationClick = (notification: Notification) => {
     console.log('Notification clicked:', notification);
@@ -63,41 +57,42 @@ const NotificationCenter: React.FC = () => {
     if (notification.type === 'leave_approval' && notification.data?.leaveRequestId) {
       navigate(`/leave-approval/${notification.data.leaveRequestId}`);
     } else if (notification.type === 'leave_status' && notification.data?.leaveRequestId) {
-      // Navigate to leave request page to view status
       navigate('/leave-request');
     } else if (notification.type === 'announcement' || notification.type === 'system') {
-      console.log('Announcement notification clicked, forcing immediate refresh');
+      console.log('Announcement notification clicked, triggering refresh');
       
-      // Immediately dispatch refresh events
+      // 觸發公告頁面刷新事件
       window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
       window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
         detail: { type: 'refresh', source: 'notification_click' }
       }));
       
-      // Navigate to company announcements page and ensure refresh
-      if (location.pathname === '/company-announcements') {
-        console.log('Already on announcements page, forcing immediate refresh');
-        // Force multiple refresh events to ensure data is updated
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
-          window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
-            detail: { type: 'refresh', source: 'notification_refresh' }
-          }));
-        }, 50);
-      } else {
+      // Navigate to company announcements page
+      if (location.pathname !== '/company-announcements') {
         console.log('Navigating to announcements page');
         navigate('/company-announcements');
       }
     }
   };
 
-  // Force refresh when popover opens
+  // Force refresh when popover opens (但限制頻率)
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     if (newOpen) {
-      console.log('NotificationCenter - popover opened, refreshing notifications');
-      refreshNotifications();
+      const now = new Date();
+      if (now.getTime() - lastRefresh.getTime() > 3000) { // 限制3秒內只能刷新一次
+        console.log('NotificationCenter - popover opened, refreshing notifications');
+        refreshNotifications();
+        setLastRefresh(now);
+      }
     }
+  };
+
+  // 手動刷新功能
+  const handleManualRefresh = () => {
+    console.log('手動刷新通知');
+    refreshNotifications();
+    setLastRefresh(new Date());
   };
 
   // 測試通知創建功能
@@ -112,12 +107,11 @@ const NotificationCenter: React.FC = () => {
     
     if (success) {
       console.log('測試通知創建成功');
-      // 重新載入通知
+      // 延遲刷新以確保通知已創建
       setTimeout(() => {
         refreshNotifications();
+        setLastRefresh(new Date());
       }, 1000);
-    } else {
-      console.log('測試通知創建失敗');
     }
   };
   
@@ -137,6 +131,17 @@ const NotificationCenter: React.FC = () => {
         <div className="flex items-center justify-between border-b p-3">
           <h3 className="text-sm font-medium">通知 ({notifications.length})</h3>
           <div className="flex gap-1">
+            {/* 手動刷新按鈕 */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-xs"
+              onClick={handleManualRefresh}
+              disabled={isLoading}
+              title="手動刷新"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
             {/* 測試按鈕 */}
             <Button
               variant="ghost"
@@ -191,7 +196,7 @@ const NotificationCenter: React.FC = () => {
           </ScrollArea>
         )}
         <div className="border-t p-2 text-xs text-gray-500 text-center">
-          最後更新: {new Date().toLocaleTimeString()}
+          最後更新: {lastRefresh.toLocaleTimeString()}
         </div>
       </PopoverContent>
     </Popover>

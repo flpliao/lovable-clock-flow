@@ -81,7 +81,7 @@ export const useSupabaseAnnouncements = () => {
             console.error('通知創建失敗:', notificationError);
             toast({
               title: "公告已創建",
-              description: "公告已成功創建，但通知發送失敗，請檢查通知系統",
+              description: "公告已成功創建，但通知發送失敗",
               variant: "default"
             });
           }
@@ -162,6 +162,22 @@ export const useSupabaseAnnouncements = () => {
     if (!currentUser) return false;
     return await AnnouncementReadService.checkAnnouncementRead(announcementId, currentUser.id);
   };
+
+  // Listen for refresh events
+  useEffect(() => {
+    const handleRefresh = () => {
+      console.log('收到公告刷新事件');
+      loadAnnouncements();
+    };
+
+    window.addEventListener('refreshAnnouncements', handleRefresh);
+    window.addEventListener('announcementDataUpdated', handleRefresh);
+    
+    return () => {
+      window.removeEventListener('refreshAnnouncements', handleRefresh);
+      window.removeEventListener('announcementDataUpdated', handleRefresh);
+    };
+  }, []);
 
   // Initial load
   useEffect(() => {

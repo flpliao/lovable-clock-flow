@@ -8,7 +8,7 @@ import { useUser } from '@/contexts/UserContext';
 export const useStaffDataLoader = () => {
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [roles, setRoles] = useState<StaffRole[]>([]);
-  const [loading, setLoading] = useState(false); // 改為 false，避免初始載入
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { currentUser } = useUser();
 
@@ -30,7 +30,10 @@ export const useStaffDataLoader = () => {
 
       if (error) {
         console.error('載入員工資料錯誤:', error);
-        // 靜默處理錯誤，不顯示通知，避免在登錄頁面出現錯誤
+        // 靜默處理權限錯誤，避免在登錄頁面出現錯誤
+        if (error.message.includes('PGRST301') || error.message.includes('policy')) {
+          console.log('權限問題，可能用戶角色尚未設定');
+        }
         setStaffList([]);
         return;
       }

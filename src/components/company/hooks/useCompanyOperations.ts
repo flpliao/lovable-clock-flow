@@ -8,12 +8,20 @@ import { Company } from '@/types/company';
 export const useCompanyOperations = () => {
   const [company, setCompany] = useState<Company | null>(null);
   const { toast } = useToast();
-  const { isAdmin } = useUser();
+  const { isAdmin, currentUser } = useUser();
 
   // 載入公司資料
   const loadCompany = async () => {
     try {
       console.log('正在載入公司資料...');
+      
+      // 檢查用戶是否已登入
+      if (!currentUser?.id) {
+        console.log('用戶未登入，跳過載入公司資料');
+        setCompany(null);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('companies')
         .select('*')
@@ -29,11 +37,15 @@ export const useCompanyOperations = () => {
       setCompany(data);
     } catch (error) {
       console.error('載入公司資料失敗:', error);
-      toast({
-        title: "載入失敗",
-        description: "無法載入公司資料",
-        variant: "destructive"
-      });
+      // 靜默處理錯誤，如果是權限問題則不顯示錯誤訊息
+      if (error instanceof Error && !error.message.includes('PGRST301')) {
+        toast({
+          title: "載入失敗",
+          description: "無法載入公司資料",
+          variant: "destructive"
+        });
+      }
+      setCompany(null);
     }
   };
 
@@ -45,6 +57,15 @@ export const useCompanyOperations = () => {
       toast({
         title: "權限不足",
         description: "只有管理員可以編輯公司資料",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!currentUser?.id) {
+      toast({
+        title: "未登入",
+        description: "請先登入後再操作",
         variant: "destructive"
       });
       return false;
@@ -106,7 +127,11 @@ export const useCompanyOperations = () => {
       // 提供更詳細的錯誤訊息
       let errorMessage = "無法更新公司資料";
       if (error instanceof Error) {
-        errorMessage = `更新失敗: ${error.message}`;
+        if (error.message.includes('PGRST301') || error.message.includes('policy')) {
+          errorMessage = "權限不足，只有管理員可以更新公司資料";
+        } else {
+          errorMessage = `更新失敗: ${error.message}`;
+        }
       }
       
       toast({

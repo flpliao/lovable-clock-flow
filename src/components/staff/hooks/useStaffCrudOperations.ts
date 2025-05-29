@@ -9,7 +9,7 @@ export const useStaffCrudOperations = (
   setStaffList: (staffList: Staff[]) => void
 ) => {
   const { toast } = useToast();
-  const { isAdmin } = useUser();
+  const { isAdmin, currentUser } = useUser();
 
   // 新增員工
   const addStaff = async (newStaff: NewStaff) => {
@@ -17,6 +17,15 @@ export const useStaffCrudOperations = (
       toast({
         title: "權限不足",
         description: "只有管理員可以新增員工",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!currentUser?.id) {
+      toast({
+        title: "未登入",
+        description: "請先登入後再操作",
         variant: "destructive"
       });
       return false;
@@ -53,7 +62,12 @@ export const useStaffCrudOperations = (
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('PGRST301') || error.message.includes('policy')) {
+          throw new Error('權限不足，只有管理員可以新增員工');
+        }
+        throw error;
+      }
 
       setStaffList([...staffList, data]);
       toast({
@@ -63,9 +77,15 @@ export const useStaffCrudOperations = (
       return true;
     } catch (error) {
       console.error('新增員工失敗:', error);
+      
+      let errorMessage = "無法新增員工";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "新增失敗",
-        description: "無法新增員工",
+        description: errorMessage,
         variant: "destructive"
       });
       return false;
@@ -78,6 +98,15 @@ export const useStaffCrudOperations = (
       toast({
         title: "權限不足",
         description: "只有管理員可以編輯員工資料",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!currentUser?.id) {
+      toast({
+        title: "未登入",
+        description: "請先登入後再操作",
         variant: "destructive"
       });
       return false;
@@ -133,6 +162,9 @@ export const useStaffCrudOperations = (
 
       if (error) {
         console.error('Supabase 更新錯誤:', error);
+        if (error.message.includes('PGRST301') || error.message.includes('policy')) {
+          throw new Error('權限不足，只有管理員可以更新員工資料');
+        }
         throw error;
       }
 
@@ -163,7 +195,7 @@ export const useStaffCrudOperations = (
         } else if (error.message.includes('not null')) {
           errorMessage = "必填欄位不能為空";
         } else {
-          errorMessage = `更新失敗: ${error.message}`;
+          errorMessage = error.message;
         }
       }
       
@@ -187,13 +219,27 @@ export const useStaffCrudOperations = (
       return false;
     }
 
+    if (!currentUser?.id) {
+      toast({
+        title: "未登入",
+        description: "請先登入後再操作",
+        variant: "destructive"
+      });
+      return false;
+    }
+
     try {
       const { error } = await supabase
         .from('staff')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('PGRST301') || error.message.includes('policy')) {
+          throw new Error('權限不足，只有管理員可以刪除員工');
+        }
+        throw error;
+      }
 
       setStaffList(staffList.filter(staff => staff.id !== id));
       toast({
@@ -203,9 +249,15 @@ export const useStaffCrudOperations = (
       return true;
     } catch (error) {
       console.error('刪除員工失敗:', error);
+      
+      let errorMessage = "無法刪除員工";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "刪除失敗",
-        description: "無法刪除員工",
+        description: errorMessage,
         variant: "destructive"
       });
       return false;

@@ -687,6 +687,18 @@ export type Database = {
         Args: { hire_date: string; target_year: number }
         Returns: number
       }
+      create_notification: {
+        Args: {
+          p_user_id: string
+          p_title: string
+          p_message: string
+          p_type?: string
+          p_announcement_id?: string
+          p_leave_request_id?: string
+          p_action_required?: boolean
+        }
+        Returns: string
+      }
       get_announcement_read_stats: {
         Args: { announcement_uuid: string }
         Returns: {

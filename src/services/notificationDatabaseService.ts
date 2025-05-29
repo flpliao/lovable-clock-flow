@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/components/notifications/NotificationItem';
 
@@ -46,7 +47,7 @@ export class NotificationDatabaseService {
   }
 
   /**
-   * Add a new notification
+   * Add a new notification using the database function
    */
   static async addNotification(
     userId: string, 
@@ -55,33 +56,24 @@ export class NotificationDatabaseService {
     try {
       console.log('Adding notification for user:', userId, 'notification:', notification);
       
-      const notificationData = {
-        user_id: userId,
-        title: notification.title || '新通知',
-        message: notification.message || '',
-        type: notification.type || 'system',
-        announcement_id: notification.data?.announcementId || null,
-        leave_request_id: notification.data?.leaveRequestId || null,
-        action_required: notification.data?.actionRequired || false,
-        is_read: false,
-        created_at: new Date().toISOString()
-      };
-
-      console.log('Inserting notification data:', notificationData);
-      
-      const { data, error } = await supabase
-        .from('notifications')
-        .insert(notificationData)
-        .select()
-        .single();
+      // Use the database function to create notification
+      const { data, error } = await supabase.rpc('create_notification', {
+        p_user_id: userId,
+        p_title: notification.title || '新通知',
+        p_message: notification.message || '',
+        p_type: notification.type || 'system',
+        p_announcement_id: notification.data?.announcementId || null,
+        p_leave_request_id: notification.data?.leaveRequestId || null,
+        p_action_required: notification.data?.actionRequired || false
+      });
 
       if (error) {
-        console.error('Notification insert failed:', error);
+        console.error('Notification creation failed:', error);
         return '';
       }
 
-      console.log('Notification added successfully:', data);
-      return data?.id || '';
+      console.log('Notification created successfully with ID:', data);
+      return data || '';
     } catch (error) {
       console.error('Error adding notification:', error);
       return '';
@@ -166,7 +158,7 @@ export class NotificationDatabaseService {
   }
 
   /**
-   * 批量創建通知 - 改進版本
+   * 批量創建通知 - 使用數據庫函數
    */
   static async createBulkNotifications(
     userIds: string[],
@@ -180,7 +172,7 @@ export class NotificationDatabaseService {
         return true;
       }
 
-      // 嘗試逐個創建通知，確保每個都能成功
+      // 使用數據庫函數逐個創建通知
       let successCount = 0;
       
       for (const userId of userIds) {
@@ -231,7 +223,7 @@ export class NotificationDatabaseService {
 
       console.log('Read test passed:', readTest);
 
-      // 測試寫入權限
+      // 測試寫入權限 - 使用數據庫函數
       const testNotificationId = await this.addNotification(userId, {
         title: '測試通知',
         message: '這是一個測試通知',

@@ -18,7 +18,18 @@ const EditCompanyDialog = () => {
     handleUpdateCompany
   } = useCompanyManagementContext();
 
-  const [editedCompany, setEditedCompany] = useState<Company | null>(null);
+  const [editedCompany, setEditedCompany] = useState<Partial<Company>>({
+    name: '',
+    registration_number: '',
+    legal_representative: '',
+    business_type: '',
+    address: '',
+    phone: '',
+    email: '',
+    website: '',
+    established_date: '',
+    capital: null
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { isAdmin } = useUser();
@@ -27,15 +38,27 @@ const EditCompanyDialog = () => {
   const hasPermission = isAdmin();
 
   useEffect(() => {
-    if (company && isEditCompanyDialogOpen) {
-      console.log('設定編輯的公司資料:', company);
-      setEditedCompany({ ...company });
+    if (isEditCompanyDialogOpen) {
+      if (company) {
+        console.log('編輯現有公司資料:', company);
+        setEditedCompany({ ...company });
+      } else {
+        console.log('新建公司資料');
+        setEditedCompany({
+          name: '',
+          registration_number: '',
+          legal_representative: '',
+          business_type: '',
+          address: '',
+          phone: '',
+          email: '',
+          website: '',
+          established_date: '',
+          capital: null
+        });
+      }
     }
   }, [company, isEditCompanyDialogOpen]);
-
-  if (!editedCompany) {
-    return null;
-  }
 
   const validateForm = () => {
     const requiredFields = [
@@ -61,7 +84,7 @@ const EditCompanyDialog = () => {
     }
 
     // 驗證統一編號格式 (台灣統一編號為8位數字)
-    const registrationNumber = editedCompany.registration_number.trim();
+    const registrationNumber = (editedCompany.registration_number || '').trim();
     if (!/^\d{8}$/.test(registrationNumber)) {
       toast({
         title: "格式錯誤",
@@ -73,7 +96,7 @@ const EditCompanyDialog = () => {
 
     // 驗證電子郵件格式
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(editedCompany.email)) {
+    if (!emailRegex.test(editedCompany.email || '')) {
       toast({
         title: "格式錯誤",
         description: "請輸入有效的電子郵件地址",
@@ -102,13 +125,25 @@ const EditCompanyDialog = () => {
     }
 
     setIsSubmitting(true);
-    console.log('提交公司資料更新:', editedCompany);
+    console.log('提交公司資料:', editedCompany);
 
     try {
-      const success = await handleUpdateCompany(editedCompany);
+      // 如果是新建公司，需要提供 id
+      const companyData = company ? editedCompany as Company : {
+        ...editedCompany,
+        id: crypto.randomUUID(), // 為新公司生成 ID
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      } as Company;
+
+      const success = await handleUpdateCompany(companyData);
       if (success) {
         console.log('公司資料更新成功');
         setIsEditCompanyDialogOpen(false);
+        toast({
+          title: company ? "更新成功" : "建立成功",
+          description: company ? "已成功更新公司基本資料" : "已成功建立公司基本資料"
+        });
       }
     } catch (error) {
       console.error('提交更新時發生錯誤:', error);
@@ -126,7 +161,7 @@ const EditCompanyDialog = () => {
     <Dialog open={isEditCompanyDialogOpen} onOpenChange={setIsEditCompanyDialogOpen}>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>編輯公司基本資料</DialogTitle>
+          <DialogTitle>{company ? '編輯公司基本資料' : '建立公司基本資料'}</DialogTitle>
         </DialogHeader>
         
         {!hasPermission && (

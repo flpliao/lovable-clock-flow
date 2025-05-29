@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Building2, Edit, MapPin, Phone, Mail } from 'lucide-react';
@@ -10,6 +10,8 @@ const CompanyInfoCard = () => {
   const { company, setIsEditCompanyDialogOpen } = useCompanyManagementContext();
   const { isAdmin } = useUser();
 
+  console.log('CompanyInfoCard - company:', company);
+
   if (!company) {
     return (
       <Card>
@@ -18,8 +20,22 @@ const CompanyInfoCard = () => {
             <Building2 className="h-6 w-6 mr-2" />
             公司基本資料
           </CardTitle>
-          <CardDescription>載入中...</CardDescription>
+          <CardDescription>尚未設定公司基本資料</CardDescription>
         </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-gray-500 mb-4">系統中尚未設定公司基本資料</p>
+            {isAdmin() && (
+              <Button 
+                onClick={() => setIsEditCompanyDialogOpen(true)}
+                className="flex items-center mx-auto"
+              >
+                <Building2 className="h-4 w-4 mr-2" />
+                設定公司資料
+              </Button>
+            )}
+          </div>
+        </CardContent>
       </Card>
     );
   }
@@ -63,6 +79,18 @@ const CompanyInfoCard = () => {
                 <span className="font-medium w-20">法定代表:</span>
                 <span>{company.legal_representative}</span>
               </div>
+              {company.established_date && (
+                <div className="flex items-center">
+                  <span className="font-medium w-20">成立日期:</span>
+                  <span>{company.established_date}</span>
+                </div>
+              )}
+              {company.capital && (
+                <div className="flex items-center">
+                  <span className="font-medium w-20">資本額:</span>
+                  <span>{company.capital.toLocaleString()} 元</span>
+                </div>
+              )}
             </div>
           </div>
           <div className="space-y-2 text-sm">
@@ -78,6 +106,19 @@ const CompanyInfoCard = () => {
               <Mail className="h-4 w-4 mr-2 flex-shrink-0" />
               <span>{company.email}</span>
             </div>
+            {company.website && (
+              <div className="flex items-center">
+                <span className="font-medium w-12">網站:</span>
+                <a 
+                  href={company.website} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  {company.website}
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>

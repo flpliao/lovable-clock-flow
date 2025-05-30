@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import Header from '@/components/Header';
 import { useUser } from '@/contexts/UserContext';
 import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,8 +21,6 @@ const CompanyBranchManagement = () => {
     <StaffManagementProvider>
       <CompanyManagementProvider>
         <div className="flex flex-col min-h-screen bg-white">
-          <Header notificationCount={0} />
-          
           <main className="flex-1 p-6">
             <div className="mb-6">
               <h1 className="text-2xl font-bold flex items-center">

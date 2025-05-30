@@ -1,60 +1,50 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Company } from '@/types/company';
 
 export class CompanyApiService {
+  // 載入公司資料 - 改為載入第一個可用的公司
   static async loadCompany(): Promise<Company | null> {
     console.log('🔍 CompanyApiService: 開始從資料庫查詢公司資料...');
     
     try {
-      // 直接查詢指定ID的公司資料
-      const companyId = '550e8400-e29b-41d4-a716-446655440000';
-      console.log('🎯 CompanyApiService: 載入指定ID的公司資料:', companyId);
+      // 先嘗試查詢指定ID的公司資料
+      const specificCompanyId = '550e8400-e29b-41d4-a716-446655440000';
+      console.log('🎯 CompanyApiService: 優先載入指定ID的公司資料:', specificCompanyId);
       
-      const { data, error } = await supabase
+      const { data: specificCompany, error: specificError } = await supabase
         .from('companies')
         .select('*')
-        .eq('id', companyId)
+        .eq('id', specificCompanyId)
         .maybeSingle();
 
-      if (error) {
-        console.error('❌ CompanyApiService: 查詢公司資料錯誤:', error);
-        
-        // 檢查是否為權限問題
-        if (error.message.includes('policy') || error.message.includes('RLS')) {
-          console.log('⚠️ CompanyApiService: 遇到 RLS 權限問題，但繼續運作');
-          // 不拋出錯誤，而是返回 null，讓前端知道沒有資料
-          return null;
-        }
-        
-        throw error;
+      if (!specificError && specificCompany) {
+        console.log('✅ CompanyApiService: 成功載入指定ID的公司資料:', specificCompany);
+        return specificCompany as Company;
+      }
+
+      // 如果指定ID不存在，載入第一個可用的公司
+      console.log('🔄 CompanyApiService: 指定ID不存在，載入第一個可用的公司...');
+      const { data: firstCompany, error: firstError } = await supabase
+        .from('companies')
+        .select('*')
+        .limit(1)
+        .maybeSingle();
+
+      if (firstError) {
+        console.error('❌ CompanyApiService: 查詢公司資料錯誤:', firstError);
+        return null;
       }
       
-      if (data) {
-        console.log('✅ CompanyApiService: 成功從資料庫載入指定公司資料:', data);
-        // 確保資料格式正確
-        return {
-          ...data,
-          created_at: data.created_at,
-          updated_at: data.updated_at
-        } as Company;
+      if (firstCompany) {
+        console.log('✅ CompanyApiService: 成功載入第一個公司資料:', firstCompany);
+        return firstCompany as Company;
       } else {
-        console.log('⚠️ CompanyApiService: 指定ID的公司資料不存在');
+        console.log('⚠️ CompanyApiService: 資料庫中沒有任何公司資料');
         return null;
       }
     } catch (error) {
       console.error('💥 CompanyApiService: 載入公司資料時發生錯誤:', error);
-      
-      // 根據錯誤類型提供不同的處理
-      if (error instanceof Error) {
-        if (error.message.includes('Failed to fetch') || error.message.includes('network')) {
-          throw new Error('網路連接問題，請檢查網路狀態');
-        } else if (error.message.includes('policy') || error.message.includes('RLS')) {
-          throw new Error('資料庫權限設定問題，請聯繫管理員');
-        }
-      }
-      
-      throw error; // 重新拋出錯誤，讓前端能正確處理
+      return null;
     }
   }
 
@@ -112,7 +102,7 @@ export class CompanyApiService {
     return data as Company;
   }
 
-  // 監聽公司資料變更的方法
+  // 改善即時監聽功能
   static subscribeToCompanyChanges(callback: (company: Company | null) => void) {
     console.log('👂 CompanyApiService: 開始監聽公司資料變更...');
     
@@ -141,7 +131,6 @@ export class CompanyApiService {
       return channel;
     } catch (error) {
       console.error('❌ CompanyApiService: 設定即時監聽失敗:', error);
-      // 返回一個空的 channel 物件以避免錯誤
       return {
         unsubscribe: () => console.log('空的 channel，無需取消訂閱')
       };

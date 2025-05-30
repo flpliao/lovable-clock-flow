@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -18,15 +17,25 @@ const BranchTable = () => {
   const { staffList } = useStaffManagementContext();
   const { currentUser } = useUser();
 
-  // 允許廖俊雄和管理員進行編輯和刪除操作
   const canManageBranches = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
 
+  // 安全地取得營業處員工數量，避免 RLS 錯誤
   const getBranchStaffCount = (branchId: string) => {
-    return staffList.filter(staff => staff.branch_id === branchId).length;
+    try {
+      return staffList.filter(staff => staff.branch_id === branchId).length;
+    } catch (error) {
+      console.log('⚠️ BranchTable: 無法取得員工數量，可能是 RLS 限制:', error);
+      return 0;
+    }
   };
 
   const getBranchStaffList = (branchId: string) => {
-    return staffList.filter(staff => staff.branch_id === branchId);
+    try {
+      return staffList.filter(staff => staff.branch_id === branchId);
+    } catch (error) {
+      console.log('⚠️ BranchTable: 無法取得員工列表，可能是 RLS 限制:', error);
+      return [];
+    }
   };
 
   const getTypeLabel = (type: string) => {
@@ -99,11 +108,14 @@ const BranchTable = () => {
                     <TableCell>
                       <div className="flex flex-col">
                         <span className="font-medium">{staffCount} 人</span>
-                        {staffCount > 0 && (
+                        {staffCount > 0 && branchStaff.length > 0 && (
                           <div className="text-xs text-gray-500 mt-1">
                             {branchStaff.slice(0, 2).map(staff => staff.name).join(', ')}
                             {staffCount > 2 && `等 ${staffCount} 人`}
                           </div>
+                        )}
+                        {staffCount === 0 && (
+                          <span className="text-xs text-gray-400">尚無員工</span>
                         )}
                       </div>
                     </TableCell>

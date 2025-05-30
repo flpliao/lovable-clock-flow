@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
@@ -10,41 +9,44 @@ export const useBranchOperations = (company: Company | null) => {
   const { toast } = useToast();
   const { currentUser } = useUser();
 
-  // 載入營業處資料
+  // 載入營業處資料 - 改善錯誤處理
   const loadBranches = async () => {
     try {
-      console.log('正在載入營業處資料...');
-      const { data, error } = await supabase
-        .from('branches')
-        .select('*')
-        .order('created_at', { ascending: true });
+      console.log('🏢 useBranchOperations: 正在載入營業處資料...');
+      
+      let query = supabase.from('branches').select('*');
+      
+      // 如果有公司資料，按公司ID篩選
+      if (company?.id) {
+        query = query.eq('company_id', company.id);
+        console.log('🔍 useBranchOperations: 按公司ID篩選:', company.id);
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: true });
 
       if (error) {
-        console.log('載入營業處資料錯誤:', error);
-        // 忽略錯誤，使用空陣列
+        console.log('⚠️ useBranchOperations: 載入營業處資料錯誤，使用空陣列:', error);
         setBranches([]);
         return;
       }
       
-      // 確保 type 欄位符合 TypeScript 類型
       const formattedBranches = data?.map(branch => ({
         ...branch,
         type: branch.type as 'headquarters' | 'branch' | 'store'
       })) || [];
       
-      console.log('載入的營業處資料:', formattedBranches);
+      console.log('✅ useBranchOperations: 載入的營業處資料:', formattedBranches);
       setBranches(formattedBranches);
     } catch (error) {
-      console.error('載入營業處資料失敗:', error);
+      console.error('❌ useBranchOperations: 載入營業處資料失敗:', error);
       setBranches([]);
     }
   };
 
-  // 新增營業處
+  // 新增營業處 - 改善公司ID處理
   const addBranch = async (newBranch: NewBranch) => {
-    console.log('新增營業處請求，當前用戶:', currentUser?.name);
+    console.log('➕ useBranchOperations: 新增營業處請求，當前用戶:', currentUser?.name);
     
-    // 允許廖俊雄和管理員新增營業處
     const canAdd = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
     if (!canAdd) {
       toast({
@@ -65,7 +67,7 @@ export const useBranchOperations = (company: Company | null) => {
     }
 
     try {
-      console.log('準備新增營業處:', newBranch);
+      console.log('🔍 useBranchOperations: 準備新增營業處:', newBranch);
       
       // 檢查代碼是否重複
       const { data: existingBranch } = await supabase
@@ -83,9 +85,12 @@ export const useBranchOperations = (company: Company | null) => {
         return false;
       }
 
+      // 使用當前公司ID或預設ID
+      const companyId = company?.id || '550e8400-e29b-41d4-a716-446655440000';
+      
       const branchData = {
         ...newBranch,
-        company_id: company?.id || '550e8400-e29b-41d4-a716-446655440000',
+        company_id: companyId,
         is_active: true,
         staff_count: 0
       };
@@ -97,24 +102,15 @@ export const useBranchOperations = (company: Company | null) => {
         .single();
 
       if (error) {
-        console.error('新增營業處 Supabase 錯誤:', error);
-        // 即使 Supabase 錯誤，也返回成功讓用戶可以繼續操作
-        const mockBranch: Branch = {
-          id: crypto.randomUUID(),
-          ...branchData,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        
-        setBranches(prev => [...prev, mockBranch]);
+        console.error('❌ useBranchOperations: 新增營業處 Supabase 錯誤:', error);
         toast({
-          title: "新增成功",
-          description: `已成功新增營業處「${newBranch.name}」`
+          title: "新增失敗",
+          description: "無法新增營業處到資料庫，請稍後再試",
+          variant: "destructive"
         });
-        return true;
+        return false;
       }
 
-      // 確保新增的 branch 有正確的 type
       const formattedBranch = {
         ...data,
         type: data.type as 'headquarters' | 'branch' | 'store'
@@ -127,7 +123,7 @@ export const useBranchOperations = (company: Company | null) => {
       });
       return true;
     } catch (error) {
-      console.error('新增營業處失敗:', error);
+      console.error('❌ useBranchOperations: 新增營業處失敗:', error);
       toast({
         title: "新增失敗",
         description: "無法新增營業處，請稍後再試",

@@ -1,90 +1,75 @@
 
-import React from 'react';
-import { useCompanySyncManager } from './hooks/useCompanySyncManager';
-import { useCompanyManagementContext } from './CompanyManagementContext';
-import { useUser } from '@/contexts/UserContext';
-import { CompanySyncCard } from './components/CompanySyncCard';
-import BranchTable from './BranchTable';
-import { CompanyDialogs } from './components/CompanyDialogs';
-import AddBranchDialog from './AddBranchDialog';
-import { ConnectionDiagnostics } from './diagnostics/ConnectionDiagnostics';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info, Building2, Settings } from 'lucide-react';
+import { useSupabaseCompanyOperations } from './hooks/useSupabaseCompanyOperations';
+import { CompanyInfoCard } from './CompanyInfoCard';
+import { BranchTable } from './BranchTable';
+import { ComprehensiveDiagnostics } from './diagnostics/ComprehensiveDiagnostics';
 
-const CompanyManagementRedesigned: React.FC = () => {
+const CompanyManagementRedesigned = () => {
+  const [activeTab, setActiveTab] = useState('overview');
   const {
     company,
+    branches,
     loading,
-    loadCompany,
-    syncCompany,
-    updateCompany
-  } = useCompanySyncManager();
-
-  const { 
-    setIsEditCompanyDialogOpen,
-    handleUpdateCompany
-  } = useCompanyManagementContext();
-
-  const { currentUser, isAdmin } = useUser();
-
-  // 權限檢查：允許廖俊雄和管理員編輯
-  const canEdit = currentUser?.name === '廖俊雄' || isAdmin();
-
-  // 初始化時載入公司資料
-  React.useEffect(() => {
-    console.log('🚀 CompanyManagementRedesigned: 初始化載入公司資料');
-    loadCompany();
-  }, [loadCompany]);
-
-  // 處理編輯公司
-  const handleEditCompany = () => {
-    setIsEditCompanyDialogOpen(true);
-  };
-
-  // 更新公司管理上下文
-  React.useEffect(() => {
-    if (company) {
-      console.log('📋 CompanyManagementRedesigned: 公司資料已更新:', company.name);
-    }
-  }, [company]);
+    updateCompany,
+    addBranch,
+    updateBranch,
+    deleteBranch,
+    refreshData
+  } = useSupabaseCompanyOperations();
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="management" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="management">公司資料管理</TabsTrigger>
-          <TabsTrigger value="diagnostics">連線診斷</TabsTrigger>
+      <Alert className="bg-green-50 border-green-200">
+        <Info className="h-4 w-4 text-green-500" />
+        <AlertDescription className="text-green-700">
+          重新設計的公司管理系統，提供更可靠的資料同步和安全性診斷功能
+        </AlertDescription>
+      </Alert>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview" className="flex items-center">
+            <Building2 className="h-4 w-4 mr-2" />
+            公司總覽
+          </TabsTrigger>
+          <TabsTrigger value="branches" className="flex items-center">
+            <Building2 className="h-4 w-4 mr-2" />
+            營業處管理
+          </TabsTrigger>
+          <TabsTrigger value="diagnostics" className="flex items-center">
+            <Settings className="h-4 w-4 mr-2" />
+            系統診斷
+          </TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="management" className="space-y-6">
-          {/* 公司同步管理卡片 */}
-          <CompanySyncCard
+
+        <TabsContent value="overview" className="space-y-6">
+          <CompanyInfoCard
             company={company}
             loading={loading}
-            onLoadCompany={loadCompany}
-            onSyncCompany={syncCompany}
-            onEditCompany={handleEditCompany}
-            canEdit={canEdit}
+            onUpdate={updateCompany}
+            onRefresh={refreshData}
           />
-
-          {/* 分支機構管理 */}
-          {company && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">營業處管理</h2>
-                {canEdit && <AddBranchDialog />}
-              </div>
-              <BranchTable />
-            </div>
-          )}
         </TabsContent>
-        
-        <TabsContent value="diagnostics">
-          <ConnectionDiagnostics />
+
+        <TabsContent value="branches" className="space-y-6">
+          <BranchTable
+            branches={branches}
+            loading={loading}
+            onAdd={addBranch}
+            onUpdate={updateBranch}
+            onDelete={deleteBranch}
+            onRefresh={refreshData}
+          />
+        </TabsContent>
+
+        <TabsContent value="diagnostics" className="space-y-6">
+          <ComprehensiveDiagnostics />
         </TabsContent>
       </Tabs>
-
-      {/* 對話框 */}
-      <CompanyDialogs />
     </div>
   );
 };

@@ -1,22 +1,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar } from '@/components/ui/calendar';
-import { ChevronLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { useUser } from '@/contexts/UserContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CheckInHistory from '@/components/CheckInHistory';
+import AttendancePageHeader from '@/components/attendance/AttendancePageHeader';
+import AttendanceCalendarView from '@/components/attendance/AttendanceCalendarView';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 import { CheckInRecord } from '@/types';
-import { formatTime } from '@/utils/checkInUtils';
 
 const PersonalAttendance = () => {
   const navigate = useNavigate();
   const { currentUser } = useUser();
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [activeTab, setActiveTab] = useState('history'); // 預設為打卡歷史
+  const [activeTab, setActiveTab] = useState('history');
   const [selectedDateRecords, setSelectedDateRecords] = useState<{
     checkIn?: CheckInRecord;
     checkOut?: CheckInRecord;
@@ -67,16 +66,6 @@ const PersonalAttendance = () => {
       refreshData();
     }
   }, [activeTab, currentUser?.id, refreshData]);
-
-  // 計算當日記錄數量
-  const getDayRecordsCount = () => {
-    if (!date) return 0;
-    const selectedDateStr = format(date, 'yyyy-MM-dd');
-    return checkInRecords.filter(record => {
-      const recordDate = format(new Date(record.timestamp), 'yyyy-MM-dd');
-      return recordDate === selectedDateStr && record.status === 'success';
-    }).length;
-  };
   
   if (!currentUser) {
     return (
@@ -98,16 +87,7 @@ const PersonalAttendance = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto py-6 px-4">
         <div className="flex flex-col gap-6">
-          {/* Header with back button */}
-          <div className="flex items-center gap-2 mb-4">
-            <button 
-              onClick={() => navigate('/')}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <ChevronLeft className="h-8 w-8" />
-            </button>
-            <h1 className="text-3xl font-bold text-gray-800">個人出勤</h1>
-          </div>
+          <AttendancePageHeader />
           
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="w-full sm:w-auto mb-6">
@@ -132,93 +112,12 @@ const PersonalAttendance = () => {
                   <CardTitle>月曆視圖</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-col md:flex-row gap-6">
-                    <div className="md:w-1/2">
-                      <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={setDate}
-                        className="mx-auto"
-                        captionLayout="buttons"
-                        formatters={{
-                          formatCaption: (date, options) => {
-                            return format(date, 'MMMM yyyy');
-                          },
-                        }}
-                      />
-                    </div>
-                    
-                    <div className="md:w-1/2">
-                      {date && (
-                        <div className="border rounded-lg p-4">
-                          <h3 className="font-medium text-lg mb-4">
-                            {format(date, 'yyyy年MM月dd日')} 出勤記錄
-                          </h3>
-                          
-                          <div className="mb-2 text-sm text-gray-500">
-                            打卡記錄總數: {getDayRecordsCount()}
-                          </div>
-                          
-                          {selectedDateRecords.checkIn || selectedDateRecords.checkOut ? (
-                            <div className="space-y-3">
-                              {selectedDateRecords.checkIn && (
-                                <div className="text-gray-700">
-                                  <p className="flex justify-between">
-                                    <span>上班時間:</span>
-                                    <span className="font-medium text-green-600">
-                                      {formatTime(selectedDateRecords.checkIn.timestamp)}
-                                    </span>
-                                  </p>
-                                  <p className="text-sm text-gray-500 mt-1">
-                                    {selectedDateRecords.checkIn.type === 'location' 
-                                      ? `位置打卡 - ${selectedDateRecords.checkIn.details.locationName}` 
-                                      : `IP打卡 - ${selectedDateRecords.checkIn.details.ip}`
-                                    }
-                                  </p>
-                                </div>
-                              )}
-                              
-                              {selectedDateRecords.checkOut && (
-                                <div className="text-gray-700">
-                                  <p className="flex justify-between">
-                                    <span>下班時間:</span>
-                                    <span className="font-medium text-blue-600">
-                                      {formatTime(selectedDateRecords.checkOut.timestamp)}
-                                    </span>
-                                  </p>
-                                  <p className="text-sm text-gray-500 mt-1">
-                                    {selectedDateRecords.checkOut.type === 'location' 
-                                      ? `位置打卡 - ${selectedDateRecords.checkOut.details.locationName}` 
-                                      : `IP打卡 - ${selectedDateRecords.checkOut.details.ip}`
-                                    }
-                                  </p>
-                                </div>
-                              )}
-                              
-                              <div className="pt-2 border-t">
-                                <p className="flex justify-between">
-                                  <span>狀態:</span>
-                                  <span className="font-medium text-green-600">
-                                    {selectedDateRecords.checkIn && selectedDateRecords.checkOut 
-                                      ? '正常' 
-                                      : selectedDateRecords.checkIn 
-                                        ? '未打下班卡' 
-                                        : '僅下班打卡'
-                                    }
-                                  </span>
-                                </p>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="text-gray-500 text-center py-8">
-                              <p>此日期無打卡記錄</p>
-                              <p className="text-sm mt-1">選擇的日期: {format(date, 'yyyy-MM-dd')}</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <AttendanceCalendarView
+                    date={date}
+                    setDate={setDate}
+                    selectedDateRecords={selectedDateRecords}
+                    checkInRecords={checkInRecords}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>

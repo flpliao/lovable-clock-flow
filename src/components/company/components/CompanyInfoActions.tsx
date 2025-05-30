@@ -21,13 +21,32 @@ export const CompanyInfoActions: React.FC<CompanyInfoActionsProps> = ({
   onForceReload,
   onForceSyncFromBackend
 }) => {
+  const handleEditClick = () => {
+    console.log('🖊️ CompanyInfoActions: 編輯按鈕被點擊');
+    console.log('🖊️ 權限檢查:', { canEdit, company: company?.name });
+    
+    if (!canEdit) {
+      console.warn('⚠️ 用戶沒有編輯權限');
+      return;
+    }
+    
+    if (!company) {
+      console.warn('⚠️ 沒有公司資料可以編輯');
+      return;
+    }
+    
+    console.log('✅ 呼叫編輯功能');
+    onEdit();
+  };
+
   return (
     <div className="flex gap-2 flex-wrap">
       {canEdit && (
         <Button
-          onClick={onEdit}
+          onClick={handleEditClick}
           size="sm"
           className="flex-1 sm:flex-none"
+          type="button"
         >
           {company ? (
             <>

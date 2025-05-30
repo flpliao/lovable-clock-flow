@@ -19,6 +19,7 @@ const CompanyInfoCard = () => {
   console.log('CompanyInfoCard - 當前用戶:', currentUser?.name);
   console.log('CompanyInfoCard - 公司資料載入狀態:', { company: company?.name, loading });
   console.log('CompanyInfoCard - 編輯對話框狀態檢查');
+  console.log('CompanyInfoCard - Context setIsEditCompanyDialogOpen:', typeof setIsEditCompanyDialogOpen);
 
   // 允許廖俊雄和管理員編輯公司資料
   const canEdit = currentUser?.name === '廖俊雄' || isAdmin();
@@ -42,13 +43,26 @@ const CompanyInfoCard = () => {
     console.log('🖊️ CompanyInfoCard: 開啟編輯公司資料對話框');
     console.log('🖊️ 當前公司資料:', company);
     console.log('🖊️ 用戶權限:', { canEdit, userName: currentUser?.name });
+    console.log('🖊️ setIsEditCompanyDialogOpen 函數:', setIsEditCompanyDialogOpen);
     
     if (!canEdit) {
       console.warn('⚠️ 用戶沒有編輯權限');
       return;
     }
+
+    if (!company) {
+      console.warn('⚠️ 沒有公司資料可以編輯');
+      return;
+    }
+
+    if (typeof setIsEditCompanyDialogOpen !== 'function') {
+      console.error('❌ setIsEditCompanyDialogOpen 不是一個函數');
+      return;
+    }
     
+    console.log('✅ 正在開啟編輯對話框...');
     setIsEditCompanyDialogOpen(true);
+    console.log('✅ 編輯對話框已設定為開啟狀態');
   };
 
   // 如果正在載入

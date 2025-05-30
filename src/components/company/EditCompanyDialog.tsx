@@ -39,8 +39,17 @@ const EditCompanyDialog = () => {
   // 允許廖俊雄和管理員操作
   const hasPermission = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
 
+  console.log('EditCompanyDialog - 對話框狀態:', { 
+    isEditCompanyDialogOpen, 
+    hasPermission, 
+    userName: currentUser?.name,
+    companyName: company?.name 
+  });
+
   // 當對話框開啟時，初始化表單資料
   useEffect(() => {
+    console.log('EditCompanyDialog - useEffect 觸發:', { isEditCompanyDialogOpen, company });
+    
     if (isEditCompanyDialogOpen && company) {
       console.log('📝 EditCompanyDialog: 初始化編輯表單，公司資料:', company);
       setEditedCompany({
@@ -208,6 +217,12 @@ const EditCompanyDialog = () => {
       });
     }
   };
+
+  console.log('EditCompanyDialog - 渲染狀態:', { 
+    isEditCompanyDialogOpen,
+    hasPermission,
+    companyExists: !!company
+  });
 
   return (
     <Dialog open={isEditCompanyDialogOpen} onOpenChange={handleClose}>

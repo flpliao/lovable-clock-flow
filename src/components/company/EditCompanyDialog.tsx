@@ -1,14 +1,16 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { Company } from '@/types/company';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
+import { CompanyFormValidation } from './forms/CompanyFormValidation';
+import { useCompanyFormData } from './forms/useCompanyFormData';
+import CompanyBasicFields from './forms/CompanyBasicFields';
+import CompanyContactFields from './forms/CompanyContactFields';
+import CompanyOptionalFields from './forms/CompanyOptionalFields';
+import CompanyFormActions from './forms/CompanyFormActions';
 
 const EditCompanyDialog = () => {
   const {
@@ -18,120 +20,17 @@ const EditCompanyDialog = () => {
     handleUpdateCompany
   } = useCompanyManagementContext();
 
-  const [editedCompany, setEditedCompany] = useState<Partial<Company>>({
-    name: '',
-    registration_number: '',
-    legal_representative: '',
-    business_type: '',
-    address: '',
-    phone: '',
-    email: '',
-    website: '',
-    established_date: '',
-    capital: null
-  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { isAdmin } = useUser();
-
-  // 檢查權限
   const hasPermission = isAdmin();
 
-  useEffect(() => {
-    if (isEditCompanyDialogOpen) {
-      if (company) {
-        console.log('編輯現有公司資料:', company);
-        setEditedCompany({
-          name: company.name || '',
-          registration_number: company.registration_number || '',
-          legal_representative: company.legal_representative || '',
-          business_type: company.business_type || '',
-          address: company.address || '',
-          phone: company.phone || '',
-          email: company.email || '',
-          website: company.website || '',
-          established_date: company.established_date || '',
-          capital: company.capital || null
-        });
-      } else {
-        console.log('新建公司資料');
-        setEditedCompany({
-          name: '',
-          registration_number: '',
-          legal_representative: '',
-          business_type: '',
-          address: '',
-          phone: '',
-          email: '',
-          website: '',
-          established_date: '',
-          capital: null
-        });
-      }
-    }
-  }, [company, isEditCompanyDialogOpen]);
+  const { editedCompany, setEditedCompany, resetFormData } = useCompanyFormData(
+    company, 
+    isEditCompanyDialogOpen
+  );
 
-  const validateForm = () => {
-    const requiredFields = [
-      { field: 'name', name: '公司名稱' },
-      { field: 'registration_number', name: '統一編號' },
-      { field: 'legal_representative', name: '法定代表人' },
-      { field: 'business_type', name: '營業項目' },
-      { field: 'address', name: '公司地址' },
-      { field: 'phone', name: '公司電話' },
-      { field: 'email', name: '公司Email' }
-    ];
-
-    for (const { field, name } of requiredFields) {
-      const value = editedCompany[field as keyof Company];
-      if (!value || (typeof value === 'string' && value.trim() === '')) {
-        toast({
-          title: "資料不完整",
-          description: `請填寫${name}`,
-          variant: "destructive"
-        });
-        return false;
-      }
-    }
-
-    // 驗證統一編號格式 (台灣統一編號為8位數字)
-    const registrationNumber = (editedCompany.registration_number || '').toString().trim();
-    if (!/^\d{8}$/.test(registrationNumber)) {
-      toast({
-        title: "格式錯誤",
-        description: "統一編號必須為8位數字",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    // 驗證電子郵件格式
-    const email = (editedCompany.email || '').trim();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast({
-        title: "格式錯誤",
-        description: "請輸入有效的電子郵件地址",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    // 驗證資本額 (如果有填寫的話)
-    if (editedCompany.capital !== null && editedCompany.capital !== undefined) {
-      const capital = Number(editedCompany.capital);
-      if (isNaN(capital) || capital < 0) {
-        toast({
-          title: "格式錯誤",
-          description: "資本額必須為正數",
-          variant: "destructive"
-        });
-        return false;
-      }
-    }
-
-    return true;
-  };
+  const formValidation = new CompanyFormValidation(toast);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,7 +46,7 @@ const EditCompanyDialog = () => {
       return;
     }
 
-    if (!validateForm()) {
+    if (!formValidation.validateForm(editedCompany)) {
       return;
     }
 
@@ -205,21 +104,7 @@ const EditCompanyDialog = () => {
 
   const handleClose = () => {
     setIsEditCompanyDialogOpen(false);
-    // 重置表單資料
-    if (company) {
-      setEditedCompany({
-        name: company.name || '',
-        registration_number: company.registration_number || '',
-        legal_representative: company.legal_representative || '',
-        business_type: company.business_type || '',
-        address: company.address || '',
-        phone: company.phone || '',
-        email: company.email || '',
-        website: company.website || '',
-        established_date: company.established_date || '',
-        capital: company.capital || null
-      });
-    }
+    resetFormData();
   };
 
   return (
@@ -236,156 +121,32 @@ const EditCompanyDialog = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="company-name">公司名稱 *</Label>
-            <Input
-              id="company-name"
-              value={editedCompany.name || ''}
-              onChange={(e) => setEditedCompany({ ...editedCompany, name: e.target.value })}
-              placeholder="請輸入公司名稱"
-              required
-              disabled={isSubmitting || !hasPermission}
-            />
-          </div>
+          <CompanyBasicFields
+            editedCompany={editedCompany}
+            setEditedCompany={setEditedCompany}
+            isSubmitting={isSubmitting}
+            hasPermission={hasPermission}
+          />
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="registration-number">統一編號 *</Label>
-              <Input
-                id="registration-number"
-                value={editedCompany.registration_number || ''}
-                onChange={(e) => {
-                  // 只允許數字輸入
-                  const value = e.target.value.replace(/\D/g, '');
-                  if (value.length <= 8) {
-                    setEditedCompany({ ...editedCompany, registration_number: value });
-                  }
-                }}
-                placeholder="請輸入8位數統一編號"
-                required
-                disabled={isSubmitting || !hasPermission}
-                maxLength={8}
-              />
-            </div>
-            <div>
-              <Label htmlFor="legal-representative">法定代表人 *</Label>
-              <Input
-                id="legal-representative"
-                value={editedCompany.legal_representative || ''}
-                onChange={(e) => setEditedCompany({ ...editedCompany, legal_representative: e.target.value })}
-                placeholder="請輸入法定代表人"
-                required
-                disabled={isSubmitting || !hasPermission}
-              />
-            </div>
-          </div>
+          <CompanyContactFields
+            editedCompany={editedCompany}
+            setEditedCompany={setEditedCompany}
+            isSubmitting={isSubmitting}
+            hasPermission={hasPermission}
+          />
 
-          <div>
-            <Label htmlFor="business-type">營業項目 *</Label>
-            <Input
-              id="business-type"
-              value={editedCompany.business_type || ''}
-              onChange={(e) => setEditedCompany({ ...editedCompany, business_type: e.target.value })}
-              placeholder="請輸入營業項目"
-              required
-              disabled={isSubmitting || !hasPermission}
-            />
-          </div>
+          <CompanyOptionalFields
+            editedCompany={editedCompany}
+            setEditedCompany={setEditedCompany}
+            isSubmitting={isSubmitting}
+            hasPermission={hasPermission}
+          />
 
-          <div>
-            <Label htmlFor="company-address">公司地址 *</Label>
-            <Textarea
-              id="company-address"
-              value={editedCompany.address || ''}
-              onChange={(e) => setEditedCompany({ ...editedCompany, address: e.target.value })}
-              placeholder="請輸入公司完整地址"
-              required
-              disabled={isSubmitting || !hasPermission}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="company-phone">公司電話 *</Label>
-              <Input
-                id="company-phone"
-                value={editedCompany.phone || ''}
-                onChange={(e) => setEditedCompany({ ...editedCompany, phone: e.target.value })}
-                placeholder="請輸入公司電話"
-                required
-                disabled={isSubmitting || !hasPermission}
-              />
-            </div>
-            <div>
-              <Label htmlFor="company-email">公司Email *</Label>
-              <Input
-                id="company-email"
-                type="email"
-                value={editedCompany.email || ''}
-                onChange={(e) => setEditedCompany({ ...editedCompany, email: e.target.value })}
-                placeholder="請輸入公司Email"
-                required
-                disabled={isSubmitting || !hasPermission}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="company-website">公司網站</Label>
-              <Input
-                id="company-website"
-                value={editedCompany.website || ''}
-                onChange={(e) => setEditedCompany({ ...editedCompany, website: e.target.value })}
-                placeholder="請輸入公司網站"
-                disabled={isSubmitting || !hasPermission}
-              />
-            </div>
-            <div>
-              <Label htmlFor="established-date">成立日期</Label>
-              <Input
-                id="established-date"
-                type="date"
-                value={editedCompany.established_date || ''}
-                onChange={(e) => setEditedCompany({ ...editedCompany, established_date: e.target.value })}
-                disabled={isSubmitting || !hasPermission}
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="capital">資本額</Label>
-            <Input
-              id="capital"
-              type="number"
-              min="0"
-              step="1"
-              value={editedCompany.capital || ''}
-              onChange={(e) => {
-                const value = e.target.value === '' ? null : Number(e.target.value);
-                setEditedCompany({ ...editedCompany, capital: value });
-              }}
-              placeholder="請輸入資本額"
-              disabled={isSubmitting || !hasPermission}
-            />
-          </div>
-
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isSubmitting}
-            >
-              取消
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={isSubmitting || !hasPermission}
-            >
-              {isSubmitting ? '儲存中...' : '儲存'}
-            </Button>
-          </div>
+          <CompanyFormActions
+            isSubmitting={isSubmitting}
+            hasPermission={hasPermission}
+            onCancel={handleClose}
+          />
         </form>
       </DialogContent>
     </Dialog>

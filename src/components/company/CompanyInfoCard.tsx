@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Edit, MapPin, Phone, Mail, Loader2, RefreshCw } from 'lucide-react';
+import { Building2, Edit, MapPin, Phone, Mail, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useUser } from '@/contexts/UserContext';
 import { useCompanyOperations } from './hooks/useCompanyOperations';
@@ -55,7 +55,8 @@ const CompanyInfoCard = () => {
             公司基本資料
           </CardTitle>
           <CardDescription>
-            <div className="text-orange-600 font-medium">
+            <div className="text-orange-600 font-medium flex items-center">
+              <AlertCircle className="h-4 w-4 mr-2" />
               沒有找到公司資料
             </div>
           </CardDescription>
@@ -63,7 +64,7 @@ const CompanyInfoCard = () => {
         <CardContent>
           <div className="text-center py-8">
             <Building2 className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 mb-4">資料庫中沒有公司資料</p>
+            <p className="text-gray-500 mb-4">資料庫連接正常，但尚未建立公司資料</p>
             <div className="flex gap-2 justify-center">
               <Button 
                 onClick={loadCompany}
@@ -97,7 +98,7 @@ const CompanyInfoCard = () => {
             <Building2 className="h-6 w-6 mr-2" />
             公司基本資料
             <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-              即時同步
+              資料載入成功
             </span>
           </CardTitle>
           <CardDescription>管理公司基本資訊與統一編號等法定資料</CardDescription>

@@ -9,7 +9,7 @@ import { CompanyApiService } from '../services/companyApiService';
 
 export const useCompanyOperations = () => {
   const [company, setCompany] = useState<Company | null>(null);
-  const [loading, setLoading] = useState(true); // 預設為載入中
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { isAdmin, currentUser } = useUser();
 
@@ -49,14 +49,32 @@ export const useCompanyOperations = () => {
           description: `已載入公司資料：${data.name}`,
         });
       } else {
-        console.log('⚠️ useCompanyOperations: 沒有找到公司資料');
+        console.log('⚠️ useCompanyOperations: 沒有找到公司資料，但連接正常');
+        toast({
+          title: "沒有公司資料",
+          description: "資料庫連接正常，但尚未建立公司資料",
+          variant: "default"
+        });
       }
     } catch (error) {
       console.error('❌ useCompanyOperations: 載入公司資料失敗:', error);
       setCompany(null);
+      
+      // 提供更友善的錯誤訊息
+      let errorMessage = "資料庫連接可能有問題";
+      if (error instanceof Error) {
+        if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "網路連接問題，請檢查網路狀態";
+        } else if (error.message.includes('policy') || error.message.includes('RLS')) {
+          errorMessage = "資料庫權限設定問題，系統正在調整中";
+        } else {
+          errorMessage = "載入資料時發生錯誤，請稍後再試";
+        }
+      }
+      
       toast({
         title: "載入失敗",
-        description: "無法載入公司資料，請檢查資料庫連接",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {

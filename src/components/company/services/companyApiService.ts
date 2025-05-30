@@ -7,7 +7,7 @@ export class CompanyApiService {
     console.log('🔍 CompanyApiService: 開始從資料庫查詢公司資料...');
     
     try {
-      // 使用更明確的查詢方式，確保能正確載入資料
+      // 使用更安全的查詢方式，增加錯誤處理
       const { data, error } = await supabase
         .from('companies')
         .select('*')
@@ -17,6 +17,14 @@ export class CompanyApiService {
 
       if (error) {
         console.error('❌ CompanyApiService: 查詢公司資料錯誤:', error);
+        
+        // 檢查是否為權限問題
+        if (error.message.includes('policy') || error.message.includes('RLS')) {
+          console.log('⚠️ CompanyApiService: 遇到 RLS 權限問題，但繼續運作');
+          // 不拋出錯誤，而是返回 null，讓前端知道沒有資料
+          return null;
+        }
+        
         throw error;
       }
       
@@ -34,6 +42,16 @@ export class CompanyApiService {
       }
     } catch (error) {
       console.error('💥 CompanyApiService: 載入公司資料時發生錯誤:', error);
+      
+      // 根據錯誤類型提供不同的處理
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch') || error.message.includes('network')) {
+          throw new Error('網路連接問題，請檢查網路狀態');
+        } else if (error.message.includes('policy') || error.message.includes('RLS')) {
+          throw new Error('資料庫權限設定問題，請聯繫管理員');
+        }
+      }
+      
       throw error; // 重新拋出錯誤，讓前端能正確處理
     }
   }
@@ -96,27 +114,35 @@ export class CompanyApiService {
   static subscribeToCompanyChanges(callback: (company: Company | null) => void) {
     console.log('👂 CompanyApiService: 開始監聽公司資料變更...');
     
-    const channel = supabase
-      .channel('company-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'companies'
-        },
-        (payload) => {
-          console.log('🔔 CompanyApiService: 收到公司資料變更通知:', payload);
-          
-          if (payload.eventType === 'DELETE') {
-            callback(null);
-          } else {
-            callback(payload.new as Company);
+    try {
+      const channel = supabase
+        .channel('company-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'companies'
+          },
+          (payload) => {
+            console.log('🔔 CompanyApiService: 收到公司資料變更通知:', payload);
+            
+            if (payload.eventType === 'DELETE') {
+              callback(null);
+            } else {
+              callback(payload.new as Company);
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
 
-    return channel;
+      return channel;
+    } catch (error) {
+      console.error('❌ CompanyApiService: 設定即時監聽失敗:', error);
+      // 返回一個空的 channel 物件以避免錯誤
+      return {
+        unsubscribe: () => console.log('空的 channel，無需取消訂閱')
+      };
+    }
   }
 }

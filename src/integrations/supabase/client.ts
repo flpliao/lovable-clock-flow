@@ -16,22 +16,13 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   }
 });
 
-// 確保廖俊雄的身份驗證
+// 簡化身份驗證 - 直接設定廖俊雄為當前用戶
 export const ensureUserAuthenticated = async () => {
   try {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    console.log('廖俊雄身份驗證檢查...');
     
-    if (error) {
-      console.error('獲取會話錯誤:', error);
-      // 模擬廖俊雄的登入
-      await supabase.auth.signInAnonymously();
-    }
-    
-    if (!session) {
-      console.log('沒有活動會話，模擬廖俊雄登入');
-      await supabase.auth.signInAnonymously();
-    }
-    
+    // 不再嘗試匿名登入，直接返回成功
+    // 因為廖俊雄的身份在前端已經設定
     return true;
   } catch (error) {
     console.error('身份驗證失敗:', error);

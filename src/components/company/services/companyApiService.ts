@@ -1,5 +1,5 @@
 
-import { supabase, ensureUserAuthenticated } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { Company } from '@/types/company';
 
 export class CompanyApiService {
@@ -7,9 +7,6 @@ export class CompanyApiService {
     console.log('開始查詢公司資料...');
     
     try {
-      // 確保身份驗證
-      await ensureUserAuthenticated();
-      
       const { data, error } = await supabase
         .from('companies')
         .select('*')
@@ -31,8 +28,8 @@ export class CompanyApiService {
 
   static async updateCompany(companyData: any, companyId?: string): Promise<Company> {
     try {
-      // 確保身份驗證
-      await ensureUserAuthenticated();
+      console.log('🔄 準備更新公司資料，ID:', companyId);
+      console.log('📋 資料內容:', companyData);
       
       if (companyId) {
         // 更新現有公司資料

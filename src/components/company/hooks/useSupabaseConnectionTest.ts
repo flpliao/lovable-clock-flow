@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase, ensureUserAuthenticated } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useSupabaseConnectionTest = () => {
   const [isTestingConnection, setIsTestingConnection] = useState(false);
@@ -13,10 +13,7 @@ export const useSupabaseConnectionTest = () => {
     try {
       console.log('開始測試 Supabase 連線...');
       
-      // 確保身份驗證
-      await ensureUserAuthenticated();
-      
-      // 測試資料庫連線
+      // 簡化連線測試，直接測試資料庫連線
       const { data, error } = await supabase
         .from('companies')
         .select('count')

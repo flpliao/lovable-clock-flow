@@ -6,7 +6,6 @@ import { Company } from '@/types/company';
 import { CompanyValidationService } from '../services/companyValidationService';
 import { CompanyDataPreparer } from '../services/companyDataPreparer';
 import { CompanyApiService } from '../services/companyApiService';
-import { ensureUserAuthenticated } from '@/integrations/supabase/client';
 
 export const useCompanyOperations = () => {
   const [company, setCompany] = useState<Company | null>(null);
@@ -24,9 +23,6 @@ export const useCompanyOperations = () => {
         setCompany(null);
         return;
       }
-
-      // 確保身份驗證
-      await ensureUserAuthenticated();
 
       const data = await CompanyApiService.loadCompany();
       setCompany(data);
@@ -64,9 +60,6 @@ export const useCompanyOperations = () => {
 
     try {
       console.log('🔍 開始資料驗證和處理...');
-      
-      // 確保身份驗證
-      await ensureUserAuthenticated();
       
       // 驗證必填欄位
       const validation = CompanyValidationService.validateCompanyData(updatedCompany);

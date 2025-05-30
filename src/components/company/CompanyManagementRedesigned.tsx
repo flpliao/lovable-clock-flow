@@ -11,7 +11,6 @@ import BranchTable from './BranchTable';
 import AddBranchDialog from './AddBranchDialog';
 import EditBranchDialog from './EditBranchDialog';
 import EditCompanyDialog from './EditCompanyDialog';
-import { CompanySyncCard } from './components/CompanySyncCard';
 import { RLSSettingsCard } from './components/RLSSettingsCard';
 import { ComprehensiveDiagnostics } from './diagnostics/ComprehensiveDiagnostics';
 
@@ -73,15 +72,7 @@ const CompanyManagementRedesigned = () => {
 
       {/* 系統設定區塊 */}
       {canManageBranches && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <CompanySyncCard
-            company={company}
-            loading={loading}
-            onLoadCompany={loadCompany}
-            onSyncCompany={handleSyncCompany}
-            onEditCompany={handleEditCompany}
-            canEdit={canManageBranches}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <RLSSettingsCard />
           
           <Card>

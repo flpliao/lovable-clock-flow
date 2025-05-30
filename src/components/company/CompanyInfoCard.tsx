@@ -42,6 +42,12 @@ const CompanyInfoCard = () => {
     console.log('🖊️ CompanyInfoCard: 開啟編輯公司資料對話框');
     console.log('🖊️ 當前公司資料:', company);
     console.log('🖊️ 用戶權限:', { canEdit, userName: currentUser?.name });
+    
+    if (!canEdit) {
+      console.warn('⚠️ 用戶沒有編輯權限');
+      return;
+    }
+    
     setIsEditCompanyDialogOpen(true);
   };
 

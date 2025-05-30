@@ -57,7 +57,7 @@ export const useCompanyOperations = () => {
         console.log('⚠️ useCompanyOperations: 無法載入依美琦股份有限公司資料');
         toast({
           title: "找不到公司資料",
-          description: "後台資料庫中沒有找到依美琦股份有限公司的資料，請檢查資料同步狀態",
+          description: "後台資料庫中沒有找到依美琦股份有限公司的資料，請使用強制同步功能",
           variant: "destructive"
         });
       }
@@ -68,6 +68,38 @@ export const useCompanyOperations = () => {
       toast({
         title: "載入失敗",
         description: "無法從後台資料庫載入公司資料，請稍後再試",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 強制從後台同步資料
+  const forceSyncFromBackend = async () => {
+    console.log('🔄 useCompanyOperations: 開始強制從後台同步資料...');
+    setLoading(true);
+    
+    try {
+      const syncedCompany = await CompanyApiService.forceSyncFromBackend();
+      
+      if (syncedCompany) {
+        setCompany(syncedCompany);
+        console.log('✅ useCompanyOperations: 強制同步成功:', syncedCompany.name);
+        
+        toast({
+          title: "同步成功",
+          description: `已成功從後台同步${syncedCompany.name}資料`,
+        });
+      } else {
+        throw new Error('同步過程中發生錯誤');
+      }
+    } catch (error) {
+      console.error('❌ useCompanyOperations: 強制同步失敗:', error);
+      
+      toast({
+        title: "同步失敗",
+        description: "無法從後台同步公司資料，請檢查網路連線",
         variant: "destructive"
       });
     } finally {
@@ -147,6 +179,7 @@ export const useCompanyOperations = () => {
     setCompany,
     loadCompany,
     updateCompany,
+    forceSyncFromBackend,
     loading
   };
 };

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Edit, RefreshCw, Database, Plus } from 'lucide-react';
+import { Edit, RefreshCw, Database, Plus, Sync } from 'lucide-react';
 import { Company } from '@/types/company';
 
 interface CompanyInfoActionsProps {
@@ -10,6 +10,7 @@ interface CompanyInfoActionsProps {
   onEdit: () => void;
   onReload: () => void;
   onForceReload: () => Promise<void>;
+  onForceSyncFromBackend?: () => Promise<void>;
 }
 
 export const CompanyInfoActions: React.FC<CompanyInfoActionsProps> = ({
@@ -17,7 +18,8 @@ export const CompanyInfoActions: React.FC<CompanyInfoActionsProps> = ({
   canEdit,
   onEdit,
   onReload,
-  onForceReload
+  onForceReload,
+  onForceSyncFromBackend
 }) => {
   return (
     <div className="flex gap-2 flex-wrap">
@@ -60,6 +62,18 @@ export const CompanyInfoActions: React.FC<CompanyInfoActionsProps> = ({
         <Database className="h-4 w-4 mr-2" />
         強制同步
       </Button>
+
+      {onForceSyncFromBackend && (
+        <Button
+          onClick={onForceSyncFromBackend}
+          variant="default"
+          size="sm"
+          className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700"
+        >
+          <Sync className="h-4 w-4 mr-2" />
+          後台同步
+        </Button>
+      )}
     </div>
   );
 };

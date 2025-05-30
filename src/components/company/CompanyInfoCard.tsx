@@ -13,7 +13,7 @@ import { CompanyEmptyState } from './components/CompanyEmptyState';
 
 const CompanyInfoCard = () => {
   const { setIsEditCompanyDialogOpen } = useCompanyManagementContext();
-  const { company, loading, loadCompany } = useCompanyOperations();
+  const { company, loading, loadCompany, forceSyncFromBackend } = useCompanyOperations();
   const { isAdmin, currentUser } = useUser();
 
   console.log('CompanyInfoCard - 當前用戶:', currentUser?.name);
@@ -31,6 +31,12 @@ const CompanyInfoCard = () => {
     }
   };
 
+  // 強制從後台同步
+  const handleForceSyncFromBackend = async () => {
+    console.log('🔄 強制從後台同步公司資料...');
+    await forceSyncFromBackend();
+  };
+
   const handleEdit = () => setIsEditCompanyDialogOpen(true);
 
   // 如果正在載入
@@ -46,6 +52,7 @@ const CompanyInfoCard = () => {
         onEdit={handleEdit}
         onReload={loadCompany}
         onForceReload={handleForceReload}
+        onForceSyncFromBackend={handleForceSyncFromBackend}
       />
     );
   }
@@ -60,6 +67,7 @@ const CompanyInfoCard = () => {
           onEdit={handleEdit}
           onReload={loadCompany}
           onForceReload={handleForceReload}
+          onForceSyncFromBackend={handleForceSyncFromBackend}
         />
       </div>
       <CompanyInfoContent company={company} />

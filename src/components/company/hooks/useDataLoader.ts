@@ -15,15 +15,18 @@ export const useDataLoader = () => {
     setLoading(true);
     
     try {
-      // 1. 先載入公司資料
+      // 1. 先載入公司資料並等待完成
       console.log('📋 useDataLoader: 正在載入公司資料...');
       await loadCompany();
       
-      // 2. 等待公司資料載入後再載入營業處
+      // 2. 等待一小段時間確保公司資料已更新到狀態中
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // 3. 載入營業處資料
       console.log('🏪 useDataLoader: 正在載入營業處資料...');
       await loadBranches();
       
-      // 3. 初始化預設營業處（如果需要）
+      // 4. 初始化預設營業處（如果需要）
       console.log('🏢 useDataLoader: 檢查是否需要初始化預設營業處...');
       await initializeDefaultBranch();
       

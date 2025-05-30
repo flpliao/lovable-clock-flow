@@ -3,20 +3,20 @@ import { Company } from '@/types/company';
 import { CompanyRepository } from './companyRepository';
 
 export class CompanyDataInitializer {
-  // 依美琦股份有限公司的預設資料
+  // 依美琦股份有限公司的正確預設資料
   private static getDefaultCompanyData(companyId: string) {
     return {
       id: companyId,
       name: '依美琦股份有限公司',
-      registration_number: '54560107',
-      address: '台南市永康區振興路132號',
-      phone: '06-2366000',
+      registration_number: '53907735', // 修正為正確的統一編號
+      address: '台北市中山區建國北路二段145號3樓', // 修正為正確地址
+      phone: '02-2542-9999', // 修正為正確電話
       email: 'service@j-image.com.tw',
       website: 'https://web.sharing.tw',
-      business_type: '資訊',
+      business_type: '資訊軟體服務業',
       legal_representative: '廖俊雄',
       established_date: '2015-05-27',
-      capital: 5000000,
+      capital: 5000000, // 確保為正確的資本額數字
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };

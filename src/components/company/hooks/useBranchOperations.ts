@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,17 +10,31 @@ export const useBranchOperations = (company: Company | null) => {
   const { toast } = useToast();
   const { currentUser } = useUser();
 
-  // 載入營業處資料 - 改善錯誤處理
+  // 當公司資料變更時，重新載入營業處
+  useEffect(() => {
+    if (company?.id) {
+      console.log('🔄 useBranchOperations: 公司資料變更，重新載入營業處...');
+      loadBranches();
+    }
+  }, [company?.id]);
+
+  // 載入營業處資料 - 確保與公司資料同步
   const loadBranches = async () => {
     try {
       console.log('🏢 useBranchOperations: 正在載入營業處資料...');
+      console.log('🏢 useBranchOperations: 當前公司ID:', company?.id);
       
       let query = supabase.from('branches').select('*');
       
-      // 如果有公司資料，按公司ID篩選
+      // 確保按正確的公司ID篩選
       if (company?.id) {
         query = query.eq('company_id', company.id);
         console.log('🔍 useBranchOperations: 按公司ID篩選:', company.id);
+      } else {
+        // 如果沒有公司資料，使用預設的公司ID
+        const defaultCompanyId = '550e8400-e29b-41d4-a716-446655440000';
+        query = query.eq('company_id', defaultCompanyId);
+        console.log('🔍 useBranchOperations: 使用預設公司ID:', defaultCompanyId);
       }
       
       const { data, error } = await query.order('created_at', { ascending: true });
@@ -43,7 +58,7 @@ export const useBranchOperations = (company: Company | null) => {
     }
   };
 
-  // 新增營業處 - 改善公司ID處理
+  // 新增營業處 - 確保使用正確的公司ID
   const addBranch = async (newBranch: NewBranch) => {
     console.log('➕ useBranchOperations: 新增營業處請求，當前用戶:', currentUser?.name);
     
@@ -85,8 +100,9 @@ export const useBranchOperations = (company: Company | null) => {
         return false;
       }
 
-      // 使用當前公司ID或預設ID
+      // 確保使用正確的公司ID
       const companyId = company?.id || '550e8400-e29b-41d4-a716-446655440000';
+      console.log('🏢 useBranchOperations: 使用公司ID:', companyId);
       
       const branchData = {
         ...newBranch,

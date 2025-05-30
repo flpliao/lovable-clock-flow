@@ -18,7 +18,7 @@ export const departmentApiService = {
       throw new Error(error.message || '載入部門資料失敗');
     }
 
-    console.log('成功載入部門資料:', data);
+    console.log('成功載入部門資料 (包含新增的資訊部門):', data);
     return data?.map(transformDepartmentData) || [];
   },
 

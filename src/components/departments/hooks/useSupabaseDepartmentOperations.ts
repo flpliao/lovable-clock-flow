@@ -20,12 +20,10 @@ export const useSupabaseDepartmentOperations = () => {
       console.log('✅ 成功載入部門資料:', data);
       setDepartments(data);
       
-      if (data && data.length > 0) {
-        toast({
-          title: "載入成功",
-          description: `已載入 ${data.length} 個部門/門市`,
-        });
-      }
+      toast({
+        title: "載入成功",
+        description: `已載入 ${data.length} 個部門/門市`,
+      });
     } catch (error) {
       console.error('❌ 載入部門資料發生錯誤:', error);
       toast({

@@ -21,8 +21,12 @@ export const useStaffValidation = () => {
       return "請填寫聯絡電話";
     }
     
-    if (!newStaff.branch_id) {
+    if (!newStaff.branch_id || newStaff.branch_id === 'placeholder-value' || newStaff.branch_id === '') {
       return "請選擇所屬營業處";
+    }
+    
+    if (!newStaff.branch_name || newStaff.branch_name.trim() === '') {
+      return "營業處資料不完整，請重新選擇營業處";
     }
 
     console.log('✅ 員工資料驗證通過');
@@ -48,8 +52,12 @@ export const useStaffValidation = () => {
       return "請填寫聯絡電話";
     }
 
-    if (!staff.branch_id) {
+    if (!staff.branch_id || staff.branch_id === 'placeholder-value' || staff.branch_id === '') {
       return "請選擇所屬營業處";
+    }
+
+    if (!staff.branch_name || staff.branch_name.trim() === '') {
+      return "營業處資料不完整，請重新選擇營業處";
     }
 
     console.log('✅ 員工更新資料驗證通過');
@@ -60,7 +68,11 @@ export const useStaffValidation = () => {
     console.log('🔍 分析錯誤:', error);
     
     if (error instanceof Error) {
-      if (error.message.includes('duplicate key')) {
+      if (error.message.includes('placeholder-value')) {
+        return "營業處選擇錯誤，請重新選擇有效的營業處";
+      } else if (error.message.includes('invalid input syntax for type uuid')) {
+        return "資料格式錯誤，請檢查營業處選擇是否正確";
+      } else if (error.message.includes('duplicate key')) {
         return "員工資料重複，請檢查姓名或聯絡資訊";
       } else if (error.message.includes('foreign key')) {
         return "營業處資料錯誤，請重新選擇營業處";

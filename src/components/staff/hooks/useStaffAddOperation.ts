@@ -28,17 +28,31 @@ export const useStaffAddOperation = (
       return false;
     }
 
-    // 確保必要欄位有預設值
+    // 確保營業處 ID 是有效的 UUID 格式
+    if (!newStaff.branch_id || 
+        newStaff.branch_id === 'placeholder-value' || 
+        newStaff.branch_id === '' ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(newStaff.branch_id)) {
+      console.error('❌ 營業處 ID 格式無效:', newStaff.branch_id);
+      toast({
+        title: "營業處選擇錯誤",
+        description: "請選擇有效的營業處",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    // 確保必要欄位有預設值，並清理資料
     const staffData = {
       name: newStaff.name.trim(),
       position: newStaff.position,
       department: newStaff.department,
       branch_id: newStaff.branch_id,
-      branch_name: newStaff.branch_name,
+      branch_name: newStaff.branch_name.trim(),
       contact: newStaff.contact.trim(),
       role: newStaff.role || 'user',
       role_id: newStaff.role_id || 'user',
-      supervisor_id: newStaff.supervisor_id || undefined,
+      supervisor_id: newStaff.supervisor_id && newStaff.supervisor_id !== '' ? newStaff.supervisor_id : undefined,
       username: newStaff.username?.trim() || undefined,
       email: newStaff.email?.trim() || undefined
     };

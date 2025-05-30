@@ -2,8 +2,10 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
-import { supabase } from '@/integrations/supabase/client';
 import { Company } from '@/types/company';
+import { CompanyValidationService } from '../services/companyValidationService';
+import { CompanyDataPreparer } from '../services/companyDataPreparer';
+import { CompanyApiService } from '../services/companyApiService';
 
 export const useCompanyOperations = () => {
   const [company, setCompany] = useState<Company | null>(null);
@@ -22,20 +24,7 @@ export const useCompanyOperations = () => {
         return;
       }
 
-      console.log('開始查詢公司資料...');
-      const { data, error } = await supabase
-        .from('companies')
-        .select('*')
-        .limit(1)
-        .maybeSingle();
-
-      if (error) {
-        console.error('載入公司資料錯誤:', error);
-        // 由於我們已經設置了正確的 RLS 政策，這裡應該不會有權限問題
-        throw error;
-      }
-      
-      console.log('載入的公司資料:', data);
+      const data = await CompanyApiService.loadCompany();
       setCompany(data);
     } catch (error) {
       console.error('載入公司資料失敗:', error);
@@ -76,92 +65,27 @@ export const useCompanyOperations = () => {
       console.log('🔍 開始資料驗證和處理...');
       
       // 驗證必填欄位
-      const requiredFields = ['name', 'registration_number', 'address', 'phone', 'email', 'business_type', 'legal_representative'];
-      const missingFields = requiredFields.filter(field => {
-        const value = updatedCompany[field as keyof Company];
-        return !value || (typeof value === 'string' && value.trim() === '');
-      });
-
-      if (missingFields.length > 0) {
-        const fieldNames = {
-          name: '公司名稱',
-          registration_number: '統一編號',
-          address: '公司地址',
-          phone: '公司電話',
-          email: '公司Email',
-          business_type: '營業項目',
-          legal_representative: '法定代表人'
-        };
-        const missingFieldNames = missingFields.map(field => fieldNames[field as keyof typeof fieldNames]).join('、');
-        throw new Error(`缺少必填欄位: ${missingFieldNames}`);
+      const validation = CompanyValidationService.validateCompanyData(updatedCompany);
+      if (!validation.isValid) {
+        throw new Error(CompanyValidationService.getValidationErrorMessage(validation.missingFields));
       }
 
       // 驗證統一編號格式
-      const registrationNumber = updatedCompany.registration_number.toString().trim();
-      if (!/^\d{8}$/.test(registrationNumber)) {
+      if (!CompanyValidationService.validateRegistrationNumber(updatedCompany.registration_number)) {
         throw new Error('統一編號必須為8位數字');
       }
 
       // 驗證電子郵件格式
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(updatedCompany.email.trim())) {
+      if (!CompanyValidationService.validateEmail(updatedCompany.email)) {
         throw new Error('電子郵件格式不正確');
       }
 
       // 準備資料
-      const companyData = {
-        name: updatedCompany.name.trim(),
-        registration_number: registrationNumber,
-        address: updatedCompany.address.trim(),
-        phone: updatedCompany.phone.trim(),
-        email: updatedCompany.email.trim().toLowerCase(),
-        website: updatedCompany.website?.trim() || null,
-        established_date: updatedCompany.established_date || null,
-        capital: updatedCompany.capital ? Number(updatedCompany.capital) : null,
-        business_type: updatedCompany.business_type.trim(),
-        legal_representative: updatedCompany.legal_representative.trim(),
-        updated_at: new Date().toISOString()
-      };
-      
+      const companyData = CompanyDataPreparer.prepareCompanyData(updatedCompany);
       console.log('📄 準備處理的資料:', companyData);
 
-      let result;
-
-      // 檢查是否已存在公司資料
-      if (company && company.id) {
-        // 更新現有公司資料
-        console.log('🔄 更新現有公司資料，ID:', company.id);
-        const { data, error } = await supabase
-          .from('companies')
-          .update(companyData)
-          .eq('id', company.id)
-          .select()
-          .single();
-
-        if (error) {
-          console.error('❌ Supabase 更新錯誤:', error);
-          throw new Error(`更新失敗: ${error.message}`);
-        }
-        result = data;
-      } else {
-        // 新增公司資料
-        console.log('➕ 新增公司資料');
-        const { data, error } = await supabase
-          .from('companies')
-          .insert({
-            ...companyData,
-            created_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-
-        if (error) {
-          console.error('❌ Supabase 新增錯誤:', error);
-          throw new Error(`新增失敗: ${error.message}`);
-        }
-        result = data;
-      }
-
+      // 執行更新或新增
+      const result = await CompanyApiService.updateCompany(companyData, company?.id);
       console.log('✅ 操作成功，返回的資料:', result);
       
       // 更新本地狀態

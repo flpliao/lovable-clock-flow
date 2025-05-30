@@ -17,11 +17,6 @@ export const useCompanyOperations = () => {
     try {
       console.log('正在載入公司資料，當前用戶:', currentUser?.name);
       
-      // 暫時移除登入檢查，讓廖俊雄可以直接操作
-      if (!currentUser?.id) {
-        console.log('用戶未登入，但允許繼續載入資料');
-      }
-
       const data = await CompanyApiService.loadCompany();
       setCompany(data);
       console.log('公司資料載入結果:', data);
@@ -38,12 +33,8 @@ export const useCompanyOperations = () => {
     console.log('📋 當前用戶:', currentUser?.name);
     console.log('📋 提交的資料:', updatedCompany);
     
-    // 暫時移除管理員檢查，讓廖俊雄可以直接操作
-    console.log('暫時允許所有用戶操作公司資料');
-
-    if (!currentUser?.id) {
-      console.log('用戶未登入，但允許繼續操作');
-    }
+    // 允許所有用戶操作，暫時不檢查權限
+    console.log('允許用戶操作公司資料（權限檢查已暫時停用）');
 
     try {
       console.log('🔍 開始資料驗證和處理...');

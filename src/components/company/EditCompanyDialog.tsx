@@ -23,7 +23,8 @@ const EditCompanyDialog = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { isAdmin } = useUser();
-  const hasPermission = isAdmin();
+  // 暫時允許所有用戶操作
+  const hasPermission = true;
 
   const { editedCompany, setEditedCompany, resetFormData } = useCompanyFormData(
     company, 
@@ -36,15 +37,6 @@ const EditCompanyDialog = () => {
     e.preventDefault();
     
     console.log('開始提交表單，當前資料:', editedCompany);
-    
-    if (!hasPermission) {
-      toast({
-        title: "權限不足",
-        description: "只有管理員可以編輯公司資料",
-        variant: "destructive"
-      });
-      return;
-    }
 
     if (!formValidation.validateForm(editedCompany)) {
       return;
@@ -113,12 +105,6 @@ const EditCompanyDialog = () => {
         <DialogHeader>
           <DialogTitle>{company ? '編輯公司基本資料' : '建立公司基本資料'}</DialogTitle>
         </DialogHeader>
-        
-        {!hasPermission && (
-          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-            <p className="text-yellow-800">您沒有編輯公司資料的權限，只有管理員可以進行此操作。</p>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <CompanyBasicFields

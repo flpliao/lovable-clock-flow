@@ -1,6 +1,8 @@
+
 import { useState, useCallback } from 'react';
 import { Company } from '@/types/company';
 import { CompanyDataService } from '../services/companyDataService';
+import { CompanySyncService } from '../services/companySyncService';
 import { useToast } from '@/hooks/use-toast';
 
 export const useCompanySyncManager = () => {
@@ -60,41 +62,36 @@ export const useCompanySyncManager = () => {
     setLoading(true);
     
     try {
-      // 先嘗試查找現有資料
-      let company = await CompanyDataService.findCompany();
+      const syncResult = await CompanySyncService.forceSyncCompany();
       
-      if (!company) {
-        // 如果沒有找到，創建標準資料
-        console.log('➕ useCompanySyncManager: 創建標準公司資料...');
-        company = await CompanyDataService.createStandardCompany();
+      if (syncResult.success && syncResult.company) {
+        setCompany(syncResult.company);
+        setSyncStatus('synced');
         
         toast({
           title: "同步成功",
-          description: "已創建新的公司資料",
+          description: syncResult.action === 'created' ? "已創建新的公司資料" : "已載入現有公司資料",
         });
+        
+        return true;
       } else {
+        setSyncStatus('not_synced');
+        
         toast({
-          title: "同步成功",
-          description: "已找到並載入現有公司資料",
+          title: "同步失敗",
+          description: `強制同步過程發生錯誤: ${syncResult.error || '未知錯誤'}`,
+          variant: "destructive"
         });
+        
+        return false;
       }
-      
-      setCompany(company);
-      setSyncStatus('synced');
-      return true;
-      
     } catch (error) {
       console.error('❌ useCompanySyncManager: 強制同步失敗:', error);
       setSyncStatus('not_synced');
       
-      let errorMessage = "同步過程發生未知錯誤";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      
       toast({
         title: "同步失敗",
-        description: `強制同步過程發生錯誤: ${errorMessage}`,
+        description: `強制同步過程發生錯誤: ${error instanceof Error ? error.message : '未知錯誤'}`,
         variant: "destructive"
       });
       

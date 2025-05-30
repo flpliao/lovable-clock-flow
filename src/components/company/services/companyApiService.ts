@@ -69,6 +69,22 @@ export class CompanyApiService {
     return true;
   }
 
+  // 檢查資料是否已同步
+  static isDataSynced(company: Company): boolean {
+    if (!company) return false;
+    
+    // 檢查關鍵資料是否符合依美琦股份有限公司
+    const hasCorrectName = company.name === this.COMPANY_NAME;
+    const hasCorrectRegistrationNumber = company.registration_number === this.COMPANY_REGISTRATION_NUMBER;
+    const hasCorrectAddress = company.address && company.address.includes('台北市中山區建國北路');
+    const hasCorrectRepresentative = company.legal_representative === '廖俊雄';
+    
+    const syncScore = [hasCorrectName, hasCorrectRegistrationNumber, hasCorrectAddress, hasCorrectRepresentative].filter(Boolean).length;
+    
+    // 至少需要3個條件符合才算同步
+    return syncScore >= 3;
+  }
+
   // 更新公司資料
   static async updateCompany(companyData: any, companyId?: string): Promise<Company> {
     try {

@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import Header from '@/components/Header';
 import StaffAnalyticsDashboard from '@/components/staff/StaffAnalyticsDashboard';
 import TeamCheckInManagement from '@/components/staff/TeamCheckInManagement';
 import { useUser } from '@/contexts/UserContext';
@@ -18,8 +17,6 @@ const StaffDashboard = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <Header notificationCount={0} />
-      
       <main className="flex-1 p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold">員工考勤儀表板</h1>

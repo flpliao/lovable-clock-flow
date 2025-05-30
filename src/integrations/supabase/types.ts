@@ -779,6 +779,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_table_rls_status: {
+        Args: { table_name: string }
+        Returns: boolean
+      }
       get_user_role_safe: {
         Args: { user_uuid: string }
         Returns: string
@@ -790,6 +794,10 @@ export type Database = {
       mark_announcement_as_read: {
         Args: { user_uuid: string; announcement_uuid: string }
         Returns: undefined
+      }
+      toggle_table_rls: {
+        Args: { table_name: string; enabled: boolean }
+        Returns: boolean
       }
     }
     Enums: {

@@ -29,12 +29,12 @@ export class CompanyDataService {
     }
   }
 
-  // 查詢公司資料 - 只查詢 companies 表，避免觸發 staff RLS
+  // 查詢公司資料 - 完全避免 staff 表，只查詢 companies 表
   static async findCompany(): Promise<Company | null> {
     console.log('🔍 CompanyDataService: 查詢依美琦公司資料...');
     
     try {
-      // 按統一編號查詢公司資料
+      // 直接按統一編號查詢，避免任何可能觸發 staff 表 RLS 的操作
       const { data, error } = await supabase
         .from('companies')
         .select('*')
@@ -51,7 +51,7 @@ export class CompanyDataService {
         return this.normalizeCompanyData(data);
       }
 
-      console.log('⚠️ CompanyDataService: 未找到公司資料');
+      console.log('⚠️ CompanyDataService: 未找到公司資料，將嘗試創建');
       return null;
 
     } catch (error) {
@@ -79,7 +79,7 @@ export class CompanyDataService {
     };
   }
 
-  // 創建標準的依美琦公司資料
+  // 創建標準的依美琦公司資料 - 直接插入不檢查用戶權限
   static async createStandardCompany(): Promise<Company> {
     console.log('➕ CompanyDataService: 創建標準依美琦公司資料...');
     
@@ -116,7 +116,7 @@ export class CompanyDataService {
     }
   }
 
-  // 更新公司資料
+  // 更新公司資料 - 簡化操作避免權限問題
   static async updateCompany(companyId: string, updateData: Partial<Company>): Promise<Company> {
     console.log('🔄 CompanyDataService: 更新公司資料...', { companyId, updateData });
     
@@ -125,6 +125,10 @@ export class CompanyDataService {
         ...updateData,
         updated_at: new Date().toISOString()
       };
+
+      // 移除不需要的欄位
+      delete cleanedData.id;
+      delete cleanedData.created_at;
 
       const { data, error } = await supabase
         .from('companies')
@@ -161,31 +165,46 @@ export class CompanyDataService {
     };
   }
 
-  // 強制同步 - 直接操作 companies 表，避免 staff 表 RLS 問題
+  // 強制同步 - 完全重新設計避免任何權限問題
   static async forceSync(): Promise<Company> {
     console.log('🔄 CompanyDataService: 廖俊雄執行強制同步...');
     
     try {
-      // 先嘗試查詢現有資料
+      // 1. 先測試連線
+      const isConnected = await this.testConnection();
+      if (!isConnected) {
+        throw new Error('無法連接到資料庫');
+      }
+
+      // 2. 查詢現有資料
       let company = await this.findCompany();
       
       if (company) {
-        console.log('✅ CompanyDataService: 找到現有公司資料，進行標準化更新');
-        // 更新為標準資料
-        const standardData = {
-          name: this.COMPANY_NAME,
-          registration_number: this.COMPANY_REGISTRATION_NUMBER,
-          legal_representative: '廖俊雄',
-          address: '台北市中山區建國北路二段92號',
-          phone: '02-2501-2345',
-          email: 'info@emeici.com.tw',
-          website: 'https://www.emeici.com.tw',
-          established_date: '2000-01-01',
-          capital: 10000000,
-          business_type: '化妝品零售業'
-        };
+        console.log('✅ CompanyDataService: 找到現有公司資料，檢查是否需要更新');
         
-        return await this.updateCompany(company.id, standardData);
+        // 檢查資料是否完整
+        const validation = this.validateCompanyData(company);
+        if (!validation.isValid) {
+          console.log('🔄 CompanyDataService: 資料不完整，進行標準化更新');
+          
+          // 更新為標準資料
+          const standardData = {
+            name: this.COMPANY_NAME,
+            registration_number: this.COMPANY_REGISTRATION_NUMBER,
+            legal_representative: '廖俊雄',
+            address: '台北市中山區建國北路二段92號',
+            phone: '02-2501-2345',
+            email: 'info@emeici.com.tw',
+            website: 'https://www.emeici.com.tw',
+            established_date: '2000-01-01',
+            capital: 10000000,
+            business_type: '化妝品零售業'
+          };
+          
+          company = await this.updateCompany(company.id, standardData);
+        }
+        
+        return company;
       } else {
         console.log('➕ CompanyDataService: 沒有找到公司資料，創建新的標準資料');
         return await this.createStandardCompany();

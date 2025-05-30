@@ -24,7 +24,7 @@ export const useSupabaseStaffOperations = () => {
 
   // 載入資料
   useEffect(() => {
-    console.log('載入員工資料...');
+    console.log('useSupabaseStaffOperations: 載入員工資料...');
     refreshData();
   }, []);
 

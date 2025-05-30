@@ -14,6 +14,9 @@ const PersonnelManagement = () => {
   const { currentUser, isAdmin } = useUser();
   const [activeTab, setActiveTab] = useState('staff');
   
+  console.log('PersonnelManagement - 當前用戶:', currentUser?.name);
+  console.log('PersonnelManagement - 是否為管理員:', isAdmin());
+  
   // Only allow admin users or HR department to access this page
   if (!currentUser || !(isAdmin() || currentUser.department === 'HR')) {
     return <Navigate to="/login" />;

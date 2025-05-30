@@ -11,7 +11,6 @@ import BranchTable from './BranchTable';
 import AddBranchDialog from './AddBranchDialog';
 import EditBranchDialog from './EditBranchDialog';
 import EditCompanyDialog from './EditCompanyDialog';
-import { RLSSettingsCard } from './components/RLSSettingsCard';
 
 const CompanyManagementRedesigned = () => {
   const { currentUser } = useUser();
@@ -68,11 +67,6 @@ const CompanyManagementRedesigned = () => {
           <BranchTable />
         </CardContent>
       </Card>
-
-      {/* RLS設定區塊 */}
-      {canManageBranches && (
-        <RLSSettingsCard />
-      )}
 
       {/* 對話框 */}
       <AddBranchDialog />

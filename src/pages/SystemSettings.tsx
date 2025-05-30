@@ -2,6 +2,7 @@
 import React from 'react';
 import { Settings } from 'lucide-react';
 import { ComprehensiveDiagnostics } from '@/components/company/diagnostics/ComprehensiveDiagnostics';
+import { RLSSettingsCard } from '@/components/company/components/RLSSettingsCard';
 
 const SystemSettings = () => {
   return (
@@ -16,7 +17,11 @@ const SystemSettings = () => {
         </p>
       </div>
 
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* RLS 安全設定區塊 */}
+        <RLSSettingsCard />
+        
+        {/* 系統診斷工具 */}
         <ComprehensiveDiagnostics />
       </div>
     </div>

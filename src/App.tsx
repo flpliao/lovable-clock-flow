@@ -2,6 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { UserProvider } from '@/contexts/UserContext';
+import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -27,28 +28,30 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <UserProvider>
-        <Router>
-          <div className="min-h-screen bg-gray-50">
-            <Header />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/leave-request" element={<LeaveRequest />} />
-              <Route path="/personal-attendance" element={<PersonalAttendance />} />
-              <Route path="/scheduling" element={<Scheduling />} />
-              <Route path="/company-announcements" element={<CompanyAnnouncements />} />
-              <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
-              <Route path="/personnel-management" element={<PersonnelManagement />} />
-              <Route path="/company-branch-management" element={<CompanyBranchManagement />} />
-              <Route path="/staff-dashboard" element={<StaffDashboard />} />
-              <Route path="/leave-approval/:requestId" element={<LeaveApprovalView />} />
-              <Route path="/system-settings" element={<SystemSettings />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </div>
-          <Toaster />
-          <Sonner />
-        </Router>
+        <LeaveManagementProvider>
+          <Router>
+            <div className="min-h-screen bg-gray-50">
+              <Header />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/leave-request" element={<LeaveRequest />} />
+                <Route path="/personal-attendance" element={<PersonalAttendance />} />
+                <Route path="/scheduling" element={<Scheduling />} />
+                <Route path="/company-announcements" element={<CompanyAnnouncements />} />
+                <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
+                <Route path="/personnel-management" element={<PersonnelManagement />} />
+                <Route path="/company-branch-management" element={<CompanyBranchManagement />} />
+                <Route path="/staff-dashboard" element={<StaffDashboard />} />
+                <Route path="/leave-approval/:requestId" element={<LeaveApprovalView />} />
+                <Route path="/system-settings" element={<SystemSettings />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
+            <Toaster />
+            <Sonner />
+          </Router>
+        </LeaveManagementProvider>
       </UserProvider>
     </QueryClientProvider>
   );

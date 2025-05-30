@@ -4,8 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info, Building2, Settings } from 'lucide-react';
 import { useSupabaseCompanyOperations } from './hooks/useSupabaseCompanyOperations';
-import { CompanyInfoCard } from './CompanyInfoCard';
-import { BranchTable } from './BranchTable';
+import CompanyInfoCard from './CompanyInfoCard';
+import BranchTable from './BranchTable';
 import { ComprehensiveDiagnostics } from './diagnostics/ComprehensiveDiagnostics';
 
 const CompanyManagementRedesigned = () => {

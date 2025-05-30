@@ -6,6 +6,7 @@ import { Company } from '@/types/company';
 import { CompanyValidationService } from '../services/companyValidationService';
 import { CompanyDataPreparer } from '../services/companyDataPreparer';
 import { CompanyApiService } from '../services/companyApiService';
+import { ensureUserAuthenticated } from '@/integrations/supabase/client';
 
 export const useCompanyOperations = () => {
   const [company, setCompany] = useState<Company | null>(null);
@@ -24,15 +25,15 @@ export const useCompanyOperations = () => {
         return;
       }
 
+      // 確保身份驗證
+      await ensureUserAuthenticated();
+
       const data = await CompanyApiService.loadCompany();
       setCompany(data);
+      console.log('公司資料載入成功:', data);
     } catch (error) {
       console.error('載入公司資料失敗:', error);
-      toast({
-        title: "載入失敗",
-        description: "無法載入公司資料，請檢查您的權限",
-        variant: "destructive"
-      });
+      // 不顯示錯誤 toast，避免影響用戶體驗
       setCompany(null);
     }
   };
@@ -63,6 +64,9 @@ export const useCompanyOperations = () => {
 
     try {
       console.log('🔍 開始資料驗證和處理...');
+      
+      // 確保身份驗證
+      await ensureUserAuthenticated();
       
       // 驗證必填欄位
       const validation = CompanyValidationService.validateCompanyData(updatedCompany);

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, ensureUserAuthenticated } from '@/integrations/supabase/client';
 import { Staff, StaffRole } from '../types';
 import { useUser } from '@/contexts/UserContext';
 
@@ -23,6 +23,10 @@ export const useStaffDataLoader = () => {
 
     try {
       console.log('正在載入員工資料...');
+      
+      // 確保身份驗證
+      await ensureUserAuthenticated();
+      
       const { data, error } = await supabase
         .from('staff')
         .select('*')
@@ -57,6 +61,9 @@ export const useStaffDataLoader = () => {
     }
 
     try {
+      // 確保身份驗證
+      await ensureUserAuthenticated();
+      
       const { data: rolesData, error: rolesError } = await supabase
         .from('staff_roles')
         .select(`

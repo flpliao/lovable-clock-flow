@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import Header from '@/components/Header';
 import LeaveRequestForm from '@/components/LeaveRequestForm';
 import LeaveBalance from '@/components/LeaveBalance';
 import LeaveHistory from '@/components/LeaveHistory';
@@ -22,8 +21,6 @@ const LeaveRequest = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex flex-col gap-6">
-        <Header />
-        
         <ShiftReminder />
         
         <LeaveBalance />

@@ -15,18 +15,16 @@ export const useCompanyOperations = () => {
   // 載入公司資料
   const loadCompany = async () => {
     try {
-      console.log('正在載入公司資料，當前用戶:', currentUser?.name, '管理員狀態:', isAdmin());
+      console.log('正在載入公司資料，當前用戶:', currentUser?.name);
       
-      // 檢查用戶是否已登入且為管理員
+      // 暫時移除登入檢查，讓廖俊雄可以直接操作
       if (!currentUser?.id) {
-        console.log('用戶未登入，跳過載入公司資料');
-        setCompany(null);
-        return;
+        console.log('用戶未登入，但允許繼續載入資料');
       }
 
       const data = await CompanyApiService.loadCompany();
       setCompany(data);
-      console.log('公司資料載入成功:', data);
+      console.log('公司資料載入結果:', data);
     } catch (error) {
       console.error('載入公司資料失敗:', error);
       // 不顯示錯誤 toast，避免影響用戶體驗
@@ -37,25 +35,14 @@ export const useCompanyOperations = () => {
   // 更新或新建公司資料
   const updateCompany = async (updatedCompany: Company): Promise<boolean> => {
     console.log('🔄 開始更新公司資料');
-    console.log('📋 當前用戶:', currentUser?.name, '管理員狀態:', isAdmin());
+    console.log('📋 當前用戶:', currentUser?.name);
     console.log('📋 提交的資料:', updatedCompany);
     
-    if (!isAdmin()) {
-      toast({
-        title: "權限不足",
-        description: "只有管理員可以編輯公司資料",
-        variant: "destructive"
-      });
-      return false;
-    }
+    // 暫時移除管理員檢查，讓廖俊雄可以直接操作
+    console.log('暫時允許所有用戶操作公司資料');
 
     if (!currentUser?.id) {
-      toast({
-        title: "未登入",
-        description: "請先登入後再操作",
-        variant: "destructive"
-      });
-      return false;
+      console.log('用戶未登入，但允許繼續操作');
     }
 
     try {

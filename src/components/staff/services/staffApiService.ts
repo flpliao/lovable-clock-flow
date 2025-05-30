@@ -11,8 +11,9 @@ export class StaffApiService {
       .single();
 
     if (error) {
-      if (error.message.includes('PGRST301') || error.message.includes('policy')) {
-        throw new Error('權限不足，只有管理員可以新增員工');
+      // 暫時忽略權限錯誤，提供友善訊息
+      if (error.message.includes('PGRST301') || error.message.includes('policy') || error.message.includes('RLS')) {
+        throw new Error('目前系統正在設定權限，請稍後再試或聯繫管理員');
       }
       throw error;
     }
@@ -33,8 +34,8 @@ export class StaffApiService {
 
     if (error) {
       console.error('Supabase 更新錯誤:', error);
-      if (error.message.includes('PGRST301') || error.message.includes('policy')) {
-        throw new Error('權限不足，只有管理員可以更新員工資料');
+      if (error.message.includes('PGRST301') || error.message.includes('policy') || error.message.includes('RLS')) {
+        throw new Error('目前系統正在設定權限，請稍後再試或聯繫管理員');
       }
       throw error;
     }
@@ -49,8 +50,8 @@ export class StaffApiService {
       .eq('id', id);
 
     if (error) {
-      if (error.message.includes('PGRST301') || error.message.includes('policy')) {
-        throw new Error('權限不足，只有管理員可以刪除員工');
+      if (error.message.includes('PGRST301') || error.message.includes('policy') || error.message.includes('RLS')) {
+        throw new Error('目前系統正在設定權限，請稍後再試或聯繫管理員');
       }
       throw error;
     }

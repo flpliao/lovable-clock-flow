@@ -7,15 +7,12 @@ import ScheduleCalendar from '@/components/ScheduleCalendar';
 import ScheduleForm from '@/components/ScheduleForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import StaffManagement from '@/components/staff/StaffManagement';
-import Header from '@/components/Header';
 
 const Scheduling = () => {
   const navigate = useNavigate();
   
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <Header />
-      
       <div className="p-5">
         <div className="flex items-center mb-4">
           <Button 

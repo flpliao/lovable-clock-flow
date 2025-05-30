@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Company } from '@/types/company';
 
@@ -26,16 +27,16 @@ export class CompanyApiService {
       console.log('🔧 CompanyApiService: 指定ID不存在，創建預設公司資料...');
       const defaultCompanyData = {
         id: specificCompanyId,
-        name: '阿波羅科技股份有限公司',
-        registration_number: '12345678',
-        address: '台北市信義區信義路五段7號',
-        phone: '02-2345-6789',
-        email: 'info@apollo-tech.com.tw',
-        website: 'https://apollo-tech.com.tw',
-        business_type: '軟體開發、系統整合',
-        legal_representative: '廖俊雄',
-        established_date: '2020-01-01',
-        capital: 10000000,
+        name: '依美琦股份有限公司',
+        registration_number: '53907735',
+        address: '台北市中山區建國北路二段145號3樓',
+        phone: '02-2507-3456',
+        email: 'info@yimeichi.com.tw',
+        website: 'https://yimeichi.com.tw',
+        business_type: '化妝品批發業、化妝品零售業、美容服務業',
+        legal_representative: '王美琦',
+        established_date: '2015-03-15',
+        capital: 5000000,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };

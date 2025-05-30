@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { CompanyManagementProvider } from './CompanyManagementContext';
 import CompanyInfoCard from './CompanyInfoCard';
 import BranchTable from './BranchTable';
 import AddBranchDialog from './AddBranchDialog';
@@ -12,7 +11,7 @@ import { useSupabaseConnectionTest } from './hooks/useSupabaseConnectionTest';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useDataLoader } from './hooks/useDataLoader';
 
-const CompanyManagementContent: React.FC = () => {
+const CompanyManagement: React.FC = () => {
   const { testSupabaseConnection, isTestingConnection } = useSupabaseConnectionTest();
   const { setIsAddBranchDialogOpen } = useCompanyManagementContext();
   const { refreshData, loading } = useDataLoader();
@@ -74,14 +73,6 @@ const CompanyManagementContent: React.FC = () => {
       <EditBranchDialog />
       <EditCompanyDialog />
     </div>
-  );
-};
-
-const CompanyManagement: React.FC = () => {
-  return (
-    <CompanyManagementProvider>
-      <CompanyManagementContent />
-    </CompanyManagementProvider>
   );
 };
 

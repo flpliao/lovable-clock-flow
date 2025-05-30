@@ -22,9 +22,10 @@ const EditCompanyDialog = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { isAdmin } = useUser();
-  // 暫時允許所有用戶操作
-  const hasPermission = true;
+  const { currentUser } = useUser();
+  
+  // 允許廖俊雄和管理員操作
+  const hasPermission = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
 
   const { editedCompany, setEditedCompany, resetFormData } = useCompanyFormData(
     company, 
@@ -36,7 +37,8 @@ const EditCompanyDialog = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('開始提交表單，當前資料:', editedCompany);
+    console.log('🚀 開始提交表單，當前資料:', editedCompany);
+    console.log('🔐 當前用戶:', currentUser?.name);
 
     if (!formValidation.validateForm(editedCompany)) {
       return;
@@ -59,7 +61,7 @@ const EditCompanyDialog = () => {
         capital: editedCompany.capital ? Number(editedCompany.capital) : null
       };
 
-      console.log('清理後的資料:', cleanedData);
+      console.log('🧹 清理後的資料:', cleanedData);
 
       // 建立完整的公司資料物件
       const companyData = {
@@ -69,21 +71,22 @@ const EditCompanyDialog = () => {
         updated_at: new Date().toISOString()
       } as Company;
 
-      console.log('準備提交的完整資料:', companyData);
+      console.log('📝 準備提交的完整資料:', companyData);
 
       const success = await handleUpdateCompany(companyData);
       if (success) {
-        console.log('公司資料更新成功');
+        console.log('✅ 公司資料更新成功');
         setIsEditCompanyDialogOpen(false);
+        resetFormData();
         toast({
           title: "儲存成功",
-          description: "公司基本資料已成功儲存"
+          description: company ? "公司基本資料已成功更新" : "公司基本資料已成功建立"
         });
       } else {
-        console.log('公司資料更新失敗');
+        console.log('❌ 公司資料更新失敗');
       }
     } catch (error) {
-      console.error('提交表單時發生錯誤:', error);
+      console.error('💥 提交表單時發生錯誤:', error);
       toast({
         title: "儲存失敗",
         description: error instanceof Error ? error.message : "儲存時發生未知錯誤",

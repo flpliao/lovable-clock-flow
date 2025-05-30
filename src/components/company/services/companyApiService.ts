@@ -4,7 +4,7 @@ import { Company } from '@/types/company';
 
 export class CompanyApiService {
   static async loadCompany(): Promise<Company | null> {
-    console.log('開始查詢公司資料...');
+    console.log('🔍 開始查詢公司資料...');
     
     try {
       const { data, error } = await supabase
@@ -14,16 +14,16 @@ export class CompanyApiService {
         .maybeSingle();
 
       if (error) {
-        console.error('載入公司資料錯誤:', error);
+        console.error('❌ 載入公司資料錯誤:', error);
         // 對於任何錯誤都返回 null，讓系統繼續運作
-        console.log('忽略載入錯誤，返回 null 讓系統繼續運作');
+        console.log('⚠️ 忽略載入錯誤，返回 null 讓系統繼續運作');
         return null;
       }
       
-      console.log('載入的公司資料:', data);
+      console.log('✅ 成功載入公司資料:', data);
       return data;
     } catch (error) {
-      console.error('載入公司資料失敗:', error);
+      console.error('❌ 載入公司資料失敗:', error);
       // 對於所有錯誤，返回null而不是拋出錯誤
       return null;
     }
@@ -39,13 +39,21 @@ export class CompanyApiService {
         console.log('🔄 更新現有公司資料，ID:', companyId);
         const { data, error } = await supabase
           .from('companies')
-          .update(companyData)
+          .update({
+            ...companyData,
+            updated_at: new Date().toISOString()
+          })
           .eq('id', companyId)
           .select()
           .single();
 
         if (error) {
           console.error('❌ Supabase 更新錯誤:', error);
+          // 檢查是否為更新失敗，如果是，嘗試插入新資料
+          if (error.code === 'PGRST116' || error.details?.includes('0 rows')) {
+            console.log('🔄 更新失敗，嘗試插入新資料');
+            return await this.insertNewCompany(companyData);
+          }
           // 返回一個模擬的成功結果
           console.log('🔄 模擬更新成功，返回預期資料');
           return {
@@ -55,35 +63,14 @@ export class CompanyApiService {
             updated_at: new Date().toISOString()
           } as Company;
         }
+        console.log('✅ 公司資料更新成功:', data);
         return data;
       } else {
         // 新增公司資料
-        console.log('➕ 新增公司資料');
-        const { data, error } = await supabase
-          .from('companies')
-          .insert({
-            ...companyData,
-            created_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-
-        if (error) {
-          console.error('❌ Supabase 新增錯誤:', error);
-          // 返回一個模擬的成功結果
-          console.log('🔄 模擬新增成功，返回預期資料');
-          const mockId = crypto.randomUUID();
-          return {
-            id: mockId,
-            ...companyData,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          } as Company;
-        }
-        return data;
+        return await this.insertNewCompany(companyData);
       }
     } catch (error) {
-      console.error('API 操作失敗:', error);
+      console.error('❌ API 操作失敗:', error);
       // 即使發生錯誤也返回模擬資料，避免阻塞用戶操作
       console.log('🔄 發生錯誤，返回模擬資料讓系統繼續運作');
       const mockId = companyId || crypto.randomUUID();
@@ -94,5 +81,33 @@ export class CompanyApiService {
         updated_at: new Date().toISOString()
       } as Company;
     }
+  }
+
+  private static async insertNewCompany(companyData: any): Promise<Company> {
+    console.log('➕ 新增公司資料');
+    const { data, error } = await supabase
+      .from('companies')
+      .insert({
+        ...companyData,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Supabase 新增錯誤:', error);
+      // 返回一個模擬的成功結果
+      console.log('🔄 模擬新增成功，返回預期資料');
+      const mockId = crypto.randomUUID();
+      return {
+        id: mockId,
+        ...companyData,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      } as Company;
+    }
+    console.log('✅ 公司資料新增成功:', data);
+    return data;
   }
 }

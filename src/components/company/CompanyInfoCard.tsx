@@ -2,15 +2,19 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Edit, MapPin, Phone, Mail } from 'lucide-react';
+import { Building2, Edit, MapPin, Phone, Mail, RefreshCw } from 'lucide-react';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useUser } from '@/contexts/UserContext';
 
 const CompanyInfoCard = () => {
   const { company, setIsEditCompanyDialogOpen } = useCompanyManagementContext();
-  const { isAdmin } = useUser();
+  const { isAdmin, currentUser } = useUser();
 
-  console.log('CompanyInfoCard - company:', company);
+  console.log('CompanyInfoCard - 當前用戶:', currentUser?.name);
+  console.log('CompanyInfoCard - 公司資料:', company);
+
+  // 允許廖俊雄和管理員編輯公司資料
+  const canEdit = currentUser?.name === '廖俊雄' || isAdmin();
 
   if (!company) {
     return (
@@ -24,8 +28,9 @@ const CompanyInfoCard = () => {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
+            <Building2 className="h-16 w-16 mx-auto text-gray-300 mb-4" />
             <p className="text-gray-500 mb-4">系統中尚未設定公司基本資料</p>
-            {isAdmin() && (
+            {canEdit && (
               <Button 
                 onClick={() => setIsEditCompanyDialogOpen(true)}
                 className="flex items-center mx-auto"
@@ -50,7 +55,7 @@ const CompanyInfoCard = () => {
           </CardTitle>
           <CardDescription>管理公司基本資訊與統一編號等法定資料</CardDescription>
         </div>
-        {isAdmin() && (
+        {canEdit && (
           <Button 
             variant="outline" 
             size="sm" 
@@ -119,6 +124,11 @@ const CompanyInfoCard = () => {
                 </a>
               </div>
             )}
+          </div>
+        </div>
+        <div className="mt-4 pt-4 border-t">
+          <div className="text-xs text-gray-500">
+            最後更新: {company.updated_at ? new Date(company.updated_at).toLocaleString('zh-TW') : '未知'}
           </div>
         </div>
       </CardContent>

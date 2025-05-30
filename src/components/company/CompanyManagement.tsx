@@ -7,13 +7,20 @@ import AddBranchDialog from './AddBranchDialog';
 import EditBranchDialog from './EditBranchDialog';
 import EditCompanyDialog from './EditCompanyDialog';
 import { Button } from '@/components/ui/button';
-import { Plus, Database } from 'lucide-react';
+import { Plus, Database, RefreshCw } from 'lucide-react';
 import { useSupabaseConnectionTest } from './hooks/useSupabaseConnectionTest';
 import { useCompanyManagementContext } from './CompanyManagementContext';
+import { useDataLoader } from './hooks/useDataLoader';
 
 const CompanyManagementContent: React.FC = () => {
   const { testSupabaseConnection, isTestingConnection } = useSupabaseConnectionTest();
   const { setIsAddBranchDialogOpen } = useCompanyManagementContext();
+  const { refreshData, loading } = useDataLoader();
+
+  const handleRefreshData = async () => {
+    console.log('手動重新整理資料...');
+    await refreshData();
+  };
 
   return (
     <div className="space-y-6">
@@ -23,6 +30,15 @@ const CompanyManagementContent: React.FC = () => {
           <p className="text-gray-500">管理公司基本資料和分支機構</p>
         </div>
         <div className="flex gap-2">
+          <Button
+            onClick={handleRefreshData}
+            disabled={loading}
+            variant="outline"
+            size="sm"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? '載入中...' : '重新整理'}
+          </Button>
           <Button
             onClick={testSupabaseConnection}
             disabled={isTestingConnection}

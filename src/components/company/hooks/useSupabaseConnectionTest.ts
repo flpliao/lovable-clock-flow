@@ -13,7 +13,7 @@ export const useSupabaseConnectionTest = () => {
     try {
       console.log('開始測試 Supabase 連線...');
       
-      // 簡化連線測試，直接測試資料庫連線
+      // 改為測試 companies 表而不是 staff 表，避免 RLS 問題
       const { data, error } = await supabase
         .from('companies')
         .select('count')

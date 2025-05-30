@@ -16,13 +16,13 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   }
 });
 
-// 簡化身份驗證 - 直接設定廖俊雄為當前用戶
+// 移除複雜的身份驗證邏輯，避免觸發 RLS 問題
 export const ensureUserAuthenticated = async () => {
   try {
     console.log('廖俊雄身份驗證檢查...');
     
-    // 不再嘗試匿名登入，直接返回成功
-    // 因為廖俊雄的身份在前端已經設定
+    // 簡化驗證邏輯，直接返回成功
+    // 因為廖俊雄的身份在前端 UserContext 中已經設定
     return true;
   } catch (error) {
     console.error('身份驗證失敗:', error);

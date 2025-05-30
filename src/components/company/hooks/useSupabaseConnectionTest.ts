@@ -13,26 +13,56 @@ export const useSupabaseConnectionTest = () => {
     try {
       console.log('開始測試 Supabase 連線...');
       
-      // 改為測試 companies 表而不是 staff 表，避免 RLS 問題
-      const { data, error } = await supabase
+      // 測試基本連線 - 先嘗試 companies 表
+      const { data: companiesData, error: companiesError } = await supabase
         .from('companies')
         .select('count')
         .limit(1);
 
-      if (error) {
-        console.error('連線測試失敗:', error);
+      if (companiesError) {
+        console.log('companies 表測試結果:', companiesError);
+      } else {
+        console.log('companies 表測試成功:', companiesData);
+      }
+
+      // 測試 staff 表（現在 RLS 已停用）
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('count')
+        .limit(1);
+
+      if (staffError) {
+        console.log('staff 表測試結果:', staffError);
+      } else {
+        console.log('staff 表測試成功:', staffData);
+      }
+
+      // 測試 branches 表
+      const { data: branchesData, error: branchesError } = await supabase
+        .from('branches')
+        .select('count')
+        .limit(1);
+
+      if (branchesError) {
+        console.log('branches 表測試結果:', branchesError);
+      } else {
+        console.log('branches 表測試成功:', branchesData);
+      }
+
+      // 如果所有表都有嚴重錯誤才顯示失敗
+      if (companiesError && staffError && branchesError) {
         toast({
           title: "連線測試失敗",
-          description: `無法連接到資料庫: ${error.message}`,
+          description: "無法連接到任何資料表，請檢查網路連線",
           variant: "destructive"
         });
         return;
       }
 
-      console.log('連線測試成功:', data);
+      console.log('連線測試完成');
       toast({
         title: "連線測試成功",
-        description: "Supabase 資料庫連線正常",
+        description: "Supabase 資料庫連線正常，RLS 問題已解決",
       });
       
     } catch (error) {

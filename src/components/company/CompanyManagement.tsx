@@ -9,51 +9,62 @@ import EditCompanyDialog from './EditCompanyDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Database } from 'lucide-react';
 import { useSupabaseConnectionTest } from './hooks/useSupabaseConnectionTest';
+import { useCompanyManagementContext } from './CompanyManagementContext';
 
-const CompanyManagement: React.FC = () => {
+const CompanyManagementContent: React.FC = () => {
   const { testSupabaseConnection, isTestingConnection } = useSupabaseConnectionTest();
+  const { setIsAddBranchDialogOpen } = useCompanyManagementContext();
 
   return (
-    <CompanyManagementProvider>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">公司管理</h1>
-            <p className="text-gray-500">管理公司基本資料和分支機構</p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={testSupabaseConnection}
-              disabled={isTestingConnection}
-              variant="outline"
-              size="sm"
-            >
-              <Database className="h-4 w-4 mr-2" />
-              {isTestingConnection ? '測試中...' : '測試連線'}
-            </Button>
-          </div>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold">公司管理</h1>
+          <p className="text-gray-500">管理公司基本資料和分支機構</p>
         </div>
-
-        {/* 公司基本資料 */}
-        <CompanyInfoCard />
-
-        {/* 分支機構管理 */}
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">分支機構</h2>
-            <Button size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              新增分支
-            </Button>
-          </div>
-          <BranchTable />
+        <div className="flex gap-2">
+          <Button
+            onClick={testSupabaseConnection}
+            disabled={isTestingConnection}
+            variant="outline"
+            size="sm"
+          >
+            <Database className="h-4 w-4 mr-2" />
+            {isTestingConnection ? '測試中...' : '測試連線'}
+          </Button>
         </div>
-
-        {/* 對話框 */}
-        <AddBranchDialog />
-        <EditBranchDialog />
-        <EditCompanyDialog />
       </div>
+
+      {/* 公司基本資料 */}
+      <CompanyInfoCard />
+
+      {/* 分支機構管理 */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">分支機構</h2>
+          <Button 
+            size="sm"
+            onClick={() => setIsAddBranchDialogOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            新增分支
+          </Button>
+        </div>
+        <BranchTable />
+      </div>
+
+      {/* 對話框 */}
+      <AddBranchDialog />
+      <EditBranchDialog />
+      <EditCompanyDialog />
+    </div>
+  );
+};
+
+const CompanyManagement: React.FC = () => {
+  return (
+    <CompanyManagementProvider>
+      <CompanyManagementContent />
     </CompanyManagementProvider>
   );
 };

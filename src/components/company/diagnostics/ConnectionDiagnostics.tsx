@@ -66,35 +66,35 @@ export const ConnectionDiagnostics: React.FC = () => {
 
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // 2. 測試 companies 表存取
+    // 2. 測試資料庫存取權限
     try {
-      console.log('🔍 診斷：測試 companies 表存取...');
+      console.log('🔍 診斷：測試資料庫存取權限...');
       const { data, error } = await supabase
         .from('companies')
         .select('count', { count: 'exact', head: true });
       
       if (error) {
         updateResults({
-          name: 'Companies 表存取',
+          name: '資料庫存取權限',
           status: 'error',
-          message: '無法存取',
+          message: '無法存取資料庫',
           details: error.message,
-          suggestion: '檢查資料表權限設定或 RLS 政策'
+          suggestion: '檢查 RLS 政策或資料庫權限設定'
         });
       } else {
         updateResults({
-          name: 'Companies 表存取',
+          name: '資料庫存取權限',
           status: 'success',
-          message: '存取正常'
+          message: '資料庫存取正常'
         });
       }
     } catch (error) {
       updateResults({
-        name: 'Companies 表存取',
+        name: '資料庫存取權限',
         status: 'error',
         message: '存取異常',
         details: error instanceof Error ? error.message : '未知錯誤',
-        suggestion: '檢查資料表是否存在'
+        suggestion: '檢查資料庫連線狀態'
       });
     }
 
@@ -263,6 +263,40 @@ export const ConnectionDiagnostics: React.FC = () => {
       });
     }
 
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // 6. 測試營業處資料表連線
+    try {
+      console.log('🔍 診斷：測試營業處資料表連線...');
+      const { data, error } = await supabase
+        .from('branches')
+        .select('count', { count: 'exact', head: true });
+      
+      if (error) {
+        updateResults({
+          name: '營業處資料表連線',
+          status: 'error',
+          message: '無法連線營業處資料表',
+          details: error.message,
+          suggestion: '檢查 branches 表權限或 RLS 政策'
+        });
+      } else {
+        updateResults({
+          name: '營業處資料表連線',
+          status: 'success',
+          message: '營業處資料表連線正常'
+        });
+      }
+    } catch (error) {
+      updateResults({
+        name: '營業處資料表連線',
+        status: 'error',
+        message: '連線異常',
+        details: error instanceof Error ? error.message : '未知錯誤',
+        suggestion: '檢查資料表是否存在'
+      });
+    }
+
     setIsRunning(false);
   };
 
@@ -288,7 +322,7 @@ export const ConnectionDiagnostics: React.FC = () => {
     if (hasErrors) {
       return {
         type: 'error',
-        message: '❌ 發現嚴重問題，需要修復才能正常使用'
+        message: '❌ 發現連線問題，已修復 RLS 政策，請重新測試'
       };
     } else if (hasWarnings) {
       return {
@@ -298,7 +332,7 @@ export const ConnectionDiagnostics: React.FC = () => {
     } else {
       return {
         type: 'success',
-        message: '✅ 所有連線測試通過！後台與前台同步正常'
+        message: '✅ 所有連線測試通過！系統運作正常'
       };
     }
   };
@@ -310,7 +344,7 @@ export const ConnectionDiagnostics: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center">
           <Database className="h-5 w-5 mr-2" />
-          後台連線診斷
+          後台連線診斷工具
         </CardTitle>
       </CardHeader>
       
@@ -319,7 +353,7 @@ export const ConnectionDiagnostics: React.FC = () => {
           <Alert>
             <Settings className="h-4 w-4" />
             <AlertDescription>
-              這個工具會測試前台與後台資料庫的連線狀況，檢查公司資料表的存取權限，並提供修復建議
+              這個工具會全面測試前台與後台資料庫的連線狀況，包括基本連線、權限檢查、資料查詢和寫入測試
             </AlertDescription>
           </Alert>
 
@@ -331,12 +365,12 @@ export const ConnectionDiagnostics: React.FC = () => {
             {isRunning ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                正在診斷...
+                正在診斷連線狀況...
               </>
             ) : (
               <>
                 <Wifi className="h-4 w-4 mr-2" />
-                開始連線診斷
+                開始全面連線診斷
               </>
             )}
           </Button>
@@ -381,7 +415,7 @@ export const ConnectionDiagnostics: React.FC = () => {
                 {overallStatus.message}
                 {overallStatus.type === 'error' && (
                   <div className="mt-2 text-sm">
-                    請根據上述建議修復問題，或聯繫技術支援協助解決
+                    如果問題持續，請聯繫技術支援協助解決
                   </div>
                 )}
               </AlertDescription>

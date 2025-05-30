@@ -46,8 +46,8 @@ export const useCompanySyncManager = () => {
       // 根據錯誤類型提供不同的提示
       let errorMessage = "載入公司資料時發生錯誤";
       if (error instanceof Error) {
-        if (error.message.includes('無法連接')) {
-          errorMessage = "無法連接到資料庫，請檢查網路連線";
+        if (error.message.includes('連線失敗')) {
+          errorMessage = "資料庫連線失敗，請檢查網路連線或重新整理頁面";
         } else if (error.message.includes('PGRST')) {
           errorMessage = "資料庫服務暫時無法使用，請稍後再試";
         } else {
@@ -84,13 +84,6 @@ export const useCompanySyncManager = () => {
     try {
       console.log('🔑 useCompanySyncManager: 廖俊雄執行同步操作');
       
-      // 先測試連線
-      console.log('🔗 useCompanySyncManager: 測試資料庫連線...');
-      const isConnected = await CompanyDataService.testConnection();
-      if (!isConnected) {
-        throw new Error('無法連接到資料庫，請檢查：\n• 網路連線是否正常\n• 是否可以訪問 Supabase 服務\n• 瀏覽器是否阻擋連線');
-      }
-      
       // 執行強制同步
       const company = await CompanyDataService.forceSync();
       setCompany(company);
@@ -110,9 +103,9 @@ export const useCompanySyncManager = () => {
       let suggestions = '';
       
       if (error instanceof Error) {
-        if (error.message.includes('無法連接')) {
-          errorMessage = '無法連接到資料庫';
-          suggestions = '請檢查網路連線或聯繫技術支援';
+        if (error.message.includes('連線失敗')) {
+          errorMessage = '資料庫連線失敗';
+          suggestions = '請檢查網路連線或重新整理頁面';
         } else if (error.message.includes('PGRST')) {
           errorMessage = 'Supabase API 連線問題';
           suggestions = '請稍後再試或重新整理頁面';

@@ -28,17 +28,6 @@ export class CompanyDataService {
         return false;
       }
       
-      // 3. 測試特定資料存取
-      const { error: accessError } = await supabase
-        .from('companies')
-        .select('id')
-        .limit(1);
-        
-      if (accessError) {
-        console.error('❌ CompanyDataService: 資料存取測試失敗:', accessError);
-        return false;
-      }
-      
       console.log('✅ CompanyDataService: 資料庫連線測試通過');
       return true;
     } catch (error) {
@@ -47,7 +36,7 @@ export class CompanyDataService {
     }
   }
 
-  // 查詢公司資料 - 增強連線檢查和錯誤處理
+  // 查詢公司資料 - 增強錯誤處理
   static async findCompany(): Promise<Company | null> {
     console.log('🔍 CompanyDataService: 查詢依美琦公司資料...');
     
@@ -55,7 +44,7 @@ export class CompanyDataService {
       // 先測試連線
       const isConnected = await this.testConnection();
       if (!isConnected) {
-        throw new Error('無法連接到資料庫，請檢查網路連線和資料庫狀態');
+        throw new Error('資料庫連線失敗，請檢查網路連線和資料庫狀態');
       }
 
       // 查詢公司資料
@@ -103,7 +92,7 @@ export class CompanyDataService {
     };
   }
 
-  // 創建標準的依美琦公司資料 - 改進錯誤處理
+  // 創建標準的依美琦公司資料
   static async createStandardCompany(): Promise<Company> {
     console.log('➕ CompanyDataService: 創建標準依美琦公司資料...');
     
@@ -111,7 +100,7 @@ export class CompanyDataService {
       // 先確認連線
       const isConnected = await this.testConnection();
       if (!isConnected) {
-        throw new Error('無法連接到資料庫，無法創建公司資料');
+        throw new Error('資料庫連線失敗，無法創建公司資料');
       }
 
       const companyData = {
@@ -146,11 +135,17 @@ export class CompanyDataService {
     }
   }
 
-  // 更新公司資料 - 簡化操作避免權限問題
+  // 更新公司資料
   static async updateCompany(companyId: string, updateData: Partial<Company>): Promise<Company> {
     console.log('🔄 CompanyDataService: 更新公司資料...', { companyId, updateData });
     
     try {
+      // 先測試連線
+      const isConnected = await this.testConnection();
+      if (!isConnected) {
+        throw new Error('資料庫連線失敗，無法更新公司資料');
+      }
+
       const cleanedData = {
         ...updateData,
         updated_at: new Date().toISOString()
@@ -197,14 +192,14 @@ export class CompanyDataService {
 
   // 強制同步 - 增強連線檢查和錯誤處理
   static async forceSync(): Promise<Company> {
-    console.log('🔄 CompanyDataService: 廖俊雄執行強制同步...');
+    console.log('🔄 CompanyDataService: 執行強制同步...');
     
     try {
       // 1. 詳細的連線測試
       console.log('🔗 CompanyDataService: 檢查資料庫連線狀態...');
       const isConnected = await this.testConnection();
       if (!isConnected) {
-        throw new Error('無法連接到資料庫，請檢查：\n1. 網路連線是否正常\n2. Supabase 服務是否運作\n3. 專案設定是否正確');
+        throw new Error('資料庫連線失敗，請檢查網路連線或重新整理頁面');
       }
 
       // 2. 查詢現有資料
@@ -246,10 +241,10 @@ export class CompanyDataService {
       // 提供更詳細的錯誤資訊
       let errorMessage = '強制同步失敗';
       if (error instanceof Error) {
-        if (error.message.includes('無法連接')) {
-          errorMessage = '無法連接到資料庫，請檢查網路連線或聯繫技術支援';
+        if (error.message.includes('連線失敗')) {
+          errorMessage = '資料庫連線問題，請檢查網路連線或重新整理頁面';
         } else if (error.message.includes('PGRST')) {
-          errorMessage = 'Supabase API 連線問題，請稍後再試';
+          errorMessage = 'Supabase API 連線問題，請稍後再試或重新整理頁面';
         } else {
           errorMessage = `同步失敗: ${error.message}`;
         }

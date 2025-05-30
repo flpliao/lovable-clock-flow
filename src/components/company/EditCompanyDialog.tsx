@@ -95,7 +95,7 @@ const EditCompanyDialog = () => {
     }
 
     // 驗證統一編號格式 (台灣統一編號為8位數字)
-    const registrationNumber = (editedCompany.registration_number || '').trim();
+    const registrationNumber = (editedCompany.registration_number || '').toString().trim();
     if (!/^\d{8}$/.test(registrationNumber)) {
       toast({
         title: "格式錯誤",
@@ -106,8 +106,9 @@ const EditCompanyDialog = () => {
     }
 
     // 驗證電子郵件格式
+    const email = (editedCompany.email || '').trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(editedCompany.email || '')) {
+    if (!emailRegex.test(email)) {
       toast({
         title: "格式錯誤",
         description: "請輸入有效的電子郵件地址",
@@ -116,11 +117,26 @@ const EditCompanyDialog = () => {
       return false;
     }
 
+    // 驗證資本額 (如果有填寫的話)
+    if (editedCompany.capital !== null && editedCompany.capital !== undefined) {
+      const capital = Number(editedCompany.capital);
+      if (isNaN(capital) || capital < 0) {
+        toast({
+          title: "格式錯誤",
+          description: "資本額必須為正數",
+          variant: "destructive"
+        });
+        return false;
+      }
+    }
+
     return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('開始提交表單，當前資料:', editedCompany);
     
     if (!hasPermission) {
       toast({
@@ -136,22 +152,28 @@ const EditCompanyDialog = () => {
     }
 
     setIsSubmitting(true);
-    console.log('提交公司資料:', editedCompany);
 
     try {
+      // 準備乾淨的資料
+      const cleanedData = {
+        name: editedCompany.name?.toString().trim() || '',
+        registration_number: editedCompany.registration_number?.toString().trim() || '',
+        legal_representative: editedCompany.legal_representative?.toString().trim() || '',
+        business_type: editedCompany.business_type?.toString().trim() || '',
+        address: editedCompany.address?.toString().trim() || '',
+        phone: editedCompany.phone?.toString().trim() || '',
+        email: editedCompany.email?.toString().trim() || '',
+        website: editedCompany.website?.toString().trim() || '',
+        established_date: editedCompany.established_date?.toString().trim() || '',
+        capital: editedCompany.capital ? Number(editedCompany.capital) : null
+      };
+
+      console.log('清理後的資料:', cleanedData);
+
       // 建立完整的公司資料物件
       const companyData = {
         id: company?.id || crypto.randomUUID(),
-        name: editedCompany.name?.trim() || '',
-        registration_number: editedCompany.registration_number?.trim() || '',
-        legal_representative: editedCompany.legal_representative?.trim() || '',
-        business_type: editedCompany.business_type?.trim() || '',
-        address: editedCompany.address?.trim() || '',
-        phone: editedCompany.phone?.trim() || '',
-        email: editedCompany.email?.trim() || '',
-        website: editedCompany.website?.trim() || '',
-        established_date: editedCompany.established_date || '',
-        capital: editedCompany.capital || null,
+        ...cleanedData,
         created_at: company?.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString()
       } as Company;
@@ -162,14 +184,18 @@ const EditCompanyDialog = () => {
       if (success) {
         console.log('公司資料更新成功');
         setIsEditCompanyDialogOpen(false);
+        toast({
+          title: "儲存成功",
+          description: "公司基本資料已成功儲存"
+        });
       } else {
         console.log('公司資料更新失敗');
       }
     } catch (error) {
-      console.error('提交更新時發生錯誤:', error);
+      console.error('提交表單時發生錯誤:', error);
       toast({
-        title: "提交失敗",
-        description: "提交更新時發生錯誤，請重試",
+        title: "儲存失敗",
+        description: error instanceof Error ? error.message : "儲存時發生未知錯誤",
         variant: "destructive"
       });
     } finally {
@@ -228,7 +254,13 @@ const EditCompanyDialog = () => {
               <Input
                 id="registration-number"
                 value={editedCompany.registration_number || ''}
-                onChange={(e) => setEditedCompany({ ...editedCompany, registration_number: e.target.value })}
+                onChange={(e) => {
+                  // 只允許數字輸入
+                  const value = e.target.value.replace(/\D/g, '');
+                  if (value.length <= 8) {
+                    setEditedCompany({ ...editedCompany, registration_number: value });
+                  }
+                }}
                 placeholder="請輸入8位數統一編號"
                 required
                 disabled={isSubmitting || !hasPermission}
@@ -326,8 +358,13 @@ const EditCompanyDialog = () => {
             <Input
               id="capital"
               type="number"
+              min="0"
+              step="1"
               value={editedCompany.capital || ''}
-              onChange={(e) => setEditedCompany({ ...editedCompany, capital: e.target.value ? Number(e.target.value) : null })}
+              onChange={(e) => {
+                const value = e.target.value === '' ? null : Number(e.target.value);
+                setEditedCompany({ ...editedCompany, capital: value });
+              }}
               placeholder="請輸入資本額"
               disabled={isSubmitting || !hasPermission}
             />

@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
-import { supabase } from '@/integrations/supabase/client';
 import { Department, NewDepartment } from '../types';
+import { departmentApiService } from '../services/departmentApiService';
 
 export const useSupabaseDepartmentOperations = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -11,53 +11,12 @@ export const useSupabaseDepartmentOperations = () => {
   const { toast } = useToast();
   const { isAdmin } = useUser();
 
-  // 將 Supabase 資料格式轉換為前端格式
-  const transformDepartmentData = (dbData: any): Department => ({
-    id: dbData.id,
-    name: dbData.name,
-    type: dbData.type,
-    location: dbData.location,
-    managerName: dbData.manager_name,
-    managerContact: dbData.manager_contact,
-    staffCount: dbData.staff_count,
-    created_at: dbData.created_at,
-    updated_at: dbData.updated_at
-  });
-
-  // 將前端格式轉換為 Supabase 資料格式
-  const transformToDbFormat = (frontendData: NewDepartment) => ({
-    name: frontendData.name,
-    type: frontendData.type,
-    location: frontendData.location,
-    manager_name: frontendData.managerName,
-    manager_contact: frontendData.managerContact
-  });
-
   // 從 Supabase 載入部門資料
   const loadDepartments = async () => {
     try {
       setLoading(true);
-      console.log('正在從 Supabase 載入部門資料...');
-      
-      const { data, error } = await supabase
-        .from('departments')
-        .select('*')
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('載入部門資料失敗:', error);
-        toast({
-          title: "載入失敗",
-          description: "無法載入部門資料，請稍後再試",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      console.log('成功載入部門資料:', data);
-      const transformedData = data?.map(transformDepartmentData) || [];
-      setDepartments(transformedData);
-      
+      const data = await departmentApiService.loadDepartments();
+      setDepartments(data);
     } catch (error) {
       console.error('載入部門資料發生錯誤:', error);
       toast({
@@ -82,41 +41,20 @@ export const useSupabaseDepartmentOperations = () => {
     }
 
     try {
-      console.log('正在新增部門:', newDepartment);
-      
-      const dbData = transformToDbFormat(newDepartment);
-      
-      const { data, error } = await supabase
-        .from('departments')
-        .insert([dbData])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('新增部門失敗:', error);
-        toast({
-          title: "新增失敗",
-          description: error.message || "新增部門時發生錯誤",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      console.log('成功新增部門:', data);
-      const transformedData = transformDepartmentData(data);
+      const transformedData = await departmentApiService.addDepartment(newDepartment);
       setDepartments(prev => [...prev, transformedData]);
       
       toast({
         title: "新增成功",
-        description: `已成功新增 ${data.name} 至部門/門市列表`
+        description: `已成功新增 ${transformedData.name} 至部門/門市列表`
       });
       
       return true;
     } catch (error) {
       console.error('新增部門發生錯誤:', error);
       toast({
-        title: "新增錯誤",
-        description: "新增部門時發生錯誤",
+        title: "新增失敗",
+        description: error instanceof Error ? error.message : "新增部門時發生錯誤",
         variant: "destructive"
       });
       return false;
@@ -135,49 +73,22 @@ export const useSupabaseDepartmentOperations = () => {
     }
 
     try {
-      console.log('正在更新部門:', department);
-      
-      const { data, error } = await supabase
-        .from('departments')
-        .update({
-          name: department.name,
-          type: department.type,
-          location: department.location,
-          manager_name: department.managerName,
-          manager_contact: department.managerContact,
-          staff_count: department.staffCount
-        })
-        .eq('id', department.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('更新部門失敗:', error);
-        toast({
-          title: "更新失敗",
-          description: error.message || "更新部門時發生錯誤",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      console.log('成功更新部門:', data);
-      const transformedData = transformDepartmentData(data);
+      const transformedData = await departmentApiService.updateDepartment(department);
       setDepartments(prev => prev.map(dept => 
         dept.id === department.id ? transformedData : dept
       ));
       
       toast({
         title: "更新成功",
-        description: `已成功更新 ${data.name} 的資料`
+        description: `已成功更新 ${transformedData.name} 的資料`
       });
       
       return true;
     } catch (error) {
       console.error('更新部門發生錯誤:', error);
       toast({
-        title: "更新錯誤",
-        description: "更新部門時發生錯誤",
+        title: "更新失敗",
+        description: error instanceof Error ? error.message : "更新部門時發生錯誤",
         variant: "destructive"
       });
       return false;
@@ -196,8 +107,6 @@ export const useSupabaseDepartmentOperations = () => {
     }
 
     try {
-      console.log('正在刪除部門:', id);
-      
       // 檢查部門是否有員工
       const deptToDelete = departments.find(dept => dept.id === id);
       if (deptToDelete && deptToDelete.staffCount > 0) {
@@ -209,22 +118,7 @@ export const useSupabaseDepartmentOperations = () => {
         return false;
       }
 
-      const { error } = await supabase
-        .from('departments')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('刪除部門失敗:', error);
-        toast({
-          title: "刪除失敗",
-          description: error.message || "刪除部門時發生錯誤",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      console.log('成功刪除部門:', id);
+      await departmentApiService.deleteDepartment(id);
       setDepartments(prev => prev.filter(dept => dept.id !== id));
       
       toast({
@@ -236,8 +130,8 @@ export const useSupabaseDepartmentOperations = () => {
     } catch (error) {
       console.error('刪除部門發生錯誤:', error);
       toast({
-        title: "刪除錯誤",
-        description: "刪除部門時發生錯誤",
+        title: "刪除失敗",
+        description: error instanceof Error ? error.message : "刪除部門時發生錯誤",
         variant: "destructive"
       });
       return false;

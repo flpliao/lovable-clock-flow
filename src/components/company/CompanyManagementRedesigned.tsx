@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Building2, Plus, Settings, Shield, Stethoscope } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { useCompanyManagementContext } from './CompanyManagementContext';
+import { useCompanyOperations } from './hooks/useCompanyOperations';
 import CompanyInfoCard from './CompanyInfoCard';
 import BranchTable from './BranchTable';
 import AddBranchDialog from './AddBranchDialog';
@@ -16,7 +17,8 @@ import { ComprehensiveDiagnostics } from './diagnostics/ComprehensiveDiagnostics
 
 const CompanyManagementRedesigned = () => {
   const { currentUser } = useUser();
-  const { setIsAddBranchDialogOpen, branches } = useCompanyManagementContext();
+  const { setIsAddBranchDialogOpen, branches, setIsEditCompanyDialogOpen } = useCompanyManagementContext();
+  const { company, loading, loadCompany, forceSyncFromBackend } = useCompanyOperations();
   
   // 允許廖俊雄和管理員管理營業處
   const canManageBranches = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
@@ -28,6 +30,16 @@ const CompanyManagementRedesigned = () => {
   const handleAddBranch = () => {
     console.log('📍 CompanyManagementRedesigned: 開啟新增營業處對話框');
     setIsAddBranchDialogOpen(true);
+  };
+
+  const handleSyncCompany = async () => {
+    console.log('🔄 CompanyManagementRedesigned: 執行強制同步');
+    await forceSyncFromBackend();
+  };
+
+  const handleEditCompany = () => {
+    console.log('🖊️ CompanyManagementRedesigned: 開啟編輯公司對話框');
+    setIsEditCompanyDialogOpen(true);
   };
 
   return (
@@ -62,7 +74,14 @@ const CompanyManagementRedesigned = () => {
       {/* 系統設定區塊 */}
       {canManageBranches && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <CompanySyncCard />
+          <CompanySyncCard
+            company={company}
+            loading={loading}
+            onLoadCompany={loadCompany}
+            onSyncCompany={handleSyncCompany}
+            onEditCompany={handleEditCompany}
+            canEdit={canManageBranches}
+          />
           <RLSSettingsCard />
           
           <Card>

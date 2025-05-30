@@ -1,3 +1,4 @@
+
 import { Company } from '@/types/company';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -5,30 +6,40 @@ export class CompanyDataService {
   private static readonly COMPANY_NAME = '依美琦股份有限公司';
   private static readonly COMPANY_REGISTRATION_NUMBER = '53907735';
 
-  // 改進的資料庫連線測試 - 使用更簡單的測試方法
+  // 增強的資料庫連線測試
   static async testConnection(): Promise<boolean> {
     try {
       console.log('🔍 CompanyDataService: 測試資料庫連線...');
       
-      // 使用 Supabase 內建的健康檢查
-      const { data, error } = await supabase.auth.getSession();
-      
-      if (error && error.message !== 'session_not_found') {
-        console.error('❌ CompanyDataService: 資料庫連線失敗:', error);
+      // 1. 測試 Supabase 客戶端連線
+      const { error: sessionError } = await supabase.auth.getSession();
+      if (sessionError && !sessionError.message.includes('session_not_found')) {
+        console.error('❌ CompanyDataService: Supabase 客戶端連線失敗:', sessionError);
         return false;
       }
       
-      // 進一步測試實際查詢能力
+      // 2. 測試資料庫查詢能力
       const { error: queryError } = await supabase
         .from('companies')
         .select('count', { count: 'exact', head: true });
       
       if (queryError) {
-        console.error('❌ CompanyDataService: 查詢測試失敗:', queryError);
+        console.error('❌ CompanyDataService: 資料庫查詢測試失敗:', queryError);
         return false;
       }
       
-      console.log('✅ CompanyDataService: 資料庫連線正常');
+      // 3. 測試特定資料存取
+      const { error: accessError } = await supabase
+        .from('companies')
+        .select('id')
+        .limit(1);
+        
+      if (accessError) {
+        console.error('❌ CompanyDataService: 資料存取測試失敗:', accessError);
+        return false;
+      }
+      
+      console.log('✅ CompanyDataService: 資料庫連線測試通過');
       return true;
     } catch (error) {
       console.error('❌ CompanyDataService: 連線測試異常:', error);
@@ -36,7 +47,7 @@ export class CompanyDataService {
     }
   }
 
-  // 查詢公司資料 - 增強錯誤處理
+  // 查詢公司資料 - 增強連線檢查和錯誤處理
   static async findCompany(): Promise<Company | null> {
     console.log('🔍 CompanyDataService: 查詢依美琦公司資料...');
     
@@ -44,10 +55,10 @@ export class CompanyDataService {
       // 先測試連線
       const isConnected = await this.testConnection();
       if (!isConnected) {
-        throw new Error('無法連接到資料庫，請檢查網路連線');
+        throw new Error('無法連接到資料庫，請檢查網路連線和資料庫狀態');
       }
 
-      // 直接按統一編號查詢，避免任何可能觸發 staff 表 RLS 的操作
+      // 查詢公司資料
       const { data, error } = await supabase
         .from('companies')
         .select('*')

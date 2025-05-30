@@ -1,30 +1,39 @@
 
 import { Company } from '@/types/company';
 import { CompanyRepository } from './companyRepository';
-import { CompanyDataInitializer } from './companyDataInitializer';
 import { CompanySubscriptionManager } from './companySubscriptionManager';
 
 export class CompanyApiService {
-  // 使用與後台完全匹配的ID
-  private static readonly SPECIFIC_COMPANY_ID = '550e8400-e29b-41d4-a716-446655440000';
-  private static readonly ADMIN_USER_ID = '550e8400-e29b-41d4-a716-446655440001';
-  private static readonly DEFAULT_BRANCH_ID = '550e8400-e29b-41d4-a716-446655440010';
+  // 使用正確的公司名稱和ID查詢
+  private static readonly COMPANY_NAME = '依美琦股份有限公司';
+  private static readonly COMPANY_REGISTRATION_NUMBER = '53907735';
 
-  // 載入公司資料 - 直接從後台載入
+  // 載入公司資料 - 優先使用名稱和統一編號查詢
   static async loadCompany(): Promise<Company | null> {
-    console.log('🔍 CompanyApiService: 開始載入公司資料...');
-    console.log('🎯 CompanyApiService: 目標公司ID:', this.SPECIFIC_COMPANY_ID);
+    console.log('🔍 CompanyApiService: 開始載入依美琦股份有限公司資料...');
     
     try {
-      // 直接載入指定ID的公司資料
-      const company = await CompanyRepository.findById(this.SPECIFIC_COMPANY_ID);
+      // 先嘗試按名稱查詢
+      let company = await CompanyRepository.findByName(this.COMPANY_NAME);
       
+      if (!company) {
+        // 如果按名稱找不到，嘗試按統一編號查詢
+        console.log('🔍 CompanyApiService: 按名稱找不到，嘗試按統一編號查詢...');
+        company = await CompanyRepository.findByRegistrationNumber(this.COMPANY_REGISTRATION_NUMBER);
+      }
+
+      if (!company) {
+        // 如果都找不到，查詢所有公司並找出依美琦
+        console.log('🔍 CompanyApiService: 查詢所有公司資料...');
+        company = await CompanyRepository.findFirstMatchingCompany();
+      }
+
       if (company && this.validateCompanyData(company)) {
         console.log('✅ CompanyApiService: 成功載入依美琦股份有限公司資料:', company.name);
         return company;
       }
 
-      console.log('⚠️ CompanyApiService: 無法載入公司資料，ID:', this.SPECIFIC_COMPANY_ID);
+      console.log('⚠️ CompanyApiService: 無法載入依美琦股份有限公司資料');
       return null;
 
     } catch (error) {
@@ -33,22 +42,11 @@ export class CompanyApiService {
     }
   }
 
-  // 驗證公司資料完整性和ID匹配
+  // 驗證公司資料
   private static validateCompanyData(company: Company): boolean {
-    // 檢查ID是否匹配
-    if (company.id !== this.SPECIFIC_COMPANY_ID) {
-      console.log(`⚠️ CompanyApiService: 公司ID不匹配: ${company.id} (期望: ${this.SPECIFIC_COMPANY_ID})`);
-      return false;
-    }
-
+    // 檢查關鍵欄位
     const requiredFields = ['name', 'registration_number', 'address', 'phone', 'email'];
-    const expectedValues = {
-      name: '依美琦股份有限公司',
-      registration_number: '53907735',
-      legal_representative: '廖俊雄'
-    };
-
-    // 檢查必填欄位
+    
     for (const field of requiredFields) {
       if (!company[field as keyof Company]) {
         console.log(`⚠️ CompanyApiService: 缺少必填欄位: ${field}`);
@@ -56,12 +54,15 @@ export class CompanyApiService {
       }
     }
 
-    // 檢查關鍵欄位是否正確
-    for (const [field, expectedValue] of Object.entries(expectedValues)) {
-      if (company[field as keyof Company] !== expectedValue) {
-        console.log(`⚠️ CompanyApiService: 欄位 ${field} 值不正確: ${company[field as keyof Company]} (期望: ${expectedValue})`);
-        return false;
-      }
+    // 檢查是否為依美琦相關資料
+    const isCorrectCompany = 
+      company.name.includes('依美琦') || 
+      company.registration_number === this.COMPANY_REGISTRATION_NUMBER ||
+      company.legal_representative === '廖俊雄';
+
+    if (!isCorrectCompany) {
+      console.log(`⚠️ CompanyApiService: 資料不符合依美琦股份有限公司`);
+      return false;
     }
 
     console.log('✅ CompanyApiService: 公司資料驗證通過');
@@ -73,17 +74,13 @@ export class CompanyApiService {
     try {
       console.log('🔄 CompanyApiService: 準備更新公司資料');
       
-      const targetCompanyId = companyId || this.SPECIFIC_COMPANY_ID;
-      
-      // 確保資料中包含正確的ID
-      const updatedData = {
-        ...companyData,
-        id: targetCompanyId
-      };
-
-      // 更新現有公司資料
-      console.log('🔄 CompanyApiService: 更新現有公司資料');
-      return await CompanyRepository.update(targetCompanyId, updatedData);
+      if (companyId) {
+        // 更新現有公司
+        return await CompanyRepository.update(companyId, companyData);
+      } else {
+        // 創建新公司
+        return await CompanyRepository.create(companyData);
+      }
     } catch (error) {
       console.error('❌ CompanyApiService: API 操作失敗:', error);
       throw error;
@@ -95,49 +92,17 @@ export class CompanyApiService {
     return CompanySubscriptionManager.subscribeToCompanyChanges(callback);
   }
 
-  // 取得指定的公司ID
-  static getTargetCompanyId(): string {
-    return this.SPECIFIC_COMPANY_ID;
-  }
-
-  // 取得管理員用戶ID
-  static getAdminUserId(): string {
-    return this.ADMIN_USER_ID;
-  }
-
-  // 取得預設營業處ID
-  static getDefaultBranchId(): string {
-    return this.DEFAULT_BRANCH_ID;
-  }
-
-  // 檢查資料是否同步
-  static isDataSynced(company: Company | null): boolean {
-    if (!company) {
-      console.log('🔍 CompanyApiService: 同步檢查 - 無公司資料');
-      return false;
-    }
-    
-    const isIdCorrect = company.id === this.SPECIFIC_COMPANY_ID;
-    const isDataValid = this.validateCompanyData(company);
-    
-    console.log('🔍 CompanyApiService: 同步檢查結果:');
-    console.log('  - 公司ID正確:', isIdCorrect, `(${company.id} === ${this.SPECIFIC_COMPANY_ID})`);
-    console.log('  - 資料有效:', isDataValid);
-    console.log('  - 整體同步狀態:', isIdCorrect && isDataValid);
-    
-    return isIdCorrect && isDataValid;
-  }
-
-  // 驗證用戶是否有權限管理此公司
-  static validateUserPermission(userId: string): boolean {
-    const hasPermission = userId === this.ADMIN_USER_ID;
-    console.log('🔐 CompanyApiService: 權限驗證 - 用戶ID:', userId, '有權限:', hasPermission);
-    return hasPermission;
-  }
-
   // 強制重新載入公司資料
   static async forceReload(): Promise<Company | null> {
     console.log('🔄 CompanyApiService: 強制重新載入公司資料...');
     return await this.loadCompany();
+  }
+
+  // 檢查用戶權限
+  static validateUserPermission(userName: string): boolean {
+    // 允許廖俊雄和管理員編輯
+    const hasPermission = userName === '廖俊雄' || userName === 'admin';
+    console.log('🔐 CompanyApiService: 權限驗證 - 用戶:', userName, '有權限:', hasPermission);
+    return hasPermission;
   }
 }

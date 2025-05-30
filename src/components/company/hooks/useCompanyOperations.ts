@@ -11,11 +11,12 @@ export const useCompanyOperations = () => {
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { isAdmin, currentUser } = useUser();
+  const { currentUser } = useUser();
 
-  // 在組件掛載時立即載入指定ID的公司資料
+  // 在組件掛載時載入公司資料
   useEffect(() => {
-    console.log('🚀 useCompanyOperations: 開始載入指定ID的公司資料');
+    console.log('🚀 useCompanyOperations: 開始載入依美琦股份有限公司資料');
+    console.log('👤 useCompanyOperations: 當前用戶:', currentUser?.name);
     loadCompany();
   }, []);
 
@@ -32,9 +33,9 @@ export const useCompanyOperations = () => {
     };
   }, []);
 
-  // 載入指定ID的公司資料
+  // 載入公司資料
   const loadCompany = async () => {
-    console.log('🔍 useCompanyOperations: 開始載入指定ID的公司資料...');
+    console.log('🔍 useCompanyOperations: 開始載入依美琦股份有限公司資料...');
     setLoading(true);
     
     try {
@@ -44,19 +45,19 @@ export const useCompanyOperations = () => {
       setCompany(data);
       
       if (data) {
-        console.log('✅ useCompanyOperations: 成功載入指定公司資料:', data.name);
+        console.log('✅ useCompanyOperations: 成功載入依美琦股份有限公司資料:', data.name);
         console.log('🆔 useCompanyOperations: 公司ID:', data.id);
         console.log('🏢 useCompanyOperations: 統一編號:', data.registration_number);
         
         toast({
           title: "載入成功",
-          description: `已載入依美琦股份有限公司資料`,
+          description: `已載入${data.name}資料`,
         });
       } else {
-        console.log('⚠️ useCompanyOperations: 指定ID的公司資料不存在');
+        console.log('⚠️ useCompanyOperations: 無法載入依美琦股份有限公司資料');
         toast({
           title: "找不到公司資料",
-          description: "後台資料庫中沒有依美琦股份有限公司的資料",
+          description: "後台資料庫中沒有找到依美琦股份有限公司的資料，請檢查資料同步狀態",
           variant: "destructive"
         });
       }
@@ -66,7 +67,7 @@ export const useCompanyOperations = () => {
       
       toast({
         title: "載入失敗",
-        description: "無法從後台資料庫載入公司資料",
+        description: "無法從後台資料庫載入公司資料，請稍後再試",
         variant: "destructive"
       });
     } finally {
@@ -83,6 +84,11 @@ export const useCompanyOperations = () => {
     setLoading(true);
     
     try {
+      // 驗證用戶權限
+      if (!CompanyApiService.validateUserPermission(currentUser?.name || '')) {
+        throw new Error('您沒有權限編輯公司資料');
+      }
+
       console.log('🔍 useCompanyOperations: 開始資料驗證和處理...');
       
       // 驗證必填欄位
@@ -114,7 +120,7 @@ export const useCompanyOperations = () => {
       
       toast({
         title: "更新成功",
-        description: "已成功更新依美琦股份有限公司資料"
+        description: `已成功更新${result.name}資料`
       });
       return true;
     } catch (error) {

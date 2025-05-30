@@ -42,7 +42,7 @@ const EditCompanyDialog = () => {
   // 當對話框開啟時，初始化表單資料
   useEffect(() => {
     if (isEditCompanyDialogOpen && company) {
-      console.log('編輯現有公司資料:', company);
+      console.log('📝 EditCompanyDialog: 初始化編輯表單，公司資料:', company);
       setEditedCompany({
         name: company.name || '',
         registration_number: company.registration_number || '',
@@ -119,7 +119,7 @@ const EditCompanyDialog = () => {
     setIsSubmitting(true);
 
     try {
-      console.log('🔄 EditCompanyDialog: 開始處理公司資料...');
+      console.log('🔄 EditCompanyDialog: 開始更新公司資料...');
       
       // 準備乾淨的資料
       const cleanedData = {
@@ -139,20 +139,22 @@ const EditCompanyDialog = () => {
 
       if (company?.id) {
         // 更新現有公司
-        console.log('🔄 EditCompanyDialog: 更新現有公司資料...');
+        console.log('🔄 EditCompanyDialog: 更新現有公司資料，ID:', company.id);
         const result = await CompanyDataService.updateCompany(company.id, cleanedData);
+        console.log('✅ EditCompanyDialog: 後台更新成功，結果:', result);
+        
         const success = await handleUpdateCompany(result);
         
         if (!success) {
           throw new Error('更新公司上下文失敗');
         }
 
-        console.log('✅ EditCompanyDialog: 公司資料更新成功:', result.name);
+        console.log('✅ EditCompanyDialog: 公司資料更新完成:', result.name);
         setIsEditCompanyDialogOpen(false);
         
         toast({
           title: "儲存成功",
-          description: "公司基本資料已成功更新"
+          description: `${result.name} 基本資料已成功更新並同步至後台`,
         });
       }
       
@@ -170,8 +172,23 @@ const EditCompanyDialog = () => {
   };
 
   const handleClose = () => {
-    console.log('🚪 EditCompanyDialog: 關閉對話框');
+    console.log('🚪 EditCompanyDialog: 關閉編輯對話框');
     setIsEditCompanyDialogOpen(false);
+    // 重設表單資料
+    if (company) {
+      setEditedCompany({
+        name: company.name || '',
+        registration_number: company.registration_number || '',
+        legal_representative: company.legal_representative || '',
+        business_type: company.business_type || '',
+        address: company.address || '',
+        phone: company.phone || '',
+        email: company.email || '',
+        website: company.website || '',
+        established_date: company.established_date || '',
+        capital: company.capital || null
+      });
+    }
   };
 
   return (

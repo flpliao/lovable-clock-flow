@@ -37,7 +37,10 @@ const CompanyInfoCard = () => {
     await forceSyncFromBackend();
   };
 
-  const handleEdit = () => setIsEditCompanyDialogOpen(true);
+  const handleEdit = () => {
+    console.log('🖊️ 開啟編輯公司資料對話框');
+    setIsEditCompanyDialogOpen(true);
+  };
 
   // 如果正在載入
   if (loading) {

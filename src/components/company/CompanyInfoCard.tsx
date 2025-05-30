@@ -60,6 +60,9 @@ const CompanyInfoCard = () => {
           <CardTitle className="flex items-center">
             <Building2 className="h-6 w-6 mr-2" />
             公司基本資料
+            <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+              即時同步
+            </span>
           </CardTitle>
           <CardDescription>管理公司基本資訊與統一編號等法定資料</CardDescription>
         </div>

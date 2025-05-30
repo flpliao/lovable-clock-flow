@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { Company } from '@/types/company';
@@ -11,6 +12,19 @@ export const useCompanyOperations = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { isAdmin, currentUser } = useUser();
+
+  // 設定即時監聽
+  useEffect(() => {
+    const channel = CompanyApiService.subscribeToCompanyChanges((updatedCompany) => {
+      console.log('🔄 useCompanyOperations: 收到公司資料變更:', updatedCompany);
+      setCompany(updatedCompany);
+    });
+
+    return () => {
+      console.log('🔌 useCompanyOperations: 取消監聽公司資料變更');
+      channel.unsubscribe();
+    };
+  }, []);
 
   // 載入公司資料
   const loadCompany = async () => {

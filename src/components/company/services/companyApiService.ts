@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Company } from '@/types/company';
 
@@ -6,28 +7,28 @@ export class CompanyApiService {
     console.log('🔍 CompanyApiService: 開始從資料庫查詢公司資料...');
     
     try {
-      // 直接查詢公司資料表，不依賴任何用戶驗證
+      // 直接查詢公司資料表，使用 maybeSingle 避免錯誤
       const { data, error } = await supabase
         .from('companies')
         .select('*')
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        // 如果是沒有資料的錯誤，返回 null 而不是拋出錯誤
-        if (error.code === 'PGRST116') {
-          console.log('⚠️ CompanyApiService: 資料庫中沒有找到公司資料');
-          return null;
-        }
         console.error('❌ CompanyApiService: 查詢公司資料錯誤:', error);
         throw error;
       }
       
-      console.log('✅ CompanyApiService: 成功從資料庫載入公司資料:', data);
-      return data as Company;
+      if (data) {
+        console.log('✅ CompanyApiService: 成功從資料庫載入公司資料:', data);
+        return data as Company;
+      } else {
+        console.log('⚠️ CompanyApiService: 資料庫中沒有找到公司資料');
+        return null;
+      }
     } catch (error) {
       console.error('💥 CompanyApiService: 載入公司資料時發生錯誤:', error);
-      // 不要重新拋出錯誤，返回 null 讓前端能正常處理
+      // 返回 null 讓前端能正常處理
       return null;
     }
   }
@@ -84,5 +85,33 @@ export class CompanyApiService {
     }
     console.log('✅ CompanyApiService: 公司資料新增成功:', data);
     return data as Company;
+  }
+
+  // 新增：監聽公司資料變更的方法
+  static subscribeToCompanyChanges(callback: (company: Company | null) => void) {
+    console.log('👂 CompanyApiService: 開始監聽公司資料變更...');
+    
+    const channel = supabase
+      .channel('company-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'companies'
+        },
+        (payload) => {
+          console.log('🔔 CompanyApiService: 收到公司資料變更通知:', payload);
+          
+          if (payload.eventType === 'DELETE') {
+            callback(null);
+          } else {
+            callback(payload.new as Company);
+          }
+        }
+      )
+      .subscribe();
+
+    return channel;
   }
 }

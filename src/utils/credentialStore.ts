@@ -15,25 +15,13 @@ declare global {
 // Initialize the credentials store if it doesn't exist
 export const initCredentialStore = (): void => {
   if (!window.userCredentialsStore) {
-    // 只保留廖俊雄（管理者）的帳號
-    window.userCredentialsStore = {
-      '550e8400-e29b-41d4-a716-446655440001': { 
-        userId: '550e8400-e29b-41d4-a716-446655440001', 
-        email: 'admin@example.com', 
-        password: 'password' 
-      }
-    };
-    console.log('Credential store initialized with admin account only');
+    // 清空所有帳號資料，準備輸入正式資料
+    window.userCredentialsStore = {};
+    console.log('Credential store initialized and cleared for production data');
   } else {
-    // 清空所有帳號，只保留廖俊雄的帳號
-    window.userCredentialsStore = {
-      '550e8400-e29b-41d4-a716-446655440001': { 
-        userId: '550e8400-e29b-41d4-a716-446655440001', 
-        email: 'admin@example.com', 
-        password: 'password' 
-      }
-    };
-    console.log('Credential store cleared and reset to admin account only');
+    // 清空所有帳號，準備輸入正式資料
+    window.userCredentialsStore = {};
+    console.log('Credential store cleared and ready for production data');
   }
   console.log('Current credential store:', window.userCredentialsStore);
 };

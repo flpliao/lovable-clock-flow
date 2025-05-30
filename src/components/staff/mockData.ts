@@ -1,21 +1,8 @@
+
 import { Staff, StaffRole } from './types';
 
-// 只保留廖俊雄（管理者）的資料
-export const mockStaffList: Staff[] = [
-  {
-    id: '550e8400-e29b-41d4-a716-446655440001', // 確保使用正確的廖俊雄 ID
-    name: '廖俊雄',
-    position: '總經理',
-    department: '管理部',
-    branch_id: '1',
-    branch_name: '總公司',
-    contact: '0912-345-678',
-    role: 'admin',
-    role_id: 'admin',
-    username: 'admin',
-    email: 'admin@example.com'
-  }
-];
+// 清空模擬員工資料，準備輸入正式資料
+export const mockStaffList: Staff[] = [];
 
 export const mockRoles: StaffRole[] = [
   {

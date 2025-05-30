@@ -3,24 +3,7 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Staff, StaffRole } from '../types';
 
-// 創建模擬資料作為備用
-const mockStaffData: Staff[] = [
-  {
-    id: '550e8400-e29b-41d4-a716-446655440001',
-    name: '廖俊雄',
-    position: '資深工程師',
-    department: '技術部',
-    branch_id: 'branch-001',
-    branch_name: '總部',
-    contact: '0912-345-678',
-    role: 'admin',
-    role_id: 'admin',
-    supervisor_id: null,
-    username: 'liao.junxiong',
-    email: 'liao@company.com'
-  }
-];
-
+// 保留角色定義，但清空員工資料
 const mockRoles: StaffRole[] = [
   {
     id: 'admin',
@@ -51,28 +34,28 @@ export const useStaffDataLoader = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  // 載入員工資料 - 使用更簡單安全的方式
+  // 載入員工資料 - 現在返回空陣列
   const loadStaff = async () => {
     try {
       console.log('正在載入員工資料...');
       setLoading(true);
 
-      // 使用模擬資料以確保系統正常運作
-      console.log('使用本地模擬資料模式');
-      setStaffList(mockStaffData);
+      // 清空員工資料，準備輸入正式資料
+      console.log('員工資料已清空，準備輸入正式資料');
+      setStaffList([]);
       
       toast({
-        title: "載入成功",
-        description: "員工資料載入完成",
+        title: "系統準備就緒",
+        description: "員工資料已清空，可以開始輸入正式資料",
       });
       
       return;
     } catch (error) {
       console.error('載入員工資料失敗:', error);
-      setStaffList(mockStaffData);
+      setStaffList([]);
       toast({
-        title: "使用本地資料",
-        description: "目前使用本地資料模式，功能正常運作",
+        title: "系統準備就緒",
+        description: "員工資料已清空，可以開始輸入正式資料",
         variant: "default"
       });
     } finally {

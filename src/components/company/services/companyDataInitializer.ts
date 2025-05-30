@@ -8,14 +8,14 @@ export class CompanyDataInitializer {
     return {
       id: companyId,
       name: '依美琦股份有限公司',
-      registration_number: '53907735',
-      address: '台北市中山區建國北路二段145號3樓',
-      phone: '02-2507-3456',
-      email: 'info@yimeichi.com.tw',
-      website: 'https://yimeichi.com.tw',
-      business_type: '化妝品批發業、化妝品零售業、美容服務業',
-      legal_representative: '王美琦',
-      established_date: '2015-03-15',
+      registration_number: '54560107',
+      address: '台南市永康區振興路132號',
+      phone: '06-2366000',
+      email: 'service@j-image.com.tw',
+      website: 'https://web.sharing.tw',
+      business_type: '資訊',
+      legal_representative: '廖俊雄',
+      established_date: '2015-05-27',
       capital: 5000000,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -38,7 +38,7 @@ export class CompanyDataInitializer {
       console.error('💥 CompanyDataInitializer: 創建預設公司資料時發生錯誤:', error);
       
       // 如果因為ID衝突等原因失敗，嘗試載入現有資料
-      if (error.code === '23505' || error.message?.includes('duplicate')) {
+      if (error.code === '23505' || error.message?.includes('duplicate') || error.message?.includes('already exists')) {
         console.log('🔄 CompanyDataInitializer: ID已存在，嘗試重新載入...');
         
         try {
@@ -52,14 +52,19 @@ export class CompanyDataInitializer {
         }
       }
       
-      // 如果都失敗了，嘗試載入第一個可用的公司
+      // 最後嘗試載入任何可用的公司資料
       try {
         console.log('🔄 CompanyDataInitializer: 嘗試載入第一個可用的公司...');
-        return await CompanyRepository.findFirstAvailable();
+        const firstCompany = await CompanyRepository.findFirstAvailable();
+        if (firstCompany) {
+          console.log('✅ CompanyDataInitializer: 載入到備用公司資料:', firstCompany.name);
+          return firstCompany;
+        }
       } catch (fallbackError) {
         console.error('❌ CompanyDataInitializer: 載入備用公司資料也失敗:', fallbackError);
-        return null;
       }
+      
+      return null;
     }
   }
 
@@ -71,7 +76,7 @@ export class CompanyDataInitializer {
       // 先嘗試載入現有資料
       const existingCompany = await CompanyRepository.findById(companyId);
       if (existingCompany) {
-        console.log('✅ CompanyDataInitializer: 找到現有公司資料');
+        console.log('✅ CompanyDataInitializer: 找到現有公司資料:', existingCompany.name);
         return existingCompany;
       }
       
@@ -81,6 +86,48 @@ export class CompanyDataInitializer {
       
     } catch (error) {
       console.error('❌ CompanyDataInitializer: 檢查公司資料時發生錯誤:', error);
+      
+      // 最後的備用方案：載入任何可用的公司
+      try {
+        console.log('🔄 CompanyDataInitializer: 執行最終備用方案...');
+        return await CompanyRepository.findFirstAvailable();
+      } catch (finalError) {
+        console.error('❌ CompanyDataInitializer: 所有方案都失敗:', finalError);
+        return null;
+      }
+    }
+  }
+
+  // 直接創建新公司 - 用於手動建立
+  static async createNewCompany(companyData: any): Promise<Company | null> {
+    try {
+      console.log('➕ CompanyDataInitializer: 手動創建新公司資料:', companyData);
+      
+      // 確保所有必要欄位都有值
+      const cleanedData = {
+        id: companyData.id || crypto.randomUUID(),
+        name: companyData.name?.trim() || '',
+        registration_number: companyData.registration_number?.trim() || '',
+        address: companyData.address?.trim() || '',
+        phone: companyData.phone?.trim() || '',
+        email: companyData.email?.trim() || '',
+        website: companyData.website?.trim() || null,
+        business_type: companyData.business_type?.trim() || '',
+        legal_representative: companyData.legal_representative?.trim() || '',
+        established_date: companyData.established_date || null,
+        capital: companyData.capital ? Number(companyData.capital) : null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('🧹 CompanyDataInitializer: 清理後的資料:', cleanedData);
+      
+      const newCompany = await CompanyRepository.create(cleanedData);
+      console.log('✅ CompanyDataInitializer: 手動創建公司成功:', newCompany);
+      return newCompany;
+
+    } catch (error) {
+      console.error('💥 CompanyDataInitializer: 手動創建公司失敗:', error);
       return null;
     }
   }

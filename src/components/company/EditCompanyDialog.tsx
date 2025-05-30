@@ -11,6 +11,7 @@ import CompanyBasicFields from './forms/CompanyBasicFields';
 import CompanyContactFields from './forms/CompanyContactFields';
 import CompanyOptionalFields from './forms/CompanyOptionalFields';
 import CompanyFormActions from './forms/CompanyFormActions';
+import { CompanyDataInitializer } from './services/companyDataInitializer';
 
 const EditCompanyDialog = () => {
   const {
@@ -37,16 +38,29 @@ const EditCompanyDialog = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('🚀 開始提交表單，當前資料:', editedCompany);
-    console.log('🔐 當前用戶:', currentUser?.name);
+    console.log('🚀 EditCompanyDialog: 開始提交表單，當前資料:', editedCompany);
+    console.log('🔐 EditCompanyDialog: 當前用戶:', currentUser?.name);
+    console.log('🆔 EditCompanyDialog: 公司ID:', company?.id);
+
+    if (!hasPermission) {
+      toast({
+        title: "權限不足",
+        description: "您沒有權限編輯公司資料",
+        variant: "destructive"
+      });
+      return;
+    }
 
     if (!formValidation.validateForm(editedCompany)) {
+      console.log('❌ EditCompanyDialog: 表單驗證失敗');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
+      console.log('🔄 EditCompanyDialog: 開始處理公司資料...');
+      
       // 準備乾淨的資料
       const cleanedData = {
         name: editedCompany.name?.toString().trim() || '',
@@ -56,26 +70,48 @@ const EditCompanyDialog = () => {
         address: editedCompany.address?.toString().trim() || '',
         phone: editedCompany.phone?.toString().trim() || '',
         email: editedCompany.email?.toString().trim() || '',
-        website: editedCompany.website?.toString().trim() || '',
-        established_date: editedCompany.established_date?.toString().trim() || '',
+        website: editedCompany.website?.toString().trim() || null,
+        established_date: editedCompany.established_date?.toString().trim() || null,
         capital: editedCompany.capital ? Number(editedCompany.capital) : null
       };
 
-      console.log('🧹 清理後的資料:', cleanedData);
+      console.log('🧹 EditCompanyDialog: 清理後的資料:', cleanedData);
 
-      // 建立完整的公司資料物件
-      const companyData = {
-        id: company?.id || crypto.randomUUID(),
-        ...cleanedData,
-        created_at: company?.created_at || new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      } as Company;
+      let result: Company | null = null;
 
-      console.log('📝 準備提交的完整資料:', companyData);
+      if (company?.id) {
+        // 更新現有公司
+        console.log('🔄 EditCompanyDialog: 更新現有公司資料...');
+        const companyData = {
+          id: company.id,
+          ...cleanedData,
+          created_at: company.created_at,
+          updated_at: new Date().toISOString()
+        } as Company;
 
-      const success = await handleUpdateCompany(companyData);
-      if (success) {
-        console.log('✅ 公司資料更新成功');
+        const success = await handleUpdateCompany(companyData);
+        if (success) {
+          result = companyData;
+        }
+      } else {
+        // 創建新公司
+        console.log('➕ EditCompanyDialog: 創建新公司資料...');
+        result = await CompanyDataInitializer.createNewCompany({
+          ...cleanedData,
+          id: crypto.randomUUID()
+        });
+        
+        // 如果創建成功，通知上層更新狀態
+        if (result) {
+          const success = await handleUpdateCompany(result);
+          if (!success) {
+            result = null;
+          }
+        }
+      }
+
+      if (result) {
+        console.log('✅ EditCompanyDialog: 公司資料處理成功:', result.name);
         setIsEditCompanyDialogOpen(false);
         resetFormData();
         toast({
@@ -83,13 +119,20 @@ const EditCompanyDialog = () => {
           description: company ? "公司基本資料已成功更新" : "公司基本資料已成功建立"
         });
       } else {
-        console.log('❌ 公司資料更新失敗');
+        throw new Error('無法處理公司資料');
       }
+      
     } catch (error) {
-      console.error('💥 提交表單時發生錯誤:', error);
+      console.error('💥 EditCompanyDialog: 提交表單時發生錯誤:', error);
+      
+      let errorMessage = "儲存時發生未知錯誤";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "儲存失敗",
-        description: error instanceof Error ? error.message : "儲存時發生未知錯誤",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -98,6 +141,7 @@ const EditCompanyDialog = () => {
   };
 
   const handleClose = () => {
+    console.log('🚪 EditCompanyDialog: 關閉對話框');
     setIsEditCompanyDialogOpen(false);
     resetFormData();
   };

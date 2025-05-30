@@ -1,4 +1,3 @@
-
 import { Company } from '@/types/company';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -7,7 +6,7 @@ export class CompanyDataService {
   private static readonly COMPANY_REGISTRATION_NUMBER = '53907735';
 
   // 增強的資料庫連線測試
-  static async testConnection(): Promise<boolean> {
+  static async testConnection(): Promise<{ success: boolean; error?: string }> {
     try {
       console.log('🔍 CompanyDataService: 測試資料庫連線...');
       
@@ -15,7 +14,10 @@ export class CompanyDataService {
       const { error: sessionError } = await supabase.auth.getSession();
       if (sessionError && !sessionError.message.includes('session_not_found')) {
         console.error('❌ CompanyDataService: Supabase 客戶端連線失敗:', sessionError);
-        return false;
+        return { 
+          success: false, 
+          error: `Supabase 連線失敗: ${sessionError.message}` 
+        };
       }
       
       // 2. 測試資料庫查詢能力
@@ -25,14 +27,20 @@ export class CompanyDataService {
       
       if (queryError) {
         console.error('❌ CompanyDataService: 資料庫查詢測試失敗:', queryError);
-        return false;
+        return { 
+          success: false, 
+          error: `資料庫查詢失敗: ${queryError.message}` 
+        };
       }
       
       console.log('✅ CompanyDataService: 資料庫連線測試通過');
-      return true;
+      return { success: true };
     } catch (error) {
       console.error('❌ CompanyDataService: 連線測試異常:', error);
-      return false;
+      return { 
+        success: false, 
+        error: `連線測試異常: ${error instanceof Error ? error.message : '未知錯誤'}` 
+      };
     }
   }
 
@@ -42,9 +50,9 @@ export class CompanyDataService {
     
     try {
       // 先測試連線
-      const isConnected = await this.testConnection();
-      if (!isConnected) {
-        throw new Error('資料庫連線失敗，請檢查網路連線和資料庫狀態');
+      const connectionTest = await this.testConnection();
+      if (!connectionTest.success) {
+        throw new Error(connectionTest.error || '資料庫連線失敗');
       }
 
       // 查詢公司資料
@@ -197,9 +205,9 @@ export class CompanyDataService {
     try {
       // 1. 詳細的連線測試
       console.log('🔗 CompanyDataService: 檢查資料庫連線狀態...');
-      const isConnected = await this.testConnection();
-      if (!isConnected) {
-        throw new Error('資料庫連線失敗，請檢查網路連線或重新整理頁面');
+      const connectionTest = await this.testConnection();
+      if (!connectionTest.success) {
+        throw new Error(connectionTest.error || '資料庫連線失敗，請檢查網路連線或重新整理頁面');
       }
 
       // 2. 查詢現有資料
@@ -241,10 +249,12 @@ export class CompanyDataService {
       // 提供更詳細的錯誤資訊
       let errorMessage = '強制同步失敗';
       if (error instanceof Error) {
-        if (error.message.includes('連線失敗')) {
+        if (error.message.includes('連線失敗') || error.message.includes('網路')) {
           errorMessage = '資料庫連線問題，請檢查網路連線或重新整理頁面';
         } else if (error.message.includes('PGRST')) {
           errorMessage = 'Supabase API 連線問題，請稍後再試或重新整理頁面';
+        } else if (error.message.includes('timeout')) {
+          errorMessage = '連線逾時，請檢查網路速度或稍後再試';
         } else {
           errorMessage = `同步失敗: ${error.message}`;
         }

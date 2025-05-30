@@ -29,23 +29,26 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    // 為廖俊雄設置預設的管理員用戶
-    return {
-      id: '550e8400-e29b-41d4-a716-446655440001',
-      name: '廖俊雄',
-      position: '資深工程師',
-      department: '技術部',
-      onboard_date: '2023-01-01',
-      role: 'admin'
-    };
-  });
+  // 廖俊雄的固定管理員資料，對應依美琦股份有限公司
+  const adminUser = {
+    id: '550e8400-e29b-41d4-a716-446655440001', // 固定的管理員ID
+    name: '廖俊雄',
+    position: '資深工程師',
+    department: '技術部',
+    onboard_date: '2023-01-01',
+    role: 'admin' as const
+  };
+
+  const [currentUser, setCurrentUser] = useState<User | null>(adminUser);
   const [annualLeaveBalance, setAnnualLeaveBalance] = useState<AnnualLeaveBalance | null>(null);
   const [isUserLoaded, setIsUserLoaded] = useState(true);
   const [userError, setUserError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('UserProvider initialized with admin user:', currentUser?.name);
+    console.log('👤 UserProvider: 初始化管理員用戶');
+    console.log('🆔 UserProvider: 用戶ID:', adminUser.id);
+    console.log('🏢 UserProvider: 關聯公司ID: 550e8400-e29b-41d4-a716-446655440000');
+    console.log('👨‍💼 UserProvider: 管理員名稱:', adminUser.name);
     setIsUserLoaded(true);
   }, []);
 
@@ -54,16 +57,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!currentUser) {
       setAnnualLeaveBalance(null);
       setUserError(null);
-      console.log('User logged out, cleared all states');
+      console.log('👤 UserProvider: 用戶登出，清除所有狀態');
     } else {
-      console.log('User logged in:', currentUser.name, 'Role:', currentUser.role);
+      console.log('👤 UserProvider: 用戶登入:', currentUser.name, '角色:', currentUser.role);
+      console.log('🆔 UserProvider: 用戶ID:', currentUser.id);
       setUserError(null);
     }
   }, [currentUser]);
 
   const isAdmin = () => {
-    const result = currentUser?.role === 'admin';
-    console.log('isAdmin check:', result, 'for user:', currentUser?.name);
+    const result = currentUser?.role === 'admin' && currentUser?.id === '550e8400-e29b-41d4-a716-446655440001';
+    console.log('🔐 UserProvider: 管理員權限檢查:', result, '用戶:', currentUser?.name);
     return result;
   };
 
@@ -74,8 +78,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const canManageUser = (userId: string): boolean => {
     if (!currentUser) return false;
     
-    // Admin can manage all users
-    if (currentUser.role === 'admin') return true;
+    // 廖俊雄（管理員）可以管理所有用戶
+    if (currentUser.role === 'admin' && currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
+      console.log('🔐 UserProvider: 管理員擁有管理權限，目標用戶ID:', userId);
+      return true;
+    }
     
     // Manager can manage users in same department
     if (currentUser.role === 'manager') return true;
@@ -87,8 +94,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const hasPermission = (permission: string): boolean => {
     if (!currentUser) return false;
     
-    // Admin has all permissions
-    if (currentUser.role === 'admin') return true;
+    // 廖俊雄（管理員）擁有所有權限
+    if (currentUser.role === 'admin' && currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
+      console.log('🔐 UserProvider: 管理員擁有權限:', permission);
+      return true;
+    }
     
     // Add specific permission logic here based on role
     switch (permission) {
@@ -107,16 +117,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const resetUserState = () => {
-    console.log('Resetting user state');
+    console.log('🔄 UserProvider: 重置用戶狀態到管理員');
     // 重置為預設的管理員用戶而不是清空
-    setCurrentUser({
-      id: '550e8400-e29b-41d4-a716-446655440001',
-      name: '廖俊雄',
-      position: '資深工程師',
-      department: '技術部',
-      onboard_date: '2023-01-01',
-      role: 'admin'
-    });
+    setCurrentUser(adminUser);
     setAnnualLeaveBalance(null);
     setUserError(null);
     setIsUserLoaded(true);

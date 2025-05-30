@@ -6,11 +6,13 @@ import { CompanySubscriptionManager } from './companySubscriptionManager';
 
 export class CompanyApiService {
   private static readonly SPECIFIC_COMPANY_ID = '550e8400-e29b-41d4-a716-446655440000';
+  private static readonly ADMIN_USER_ID = '550e8400-e29b-41d4-a716-446655440001';
 
   // 載入公司資料 - 確保載入正確的資料
   static async loadCompany(): Promise<Company | null> {
     console.log('🔍 CompanyApiService: 開始載入公司資料...');
     console.log('🎯 CompanyApiService: 目標公司ID:', this.SPECIFIC_COMPANY_ID);
+    console.log('👤 CompanyApiService: 管理員用戶ID:', this.ADMIN_USER_ID);
     
     try {
       // 1. 首先嘗試載入指定ID的公司
@@ -18,11 +20,13 @@ export class CompanyApiService {
       
       if (company) {
         console.log('✅ CompanyApiService: 成功載入現有公司資料:', company.name);
-        // 驗證資料完整性
-        if (this.validateCompanyData(company)) {
+        console.log('🔗 CompanyApiService: 驗證ID匹配 - 公司ID:', company.id, '期望ID:', this.SPECIFIC_COMPANY_ID);
+        
+        // 驗證資料完整性和ID匹配
+        if (this.validateCompanyData(company) && company.id === this.SPECIFIC_COMPANY_ID) {
           return company;
         } else {
-          console.log('⚠️ CompanyApiService: 公司資料不完整，需要更新');
+          console.log('⚠️ CompanyApiService: 公司資料不完整或ID不匹配，需要更新');
         }
       }
 
@@ -32,6 +36,7 @@ export class CompanyApiService {
       
       if (company) {
         console.log('✅ CompanyApiService: 成功確保公司資料存在:', company.name);
+        console.log('🆔 CompanyApiService: 最終公司ID:', company.id);
         return company;
       }
 
@@ -44,13 +49,20 @@ export class CompanyApiService {
     }
   }
 
-  // 驗證公司資料完整性
+  // 驗證公司資料完整性和ID匹配
   private static validateCompanyData(company: Company): boolean {
+    // 首先檢查ID是否匹配
+    if (company.id !== this.SPECIFIC_COMPANY_ID) {
+      console.log(`⚠️ CompanyApiService: 公司ID不匹配: ${company.id} (期望: ${this.SPECIFIC_COMPANY_ID})`);
+      return false;
+    }
+
     const requiredFields = ['name', 'registration_number', 'address', 'phone', 'email'];
     const expectedValues = {
       name: '依美琦股份有限公司',
       registration_number: '53907735',
-      address: '台北市中山區建國北路二段145號3樓'
+      address: '台北市中山區建國北路二段145號3樓',
+      legal_representative: '廖俊雄'
     };
 
     // 檢查必填欄位
@@ -69,25 +81,33 @@ export class CompanyApiService {
       }
     }
 
+    console.log('✅ CompanyApiService: 公司資料驗證通過');
     return true;
   }
 
   // 更新或新建公司資料
   static async updateCompany(companyData: any, companyId?: string): Promise<Company> {
     try {
-      console.log('🔄 CompanyApiService: 準備更新公司資料，ID:', companyId);
+      console.log('🔄 CompanyApiService: 準備更新公司資料');
+      console.log('🆔 CompanyApiService: 使用公司ID:', companyId || this.SPECIFIC_COMPANY_ID);
       console.log('📋 CompanyApiService: 資料內容:', companyData);
       
-      if (companyId) {
+      const targetCompanyId = companyId || this.SPECIFIC_COMPANY_ID;
+      
+      // 確保資料中包含正確的ID
+      const updatedData = {
+        ...companyData,
+        id: targetCompanyId
+      };
+
+      if (companyId && companyId === this.SPECIFIC_COMPANY_ID) {
         // 更新現有公司資料
-        return await CompanyRepository.update(companyId, companyData);
+        console.log('🔄 CompanyApiService: 更新現有公司資料');
+        return await CompanyRepository.update(targetCompanyId, updatedData);
       } else {
         // 新增公司資料，使用指定的ID
-        const newCompanyData = {
-          ...companyData,
-          id: this.SPECIFIC_COMPANY_ID
-        };
-        return await CompanyRepository.create(newCompanyData);
+        console.log('➕ CompanyApiService: 創建新的公司資料');
+        return await CompanyRepository.create(updatedData);
       }
     } catch (error) {
       console.error('❌ CompanyApiService: API 操作失敗:', error);
@@ -105,25 +125,47 @@ export class CompanyApiService {
     return this.SPECIFIC_COMPANY_ID;
   }
 
+  // 取得管理員用戶ID
+  static getAdminUserId(): string {
+    return this.ADMIN_USER_ID;
+  }
+
   // 檢查資料是否同步
   static isDataSynced(company: Company | null): boolean {
-    if (!company) return false;
+    if (!company) {
+      console.log('🔍 CompanyApiService: 同步檢查 - 無公司資料');
+      return false;
+    }
     
     const isIdCorrect = company.id === this.SPECIFIC_COMPANY_ID;
     const isDataValid = this.validateCompanyData(company);
     
-    console.log('🔍 CompanyApiService: 同步檢查 - ID正確:', isIdCorrect, '資料有效:', isDataValid);
+    console.log('🔍 CompanyApiService: 同步檢查結果:');
+    console.log('  - 公司ID正確:', isIdCorrect, `(${company.id} === ${this.SPECIFIC_COMPANY_ID})`);
+    console.log('  - 資料有效:', isDataValid);
+    console.log('  - 整體同步狀態:', isIdCorrect && isDataValid);
+    
     return isIdCorrect && isDataValid;
   }
 
   // 強制重新初始化公司資料
   static async forceReinitialize(): Promise<Company | null> {
     console.log('🔄 CompanyApiService: 強制重新初始化公司資料...');
+    console.log('🆔 CompanyApiService: 使用公司ID:', this.SPECIFIC_COMPANY_ID);
+    console.log('👤 CompanyApiService: 關聯管理員:', this.ADMIN_USER_ID);
+    
     try {
       return await CompanyDataInitializer.createDefaultCompany(this.SPECIFIC_COMPANY_ID);
     } catch (error) {
       console.error('❌ CompanyApiService: 強制重新初始化失敗:', error);
       return null;
     }
+  }
+
+  // 驗證用戶是否有權限管理此公司
+  static validateUserPermission(userId: string): boolean {
+    const hasPermission = userId === this.ADMIN_USER_ID;
+    console.log('🔐 CompanyApiService: 權限驗證 - 用戶ID:', userId, '有權限:', hasPermission);
+    return hasPermission;
   }
 }

@@ -17,14 +17,18 @@ const AddBranchDialog = () => {
     setNewBranch,
     handleAddBranch
   } = useCompanyManagementContext();
-  const { isAdmin } = useUser();
+  const { currentUser } = useUser();
 
-  if (!isAdmin()) {
+  // 允許廖俊雄和管理員新增營業處
+  const canAddBranch = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
+
+  if (!canAddBranch) {
     return null;
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('提交新增營業處表單，當前用戶:', currentUser?.name);
     handleAddBranch();
   };
 

@@ -16,7 +16,10 @@ const BranchTable = () => {
   } = useCompanyManagementContext();
   
   const { staffList } = useStaffManagementContext();
-  const { isAdmin } = useUser();
+  const { currentUser } = useUser();
+
+  // 允許廖俊雄和管理員進行編輯和刪除操作
+  const canManageBranches = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
 
   const getBranchStaffCount = (branchId: string) => {
     return staffList.filter(staff => staff.branch_id === branchId).length;
@@ -67,7 +70,7 @@ const BranchTable = () => {
                 <TableHead>人員數量</TableHead>
                 <TableHead>負責人</TableHead>
                 <TableHead>狀態</TableHead>
-                {isAdmin() && <TableHead>操作</TableHead>}
+                {canManageBranches && <TableHead>操作</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -121,7 +124,7 @@ const BranchTable = () => {
                         {branch.is_active ? "營運中" : "暫停營運"}
                       </Badge>
                     </TableCell>
-                    {isAdmin() && (
+                    {canManageBranches && (
                       <TableCell>
                         <div className="flex items-center space-x-2">
                           <Button 

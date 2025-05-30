@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { Company, Branch, NewBranch, CompanyManagementContextType } from '@/types/company';
 import { useToast } from '@/hooks/use-toast';
@@ -32,7 +33,7 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
     addBranch,
     updateBranch,
     deleteBranch
-  } = useBranchOperations(company?.id || '', setBranches, toast);
+  } = useBranchOperations(company?.id || '');
 
   useEffect(() => {
     setFilteredBranches(branches);

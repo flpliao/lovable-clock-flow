@@ -1,280 +1,109 @@
 
-import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
+import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Branch, NewBranch, Company } from '@/types/company';
+import { Branch, NewBranch } from '@/types/company';
 
-export const useBranchOperations = (company: Company | null) => {
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const { toast } = useToast();
-  const { currentUser } = useUser();
-
-  // 當公司資料變更時，重新載入營業處
-  useEffect(() => {
-    if (company?.id) {
-      console.log('🔄 useBranchOperations: 公司資料變更，重新載入營業處...');
-      loadBranches();
-    }
-  }, [company?.id]);
-
-  // 載入營業處資料 - 確保與公司資料同步
-  const loadBranches = async () => {
-    try {
-      console.log('🏢 useBranchOperations: 正在載入營業處資料...');
-      console.log('🏢 useBranchOperations: 當前公司ID:', company?.id);
-      
-      let query = supabase.from('branches').select('*');
-      
-      // 確保按正確的公司ID篩選
-      if (company?.id) {
-        query = query.eq('company_id', company.id);
-        console.log('🔍 useBranchOperations: 按公司ID篩選:', company.id);
-      } else {
-        // 如果沒有公司資料，使用預設的公司ID
-        const defaultCompanyId = '550e8400-e29b-41d4-a716-446655440000';
-        query = query.eq('company_id', defaultCompanyId);
-        console.log('🔍 useBranchOperations: 使用預設公司ID:', defaultCompanyId);
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: true });
-
-      if (error) {
-        console.log('⚠️ useBranchOperations: 載入營業處資料錯誤，使用空陣列:', error);
-        setBranches([]);
-        return;
-      }
-      
-      const formattedBranches = data?.map(branch => ({
-        ...branch,
-        type: branch.type as 'headquarters' | 'branch' | 'store'
-      })) || [];
-      
-      console.log('✅ useBranchOperations: 載入的營業處資料:', formattedBranches);
-      setBranches(formattedBranches);
-    } catch (error) {
-      console.error('❌ useBranchOperations: 載入營業處資料失敗:', error);
-      setBranches([]);
-    }
-  };
-
-  // 新增營業處 - 確保使用正確的公司ID
-  const addBranch = async (newBranch: NewBranch) => {
-    console.log('➕ useBranchOperations: 新增營業處請求，當前用戶:', currentUser?.name);
+export const useBranchOperations = (companyId: string) => {
+  
+  const loadBranches = useCallback(async () => {
+    if (!companyId) return [];
     
-    const canAdd = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
-    if (!canAdd) {
-      toast({
-        title: "權限不足",
-        description: "您沒有權限新增營業處",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    if (!newBranch.name || !newBranch.code || !newBranch.address || !newBranch.phone) {
-      toast({
-        title: "資料不完整",
-        description: "請填寫營業處名稱、代碼、地址和電話",
-        variant: "destructive"
-      });
-      return false;
-    }
-
+    console.log('🔍 useBranchOperations: 載入分支機構...');
+    
     try {
-      console.log('🔍 useBranchOperations: 準備新增營業處:', newBranch);
-      
-      // 檢查代碼是否重複
-      const { data: existingBranch } = await supabase
-        .from('branches')
-        .select('id')
-        .eq('code', newBranch.code)
-        .maybeSingle();
-
-      if (existingBranch) {
-        toast({
-          title: "代碼重複",
-          description: "此營業處代碼已存在，請使用其他代碼",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      // 確保使用正確的公司ID
-      const companyId = company?.id || '550e8400-e29b-41d4-a716-446655440000';
-      console.log('🏢 useBranchOperations: 使用公司ID:', companyId);
-      
-      const branchData = {
-        ...newBranch,
-        company_id: companyId,
-        is_active: true,
-        staff_count: 0
-      };
-
       const { data, error } = await supabase
         .from('branches')
-        .insert(branchData)
-        .select()
-        .single();
+        .select('*')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('❌ useBranchOperations: 新增營業處 Supabase 錯誤:', error);
-        toast({
-          title: "新增失敗",
-          description: "無法新增營業處到資料庫，請稍後再試",
-          variant: "destructive"
-        });
-        return false;
+        console.error('❌ useBranchOperations: 載入分支機構失敗:', error);
+        return [];
       }
 
-      const formattedBranch = {
-        ...data,
-        type: data.type as 'headquarters' | 'branch' | 'store'
-      };
-
-      setBranches(prev => [...prev, formattedBranch]);
-      toast({
-        title: "新增成功",
-        description: `已成功新增營業處「${data.name}」`
-      });
-      return true;
+      console.log('✅ useBranchOperations: 載入分支機構成功:', data?.length || 0, '筆');
+      return data as Branch[] || [];
     } catch (error) {
-      console.error('❌ useBranchOperations: 新增營業處失敗:', error);
-      toast({
-        title: "新增失敗",
-        description: "無法新增營業處，請稍後再試",
-        variant: "destructive"
-      });
-      return false;
+      console.error('💥 useBranchOperations: 載入分支機構時發生錯誤:', error);
+      return [];
     }
-  };
+  }, [companyId]);
 
-  // 更新營業處
-  const updateBranch = async (updatedBranch: Branch) => {
-    console.log('更新營業處請求，當前用戶:', currentUser?.name);
+  const addBranch = useCallback(async (branchData: NewBranch): Promise<boolean> => {
+    if (!companyId) return false;
     
-    // 允許廖俊雄和管理員更新營業處
-    const canUpdate = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
-    if (!canUpdate) {
-      toast({
-        title: "權限不足",
-        description: "您沒有權限更新營業處",
-        variant: "destructive"
-      });
-      return false;
-    }
-
+    console.log('➕ useBranchOperations: 新增分支機構:', branchData);
+    
     try {
       const { error } = await supabase
         .from('branches')
-        .update(updatedBranch)
-        .eq('id', updatedBranch.id);
+        .insert({
+          ...branchData,
+          company_id: companyId
+        });
 
       if (error) {
-        console.error('更新營業處 Supabase 錯誤:', error);
-        // 即使 Supabase 錯誤，也更新本地狀態
-        setBranches(prev => 
-          prev.map(branch => 
-            branch.id === updatedBranch.id ? updatedBranch : branch
-          )
-        );
-        toast({
-          title: "編輯成功",
-          description: `已成功更新營業處「${updatedBranch.name}」的資料`
-        });
-        return true;
-      }
-
-      setBranches(prev => 
-        prev.map(branch => 
-          branch.id === updatedBranch.id ? updatedBranch : branch
-        )
-      );
-      
-      toast({
-        title: "編輯成功",
-        description: `已成功更新營業處「${updatedBranch.name}」的資料`
-      });
-      return true;
-    } catch (error) {
-      console.error('更新營業處失敗:', error);
-      toast({
-        title: "更新失敗",
-        description: "無法更新營業處資料，請稍後再試",
-        variant: "destructive"
-      });
-      return false;
-    }
-  };
-
-  // 刪除營業處
-  const deleteBranch = async (id: string) => {
-    console.log('刪除營業處請求，當前用戶:', currentUser?.name);
-    
-    // 允許廖俊雄和管理員刪除營業處
-    const canDelete = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
-    if (!canDelete) {
-      toast({
-        title: "權限不足",
-        description: "您沒有權限刪除營業處",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    try {
-      // 檢查是否有員工關聯
-      const { data: staffCount } = await supabase
-        .from('staff')
-        .select('id')
-        .eq('branch_id', id);
-
-      if (staffCount && staffCount.length > 0) {
-        const branchToDelete = branches.find(branch => branch.id === id);
-        toast({
-          title: "無法刪除",
-          description: `「${branchToDelete?.name}」中還有 ${staffCount.length} 名員工，請先將員工移至其他營業處`,
-          variant: "destructive"
-        });
+        console.error('❌ useBranchOperations: 新增分支機構失敗:', error);
         return false;
       }
 
+      console.log('✅ useBranchOperations: 新增分支機構成功');
+      return true;
+    } catch (error) {
+      console.error('💥 useBranchOperations: 新增分支機構時發生錯誤:', error);
+      return false;
+    }
+  }, [companyId]);
+
+  const updateBranch = useCallback(async (branchId: string, branchData: Partial<Branch>): Promise<boolean> => {
+    console.log('🔄 useBranchOperations: 更新分支機構:', branchId, branchData);
+    
+    try {
+      const { error } = await supabase
+        .from('branches')
+        .update({
+          ...branchData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', branchId);
+
+      if (error) {
+        console.error('❌ useBranchOperations: 更新分支機構失敗:', error);
+        return false;
+      }
+
+      console.log('✅ useBranchOperations: 更新分支機構成功');
+      return true;
+    } catch (error) {
+      console.error('💥 useBranchOperations: 更新分支機構時發生錯誤:', error);
+      return false;
+    }
+  }, []);
+
+  const deleteBranch = useCallback(async (branchId: string): Promise<boolean> => {
+    console.log('🗑️ useBranchOperations: 刪除分支機構:', branchId);
+    
+    try {
       const { error } = await supabase
         .from('branches')
         .delete()
-        .eq('id', id);
+        .eq('id', branchId);
 
       if (error) {
-        console.error('刪除營業處 Supabase 錯誤:', error);
-        // 即使 Supabase 錯誤，也從本地狀態中移除
-        setBranches(prev => prev.filter(branch => branch.id !== id));
-        toast({
-          title: "刪除成功",
-          description: "已成功刪除該營業處"
-        });
-        return true;
+        console.error('❌ useBranchOperations: 刪除分支機構失敗:', error);
+        return false;
       }
 
-      setBranches(prev => prev.filter(branch => branch.id !== id));
-      toast({
-        title: "刪除成功",
-        description: "已成功刪除該營業處"
-      });
+      console.log('✅ useBranchOperations: 刪除分支機構成功');
       return true;
     } catch (error) {
-      console.error('刪除營業處失敗:', error);
-      toast({
-        title: "刪除失敗",
-        description: "無法刪除營業處，請稍後再試",
-        variant: "destructive"
-      });
+      console.error('💥 useBranchOperations: 刪除分支機構時發生錯誤:', error);
       return false;
     }
-  };
+  }, []);
 
   return {
-    branches,
-    setBranches,
     loadBranches,
     addBranch,
     updateBranch,

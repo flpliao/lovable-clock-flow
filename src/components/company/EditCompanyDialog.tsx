@@ -142,28 +142,28 @@ const EditCompanyDialog = () => {
       // 建立完整的公司資料物件
       const companyData = {
         id: company?.id || crypto.randomUUID(),
-        name: editedCompany.name || '',
-        registration_number: editedCompany.registration_number || '',
-        legal_representative: editedCompany.legal_representative || '',
-        business_type: editedCompany.business_type || '',
-        address: editedCompany.address || '',
-        phone: editedCompany.phone || '',
-        email: editedCompany.email || '',
-        website: editedCompany.website || '',
+        name: editedCompany.name?.trim() || '',
+        registration_number: editedCompany.registration_number?.trim() || '',
+        legal_representative: editedCompany.legal_representative?.trim() || '',
+        business_type: editedCompany.business_type?.trim() || '',
+        address: editedCompany.address?.trim() || '',
+        phone: editedCompany.phone?.trim() || '',
+        email: editedCompany.email?.trim() || '',
+        website: editedCompany.website?.trim() || '',
         established_date: editedCompany.established_date || '',
         capital: editedCompany.capital || null,
         created_at: company?.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString()
       } as Company;
 
+      console.log('準備提交的完整資料:', companyData);
+
       const success = await handleUpdateCompany(companyData);
       if (success) {
         console.log('公司資料更新成功');
         setIsEditCompanyDialogOpen(false);
-        toast({
-          title: company ? "更新成功" : "建立成功",
-          description: company ? "已成功更新公司基本資料" : "已成功建立公司基本資料"
-        });
+      } else {
+        console.log('公司資料更新失敗');
       }
     } catch (error) {
       console.error('提交更新時發生錯誤:', error);

@@ -30,7 +30,10 @@ export const useCompanyOperations = () => {
 
       if (error) {
         console.error('載入公司資料錯誤:', error);
-        throw error;
+        // 如果是權限問題，不顯示錯誤訊息
+        if (!error.message.includes('PGRST301') && !error.message.includes('policy')) {
+          throw error;
+        }
       }
       
       console.log('載入的公司資料:', data);
@@ -50,7 +53,7 @@ export const useCompanyOperations = () => {
   };
 
   // 更新或新建公司資料
-  const updateCompany = async (updatedCompany: Company) => {
+  const updateCompany = async (updatedCompany: Company): Promise<boolean> => {
     console.log('開始更新公司資料，管理員狀態:', isAdmin());
     
     if (!isAdmin()) {
@@ -152,10 +155,14 @@ export const useCompanyOperations = () => {
       // 提供更詳細的錯誤訊息
       let errorMessage = "無法處理公司資料";
       if (error instanceof Error) {
-        if (error.message.includes('PGRST301') || error.message.includes('policy')) {
-          errorMessage = "權限不足，只有管理員可以更新公司資料";
-        } else if (error.message.includes('duplicate key')) {
+        if (error.message.includes('duplicate key')) {
           errorMessage = "統一編號已存在，請使用不同的統一編號";
+        } else if (error.message.includes('violates')) {
+          errorMessage = "資料格式不正確，請檢查輸入內容";
+        } else if (error.message.includes('permission') || error.message.includes('policy')) {
+          errorMessage = "權限不足，請確認您有編輯權限";
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "網路連線問題，請檢查網路連線後重試";
         } else {
           errorMessage = `處理失敗: ${error.message}`;
         }

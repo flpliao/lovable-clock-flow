@@ -80,12 +80,22 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
   };
 
   const handleUpdateCompany = async (updatedCompany: Company): Promise<boolean> => {
-    const success = await updateCompany(updatedCompany);
-    if (success) {
-      // 重新載入資料以確保同步
-      await refreshData();
+    console.log('useCompanyManagement: 開始更新公司資料', updatedCompany);
+    
+    try {
+      const success = await updateCompany(updatedCompany);
+      if (success) {
+        console.log('useCompanyManagement: 公司資料更新成功，重新載入資料');
+        // 重新載入資料以確保同步
+        await refreshData();
+      } else {
+        console.log('useCompanyManagement: 公司資料更新失敗');
+      }
+      return success;
+    } catch (error) {
+      console.error('useCompanyManagement: 更新公司資料時發生錯誤', error);
+      return false;
     }
-    return success;
   };
 
   const openEditBranchDialog = (branch: Branch) => {

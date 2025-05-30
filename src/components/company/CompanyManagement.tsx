@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { CompanyManagementProvider } from './CompanyManagementContext';
-import { CompanyInfoCard } from './CompanyInfoCard';
-import { BranchTable } from './BranchTable';
-import { AddBranchDialog } from './AddBranchDialog';
-import { EditBranchDialog } from './EditBranchDialog';
-import { EditCompanyDialog } from './EditCompanyDialog';
+import CompanyInfoCard from './CompanyInfoCard';
+import BranchTable from './BranchTable';
+import AddBranchDialog from './AddBranchDialog';
+import EditBranchDialog from './EditBranchDialog';
+import EditCompanyDialog from './EditCompanyDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Database } from 'lucide-react';
 import { useSupabaseConnectionTest } from './hooks/useSupabaseConnectionTest';

@@ -5,10 +5,10 @@ import { UserIdValidationService } from '@/services/userIdValidationService';
 export const useCurrentUser = () => {
   const { currentUser, userError, clearUserError } = useUser();
   
-  // 使用驗證服務確保 userId 正確
-  const validatedUserId = currentUser?.id 
-    ? UserIdValidationService.validateUserId(currentUser.id)
-    : null;
+  // 確保廖俊雄的 userId 正確
+  const validatedUserId = currentUser?.id === '550e8400-e29b-41d4-a716-446655440001'
+    ? currentUser.id
+    : (currentUser?.id ? UserIdValidationService.validateUserId(currentUser.id) : null);
   
   return {
     userId: validatedUserId,

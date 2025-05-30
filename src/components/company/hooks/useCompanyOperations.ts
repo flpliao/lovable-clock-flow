@@ -13,15 +13,16 @@ export const useCompanyOperations = () => {
   // 載入公司資料
   const loadCompany = async () => {
     try {
-      console.log('正在載入公司資料...');
+      console.log('正在載入公司資料，當前用戶:', currentUser?.name, '管理員狀態:', isAdmin());
       
-      // 檢查用戶是否已登入
+      // 檢查用戶是否已登入且為管理員
       if (!currentUser?.id) {
         console.log('用戶未登入，跳過載入公司資料');
         setCompany(null);
         return;
       }
 
+      console.log('開始查詢公司資料...');
       const { data, error } = await supabase
         .from('companies')
         .select('*')
@@ -30,31 +31,27 @@ export const useCompanyOperations = () => {
 
       if (error) {
         console.error('載入公司資料錯誤:', error);
-        // 如果是權限問題，不顯示錯誤訊息
-        if (!error.message.includes('PGRST301') && !error.message.includes('policy')) {
-          throw error;
-        }
+        // 由於我們已經設置了正確的 RLS 政策，這裡應該不會有權限問題
+        throw error;
       }
       
       console.log('載入的公司資料:', data);
       setCompany(data);
     } catch (error) {
       console.error('載入公司資料失敗:', error);
-      // 靜默處理錯誤，如果是權限問題則不顯示錯誤訊息
-      if (error instanceof Error && !error.message.includes('PGRST301')) {
-        toast({
-          title: "載入失敗",
-          description: "無法載入公司資料",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "載入失敗",
+        description: "無法載入公司資料，請檢查您的權限",
+        variant: "destructive"
+      });
       setCompany(null);
     }
   };
 
   // 更新或新建公司資料
   const updateCompany = async (updatedCompany: Company): Promise<boolean> => {
-    console.log('🔄 開始更新公司資料，管理員狀態:', isAdmin());
+    console.log('🔄 開始更新公司資料');
+    console.log('📋 當前用戶:', currentUser?.name, '管理員狀態:', isAdmin());
     console.log('📋 提交的資料:', updatedCompany);
     
     if (!isAdmin()) {
@@ -111,7 +108,7 @@ export const useCompanyOperations = () => {
         throw new Error('電子郵件格式不正確');
       }
 
-      // 準備資料，確保所有欄位都正確對應到資料庫
+      // 準備資料
       const companyData = {
         name: updatedCompany.name.trim(),
         registration_number: registrationNumber,
@@ -128,19 +125,6 @@ export const useCompanyOperations = () => {
       
       console.log('📄 準備處理的資料:', companyData);
 
-      // 測試連線狀態
-      console.log('🔗 測試 Supabase 連線狀態...');
-      const { error: connectionTest } = await supabase
-        .from('companies')
-        .select('count')
-        .limit(1);
-      
-      if (connectionTest) {
-        console.error('❌ Supabase 連線測試失敗:', connectionTest);
-        throw new Error(`資料庫連線失敗: ${connectionTest.message}`);
-      }
-      console.log('✅ Supabase 連線正常');
-
       let result;
 
       // 檢查是否已存在公司資料
@@ -156,23 +140,7 @@ export const useCompanyOperations = () => {
 
         if (error) {
           console.error('❌ Supabase 更新錯誤:', error);
-          console.error('錯誤詳情:', {
-            message: error.message,
-            code: error.code,
-            hint: error.hint,
-            details: error.details
-          });
-          
-          // 根據錯誤類型提供更詳細的錯誤訊息
-          if (error.code === '23505') {
-            throw new Error('統一編號已存在，請使用不同的統一編號');
-          } else if (error.code === '23514') {
-            throw new Error('資料格式不正確，請檢查輸入內容');
-          } else if (error.message.includes('permission') || error.message.includes('policy')) {
-            throw new Error('權限不足，請確認您有編輯權限');
-          } else {
-            throw new Error(`更新失敗: ${error.message}`);
-          }
+          throw new Error(`更新失敗: ${error.message}`);
         }
         result = data;
       } else {
@@ -189,23 +157,7 @@ export const useCompanyOperations = () => {
 
         if (error) {
           console.error('❌ Supabase 新增錯誤:', error);
-          console.error('錯誤詳情:', {
-            message: error.message,
-            code: error.code,
-            hint: error.hint,
-            details: error.details
-          });
-          
-          // 根據錯誤類型提供更詳細的錯誤訊息
-          if (error.code === '23505') {
-            throw new Error('統一編號已存在，請使用不同的統一編號');
-          } else if (error.code === '23514') {
-            throw new Error('資料格式不正確，請檢查輸入內容');
-          } else if (error.message.includes('permission') || error.message.includes('policy')) {
-            throw new Error('權限不足，請確認您有編輯權限');
-          } else {
-            throw new Error(`新增失敗: ${error.message}`);
-          }
+          throw new Error(`新增失敗: ${error.message}`);
         }
         result = data;
       }
@@ -223,7 +175,6 @@ export const useCompanyOperations = () => {
     } catch (error) {
       console.error('❌ 處理公司資料失敗:', error);
       
-      // 提供詳細的錯誤訊息
       let errorMessage = "無法處理公司資料";
       if (error instanceof Error) {
         errorMessage = error.message;

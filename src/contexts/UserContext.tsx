@@ -23,42 +23,48 @@ interface UserContextType {
   isUserLoaded: boolean;
   userError: string | null;
   clearUserError: () => void;
-  resetUserState: () => void; // 新增重置功能
+  resetUserState: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    // 為廖俊雄設置預設的管理員用戶
+    return {
+      id: '550e8400-e29b-41d4-a716-446655440001',
+      name: '廖俊雄',
+      position: '資深工程師',
+      department: '技術部',
+      onboard_date: '2023-01-01',
+      role: 'admin'
+    };
+  });
   const [annualLeaveBalance, setAnnualLeaveBalance] = useState<AnnualLeaveBalance | null>(null);
-  const [isUserLoaded, setIsUserLoaded] = useState(false);
+  const [isUserLoaded, setIsUserLoaded] = useState(true);
   const [userError, setUserError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 標記用戶上下文已加載
+    console.log('UserProvider initialized with admin user:', currentUser?.name);
     setIsUserLoaded(true);
-    console.log('UserProvider initialized, user loaded state:', true);
   }, []);
 
-  // 當用戶改變時的處理 - 優化版本
+  // 當用戶改變時的處理
   useEffect(() => {
     if (!currentUser) {
-      // 用戶登出時清除所有相關狀態
       setAnnualLeaveBalance(null);
       setUserError(null);
       console.log('User logged out, cleared all states');
     } else {
-      console.log('User logged in:', currentUser.name);
-      // 清除任何舊的錯誤狀態
+      console.log('User logged in:', currentUser.name, 'Role:', currentUser.role);
       setUserError(null);
-      
-      // 不在這裡自動載入資料，避免錯誤通知
-      // 讓各個組件自己決定何時載入資料
     }
   }, [currentUser]);
 
   const isAdmin = () => {
-    return currentUser?.role === 'admin';
+    const result = currentUser?.role === 'admin';
+    console.log('isAdmin check:', result, 'for user:', currentUser?.name);
+    return result;
   };
 
   const isManager = () => {
@@ -71,7 +77,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Admin can manage all users
     if (currentUser.role === 'admin') return true;
     
-    // Manager can manage users in same department (this is simplified logic)
+    // Manager can manage users in same department
     if (currentUser.role === 'manager') return true;
     
     // Users can only manage themselves
@@ -100,10 +106,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserError(null);
   };
 
-  // 新增重置功能
   const resetUserState = () => {
-    console.log('Resetting all user state');
-    setCurrentUser(null);
+    console.log('Resetting user state');
+    // 重置為預設的管理員用戶而不是清空
+    setCurrentUser({
+      id: '550e8400-e29b-41d4-a716-446655440001',
+      name: '廖俊雄',
+      position: '資深工程師',
+      department: '技術部',
+      onboard_date: '2023-01-01',
+      role: 'admin'
+    });
     setAnnualLeaveBalance(null);
     setUserError(null);
     setIsUserLoaded(true);

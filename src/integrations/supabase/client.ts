@@ -16,13 +16,11 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   }
 });
 
-// 移除複雜的身份驗證邏輯，避免觸發 RLS 問題
+// 簡化身份驗證邏輯，直接允許訪問
 export const ensureUserAuthenticated = async () => {
   try {
-    console.log('廖俊雄身份驗證檢查...');
-    
-    // 簡化驗證邏輯，直接返回成功
-    // 因為廖俊雄的身份在前端 UserContext 中已經設定
+    console.log('模擬身份驗證檢查 - 廖俊雄已登入');
+    // 對於模擬系統，直接返回成功
     return true;
   } catch (error) {
     console.error('身份驗證失敗:', error);

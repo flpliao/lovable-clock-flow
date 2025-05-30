@@ -1,26 +1,19 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase, ensureUserAuthenticated } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { Staff, StaffRole } from '../types';
-import { useUser } from '@/contexts/UserContext';
-import { useStaffInitializer } from './useStaffInitializer';
 
 export const useStaffDataLoader = () => {
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [roles, setRoles] = useState<StaffRole[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { currentUser } = useUser();
-  const { initializeLiaoJunxiongStaff } = useStaffInitializer();
 
   // 載入員工資料
   const loadStaff = async () => {
     try {
       console.log('正在載入員工資料...');
-      
-      // 確保身份驗證
-      await ensureUserAuthenticated();
       
       const { data, error } = await supabase
         .from('staff')
@@ -29,10 +22,11 @@ export const useStaffDataLoader = () => {
 
       if (error) {
         console.error('載入員工資料錯誤:', error);
-        // 靜默處理權限錯誤，避免在登錄頁面出現錯誤
-        if (error.message.includes('PGRST301') || error.message.includes('policy')) {
-          console.log('權限問題，可能用戶角色尚未設定');
-        }
+        toast({
+          title: "載入失敗",
+          description: `無法載入員工資料: ${error.message}`,
+          variant: "destructive"
+        });
         setStaffList([]);
         return;
       }
@@ -41,7 +35,6 @@ export const useStaffDataLoader = () => {
       setStaffList(data || []);
     } catch (error) {
       console.error('載入員工資料失敗:', error);
-      // 靜默處理錯誤
       setStaffList([]);
     }
   };
@@ -49,9 +42,6 @@ export const useStaffDataLoader = () => {
   // 載入角色資料
   const loadRoles = async () => {
     try {
-      // 確保身份驗證
-      await ensureUserAuthenticated();
-      
       const { data: rolesData, error: rolesError } = await supabase
         .from('staff_roles')
         .select(`
@@ -64,7 +54,6 @@ export const useStaffDataLoader = () => {
 
       if (rolesError) {
         console.error('載入角色資料錯誤:', rolesError);
-        // 靜默處理錯誤
         setRoles([]);
         return;
       }
@@ -77,7 +66,6 @@ export const useStaffDataLoader = () => {
       setRoles(formattedRoles);
     } catch (error) {
       console.error('載入角色資料失敗:', error);
-      // 靜默處理錯誤
       setRoles([]);
     }
   };

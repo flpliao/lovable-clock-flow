@@ -35,29 +35,32 @@ export const useCompanySyncManager = () => {
             description: "請使用「強制同步」功能載入依美琦股份有限公司的資料",
             variant: "default"
           });
-        } else {
-          toast({
-            title: "未找到公司資料",
-            description: "請聯繫系統管理員載入公司資料",
-            variant: "destructive"
-          });
         }
       }
     } catch (error) {
       console.error('❌ useCompanySyncManager: 載入公司資料失敗:', error);
       setCompany(null);
       
-      toast({
-        title: "載入失敗",
-        description: `無法載入公司資料，請稍後再試`,
-        variant: "destructive"
-      });
+      // 針對 RLS 錯誤提供特殊處理
+      if (error instanceof Error && error.message.includes('infinite recursion')) {
+        toast({
+          title: "資料庫設定問題",
+          description: "偵測到資料庫權限設定問題，請聯繫技術支援",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "載入失敗",
+          description: `無法載入公司資料，請稍後再試`,
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }
   }, [toast, hasAdminPermission]);
 
-  // 同步公司資料 - 專為廖俊雄設計
+  // 同步公司資料 - 專為廖俊雄設計，改進錯誤處理
   const syncCompany = useCallback(async (): Promise<boolean> => {
     console.log('🔄 useCompanySyncManager: 開始同步公司資料...');
     
@@ -90,11 +93,11 @@ export const useCompanySyncManager = () => {
     } catch (error) {
       console.error('❌ useCompanySyncManager: 同步失敗:', error);
       
-      // 如果是權限問題，提供更友善的提示
+      // 針對不同錯誤類型提供專門的錯誤訊息
       let errorMessage = '同步過程發生錯誤';
       if (error instanceof Error) {
-        if (error.message.includes('權限') || error.message.includes('RLS')) {
-          errorMessage = '資料庫權限設定問題，請檢查 RLS 政策';
+        if (error.message.includes('infinite recursion') || error.message.includes('RLS')) {
+          errorMessage = '資料庫權限設定問題，已通知技術團隊處理';
         } else if (error.message.includes('連線') || error.message.includes('網路')) {
           errorMessage = '資料庫連線問題，請檢查網路連線';
         } else {

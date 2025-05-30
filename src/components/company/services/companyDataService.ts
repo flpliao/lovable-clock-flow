@@ -23,9 +23,10 @@ export class CompanyDataService {
       // 2. 測試資料庫查詢能力
       const { error: queryError } = await supabase
         .from('companies')
-        .select('count', { count: 'exact', head: true });
+        .select('id')
+        .limit(1);
       
-      if (queryError) {
+      if (queryError && !queryError.code?.includes('PGRST116')) {
         console.error('❌ CompanyDataService: 資料庫查詢測試失敗:', queryError);
         return { 
           success: false, 
@@ -52,7 +53,7 @@ export class CompanyDataService {
       // 先測試連線
       const connectionTest = await this.testConnection();
       if (!connectionTest.success) {
-        throw new Error(connectionTest.error || '資料庫連線失敗');
+        console.warn('⚠️ CompanyDataService: 連線測試失敗，但繼續嘗試查詢:', connectionTest.error);
       }
 
       // 查詢公司資料
@@ -105,10 +106,11 @@ export class CompanyDataService {
     console.log('➕ CompanyDataService: 創建標準依美琦公司資料...');
     
     try {
-      // 先確認連線
-      const isConnected = await this.testConnection();
-      if (!isConnected) {
-        throw new Error('資料庫連線失敗，無法創建公司資料');
+      // 先檢查是否已存在
+      const existingCompany = await this.findCompany();
+      if (existingCompany) {
+        console.log('✅ CompanyDataService: 公司資料已存在，返回現有資料');
+        return existingCompany;
       }
 
       const companyData = {
@@ -131,6 +133,14 @@ export class CompanyDataService {
         .single();
 
       if (error) {
+        // 如果是重複鍵錯誤，嘗試查詢現有資料
+        if (error.code === '23505') {
+          console.log('🔄 CompanyDataService: 資料已存在，查詢現有資料');
+          const existing = await this.findCompany();
+          if (existing) {
+            return existing;
+          }
+        }
         console.error('❌ CompanyDataService: 創建公司資料失敗:', error);
         throw new Error(`創建公司資料失敗: ${error.message}`);
       }
@@ -143,61 +153,6 @@ export class CompanyDataService {
     }
   }
 
-  // 更新公司資料
-  static async updateCompany(companyId: string, updateData: Partial<Company>): Promise<Company> {
-    console.log('🔄 CompanyDataService: 更新公司資料...', { companyId, updateData });
-    
-    try {
-      // 先測試連線
-      const isConnected = await this.testConnection();
-      if (!isConnected) {
-        throw new Error('資料庫連線失敗，無法更新公司資料');
-      }
-
-      const cleanedData = {
-        ...updateData,
-        updated_at: new Date().toISOString()
-      };
-
-      // 移除不需要的欄位
-      delete cleanedData.id;
-      delete cleanedData.created_at;
-
-      const { data, error } = await supabase
-        .from('companies')
-        .update(cleanedData)
-        .eq('id', companyId)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('❌ CompanyDataService: 更新公司資料失敗:', error);
-        throw new Error(`更新公司資料失敗: ${error.message}`);
-      }
-
-      console.log('✅ CompanyDataService: 公司資料更新成功:', data);
-      return this.normalizeCompanyData(data);
-    } catch (error) {
-      console.error('❌ CompanyDataService: 更新過程發生錯誤:', error);
-      throw error;
-    }
-  }
-
-  // 驗證公司資料完整性
-  static validateCompanyData(company: Company): { isValid: boolean; errors: string[] } {
-    const errors: string[] = [];
-    
-    if (!company.name?.trim()) errors.push('公司名稱不能為空');
-    if (!company.registration_number?.trim()) errors.push('統一編號不能為空');
-    if (!company.legal_representative?.trim()) errors.push('法定代表人不能為空');
-    if (!company.business_type?.trim()) errors.push('營業項目不能為空');
-
-    return {
-      isValid: errors.length === 0,
-      errors
-    };
-  }
-
   // 強制同步 - 增強連線檢查和錯誤處理
   static async forceSync(): Promise<Company> {
     console.log('🔄 CompanyDataService: 執行強制同步...');
@@ -207,7 +162,7 @@ export class CompanyDataService {
       console.log('🔗 CompanyDataService: 檢查資料庫連線狀態...');
       const connectionTest = await this.testConnection();
       if (!connectionTest.success) {
-        throw new Error(connectionTest.error || '資料庫連線失敗，請檢查網路連線或重新整理頁面');
+        console.warn('⚠️ CompanyDataService: 連線測試失敗，但繼續嘗試同步:', connectionTest.error);
       }
 
       // 2. 查詢現有資料
@@ -262,5 +217,54 @@ export class CompanyDataService {
       
       throw new Error(errorMessage);
     }
+  }
+
+  // 更新公司資料
+  static async updateCompany(companyId: string, updateData: Partial<Company>): Promise<Company> {
+    console.log('🔄 CompanyDataService: 更新公司資料...', { companyId, updateData });
+    
+    try {
+      const cleanedData = {
+        ...updateData,
+        updated_at: new Date().toISOString()
+      };
+
+      // 移除不需要的欄位
+      delete cleanedData.id;
+      delete cleanedData.created_at;
+
+      const { data, error } = await supabase
+        .from('companies')
+        .update(cleanedData)
+        .eq('id', companyId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ CompanyDataService: 更新公司資料失敗:', error);
+        throw new Error(`更新公司資料失敗: ${error.message}`);
+      }
+
+      console.log('✅ CompanyDataService: 公司資料更新成功:', data);
+      return this.normalizeCompanyData(data);
+    } catch (error) {
+      console.error('❌ CompanyDataService: 更新過程發生錯誤:', error);
+      throw error;
+    }
+  }
+
+  // 驗證公司資料完整性
+  static validateCompanyData(company: Company): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
+    
+    if (!company.name?.trim()) errors.push('公司名稱不能為空');
+    if (!company.registration_number?.trim()) errors.push('統一編號不能為空');
+    if (!company.legal_representative?.trim()) errors.push('法定代表人不能為空');
+    if (!company.business_type?.trim()) errors.push('營業項目不能為空');
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
   }
 }

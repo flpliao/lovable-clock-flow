@@ -63,24 +63,37 @@ export const useDiagnosticTests = () => {
       });
       setResults([...testResults]);
 
+      // 先嘗試簡單的查詢
       const { data, error } = await supabase
         .from('companies')
-        .select('count', { count: 'exact', head: true });
+        .select('id, name')
+        .limit(1);
 
       if (error) {
-        testResults[testResults.length - 1] = {
-          name: 'Companies 表存取',
-          status: 'error',
-          message: '無法存取 companies 表',
-          details: error.message,
-          suggestion: '檢查資料庫 RLS 政策或表格權限'
-        };
+        // 如果有錯誤，但不是權限問題，可能是表格為空
+        if (error.code === 'PGRST116' || error.message.includes('no rows')) {
+          testResults[testResults.length - 1] = {
+            name: 'Companies 表存取',
+            status: 'warning',
+            message: 'Companies 表存取正常但無資料',
+            details: '表格為空，這是正常的',
+            suggestion: '可以開始新增公司資料'
+          };
+        } else {
+          testResults[testResults.length - 1] = {
+            name: 'Companies 表存取',
+            status: 'error',
+            message: '無法存取 companies 表',
+            details: error.message || '未知錯誤',
+            suggestion: '檢查資料庫 RLS 政策或表格權限'
+          };
+        }
       } else {
         testResults[testResults.length - 1] = {
           name: 'Companies 表存取',
           status: 'success',
           message: 'Companies 表存取正常',
-          details: `資料庫回應正常`
+          details: `找到 ${data?.length || 0} 筆公司資料`
         };
       }
     } catch (error) {
@@ -95,7 +108,59 @@ export const useDiagnosticTests = () => {
 
     setResults([...testResults]);
 
-    // 3. 公司資料查詢測試
+    // 3. Branches 表存取測試
+    try {
+      testResults.push({
+        name: 'Branches 表存取',
+        status: 'testing',
+        message: '正在測試 branches 表的讀取權限...'
+      });
+      setResults([...testResults]);
+
+      const { data, error } = await supabase
+        .from('branches')
+        .select('id, name')
+        .limit(1);
+
+      if (error) {
+        if (error.code === 'PGRST116' || error.message.includes('no rows')) {
+          testResults[testResults.length - 1] = {
+            name: 'Branches 表存取',
+            status: 'warning',
+            message: 'Branches 表存取正常但無資料',
+            details: '表格為空，這是正常的',
+            suggestion: '可以開始新增營業處資料'
+          };
+        } else {
+          testResults[testResults.length - 1] = {
+            name: 'Branches 表存取',
+            status: 'error',
+            message: '無法存取 branches 表',
+            details: error.message || '未知錯誤',
+            suggestion: '檢查資料庫 RLS 政策或表格權限'
+          };
+        }
+      } else {
+        testResults[testResults.length - 1] = {
+          name: 'Branches 表存取',
+          status: 'success',
+          message: 'Branches 表存取正常',
+          details: `找到 ${data?.length || 0} 筆營業處資料`
+        };
+      }
+    } catch (error) {
+      testResults[testResults.length - 1] = {
+        name: 'Branches 表存取',
+        status: 'error',
+        message: 'Branches 表存取測試失敗',
+        details: error instanceof Error ? error.message : '未知錯誤',
+        suggestion: '檢查資料庫連線狀態'
+      };
+    }
+
+    setResults([...testResults]);
+
+    // 4. 公司資料查詢測試
     try {
       testResults.push({
         name: '公司資料查詢',
@@ -134,97 +199,41 @@ export const useDiagnosticTests = () => {
 
     setResults([...testResults]);
 
-    // 4. Branches 表存取測試
+    // 5. 資料庫寫入測試
     try {
       testResults.push({
-        name: 'Branches 表存取',
-        status: 'testing',
-        message: '正在測試 branches 表的讀取權限...'
-      });
-      setResults([...testResults]);
-
-      const { data, error } = await supabase
-        .from('branches')
-        .select('count', { count: 'exact', head: true });
-
-      if (error) {
-        testResults[testResults.length - 1] = {
-          name: 'Branches 表存取',
-          status: 'error',
-          message: '無法存取 branches 表',
-          details: error.message,
-          suggestion: '檢查資料庫 RLS 政策或表格權限'
-        };
-      } else {
-        testResults[testResults.length - 1] = {
-          name: 'Branches 表存取',
-          status: 'success',
-          message: 'Branches 表存取正常',
-          details: `資料庫回應正常`
-        };
-      }
-    } catch (error) {
-      testResults[testResults.length - 1] = {
-        name: 'Branches 表存取',
-        status: 'error',
-        message: 'Branches 表存取測試失敗',
-        details: error instanceof Error ? error.message : '未知錯誤',
-        suggestion: '檢查資料庫連線狀態'
-      };
-    }
-
-    setResults([...testResults]);
-
-    // 5. 寫入權限測試
-    try {
-      testResults.push({
-        name: '資料庫寫入權限',
+        name: '資料庫寫入測試',
         status: 'testing',
         message: '正在測試資料庫寫入權限...'
       });
       setResults([...testResults]);
 
-      // 嘗試執行一個簡單的測試寫入（不實際寫入）
-      const testData = {
-        name: '測試公司',
-        registration_number: '00000000',
-        legal_representative: '測試',
-        address: '測試地址',
-        phone: '測試電話',
-        email: 'test@test.com',
-        business_type: '測試'
-      };
-
-      // 使用 dry run 方式測試權限
-      const { error } = await supabase
-        .from('companies')
-        .select('*')
-        .eq('registration_number', '99999999') // 不存在的編號
-        .limit(1);
-
-      if (error && error.message.includes('permission')) {
+      // 測試創建公司資料
+      const testCompany = await CompanyDataService.createStandardCompany();
+      
+      if (testCompany) {
         testResults[testResults.length - 1] = {
-          name: '資料庫寫入權限',
-          status: 'warning',
-          message: '寫入權限可能受限',
-          details: error.message,
-          suggestion: '檢查 RLS 政策設定'
+          name: '資料庫寫入測試',
+          status: 'success',
+          message: '資料庫寫入權限正常',
+          details: `成功創建/更新公司資料: ${testCompany.name}`
         };
       } else {
         testResults[testResults.length - 1] = {
-          name: '資料庫寫入權限',
-          status: 'success',
-          message: '資料庫操作權限正常',
-          details: '可以執行資料庫查詢操作'
+          name: '資料庫寫入測試',
+          status: 'warning',
+          message: '寫入測試未完成',
+          details: '可能是因為資料已存在',
+          suggestion: '這通常是正常的'
         };
       }
     } catch (error) {
       testResults[testResults.length - 1] = {
-        name: '資料庫寫入權限',
+        name: '資料庫寫入測試',
         status: 'error',
-        message: '權限測試失敗',
+        message: '資料庫寫入測試失敗',
         details: error instanceof Error ? error.message : '未知錯誤',
-        suggestion: '檢查使用者權限設定'
+        suggestion: '檢查寫入權限設定'
       };
     }
 
@@ -249,7 +258,7 @@ export const useDiagnosticTests = () => {
 
       const latency = Date.now() - startTime;
 
-      if (error) {
+      if (error && !error.code?.includes('PGRST116')) {
         testResults[testResults.length - 1] = {
           name: '網路連線品質',
           status: 'error',

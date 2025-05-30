@@ -15,6 +15,7 @@ import OrganizationChart from './OrganizationChart';
 import AddStaffDialog from './AddStaffDialog';
 import EditStaffDialog from './EditStaffDialog';
 import RoleManagement from './RoleManagement';
+import AdminVerificationCard from './AdminVerificationCard';
 
 const StaffManagement = () => {
   const { isAdmin } = useUser();
@@ -23,6 +24,8 @@ const StaffManagement = () => {
   return (
     <CompanyManagementProvider>
       <div className="space-y-4">
+        <AdminVerificationCard />
+        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div>

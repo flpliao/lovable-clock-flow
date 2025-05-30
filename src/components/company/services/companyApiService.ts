@@ -7,10 +7,11 @@ export class CompanyApiService {
     console.log('🔍 CompanyApiService: 開始從資料庫查詢公司資料...');
     
     try {
-      // 直接查詢公司資料表，使用 maybeSingle 避免錯誤
+      // 使用更明確的查詢方式，確保能正確載入資料
       const { data, error } = await supabase
         .from('companies')
         .select('*')
+        .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
@@ -21,15 +22,19 @@ export class CompanyApiService {
       
       if (data) {
         console.log('✅ CompanyApiService: 成功從資料庫載入公司資料:', data);
-        return data as Company;
+        // 確保資料格式正確
+        return {
+          ...data,
+          created_at: data.created_at,
+          updated_at: data.updated_at
+        } as Company;
       } else {
         console.log('⚠️ CompanyApiService: 資料庫中沒有找到公司資料');
         return null;
       }
     } catch (error) {
       console.error('💥 CompanyApiService: 載入公司資料時發生錯誤:', error);
-      // 返回 null 讓前端能正常處理
-      return null;
+      throw error; // 重新拋出錯誤，讓前端能正確處理
     }
   }
 
@@ -87,7 +92,7 @@ export class CompanyApiService {
     return data as Company;
   }
 
-  // 新增：監聽公司資料變更的方法
+  // 監聽公司資料變更的方法
   static subscribeToCompanyChanges(callback: (company: Company | null) => void) {
     console.log('👂 CompanyApiService: 開始監聽公司資料變更...');
     

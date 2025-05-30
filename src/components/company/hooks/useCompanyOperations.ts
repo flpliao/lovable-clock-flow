@@ -9,9 +9,14 @@ import { CompanyApiService } from '../services/companyApiService';
 
 export const useCompanyOperations = () => {
   const [company, setCompany] = useState<Company | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // 預設為載入中
   const { toast } = useToast();
   const { isAdmin, currentUser } = useUser();
+
+  // 在組件掛載時立即載入公司資料
+  useEffect(() => {
+    loadCompany();
+  }, []);
 
   // 設定即時監聽
   useEffect(() => {
@@ -36,7 +41,16 @@ export const useCompanyOperations = () => {
       console.log('🔍 useCompanyOperations: API 返回的資料:', data);
       
       setCompany(data);
-      console.log('✅ useCompanyOperations: 公司資料載入完成:', data ? '有資料' : '無資料');
+      
+      if (data) {
+        console.log('✅ useCompanyOperations: 成功載入公司資料:', data.name);
+        toast({
+          title: "載入成功",
+          description: `已載入公司資料：${data.name}`,
+        });
+      } else {
+        console.log('⚠️ useCompanyOperations: 沒有找到公司資料');
+      }
     } catch (error) {
       console.error('❌ useCompanyOperations: 載入公司資料失敗:', error);
       setCompany(null);

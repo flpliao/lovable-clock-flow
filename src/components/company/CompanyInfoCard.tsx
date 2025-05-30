@@ -5,19 +5,22 @@ import { Button } from '@/components/ui/button';
 import { Building2, Edit, MapPin, Phone, Mail, Loader2, RefreshCw } from 'lucide-react';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useUser } from '@/contexts/UserContext';
+import { useCompanyOperations } from './hooks/useCompanyOperations';
 
 const CompanyInfoCard = () => {
-  const { company, setIsEditCompanyDialogOpen } = useCompanyManagementContext();
+  const { setIsEditCompanyDialogOpen } = useCompanyManagementContext();
+  const { company, loading, loadCompany } = useCompanyOperations();
   const { isAdmin, currentUser } = useUser();
 
   console.log('CompanyInfoCard - 當前用戶:', currentUser?.name);
   console.log('CompanyInfoCard - 公司資料:', company);
+  console.log('CompanyInfoCard - 載入狀態:', loading);
 
   // 允許廖俊雄和管理員編輯公司資料
   const canEdit = currentUser?.name === '廖俊雄' || isAdmin();
 
-  // 如果公司資料為 null（載入中或無資料）
-  if (company === null) {
+  // 如果正在載入
+  if (loading) {
     return (
       <Card>
         <CardHeader>
@@ -26,7 +29,7 @@ const CompanyInfoCard = () => {
             公司基本資料
           </CardTitle>
           <CardDescription>
-            <div className="text-orange-600 font-medium flex items-center">
+            <div className="text-blue-600 font-medium flex items-center">
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               正在載入公司資料...
             </div>
@@ -34,19 +37,52 @@ const CompanyInfoCard = () => {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
+            <Loader2 className="h-16 w-16 mx-auto text-blue-500 mb-4 animate-spin" />
+            <p className="text-gray-500">正在從資料庫載入公司資料...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // 如果沒有公司資料
+  if (!company) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Building2 className="h-6 w-6 mr-2" />
+            公司基本資料
+          </CardTitle>
+          <CardDescription>
+            <div className="text-orange-600 font-medium">
+              沒有找到公司資料
+            </div>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
             <Building2 className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 mb-4">正在從資料庫載入公司資料，請稍候...</p>
-            <p className="text-sm text-gray-400 mb-4">如果一直停在這裡，可能是資料庫中沒有公司資料</p>
-            {canEdit && (
+            <p className="text-gray-500 mb-4">資料庫中沒有公司資料</p>
+            <div className="flex gap-2 justify-center">
               <Button 
-                onClick={() => setIsEditCompanyDialogOpen(true)}
-                className="flex items-center mx-auto"
+                onClick={loadCompany}
                 variant="outline"
+                size="sm"
               >
-                <Building2 className="h-4 w-4 mr-2" />
-                設定公司資料
+                <RefreshCw className="h-4 w-4 mr-2" />
+                重新載入
               </Button>
-            )}
+              {canEdit && (
+                <Button 
+                  onClick={() => setIsEditCompanyDialogOpen(true)}
+                  size="sm"
+                >
+                  <Building2 className="h-4 w-4 mr-2" />
+                  設定公司資料
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -66,17 +102,27 @@ const CompanyInfoCard = () => {
           </CardTitle>
           <CardDescription>管理公司基本資訊與統一編號等法定資料</CardDescription>
         </div>
-        {canEdit && (
+        <div className="flex gap-2">
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={() => setIsEditCompanyDialogOpen(true)}
-            className="flex items-center"
+            onClick={loadCompany}
           >
-            <Edit className="h-4 w-4 mr-1" />
-            編輯
+            <RefreshCw className="h-4 w-4 mr-1" />
+            重新載入
           </Button>
-        )}
+          {canEdit && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsEditCompanyDialogOpen(true)}
+              className="flex items-center"
+            >
+              <Edit className="h-4 w-4 mr-1" />
+              編輯
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

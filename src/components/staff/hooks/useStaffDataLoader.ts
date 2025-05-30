@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { Staff, StaffRole } from '../types';
 
 // 創建模擬資料作為備用
@@ -58,7 +57,7 @@ export const useStaffDataLoader = () => {
       console.log('正在載入員工資料...');
       setLoading(true);
 
-      // 先使用模擬資料以確保系統正常運作
+      // 使用模擬資料以確保系統正常運作
       console.log('使用本地模擬資料模式');
       setStaffList(mockStaffData);
       

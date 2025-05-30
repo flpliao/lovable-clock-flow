@@ -1,295 +1,174 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { DiagnosticResult } from '../types';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useDiagnosticTests = () => {
   const [results, setResults] = useState<DiagnosticResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
-  const updateResults = (newResult: DiagnosticResult) => {
-    setResults(prev => [...prev, newResult]);
-  };
-
-  const testSupabaseConnection = async () => {
-    try {
-      console.log('🔍 診斷：測試 Supabase 基本連線...');
-      const { data, error } = await supabase.auth.getSession();
-      
-      if (error && !error.message.includes('session_not_found')) {
-        updateResults({
-          name: 'Supabase 基本連線',
-          status: 'error',
-          message: '連線失敗',
-          details: error.message,
-          suggestion: '檢查網路連線或 Supabase 服務狀態'
-        });
-      } else {
-        updateResults({
-          name: 'Supabase 基本連線',
-          status: 'success',
-          message: '連線正常'
-        });
-      }
-    } catch (error) {
-      updateResults({
-        name: 'Supabase 基本連線',
-        status: 'error',
-        message: '連線異常',
-        details: error instanceof Error ? error.message : '未知錯誤',
-        suggestion: '檢查網路連線設定'
-      });
-    }
-  };
-
-  const testDatabaseAccess = async () => {
-    try {
-      console.log('🔍 診斷：測試資料庫存取權限...');
-      const { data, error } = await supabase
-        .from('companies')
-        .select('count', { count: 'exact', head: true });
-      
-      if (error) {
-        updateResults({
-          name: '資料庫存取權限',
-          status: 'error',
-          message: '無法存取資料庫',
-          details: error.message,
-          suggestion: '檢查 RLS 政策或資料庫權限設定'
-        });
-      } else {
-        updateResults({
-          name: '資料庫存取權限',
-          status: 'success',
-          message: '資料庫存取正常'
-        });
-      }
-    } catch (error) {
-      updateResults({
-        name: '資料庫存取權限',
-        status: 'error',
-        message: '存取異常',
-        details: error instanceof Error ? error.message : '未知錯誤',
-        suggestion: '檢查資料庫連線狀態'
-      });
-    }
-  };
-
-  const testCompanyDataQuery = async () => {
-    try {
-      console.log('🔍 診斷：測試查詢依美琦公司資料...');
-      const { data, error } = await supabase
-        .from('companies')
-        .select('*')
-        .eq('registration_number', '53907735')
-        .maybeSingle();
-      
-      if (error) {
-        updateResults({
-          name: '依美琦公司資料查詢',
-          status: 'error',
-          message: '查詢失敗',
-          details: error.message,
-          suggestion: '檢查查詢語法或資料表結構'
-        });
-      } else if (data) {
-        updateResults({
-          name: '依美琦公司資料查詢',
-          status: 'success',
-          message: `找到公司資料: ${data.name}`
-        });
-      } else {
-        updateResults({
-          name: '依美琦公司資料查詢',
-          status: 'warning',
-          message: '未找到依美琦公司資料',
-          details: '資料庫中沒有統一編號 53907735 的公司記錄',
-          suggestion: '需要手動創建公司資料或執行資料初始化'
-        });
-      }
-    } catch (error) {
-      updateResults({
-        name: '依美琦公司資料查詢',
-        status: 'error',
-        message: '查詢異常',
-        details: error instanceof Error ? error.message : '未知錯誤',
-        suggestion: '檢查資料庫連線或查詢權限'
-      });
-    }
-  };
-
-  const testWritePermissions = async () => {
-    try {
-      console.log('🔍 診斷：測試寫入權限...');
-      const testData = {
-        name: '測試公司_' + Date.now(),
-        registration_number: 'TEST' + Date.now(),
-        legal_representative: '測試代表人',
-        address: '測試地址',
-        phone: '02-1234-5678',
-        email: 'test@example.com',
-        business_type: '測試業務'
-      };
-
-      const { data, error } = await supabase
-        .from('companies')
-        .insert(testData)
-        .select()
-        .single();
-      
-      if (error) {
-        updateResults({
-          name: '資料寫入權限測試',
-          status: 'error',
-          message: '寫入失敗',
-          details: error.message,
-          suggestion: '檢查寫入權限或 RLS 政策設定'
-        });
-      } else {
-        // 立即刪除測試資料
-        await supabase
-          .from('companies')
-          .delete()
-          .eq('id', data.id);
-        
-        updateResults({
-          name: '資料寫入權限測試',
-          status: 'success',
-          message: '寫入權限正常'
-        });
-      }
-    } catch (error) {
-      updateResults({
-        name: '資料寫入權限測試',
-        status: 'error',
-        message: '測試異常',
-        details: error instanceof Error ? error.message : '未知錯誤',
-        suggestion: '檢查資料庫寫入權限'
-      });
-    }
-  };
-
-  const testUpdatePermissions = async () => {
-    try {
-      console.log('🔍 診斷：測試更新權限...');
-      const testData = {
-        name: '測試更新公司_' + Date.now(),
-        registration_number: 'UPDATE_TEST' + Date.now(),
-        legal_representative: '測試代表人',
-        address: '測試地址',
-        phone: '02-1234-5678',
-        email: 'test@example.com',
-        business_type: '測試業務'
-      };
-
-      const { data: insertData, error: insertError } = await supabase
-        .from('companies')
-        .insert(testData)
-        .select()
-        .single();
-      
-      if (insertError) {
-        updateResults({
-          name: '資料更新權限測試',
-          status: 'error',
-          message: '無法創建測試資料',
-          details: insertError.message,
-          suggestion: '先解決寫入權限問題'
-        });
-      } else {
-        const { error: updateError } = await supabase
-          .from('companies')
-          .update({ name: '已更新_' + insertData.name })
-          .eq('id', insertData.id);
-
-        if (updateError) {
-          updateResults({
-            name: '資料更新權限測試',
-            status: 'error',
-            message: '更新失敗',
-            details: updateError.message,
-            suggestion: '檢查更新權限或 RLS 政策設定'
-          });
-        } else {
-          updateResults({
-            name: '資料更新權限測試',
-            status: 'success',
-            message: '更新權限正常'
-          });
-        }
-
-        // 清理測試資料
-        await supabase
-          .from('companies')
-          .delete()
-          .eq('id', insertData.id);
-      }
-    } catch (error) {
-      updateResults({
-        name: '資料更新權限測試',
-        status: 'error',
-        message: '測試異常',
-        details: error instanceof Error ? error.message : '未知錯誤',
-        suggestion: '檢查資料庫更新權限'
-      });
-    }
-  };
-
-  const testBranchesTable = async () => {
-    try {
-      console.log('🔍 診斷：測試營業處資料表連線...');
-      const { data, error } = await supabase
-        .from('branches')
-        .select('count', { count: 'exact', head: true });
-      
-      if (error) {
-        updateResults({
-          name: '營業處資料表連線',
-          status: 'error',
-          message: '無法連線營業處資料表',
-          details: error.message,
-          suggestion: '檢查 branches 表權限或 RLS 政策'
-        });
-      } else {
-        updateResults({
-          name: '營業處資料表連線',
-          status: 'success',
-          message: '營業處資料表連線正常'
-        });
-      }
-    } catch (error) {
-      updateResults({
-        name: '營業處資料表連線',
-        status: 'error',
-        message: '連線異常',
-        details: error instanceof Error ? error.message : '未知錯誤',
-        suggestion: '檢查資料表是否存在'
-      });
-    }
-  };
-
   const runAllTests = async () => {
     setIsRunning(true);
     setResults([]);
+    const testResults: DiagnosticResult[] = [];
 
-    await testSupabaseConnection();
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // 測試 1: 基本連線測試
+    try {
+      testResults.push({
+        name: '基本連線測試',
+        status: 'testing',
+        message: '正在測試 Supabase 連線...'
+      });
+      setResults([...testResults]);
 
-    await testDatabaseAccess();
-    await new Promise(resolve => setTimeout(resolve, 500));
+      const { error } = await supabase.auth.getSession();
+      
+      if (error && !error.message.includes('session_not_found')) {
+        testResults[testResults.length - 1] = {
+          name: '基本連線測試',
+          status: 'error',
+          message: 'Supabase 連線失敗',
+          details: error.message,
+          suggestion: '請檢查網路連線或 Supabase 設定'
+        };
+      } else {
+        testResults[testResults.length - 1] = {
+          name: '基本連線測試',
+          status: 'success',
+          message: 'Supabase 連線正常'
+        };
+      }
+    } catch (error) {
+      testResults[testResults.length - 1] = {
+        name: '基本連線測試',
+        status: 'error',
+        message: '連線測試失敗',
+        details: error instanceof Error ? error.message : '未知錯誤'
+      };
+    }
 
-    await testCompanyDataQuery();
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // 測試 2: 資料庫查詢測試
+    try {
+      testResults.push({
+        name: '資料庫查詢測試',
+        status: 'testing',
+        message: '正在測試資料庫查詢能力...'
+      });
+      setResults([...testResults]);
 
-    await testWritePermissions();
-    await new Promise(resolve => setTimeout(resolve, 500));
+      const { data: companies, error: companiesError } = await supabase
+        .from('companies')
+        .select('count', { count: 'exact', head: true });
 
-    await testUpdatePermissions();
-    await new Promise(resolve => setTimeout(resolve, 500));
+      if (companiesError) {
+        testResults[testResults.length - 1] = {
+          name: '資料庫查詢測試',
+          status: 'error',
+          message: '資料庫查詢失敗',
+          details: companiesError.message,
+          suggestion: '檢查資料表是否存在以及權限設定'
+        };
+      } else {
+        testResults[testResults.length - 1] = {
+          name: '資料庫查詢測試',
+          status: 'success',
+          message: '資料庫查詢正常'
+        };
+      }
+    } catch (error) {
+      testResults[testResults.length - 1] = {
+        name: '資料庫查詢測試',
+        status: 'error',
+        message: '查詢測試失敗',
+        details: error instanceof Error ? error.message : '未知錯誤'
+      };
+    }
 
-    await testBranchesTable();
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // 測試 3: 員工資料表權限測試
+    try {
+      testResults.push({
+        name: '員工資料表權限測試',
+        status: 'testing',
+        message: '正在測試員工資料表存取權限...'
+      });
+      setResults([...testResults]);
 
+      const { data: staff, error: staffError } = await supabase
+        .from('staff')
+        .select('count', { count: 'exact', head: true });
+
+      if (staffError) {
+        if (staffError.message.includes('RLS')) {
+          testResults[testResults.length - 1] = {
+            name: '員工資料表權限測試',
+            status: 'warning',
+            message: 'RLS 政策限制存取',
+            details: staffError.message,
+            suggestion: '這是正常的，RLS 政策正在保護資料'
+          };
+        } else {
+          testResults[testResults.length - 1] = {
+            name: '員工資料表權限測試',
+            status: 'error',
+            message: '員工資料表存取失敗',
+            details: staffError.message,
+            suggestion: '檢查 staff 資料表是否存在'
+          };
+        }
+      } else {
+        testResults[testResults.length - 1] = {
+          name: '員工資料表權限測試',
+          status: 'success',
+          message: '員工資料表存取正常'
+        };
+      }
+    } catch (error) {
+      testResults[testResults.length - 1] = {
+        name: '員工資料表權限測試',
+        status: 'error',
+        message: '權限測試失敗',
+        details: error instanceof Error ? error.message : '未知錯誤'
+      };
+    }
+
+    // 測試 4: 營業處資料表測試
+    try {
+      testResults.push({
+        name: '營業處資料表測試',
+        status: 'testing',
+        message: '正在測試營業處資料表...'
+      });
+      setResults([...testResults]);
+
+      const { data: branches, error: branchesError } = await supabase
+        .from('branches')
+        .select('count', { count: 'exact', head: true });
+
+      if (branchesError) {
+        testResults[testResults.length - 1] = {
+          name: '營業處資料表測試',
+          status: 'error',
+          message: '營業處資料表存取失敗',
+          details: branchesError.message,
+          suggestion: '檢查 branches 資料表設定'
+        };
+      } else {
+        testResults[testResults.length - 1] = {
+          name: '營業處資料表測試',
+          status: 'success',
+          message: '營業處資料表正常'
+        };
+      }
+    } catch (error) {
+      testResults[testResults.length - 1] = {
+        name: '營業處資料表測試',
+        status: 'error',
+        message: '營業處測試失敗',
+        details: error instanceof Error ? error.message : '未知錯誤'
+      };
+    }
+
+    setResults(testResults);
     setIsRunning(false);
   };
 

@@ -13,11 +13,13 @@ export const DiagnosticResults: React.FC<DiagnosticResultsProps> = ({ results })
   }
 
   return (
-    <div className="space-y-3">
-      <h3 className="font-medium">診斷結果：</h3>
-      {results.map((result, index) => (
-        <DiagnosticResultItem key={index} result={result} />
-      ))}
+    <div className="space-y-2">
+      <h3 className="text-lg font-medium">診斷結果</h3>
+      <div className="space-y-2">
+        {results.map((result, index) => (
+          <DiagnosticResultItem key={index} result={result} />
+        ))}
+      </div>
     </div>
   );
 };

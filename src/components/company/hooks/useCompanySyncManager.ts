@@ -3,11 +3,18 @@ import { useState, useCallback } from 'react';
 import { Company } from '@/types/company';
 import { CompanyDataService } from '../services/companyDataService';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/contexts/UserContext';
 
 export const useCompanySyncManager = () => {
   const [loading, setLoading] = useState(false);
   const [company, setCompany] = useState<Company | null>(null);
   const { toast } = useToast();
+  const { currentUser } = useUser();
+
+  // 檢查是否為廖俊雄或管理員
+  const hasAdminPermission = useCallback(() => {
+    return currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
+  }, [currentUser]);
 
   // 載入公司資料
   const loadCompany = useCallback(async () => {
@@ -15,19 +22,27 @@ export const useCompanySyncManager = () => {
     setLoading(true);
     
     try {
+      // 先測試連線
+      const isConnected = await CompanyDataService.testConnection();
+      if (!isConnected && !hasAdminPermission()) {
+        throw new Error('資料庫連線失敗，且您沒有管理員權限');
+      }
+
       const company = await CompanyDataService.findCompany();
       setCompany(company);
       
       if (company) {
+        console.log('✅ useCompanySyncManager: 成功載入公司資料:', company.name);
         toast({
           title: "載入成功",
           description: `已載入 ${company.name} 的資料`,
         });
       } else {
+        console.log('⚠️ useCompanySyncManager: 未找到公司資料');
         toast({
           title: "未找到公司資料",
-          description: "請使用同步功能載入公司資料",
-          variant: "destructive"
+          description: hasAdminPermission() ? "請使用同步功能載入公司資料" : "請聯繫系統管理員",
+          variant: hasAdminPermission() ? "default" : "destructive"
         });
       }
     } catch (error) {
@@ -42,32 +57,35 @@ export const useCompanySyncManager = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, hasAdminPermission]);
 
-  // 同步公司資料
+  // 同步公司資料 - 專為廖俊雄設計
   const syncCompany = useCallback(async (): Promise<boolean> => {
     console.log('🔄 useCompanySyncManager: 開始同步公司資料...');
+    
+    // 權限檢查
+    if (!hasAdminPermission()) {
+      toast({
+        title: "權限不足",
+        description: "只有廖俊雄或系統管理員可以執行同步操作",
+        variant: "destructive"
+      });
+      return false;
+    }
+
     setLoading(true);
     
     try {
-      let company = await CompanyDataService.findCompany();
+      console.log('🔑 useCompanySyncManager: 廖俊雄執行同步操作');
       
-      if (!company) {
-        console.log('➕ useCompanySyncManager: 創建標準公司資料...');
-        company = await CompanyDataService.createStandardCompany();
-        
-        toast({
-          title: "同步成功",
-          description: "已創建新的公司資料",
-        });
-      } else {
-        toast({
-          title: "同步成功",
-          description: "已載入現有公司資料",
-        });
-      }
-      
+      const company = await CompanyDataService.forceSync();
       setCompany(company);
+      
+      toast({
+        title: "同步成功",
+        description: `${company.name} 的資料已成功同步`,
+      });
+      
       return true;
       
     } catch (error) {
@@ -83,10 +101,19 @@ export const useCompanySyncManager = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, hasAdminPermission]);
 
   // 更新公司資料
   const updateCompany = useCallback(async (updatedData: Partial<Company>): Promise<boolean> => {
+    if (!hasAdminPermission()) {
+      toast({
+        title: "權限不足",
+        description: "只有廖俊雄或系統管理員可以修改公司資料",
+        variant: "destructive"
+      });
+      return false;
+    }
+
     if (!company?.id) {
       toast({
         title: "更新失敗",
@@ -133,13 +160,14 @@ export const useCompanySyncManager = () => {
     } finally {
       setLoading(false);
     }
-  }, [company, toast]);
+  }, [company, toast, hasAdminPermission]);
 
   return {
     company,
     loading,
     loadCompany,
     syncCompany,
-    updateCompany
+    updateCompany,
+    hasAdminPermission: hasAdminPermission()
   };
 };

@@ -16,11 +16,12 @@ export class CompanyRepository {
 
       if (error) {
         console.error('❌ CompanyRepository: 查詢公司資料時發生錯誤:', error);
-        throw error;
+        // 不再拋出錯誤，而是返回 null，讓上層處理
+        return null;
       }
 
       if (data) {
-        console.log('✅ CompanyRepository: 成功查詢到公司資料:', data);
+        console.log('✅ CompanyRepository: 成功查詢到公司資料:', data.name);
       } else {
         console.log('⚠️ CompanyRepository: 未找到指定ID的公司資料');
       }
@@ -28,7 +29,8 @@ export class CompanyRepository {
       return data as Company | null;
     } catch (error) {
       console.error('💥 CompanyRepository: 查詢過程中發生錯誤:', error);
-      throw error;
+      // 返回 null 而不是拋出錯誤，讓系統更穩定
+      return null;
     }
   }
 
@@ -45,11 +47,11 @@ export class CompanyRepository {
 
       if (error) {
         console.error('❌ CompanyRepository: 查詢第一個公司資料錯誤:', error);
-        throw error;
+        return null;
       }
       
       if (data) {
-        console.log('✅ CompanyRepository: 成功載入第一個公司資料:', data);
+        console.log('✅ CompanyRepository: 成功載入第一個公司資料:', data.name);
       } else {
         console.log('⚠️ CompanyRepository: 資料庫中沒有任何公司資料');
       }
@@ -57,7 +59,7 @@ export class CompanyRepository {
       return data as Company | null;
     } catch (error) {
       console.error('💥 CompanyRepository: 查詢過程中發生錯誤:', error);
-      throw error;
+      return null;
     }
   }
 

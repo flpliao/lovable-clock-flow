@@ -16,29 +16,53 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   }
 });
 
-// 簡化的模擬身份驗證函數
+// 更安全的身份驗證檢查函數
 export const ensureUserAuthenticated = async () => {
   try {
-    console.log('模擬身份驗證 - 廖俊雄已登入');
+    console.log('檢查用戶身份驗證狀態...');
     
+    const { data: { user }, error } = await supabase.auth.getUser();
+    
+    if (error) {
+      console.error('身份驗證檢查錯誤:', error);
+      return false;
+    }
+
+    if (!user) {
+      console.log('用戶未登入');
+      return false;
+    }
+
+    console.log('用戶已登入:', user.id);
+
     // 檢查廖俊雄的員工記錄是否存在
-    const { data: existingStaff, error: checkError } = await supabase
-      .from('staff')
-      .select('*')
-      .eq('id', '550e8400-e29b-41d4-a716-446655440001')
-      .maybeSingle();
+    if (user.id === '550e8400-e29b-41d4-a716-446655440001') {
+      console.log('檢查廖俊雄的員工記錄...');
+      
+      try {
+        // 使用 RPC 函數來安全地檢查
+        const { data: userRole, error: roleError } = await supabase
+          .rpc('get_user_role_safe', { user_uuid: user.id });
 
-    if (checkError) {
-      console.error('檢查員工記錄錯誤:', checkError);
+        if (roleError) {
+          console.error('無法檢查用戶角色:', roleError);
+          return false;
+        }
+
+        if (userRole) {
+          console.log('✅ 廖俊雄員工記錄存在，角色:', userRole);
+          return true;
+        } else {
+          console.log('❌ 廖俊雄員工記錄不存在');
+          return false;
+        }
+      } catch (error) {
+        console.error('檢查員工記錄時發生錯誤:', error);
+        return false;
+      }
     }
 
-    if (existingStaff) {
-      console.log('✅ 廖俊雄員工記錄已存在');
-      return true;
-    }
-
-    console.log('廖俊雄員工記錄不存在，需要手動創建');
-    return false;
+    return true;
   } catch (error) {
     console.error('身份驗證檢查失敗:', error);
     return false;

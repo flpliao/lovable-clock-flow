@@ -10,34 +10,49 @@ export const useStaffInitializer = () => {
     try {
       console.log('檢查廖俊雄員工記錄...');
       
-      // 直接檢查廖俊雄的記錄是否存在
-      const { data: existingStaff, error: checkError } = await supabase
-        .from('staff')
-        .select('*')
-        .eq('id', '550e8400-e29b-41d4-a716-446655440001')
-        .maybeSingle();
+      // 使用 RPC 函數來安全地檢查用戶角色
+      const { data: userRole, error: roleError } = await supabase
+        .rpc('get_user_role_safe', { user_uuid: '550e8400-e29b-41d4-a716-446655440001' });
 
-      if (checkError) {
-        console.error('檢查員工記錄錯誤:', checkError);
+      if (roleError) {
+        console.error('檢查用戶角色錯誤:', roleError);
         return null;
       }
 
-      if (existingStaff) {
-        console.log('✅ 廖俊雄員工記錄已存在:', existingStaff);
-        console.log('✅ 確認身份：');
-        console.log('   - 姓名:', existingStaff.name);
-        console.log('   - 角色:', existingStaff.role);
-        console.log('   - 職位:', existingStaff.position);
-        console.log('   - 部門:', existingStaff.department);
-        console.log('   - 管理者權限:', existingStaff.role === 'admin' ? '是' : '否');
+      if (userRole) {
+        console.log('✅ 廖俊雄員工記錄存在，角色:', userRole);
         
-        if (existingStaff.role === 'admin') {
+        // 如果需要獲取完整員工資訊，使用直接查詢（僅限特定 ID）
+        const { data: staffData, error: staffError } = await supabase
+          .from('staff')
+          .select('*')
+          .eq('id', '550e8400-e29b-41d4-a716-446655440001')
+          .single();
+
+        if (staffError) {
+          console.error('獲取員工詳細資訊錯誤:', staffError);
+          // 即使無法獲取詳細資訊，也返回基本角色資訊
+          return {
+            id: '550e8400-e29b-41d4-a716-446655440001',
+            name: '廖俊雄',
+            role: userRole
+          };
+        }
+
+        console.log('✅ 確認身份：');
+        console.log('   - 姓名:', staffData.name);
+        console.log('   - 角色:', staffData.role);
+        console.log('   - 職位:', staffData.position);
+        console.log('   - 部門:', staffData.department);
+        console.log('   - 管理者權限:', staffData.role === 'admin' ? '是' : '否');
+        
+        if (staffData.role === 'admin') {
           console.log('🔑 廖俊雄具有系統管理者權限');
         } else {
-          console.warn('⚠️ 廖俊雄不是系統管理者，當前角色:', existingStaff.role);
+          console.warn('⚠️ 廖俊雄不是系統管理者，當前角色:', staffData.role);
         }
         
-        return existingStaff;
+        return staffData;
       }
 
       console.log('❌ 廖俊雄員工記錄不存在於資料庫中');

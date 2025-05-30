@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Plus, Settings, Shield, Stethoscope } from 'lucide-react';
+import { Building2, Plus } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useCompanyOperations } from './hooks/useCompanyOperations';
@@ -12,7 +12,6 @@ import AddBranchDialog from './AddBranchDialog';
 import EditBranchDialog from './EditBranchDialog';
 import EditCompanyDialog from './EditCompanyDialog';
 import { RLSSettingsCard } from './components/RLSSettingsCard';
-import { ComprehensiveDiagnostics } from './diagnostics/ComprehensiveDiagnostics';
 
 const CompanyManagementRedesigned = () => {
   const { currentUser } = useUser();
@@ -70,23 +69,9 @@ const CompanyManagementRedesigned = () => {
         </CardContent>
       </Card>
 
-      {/* 系統設定區塊 */}
+      {/* RLS設定區塊 */}
       {canManageBranches && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <RLSSettingsCard />
-          
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Stethoscope className="h-5 w-5 mr-2 text-green-600" />
-                系統診斷
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ComprehensiveDiagnostics />
-            </CardContent>
-          </Card>
-        </div>
+        <RLSSettingsCard />
       )}
 
       {/* 對話框 */}

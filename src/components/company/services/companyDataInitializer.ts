@@ -25,7 +25,7 @@ export class CompanyDataInitializer {
   // 創建預設的依美琦股份有限公司資料
   static async createDefaultCompany(companyId: string): Promise<Company | null> {
     try {
-      console.log('🔧 CompanyDataInitializer: 創建依美琦股份有限公司資料...');
+      console.log('🔧 CompanyDataInitializer: 創建依美琦股份有限公司資料...', { companyId });
       
       const defaultCompanyData = this.getDefaultCompanyData(companyId);
       console.log('📝 CompanyDataInitializer: 準備插入資料:', defaultCompanyData);
@@ -38,7 +38,7 @@ export class CompanyDataInitializer {
       console.error('💥 CompanyDataInitializer: 創建預設公司資料時發生錯誤:', error);
       
       // 如果因為ID衝突等原因失敗，嘗試載入現有資料
-      if (error.code === '23505') { // 唯一性約束違反
+      if (error.code === '23505' || error.message?.includes('duplicate')) {
         console.log('🔄 CompanyDataInitializer: ID已存在，嘗試重新載入...');
         
         try {
@@ -54,11 +54,34 @@ export class CompanyDataInitializer {
       
       // 如果都失敗了，嘗試載入第一個可用的公司
       try {
+        console.log('🔄 CompanyDataInitializer: 嘗試載入第一個可用的公司...');
         return await CompanyRepository.findFirstAvailable();
       } catch (fallbackError) {
         console.error('❌ CompanyDataInitializer: 載入備用公司資料也失敗:', fallbackError);
         return null;
       }
+    }
+  }
+
+  // 檢查並初始化公司資料
+  static async ensureCompanyExists(companyId: string): Promise<Company | null> {
+    try {
+      console.log('🔍 CompanyDataInitializer: 檢查公司資料是否存在...', { companyId });
+      
+      // 先嘗試載入現有資料
+      const existingCompany = await CompanyRepository.findById(companyId);
+      if (existingCompany) {
+        console.log('✅ CompanyDataInitializer: 找到現有公司資料');
+        return existingCompany;
+      }
+      
+      // 如果不存在，創建新的
+      console.log('🏢 CompanyDataInitializer: 公司資料不存在，開始創建...');
+      return await this.createDefaultCompany(companyId);
+      
+    } catch (error) {
+      console.error('❌ CompanyDataInitializer: 檢查公司資料時發生錯誤:', error);
+      return null;
     }
   }
 }

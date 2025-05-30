@@ -1,4 +1,3 @@
-
 import { Company } from '@/types/company';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -6,18 +5,26 @@ export class CompanyDataService {
   private static readonly COMPANY_NAME = '依美琦股份有限公司';
   private static readonly COMPANY_REGISTRATION_NUMBER = '53907735';
 
-  // 簡化的資料庫連線測試 - 只測試 companies 表
+  // 改進的資料庫連線測試 - 使用更簡單的測試方法
   static async testConnection(): Promise<boolean> {
     try {
       console.log('🔍 CompanyDataService: 測試資料庫連線...');
       
-      const { error } = await supabase
-        .from('companies')
-        .select('id')
-        .limit(1);
+      // 使用 Supabase 內建的健康檢查
+      const { data, error } = await supabase.auth.getSession();
       
-      if (error) {
+      if (error && error.message !== 'session_not_found') {
         console.error('❌ CompanyDataService: 資料庫連線失敗:', error);
+        return false;
+      }
+      
+      // 進一步測試實際查詢能力
+      const { error: queryError } = await supabase
+        .from('companies')
+        .select('count', { count: 'exact', head: true });
+      
+      if (queryError) {
+        console.error('❌ CompanyDataService: 查詢測試失敗:', queryError);
         return false;
       }
       
@@ -29,11 +36,17 @@ export class CompanyDataService {
     }
   }
 
-  // 查詢公司資料 - 完全避免 staff 表，只查詢 companies 表
+  // 查詢公司資料 - 增強錯誤處理
   static async findCompany(): Promise<Company | null> {
     console.log('🔍 CompanyDataService: 查詢依美琦公司資料...');
     
     try {
+      // 先測試連線
+      const isConnected = await this.testConnection();
+      if (!isConnected) {
+        throw new Error('無法連接到資料庫，請檢查網路連線');
+      }
+
       // 直接按統一編號查詢，避免任何可能觸發 staff 表 RLS 的操作
       const { data, error } = await supabase
         .from('companies')
@@ -43,7 +56,7 @@ export class CompanyDataService {
       
       if (error) {
         console.error('❌ CompanyDataService: 查詢公司資料失敗:', error);
-        return null;
+        throw new Error(`查詢公司資料失敗: ${error.message}`);
       }
       
       if (data) {
@@ -51,12 +64,12 @@ export class CompanyDataService {
         return this.normalizeCompanyData(data);
       }
 
-      console.log('⚠️ CompanyDataService: 未找到公司資料，將嘗試創建');
+      console.log('⚠️ CompanyDataService: 未找到公司資料');
       return null;
 
     } catch (error) {
       console.error('❌ CompanyDataService: 查詢過程發生錯誤:', error);
-      return null;
+      throw error;
     }
   }
 
@@ -79,11 +92,17 @@ export class CompanyDataService {
     };
   }
 
-  // 創建標準的依美琦公司資料 - 直接插入不檢查用戶權限
+  // 創建標準的依美琦公司資料 - 改進錯誤處理
   static async createStandardCompany(): Promise<Company> {
     console.log('➕ CompanyDataService: 創建標準依美琦公司資料...');
     
     try {
+      // 先確認連線
+      const isConnected = await this.testConnection();
+      if (!isConnected) {
+        throw new Error('無法連接到資料庫，無法創建公司資料');
+      }
+
       const companyData = {
         name: this.COMPANY_NAME,
         registration_number: this.COMPANY_REGISTRATION_NUMBER,
@@ -165,15 +184,16 @@ export class CompanyDataService {
     };
   }
 
-  // 強制同步 - 完全重新設計避免任何權限問題
+  // 強制同步 - 增強連線檢查和錯誤處理
   static async forceSync(): Promise<Company> {
     console.log('🔄 CompanyDataService: 廖俊雄執行強制同步...');
     
     try {
-      // 1. 先測試連線
+      // 1. 詳細的連線測試
+      console.log('🔗 CompanyDataService: 檢查資料庫連線狀態...');
       const isConnected = await this.testConnection();
       if (!isConnected) {
-        throw new Error('無法連接到資料庫');
+        throw new Error('無法連接到資料庫，請檢查：\n1. 網路連線是否正常\n2. Supabase 服務是否運作\n3. 專案設定是否正確');
       }
 
       // 2. 查詢現有資料
@@ -211,7 +231,20 @@ export class CompanyDataService {
       }
     } catch (error) {
       console.error('❌ CompanyDataService: 強制同步失敗:', error);
-      throw new Error(`強制同步失敗: ${error instanceof Error ? error.message : '未知錯誤'}`);
+      
+      // 提供更詳細的錯誤資訊
+      let errorMessage = '強制同步失敗';
+      if (error instanceof Error) {
+        if (error.message.includes('無法連接')) {
+          errorMessage = '無法連接到資料庫，請檢查網路連線或聯繫技術支援';
+        } else if (error.message.includes('PGRST')) {
+          errorMessage = 'Supabase API 連線問題，請稍後再試';
+        } else {
+          errorMessage = `同步失敗: ${error.message}`;
+        }
+      }
+      
+      throw new Error(errorMessage);
     }
   }
 }

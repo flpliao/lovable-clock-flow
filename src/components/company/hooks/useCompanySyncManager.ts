@@ -16,7 +16,7 @@ export const useCompanySyncManager = () => {
     return currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
   }, [currentUser]);
 
-  // 載入公司資料 - 完全避免觸發 staff 表 RLS
+  // 載入公司資料 - 增強錯誤處理
   const loadCompany = useCallback(async () => {
     console.log('🔄 useCompanySyncManager: 載入公司資料...');
     setLoading(true);
@@ -35,7 +35,7 @@ export const useCompanySyncManager = () => {
         console.log('⚠️ useCompanySyncManager: 未找到公司資料');
         toast({
           title: "未找到資料",
-          description: "尚未找到公司資料，請使用強制同步功能",
+          description: "資料庫中沒有找到公司資料，請使用強制同步功能",
           variant: "destructive"
         });
       }
@@ -43,9 +43,21 @@ export const useCompanySyncManager = () => {
       console.error('❌ useCompanySyncManager: 載入公司資料失敗:', error);
       setCompany(null);
       
+      // 根據錯誤類型提供不同的提示
+      let errorMessage = "載入公司資料時發生錯誤";
+      if (error instanceof Error) {
+        if (error.message.includes('無法連接')) {
+          errorMessage = "無法連接到資料庫，請檢查網路連線";
+        } else if (error.message.includes('PGRST')) {
+          errorMessage = "資料庫服務暫時無法使用，請稍後再試";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "載入失敗",
-        description: "無法載入公司資料，請稍後再試",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -53,7 +65,7 @@ export const useCompanySyncManager = () => {
     }
   }, [toast]);
 
-  // 同步公司資料 - 針對廖俊雄的權限操作
+  // 同步公司資料 - 增強連線檢查
   const syncCompany = useCallback(async (): Promise<boolean> => {
     console.log('🔄 useCompanySyncManager: 開始同步公司資料...');
     
@@ -72,13 +84,20 @@ export const useCompanySyncManager = () => {
     try {
       console.log('🔑 useCompanySyncManager: 廖俊雄執行同步操作');
       
-      // 使用強制同步功能，完全避免 staff 表操作
+      // 先測試連線
+      console.log('🔗 useCompanySyncManager: 測試資料庫連線...');
+      const isConnected = await CompanyDataService.testConnection();
+      if (!isConnected) {
+        throw new Error('無法連接到資料庫，請檢查：\n• 網路連線是否正常\n• 是否可以訪問 Supabase 服務\n• 瀏覽器是否阻擋連線');
+      }
+      
+      // 執行強制同步
       const company = await CompanyDataService.forceSync();
       setCompany(company);
       
       toast({
         title: "同步成功",
-        description: `已成功載入 ${company.name} 的資料`,
+        description: `已成功同步 ${company.name} 的資料`,
       });
       
       return true;
@@ -86,13 +105,20 @@ export const useCompanySyncManager = () => {
     } catch (error) {
       console.error('❌ useCompanySyncManager: 同步失敗:', error);
       
-      // 提供更清楚的錯誤訊息
+      // 提供詳細的錯誤訊息和解決建議
       let errorMessage = '同步過程發生錯誤';
+      let suggestions = '';
+      
       if (error instanceof Error) {
-        if (error.message.includes('infinite recursion') || error.message.includes('RLS')) {
-          errorMessage = '已避開資料庫權限問題，但仍發生錯誤，請聯繫技術支援';
-        } else if (error.message.includes('連線') || error.message.includes('網路')) {
-          errorMessage = '資料庫連線問題，請檢查網路連線';
+        if (error.message.includes('無法連接')) {
+          errorMessage = '無法連接到資料庫';
+          suggestions = '請檢查網路連線或聯繫技術支援';
+        } else if (error.message.includes('PGRST')) {
+          errorMessage = 'Supabase API 連線問題';
+          suggestions = '請稍後再試或重新整理頁面';
+        } else if (error.message.includes('timeout')) {
+          errorMessage = '連線逾時';
+          suggestions = '請檢查網路速度或稍後再試';
         } else {
           errorMessage = error.message;
         }
@@ -100,7 +126,7 @@ export const useCompanySyncManager = () => {
       
       toast({
         title: "同步失敗",
-        description: errorMessage,
+        description: `${errorMessage}${suggestions ? '\n' + suggestions : ''}`,
         variant: "destructive"
       });
       

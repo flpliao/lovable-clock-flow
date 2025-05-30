@@ -102,6 +102,7 @@ const EditCompanyDialog = () => {
     e.preventDefault();
     
     console.log('🚀 EditCompanyDialog: 開始提交表單，當前資料:', editedCompany);
+    console.log('🚀 EditCompanyDialog: 目前公司資料:', company);
 
     if (!hasPermission) {
       toast({
@@ -138,42 +139,40 @@ const EditCompanyDialog = () => {
       console.log('🧹 EditCompanyDialog: 清理後的資料:', cleanedData);
 
       if (company?.id) {
-        // 更新現有公司資料到後台
+        // 直接更新後台資料
         console.log('🔄 EditCompanyDialog: 更新現有公司資料，ID:', company.id);
-        const result = await CompanyDataService.updateCompany(company.id, cleanedData);
-        console.log('✅ EditCompanyDialog: 後台更新成功，結果:', result);
+        const updatedCompany = await CompanyDataService.updateCompany(company.id, cleanedData);
+        console.log('✅ EditCompanyDialog: 後台更新成功，結果:', updatedCompany);
         
         // 更新前台 context 中的資料
-        const success = await handleUpdateCompany(result);
+        console.log('🔄 EditCompanyDialog: 更新前台 context...');
+        const contextUpdateSuccess = await handleUpdateCompany(updatedCompany);
         
-        if (!success) {
-          throw new Error('更新公司上下文失敗');
+        if (!contextUpdateSuccess) {
+          console.warn('⚠️ EditCompanyDialog: Context 更新失敗，但後台已更新成功');
         }
 
-        console.log('✅ EditCompanyDialog: 公司資料更新完成，前後台已同步:', result.name);
+        console.log('✅ EditCompanyDialog: 公司資料更新完成:', updatedCompany.name);
+        
+        // 關閉對話框
         setIsEditCompanyDialogOpen(false);
         
         toast({
           title: "儲存成功",
-          description: `${result.name} 基本資料已成功更新並同步至後台`,
+          description: `${updatedCompany.name} 基本資料已成功更新並同步至後台`,
         });
-      } else {
-        // 如果沒有現有資料，創建新的公司資料
-        console.log('➕ EditCompanyDialog: 創建新的公司資料');
-        const result = await CompanyDataService.createStandardCompany();
-        
-        const success = await handleUpdateCompany(result);
-        
-        if (!success) {
-          throw new Error('創建公司上下文失敗');
-        }
 
-        console.log('✅ EditCompanyDialog: 新公司資料創建完成:', result.name);
-        setIsEditCompanyDialogOpen(false);
-        
+        // 強制重新載入頁面資料以確保同步
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+
+      } else {
+        console.log('⚠️ EditCompanyDialog: 沒有公司 ID，無法更新');
         toast({
-          title: "創建成功",
-          description: `${result.name} 基本資料已成功創建並同步至後台`,
+          title: "更新失敗",
+          description: "找不到公司資料，無法進行更新",
+          variant: "destructive"
         });
       }
       
@@ -182,7 +181,7 @@ const EditCompanyDialog = () => {
       
       toast({
         title: "儲存失敗",
-        description: error instanceof Error ? error.message : "儲存時發生未知錯誤",
+        description: error instanceof Error ? error.message : "儲存時發生未知錯誤，請重新整理頁面後再試",
         variant: "destructive"
       });
     } finally {

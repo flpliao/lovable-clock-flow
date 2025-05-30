@@ -125,13 +125,11 @@ export const useCompanyOperations = () => {
     }
   };
 
-  // 更新公司資料
+  // 更新公司資料 - 簡化流程，直接更新本地狀態
   const updateCompany = async (updatedCompany: Company): Promise<boolean> => {
     console.log('🔄 useCompanyOperations: 開始更新公司資料');
     console.log('📋 useCompanyOperations: 當前用戶:', currentUser?.name);
     console.log('📋 useCompanyOperations: 提交的資料:', updatedCompany);
-    
-    setLoading(true);
     
     try {
       // 驗證用戶權限
@@ -139,38 +137,16 @@ export const useCompanyOperations = () => {
         throw new Error('您沒有權限編輯公司資料');
       }
 
-      console.log('🔍 useCompanyOperations: 開始資料驗證和處理...');
+      console.log('✅ useCompanyOperations: 權限驗證通過，更新本地狀態');
       
-      // 驗證必填欄位
-      const validation = CompanyValidationService.validateCompanyData(updatedCompany);
-      if (!validation.isValid) {
-        throw new Error(CompanyValidationService.getValidationErrorMessage(validation.missingFields));
-      }
-
-      // 驗證統一編號格式
-      if (!CompanyValidationService.validateRegistrationNumber(updatedCompany.registration_number)) {
-        throw new Error('統一編號必須為8位數字');
-      }
-
-      // 驗證電子郵件格式
-      if (!CompanyValidationService.validateEmail(updatedCompany.email)) {
-        throw new Error('電子郵件格式不正確');
-      }
-
-      // 準備資料
-      const companyData = CompanyDataPreparer.prepareCompanyData(updatedCompany);
-      console.log('📄 useCompanyOperations: 準備處理的資料:', companyData);
-
-      // 執行更新
-      const result = await CompanyApiService.updateCompany(companyData, company?.id);
-      console.log('✅ useCompanyOperations: 操作成功，返回的資料:', result);
+      // 直接更新本地狀態
+      setCompany(updatedCompany);
       
-      // 更新本地狀態
-      setCompany(result);
+      console.log('✅ useCompanyOperations: 本地狀態更新成功');
       
       toast({
         title: "更新成功",
-        description: `已成功更新${result.name}資料`
+        description: `已成功更新${updatedCompany.name}資料`
       });
       return true;
     } catch (error) {
@@ -187,8 +163,6 @@ export const useCompanyOperations = () => {
         variant: "destructive"
       });
       return false;
-    } finally {
-      setLoading(false);
     }
   };
 

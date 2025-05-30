@@ -7,12 +7,14 @@ export class CompanyApiService {
     console.log('🔍 CompanyApiService: 開始從資料庫查詢公司資料...');
     
     try {
-      // 使用更安全的查詢方式，增加錯誤處理
+      // 直接查詢指定ID的公司資料
+      const companyId = '550e8400-e29b-41d4-a716-446655440000';
+      console.log('🎯 CompanyApiService: 載入指定ID的公司資料:', companyId);
+      
       const { data, error } = await supabase
         .from('companies')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .eq('id', companyId)
         .maybeSingle();
 
       if (error) {
@@ -29,7 +31,7 @@ export class CompanyApiService {
       }
       
       if (data) {
-        console.log('✅ CompanyApiService: 成功從資料庫載入公司資料:', data);
+        console.log('✅ CompanyApiService: 成功從資料庫載入指定公司資料:', data);
         // 確保資料格式正確
         return {
           ...data,
@@ -37,7 +39,7 @@ export class CompanyApiService {
           updated_at: data.updated_at
         } as Company;
       } else {
-        console.log('⚠️ CompanyApiService: 資料庫中沒有找到公司資料');
+        console.log('⚠️ CompanyApiService: 指定ID的公司資料不存在');
         return null;
       }
     } catch (error) {

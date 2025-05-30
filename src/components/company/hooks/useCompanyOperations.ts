@@ -13,8 +13,9 @@ export const useCompanyOperations = () => {
   const { toast } = useToast();
   const { isAdmin, currentUser } = useUser();
 
-  // 在組件掛載時立即載入公司資料
+  // 在組件掛載時立即載入指定ID的公司資料
   useEffect(() => {
+    console.log('🚀 useCompanyOperations: 開始載入指定ID的公司資料');
     loadCompany();
   }, []);
 
@@ -31,9 +32,9 @@ export const useCompanyOperations = () => {
     };
   }, []);
 
-  // 載入公司資料
+  // 載入指定ID的公司資料
   const loadCompany = async () => {
-    console.log('🔍 useCompanyOperations: 開始載入公司資料...');
+    console.log('🔍 useCompanyOperations: 開始載入指定ID的公司資料...');
     setLoading(true);
     
     try {
@@ -43,17 +44,17 @@ export const useCompanyOperations = () => {
       setCompany(data);
       
       if (data) {
-        console.log('✅ useCompanyOperations: 成功載入公司資料:', data.name);
+        console.log('✅ useCompanyOperations: 成功載入指定公司資料:', data.name);
         toast({
           title: "載入成功",
-          description: `已載入公司資料：${data.name}`,
+          description: `已載入指定公司資料：${data.name}`,
         });
       } else {
-        console.log('⚠️ useCompanyOperations: 沒有找到公司資料，但連接正常');
+        console.log('⚠️ useCompanyOperations: 指定ID的公司資料不存在');
         toast({
-          title: "沒有公司資料",
-          description: "資料庫連接正常，但尚未建立公司資料",
-          variant: "default"
+          title: "找不到公司資料",
+          description: "指定ID的公司資料不存在，請確認ID是否正確",
+          variant: "destructive"
         });
       }
     } catch (error) {
@@ -61,14 +62,14 @@ export const useCompanyOperations = () => {
       setCompany(null);
       
       // 提供更友善的錯誤訊息
-      let errorMessage = "資料庫連接可能有問題";
+      let errorMessage = "載入指定公司資料失敗";
       if (error instanceof Error) {
         if (error.message.includes('network') || error.message.includes('fetch')) {
           errorMessage = "網路連接問題，請檢查網路狀態";
         } else if (error.message.includes('policy') || error.message.includes('RLS')) {
           errorMessage = "資料庫權限設定問題，系統正在調整中";
         } else {
-          errorMessage = "載入資料時發生錯誤，請稍後再試";
+          errorMessage = error.message || "載入資料時發生錯誤，請稍後再試";
         }
       }
       

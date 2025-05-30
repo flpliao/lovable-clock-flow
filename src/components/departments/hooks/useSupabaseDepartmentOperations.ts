@@ -11,6 +11,19 @@ export const useSupabaseDepartmentOperations = () => {
   const { toast } = useToast();
   const { isAdmin } = useUser();
 
+  // 將 Supabase 資料格式轉換為前端格式
+  const transformDepartmentData = (dbData: any): Department => ({
+    id: dbData.id,
+    name: dbData.name,
+    type: dbData.type,
+    location: dbData.location,
+    managerName: dbData.manager_name,
+    managerContact: dbData.manager_contact,
+    staffCount: dbData.staff_count,
+    created_at: dbData.created_at,
+    updated_at: dbData.updated_at
+  });
+
   // 從 Supabase 載入部門資料
   const loadDepartments = async () => {
     try {
@@ -33,7 +46,8 @@ export const useSupabaseDepartmentOperations = () => {
       }
 
       console.log('成功載入部門資料:', data);
-      setDepartments(data || []);
+      const transformedData = data?.map(transformDepartmentData) || [];
+      setDepartments(transformedData);
       
     } catch (error) {
       console.error('載入部門資料發生錯誤:', error);
@@ -78,7 +92,8 @@ export const useSupabaseDepartmentOperations = () => {
       }
 
       console.log('成功新增部門:', data);
-      setDepartments(prev => [...prev, data]);
+      const transformedData = transformDepartmentData(data);
+      setDepartments(prev => [...prev, transformedData]);
       
       toast({
         title: "新增成功",
@@ -136,8 +151,9 @@ export const useSupabaseDepartmentOperations = () => {
       }
 
       console.log('成功更新部門:', data);
+      const transformedData = transformDepartmentData(data);
       setDepartments(prev => prev.map(dept => 
-        dept.id === department.id ? { ...data, managerName: data.manager_name, managerContact: data.manager_contact } : dept
+        dept.id === department.id ? transformedData : dept
       ));
       
       toast({

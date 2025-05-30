@@ -10,15 +10,16 @@ import CompanyContactFields from './forms/CompanyContactFields';
 import CompanyOptionalFields from './forms/CompanyOptionalFields';
 import CompanyFormActions from './forms/CompanyFormActions';
 import { CompanyDataService } from './services/companyDataService';
+import { useCompanyOperations } from './hooks/useCompanyOperations';
 
 const EditCompanyDialog = () => {
   const {
     isEditCompanyDialogOpen,
     setIsEditCompanyDialogOpen,
-    company,
     handleUpdateCompany
   } = useCompanyManagementContext();
 
+  const { company: contextCompany } = useCompanyOperations();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editedCompany, setEditedCompany] = useState<Partial<Company>>({
     name: '',
@@ -43,29 +44,81 @@ const EditCompanyDialog = () => {
     isEditCompanyDialogOpen, 
     hasPermission, 
     userName: currentUser?.name,
-    companyName: company?.name 
+    companyName: contextCompany?.name 
   });
 
-  // 當對話框開啟時，初始化表單資料
+  // 當對話框開啟時，載入並初始化表單資料
   useEffect(() => {
-    console.log('EditCompanyDialog - useEffect 觸發:', { isEditCompanyDialogOpen, company });
+    console.log('EditCompanyDialog - useEffect 觸發:', { 
+      isEditCompanyDialogOpen, 
+      contextCompany: contextCompany?.name 
+    });
     
-    if (isEditCompanyDialogOpen && company) {
-      console.log('📝 EditCompanyDialog: 初始化編輯表單，公司資料:', company);
-      setEditedCompany({
-        name: company.name || '',
-        registration_number: company.registration_number || '',
-        legal_representative: company.legal_representative || '',
-        business_type: company.business_type || '',
-        address: company.address || '',
-        phone: company.phone || '',
-        email: company.email || '',
-        website: company.website || '',
-        established_date: company.established_date || '',
-        capital: company.capital || null
+    if (isEditCompanyDialogOpen) {
+      console.log('📝 EditCompanyDialog: 對話框開啟，載入公司資料...');
+      
+      if (contextCompany) {
+        console.log('📝 EditCompanyDialog: 使用 context 中的公司資料:', contextCompany);
+        initializeFormData(contextCompany);
+      } else {
+        console.log('📝 EditCompanyDialog: context 中沒有公司資料，從資料庫載入...');
+        loadCompanyDataFromDatabase();
+      }
+    }
+  }, [isEditCompanyDialogOpen, contextCompany]);
+
+  // 從資料庫載入公司資料
+  const loadCompanyDataFromDatabase = async () => {
+    try {
+      console.log('🔍 EditCompanyDialog: 從資料庫查詢公司資料...');
+      const companyData = await CompanyDataService.findCompany();
+      
+      if (companyData) {
+        console.log('✅ EditCompanyDialog: 成功從資料庫載入公司資料:', companyData);
+        initializeFormData(companyData);
+        
+        toast({
+          title: "資料載入成功",
+          description: `已載入 ${companyData.name} 的資料`,
+        });
+      } else {
+        console.log('⚠️ EditCompanyDialog: 資料庫中沒有找到公司資料');
+        toast({
+          title: "找不到公司資料",
+          description: "資料庫中沒有找到公司資料，請先建立基本資料",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('❌ EditCompanyDialog: 載入公司資料失敗:', error);
+      toast({
+        title: "載入失敗",
+        description: "無法從資料庫載入公司資料，請重試",
+        variant: "destructive"
       });
     }
-  }, [company, isEditCompanyDialogOpen]);
+  };
+
+  // 初始化表單資料
+  const initializeFormData = (company: Company) => {
+    console.log('📝 EditCompanyDialog: 初始化表單資料:', company);
+    
+    const formData = {
+      name: company.name || '',
+      registration_number: company.registration_number || '',
+      legal_representative: company.legal_representative || '',
+      business_type: company.business_type || '',
+      address: company.address || '',
+      phone: company.phone || '',
+      email: company.email || '',
+      website: company.website || '',
+      established_date: company.established_date || '',
+      capital: company.capital || null
+    };
+    
+    console.log('📝 EditCompanyDialog: 設定表單資料:', formData);
+    setEditedCompany(formData);
+  };
 
   const validateForm = (data: Partial<Company>): boolean => {
     if (!data.name?.trim()) {
@@ -111,7 +164,7 @@ const EditCompanyDialog = () => {
     e.preventDefault();
     
     console.log('🚀 EditCompanyDialog: 開始提交表單，當前資料:', editedCompany);
-    console.log('🚀 EditCompanyDialog: 目前公司資料:', company);
+    console.log('🚀 EditCompanyDialog: 目前公司資料:', contextCompany);
 
     if (!hasPermission) {
       toast({
@@ -147,10 +200,10 @@ const EditCompanyDialog = () => {
 
       console.log('🧹 EditCompanyDialog: 清理後的資料:', cleanedData);
 
-      if (company?.id) {
+      if (contextCompany?.id) {
         // 直接更新後台資料
-        console.log('🔄 EditCompanyDialog: 更新現有公司資料，ID:', company.id);
-        const updatedCompany = await CompanyDataService.updateCompany(company.id, cleanedData);
+        console.log('🔄 EditCompanyDialog: 更新現有公司資料，ID:', contextCompany.id);
+        const updatedCompany = await CompanyDataService.updateCompany(contextCompany.id, cleanedData);
         console.log('✅ EditCompanyDialog: 後台更新成功，結果:', updatedCompany);
         
         // 更新前台 context 中的資料
@@ -202,26 +255,16 @@ const EditCompanyDialog = () => {
     console.log('🚪 EditCompanyDialog: 關閉編輯對話框');
     setIsEditCompanyDialogOpen(false);
     // 重設表單資料
-    if (company) {
-      setEditedCompany({
-        name: company.name || '',
-        registration_number: company.registration_number || '',
-        legal_representative: company.legal_representative || '',
-        business_type: company.business_type || '',
-        address: company.address || '',
-        phone: company.phone || '',
-        email: company.email || '',
-        website: company.website || '',
-        established_date: company.established_date || '',
-        capital: company.capital || null
-      });
+    if (contextCompany) {
+      initializeFormData(contextCompany);
     }
   };
 
   console.log('EditCompanyDialog - 渲染狀態:', { 
     isEditCompanyDialogOpen,
     hasPermission,
-    companyExists: !!company
+    companyExists: !!contextCompany,
+    formDataName: editedCompany.name
   });
 
   return (

@@ -19,8 +19,8 @@ export const useDataLoader = () => {
       console.log('📋 useDataLoader: 正在載入公司資料...');
       await loadCompany();
       
-      // 2. 等待一小段時間確保公司資料已更新到狀態中
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // 2. 等待更長時間確保公司資料已更新到狀態中
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // 3. 載入營業處資料
       console.log('🏪 useDataLoader: 正在載入營業處資料...');
@@ -46,11 +46,8 @@ export const useDataLoader = () => {
   // 當元件掛載時載入資料
   useEffect(() => {
     console.log('🚀 useDataLoader: 頁面載入，開始載入資料');
-    const timer = setTimeout(() => {
-      loadAllData();
-    }, 100);
-
-    return () => clearTimeout(timer);
+    // 立即執行，不延遲
+    loadAllData();
   }, []);
 
   return {

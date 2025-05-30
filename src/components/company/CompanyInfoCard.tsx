@@ -6,6 +6,7 @@ import { Building2, Edit, MapPin, Phone, Mail, Loader2, RefreshCw, AlertCircle, 
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useUser } from '@/contexts/UserContext';
 import { useCompanyOperations } from './hooks/useCompanyOperations';
+import { CompanyApiService } from './services/companyApiService';
 
 const CompanyInfoCard = () => {
   const { setIsEditCompanyDialogOpen } = useCompanyManagementContext();
@@ -19,7 +20,7 @@ const CompanyInfoCard = () => {
   const canEdit = currentUser?.name === '廖俊雄' || isAdmin();
 
   // 檢查資料是否同步
-  const isDataSynced = company && company.id === '550e8400-e29b-41d4-a716-446655440000';
+  const isDataSynced = CompanyApiService.isDataSynced(company);
 
   // 如果正在載入
   if (loading) {
@@ -29,6 +30,9 @@ const CompanyInfoCard = () => {
           <CardTitle className="flex items-center">
             <Building2 className="h-6 w-6 mr-2" />
             公司基本資料
+            <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+              載入中
+            </span>
           </CardTitle>
           <CardDescription>
             <div className="text-blue-600 font-medium flex items-center">

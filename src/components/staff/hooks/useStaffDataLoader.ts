@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,9 +17,7 @@ const mockStaffData: Staff[] = [
     role_id: 'admin',
     supervisor_id: null,
     username: 'liao.junxiong',
-    email: 'liao@company.com',
-    created_at: '2023-01-01T00:00:00Z',
-    updated_at: '2023-01-01T00:00:00Z'
+    email: 'liao@company.com'
   }
 ];
 
@@ -102,9 +99,7 @@ export const useStaffDataLoader = () => {
               role_id,
               supervisor_id,
               username,
-              email,
-              created_at,
-              updated_at
+              email
             `)
             .limit(50); // 限制數量避免大量資料
 

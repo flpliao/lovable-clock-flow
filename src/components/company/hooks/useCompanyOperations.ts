@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
@@ -22,19 +21,14 @@ export const useCompanyOperations = () => {
       const data = await CompanyApiService.loadCompany();
       console.log('🔍 useCompanyOperations: API 返回的資料:', data);
       
-      if (data) {
-        console.log('✅ useCompanyOperations: 設定公司資料到 state:', data);
-        setCompany(data);
-      } else {
-        console.log('⚠️ useCompanyOperations: 沒有找到公司資料，設定為 null');
-        setCompany(null);
-      }
+      setCompany(data);
+      console.log('✅ useCompanyOperations: 公司資料載入完成:', data ? '有資料' : '無資料');
     } catch (error) {
       console.error('❌ useCompanyOperations: 載入公司資料失敗:', error);
       setCompany(null);
       toast({
         title: "載入失敗",
-        description: "無法載入公司資料，請重新整理頁面",
+        description: "無法載入公司資料，請檢查資料庫連接",
         variant: "destructive"
       });
     } finally {

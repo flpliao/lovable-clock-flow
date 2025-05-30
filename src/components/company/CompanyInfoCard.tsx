@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Edit, MapPin, Phone, Mail, Loader2 } from 'lucide-react';
+import { Building2, Edit, MapPin, Phone, Mail, Loader2, RefreshCw } from 'lucide-react';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useUser } from '@/contexts/UserContext';
 
@@ -35,7 +35,8 @@ const CompanyInfoCard = () => {
         <CardContent>
           <div className="text-center py-8">
             <Building2 className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 mb-4">系統正在從資料庫載入公司資料</p>
+            <p className="text-gray-500 mb-4">正在從資料庫載入公司資料，請稍候...</p>
+            <p className="text-sm text-gray-400 mb-4">如果一直停在這裡，可能是資料庫中沒有公司資料</p>
             {canEdit && (
               <Button 
                 onClick={() => setIsEditCompanyDialogOpen(true)}

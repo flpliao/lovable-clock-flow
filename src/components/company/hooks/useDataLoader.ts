@@ -45,7 +45,12 @@ export const useDataLoader = () => {
   // 當元件掛載時立即載入資料
   useEffect(() => {
     console.log('🚀 useDataLoader: 頁面載入，開始載入公司資料');
-    loadAllData();
+    // 使用 setTimeout 確保元件完全掛載後再載入資料
+    const timer = setTimeout(() => {
+      loadAllData();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []); // 空依賴陣列，只在掛載時執行一次
 
   return {

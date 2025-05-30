@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Company } from '@/types/company';
 
@@ -7,31 +6,29 @@ export class CompanyApiService {
     console.log('🔍 CompanyApiService: 開始從資料庫查詢公司資料...');
     
     try {
-      // 直接查詢所有公司資料，然後取第一筆
+      // 直接查詢公司資料表，不依賴任何用戶驗證
       const { data, error } = await supabase
         .from('companies')
         .select('*')
-        .order('created_at', { ascending: true })
-        .limit(1);
+        .limit(1)
+        .single();
 
       if (error) {
+        // 如果是沒有資料的錯誤，返回 null 而不是拋出錯誤
+        if (error.code === 'PGRST116') {
+          console.log('⚠️ CompanyApiService: 資料庫中沒有找到公司資料');
+          return null;
+        }
         console.error('❌ CompanyApiService: 查詢公司資料錯誤:', error);
         throw error;
       }
       
-      console.log('🔍 CompanyApiService: 原始查詢結果:', data);
-      
-      if (data && data.length > 0) {
-        const company = data[0];
-        console.log('✅ CompanyApiService: 成功從資料庫載入公司資料:', company);
-        return company as Company;
-      } else {
-        console.log('⚠️ CompanyApiService: 資料庫中沒有找到公司資料');
-        return null;
-      }
+      console.log('✅ CompanyApiService: 成功從資料庫載入公司資料:', data);
+      return data as Company;
     } catch (error) {
       console.error('💥 CompanyApiService: 載入公司資料時發生錯誤:', error);
-      throw error;
+      // 不要重新拋出錯誤，返回 null 讓前端能正常處理
+      return null;
     }
   }
 

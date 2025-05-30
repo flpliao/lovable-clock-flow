@@ -7,6 +7,8 @@ export interface Department {
   managerName?: string;
   managerContact?: string;
   staffCount: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface NewDepartment {
@@ -20,6 +22,7 @@ export interface NewDepartment {
 export interface DepartmentManagementContextType {
   departments: Department[];
   filteredDepartments: Department[];
+  loading: boolean;
   isAddDialogOpen: boolean;
   setIsAddDialogOpen: (isOpen: boolean) => void;
   isEditDialogOpen: boolean;

@@ -388,6 +388,42 @@ export type Database = {
         }
         Relationships: []
       }
+      departments: {
+        Row: {
+          created_at: string
+          id: string
+          location: string | null
+          manager_contact: string | null
+          manager_name: string | null
+          name: string
+          staff_count: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          manager_contact?: string | null
+          manager_name?: string | null
+          name: string
+          staff_count?: number
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          manager_contact?: string | null
+          manager_name?: string | null
+          name?: string
+          staff_count?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       leave_requests: {
         Row: {
           approval_level: number | null

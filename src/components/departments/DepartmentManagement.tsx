@@ -12,6 +12,7 @@ import { DepartmentManagementProvider } from './DepartmentManagementContext';
 import DepartmentTable from './DepartmentTable';
 import AddDepartmentDialog from './AddDepartmentDialog';
 import EditDepartmentDialog from './EditDepartmentDialog';
+import { Database } from 'lucide-react';
 
 const DepartmentManagement = () => {
   const { isAdmin } = useUser();
@@ -22,11 +23,14 @@ const DepartmentManagement = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>部門/門市管理</CardTitle>
+              <CardTitle className="flex items-center">
+                <Database className="h-5 w-5 mr-2 text-green-600" />
+                部門/門市管理
+              </CardTitle>
               <CardDescription>
                 {isAdmin() 
-                  ? "管理所有部門和門市資料" 
-                  : "查看部門和門市資料"}
+                  ? "管理所有部門和門市資料 (已與後台同步)" 
+                  : "查看部門和門市資料 (已與後台同步)"}
               </CardDescription>
             </div>
             <AddDepartmentDialog />

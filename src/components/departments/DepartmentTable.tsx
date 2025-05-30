@@ -9,14 +9,23 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Edit2, Trash2, Building, Store } from 'lucide-react';
+import { Edit2, Trash2, Building, Store, Loader2 } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { useDepartmentManagementContext } from './DepartmentManagementContext';
 import { Badge } from '@/components/ui/badge';
 
 const DepartmentTable = () => {
   const { isAdmin } = useUser();
-  const { filteredDepartments, openEditDialog, handleDeleteDepartment } = useDepartmentManagementContext();
+  const { filteredDepartments, loading, openEditDialog, handleDeleteDepartment } = useDepartmentManagementContext();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <Loader2 className="h-6 w-6 animate-spin" />
+        <span className="ml-2">載入部門資料中...</span>
+      </div>
+    );
+  }
 
   return (
     <Table>

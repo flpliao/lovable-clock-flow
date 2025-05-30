@@ -3,10 +3,9 @@ import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { Department, NewDepartment } from './types';
-import { mockDepartments } from './mockData';
+import { useSupabaseDepartmentOperations } from './hooks/useSupabaseDepartmentOperations';
 
 export const useDepartmentManagement = () => {
-  const [departments, setDepartments] = useState<Department[]>(mockDepartments);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentDepartment, setCurrentDepartment] = useState<Department | null>(null);
@@ -21,10 +20,19 @@ export const useDepartmentManagement = () => {
   const { toast } = useToast();
   const { isAdmin } = useUser();
 
+  // 使用 Supabase 操作 hook
+  const {
+    departments,
+    loading,
+    addDepartment: supabaseAddDepartment,
+    updateDepartment: supabaseUpdateDepartment,
+    deleteDepartment: supabaseDeleteDepartment
+  } = useSupabaseDepartmentOperations();
+
   // All departments are visible
   const filteredDepartments = departments;
 
-  const handleAddDepartment = () => {
+  const handleAddDepartment = async () => {
     if (!newDepartment.name || !newDepartment.type) {
       toast({
         title: "資料不完整",
@@ -34,39 +42,20 @@ export const useDepartmentManagement = () => {
       return;
     }
 
-    // Only admins can add new departments
-    if (!isAdmin()) {
-      toast({
-        title: "權限不足",
-        description: "只有管理員可以新增部門/門市",
-        variant: "destructive"
+    const success = await supabaseAddDepartment(newDepartment);
+    if (success) {
+      setNewDepartment({
+        name: '',
+        type: 'department',
+        location: '',
+        managerName: '',
+        managerContact: ''
       });
-      return;
+      setIsAddDialogOpen(false);
     }
-
-    const departmentToAdd = {
-      id: `${departments.length + 1}`,
-      ...newDepartment,
-      staffCount: 0
-    };
-
-    setDepartments([...departments, departmentToAdd]);
-    setNewDepartment({
-      name: '',
-      type: 'department',
-      location: '',
-      managerName: '',
-      managerContact: ''
-    });
-    setIsAddDialogOpen(false);
-    
-    toast({
-      title: "新增成功",
-      description: `已成功新增 ${departmentToAdd.name} 至部門/門市列表`
-    });
   };
 
-  const handleEditDepartment = () => {
+  const handleEditDepartment = async () => {
     if (!currentDepartment || !currentDepartment.name || !currentDepartment.type) {
       toast({
         title: "資料不完整",
@@ -76,53 +65,14 @@ export const useDepartmentManagement = () => {
       return;
     }
 
-    if (!isAdmin()) {
-      toast({
-        title: "權限不足",
-        description: "只有管理員可以編輯部門/門市",
-        variant: "destructive"
-      });
-      return;
+    const success = await supabaseUpdateDepartment(currentDepartment);
+    if (success) {
+      setIsEditDialogOpen(false);
     }
-
-    setDepartments(departments.map(dept => 
-      dept.id === currentDepartment.id ? currentDepartment : dept
-    ));
-    setIsEditDialogOpen(false);
-    
-    toast({
-      title: "編輯成功",
-      description: `已成功更新 ${currentDepartment.name} 的資料`
-    });
   };
 
-  const handleDeleteDepartment = (id: string) => {
-    if (!isAdmin()) {
-      toast({
-        title: "權限不足",
-        description: "只有管理員可以刪除部門/門市",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Check if there are staff in this department
-    const deptToDelete = departments.find(dept => dept.id === id);
-    if (deptToDelete && deptToDelete.staffCount > 0) {
-      toast({
-        title: "無法刪除",
-        description: `${deptToDelete.name} 中還有 ${deptToDelete.staffCount} 名員工，請先將員工移至其他部門`,
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setDepartments(departments.filter(dept => dept.id !== id));
-    
-    toast({
-      title: "刪除成功",
-      description: "已成功從列表中移除該部門/門市"
-    });
+  const handleDeleteDepartment = async (id: string) => {
+    await supabaseDeleteDepartment(id);
   };
 
   const openEditDialog = (department: Department) => {
@@ -142,6 +92,7 @@ export const useDepartmentManagement = () => {
   return {
     departments,
     filteredDepartments,
+    loading,
     isAddDialogOpen,
     setIsAddDialogOpen,
     isEditDialogOpen,

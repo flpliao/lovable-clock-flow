@@ -16,20 +16,13 @@ export const useStaffDataLoader = () => {
 
   // 載入員工資料
   const loadStaff = async () => {
-    // 如果沒有用戶登錄，直接返回
-    if (!currentUser?.id) {
-      console.log('No user logged in, skipping staff load');
-      setStaffList([]);
-      return;
-    }
-
     try {
       console.log('正在載入員工資料...');
       
       // 確保身份驗證
       await ensureUserAuthenticated();
       
-      // 先初始化廖俊雄的記錄（如果需要）
+      // 始終嘗試初始化廖俊雄的記錄（不依賴 currentUser 條件）
       await initializeLiaoJunxiongStaff();
       
       const { data, error } = await supabase
@@ -58,13 +51,6 @@ export const useStaffDataLoader = () => {
 
   // 載入角色資料
   const loadRoles = async () => {
-    // 如果沒有用戶登錄，直接返回
-    if (!currentUser?.id) {
-      console.log('No user logged in, skipping roles load');
-      setRoles([]);
-      return;
-    }
-
     try {
       // 確保身份驗證
       await ensureUserAuthenticated();
@@ -101,12 +87,6 @@ export const useStaffDataLoader = () => {
 
   // 刷新資料
   const refreshData = async () => {
-    if (!currentUser?.id) {
-      console.log('No user logged in, skipping data refresh');
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     await Promise.all([loadStaff(), loadRoles()]);
     setLoading(false);

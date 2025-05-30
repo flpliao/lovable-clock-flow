@@ -73,12 +73,10 @@ export const useStaffInitializer = () => {
     }
   };
 
+  // 移除依賴條件，始終嘗試初始化
   useEffect(() => {
-    // 只有當前用戶是廖俊雄且為管理員時才執行初始化
-    if (currentUser?.id === '550e8400-e29b-41d4-a716-446655440001' && currentUser?.role === 'admin') {
-      initializeLiaoJunxiongStaff();
-    }
-  }, [currentUser?.id]);
+    initializeLiaoJunxiongStaff();
+  }, []); // 只在組件掛載時執行一次
 
   return { initializeLiaoJunxiongStaff };
 };

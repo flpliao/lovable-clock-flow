@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CompanyManagementProvider } from '@/components/company/CompanyManagementContext';
-import CompanyManagement from '@/components/company/CompanyManagement';
+import CompanyManagementRedesigned from '@/components/company/CompanyManagementRedesigned';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 
 const CompanyBranchManagement = () => {
@@ -37,7 +37,7 @@ const CompanyBranchManagement = () => {
             <Alert className="mb-4 bg-blue-50 border-blue-200">
               <Info className="h-4 w-4 text-blue-500" />
               <AlertDescription className="text-blue-700">
-                在此管理公司的基本資料以及各營業處資訊。員工將根據所屬營業處建立權限與主管關係，確保申請流程的正確性。
+                重新設計的公司管理系統，提供更可靠的前後台資料同步機制。如果遇到同步問題，請使用「強制同步」功能。
               </AlertDescription>
             </Alert>
             
@@ -47,7 +47,7 @@ const CompanyBranchManagement = () => {
               </TabsList>
               
               <TabsContent value="overview">
-                <CompanyManagement />
+                <CompanyManagementRedesigned />
               </TabsContent>
             </Tabs>
           </main>

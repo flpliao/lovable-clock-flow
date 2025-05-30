@@ -15,18 +15,20 @@ export const useCompanyOperations = () => {
   // 載入公司資料
   const loadCompany = async () => {
     try {
-      console.log('🔍 開始載入公司資料...');
+      console.log('🔍 useCompanyOperations: 開始載入公司資料...');
       
       const data = await CompanyApiService.loadCompany();
+      console.log('🔍 useCompanyOperations: API 返回的資料:', data);
+      
       if (data) {
-        console.log('✅ 公司資料載入成功:', data);
+        console.log('✅ useCompanyOperations: 設定公司資料到 state:', data);
         setCompany(data);
       } else {
-        console.log('⚠️ 沒有找到公司資料');
+        console.log('⚠️ useCompanyOperations: 沒有找到公司資料，設定為 null');
         setCompany(null);
       }
     } catch (error) {
-      console.error('❌ 載入公司資料失敗:', error);
+      console.error('❌ useCompanyOperations: 載入公司資料失敗:', error);
       setCompany(null);
       toast({
         title: "載入失敗",

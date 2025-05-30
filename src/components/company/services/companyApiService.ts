@@ -7,22 +7,25 @@ export class CompanyApiService {
     console.log('🔍 開始從資料庫查詢公司資料...');
     
     try {
+      // 直接查詢第一筆公司資料，不使用 maybeSingle()
       const { data, error } = await supabase
         .from('companies')
         .select('*')
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
 
       if (error) {
         console.error('❌ 查詢公司資料錯誤:', error);
         return null;
       }
       
-      if (data) {
-        console.log('✅ 成功從資料庫載入公司資料:', data);
-        return data;
+      console.log('🔍 原始查詢結果:', data);
+      
+      if (data && data.length > 0) {
+        const company = data[0];
+        console.log('✅ 成功從資料庫載入公司資料:', company);
+        return company;
       } else {
-        console.log('⚠️ 資料庫中沒有找到公司資料');
+        console.log('⚠️ 資料庫中沒有找到公司資料，查詢結果為空陣列');
         return null;
       }
     } catch (error) {

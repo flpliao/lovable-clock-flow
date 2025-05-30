@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info, Building2, Settings, Shield } from 'lucide-react';
+import { Building2, Settings, Shield } from 'lucide-react';
 import CompanyInfoCard from './CompanyInfoCard';
 import BranchTable from './BranchTable';
 import { ComprehensiveDiagnostics } from './diagnostics/ComprehensiveDiagnostics';
@@ -13,13 +12,6 @@ const CompanyManagementRedesigned = () => {
 
   return (
     <div className="space-y-6">
-      <Alert className="bg-green-50 border-green-200">
-        <Info className="h-4 w-4 text-green-500" />
-        <AlertDescription className="text-green-700">
-          重新設計的公司管理系統，提供更可靠的資料同步和安全性診斷功能
-        </AlertDescription>
-      </Alert>
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview" className="flex items-center">

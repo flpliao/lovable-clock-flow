@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Company, Branch, NewBranch, CompanyManagementContextType } from '@/types/company';
 import { useToast } from '@/hooks/use-toast';
 import { useBranchOperations } from './hooks/useBranchOperations';
-import { useCompanySyncManager } from './hooks/useCompanySyncManager';
+import { useCompanyOperations } from './hooks/useCompanyOperations';
 
 export const useCompanyManagement = (): CompanyManagementContextType => {
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -26,7 +26,9 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
   });
 
   const { toast } = useToast();
-  const { company, updateCompany } = useCompanySyncManager();
+  
+  // 使用 useCompanyOperations 來獲取公司資料
+  const { company, updateCompany } = useCompanyOperations();
   
   const {
     branches: branchList,
@@ -49,7 +51,12 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
   }, [company?.id, loadBranches]);
 
   const handleAddBranch = useCallback(async () => {
+    console.log('🚀 useCompanyManagement: handleAddBranch 開始');
+    console.log('📋 useCompanyManagement: 當前公司資料:', company);
+    console.log('🆔 useCompanyManagement: 公司ID:', company?.id);
+    
     if (!company?.id) {
+      console.error('❌ useCompanyManagement: 沒有公司ID，無法新增營業處');
       toast({
         title: "錯誤",
         description: "請先設定公司資料",
@@ -58,8 +65,16 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
       return;
     }
 
+    console.log('✅ useCompanyManagement: 公司ID存在，開始新增營業處');
+    console.log('📋 useCompanyManagement: 新增的營業處資料:', newBranch);
+
     const success = await addBranch(newBranch);
     if (success) {
+      console.log('✅ useCompanyManagement: 營業處新增成功');
+      toast({
+        title: "新增成功",
+        description: "營業處已成功新增",
+      });
       setIsAddBranchDialogOpen(false);
       setNewBranch({
         name: '',
@@ -71,6 +86,13 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
         manager_name: '',
         manager_contact: '',
         business_license: ''
+      });
+    } else {
+      console.error('❌ useCompanyManagement: 營業處新增失敗');
+      toast({
+        title: "新增失敗",
+        description: "新增營業處時發生錯誤，請重試",
+        variant: "destructive"
       });
     }
   }, [company?.id, newBranch, addBranch, toast]);

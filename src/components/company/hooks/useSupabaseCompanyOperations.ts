@@ -19,7 +19,7 @@ export const useSupabaseCompanyOperations = () => {
     addBranch,
     updateBranch,
     deleteBranch
-  } = useBranchOperations(company);
+  } = useBranchOperations(company?.id || '');
 
   const {
     loading: dataLoading,

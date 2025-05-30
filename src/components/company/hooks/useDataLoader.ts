@@ -8,7 +8,7 @@ import { useUser } from '@/contexts/UserContext';
 export const useDataLoader = () => {
   const [loading, setLoading] = useState(false);
   const { loadCompany, company } = useCompanyOperations();
-  const { loadBranches } = useBranchOperations(company);
+  const { loadBranches } = useBranchOperations(company?.id || '');
   const { currentUser } = useUser();
 
   const loadAllData = async () => {

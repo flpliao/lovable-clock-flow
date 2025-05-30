@@ -1,11 +1,23 @@
+
 import React from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Pencil, Trash2, Building2 } from 'lucide-react';
 import { useCompanyManagementContext } from './CompanyManagementContext';
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { useUser } from '@/contexts/UserContext';
+
+// 安全地使用 StaffManagementContext
+const useStaffManagementContextSafely = () => {
+  try {
+    // 動態導入 context hook
+    const { useStaffManagementContext } = require('@/contexts/StaffManagementContext');
+    return useStaffManagementContext();
+  } catch (error) {
+    console.log('⚠️ BranchTable: StaffManagementContext 不可用，返回空數據');
+    return { staffList: [] };
+  }
+};
 
 const BranchTable = () => {
   const { 
@@ -14,14 +26,19 @@ const BranchTable = () => {
     openEditBranchDialog
   } = useCompanyManagementContext();
   
-  const { staffList } = useStaffManagementContext();
   const { currentUser } = useUser();
+  
+  // 安全地獲取員工數據
+  const { staffList } = useStaffManagementContextSafely();
 
   const canManageBranches = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
 
   // 安全地取得營業處員工數量，避免 RLS 錯誤
   const getBranchStaffCount = (branchId: string) => {
     try {
+      if (!staffList || !Array.isArray(staffList)) {
+        return 0;
+      }
       return staffList.filter(staff => staff.branch_id === branchId).length;
     } catch (error) {
       console.log('⚠️ BranchTable: 無法取得員工數量，可能是 RLS 限制:', error);
@@ -31,6 +48,9 @@ const BranchTable = () => {
 
   const getBranchStaffList = (branchId: string) => {
     try {
+      if (!staffList || !Array.isArray(staffList)) {
+        return [];
+      }
       return staffList.filter(staff => staff.branch_id === branchId);
     } catch (error) {
       console.log('⚠️ BranchTable: 無法取得員工列表，可能是 RLS 限制:', error);

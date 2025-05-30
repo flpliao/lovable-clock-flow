@@ -1,3 +1,4 @@
+
 import { Company } from '@/types/company';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -5,12 +6,11 @@ export class CompanyDataService {
   private static readonly COMPANY_NAME = '依美琦股份有限公司';
   private static readonly COMPANY_REGISTRATION_NUMBER = '53907735';
 
-  // 測試資料庫連線 - 避免查詢 staff 表
+  // 簡化的資料庫連線測試 - 只測試 companies 表
   static async testConnection(): Promise<boolean> {
     try {
       console.log('🔍 CompanyDataService: 測試資料庫連線...');
       
-      // 直接查詢 companies 表而不是 staff 表
       const { error } = await supabase
         .from('companies')
         .select('id')
@@ -29,12 +29,12 @@ export class CompanyDataService {
     }
   }
 
-  // 查詢公司資料 - 簮化查詢避免觸發 staff RLS
+  // 查詢公司資料 - 只查詢 companies 表，避免觸發 staff RLS
   static async findCompany(): Promise<Company | null> {
     console.log('🔍 CompanyDataService: 查詢依美琦公司資料...');
     
     try {
-      // 先按統一編號查詢，這是最可靠的方式
+      // 按統一編號查詢公司資料
       const { data, error } = await supabase
         .from('companies')
         .select('*')
@@ -43,7 +43,6 @@ export class CompanyDataService {
       
       if (error) {
         console.error('❌ CompanyDataService: 查詢公司資料失敗:', error);
-        // 如果查詢失敗，返回 null 而不是拋出錯誤
         return null;
       }
       
@@ -57,7 +56,6 @@ export class CompanyDataService {
 
     } catch (error) {
       console.error('❌ CompanyDataService: 查詢過程發生錯誤:', error);
-      // 返回 null 而不是拋出錯誤，避免中斷流程
       return null;
     }
   }
@@ -81,7 +79,7 @@ export class CompanyDataService {
     };
   }
 
-  // 創建標準的依美琦公司資料 - 簮化錯誤處理
+  // 創建標準的依美琦公司資料
   static async createStandardCompany(): Promise<Company> {
     console.log('➕ CompanyDataService: 創建標準依美琦公司資料...');
     
@@ -163,17 +161,11 @@ export class CompanyDataService {
     };
   }
 
-  // 強制同步 - 改進錯誤處理，避免觸發 staff RLS
+  // 強制同步 - 直接操作 companies 表，避免 staff 表 RLS 問題
   static async forceSync(): Promise<Company> {
     console.log('🔄 CompanyDataService: 廖俊雄執行強制同步...');
     
     try {
-      // 先測試連線，但不依賴 staff 表
-      const isConnected = await this.testConnection();
-      if (!isConnected) {
-        throw new Error('資料庫連線失敗，請檢查網路連線');
-      }
-
       // 先嘗試查詢現有資料
       let company = await this.findCompany();
       
@@ -200,10 +192,6 @@ export class CompanyDataService {
       }
     } catch (error) {
       console.error('❌ CompanyDataService: 強制同步失敗:', error);
-      // 提供更友善的錯誤訊息
-      if (error instanceof Error && error.message.includes('infinite recursion')) {
-        throw new Error('資料庫權限設定問題，請聯繫系統管理員檢查 RLS 政策');
-      }
       throw new Error(`強制同步失敗: ${error instanceof Error ? error.message : '未知錯誤'}`);
     }
   }

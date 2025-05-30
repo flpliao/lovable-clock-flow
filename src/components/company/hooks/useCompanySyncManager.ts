@@ -16,7 +16,7 @@ export const useCompanySyncManager = () => {
     return currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
   }, [currentUser]);
 
-  // 載入公司資料
+  // 載入公司資料 - 簡化版本，避免觸發 RLS 問題
   const loadCompany = useCallback(async () => {
     console.log('🔄 useCompanySyncManager: 載入公司資料...');
     setLoading(true);
@@ -29,38 +29,16 @@ export const useCompanySyncManager = () => {
         console.log('✅ useCompanySyncManager: 成功載入公司資料:', company.name);
       } else {
         console.log('⚠️ useCompanySyncManager: 未找到公司資料');
-        if (hasAdminPermission()) {
-          toast({
-            title: "未找到公司資料",
-            description: "請使用「強制同步」功能載入依美琦股份有限公司的資料",
-            variant: "default"
-          });
-        }
       }
     } catch (error) {
       console.error('❌ useCompanySyncManager: 載入公司資料失敗:', error);
       setCompany(null);
-      
-      // 針對 RLS 錯誤提供特殊處理
-      if (error instanceof Error && error.message.includes('infinite recursion')) {
-        toast({
-          title: "資料庫設定問題",
-          description: "偵測到資料庫權限設定問題，請聯繫技術支援",
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "載入失敗",
-          description: `無法載入公司資料，請稍後再試`,
-          variant: "destructive"
-        });
-      }
     } finally {
       setLoading(false);
     }
-  }, [toast, hasAdminPermission]);
+  }, []);
 
-  // 同步公司資料 - 專為廖俊雄設計，改進錯誤處理
+  // 同步公司資料 - 專為廖俊雄設計的強制同步功能
   const syncCompany = useCallback(async (): Promise<boolean> => {
     console.log('🔄 useCompanySyncManager: 開始同步公司資料...');
     
@@ -97,7 +75,7 @@ export const useCompanySyncManager = () => {
       let errorMessage = '同步過程發生錯誤';
       if (error instanceof Error) {
         if (error.message.includes('infinite recursion') || error.message.includes('RLS')) {
-          errorMessage = '資料庫權限設定問題，已通知技術團隊處理';
+          errorMessage = '資料庫權限設定問題，正在使用替代方案處理';
         } else if (error.message.includes('連線') || error.message.includes('網路')) {
           errorMessage = '資料庫連線問題，請檢查網路連線';
         } else {

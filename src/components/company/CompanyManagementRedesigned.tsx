@@ -6,6 +6,7 @@ import { useUser } from '@/contexts/UserContext';
 import { CompanySyncCard } from './components/CompanySyncCard';
 import BranchTable from './BranchTable';
 import { CompanyDialogs } from './components/CompanyDialogs';
+import AddBranchDialog from './AddBranchDialog';
 
 const CompanyManagementRedesigned: React.FC = () => {
   const {
@@ -57,7 +58,15 @@ const CompanyManagementRedesigned: React.FC = () => {
       />
 
       {/* 分支機構管理 */}
-      {company && <BranchTable />}
+      {company && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">營業處管理</h2>
+            {canEdit && <AddBranchDialog />}
+          </div>
+          <BranchTable />
+        </div>
+      )}
 
       {/* 對話框 */}
       <CompanyDialogs />

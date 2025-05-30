@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Edit, RefreshCw, Database, Plus, Sync } from 'lucide-react';
+import { Edit, RefreshCw, Database, Plus, RefreshCcw } from 'lucide-react';
 import { Company } from '@/types/company';
 
 interface CompanyInfoActionsProps {
@@ -70,7 +70,7 @@ export const CompanyInfoActions: React.FC<CompanyInfoActionsProps> = ({
           size="sm"
           className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700"
         >
-          <Sync className="h-4 w-4 mr-2" />
+          <RefreshCcw className="h-4 w-4 mr-2" />
           後台同步
         </Button>
       )}

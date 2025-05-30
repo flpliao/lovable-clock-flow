@@ -60,13 +60,9 @@ export class CompanyApiService {
       phone: company.phone || '02-2501-2345',
       email: company.email || 'info@emeici.com.tw',
       website: company.website || 'https://www.emeici.com.tw',
-      business_license: company.business_license || this.COMPANY_REGISTRATION_NUMBER,
-      tax_id: company.tax_id || this.COMPANY_REGISTRATION_NUMBER,
-      establishment_date: company.establishment_date || '2000-01-01',
+      established_date: company.established_date || '2000-01-01',
       capital: company.capital || 10000000,
-      employee_count: company.employee_count || 50,
-      industry: company.industry || '化妝品零售業',
-      description: company.description || '專業化妝品零售連鎖企業',
+      business_type: company.business_type || '化妝品零售業',
       updated_at: new Date().toISOString()
     };
   }
@@ -81,13 +77,9 @@ export class CompanyApiService {
       phone: '02-2501-2345',
       email: 'info@emeici.com.tw',
       website: 'https://www.emeici.com.tw',
-      business_license: this.COMPANY_REGISTRATION_NUMBER,
-      tax_id: this.COMPANY_REGISTRATION_NUMBER,
-      establishment_date: '2000-01-01',
+      established_date: '2000-01-01',
       capital: 10000000,
-      employee_count: 50,
-      industry: '化妝品零售業',
-      description: '專業化妝品零售連鎖企業'
+      business_type: '化妝品零售業'
     };
   }
 

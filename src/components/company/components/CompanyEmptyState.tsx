@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Building2, Plus, RefreshCw, Database, Sync } from 'lucide-react';
+import { Building2, Plus, RefreshCw, Database, RefreshCcw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CompanyInfoHeader } from './CompanyInfoHeader';
@@ -35,7 +35,7 @@ export const CompanyEmptyState: React.FC<CompanyEmptyStateProps> = ({
                 onClick={onForceSyncFromBackend}
                 className="bg-blue-600 hover:bg-blue-700"
               >
-                <Sync className="h-4 w-4 mr-2" />
+                <RefreshCcw className="h-4 w-4 mr-2" />
                 從後台強制同步
               </Button>
             )}

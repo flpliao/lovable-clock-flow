@@ -77,6 +77,19 @@ export const useCompanyOperations = () => {
     try {
       console.log('正在處理公司資料:', updatedCompany);
       
+      // 測試連線狀態
+      console.log('測試 Supabase 連線狀態...');
+      const { error: connectionTest } = await supabase
+        .from('companies')
+        .select('count')
+        .limit(1);
+      
+      if (connectionTest) {
+        console.error('Supabase 連線測試失敗:', connectionTest);
+        throw new Error(`資料庫連線失敗: ${connectionTest.message}`);
+      }
+      console.log('✅ Supabase 連線正常');
+      
       // 準備資料，確保所有欄位都正確對應到資料庫
       const companyData = {
         name: updatedCompany.name?.trim() || '',
@@ -117,6 +130,12 @@ export const useCompanyOperations = () => {
 
         if (error) {
           console.error('Supabase 更新錯誤:', error);
+          console.error('錯誤詳情:', {
+            message: error.message,
+            code: error.code,
+            hint: error.hint,
+            details: error.details
+          });
           throw error;
         }
         result = data;
@@ -134,6 +153,12 @@ export const useCompanyOperations = () => {
 
         if (error) {
           console.error('Supabase 新增錯誤:', error);
+          console.error('錯誤詳情:', {
+            message: error.message,
+            code: error.code,
+            hint: error.hint,
+            details: error.details
+          });
           throw error;
         }
         result = data;
@@ -163,6 +188,8 @@ export const useCompanyOperations = () => {
           errorMessage = "權限不足，請確認您有編輯權限";
         } else if (error.message.includes('network') || error.message.includes('fetch')) {
           errorMessage = "網路連線問題，請檢查網路連線後重試";
+        } else if (error.message.includes('資料庫連線失敗')) {
+          errorMessage = error.message;
         } else {
           errorMessage = `處理失敗: ${error.message}`;
         }

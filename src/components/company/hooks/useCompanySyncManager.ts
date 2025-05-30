@@ -43,7 +43,7 @@ export const useCompanySyncManager = () => {
       
       toast({
         title: "載入失敗",
-        description: "無法載入公司資料，請檢查網路連線",
+        description: `無法載入公司資料: ${error instanceof Error ? error.message : '未知錯誤'}`,
         variant: "destructive"
       });
     } finally {
@@ -92,7 +92,7 @@ export const useCompanySyncManager = () => {
       
       toast({
         title: "同步失敗",
-        description: "強制同步過程發生錯誤",
+        description: `強制同步過程發生錯誤: ${error instanceof Error ? error.message : '未知錯誤'}`,
         variant: "destructive"
       });
       
@@ -116,10 +116,8 @@ export const useCompanySyncManager = () => {
     setLoading(true);
     
     try {
-      const validation = CompanyDataService.validateCompanyData({
-        ...company,
-        ...updatedData
-      } as Company);
+      const mergedData = { ...company, ...updatedData } as Company;
+      const validation = CompanyDataService.validateCompanyData(mergedData);
       
       if (!validation.isValid) {
         toast({
@@ -145,7 +143,7 @@ export const useCompanySyncManager = () => {
       
       toast({
         title: "更新失敗",
-        description: "無法更新公司資料",
+        description: `無法更新公司資料: ${error instanceof Error ? error.message : '未知錯誤'}`,
         variant: "destructive"
       });
       

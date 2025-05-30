@@ -1,32 +1,21 @@
-
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Company, Branch, NewBranch, CompanyManagementContextType } from '@/types/company';
-import { useSupabaseCompanyOperations } from './hooks/useSupabaseCompanyOperations';
+import { useToast } from '@/hooks/use-toast';
+import { useBranchOperations } from './hooks/useBranchOperations';
+import { useCompanySyncManager } from './hooks/useCompanySyncManager';
 
 export const useCompanyManagement = (): CompanyManagementContextType => {
-  const {
-    company,
-    branches,
-    loading,
-    updateCompany,
-    addBranch,
-    updateBranch,
-    deleteBranch,
-    refreshData
-  } = useSupabaseCompanyOperations();
-
-  // Dialog states
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [filteredBranches, setFilteredBranches] = useState<Branch[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [isAddBranchDialogOpen, setIsAddBranchDialogOpen] = useState(false);
   const [isEditBranchDialogOpen, setIsEditBranchDialogOpen] = useState(false);
   const [isEditCompanyDialogOpen, setIsEditCompanyDialogOpen] = useState(false);
-  
-  // Form states
   const [currentBranch, setCurrentBranch] = useState<Branch | null>(null);
-  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [newBranch, setNewBranch] = useState<NewBranch>({
     name: '',
     code: '',
-    type: 'store',
+    type: 'branch',
     address: '',
     phone: '',
     email: '',
@@ -35,17 +24,43 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
     business_license: ''
   });
 
-  // Filtered branches (可以在這裡加入搜尋邏輯)
-  const filteredBranches = branches;
+  const { toast } = useToast();
+  const { company, updateCompany } = useCompanySyncManager();
+  
+  const {
+    loadBranches,
+    addBranch,
+    updateBranch,
+    deleteBranch
+  } = useBranchOperations(company?.id || '', setBranches, toast);
 
-  // Handlers
-  const handleAddBranch = async () => {
+  useEffect(() => {
+    setFilteredBranches(branches);
+  }, [branches]);
+
+  useEffect(() => {
+    if (company?.id) {
+      loadBranches();
+    }
+  }, [company?.id, loadBranches]);
+
+  const handleAddBranch = useCallback(async () => {
+    if (!company?.id) {
+      toast({
+        title: "錯誤",
+        description: "請先設定公司資料",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const success = await addBranch(newBranch);
     if (success) {
+      setIsAddBranchDialogOpen(false);
       setNewBranch({
         name: '',
         code: '',
-        type: 'store',
+        type: 'branch',
         address: '',
         phone: '',
         email: '',
@@ -53,64 +68,64 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
         manager_contact: '',
         business_license: ''
       });
-      setIsAddBranchDialogOpen(false);
-      // 重新載入資料以確保同步
-      await refreshData();
     }
-  };
+  }, [company?.id, newBranch, addBranch, toast]);
 
-  const handleEditBranch = async () => {
-    if (currentBranch) {
-      const success = await updateBranch(currentBranch);
-      if (success) {
-        setIsEditBranchDialogOpen(false);
-        setCurrentBranch(null);
-        // 重新載入資料以確保同步
-        await refreshData();
-      }
-    }
-  };
+  const handleEditBranch = useCallback(async () => {
+    if (!currentBranch) return;
 
-  const handleDeleteBranch = async (id: string) => {
-    const success = await deleteBranch(id);
+    const success = await updateBranch(currentBranch.id, currentBranch);
     if (success) {
-      // 重新載入資料以確保同步
-      await refreshData();
+      setIsEditBranchDialogOpen(false);
+      setCurrentBranch(null);
     }
-  };
+  }, [currentBranch, updateBranch]);
 
-  const handleUpdateCompany = async (updatedCompany: Company): Promise<boolean> => {
-    console.log('useCompanyManagement: 開始更新公司資料', updatedCompany);
+  const handleDeleteBranch = useCallback(async (id: string) => {
+    await deleteBranch(id);
+  }, [deleteBranch]);
+
+  const handleUpdateCompany = useCallback(async (updatedCompany: Company): Promise<boolean> => {
+    console.log('🔄 useCompanyManagement: 處理公司更新:', updatedCompany);
     
     try {
+      // 使用 useCompanySyncManager 的 updateCompany 方法
       const success = await updateCompany(updatedCompany);
+      
       if (success) {
-        console.log('useCompanyManagement: 公司資料更新成功，重新載入資料');
-        // 重新載入資料以確保同步
-        await refreshData();
+        console.log('✅ useCompanyManagement: 公司資料更新成功');
+        toast({
+          title: "更新成功",
+          description: "公司資料已成功更新",
+        });
+        return true;
       } else {
-        console.log('useCompanyManagement: 公司資料更新失敗');
+        console.log('❌ useCompanyManagement: 公司資料更新失敗');
+        return false;
       }
-      return success;
     } catch (error) {
-      console.error('useCompanyManagement: 更新公司資料時發生錯誤', error);
+      console.error('❌ useCompanyManagement: 更新公司時發生錯誤:', error);
+      toast({
+        title: "更新失敗",
+        description: `更新公司資料時發生錯誤: ${error instanceof Error ? error.message : '未知錯誤'}`,
+        variant: "destructive"
+      });
       return false;
     }
-  };
+  }, [updateCompany, toast]);
 
-  const openEditBranchDialog = (branch: Branch) => {
-    setCurrentBranch({ ...branch });
+  const openEditBranchDialog = useCallback((branch: Branch) => {
+    setCurrentBranch(branch);
     setIsEditBranchDialogOpen(true);
-  };
+  }, []);
 
-  // Utility functions
-  const getBranchByCode = (code: string) => {
+  const getBranchByCode = useCallback((code: string) => {
     return branches.find(branch => branch.code === code);
-  };
+  }, [branches]);
 
-  const getActiveBranches = () => {
+  const getActiveBranches = useCallback(() => {
     return branches.filter(branch => branch.is_active);
-  };
+  }, [branches]);
 
   return {
     company,

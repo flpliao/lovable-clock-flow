@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 export class CompanyDataService {
   private static readonly COMPANY_NAME = '依美琦股份有限公司';
   private static readonly COMPANY_REGISTRATION_NUMBER = '53907735';
+  private static readonly COMPANY_ID = '62a619a8-1a66-46f8-8125-4788248e033f';
 
   // 增強的資料庫連線測試
   static async testConnection(): Promise<{ success: boolean; error?: string }> {
@@ -45,7 +46,7 @@ export class CompanyDataService {
     }
   }
 
-  // 查詢公司資料 - 增強錯誤處理
+  // 查詢公司資料 - 使用正式 ID
   static async findCompany(): Promise<Company | null> {
     console.log('🔍 CompanyDataService: 查詢依美琦公司資料...');
     
@@ -56,7 +57,23 @@ export class CompanyDataService {
         console.warn('⚠️ CompanyDataService: 連線測試失敗，但繼續嘗試查詢:', connectionTest.error);
       }
 
-      // 查詢公司資料
+      // 優先使用正式 ID 查詢
+      const { data: companyById, error: idError } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('id', this.COMPANY_ID)
+        .maybeSingle();
+
+      if (idError) {
+        console.warn('⚠️ CompanyDataService: 按 ID 查詢失敗，嘗試按統一編號查詢:', idError);
+      }
+
+      if (companyById) {
+        console.log('✅ CompanyDataService: 按正式 ID 找到公司資料:', companyById.name);
+        return this.normalizeCompanyData(companyById);
+      }
+
+      // 如果按 ID 找不到，則按統一編號查詢
       const { data, error } = await supabase
         .from('companies')
         .select('*')
@@ -69,7 +86,7 @@ export class CompanyDataService {
       }
       
       if (data) {
-        console.log('✅ CompanyDataService: 找到公司資料:', data.name);
+        console.log('✅ CompanyDataService: 按統一編號找到公司資料:', data.name);
         return this.normalizeCompanyData(data);
       }
 
@@ -101,7 +118,7 @@ export class CompanyDataService {
     };
   }
 
-  // 創建標準的依美琦公司資料
+  // 創建標準的依美琦公司資料 - 使用正式 ID
   static async createStandardCompany(): Promise<Company> {
     console.log('➕ CompanyDataService: 創建標準依美琦公司資料...');
     
@@ -114,6 +131,7 @@ export class CompanyDataService {
       }
 
       const companyData = {
+        id: this.COMPANY_ID,
         name: this.COMPANY_NAME,
         registration_number: this.COMPANY_REGISTRATION_NUMBER,
         legal_representative: '廖俊雄',
@@ -153,7 +171,7 @@ export class CompanyDataService {
     }
   }
 
-  // 強制同步 - 增強連線檢查和錯誤處理
+  // 強制同步 - 使用正式 ID
   static async forceSync(): Promise<Company> {
     console.log('🔄 CompanyDataService: 執行強制同步...');
     
@@ -266,5 +284,10 @@ export class CompanyDataService {
       isValid: errors.length === 0,
       errors
     };
+  }
+
+  // 獲取正式公司 ID
+  static getCompanyId(): string {
+    return this.COMPANY_ID;
   }
 }

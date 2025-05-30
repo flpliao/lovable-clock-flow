@@ -6,24 +6,18 @@ export class CompanyDataService {
   private static readonly COMPANY_NAME = '依美琦股份有限公司';
   private static readonly COMPANY_REGISTRATION_NUMBER = '53907735';
 
-  // 測試資料庫連線 - 增強版本
+  // 測試資料庫連線
   static async testConnection(): Promise<boolean> {
     try {
       console.log('🔍 CompanyDataService: 測試資料庫連線...');
       
-      // 首先測試基本連線
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('companies')
         .select('count')
         .limit(1);
       
       if (error) {
         console.error('❌ CompanyDataService: 資料庫連線失敗:', error);
-        // 如果是認證問題，嘗試使用匿名訪問
-        if (error.code === 'PGRST301' || error.message.includes('JWT')) {
-          console.log('🔄 CompanyDataService: 嘗試匿名訪問...');
-          return true; // 允許匿名訪問模式
-        }
         return false;
       }
       
@@ -31,68 +25,52 @@ export class CompanyDataService {
       return true;
     } catch (error) {
       console.error('❌ CompanyDataService: 連線測試異常:', error);
-      // 即使連線測試失敗，也允許繼續嘗試操作
-      return true;
+      return false;
     }
   }
 
-  // 查詢公司資料 - 增強錯誤處理
+  // 查詢公司資料
   static async findCompany(): Promise<Company | null> {
     console.log('🔍 CompanyDataService: 查詢依美琦公司資料...');
     
     try {
-      // 多重查詢策略
-      const queries = [
-        // 1. 按公司名稱查詢
-        supabase
-          .from('companies')
-          .select('*')
-          .eq('name', this.COMPANY_NAME)
-          .maybeSingle(),
+      // 按公司名稱查詢
+      let { data, error } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('name', this.COMPANY_NAME)
+        .maybeSingle();
+      
+      if (error) {
+        console.log('⚠️ CompanyDataService: 按名稱查詢失敗，嘗試按統一編號查詢');
         
-        // 2. 按統一編號查詢
-        supabase
+        // 按統一編號查詢
+        const result = await supabase
           .from('companies')
           .select('*')
           .eq('registration_number', this.COMPANY_REGISTRATION_NUMBER)
-          .maybeSingle(),
+          .maybeSingle();
         
-        // 3. 模糊查詢
-        supabase
-          .from('companies')
-          .select('*')
-          .or(`name.ilike.%依美琦%,legal_representative.eq.廖俊雄`)
-          .limit(1)
-          .maybeSingle()
-      ];
-
-      // 依序嘗試查詢
-      for (let i = 0; i < queries.length; i++) {
-        try {
-          console.log(`🔄 CompanyDataService: 執行查詢策略 ${i + 1}...`);
-          const { data, error } = await queries[i];
-          
-          if (error) {
-            console.log(`⚠️ CompanyDataService: 查詢策略 ${i + 1} 失敗:`, error.message);
-            continue;
-          }
-          
-          if (data) {
-            console.log('✅ CompanyDataService: 找到公司資料:', data.name);
-            return this.normalizeCompanyData(data);
-          }
-        } catch (queryError) {
-          console.log(`⚠️ CompanyDataService: 查詢策略 ${i + 1} 異常:`, queryError);
-          continue;
-        }
+        data = result.data;
+        error = result.error;
+      }
+      
+      if (error) {
+        console.error('❌ CompanyDataService: 查詢公司資料失敗:', error);
+        throw new Error(`查詢公司資料失敗: ${error.message}`);
+      }
+      
+      if (data) {
+        console.log('✅ CompanyDataService: 找到公司資料:', data.name);
+        return this.normalizeCompanyData(data);
       }
 
-      console.log('⚠️ CompanyDataService: 所有查詢策略都沒有找到公司資料');
+      console.log('⚠️ CompanyDataService: 未找到公司資料');
       return null;
 
     } catch (error) {
-      console.error('❌ CompanyDataService: 查詢過程發生嚴重錯誤:', error);
-      throw new Error(`查詢公司資料失敗: ${error instanceof Error ? error.message : '資料庫連線問題'}`);
+      console.error('❌ CompanyDataService: 查詢過程發生錯誤:', error);
+      throw error;
     }
   }
 
@@ -115,7 +93,7 @@ export class CompanyDataService {
     };
   }
 
-  // 創建標準的依美琦公司資料 - 增強版本
+  // 創建標準的依美琦公司資料
   static async createStandardCompany(): Promise<Company> {
     console.log('➕ CompanyDataService: 創建標準依美琦公司資料...');
     
@@ -141,12 +119,6 @@ export class CompanyDataService {
 
       if (error) {
         console.error('❌ CompanyDataService: 創建公司資料失敗:', error);
-        
-        // 如果是權限問題，提供更清楚的錯誤訊息
-        if (error.code === 'PGRST301' || error.message.includes('RLS')) {
-          throw new Error('權限不足：請確認您有建立公司資料的權限');
-        }
-        
         throw new Error(`創建公司資料失敗: ${error.message}`);
       }
 
@@ -158,12 +130,11 @@ export class CompanyDataService {
     }
   }
 
-  // 更新公司資料 - 增強權限檢查
+  // 更新公司資料
   static async updateCompany(companyId: string, updateData: Partial<Company>): Promise<Company> {
     console.log('🔄 CompanyDataService: 更新公司資料...', { companyId, updateData });
     
     try {
-      // 清理更新資料
       const cleanedData = {
         ...updateData,
         updated_at: new Date().toISOString()
@@ -178,11 +149,6 @@ export class CompanyDataService {
 
       if (error) {
         console.error('❌ CompanyDataService: 更新公司資料失敗:', error);
-        
-        if (error.code === 'PGRST301' || error.message.includes('RLS')) {
-          throw new Error('權限不足：請確認您有修改公司資料的權限');
-        }
-        
         throw new Error(`更新公司資料失敗: ${error.message}`);
       }
 

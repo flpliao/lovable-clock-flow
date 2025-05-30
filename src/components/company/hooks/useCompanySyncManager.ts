@@ -22,28 +22,26 @@ export const useCompanySyncManager = () => {
     setLoading(true);
     
     try {
-      // 先測試連線
-      const isConnected = await CompanyDataService.testConnection();
-      if (!isConnected && !hasAdminPermission()) {
-        throw new Error('資料庫連線失敗，且您沒有管理員權限');
-      }
-
       const company = await CompanyDataService.findCompany();
       setCompany(company);
       
       if (company) {
         console.log('✅ useCompanySyncManager: 成功載入公司資料:', company.name);
-        toast({
-          title: "載入成功",
-          description: `已載入 ${company.name} 的資料`,
-        });
       } else {
         console.log('⚠️ useCompanySyncManager: 未找到公司資料');
-        toast({
-          title: "未找到公司資料",
-          description: hasAdminPermission() ? "請使用同步功能載入公司資料" : "請聯繫系統管理員",
-          variant: hasAdminPermission() ? "default" : "destructive"
-        });
+        if (hasAdminPermission()) {
+          toast({
+            title: "未找到公司資料",
+            description: "請使用「強制同步」功能載入依美琦股份有限公司的資料",
+            variant: "default"
+          });
+        } else {
+          toast({
+            title: "未找到公司資料",
+            description: "請聯繫系統管理員載入公司資料",
+            variant: "destructive"
+          });
+        }
       }
     } catch (error) {
       console.error('❌ useCompanySyncManager: 載入公司資料失敗:', error);
@@ -51,7 +49,7 @@ export const useCompanySyncManager = () => {
       
       toast({
         title: "載入失敗",
-        description: `無法載入公司資料: ${error instanceof Error ? error.message : '未知錯誤'}`,
+        description: `無法載入公司資料，請稍後再試`,
         variant: "destructive"
       });
     } finally {
@@ -78,12 +76,13 @@ export const useCompanySyncManager = () => {
     try {
       console.log('🔑 useCompanySyncManager: 廖俊雄執行同步操作');
       
+      // 使用強制同步功能
       const company = await CompanyDataService.forceSync();
       setCompany(company);
       
       toast({
         title: "同步成功",
-        description: `${company.name} 的資料已成功同步`,
+        description: `已成功載入 ${company.name} 的資料`,
       });
       
       return true;
@@ -91,9 +90,21 @@ export const useCompanySyncManager = () => {
     } catch (error) {
       console.error('❌ useCompanySyncManager: 同步失敗:', error);
       
+      // 如果是權限問題，提供更友善的提示
+      let errorMessage = '同步過程發生錯誤';
+      if (error instanceof Error) {
+        if (error.message.includes('權限') || error.message.includes('RLS')) {
+          errorMessage = '資料庫權限設定問題，請檢查 RLS 政策';
+        } else if (error.message.includes('連線') || error.message.includes('網路')) {
+          errorMessage = '資料庫連線問題，請檢查網路連線';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "同步失敗",
-        description: `同步過程發生錯誤: ${error instanceof Error ? error.message : '未知錯誤'}`,
+        description: errorMessage,
         variant: "destructive"
       });
       

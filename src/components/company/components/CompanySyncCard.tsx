@@ -73,28 +73,26 @@ export const CompanySyncCard: React.FC<CompanySyncCardProps> = ({
         </Button>
 
         {canEdit && (
-          <>
-            <Button
-              onClick={onSyncCompany}
-              variant="default"
-              size="sm"
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <RefreshCcw className="h-4 w-4 mr-2" />
-              強制同步
-            </Button>
+          <Button
+            onClick={onSyncCompany}
+            variant="default"
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <RefreshCcw className="h-4 w-4 mr-2" />
+            強制同步
+          </Button>
+        )}
 
-            {company && (
-              <Button
-                onClick={onEditCompany}
-                variant="outline"
-                size="sm"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                編輯資料
-              </Button>
-            )}
-          </>
+        {company && canEdit && (
+          <Button
+            onClick={onEditCompany}
+            variant="outline"
+            size="sm"
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            編輯資料
+          </Button>
         )}
       </div>
     );

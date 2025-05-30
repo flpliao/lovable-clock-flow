@@ -24,16 +24,11 @@ export const useSupabaseStaffOperations = () => {
     deleteStaff
   } = useStaffCrudOperations(staffList, setStaffList);
 
-  // 只有當有用戶登錄時才載入資料
+  // 載入資料，不再依賴用戶登錄狀態
   useEffect(() => {
-    if (currentUser?.id) {
-      console.log('User logged in, loading staff data for:', currentUser.name);
-      refreshData();
-    } else {
-      console.log('No user logged in, skipping staff data load');
-      setLoading(false);
-    }
-  }, [currentUser?.id]);
+    console.log('Loading staff data...');
+    refreshData();
+  }, []); // 移除對 currentUser 的依賴
 
   return {
     staffList,

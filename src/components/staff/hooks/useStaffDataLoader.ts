@@ -22,9 +22,6 @@ export const useStaffDataLoader = () => {
       // 確保身份驗證
       await ensureUserAuthenticated();
       
-      // 始終嘗試初始化廖俊雄的記錄（不依賴 currentUser 條件）
-      await initializeLiaoJunxiongStaff();
-      
       const { data, error } = await supabase
         .from('staff')
         .select('*')

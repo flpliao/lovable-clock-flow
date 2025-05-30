@@ -1,8 +1,8 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Edit, MapPin, Phone, Mail, RefreshCw } from 'lucide-react';
+import { Building2, Edit, MapPin, Phone, Mail, Loader2 } from 'lucide-react';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useUser } from '@/contexts/UserContext';
 
@@ -16,7 +16,8 @@ const CompanyInfoCard = () => {
   // 允許廖俊雄和管理員編輯公司資料
   const canEdit = currentUser?.name === '廖俊雄' || isAdmin();
 
-  if (!company) {
+  // 如果公司資料為 null（載入中或無資料）
+  if (company === null) {
     return (
       <Card>
         <CardHeader>
@@ -25,21 +26,21 @@ const CompanyInfoCard = () => {
             公司基本資料
           </CardTitle>
           <CardDescription>
-            <div className="text-orange-600 font-medium">
-              系統正在載入公司資料，或尚未設定公司基本資料
+            <div className="text-orange-600 font-medium flex items-center">
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              正在載入公司資料...
             </div>
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <Building2 className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 mb-4">
-              {company === null ? '正在載入公司資料...' : '系統中尚未設定公司基本資料'}
-            </p>
+            <p className="text-gray-500 mb-4">系統正在從資料庫載入公司資料</p>
             {canEdit && (
               <Button 
                 onClick={() => setIsEditCompanyDialogOpen(true)}
                 className="flex items-center mx-auto"
+                variant="outline"
               >
                 <Building2 className="h-4 w-4 mr-2" />
                 設定公司資料

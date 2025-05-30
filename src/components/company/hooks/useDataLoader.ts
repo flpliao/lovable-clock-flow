@@ -1,17 +1,14 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCompanyOperations } from './useCompanyOperations';
 import { useBranchOperations } from './useBranchOperations';
 import { useBranchInitializer } from './useBranchInitializer';
-import { useUser } from '@/contexts/UserContext';
-import { useEffect } from 'react';
 
 export const useDataLoader = () => {
   const [loading, setLoading] = useState(false);
   const { loadCompany, company } = useCompanyOperations();
   const { loadBranches } = useBranchOperations(company);
   const { initializeDefaultBranch } = useBranchInitializer();
-  const { currentUser } = useUser();
 
   // 載入所有資料
   const loadAllData = async () => {
@@ -45,11 +42,11 @@ export const useDataLoader = () => {
     await loadAllData();
   };
 
-  // 當進入頁面時立即載入資料
+  // 當元件掛載時立即載入資料
   useEffect(() => {
     console.log('🚀 useDataLoader: 頁面載入，開始載入公司資料');
     loadAllData();
-  }, []); // 移除對 currentUser 的依賴，直接載入
+  }, []); // 空依賴陣列，只在掛載時執行一次
 
   return {
     loading,

@@ -8,7 +8,8 @@ export const useSupabaseCompanyOperations = () => {
     company,
     setCompany,
     loadCompany,
-    updateCompany
+    updateCompany,
+    loading: companyLoading
   } = useCompanyOperations();
 
   const {
@@ -21,14 +22,14 @@ export const useSupabaseCompanyOperations = () => {
   } = useBranchOperations(company);
 
   const {
-    loading,
+    loading: dataLoading,
     refreshData
   } = useDataLoader();
 
   return {
     company,
     branches,
-    loading,
+    loading: companyLoading || dataLoading,
     updateCompany,
     addBranch,
     updateBranch,

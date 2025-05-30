@@ -1,13 +1,10 @@
 
 import React from 'react';
-import Header from '@/components/Header';
 import AnnouncementList from '@/components/announcements/AnnouncementList';
 
 const CompanyAnnouncements: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <Header />
-      
       <main className="flex-1 p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold">公司公告</h1>

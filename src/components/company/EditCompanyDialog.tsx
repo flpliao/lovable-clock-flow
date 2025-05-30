@@ -5,7 +5,6 @@ import { useCompanyManagementContext } from './CompanyManagementContext';
 import { Company } from '@/types/company';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
-import { CompanyFormValidation } from './forms/CompanyFormValidation';
 import CompanyBasicFields from './forms/CompanyBasicFields';
 import CompanyContactFields from './forms/CompanyContactFields';
 import CompanyOptionalFields from './forms/CompanyOptionalFields';
@@ -39,42 +38,65 @@ const EditCompanyDialog = () => {
   
   // 允許廖俊雄和管理員操作
   const hasPermission = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
-  const formValidation = new CompanyFormValidation(toast);
 
   // 當對話框開啟時，初始化表單資料
   useEffect(() => {
-    if (isEditCompanyDialogOpen) {
-      if (company) {
-        console.log('編輯現有公司資料:', company);
-        setEditedCompany({
-          name: company.name || '',
-          registration_number: company.registration_number || '',
-          legal_representative: company.legal_representative || '',
-          business_type: company.business_type || '',
-          address: company.address || '',
-          phone: company.phone || '',
-          email: company.email || '',
-          website: company.website || '',
-          established_date: company.established_date || '',
-          capital: company.capital || null
-        });
-      } else {
-        console.log('新建公司資料');
-        setEditedCompany({
-          name: '',
-          registration_number: '',
-          legal_representative: '',
-          business_type: '',
-          address: '',
-          phone: '',
-          email: '',
-          website: '',
-          established_date: '',
-          capital: null
-        });
-      }
+    if (isEditCompanyDialogOpen && company) {
+      console.log('編輯現有公司資料:', company);
+      setEditedCompany({
+        name: company.name || '',
+        registration_number: company.registration_number || '',
+        legal_representative: company.legal_representative || '',
+        business_type: company.business_type || '',
+        address: company.address || '',
+        phone: company.phone || '',
+        email: company.email || '',
+        website: company.website || '',
+        established_date: company.established_date || '',
+        capital: company.capital || null
+      });
     }
   }, [company, isEditCompanyDialogOpen]);
+
+  const validateForm = (data: Partial<Company>): boolean => {
+    if (!data.name?.trim()) {
+      toast({
+        title: "驗證失敗",
+        description: "公司名稱不能為空",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!data.registration_number?.trim()) {
+      toast({
+        title: "驗證失敗",
+        description: "統一編號不能為空",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!data.legal_representative?.trim()) {
+      toast({
+        title: "驗證失敗",
+        description: "法定代表人不能為空",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!data.business_type?.trim()) {
+      toast({
+        title: "驗證失敗",
+        description: "營業項目不能為空",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,8 +112,7 @@ const EditCompanyDialog = () => {
       return;
     }
 
-    if (!formValidation.validateForm(editedCompany)) {
-      console.log('❌ EditCompanyDialog: 表單驗證失敗');
+    if (!validateForm(editedCompany)) {
       return;
     }
 
@@ -116,63 +137,31 @@ const EditCompanyDialog = () => {
 
       console.log('🧹 EditCompanyDialog: 清理後的資料:', cleanedData);
 
-      let result: Company | null = null;
-
       if (company?.id) {
         // 更新現有公司
         console.log('🔄 EditCompanyDialog: 更新現有公司資料...');
-        try {
-          result = await CompanyDataService.updateCompany(company.id, cleanedData);
-          const success = await handleUpdateCompany(result);
-          if (!success) {
-            throw new Error('更新公司上下文失敗');
-          }
-        } catch (updateError) {
-          console.error('❌ EditCompanyDialog: 更新失敗:', updateError);
-          throw updateError;
+        const result = await CompanyDataService.updateCompany(company.id, cleanedData);
+        const success = await handleUpdateCompany(result);
+        
+        if (!success) {
+          throw new Error('更新公司上下文失敗');
         }
-      } else {
-        // 創建新公司
-        console.log('➕ EditCompanyDialog: 創建新公司資料...');
-        try {
-          result = await CompanyDataService.createStandardCompany();
-          // 使用創建的資料更新為用戶輸入的資料
-          if (result) {
-            result = await CompanyDataService.updateCompany(result.id, cleanedData);
-            const success = await handleUpdateCompany(result);
-            if (!success) {
-              throw new Error('創建公司上下文失敗');
-            }
-          }
-        } catch (createError) {
-          console.error('❌ EditCompanyDialog: 創建失敗:', createError);
-          throw createError;
-        }
-      }
 
-      if (result) {
-        console.log('✅ EditCompanyDialog: 公司資料處理成功:', result.name);
+        console.log('✅ EditCompanyDialog: 公司資料更新成功:', result.name);
         setIsEditCompanyDialogOpen(false);
-        resetFormData();
+        
         toast({
           title: "儲存成功",
-          description: company ? "公司基本資料已成功更新" : "公司基本資料已成功建立"
+          description: "公司基本資料已成功更新"
         });
-      } else {
-        throw new Error('無法處理公司資料');
       }
       
     } catch (error) {
       console.error('💥 EditCompanyDialog: 提交表單時發生錯誤:', error);
       
-      let errorMessage = "儲存時發生未知錯誤";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      
       toast({
         title: "儲存失敗",
-        description: errorMessage,
+        description: error instanceof Error ? error.message : "儲存時發生未知錯誤",
         variant: "destructive"
       });
     } finally {
@@ -180,47 +169,16 @@ const EditCompanyDialog = () => {
     }
   };
 
-  const resetFormData = () => {
-    if (company) {
-      setEditedCompany({
-        name: company.name || '',
-        registration_number: company.registration_number || '',
-        legal_representative: company.legal_representative || '',
-        business_type: company.business_type || '',
-        address: company.address || '',
-        phone: company.phone || '',
-        email: company.email || '',
-        website: company.website || '',
-        established_date: company.established_date || '',
-        capital: company.capital || null
-      });
-    } else {
-      setEditedCompany({
-        name: '',
-        registration_number: '',
-        legal_representative: '',
-        business_type: '',
-        address: '',
-        phone: '',
-        email: '',
-        website: '',
-        established_date: '',
-        capital: null
-      });
-    }
-  };
-
   const handleClose = () => {
     console.log('🚪 EditCompanyDialog: 關閉對話框');
     setIsEditCompanyDialogOpen(false);
-    resetFormData();
   };
 
   return (
     <Dialog open={isEditCompanyDialogOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{company ? '編輯公司基本資料' : '建立公司基本資料'}</DialogTitle>
+          <DialogTitle>編輯公司基本資料</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -29,15 +29,18 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
   const { company, updateCompany } = useCompanySyncManager();
   
   const {
+    branches: branchList,
     loadBranches,
     addBranch,
     updateBranch,
     deleteBranch
   } = useBranchOperations(company?.id || '');
 
+  // 同步分支列表
   useEffect(() => {
-    setFilteredBranches(branches);
-  }, [branches]);
+    setBranches(branchList);
+    setFilteredBranches(branchList);
+  }, [branchList]);
 
   useEffect(() => {
     if (company?.id) {
@@ -90,7 +93,6 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
     console.log('🔄 useCompanyManagement: 處理公司更新:', updatedCompany);
     
     try {
-      // 使用 useCompanySyncManager 的 updateCompany 方法
       const success = await updateCompany(updatedCompany);
       
       if (success) {

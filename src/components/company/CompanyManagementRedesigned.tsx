@@ -11,9 +11,8 @@ const CompanyManagementRedesigned: React.FC = () => {
   const {
     company,
     loading,
-    syncStatus,
     loadCompany,
-    forceSync,
+    syncCompany,
     updateCompany
   } = useCompanySyncManager();
 
@@ -38,15 +37,9 @@ const CompanyManagementRedesigned: React.FC = () => {
     setIsEditCompanyDialogOpen(true);
   };
 
-  // 處理建立公司
-  const handleCreateCompany = () => {
-    setIsEditCompanyDialogOpen(true);
-  };
-
   // 更新公司管理上下文
   React.useEffect(() => {
     if (company) {
-      // 這裡可以通知上下文公司資料已更新
       console.log('📋 CompanyManagementRedesigned: 公司資料已更新:', company.name);
     }
   }, [company]);
@@ -57,10 +50,8 @@ const CompanyManagementRedesigned: React.FC = () => {
       <CompanySyncCard
         company={company}
         loading={loading}
-        syncStatus={syncStatus}
         onLoadCompany={loadCompany}
-        onForceSync={forceSync}
-        onCreateCompany={handleCreateCompany}
+        onSyncCompany={syncCompany}
         onEditCompany={handleEditCompany}
         canEdit={canEdit}
       />

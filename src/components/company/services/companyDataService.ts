@@ -25,65 +25,61 @@ export class CompanyDataService {
     }
   }
 
-  // 查詢公司資料
+  // 查詢公司資料 - 簡化查詢邏輯
   static async findCompany(): Promise<Company | null> {
-    console.log('🔍 CompanyDataService: 開始查詢依美琦公司資料...');
+    console.log('🔍 CompanyDataService: 查詢依美琦公司資料...');
     
     try {
       // 先測試連線
       const isConnected = await this.testConnection();
       if (!isConnected) {
-        console.error('❌ CompanyDataService: 資料庫連線失敗，無法查詢公司資料');
         throw new Error('資料庫連線失敗');
       }
 
-      // 按公司名稱查詢
-      console.log('🔍 CompanyDataService: 按名稱查詢:', this.COMPANY_NAME);
-      const { data: companyByName, error: nameError } = await supabase
+      // 統一查詢條件
+      const { data, error } = await supabase
         .from('companies')
         .select('*')
-        .eq('name', this.COMPANY_NAME)
+        .or(`name.eq.${this.COMPANY_NAME},registration_number.eq.${this.COMPANY_REGISTRATION_NUMBER}`)
+        .limit(1)
         .maybeSingle();
 
-      if (!nameError && companyByName) {
-        console.log('✅ CompanyDataService: 按名稱找到公司資料:', companyByName.name);
-        return companyByName as Company;
+      if (error) {
+        console.error('❌ CompanyDataService: 查詢失敗:', error);
+        throw new Error(`查詢公司資料失敗: ${error.message}`);
       }
 
-      // 按統一編號查詢
-      console.log('🔍 CompanyDataService: 按統一編號查詢:', this.COMPANY_REGISTRATION_NUMBER);
-      const { data: companyByReg, error: regError } = await supabase
-        .from('companies')
-        .select('*')
-        .eq('registration_number', this.COMPANY_REGISTRATION_NUMBER)
-        .maybeSingle();
-
-      if (!regError && companyByReg) {
-        console.log('✅ CompanyDataService: 按統一編號找到公司資料:', companyByReg.name);
-        return companyByReg as Company;
+      if (data) {
+        console.log('✅ CompanyDataService: 找到公司資料:', data.name);
+        return this.normalizeCompanyData(data);
       }
 
-      // 模糊查詢
-      console.log('🔍 CompanyDataService: 進行模糊查詢...');
-      const { data: allCompanies, error: allError } = await supabase
-        .from('companies')
-        .select('*')
-        .or(`name.ilike.%依美琦%,registration_number.eq.${this.COMPANY_REGISTRATION_NUMBER},legal_representative.eq.廖俊雄`)
-        .limit(5);
-
-      if (!allError && allCompanies && allCompanies.length > 0) {
-        const targetCompany = allCompanies[0]; // 取第一個匹配的
-        console.log('✅ CompanyDataService: 模糊查詢找到公司資料:', targetCompany.name);
-        return targetCompany as Company;
-      }
-
-      console.log('⚠️ CompanyDataService: 沒有找到任何公司資料');
+      console.log('⚠️ CompanyDataService: 沒有找到公司資料');
       return null;
 
     } catch (error) {
-      console.error('❌ CompanyDataService: 查詢公司資料失敗:', error);
+      console.error('❌ CompanyDataService: 查詢過程發生錯誤:', error);
       throw error;
     }
+  }
+
+  // 標準化公司資料格式
+  static normalizeCompanyData(rawData: any): Company {
+    return {
+      id: rawData.id,
+      name: rawData.name || '',
+      registration_number: rawData.registration_number || '',
+      legal_representative: rawData.legal_representative || '',
+      address: rawData.address || '',
+      phone: rawData.phone || '',
+      email: rawData.email || '',
+      website: rawData.website || null,
+      established_date: rawData.established_date || null,
+      capital: rawData.capital || null,
+      business_type: rawData.business_type || '',
+      created_at: rawData.created_at,
+      updated_at: rawData.updated_at
+    };
   }
 
   // 創建標準的依美琦公司資料
@@ -116,7 +112,7 @@ export class CompanyDataService {
       }
 
       console.log('✅ CompanyDataService: 成功創建標準公司資料:', data);
-      return data as Company;
+      return this.normalizeCompanyData(data);
     } catch (error) {
       console.error('❌ CompanyDataService: 創建過程發生錯誤:', error);
       throw error;
@@ -144,23 +140,20 @@ export class CompanyDataService {
       }
 
       console.log('✅ CompanyDataService: 公司資料更新成功:', data);
-      return data as Company;
+      return this.normalizeCompanyData(data);
     } catch (error) {
       console.error('❌ CompanyDataService: 更新過程發生錯誤:', error);
       throw error;
     }
   }
 
-  // 驗證公司資料完整性
+  // 驗證公司資料完整性 - 簡化驗證規則
   static validateCompanyData(company: Company): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
     
     if (!company.name?.trim()) errors.push('公司名稱不能為空');
     if (!company.registration_number?.trim()) errors.push('統一編號不能為空');
     if (!company.legal_representative?.trim()) errors.push('法定代表人不能為空');
-    if (!company.address?.trim()) errors.push('公司地址不能為空');
-    if (!company.phone?.trim()) errors.push('聯絡電話不能為空');
-    if (!company.email?.trim()) errors.push('電子郵件不能為空');
     if (!company.business_type?.trim()) errors.push('營業項目不能為空');
 
     return {

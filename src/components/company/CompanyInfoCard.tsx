@@ -24,12 +24,18 @@ const CompanyInfoCard = () => {
             <Building2 className="h-6 w-6 mr-2" />
             公司基本資料
           </CardTitle>
-          <CardDescription>尚未設定公司基本資料</CardDescription>
+          <CardDescription>
+            <div className="text-orange-600 font-medium">
+              系統正在載入公司資料，或尚未設定公司基本資料
+            </div>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <Building2 className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 mb-4">系統中尚未設定公司基本資料</p>
+            <p className="text-gray-500 mb-4">
+              {company === null ? '正在載入公司資料...' : '系統中尚未設定公司基本資料'}
+            </p>
             {canEdit && (
               <Button 
                 onClick={() => setIsEditCompanyDialogOpen(true)}

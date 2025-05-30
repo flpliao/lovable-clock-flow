@@ -15,30 +15,25 @@ export const useDataLoader = () => {
 
   // 載入所有資料
   const loadAllData = async () => {
-    if (!currentUser?.id) {
-      console.log('No user logged in, skipping data load');
-      return;
-    }
-
-    console.log('開始載入公司和營業處資料...');
+    console.log('🔄 開始載入所有資料...');
     setLoading(true);
     
     try {
       // 先載入公司資料
-      console.log('正在載入公司資料...');
+      console.log('📋 正在載入公司資料...');
       await loadCompany();
       
       // 然後初始化預設營業處（如果需要）
-      console.log('正在初始化預設營業處...');
+      console.log('🏢 正在初始化預設營業處...');
       await initializeDefaultBranch();
       
       // 最後載入營業處資料
-      console.log('正在載入營業處資料...');
+      console.log('🏪 正在載入營業處資料...');
       await loadBranches();
       
-      console.log('所有資料載入完成');
+      console.log('✅ 所有資料載入完成');
     } catch (error) {
-      console.error('載入資料失敗:', error);
+      console.error('❌ 載入資料失敗:', error);
     } finally {
       setLoading(false);
     }
@@ -46,17 +41,15 @@ export const useDataLoader = () => {
 
   // 刷新資料
   const refreshData = async () => {
-    console.log('重新整理資料...');
+    console.log('🔄 手動重新整理資料...');
     await loadAllData();
   };
 
-  // 當用戶登錄時自動載入資料
+  // 當進入頁面時立即載入資料
   useEffect(() => {
-    if (currentUser?.id) {
-      console.log('用戶已登入，開始載入資料:', currentUser.name);
-      loadAllData();
-    }
-  }, [currentUser?.id]);
+    console.log('🚀 頁面載入，開始載入公司資料');
+    loadAllData();
+  }, []); // 移除對 currentUser 的依賴，直接載入
 
   return {
     loading,

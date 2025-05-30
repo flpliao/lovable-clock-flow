@@ -15,15 +15,24 @@ export const useCompanyOperations = () => {
   // 載入公司資料
   const loadCompany = async () => {
     try {
-      console.log('正在載入公司資料，當前用戶:', currentUser?.name);
+      console.log('🔍 開始載入公司資料...');
       
       const data = await CompanyApiService.loadCompany();
-      setCompany(data);
-      console.log('公司資料載入結果:', data);
+      if (data) {
+        console.log('✅ 公司資料載入成功:', data);
+        setCompany(data);
+      } else {
+        console.log('⚠️ 沒有找到公司資料');
+        setCompany(null);
+      }
     } catch (error) {
-      console.error('載入公司資料失敗:', error);
-      // 不顯示錯誤 toast，避免影響用戶體驗
+      console.error('❌ 載入公司資料失敗:', error);
       setCompany(null);
+      toast({
+        title: "載入失敗",
+        description: "無法載入公司資料，請重新整理頁面",
+        variant: "destructive"
+      });
     }
   };
 
@@ -33,9 +42,6 @@ export const useCompanyOperations = () => {
     console.log('📋 當前用戶:', currentUser?.name);
     console.log('📋 提交的資料:', updatedCompany);
     
-    // 允許所有用戶操作，暫時不檢查權限
-    console.log('允許用戶操作公司資料（權限檢查已暫時停用）');
-
     try {
       console.log('🔍 開始資料驗證和處理...');
       

@@ -22,25 +22,60 @@ export class CompanyDataInitializer {
     };
   }
 
+  // 強制確保公司資料存在
+  static async ensureCompanyExists(companyId: string): Promise<Company | null> {
+    try {
+      console.log('🔍 CompanyDataInitializer: 強制確保公司資料存在...', { companyId });
+      
+      // 先嘗試載入現有資料
+      let existingCompany = await CompanyRepository.findById(companyId);
+      
+      if (existingCompany && this.validateCompanyData(existingCompany)) {
+        console.log('✅ CompanyDataInitializer: 找到有效的公司資料:', existingCompany.name);
+        return existingCompany;
+      }
+      
+      // 如果資料不存在或無效，強制創建
+      console.log('🔧 CompanyDataInitializer: 資料不存在或無效，開始創建...');
+      
+      const defaultData = this.getDefaultCompanyData(companyId);
+      
+      // 嘗試刪除舊資料（如果存在）
+      try {
+        await CompanyRepository.deleteById(companyId);
+        console.log('🗑️ CompanyDataInitializer: 已刪除舊資料');
+      } catch (deleteError) {
+        console.log('ℹ️ CompanyDataInitializer: 無需刪除舊資料');
+      }
+      
+      // 創建新資料
+      const newCompany = await CompanyRepository.create(defaultData);
+      console.log('✅ CompanyDataInitializer: 成功創建依美琦股份有限公司資料:', newCompany);
+      return newCompany;
+
+    } catch (error) {
+      console.error('❌ CompanyDataInitializer: 確保公司資料存在時發生錯誤:', error);
+      
+      // 最後一次嘗試：直接載入任何可能存在的資料
+      try {
+        const fallbackCompany = await CompanyRepository.findById(companyId);
+        if (fallbackCompany) {
+          console.log('🔄 CompanyDataInitializer: 找到備用公司資料:', fallbackCompany.name);
+          return fallbackCompany;
+        }
+      } catch (fallbackError) {
+        console.error('❌ CompanyDataInitializer: 備用載入也失敗:', fallbackError);
+      }
+      
+      return null;
+    }
+  }
+
   // 創建預設的依美琦股份有限公司資料
   static async createDefaultCompany(companyId: string): Promise<Company | null> {
     try {
       console.log('🔧 CompanyDataInitializer: 創建依美琦股份有限公司資料...', { companyId });
       
-      // 先刪除可能存在的舊資料（如果有的話）
-      try {
-        const existingCompany = await CompanyRepository.findById(companyId);
-        if (existingCompany) {
-          console.log('⚠️ CompanyDataInitializer: 發現現有公司資料，將使用更新方式');
-          const updatedData = this.getDefaultCompanyData(companyId);
-          const updatedCompany = await CompanyRepository.update(companyId, updatedData);
-          console.log('✅ CompanyDataInitializer: 成功更新公司資料:', updatedCompany);
-          return updatedCompany;
-        }
-      } catch (updateError) {
-        console.log('🔄 CompanyDataInitializer: 更新失敗，嘗試創建新資料');
-      }
-
       const defaultCompanyData = this.getDefaultCompanyData(companyId);
       console.log('📝 CompanyDataInitializer: 準備插入資料:', defaultCompanyData);
 
@@ -70,46 +105,11 @@ export class CompanyDataInitializer {
     }
   }
 
-  // 檢查並初始化公司資料
-  static async ensureCompanyExists(companyId: string): Promise<Company | null> {
-    try {
-      console.log('🔍 CompanyDataInitializer: 檢查公司資料是否存在...', { companyId });
-      
-      // 先嘗試載入現有資料
-      const existingCompany = await CompanyRepository.findById(companyId);
-      if (existingCompany) {
-        console.log('✅ CompanyDataInitializer: 找到現有公司資料:', existingCompany.name);
-        
-        // 驗證現有資料是否正確
-        if (this.validateCompanyData(existingCompany)) {
-          console.log('✅ CompanyDataInitializer: 現有資料驗證通過');
-          return existingCompany;
-        } else {
-          console.log('⚠️ CompanyDataInitializer: 現有資料不完整，需要更新');
-          // 更新為正確的資料
-          const correctData = this.getDefaultCompanyData(companyId);
-          const updatedCompany = await CompanyRepository.update(companyId, correctData);
-          console.log('✅ CompanyDataInitializer: 成功更新公司資料');
-          return updatedCompany;
-        }
-      }
-      
-      // 如果不存在，創建新的
-      console.log('🏢 CompanyDataInitializer: 公司資料不存在，開始創建...');
-      return await this.createDefaultCompany(companyId);
-      
-    } catch (error) {
-      console.error('❌ CompanyDataInitializer: 檢查公司資料時發生錯誤:', error);
-      return null;
-    }
-  }
-
   // 驗證公司資料完整性
   private static validateCompanyData(company: Company): boolean {
     const requiredData = {
       name: '依美琦股份有限公司',
       registration_number: '53907735',
-      address: '台北市中山區建國北路二段145號3樓',
       legal_representative: '廖俊雄'
     };
 

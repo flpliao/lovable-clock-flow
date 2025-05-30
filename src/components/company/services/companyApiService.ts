@@ -1,4 +1,3 @@
-
 import { Company } from '@/types/company';
 import { CompanyRepository } from './companyRepository';
 import { CompanyDataInitializer } from './companyDataInitializer';
@@ -12,39 +11,53 @@ export class CompanyApiService {
   static async loadCompany(): Promise<Company | null> {
     console.log('🔍 CompanyApiService: 開始載入公司資料...');
     console.log('🎯 CompanyApiService: 目標公司ID:', this.SPECIFIC_COMPANY_ID);
-    console.log('👤 CompanyApiService: 管理員用戶ID:', this.ADMIN_USER_ID);
     
     try {
       // 1. 首先嘗試載入指定ID的公司
       let company = await CompanyRepository.findById(this.SPECIFIC_COMPANY_ID);
       
-      if (company) {
-        console.log('✅ CompanyApiService: 成功載入現有公司資料:', company.name);
-        console.log('🔗 CompanyApiService: 驗證ID匹配 - 公司ID:', company.id, '期望ID:', this.SPECIFIC_COMPANY_ID);
-        
-        // 驗證資料完整性和ID匹配
-        if (this.validateCompanyData(company) && company.id === this.SPECIFIC_COMPANY_ID) {
-          return company;
-        } else {
-          console.log('⚠️ CompanyApiService: 公司資料不完整或ID不匹配，需要更新');
-        }
+      if (company && this.validateCompanyData(company)) {
+        console.log('✅ CompanyApiService: 成功載入有效公司資料:', company.name);
+        return company;
       }
 
-      // 2. 如果找不到或資料不完整，創建新的預設公司資料
-      console.log('🔧 CompanyApiService: 創建或更新公司資料...');
+      // 2. 如果沒有有效資料，強制確保資料存在
+      console.log('🔧 CompanyApiService: 強制確保公司資料存在...');
       company = await CompanyDataInitializer.ensureCompanyExists(this.SPECIFIC_COMPANY_ID);
       
       if (company) {
         console.log('✅ CompanyApiService: 成功確保公司資料存在:', company.name);
-        console.log('🆔 CompanyApiService: 最終公司ID:', company.id);
         return company;
       }
 
-      console.log('❌ CompanyApiService: 無法創建或載入公司資料');
+      console.log('❌ CompanyApiService: 無法載入或創建公司資料');
       return null;
 
     } catch (error) {
       console.error('💥 CompanyApiService: 載入公司資料時發生錯誤:', error);
+      return null;
+    }
+  }
+
+  // 強制修復公司資料
+  static async forceFixCompanyData(): Promise<Company | null> {
+    console.log('🔧 CompanyApiService: 開始強制修復公司資料...');
+    
+    try {
+      // 1. 強制重新創建公司資料
+      const company = await CompanyDataInitializer.createDefaultCompany(this.SPECIFIC_COMPANY_ID);
+      
+      if (company) {
+        console.log('✅ CompanyApiService: 強制修復成功:', company.name);
+        
+        // 2. 驗證修復後的資料
+        const validatedCompany = await this.loadCompany();
+        return validatedCompany;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('❌ CompanyApiService: 強制修復失敗:', error);
       return null;
     }
   }
@@ -61,7 +74,6 @@ export class CompanyApiService {
     const expectedValues = {
       name: '依美琦股份有限公司',
       registration_number: '53907735',
-      address: '台北市中山區建國北路二段145號3樓',
       legal_representative: '廖俊雄'
     };
 
@@ -90,7 +102,6 @@ export class CompanyApiService {
     try {
       console.log('🔄 CompanyApiService: 準備更新公司資料');
       console.log('🆔 CompanyApiService: 使用公司ID:', companyId || this.SPECIFIC_COMPANY_ID);
-      console.log('📋 CompanyApiService: 資料內容:', companyData);
       
       const targetCompanyId = companyId || this.SPECIFIC_COMPANY_ID;
       
@@ -155,7 +166,7 @@ export class CompanyApiService {
     console.log('👤 CompanyApiService: 關聯管理員:', this.ADMIN_USER_ID);
     
     try {
-      return await CompanyDataInitializer.createDefaultCompany(this.SPECIFIC_COMPANY_ID);
+      return await this.forceFixCompanyData();
     } catch (error) {
       console.error('❌ CompanyApiService: 強制重新初始化失敗:', error);
       return null;

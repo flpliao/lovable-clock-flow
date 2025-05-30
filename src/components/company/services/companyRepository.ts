@@ -16,7 +16,6 @@ export class CompanyRepository {
 
       if (error) {
         console.error('❌ CompanyRepository: 查詢公司資料時發生錯誤:', error);
-        // 不再拋出錯誤，而是返回 null，讓上層處理
         return null;
       }
 
@@ -29,7 +28,6 @@ export class CompanyRepository {
       return data as Company | null;
     } catch (error) {
       console.error('💥 CompanyRepository: 查詢過程中發生錯誤:', error);
-      // 返回 null 而不是拋出錯誤，讓系統更穩定
       return null;
     }
   }
@@ -116,6 +114,59 @@ export class CompanyRepository {
     } catch (error) {
       console.error('💥 CompanyRepository: 更新過程中發生錯誤:', error);
       throw error;
+    }
+  }
+
+  // 刪除公司資料
+  static async deleteById(companyId: string): Promise<boolean> {
+    console.log('🗑️ CompanyRepository: 刪除公司資料，ID:', companyId);
+    
+    try {
+      const { error } = await supabase
+        .from('companies')
+        .delete()
+        .eq('id', companyId);
+
+      if (error) {
+        console.error('❌ CompanyRepository: 刪除公司資料失敗:', error);
+        throw error;
+      }
+
+      console.log('✅ CompanyRepository: 成功刪除公司資料');
+      return true;
+    } catch (error) {
+      console.error('💥 CompanyRepository: 刪除過程中發生錯誤:', error);
+      throw error;
+    }
+  }
+
+  // 強制重新載入指定公司
+  static async forceReload(companyId: string): Promise<Company | null> {
+    console.log('🔄 CompanyRepository: 強制重新載入公司資料，ID:', companyId);
+    
+    try {
+      // 清除可能的快取
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const { data, error } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('id', companyId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('❌ CompanyRepository: 強制重新載入失敗:', error);
+        return null;
+      }
+
+      if (data) {
+        console.log('✅ CompanyRepository: 強制重新載入成功:', data.name);
+      }
+
+      return data as Company | null;
+    } catch (error) {
+      console.error('💥 CompanyRepository: 強制重新載入過程中發生錯誤:', error);
+      return null;
     }
   }
 }

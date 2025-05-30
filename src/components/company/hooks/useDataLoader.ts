@@ -1,38 +1,49 @@
 
-import { useState, useEffect } from 'react';
+import { useCompanyOperations } from './useCompanyOperations';
+import { useBranchOperations } from './useBranchOperations';
+import { useBranchInitializer } from './useBranchInitializer';
 import { useUser } from '@/contexts/UserContext';
+import { useEffect } from 'react';
 
-export const useDataLoader = (loadCompany: () => Promise<void>, loadBranches: () => Promise<void>) => {
-  const [loading, setLoading] = useState(false);
+export const useDataLoader = () => {
+  const { loadCompany } = useCompanyOperations();
+  const { loadBranches } = useBranchOperations();
+  const { initializeDefaultBranch } = useBranchInitializer();
   const { currentUser } = useUser();
 
-  const refreshData = async () => {
+  // 載入所有資料
+  const loadAllData = async () => {
     if (!currentUser?.id) {
-      console.log('No user logged in, skipping data refresh');
-      setLoading(false);
+      console.log('No user logged in, skipping data load');
       return;
     }
 
-    setLoading(true);
+    console.log('開始載入公司和營業處資料...');
+    
     try {
-      console.log('正在刷新公司與營業處資料...');
-      await Promise.all([loadCompany(), loadBranches()]);
+      // 先初始化預設營業處（如果需要）
+      await initializeDefaultBranch();
+      
+      // 並行載入公司和營業處資料
+      await Promise.all([
+        loadCompany(),
+        loadBranches()
+      ]);
+      
+      console.log('所有資料載入完成');
     } catch (error) {
-      console.error('刷新資料時發生錯誤:', error);
-    } finally {
-      setLoading(false);
+      console.error('載入資料失敗:', error);
     }
   };
 
-  // 初始載入資料
+  // 當用戶登錄時自動載入資料
   useEffect(() => {
     if (currentUser?.id) {
-      refreshData();
+      loadAllData();
     }
   }, [currentUser?.id]);
 
   return {
-    loading,
-    refreshData
+    loadAllData
   };
 };

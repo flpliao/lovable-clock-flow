@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase, ensureUserAuthenticated } from '@/integrations/supabase/client';
 import { Staff, StaffRole } from '../types';
 import { useUser } from '@/contexts/UserContext';
+import { useStaffInitializer } from './useStaffInitializer';
 
 export const useStaffDataLoader = () => {
   const [staffList, setStaffList] = useState<Staff[]>([]);
@@ -11,6 +12,7 @@ export const useStaffDataLoader = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { currentUser } = useUser();
+  const { initializeLiaoJunxiongStaff } = useStaffInitializer();
 
   // 載入員工資料
   const loadStaff = async () => {
@@ -26,6 +28,9 @@ export const useStaffDataLoader = () => {
       
       // 確保身份驗證
       await ensureUserAuthenticated();
+      
+      // 先初始化廖俊雄的記錄（如果需要）
+      await initializeLiaoJunxiongStaff();
       
       const { data, error } = await supabase
         .from('staff')

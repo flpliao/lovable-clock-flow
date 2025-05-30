@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar } from '@/components/ui/calendar';
 import { ChevronLeft } from 'lucide-react';
 import { format } from 'date-fns';
-import Header from '@/components/Header';
 import { useUser } from '@/contexts/UserContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -97,8 +96,6 @@ const PersonalAttendance = () => {
   
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-      
       <div className="container mx-auto py-6 px-4">
         <div className="flex flex-col gap-6">
           {/* Header with back button */}

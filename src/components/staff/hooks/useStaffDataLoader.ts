@@ -2,8 +2,9 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Staff, StaffRole } from '../types';
+import { supabase } from '@/integrations/supabase/client';
 
-// 保留角色定義，但清空員工資料
+// 保留角色定義
 const mockRoles: StaffRole[] = [
   {
     id: 'admin',
@@ -34,29 +35,44 @@ export const useStaffDataLoader = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  // 載入員工資料 - 現在返回空陣列
+  // 載入員工資料 - 從 Supabase 載入實際資料
   const loadStaff = async () => {
     try {
-      console.log('正在載入員工資料...');
+      console.log('🔄 正在從 Supabase 載入員工資料...');
       setLoading(true);
 
-      // 清空員工資料，準備輸入正式資料
-      console.log('員工資料已清空，準備輸入正式資料');
-      setStaffList([]);
+      const { data, error } = await supabase
+        .from('staff')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ 載入員工資料失敗:', error);
+        toast({
+          title: "載入失敗",
+          description: "無法載入員工資料，請稍後再試",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('✅ 成功載入員工資料:', data);
+      setStaffList(data || []);
       
-      toast({
-        title: "系統準備就緒",
-        description: "員工資料已清空，可以開始輸入正式資料",
-      });
+      if (data && data.length > 0) {
+        toast({
+          title: "載入成功",
+          description: `已載入 ${data.length} 筆員工資料`,
+        });
+      }
       
-      return;
     } catch (error) {
-      console.error('載入員工資料失敗:', error);
+      console.error('❌ 載入員工資料系統錯誤:', error);
       setStaffList([]);
       toast({
-        title: "系統準備就緒",
-        description: "員工資料已清空，可以開始輸入正式資料",
-        variant: "default"
+        title: "系統錯誤",
+        description: "載入員工資料時發生錯誤",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -77,6 +93,7 @@ export const useStaffDataLoader = () => {
 
   // 刷新資料
   const refreshData = async () => {
+    console.log('🔄 刷新所有資料...');
     setLoading(true);
     await Promise.all([loadStaff(), loadRoles()]);
     setLoading(false);

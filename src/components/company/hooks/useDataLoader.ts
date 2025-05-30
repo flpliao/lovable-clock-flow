@@ -8,8 +8,8 @@ import { useEffect } from 'react';
 
 export const useDataLoader = () => {
   const [loading, setLoading] = useState(false);
-  const { loadCompany } = useCompanyOperations();
-  const { loadBranches } = useBranchOperations();
+  const { loadCompany, company } = useCompanyOperations();
+  const { loadBranches } = useBranchOperations(company);
   const { initializeDefaultBranch } = useBranchInitializer();
   const { currentUser } = useUser();
 

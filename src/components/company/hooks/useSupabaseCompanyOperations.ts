@@ -18,7 +18,7 @@ export const useSupabaseCompanyOperations = () => {
     addBranch,
     updateBranch,
     deleteBranch
-  } = useBranchOperations();
+  } = useBranchOperations(company);
 
   const {
     loading,

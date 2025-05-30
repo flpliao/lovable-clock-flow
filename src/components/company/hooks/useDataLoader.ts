@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { useCompanyOperations } from './useCompanyOperations';
 import { useBranchOperations } from './useBranchOperations';
 import { useBranchInitializer } from './useBranchInitializer';
@@ -6,6 +7,7 @@ import { useUser } from '@/contexts/UserContext';
 import { useEffect } from 'react';
 
 export const useDataLoader = () => {
+  const [loading, setLoading] = useState(false);
   const { loadCompany } = useCompanyOperations();
   const { loadBranches } = useBranchOperations();
   const { initializeDefaultBranch } = useBranchInitializer();
@@ -19,6 +21,7 @@ export const useDataLoader = () => {
     }
 
     console.log('開始載入公司和營業處資料...');
+    setLoading(true);
     
     try {
       // 先初始化預設營業處（如果需要）
@@ -33,7 +36,14 @@ export const useDataLoader = () => {
       console.log('所有資料載入完成');
     } catch (error) {
       console.error('載入資料失敗:', error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  // 刷新資料
+  const refreshData = async () => {
+    await loadAllData();
   };
 
   // 當用戶登錄時自動載入資料
@@ -44,6 +54,8 @@ export const useDataLoader = () => {
   }, [currentUser?.id]);
 
   return {
-    loadAllData
+    loading,
+    loadAllData,
+    refreshData
   };
 };

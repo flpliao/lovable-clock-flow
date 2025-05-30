@@ -18,12 +18,12 @@ export const useSupabaseCompanyOperations = () => {
     addBranch,
     updateBranch,
     deleteBranch
-  } = useBranchOperations(company);
+  } = useBranchOperations();
 
   const {
     loading,
     refreshData
-  } = useDataLoader(loadCompany, loadBranches);
+  } = useDataLoader();
 
   return {
     company,

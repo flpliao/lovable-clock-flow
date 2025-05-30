@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
@@ -6,6 +5,7 @@ import { Company } from '@/types/company';
 import { CompanyValidationService } from '../services/companyValidationService';
 import { CompanyDataPreparer } from '../services/companyDataPreparer';
 import { CompanyApiService } from '../services/companyApiService';
+import { CompanyDataService } from '../services/companyDataService';
 
 export const useCompanyOperations = () => {
   const [company, setCompany] = useState<Company | null>(null);
@@ -39,8 +39,9 @@ export const useCompanyOperations = () => {
     setLoading(true);
     
     try {
-      const data = await CompanyApiService.loadCompany();
-      console.log('🔍 useCompanyOperations: API 返回的資料:', data);
+      // 直接使用 CompanyDataService 來載入資料
+      const data = await CompanyDataService.findCompany();
+      console.log('🔍 useCompanyOperations: 查詢結果:', data);
       
       setCompany(data);
       
@@ -65,9 +66,14 @@ export const useCompanyOperations = () => {
       console.error('❌ useCompanyOperations: 載入公司資料失敗:', error);
       setCompany(null);
       
+      let errorMessage = "無法從後台資料庫載入公司資料";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "載入失敗",
-        description: "無法從後台資料庫載入公司資料，請稍後再試",
+        description: `無法載入公司資料: ${errorMessage}`,
         variant: "destructive"
       });
     } finally {
@@ -81,7 +87,13 @@ export const useCompanyOperations = () => {
     setLoading(true);
     
     try {
-      const syncedCompany = await CompanyApiService.forceSyncFromBackend();
+      // 先嘗試創建標準公司資料，如果已存在則會跳過
+      let syncedCompany = await CompanyDataService.findCompany();
+      
+      if (!syncedCompany) {
+        console.log('🔄 useCompanyOperations: 沒有找到公司資料，創建標準資料...');
+        syncedCompany = await CompanyDataService.createStandardCompany();
+      }
       
       if (syncedCompany) {
         setCompany(syncedCompany);
@@ -89,7 +101,7 @@ export const useCompanyOperations = () => {
         
         toast({
           title: "同步成功",
-          description: `已成功從後台同步${syncedCompany.name}資料`,
+          description: `已成功同步${syncedCompany.name}資料`,
         });
       } else {
         throw new Error('同步過程中發生錯誤');
@@ -97,9 +109,14 @@ export const useCompanyOperations = () => {
     } catch (error) {
       console.error('❌ useCompanyOperations: 強制同步失敗:', error);
       
+      let errorMessage = "無法同步公司資料";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "同步失敗",
-        description: "無法從後台同步公司資料，請檢查網路連線",
+        description: `無法從後台同步公司資料: ${errorMessage}`,
         variant: "destructive"
       });
     } finally {

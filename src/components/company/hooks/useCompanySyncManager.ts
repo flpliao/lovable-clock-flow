@@ -1,7 +1,5 @@
-
 import { useState, useCallback } from 'react';
 import { Company } from '@/types/company';
-import { CompanySyncService, SyncResult } from '../services/companySyncService';
 import { CompanyDataService } from '../services/companyDataService';
 import { useToast } from '@/hooks/use-toast';
 
@@ -41,9 +39,14 @@ export const useCompanySyncManager = () => {
       setSyncStatus('not_synced');
       setCompany(null);
       
+      let errorMessage = "無法載入公司資料";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "載入失敗",
-        description: `無法載入公司資料: ${error instanceof Error ? error.message : '未知錯誤'}`,
+        description: `無法載入公司資料: ${errorMessage}`,
         variant: "destructive"
       });
     } finally {
@@ -57,42 +60,41 @@ export const useCompanySyncManager = () => {
     setLoading(true);
     
     try {
-      const result: SyncResult = await CompanySyncService.forceSyncCompany();
+      // 先嘗試查找現有資料
+      let company = await CompanyDataService.findCompany();
       
-      if (result.success && result.company) {
-        setCompany(result.company);
-        setSyncStatus('synced');
-        
-        const actionMessages = {
-          found: '已找到並載入現有公司資料',
-          created: '已創建新的公司資料',
-          updated: '已更新並同步公司資料',
-          failed: '同步失敗'
-        };
+      if (!company) {
+        // 如果沒有找到，創建標準資料
+        console.log('➕ useCompanySyncManager: 創建標準公司資料...');
+        company = await CompanyDataService.createStandardCompany();
         
         toast({
           title: "同步成功",
-          description: actionMessages[result.action],
+          description: "已創建新的公司資料",
         });
-        
-        return true;
       } else {
-        setSyncStatus('not_synced');
         toast({
-          title: "同步失敗",
-          description: result.error || "同步過程發生未知錯誤",
-          variant: "destructive"
+          title: "同步成功",
+          description: "已找到並載入現有公司資料",
         });
-        
-        return false;
       }
+      
+      setCompany(company);
+      setSyncStatus('synced');
+      return true;
+      
     } catch (error) {
       console.error('❌ useCompanySyncManager: 強制同步失敗:', error);
       setSyncStatus('not_synced');
       
+      let errorMessage = "同步過程發生未知錯誤";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "同步失敗",
-        description: `強制同步過程發生錯誤: ${error instanceof Error ? error.message : '未知錯誤'}`,
+        description: `強制同步過程發生錯誤: ${errorMessage}`,
         variant: "destructive"
       });
       

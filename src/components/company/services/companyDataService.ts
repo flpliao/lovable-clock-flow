@@ -9,10 +9,18 @@ export class CompanyDataService {
   // 檢查資料庫連線
   static async testConnection(): Promise<boolean> {
     try {
-      const { error } = await supabase.from('companies').select('id').limit(1);
-      return !error;
+      console.log('🔍 CompanyDataService: 測試資料庫連線...');
+      const { error } = await supabase.from('companies').select('count').limit(1);
+      
+      if (error) {
+        console.error('❌ CompanyDataService: 資料庫連線測試失敗:', error);
+        return false;
+      }
+      
+      console.log('✅ CompanyDataService: 資料庫連線正常');
+      return true;
     } catch (error) {
-      console.error('❌ 資料庫連線測試失敗:', error);
+      console.error('❌ CompanyDataService: 資料庫連線測試異常:', error);
       return false;
     }
   }
@@ -25,10 +33,12 @@ export class CompanyDataService {
       // 先測試連線
       const isConnected = await this.testConnection();
       if (!isConnected) {
+        console.error('❌ CompanyDataService: 資料庫連線失敗，無法查詢公司資料');
         throw new Error('資料庫連線失敗');
       }
 
       // 按公司名稱查詢
+      console.log('🔍 CompanyDataService: 按名稱查詢:', this.COMPANY_NAME);
       const { data: companyByName, error: nameError } = await supabase
         .from('companies')
         .select('*')
@@ -41,6 +51,7 @@ export class CompanyDataService {
       }
 
       // 按統一編號查詢
+      console.log('🔍 CompanyDataService: 按統一編號查詢:', this.COMPANY_REGISTRATION_NUMBER);
       const { data: companyByReg, error: regError } = await supabase
         .from('companies')
         .select('*')
@@ -52,27 +63,21 @@ export class CompanyDataService {
         return companyByReg as Company;
       }
 
-      // 查詢所有公司
+      // 模糊查詢
+      console.log('🔍 CompanyDataService: 進行模糊查詢...');
       const { data: allCompanies, error: allError } = await supabase
         .from('companies')
         .select('*')
-        .limit(10);
+        .or(`name.ilike.%依美琦%,registration_number.eq.${this.COMPANY_REGISTRATION_NUMBER},legal_representative.eq.廖俊雄`)
+        .limit(5);
 
       if (!allError && allCompanies && allCompanies.length > 0) {
-        // 找尋依美琦相關的公司
-        const targetCompany = allCompanies.find(company => 
-          company.name?.includes('依美琦') || 
-          company.registration_number === this.COMPANY_REGISTRATION_NUMBER ||
-          company.legal_representative === '廖俊雄'
-        );
-
-        if (targetCompany) {
-          console.log('✅ CompanyDataService: 找到匹配的公司資料:', targetCompany.name);
-          return targetCompany as Company;
-        }
+        const targetCompany = allCompanies[0]; // 取第一個匹配的
+        console.log('✅ CompanyDataService: 模糊查詢找到公司資料:', targetCompany.name);
+        return targetCompany as Company;
       }
 
-      console.log('⚠️ CompanyDataService: 沒有找到公司資料');
+      console.log('⚠️ CompanyDataService: 沒有找到任何公司資料');
       return null;
 
     } catch (error) {
@@ -85,32 +90,37 @@ export class CompanyDataService {
   static async createStandardCompany(): Promise<Company> {
     console.log('➕ CompanyDataService: 創建標準依美琦公司資料...');
     
-    const companyData = {
-      name: this.COMPANY_NAME,
-      registration_number: this.COMPANY_REGISTRATION_NUMBER,
-      legal_representative: '廖俊雄',
-      address: '台北市中山區建國北路二段92號',
-      phone: '02-2501-2345',
-      email: 'info@emeici.com.tw',
-      website: 'https://www.emeici.com.tw',
-      established_date: '2000-01-01',
-      capital: 10000000,
-      business_type: '化妝品零售業'
-    };
+    try {
+      const companyData = {
+        name: this.COMPANY_NAME,
+        registration_number: this.COMPANY_REGISTRATION_NUMBER,
+        legal_representative: '廖俊雄',
+        address: '台北市中山區建國北路二段92號',
+        phone: '02-2501-2345',
+        email: 'info@emeici.com.tw',
+        website: 'https://www.emeici.com.tw',
+        established_date: '2000-01-01',
+        capital: 10000000,
+        business_type: '化妝品零售業'
+      };
 
-    const { data, error } = await supabase
-      .from('companies')
-      .insert(companyData)
-      .select()
-      .single();
+      const { data, error } = await supabase
+        .from('companies')
+        .insert(companyData)
+        .select()
+        .single();
 
-    if (error) {
-      console.error('❌ CompanyDataService: 創建公司資料失敗:', error);
-      throw new Error(`創建公司資料失敗: ${error.message}`);
+      if (error) {
+        console.error('❌ CompanyDataService: 創建公司資料失敗:', error);
+        throw new Error(`創建公司資料失敗: ${error.message}`);
+      }
+
+      console.log('✅ CompanyDataService: 成功創建標準公司資料:', data);
+      return data as Company;
+    } catch (error) {
+      console.error('❌ CompanyDataService: 創建過程發生錯誤:', error);
+      throw error;
     }
-
-    console.log('✅ CompanyDataService: 成功創建標準公司資料:', data);
-    return data as Company;
   }
 
   // 更新公司資料

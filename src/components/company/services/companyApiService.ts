@@ -26,7 +26,7 @@ export class CompanyApiService {
         return specificCompany as Company;
       }
 
-      // 如果指定ID不存在，創建預設公司資料
+      // 如果指定ID不存在，創建依美琦股份有限公司資料
       console.log('🔧 CompanyApiService: 指定ID不存在，創建依美琦股份有限公司資料...');
       return await this.createDefaultCompany(specificCompanyId);
 

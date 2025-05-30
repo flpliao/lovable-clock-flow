@@ -45,15 +45,18 @@ export const useCompanyOperations = () => {
       
       if (data) {
         console.log('✅ useCompanyOperations: 成功載入指定公司資料:', data.name);
+        console.log('🆔 useCompanyOperations: 公司ID:', data.id);
+        console.log('🏢 useCompanyOperations: 統一編號:', data.registration_number);
+        
         toast({
           title: "載入成功",
-          description: `已載入指定公司資料：${data.name}`,
+          description: `已載入依美琦股份有限公司資料`,
         });
       } else {
         console.log('⚠️ useCompanyOperations: 指定ID的公司資料不存在');
         toast({
           title: "找不到公司資料",
-          description: "指定ID的公司資料不存在，請確認ID是否正確",
+          description: "後台資料庫中沒有依美琦股份有限公司的資料",
           variant: "destructive"
         });
       }
@@ -61,21 +64,9 @@ export const useCompanyOperations = () => {
       console.error('❌ useCompanyOperations: 載入公司資料失敗:', error);
       setCompany(null);
       
-      // 提供更友善的錯誤訊息
-      let errorMessage = "載入指定公司資料失敗";
-      if (error instanceof Error) {
-        if (error.message.includes('network') || error.message.includes('fetch')) {
-          errorMessage = "網路連接問題，請檢查網路狀態";
-        } else if (error.message.includes('policy') || error.message.includes('RLS')) {
-          errorMessage = "資料庫權限設定問題，系統正在調整中";
-        } else {
-          errorMessage = error.message || "載入資料時發生錯誤，請稍後再試";
-        }
-      }
-      
       toast({
         title: "載入失敗",
-        description: errorMessage,
+        description: "無法從後台資料庫載入公司資料",
         variant: "destructive"
       });
     } finally {
@@ -83,7 +74,7 @@ export const useCompanyOperations = () => {
     }
   };
 
-  // 更新或新建公司資料
+  // 更新公司資料
   const updateCompany = async (updatedCompany: Company): Promise<boolean> => {
     console.log('🔄 useCompanyOperations: 開始更新公司資料');
     console.log('📋 useCompanyOperations: 當前用戶:', currentUser?.name);
@@ -114,7 +105,7 @@ export const useCompanyOperations = () => {
       const companyData = CompanyDataPreparer.prepareCompanyData(updatedCompany);
       console.log('📄 useCompanyOperations: 準備處理的資料:', companyData);
 
-      // 執行更新或新增
+      // 執行更新
       const result = await CompanyApiService.updateCompany(companyData, company?.id);
       console.log('✅ useCompanyOperations: 操作成功，返回的資料:', result);
       
@@ -122,8 +113,8 @@ export const useCompanyOperations = () => {
       setCompany(result);
       
       toast({
-        title: company ? "更新成功" : "建立成功",
-        description: company ? "已成功更新公司基本資料" : "已成功建立公司基本資料"
+        title: "更新成功",
+        description: "已成功更新依美琦股份有限公司資料"
       });
       return true;
     } catch (error) {

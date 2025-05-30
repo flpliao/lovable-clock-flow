@@ -3,23 +3,12 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info, Building2, Settings } from 'lucide-react';
-import { useSupabaseCompanyOperations } from './hooks/useSupabaseCompanyOperations';
 import CompanyInfoCard from './CompanyInfoCard';
 import BranchTable from './BranchTable';
 import { ComprehensiveDiagnostics } from './diagnostics/ComprehensiveDiagnostics';
 
 const CompanyManagementRedesigned = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const {
-    company,
-    branches,
-    loading,
-    updateCompany,
-    addBranch,
-    updateBranch,
-    deleteBranch,
-    refreshData
-  } = useSupabaseCompanyOperations();
 
   return (
     <div className="space-y-6">
@@ -47,23 +36,11 @@ const CompanyManagementRedesigned = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <CompanyInfoCard
-            company={company}
-            loading={loading}
-            onUpdate={updateCompany}
-            onRefresh={refreshData}
-          />
+          <CompanyInfoCard />
         </TabsContent>
 
         <TabsContent value="branches" className="space-y-6">
-          <BranchTable
-            branches={branches}
-            loading={loading}
-            onAdd={addBranch}
-            onUpdate={updateBranch}
-            onDelete={deleteBranch}
-            onRefresh={refreshData}
-          />
+          <BranchTable />
         </TabsContent>
 
         <TabsContent value="diagnostics" className="space-y-6">

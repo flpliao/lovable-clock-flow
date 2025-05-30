@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,10 +21,10 @@ const CompanyInfoCard = () => {
   // 檢查資料是否同步
   const isDataSynced = CompanyApiService.isDataSynced(company);
 
-  // 強制重新初始化
-  const handleForceReinitialize = async () => {
-    console.log('🔄 強制重新初始化公司資料...');
-    const result = await CompanyApiService.forceReinitialize();
+  // 強制重新載入
+  const handleForceReload = async () => {
+    console.log('🔄 強制重新載入公司資料...');
+    const result = await CompanyApiService.forceReload();
     if (result) {
       await loadCompany();
     }
@@ -95,12 +94,12 @@ const CompanyInfoCard = () => {
                 重新載入
               </Button>
               <Button 
-                onClick={handleForceReinitialize}
+                onClick={handleForceReload}
                 variant="outline"
                 size="sm"
               >
                 <AlertTriangle className="h-4 w-4 mr-2" />
-                強制初始化
+                強制重新載入
               </Button>
               {canEdit && (
                 <Button 
@@ -162,7 +161,7 @@ const CompanyInfoCard = () => {
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={handleForceReinitialize}
+              onClick={handleForceReload}
             >
               <AlertTriangle className="h-4 w-4 mr-1" />
               修復同步

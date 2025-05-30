@@ -1,53 +1,88 @@
 
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Settings, Shield } from 'lucide-react';
+import React from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Building2, Plus, Settings, Shield, Stethoscope } from 'lucide-react';
+import { useUser } from '@/contexts/UserContext';
+import { useCompanyManagementContext } from './CompanyManagementContext';
 import CompanyInfoCard from './CompanyInfoCard';
 import BranchTable from './BranchTable';
-import { ComprehensiveDiagnostics } from './diagnostics/ComprehensiveDiagnostics';
+import AddBranchDialog from './AddBranchDialog';
+import EditBranchDialog from './EditBranchDialog';
+import EditCompanyDialog from './EditCompanyDialog';
+import { CompanySyncCard } from './components/CompanySyncCard';
 import { RLSSettingsCard } from './components/RLSSettingsCard';
+import { ComprehensiveDiagnostics } from './diagnostics/ComprehensiveDiagnostics';
 
 const CompanyManagementRedesigned = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const { currentUser } = useUser();
+  const { setIsAddBranchDialogOpen, branches } = useCompanyManagementContext();
+  
+  // 允許廖俊雄和管理員管理營業處
+  const canManageBranches = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
+
+  console.log('CompanyManagementRedesigned - 當前用戶:', currentUser?.name);
+  console.log('CompanyManagementRedesigned - 營業處管理權限:', canManageBranches);
+  console.log('CompanyManagementRedesigned - 營業處數量:', branches?.length || 0);
+
+  const handleAddBranch = () => {
+    console.log('📍 CompanyManagementRedesigned: 開啟新增營業處對話框');
+    setIsAddBranchDialogOpen(true);
+  };
 
   return (
     <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview" className="flex items-center">
-            <Building2 className="h-4 w-4 mr-2" />
-            公司總覽
-          </TabsTrigger>
-          <TabsTrigger value="branches" className="flex items-center">
-            <Building2 className="h-4 w-4 mr-2" />
-            營業處管理
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center">
-            <Shield className="h-4 w-4 mr-2" />
-            安全設定
-          </TabsTrigger>
-          <TabsTrigger value="diagnostics" className="flex items-center">
-            <Settings className="h-4 w-4 mr-2" />
-            系統診斷
-          </TabsTrigger>
-        </TabsList>
+      {/* 公司基本資料 */}
+      <CompanyInfoCard />
 
-        <TabsContent value="overview" className="space-y-6">
-          <CompanyInfoCard />
-        </TabsContent>
-
-        <TabsContent value="branches" className="space-y-6">
+      {/* 營業處管理區塊 */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Building2 className="h-6 w-6 mr-2 text-blue-600" />
+              <CardTitle>營業處管理</CardTitle>
+            </div>
+            {canManageBranches && (
+              <Button
+                onClick={handleAddBranch}
+                className="flex items-center"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                新增營業處
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
           <BranchTable />
-        </TabsContent>
+        </CardContent>
+      </Card>
 
-        <TabsContent value="security" className="space-y-6">
+      {/* 系統設定區塊 */}
+      {canManageBranches && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <CompanySyncCard />
           <RLSSettingsCard />
-        </TabsContent>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Stethoscope className="h-5 w-5 mr-2 text-green-600" />
+                系統診斷
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ComprehensiveDiagnostics />
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-        <TabsContent value="diagnostics" className="space-y-6">
-          <ComprehensiveDiagnostics />
-        </TabsContent>
-      </Tabs>
+      {/* 對話框 */}
+      <AddBranchDialog />
+      <EditBranchDialog />
+      <EditCompanyDialog />
     </div>
   );
 };

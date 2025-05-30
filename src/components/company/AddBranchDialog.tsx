@@ -1,13 +1,13 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus } from 'lucide-react';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useUser } from '@/contexts/UserContext';
+import { useToast } from '@/hooks/use-toast';
 
 const AddBranchDialog = () => {
   const {
@@ -17,33 +17,104 @@ const AddBranchDialog = () => {
     setNewBranch,
     handleAddBranch
   } = useCompanyManagementContext();
+  
   const { currentUser } = useUser();
+  const { toast } = useToast();
 
   // 允許廖俊雄和管理員新增營業處
   const canAddBranch = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
+
+  console.log('AddBranchDialog - 對話框狀態:', { 
+    isAddBranchDialogOpen, 
+    canAddBranch, 
+    userName: currentUser?.name 
+  });
 
   if (!canAddBranch) {
     return null;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('提交新增營業處表單，當前用戶:', currentUser?.name);
-    handleAddBranch();
+    console.log('🚀 AddBranchDialog: 提交新增營業處表單');
+    console.log('📋 AddBranchDialog: 表單資料:', newBranch);
+    console.log('👤 AddBranchDialog: 當前用戶:', currentUser?.name);
+
+    // 基本驗證
+    if (!newBranch.name?.trim()) {
+      toast({
+        title: "驗證失敗",
+        description: "營業處名稱不能為空",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!newBranch.code?.trim()) {
+      toast({
+        title: "驗證失敗", 
+        description: "營業處代碼不能為空",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!newBranch.address?.trim()) {
+      toast({
+        title: "驗證失敗",
+        description: "地址不能為空", 
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!newBranch.phone?.trim()) {
+      toast({
+        title: "驗證失敗",
+        description: "電話不能為空",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      console.log('✅ AddBranchDialog: 呼叫新增營業處功能');
+      await handleAddBranch();
+      console.log('✅ AddBranchDialog: 新增營業處成功');
+    } catch (error) {
+      console.error('❌ AddBranchDialog: 新增營業處失敗:', error);
+      toast({
+        title: "新增失敗",
+        description: "新增營業處時發生錯誤，請重試",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleClose = () => {
+    console.log('🚪 AddBranchDialog: 關閉新增營業處對話框');
+    setIsAddBranchDialogOpen(false);
+    // 重設表單
+    setNewBranch({
+      name: '',
+      code: '',
+      type: 'branch',
+      address: '',
+      phone: '',
+      email: '',
+      manager_name: '',
+      manager_contact: '',
+      business_license: ''
+    });
   };
 
   return (
-    <Dialog open={isAddBranchDialogOpen} onOpenChange={setIsAddBranchDialogOpen}>
-      <DialogTrigger asChild>
-        <Button className="flex items-center">
-          <Plus className="h-4 w-4 mr-1" />
-          新增營業處
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+    <Dialog open={isAddBranchDialogOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>新增營業處</DialogTitle>
         </DialogHeader>
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -155,7 +226,7 @@ const AddBranchDialog = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setIsAddBranchDialogOpen(false)}
+              onClick={handleClose}
             >
               取消
             </Button>

@@ -1,6 +1,5 @@
 
 import React, { useEffect } from 'react';
-import Header from '@/components/Header';
 import WelcomeSection from '@/components/WelcomeSection';
 import FeatureCards from '@/components/FeatureCards';
 import LocationCheckIn from '@/components/LocationCheckIn';
@@ -40,8 +39,6 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <Header />
-      
       <main className="flex-1 flex flex-col">
         <WelcomeSection userName={currentUser?.name || '訪客'} />
         

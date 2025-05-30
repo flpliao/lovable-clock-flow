@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Company } from '@/types/company';
 
@@ -18,15 +17,30 @@ export class CompanyApiService {
         .eq('id', specificCompanyId)
         .maybeSingle();
 
+      if (specificError) {
+        console.error('❌ CompanyApiService: 查詢指定ID公司資料時發生錯誤:', specificError);
+      }
+
       if (!specificError && specificCompany) {
         console.log('✅ CompanyApiService: 成功載入指定ID的公司資料:', specificCompany);
         return specificCompany as Company;
       }
 
       // 如果指定ID不存在，創建預設公司資料
-      console.log('🔧 CompanyApiService: 指定ID不存在，創建預設公司資料...');
+      console.log('🔧 CompanyApiService: 指定ID不存在，創建依美琦股份有限公司資料...');
+      return await this.createDefaultCompany(specificCompanyId);
+
+    } catch (error) {
+      console.error('💥 CompanyApiService: 載入公司資料時發生錯誤:', error);
+      return await this.loadFirstAvailableCompany();
+    }
+  }
+
+  // 創建預設的依美琦股份有限公司資料
+  private static async createDefaultCompany(companyId: string): Promise<Company | null> {
+    try {
       const defaultCompanyData = {
-        id: specificCompanyId,
+        id: companyId,
         name: '依美琦股份有限公司',
         registration_number: '53907735',
         address: '台北市中山區建國北路二段145號3樓',
@@ -41,6 +55,8 @@ export class CompanyApiService {
         updated_at: new Date().toISOString()
       };
 
+      console.log('📝 CompanyApiService: 準備插入依美琦股份有限公司資料:', defaultCompanyData);
+
       const { data: newCompany, error: insertError } = await supabase
         .from('companies')
         .insert(defaultCompanyData)
@@ -48,16 +64,29 @@ export class CompanyApiService {
         .single();
 
       if (insertError) {
-        console.error('❌ CompanyApiService: 創建預設公司資料失敗:', insertError);
-        // 如果創建失敗，嘗試載入第一個可用的公司
+        console.error('❌ CompanyApiService: 創建依美琦股份有限公司資料失敗:', insertError);
+        // 如果因為ID衝突等原因失敗，嘗試載入現有資料
+        if (insertError.code === '23505') { // 唯一性約束違反
+          console.log('🔄 CompanyApiService: ID已存在，嘗試重新載入...');
+          const { data: existingCompany } = await supabase
+            .from('companies')
+            .select('*')
+            .eq('id', companyId)
+            .maybeSingle();
+          
+          if (existingCompany) {
+            console.log('✅ CompanyApiService: 找到現有公司資料:', existingCompany);
+            return existingCompany as Company;
+          }
+        }
         return await this.loadFirstAvailableCompany();
       }
 
-      console.log('✅ CompanyApiService: 成功創建預設公司資料:', newCompany);
+      console.log('✅ CompanyApiService: 成功創建依美琦股份有限公司資料:', newCompany);
       return newCompany as Company;
 
     } catch (error) {
-      console.error('💥 CompanyApiService: 載入公司資料時發生錯誤:', error);
+      console.error('💥 CompanyApiService: 創建預設公司資料時發生錯誤:', error);
       return await this.loadFirstAvailableCompany();
     }
   }

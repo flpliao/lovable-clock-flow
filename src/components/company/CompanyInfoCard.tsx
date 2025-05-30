@@ -30,7 +30,7 @@ const CompanyInfoCard = () => {
           <CardDescription>
             <div className="text-blue-600 font-medium flex items-center">
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              正在載入公司資料...
+              正在載入依美琦股份有限公司資料...
             </div>
           </CardDescription>
         </CardHeader>
@@ -38,6 +38,7 @@ const CompanyInfoCard = () => {
           <div className="text-center py-8">
             <Loader2 className="h-16 w-16 mx-auto text-blue-500 mb-4 animate-spin" />
             <p className="text-gray-500">正在從資料庫載入公司資料...</p>
+            <p className="text-xs text-gray-400 mt-2">如果是首次使用，系統將自動建立依美琦股份有限公司資料</p>
           </div>
         </CardContent>
       </Card>
@@ -56,14 +57,15 @@ const CompanyInfoCard = () => {
           <CardDescription>
             <div className="text-orange-600 font-medium flex items-center">
               <AlertCircle className="h-4 w-4 mr-2" />
-              尚未建立公司資料
+              系統正在準備依美琦股份有限公司資料
             </div>
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <Building2 className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 mb-4">系統中尚未建立公司基本資料</p>
+            <p className="text-gray-500 mb-2">系統正在初始化依美琦股份有限公司基本資料</p>
+            <p className="text-xs text-gray-400 mb-4">請稍等片刻或點擊重新載入</p>
             <div className="flex gap-2 justify-center">
               <Button 
                 onClick={loadCompany}
@@ -79,7 +81,7 @@ const CompanyInfoCard = () => {
                   size="sm"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  建立公司資料
+                  手動建立公司資料
                 </Button>
               )}
             </div>

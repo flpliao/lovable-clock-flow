@@ -35,4 +35,5 @@ export interface DepartmentManagementContextType {
   handleEditDepartment: () => void;
   handleDeleteDepartment: (id: string) => void;
   openEditDialog: (department: Department) => void;
+  refreshDepartments: () => Promise<void>;
 }

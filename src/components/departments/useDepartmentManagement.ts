@@ -15,7 +15,8 @@ export const useDepartmentManagement = () => {
     loading,
     addDepartment: supabaseAddDepartment,
     updateDepartment: supabaseUpdateDepartment,
-    deleteDepartment: supabaseDeleteDepartment
+    deleteDepartment: supabaseDeleteDepartment,
+    refreshDepartments
   } = useSupabaseDepartmentOperations();
 
   const {
@@ -92,6 +93,7 @@ export const useDepartmentManagement = () => {
     handleAddDepartment,
     handleEditDepartment,
     handleDeleteDepartment,
-    openEditDialog
+    openEditDialog,
+    refreshDepartments
   };
 };

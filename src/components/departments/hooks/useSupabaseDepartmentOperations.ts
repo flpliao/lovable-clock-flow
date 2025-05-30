@@ -14,11 +14,20 @@ export const useSupabaseDepartmentOperations = () => {
   // 從 Supabase 載入部門資料
   const loadDepartments = async () => {
     try {
+      console.log('🔄 正在從 Supabase 載入部門資料...');
       setLoading(true);
       const data = await departmentApiService.loadDepartments();
+      console.log('✅ 成功載入部門資料:', data);
       setDepartments(data);
+      
+      if (data && data.length > 0) {
+        toast({
+          title: "載入成功",
+          description: `已載入 ${data.length} 個部門/門市`,
+        });
+      }
     } catch (error) {
-      console.error('載入部門資料發生錯誤:', error);
+      console.error('❌ 載入部門資料發生錯誤:', error);
       toast({
         title: "載入錯誤",
         description: "載入部門資料時發生錯誤",
@@ -48,6 +57,9 @@ export const useSupabaseDepartmentOperations = () => {
         title: "新增成功",
         description: `已成功新增 ${transformedData.name} 至部門/門市列表`
       });
+      
+      // 重新載入確保同步
+      await loadDepartments();
       
       return true;
     } catch (error) {
@@ -82,6 +94,9 @@ export const useSupabaseDepartmentOperations = () => {
         title: "更新成功",
         description: `已成功更新 ${transformedData.name} 的資料`
       });
+      
+      // 重新載入確保同步
+      await loadDepartments();
       
       return true;
     } catch (error) {
@@ -126,6 +141,9 @@ export const useSupabaseDepartmentOperations = () => {
         description: "已成功從列表中移除該部門/門市"
       });
       
+      // 重新載入確保同步
+      await loadDepartments();
+      
       return true;
     } catch (error) {
       console.error('刪除部門發生錯誤:', error);
@@ -138,8 +156,15 @@ export const useSupabaseDepartmentOperations = () => {
     }
   };
 
+  // 刷新資料
+  const refreshDepartments = async () => {
+    console.log('🔄 手動刷新部門資料...');
+    await loadDepartments();
+  };
+
   // 組件載入時自動載入資料
   useEffect(() => {
+    console.log('📋 DepartmentOperations: 初始化載入部門資料...');
     loadDepartments();
   }, []);
 
@@ -149,6 +174,7 @@ export const useSupabaseDepartmentOperations = () => {
     loadDepartments,
     addDepartment,
     updateDepartment,
-    deleteDepartment
+    deleteDepartment,
+    refreshDepartments
   };
 };

@@ -24,6 +24,15 @@ export const useSupabaseDepartmentOperations = () => {
     updated_at: dbData.updated_at
   });
 
+  // 將前端格式轉換為 Supabase 資料格式
+  const transformToDbFormat = (frontendData: NewDepartment) => ({
+    name: frontendData.name,
+    type: frontendData.type,
+    location: frontendData.location,
+    manager_name: frontendData.managerName,
+    manager_contact: frontendData.managerContact
+  });
+
   // 從 Supabase 載入部門資料
   const loadDepartments = async () => {
     try {
@@ -75,9 +84,11 @@ export const useSupabaseDepartmentOperations = () => {
     try {
       console.log('正在新增部門:', newDepartment);
       
+      const dbData = transformToDbFormat(newDepartment);
+      
       const { data, error } = await supabase
         .from('departments')
-        .insert([newDepartment])
+        .insert([dbData])
         .select()
         .single();
 

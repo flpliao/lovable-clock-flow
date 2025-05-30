@@ -8,15 +8,15 @@ export class CompanyDataInitializer {
     return {
       id: companyId,
       name: '依美琦股份有限公司',
-      registration_number: '53907735', // 修正為正確的統一編號
-      address: '台北市中山區建國北路二段145號3樓', // 修正為正確地址
-      phone: '02-2542-9999', // 修正為正確電話
+      registration_number: '53907735',
+      address: '台北市中山區建國北路二段145號3樓',
+      phone: '02-2542-9999',
       email: 'service@j-image.com.tw',
       website: 'https://web.sharing.tw',
       business_type: '資訊軟體服務業',
       legal_representative: '廖俊雄',
       established_date: '2015-05-27',
-      capital: 5000000, // 確保為正確的資本額數字
+      capital: 5000000,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -27,6 +27,20 @@ export class CompanyDataInitializer {
     try {
       console.log('🔧 CompanyDataInitializer: 創建依美琦股份有限公司資料...', { companyId });
       
+      // 先刪除可能存在的舊資料（如果有的話）
+      try {
+        const existingCompany = await CompanyRepository.findById(companyId);
+        if (existingCompany) {
+          console.log('⚠️ CompanyDataInitializer: 發現現有公司資料，將使用更新方式');
+          const updatedData = this.getDefaultCompanyData(companyId);
+          const updatedCompany = await CompanyRepository.update(companyId, updatedData);
+          console.log('✅ CompanyDataInitializer: 成功更新公司資料:', updatedCompany);
+          return updatedCompany;
+        }
+      } catch (updateError) {
+        console.log('🔄 CompanyDataInitializer: 更新失敗，嘗試創建新資料');
+      }
+
       const defaultCompanyData = this.getDefaultCompanyData(companyId);
       console.log('📝 CompanyDataInitializer: 準備插入資料:', defaultCompanyData);
 
@@ -52,18 +66,6 @@ export class CompanyDataInitializer {
         }
       }
       
-      // 最後嘗試載入任何可用的公司資料
-      try {
-        console.log('🔄 CompanyDataInitializer: 嘗試載入第一個可用的公司...');
-        const firstCompany = await CompanyRepository.findFirstAvailable();
-        if (firstCompany) {
-          console.log('✅ CompanyDataInitializer: 載入到備用公司資料:', firstCompany.name);
-          return firstCompany;
-        }
-      } catch (fallbackError) {
-        console.error('❌ CompanyDataInitializer: 載入備用公司資料也失敗:', fallbackError);
-      }
-      
       return null;
     }
   }
@@ -77,7 +79,19 @@ export class CompanyDataInitializer {
       const existingCompany = await CompanyRepository.findById(companyId);
       if (existingCompany) {
         console.log('✅ CompanyDataInitializer: 找到現有公司資料:', existingCompany.name);
-        return existingCompany;
+        
+        // 驗證現有資料是否正確
+        if (this.validateCompanyData(existingCompany)) {
+          console.log('✅ CompanyDataInitializer: 現有資料驗證通過');
+          return existingCompany;
+        } else {
+          console.log('⚠️ CompanyDataInitializer: 現有資料不完整，需要更新');
+          // 更新為正確的資料
+          const correctData = this.getDefaultCompanyData(companyId);
+          const updatedCompany = await CompanyRepository.update(companyId, correctData);
+          console.log('✅ CompanyDataInitializer: 成功更新公司資料');
+          return updatedCompany;
+        }
       }
       
       // 如果不存在，創建新的
@@ -86,16 +100,27 @@ export class CompanyDataInitializer {
       
     } catch (error) {
       console.error('❌ CompanyDataInitializer: 檢查公司資料時發生錯誤:', error);
-      
-      // 最後的備用方案：載入任何可用的公司
-      try {
-        console.log('🔄 CompanyDataInitializer: 執行最終備用方案...');
-        return await CompanyRepository.findFirstAvailable();
-      } catch (finalError) {
-        console.error('❌ CompanyDataInitializer: 所有方案都失敗:', finalError);
-        return null;
+      return null;
+    }
+  }
+
+  // 驗證公司資料完整性
+  private static validateCompanyData(company: Company): boolean {
+    const requiredData = {
+      name: '依美琦股份有限公司',
+      registration_number: '53907735',
+      address: '台北市中山區建國北路二段145號3樓',
+      legal_representative: '廖俊雄'
+    };
+
+    for (const [field, expectedValue] of Object.entries(requiredData)) {
+      if (company[field as keyof Company] !== expectedValue) {
+        console.log(`⚠️ 欄位 ${field} 不正確: ${company[field as keyof Company]} (期望: ${expectedValue})`);
+        return false;
       }
     }
+
+    return true;
   }
 
   // 直接創建新公司 - 用於手動建立

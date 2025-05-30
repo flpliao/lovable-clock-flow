@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Edit, MapPin, Phone, Mail, Loader2, RefreshCw, AlertCircle, Plus, CheckCircle } from 'lucide-react';
+import { Building2, Edit, MapPin, Phone, Mail, Loader2, RefreshCw, AlertCircle, Plus, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useUser } from '@/contexts/UserContext';
 import { useCompanyOperations } from './hooks/useCompanyOperations';
@@ -21,6 +21,15 @@ const CompanyInfoCard = () => {
 
   // 檢查資料是否同步
   const isDataSynced = CompanyApiService.isDataSynced(company);
+
+  // 強制重新初始化
+  const handleForceReinitialize = async () => {
+    console.log('🔄 強制重新初始化公司資料...');
+    const result = await CompanyApiService.forceReinitialize();
+    if (result) {
+      await loadCompany();
+    }
+  };
 
   // 如果正在載入
   if (loading) {
@@ -85,6 +94,14 @@ const CompanyInfoCard = () => {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 重新載入
               </Button>
+              <Button 
+                onClick={handleForceReinitialize}
+                variant="outline"
+                size="sm"
+              >
+                <AlertTriangle className="h-4 w-4 mr-2" />
+                強制初始化
+              </Button>
               {canEdit && (
                 <Button 
                   onClick={() => setIsEditCompanyDialogOpen(true)}
@@ -114,8 +131,9 @@ const CompanyInfoCard = () => {
                 已同步
               </span>
             ) : (
-              <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                資料已載入
+              <span className="ml-2 text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full flex items-center">
+                <AlertCircle className="h-3 w-3 mr-1" />
+                未同步
               </span>
             )}
           </CardTitle>
@@ -123,7 +141,11 @@ const CompanyInfoCard = () => {
             <div>管理公司基本資訊與統一編號等法定資料</div>
             <div className="text-xs text-gray-400 mt-1">
               公司ID: {company.id}
-              {isDataSynced && <span className="text-green-600 ml-2">✓ 與後台同步</span>}
+              {isDataSynced ? (
+                <span className="text-green-600 ml-2">✓ 與後台同步</span>
+              ) : (
+                <span className="text-red-600 ml-2">✗ 資料不同步</span>
+              )}
             </div>
           </CardDescription>
         </div>
@@ -136,6 +158,16 @@ const CompanyInfoCard = () => {
             <RefreshCw className="h-4 w-4 mr-1" />
             重新載入
           </Button>
+          {!isDataSynced && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleForceReinitialize}
+            >
+              <AlertTriangle className="h-4 w-4 mr-1" />
+              修復同步
+            </Button>
+          )}
           {canEdit && (
             <Button 
               variant="outline" 
@@ -157,8 +189,10 @@ const CompanyInfoCard = () => {
               <div className="flex items-center">
                 <span className="font-medium w-20">統一編號:</span>
                 <span>{company.registration_number}</span>
-                {company.registration_number === '53907735' && (
+                {company.registration_number === '53907735' ? (
                   <span className="ml-2 text-xs text-green-600">✓</span>
+                ) : (
+                  <span className="ml-2 text-xs text-red-600">✗</span>
                 )}
               </div>
               <div className="flex items-center">
@@ -187,8 +221,10 @@ const CompanyInfoCard = () => {
             <div className="flex items-start">
               <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
               <span>{company.address}</span>
-              {company.address.includes('台北市中山區建國北路') && (
+              {company.address.includes('台北市中山區建國北路') ? (
                 <span className="ml-2 text-xs text-green-600">✓</span>
+              ) : (
+                <span className="ml-2 text-xs text-red-600">✗</span>
               )}
             </div>
             <div className="flex items-center">
@@ -217,8 +253,10 @@ const CompanyInfoCard = () => {
         <div className="mt-4 pt-4 border-t">
           <div className="text-xs text-gray-500 flex justify-between">
             <span>最後更新: {company.updated_at ? new Date(company.updated_at).toLocaleString('zh-TW') : '未知'}</span>
-            {isDataSynced && (
+            {isDataSynced ? (
               <span className="text-green-600">前後台資料已同步</span>
+            ) : (
+              <span className="text-red-600">前後台資料未同步</span>
             )}
           </div>
         </div>

@@ -18,42 +18,58 @@ export class CompanyApiService {
       
       if (company) {
         console.log('✅ CompanyApiService: 成功載入現有公司資料:', company.name);
-        return company;
+        // 驗證資料完整性
+        if (this.validateCompanyData(company)) {
+          return company;
+        } else {
+          console.log('⚠️ CompanyApiService: 公司資料不完整，需要更新');
+        }
       }
 
-      // 2. 如果找不到，創建新的預設公司資料
-      console.log('🔧 CompanyApiService: 找不到指定公司，開始創建預設資料...');
-      company = await CompanyDataInitializer.createDefaultCompany(this.SPECIFIC_COMPANY_ID);
+      // 2. 如果找不到或資料不完整，創建新的預設公司資料
+      console.log('🔧 CompanyApiService: 創建或更新公司資料...');
+      company = await CompanyDataInitializer.ensureCompanyExists(this.SPECIFIC_COMPANY_ID);
       
       if (company) {
-        console.log('✅ CompanyApiService: 成功創建並載入預設公司資料:', company.name);
+        console.log('✅ CompanyApiService: 成功確保公司資料存在:', company.name);
         return company;
       }
 
-      // 3. 如果創建失敗，嘗試載入任何可用的公司
-      console.log('🔄 CompanyApiService: 創建失敗，嘗試載入任何可用公司...');
-      company = await CompanyRepository.findFirstAvailable();
-      
-      if (company) {
-        console.log('✅ CompanyApiService: 載入到替代公司資料:', company.name);
-        return company;
-      }
-
-      console.log('❌ CompanyApiService: 完全找不到公司資料');
+      console.log('❌ CompanyApiService: 無法創建或載入公司資料');
       return null;
 
     } catch (error) {
       console.error('💥 CompanyApiService: 載入公司資料時發生錯誤:', error);
-      
-      // 最後的備用方案
-      try {
-        console.log('🔄 CompanyApiService: 執行最終備用方案...');
-        return await CompanyRepository.findFirstAvailable();
-      } catch (fallbackError) {
-        console.error('💥 CompanyApiService: 所有載入方案都失敗:', fallbackError);
-        return null;
+      return null;
+    }
+  }
+
+  // 驗證公司資料完整性
+  private static validateCompanyData(company: Company): boolean {
+    const requiredFields = ['name', 'registration_number', 'address', 'phone', 'email'];
+    const expectedValues = {
+      name: '依美琦股份有限公司',
+      registration_number: '53907735',
+      address: '台北市中山區建國北路二段145號3樓'
+    };
+
+    // 檢查必填欄位
+    for (const field of requiredFields) {
+      if (!company[field as keyof Company]) {
+        console.log(`⚠️ CompanyApiService: 缺少必填欄位: ${field}`);
+        return false;
       }
     }
+
+    // 檢查關鍵欄位是否正確
+    for (const [field, expectedValue] of Object.entries(expectedValues)) {
+      if (company[field as keyof Company] !== expectedValue) {
+        console.log(`⚠️ CompanyApiService: 欄位 ${field} 值不正確: ${company[field as keyof Company]} (期望: ${expectedValue})`);
+        return false;
+      }
+    }
+
+    return true;
   }
 
   // 更新或新建公司資料
@@ -91,6 +107,23 @@ export class CompanyApiService {
 
   // 檢查資料是否同步
   static isDataSynced(company: Company | null): boolean {
-    return company?.id === this.SPECIFIC_COMPANY_ID;
+    if (!company) return false;
+    
+    const isIdCorrect = company.id === this.SPECIFIC_COMPANY_ID;
+    const isDataValid = this.validateCompanyData(company);
+    
+    console.log('🔍 CompanyApiService: 同步檢查 - ID正確:', isIdCorrect, '資料有效:', isDataValid);
+    return isIdCorrect && isDataValid;
+  }
+
+  // 強制重新初始化公司資料
+  static async forceReinitialize(): Promise<Company | null> {
+    console.log('🔄 CompanyApiService: 強制重新初始化公司資料...');
+    try {
+      return await CompanyDataInitializer.createDefaultCompany(this.SPECIFIC_COMPANY_ID);
+    } catch (error) {
+      console.error('❌ CompanyApiService: 強制重新初始化失敗:', error);
+      return null;
+    }
   }
 }

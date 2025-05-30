@@ -16,28 +16,12 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   }
 });
 
-// 為模擬系統設置虛擬身份驗證
+// 簡化的模擬身份驗證函數
 export const ensureUserAuthenticated = async () => {
   try {
-    console.log('設置模擬身份驗證 - 廖俊雄');
+    console.log('模擬身份驗證 - 廖俊雄已登入');
     
-    // 設置模擬的身份驗證狀態
-    const mockAuthState = {
-      access_token: 'mock-token',
-      token_type: 'bearer',
-      expires_in: 3600,
-      refresh_token: 'mock-refresh-token',
-      user: {
-        id: '550e8400-e29b-41d4-a716-446655440001',
-        aud: 'authenticated',
-        role: 'authenticated',
-        email: 'admin@example.com',
-        user_metadata: {},
-        app_metadata: {}
-      }
-    };
-
-    // 確保廖俊雄的員工記錄存在
+    // 檢查廖俊雄的員工記錄是否存在
     const { data: existingStaff, error: checkError } = await supabase
       .from('staff')
       .select('*')
@@ -46,78 +30,17 @@ export const ensureUserAuthenticated = async () => {
 
     if (checkError) {
       console.error('檢查員工記錄錯誤:', checkError);
-      return false;
     }
 
-    if (!existingStaff) {
-      console.log('創建廖俊雄的員工記錄...');
-      
-      // 首先確保有一個預設的分支
-      const { data: branch, error: branchError } = await supabase
-        .from('branches')
-        .select('id')
-        .limit(1)
-        .maybeSingle();
-
-      if (branchError) {
-        console.error('檢查分支錯誤:', branchError);
-        return false;
-      }
-
-      let branchId = branch?.id;
-      
-      if (!branchId) {
-        // 創建預設分支
-        const { data: newBranch, error: createBranchError } = await supabase
-          .from('branches')
-          .insert({
-            name: '總公司',
-            code: 'HQ001',
-            type: '總部',
-            address: '台北市信義區',
-            phone: '02-12345678',
-            company_id: '00000000-0000-0000-0000-000000000001'
-          })
-          .select()
-          .single();
-
-        if (createBranchError) {
-          console.error('創建分支錯誤:', createBranchError);
-          return false;
-        }
-        
-        branchId = newBranch.id;
-      }
-
-      // 創建廖俊雄的員工記錄
-      const { error: insertError } = await supabase
-        .from('staff')
-        .insert({
-          id: '550e8400-e29b-41d4-a716-446655440001',
-          name: '廖俊雄',
-          position: '資深工程師',
-          department: '技術部',
-          branch_name: '總公司',
-          contact: 'admin@example.com',
-          role: 'admin',
-          role_id: 'admin',
-          email: 'admin@example.com',
-          branch_id: branchId
-        });
-
-      if (insertError) {
-        console.error('創建員工記錄錯誤:', insertError);
-        return false;
-      }
-      
-      console.log('✅ 廖俊雄員工記錄已創建');
-    } else {
+    if (existingStaff) {
       console.log('✅ 廖俊雄員工記錄已存在');
+      return true;
     }
-    
-    return true;
+
+    console.log('廖俊雄員工記錄不存在，需要手動創建');
+    return false;
   } catch (error) {
-    console.error('身份驗證設置失敗:', error);
+    console.error('身份驗證檢查失敗:', error);
     return false;
   }
 };

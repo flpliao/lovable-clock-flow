@@ -1,23 +1,16 @@
 
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase, ensureUserAuthenticated } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useStaffInitializer = () => {
   const { toast } = useToast();
 
   const initializeLiaoJunxiongStaff = async () => {
     try {
-      console.log('初始化廖俊雄員工記錄...');
+      console.log('檢查廖俊雄員工記錄...');
       
-      // 先設置身份驗證
-      const authSuccess = await ensureUserAuthenticated();
-      if (!authSuccess) {
-        console.error('身份驗證設置失敗');
-        return null;
-      }
-      
-      // 檢查廖俊雄的記錄是否存在
+      // 直接檢查廖俊雄的記錄是否存在
       const { data: existingStaff, error: checkError } = await supabase
         .from('staff')
         .select('*')

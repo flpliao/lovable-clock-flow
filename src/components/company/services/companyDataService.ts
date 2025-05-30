@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 export class CompanyDataService {
   private static readonly COMPANY_NAME = '依美琦股份有限公司';
   private static readonly COMPANY_REGISTRATION_NUMBER = '53907735';
-  private static readonly COMPANY_ID = '62a619a8-1a66-46f8-8125-4788248e033f';
+  private static readonly COMPANY_ID = '550e8400-e29b-41d4-a716-446655440000';
 
   // 增強的資料庫連線測試
   static async testConnection(): Promise<{ success: boolean; error?: string }> {

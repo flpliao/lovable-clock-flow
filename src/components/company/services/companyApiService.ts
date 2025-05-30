@@ -4,9 +4,9 @@ import { Company } from '@/types/company';
 import { CompanyDataService } from './companyDataService';
 
 export class CompanyApiService {
-  private static readonly COMPANY_ID = '62a619a8-1a66-46f8-8125-4788248e033f';
+  private static readonly COMPANY_ID = '550e8400-e29b-41d4-a716-446655440000';
   private static readonly STANDARD_COMPANY_DATA = {
-    id: '62a619a8-1a66-46f8-8125-4788248e033f',
+    id: '550e8400-e29b-41d4-a716-446655440000',
     name: '依美琦股份有限公司',
     registration_number: '53907735',
     legal_representative: '廖俊雄',

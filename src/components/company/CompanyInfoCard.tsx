@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Edit, MapPin, Phone, Mail, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
+import { Building2, Edit, MapPin, Phone, Mail, Loader2, RefreshCw, AlertCircle, Plus } from 'lucide-react';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useUser } from '@/contexts/UserContext';
 import { useCompanyOperations } from './hooks/useCompanyOperations';
@@ -13,8 +13,7 @@ const CompanyInfoCard = () => {
   const { isAdmin, currentUser } = useUser();
 
   console.log('CompanyInfoCard - 當前用戶:', currentUser?.name);
-  console.log('CompanyInfoCard - 指定ID公司資料:', company);
-  console.log('CompanyInfoCard - 載入狀態:', loading);
+  console.log('CompanyInfoCard - 公司資料載入狀態:', { company: company?.name, loading });
 
   // 允許廖俊雄和管理員編輯公司資料
   const canEdit = currentUser?.name === '廖俊雄' || isAdmin();
@@ -31,15 +30,14 @@ const CompanyInfoCard = () => {
           <CardDescription>
             <div className="text-blue-600 font-medium flex items-center">
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              正在載入指定ID的公司資料...
+              正在載入公司資料...
             </div>
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <Loader2 className="h-16 w-16 mx-auto text-blue-500 mb-4 animate-spin" />
-            <p className="text-gray-500">正在從資料庫載入指定ID的公司資料...</p>
-            <p className="text-xs text-gray-400 mt-2">公司ID: 550e8400-e29b-41d4-a716-446655440000</p>
+            <p className="text-gray-500">正在從資料庫載入公司資料...</p>
           </div>
         </CardContent>
       </Card>
@@ -58,15 +56,14 @@ const CompanyInfoCard = () => {
           <CardDescription>
             <div className="text-orange-600 font-medium flex items-center">
               <AlertCircle className="h-4 w-4 mr-2" />
-              找不到指定ID的公司資料
+              尚未建立公司資料
             </div>
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <Building2 className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 mb-2">指定ID的公司資料不存在</p>
-            <p className="text-xs text-gray-400 mb-4">公司ID: 550e8400-e29b-41d4-a716-446655440000</p>
+            <p className="text-gray-500 mb-4">系統中尚未建立公司基本資料</p>
             <div className="flex gap-2 justify-center">
               <Button 
                 onClick={loadCompany}
@@ -81,7 +78,7 @@ const CompanyInfoCard = () => {
                   onClick={() => setIsEditCompanyDialogOpen(true)}
                   size="sm"
                 >
-                  <Building2 className="h-4 w-4 mr-2" />
+                  <Plus className="h-4 w-4 mr-2" />
                   建立公司資料
                 </Button>
               )}
@@ -100,7 +97,7 @@ const CompanyInfoCard = () => {
             <Building2 className="h-6 w-6 mr-2" />
             公司基本資料
             <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-              指定ID資料載入成功
+              已載入
             </span>
           </CardTitle>
           <CardDescription>

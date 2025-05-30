@@ -2,15 +2,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { Company } from '@/types/company';
 
 export class CompanyApiService {
-  // 載入公司資料 - 改為載入第一個可用的公司
+  // 載入公司資料 - 優先載入指定ID，不存在則創建
   static async loadCompany(): Promise<Company | null> {
     console.log('🔍 CompanyApiService: 開始從資料庫查詢公司資料...');
     
     try {
-      // 先嘗試查詢指定ID的公司資料
       const specificCompanyId = '550e8400-e29b-41d4-a716-446655440000';
       console.log('🎯 CompanyApiService: 優先載入指定ID的公司資料:', specificCompanyId);
       
+      // 先嘗試查詢指定ID的公司資料
       const { data: specificCompany, error: specificError } = await supabase
         .from('companies')
         .select('*')
@@ -22,8 +22,49 @@ export class CompanyApiService {
         return specificCompany as Company;
       }
 
-      // 如果指定ID不存在，載入第一個可用的公司
-      console.log('🔄 CompanyApiService: 指定ID不存在，載入第一個可用的公司...');
+      // 如果指定ID不存在，創建預設公司資料
+      console.log('🔧 CompanyApiService: 指定ID不存在，創建預設公司資料...');
+      const defaultCompanyData = {
+        id: specificCompanyId,
+        name: '阿波羅科技股份有限公司',
+        registration_number: '12345678',
+        address: '台北市信義區信義路五段7號',
+        phone: '02-2345-6789',
+        email: 'info@apollo-tech.com.tw',
+        website: 'https://apollo-tech.com.tw',
+        business_type: '軟體開發、系統整合',
+        legal_representative: '廖俊雄',
+        established_date: '2020-01-01',
+        capital: 10000000,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data: newCompany, error: insertError } = await supabase
+        .from('companies')
+        .insert(defaultCompanyData)
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('❌ CompanyApiService: 創建預設公司資料失敗:', insertError);
+        // 如果創建失敗，嘗試載入第一個可用的公司
+        return await this.loadFirstAvailableCompany();
+      }
+
+      console.log('✅ CompanyApiService: 成功創建預設公司資料:', newCompany);
+      return newCompany as Company;
+
+    } catch (error) {
+      console.error('💥 CompanyApiService: 載入公司資料時發生錯誤:', error);
+      return await this.loadFirstAvailableCompany();
+    }
+  }
+
+  // 載入第一個可用的公司作為備用方案
+  private static async loadFirstAvailableCompany(): Promise<Company | null> {
+    try {
+      console.log('🔄 CompanyApiService: 載入第一個可用的公司...');
       const { data: firstCompany, error: firstError } = await supabase
         .from('companies')
         .select('*')
@@ -31,7 +72,7 @@ export class CompanyApiService {
         .maybeSingle();
 
       if (firstError) {
-        console.error('❌ CompanyApiService: 查詢公司資料錯誤:', firstError);
+        console.error('❌ CompanyApiService: 查詢第一個公司資料錯誤:', firstError);
         return null;
       }
       
@@ -43,7 +84,7 @@ export class CompanyApiService {
         return null;
       }
     } catch (error) {
-      console.error('💥 CompanyApiService: 載入公司資料時發生錯誤:', error);
+      console.error('💥 CompanyApiService: 載入第一個公司資料時發生錯誤:', error);
       return null;
     }
   }

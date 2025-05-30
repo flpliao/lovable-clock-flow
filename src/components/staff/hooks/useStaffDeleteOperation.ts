@@ -14,24 +14,38 @@ export const useStaffDeleteOperation = (
   const { getErrorMessage } = useStaffValidation();
 
   const deleteStaff = async (id: string): Promise<boolean> => {
-    // 暫時移除管理員檢查，讓廖俊雄可以直接操作
-    console.log('刪除員工，當前用戶可直接操作');
+    // 檢查權限
+    if (!isAdmin() && currentUser?.name !== '廖俊雄') {
+      toast({
+        title: "權限不足",
+        description: "只有管理員可以刪除員工資料",
+        variant: "destructive"
+      });
+      return false;
+    }
 
     if (!currentUser?.id) {
-      console.log('用戶未登入，但允許繼續操作');
+      toast({
+        title: "刪除失敗",
+        description: "無法確認用戶身份",
+        variant: "destructive"
+      });
+      return false;
     }
 
     try {
+      console.log('🗑️ 刪除員工，ID:', id, '操作者:', currentUser.name);
+      
       await StaffApiService.deleteStaff(id);
       setStaffList(staffList.filter(staff => staff.id !== id));
       
       toast({
         title: "刪除成功",
-        description: "已成功刪除該員工"
+        description: "已成功刪除該員工及相關資料"
       });
       return true;
     } catch (error) {
-      console.error('刪除員工失敗:', error);
+      console.error('❌ 刪除員工失敗:', error);
       
       toast({
         title: "刪除失敗",

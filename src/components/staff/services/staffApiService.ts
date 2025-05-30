@@ -11,10 +11,7 @@ export class StaffApiService {
       .single();
 
     if (error) {
-      // 暫時忽略權限錯誤，提供友善訊息
-      if (error.message.includes('PGRST301') || error.message.includes('policy') || error.message.includes('RLS')) {
-        throw new Error('目前系統正在設定權限，請稍後再試或聯繫管理員');
-      }
+      console.error('❌ Supabase 新增錯誤:', error);
       throw error;
     }
 
@@ -33,10 +30,7 @@ export class StaffApiService {
       .single();
 
     if (error) {
-      console.error('Supabase 更新錯誤:', error);
-      if (error.message.includes('PGRST301') || error.message.includes('policy') || error.message.includes('RLS')) {
-        throw new Error('目前系統正在設定權限，請稍後再試或聯繫管理員');
-      }
+      console.error('❌ Supabase 更新錯誤:', error);
       throw error;
     }
 
@@ -44,16 +38,18 @@ export class StaffApiService {
   }
 
   static async deleteStaff(id: string): Promise<void> {
+    console.log('🗑️ StaffApiService: 刪除員工，ID:', id);
+    
     const { error } = await supabase
       .from('staff')
       .delete()
       .eq('id', id);
 
     if (error) {
-      if (error.message.includes('PGRST301') || error.message.includes('policy') || error.message.includes('RLS')) {
-        throw new Error('目前系統正在設定權限，請稍後再試或聯繫管理員');
-      }
+      console.error('❌ StaffApiService: 刪除失敗:', error);
       throw error;
     }
+
+    console.log('✅ StaffApiService: 員工刪除成功');
   }
 }

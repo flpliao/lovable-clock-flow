@@ -1,92 +1,128 @@
 
 import React from 'react';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Edit2, Trash2, Building, Store, Loader2 } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
-import { useDepartmentManagementContext } from './DepartmentManagementContext';
 import { Badge } from '@/components/ui/badge';
+import { Pencil, Trash2, Building } from 'lucide-react';
+import { useDepartmentManagement } from './useDepartmentManagement';
+import { useUser } from '@/contexts/UserContext';
 
 const DepartmentTable = () => {
+  const { 
+    filteredDepartments, 
+    openEditDialog, 
+    handleDeleteDepartment 
+  } = useDepartmentManagement();
+  
   const { isAdmin } = useUser();
-  const { filteredDepartments, loading, openEditDialog, handleDeleteDepartment } = useDepartmentManagementContext();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-32">
-        <Loader2 className="h-6 w-6 animate-spin" />
-        <span className="ml-2">載入部門資料中...</span>
-      </div>
-    );
-  }
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'headquarters':
+        return '總部';
+      case 'branch':
+        return '分部';
+      case 'store':
+        return '門市';
+      default:
+        return type;
+    }
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'headquarters':
+        return 'bg-blue-100 text-blue-800';
+      case 'branch':
+        return 'bg-green-100 text-green-800';
+      case 'store':
+        return 'bg-orange-100 text-orange-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>名稱</TableHead>
-          <TableHead>類型</TableHead>
-          <TableHead>地點</TableHead>
-          <TableHead>負責人</TableHead>
-          <TableHead>聯絡方式</TableHead>
-          <TableHead>人數</TableHead>
-          {isAdmin() && <TableHead className="text-right">操作</TableHead>}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {filteredDepartments.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={isAdmin() ? 7 : 6} className="h-24 text-center">
-              目前沒有部門/門市資料
-            </TableCell>
-          </TableRow>
-        ) : (
-          filteredDepartments.map((department) => (
-            <TableRow key={department.id}>
-              <TableCell className="font-medium">{department.name}</TableCell>
-              <TableCell>
-                <Badge className={department.type === 'department' ? 'bg-blue-500' : 'bg-emerald-500'}>
-                  {department.type === 'department' ? (
-                    <><Building className="h-3 w-3 mr-1" /> 部門</>
-                  ) : (
-                    <><Store className="h-3 w-3 mr-1" /> 門市</>
+    <div className="rounded-md border overflow-hidden">
+      {filteredDepartments.length > 0 ? (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="h-7">
+                <TableHead className="text-xs font-medium py-1">部門</TableHead>
+                <TableHead className="text-xs font-medium py-1">類型</TableHead>
+                <TableHead className="text-xs font-medium py-1 hidden sm:table-cell">地點</TableHead>
+                <TableHead className="text-xs font-medium py-1 hidden md:table-cell">負責人</TableHead>
+                <TableHead className="text-xs font-medium py-1">人數</TableHead>
+                {isAdmin() && <TableHead className="text-xs font-medium py-1">操作</TableHead>}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredDepartments.map((department) => (
+                <TableRow key={department.id} className="h-8">
+                  <TableCell className="font-medium text-xs py-1">
+                    <div className="flex items-center">
+                      <Building className="h-3 w-3 mr-1 text-gray-500" />
+                      {department.name}
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-1">
+                    <Badge className={`text-xs px-1 py-0 ${getTypeColor(department.type)}`}>
+                      {getTypeLabel(department.type)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-xs py-1 hidden sm:table-cell">
+                    {department.location || '未設定'}
+                  </TableCell>
+                  <TableCell className="text-xs py-1 hidden md:table-cell">
+                    {department.manager_name ? (
+                      <div>
+                        <div className="font-medium">{department.manager_name}</div>
+                        {department.manager_contact && (
+                          <div className="text-xs text-gray-500">{department.manager_contact}</div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">未設定</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-xs py-1">
+                    <span className="font-medium">{department.staff_count || 0}</span>
+                  </TableCell>
+                  {isAdmin() && (
+                    <TableCell className="py-1">
+                      <div className="flex items-center space-x-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => openEditDialog(department)}
+                          className="h-6 px-1 text-xs"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-red-500 hover:text-red-700 h-6 px-1 text-xs"
+                          onClick={() => handleDeleteDepartment(department.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   )}
-                </Badge>
-              </TableCell>
-              <TableCell>{department.location || '未設定'}</TableCell>
-              <TableCell>{department.managerName || '未指派'}</TableCell>
-              <TableCell>{department.managerContact || '未設定'}</TableCell>
-              <TableCell>{department.staffCount} 人</TableCell>
-              {isAdmin() && (
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => openEditDialog(department)}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteDepartment(department.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              )}
-            </TableRow>
-          ))
-        )}
-      </TableBody>
-    </Table>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      ) : (
+        <div className="p-4 text-center">
+          <Building className="h-12 w-12 mx-auto text-gray-300 mb-2" />
+          <p className="text-muted-foreground text-sm">尚未建立部門資料</p>
+        </div>
+      )}
+    </div>
   );
 };
 

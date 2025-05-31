@@ -48,33 +48,33 @@ const DepartmentTable = () => {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="h-7">
-                <TableHead className="text-xs font-medium py-1">部門</TableHead>
-                <TableHead className="text-xs font-medium py-1">類型</TableHead>
-                <TableHead className="text-xs font-medium py-1 hidden sm:table-cell">地點</TableHead>
-                <TableHead className="text-xs font-medium py-1 hidden md:table-cell">負責人</TableHead>
-                <TableHead className="text-xs font-medium py-1">人數</TableHead>
-                {isAdmin() && <TableHead className="text-xs font-medium py-1">操作</TableHead>}
+              <TableRow className="h-6">
+                <TableHead className="text-xs font-medium py-1 px-2">部門</TableHead>
+                <TableHead className="text-xs font-medium py-1 px-2">類型</TableHead>
+                <TableHead className="text-xs font-medium py-1 px-2 hidden sm:table-cell">地點</TableHead>
+                <TableHead className="text-xs font-medium py-1 px-2 hidden md:table-cell">負責人</TableHead>
+                <TableHead className="text-xs font-medium py-1 px-2">人數</TableHead>
+                {isAdmin() && <TableHead className="text-xs font-medium py-1 px-2">操作</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredDepartments.map((department) => (
-                <TableRow key={department.id} className="h-8">
-                  <TableCell className="font-medium text-xs py-1">
+                <TableRow key={department.id} className="h-7">
+                  <TableCell className="font-medium text-xs py-1 px-2">
                     <div className="flex items-center">
                       <Building className="h-3 w-3 mr-1 text-gray-500" />
                       {department.name}
                     </div>
                   </TableCell>
-                  <TableCell className="py-1">
+                  <TableCell className="py-1 px-2">
                     <Badge className={`text-xs px-1 py-0 ${getTypeColor(department.type)}`}>
                       {getTypeLabel(department.type)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-xs py-1 hidden sm:table-cell">
+                  <TableCell className="text-xs py-1 px-2 hidden sm:table-cell">
                     {department.location || '未設定'}
                   </TableCell>
-                  <TableCell className="text-xs py-1 hidden md:table-cell">
+                  <TableCell className="text-xs py-1 px-2 hidden md:table-cell">
                     {department.manager_name ? (
                       <div>
                         <div className="font-medium">{department.manager_name}</div>
@@ -86,24 +86,24 @@ const DepartmentTable = () => {
                       <span className="text-gray-400">未設定</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-xs py-1">
+                  <TableCell className="text-xs py-1 px-2">
                     <span className="font-medium">{department.staff_count || 0}</span>
                   </TableCell>
                   {isAdmin() && (
-                    <TableCell className="py-1">
+                    <TableCell className="py-1 px-2">
                       <div className="flex items-center space-x-1">
                         <Button 
                           variant="ghost" 
                           size="sm"
                           onClick={() => openEditDialog(department)}
-                          className="h-6 px-1 text-xs"
+                          className="h-5 px-1 text-xs"
                         >
                           <Pencil className="h-3 w-3" />
                         </Button>
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="text-red-500 hover:text-red-700 h-6 px-1 text-xs"
+                          className="text-red-500 hover:text-red-700 h-5 px-1 text-xs"
                           onClick={() => handleDeleteDepartment(department.id)}
                         >
                           <Trash2 className="h-3 w-3" />

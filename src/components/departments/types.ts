@@ -2,21 +2,21 @@
 export interface Department {
   id: string;
   name: string;
-  type: 'department' | 'store';
+  type: 'headquarters' | 'branch' | 'store';
   location?: string;
-  managerName?: string;
-  managerContact?: string;
-  staffCount: number;
+  manager_name?: string;
+  manager_contact?: string;
+  staff_count: number;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface NewDepartment {
   name: string;
-  type: 'department' | 'store';
+  type: 'headquarters' | 'branch' | 'store';
   location?: string;
-  managerName?: string;
-  managerContact?: string;
+  manager_name?: string;
+  manager_contact?: string;
 }
 
 export interface DepartmentManagementContextType {

@@ -7,9 +7,9 @@ export const transformDepartmentData = (dbData: any): Department => ({
   name: dbData.name,
   type: dbData.type,
   location: dbData.location,
-  managerName: dbData.manager_name,
-  managerContact: dbData.manager_contact,
-  staffCount: dbData.staff_count,
+  manager_name: dbData.manager_name,
+  manager_contact: dbData.manager_contact,
+  staff_count: dbData.staff_count,
   created_at: dbData.created_at,
   updated_at: dbData.updated_at
 });
@@ -19,6 +19,6 @@ export const transformToDbFormat = (frontendData: NewDepartment) => ({
   name: frontendData.name,
   type: frontendData.type,
   location: frontendData.location,
-  manager_name: frontendData.managerName,
-  manager_contact: frontendData.managerContact
+  manager_name: frontendData.manager_name,
+  manager_contact: frontendData.manager_contact
 });

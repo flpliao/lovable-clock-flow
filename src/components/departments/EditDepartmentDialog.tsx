@@ -27,7 +27,7 @@ const EditDepartmentDialog = () => {
   
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-      <DialogContent className="sm:max-w-[380px]">
+      <DialogContent className="sm:max-w-[320px]">
         <DialogHeader>
           <DialogTitle className="text-sm">編輯部門</DialogTitle>
           <DialogDescription className="text-xs">
@@ -44,7 +44,7 @@ const EditDepartmentDialog = () => {
               id="edit-name"
               value={currentDepartment.name}
               onChange={(e) => setCurrentDepartment({...currentDepartment, name: e.target.value})}
-              className="col-span-3 h-7 text-xs"
+              className="col-span-3 h-6 text-xs"
             />
           </div>
           
@@ -54,9 +54,9 @@ const EditDepartmentDialog = () => {
             </Label>
             <Select 
               value={currentDepartment.type} 
-              onValueChange={(value) => setCurrentDepartment({...currentDepartment, type: value})}
+              onValueChange={(value: 'headquarters' | 'branch' | 'store') => setCurrentDepartment({...currentDepartment, type: value})}
             >
-              <SelectTrigger className="col-span-3 h-7 text-xs" id="edit-type">
+              <SelectTrigger className="col-span-3 h-6 text-xs" id="edit-type">
                 <SelectValue placeholder="選擇類型" />
               </SelectTrigger>
               <SelectContent>
@@ -75,7 +75,7 @@ const EditDepartmentDialog = () => {
               id="edit-location"
               value={currentDepartment.location || ''}
               onChange={(e) => setCurrentDepartment({...currentDepartment, location: e.target.value})}
-              className="col-span-3 h-7 text-xs"
+              className="col-span-3 h-6 text-xs"
             />
           </div>
           
@@ -87,7 +87,7 @@ const EditDepartmentDialog = () => {
               id="edit-manager_name"
               value={currentDepartment.manager_name || ''}
               onChange={(e) => setCurrentDepartment({...currentDepartment, manager_name: e.target.value})}
-              className="col-span-3 h-7 text-xs"
+              className="col-span-3 h-6 text-xs"
             />
           </div>
           
@@ -99,14 +99,14 @@ const EditDepartmentDialog = () => {
               id="edit-manager_contact"
               value={currentDepartment.manager_contact || ''}
               onChange={(e) => setCurrentDepartment({...currentDepartment, manager_contact: e.target.value})}
-              className="col-span-3 h-7 text-xs"
+              className="col-span-3 h-6 text-xs"
             />
           </div>
         </div>
         
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="h-7 text-xs">取消</Button>
-          <Button onClick={handleEditDepartment} className="h-7 text-xs">儲存</Button>
+          <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="h-6 text-xs">取消</Button>
+          <Button onClick={handleEditDepartment} className="h-6 text-xs">儲存</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

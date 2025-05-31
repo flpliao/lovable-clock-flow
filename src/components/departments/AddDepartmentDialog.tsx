@@ -37,7 +37,7 @@ const AddDepartmentDialog = () => {
           <Plus className="h-3 w-3 mr-1" /> 新增
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[380px]">
+      <DialogContent className="sm:max-w-[320px]">
         <DialogHeader>
           <DialogTitle className="text-sm">新增部門</DialogTitle>
           <DialogDescription className="text-xs">
@@ -54,7 +54,7 @@ const AddDepartmentDialog = () => {
               id="name"
               value={newDepartment.name}
               onChange={(e) => setNewDepartment({...newDepartment, name: e.target.value})}
-              className="col-span-3 h-7 text-xs"
+              className="col-span-3 h-6 text-xs"
             />
           </div>
           
@@ -64,9 +64,9 @@ const AddDepartmentDialog = () => {
             </Label>
             <Select 
               value={newDepartment.type} 
-              onValueChange={(value) => setNewDepartment({...newDepartment, type: value})}
+              onValueChange={(value: 'headquarters' | 'branch' | 'store') => setNewDepartment({...newDepartment, type: value})}
             >
-              <SelectTrigger className="col-span-3 h-7 text-xs" id="type">
+              <SelectTrigger className="col-span-3 h-6 text-xs" id="type">
                 <SelectValue placeholder="選擇類型" />
               </SelectTrigger>
               <SelectContent>
@@ -83,9 +83,9 @@ const AddDepartmentDialog = () => {
             </Label>
             <Input
               id="location"
-              value={newDepartment.location}
+              value={newDepartment.location || ''}
               onChange={(e) => setNewDepartment({...newDepartment, location: e.target.value})}
-              className="col-span-3 h-7 text-xs"
+              className="col-span-3 h-6 text-xs"
             />
           </div>
           
@@ -95,9 +95,9 @@ const AddDepartmentDialog = () => {
             </Label>
             <Input
               id="manager_name"
-              value={newDepartment.manager_name}
+              value={newDepartment.manager_name || ''}
               onChange={(e) => setNewDepartment({...newDepartment, manager_name: e.target.value})}
-              className="col-span-3 h-7 text-xs"
+              className="col-span-3 h-6 text-xs"
             />
           </div>
           
@@ -107,16 +107,16 @@ const AddDepartmentDialog = () => {
             </Label>
             <Input
               id="manager_contact"
-              value={newDepartment.manager_contact}
+              value={newDepartment.manager_contact || ''}
               onChange={(e) => setNewDepartment({...newDepartment, manager_contact: e.target.value})}
-              className="col-span-3 h-7 text-xs"
+              className="col-span-3 h-6 text-xs"
             />
           </div>
         </div>
         
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="h-7 text-xs">取消</Button>
-          <Button onClick={handleAddDepartment} className="h-7 text-xs">新增</Button>
+          <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="h-6 text-xs">取消</Button>
+          <Button onClick={handleAddDepartment} className="h-6 text-xs">新增</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

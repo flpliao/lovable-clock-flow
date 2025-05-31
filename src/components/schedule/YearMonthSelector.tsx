@@ -31,21 +31,21 @@ const YearMonthSelector = ({ selectedYear, selectedMonth, onYearChange, onMonthC
 
   return (
     <div>
-      <FormLabel className="flex items-center space-x-2 text-base font-medium mb-3">
-        <Calendar className="h-5 w-5 text-green-600" />
+      <FormLabel className="flex items-center space-x-2 text-sm sm:text-base font-medium mb-2 sm:mb-3">
+        <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
         <span>選擇年月</span>
       </FormLabel>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <Select value={selectedYear} onValueChange={onYearChange}>
-          <SelectTrigger className="h-12 text-base border-2 border-gray-200 rounded-lg">
+          <SelectTrigger className="h-11 sm:h-12 text-sm sm:text-base border-2 border-gray-200 rounded-lg">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg">
+          <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">
             {years.map((year) => (
               <SelectItem 
                 key={year} 
                 value={year.toString()}
-                className="py-3 px-4 text-base hover:bg-gray-50"
+                className="py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base hover:bg-gray-50"
               >
                 {year}年
               </SelectItem>
@@ -54,15 +54,15 @@ const YearMonthSelector = ({ selectedYear, selectedMonth, onYearChange, onMonthC
         </Select>
         
         <Select value={selectedMonth} onValueChange={onMonthChange}>
-          <SelectTrigger className="h-12 text-base border-2 border-gray-200 rounded-lg">
+          <SelectTrigger className="h-11 sm:h-12 text-sm sm:text-base border-2 border-gray-200 rounded-lg">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg">
+          <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">
             {months.map((month) => (
               <SelectItem 
                 key={month.value} 
                 value={month.value}
-                className="py-3 px-4 text-base hover:bg-gray-50"
+                className="py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base hover:bg-gray-50"
               >
                 {month.label}
               </SelectItem>

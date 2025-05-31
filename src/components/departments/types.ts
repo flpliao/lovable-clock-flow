@@ -32,7 +32,7 @@ export interface DepartmentManagementContextType {
   newDepartment: NewDepartment;
   setNewDepartment: (department: NewDepartment) => void;
   handleAddDepartment: () => void;
-  handleEditDepartment: () => void;
+  handleEditDepartment: () => Promise<boolean>;
   handleDeleteDepartment: (id: string) => void;
   openEditDialog: (department: Department) => void;
   refreshDepartments: () => Promise<void>;

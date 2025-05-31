@@ -38,17 +38,17 @@ const Index = () => {
     : 0;
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <main className="flex-1 flex flex-col px-3 sm:px-4">
-        <WelcomeSection userName={currentUser?.name || '訪客'} />
-        
-        <LocationCheckIn />
-        
+    <div className="min-h-screen bg-gray-50">
+      <WelcomeSection userName={currentUser?.name || '訪客'} />
+      
+      <LocationCheckIn />
+      
+      <div className="px-4 pb-8">
         <FeatureCards 
           abnormalCount={0} 
           annualLeaveBalance={leaveHours} 
         />
-      </main>
+      </div>
     </div>
   );
 };

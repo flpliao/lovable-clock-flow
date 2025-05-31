@@ -99,8 +99,11 @@ const LocationCheckIn: React.FC = () => {
   // 載入中狀態
   if (isLoading) {
     return (
-      <div className="mt-10 flex flex-col items-center justify-center relative">
-        <div className="text-center">載入中...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">載入中...</p>
+        </div>
       </div>
     );
   }
@@ -108,8 +111,8 @@ const LocationCheckIn: React.FC = () => {
   // 確保有有效的用戶且認證通過才顯示打卡功能
   if (!currentUser || !isAuthenticated || !effectiveUserId) {
     return (
-      <div className="mt-10 flex flex-col items-center justify-center relative">
-        <Alert variant="destructive" className="mb-4 max-w-md mx-auto">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <Alert variant="destructive" className="max-w-md mx-auto">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>請先登入才能使用打卡功能</AlertDescription>
         </Alert>
@@ -118,47 +121,50 @@ const LocationCheckIn: React.FC = () => {
   }
   
   return (
-    <div className="mt-10 flex flex-col items-center justify-center relative">
-      <div className="bg-pattern bg-repeat-x w-full h-64 absolute -bottom-10 opacity-10 z-0"></div>
-      
+    <div className="min-h-screen bg-gray-50">
       {/* 自動補卡提醒系統 */}
       <CheckInReminderSystem />
       
+      {/* Error message */}
       {error && (
-        <Alert variant="destructive" className="mb-4 max-w-md mx-auto">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <div className="px-4 pt-4">
+          <Alert variant="destructive" className="max-w-sm mx-auto">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </div>
       )}
       
-      {/* Today's Check-in and Check-out Status */}
-      {(todayRecords.checkIn || todayRecords.checkOut) && (
-        <CheckInStatusDisplay todayRecords={todayRecords} />
-      )}
-      
-      {/* Action type selection (check-in or check-out) */}
-      <ActionTypeSelector
-        actionType={actionType}
-        setActionType={setActionType}
-        todayRecords={todayRecords}
-      />
-      
-      {/* If both check-in and check-out are done, show completion message */}
-      {todayRecords.checkIn && todayRecords.checkOut ? (
-        <CheckInCompletedMessage />
-      ) : (
-        /* Method selection (location or IP) and action buttons */
-        <CheckInMethodSelector
-          checkInMethod={checkInMethod}
-          setCheckInMethod={setCheckInMethod}
-          onLocationCheckIn={onLocationCheckIn}
-          onIpCheckIn={onIpCheckIn}
-          loading={loading}
+      <div className="pt-8 pb-12">
+        {/* Today's Check-in and Check-out Status */}
+        {(todayRecords.checkIn || todayRecords.checkOut) && (
+          <CheckInStatusDisplay todayRecords={todayRecords} />
+        )}
+        
+        {/* Action type selection (check-in or check-out) */}
+        <ActionTypeSelector
           actionType={actionType}
-          distance={distance}
-          error={error}
+          setActionType={setActionType}
+          todayRecords={todayRecords}
         />
-      )}
+        
+        {/* If both check-in and check-out are done, show completion message */}
+        {todayRecords.checkIn && todayRecords.checkOut ? (
+          <CheckInCompletedMessage />
+        ) : (
+          /* Method selection (location or IP) and action buttons */
+          <CheckInMethodSelector
+            checkInMethod={checkInMethod}
+            setCheckInMethod={setCheckInMethod}
+            onLocationCheckIn={onLocationCheckIn}
+            onIpCheckIn={onIpCheckIn}
+            loading={loading}
+            actionType={actionType}
+            distance={distance}
+            error={error}
+          />
+        )}
+      </div>
     </div>
   );
 };

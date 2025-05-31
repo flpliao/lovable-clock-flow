@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { MapPin, Wifi, LogIn, LogOut } from 'lucide-react';
 
 interface CheckInMethodSelectorProps {
@@ -25,94 +24,80 @@ const CheckInMethodSelector: React.FC<CheckInMethodSelectorProps> = ({
   error
 }) => {
   return (
-    <Tabs 
-      value={checkInMethod} 
-      onValueChange={(value) => setCheckInMethod(value as 'location' | 'ip')}
-      className="w-full max-w-md z-10"
-    >
-      <TabsList className="grid w-full grid-cols-2 mb-6">
-        <TabsTrigger value="location" className="text-center">
+    <div className="w-full max-w-sm mx-auto px-4">
+      {/* Method selection tabs */}
+      <div className="bg-gray-100 rounded-2xl p-1 mb-8 flex">
+        <button
+          onClick={() => setCheckInMethod('location')}
+          className={`flex-1 rounded-xl py-3 px-4 font-medium flex items-center justify-center transition-colors ${
+            checkInMethod === 'location' 
+              ? 'bg-white text-gray-800 shadow-sm' 
+              : 'text-gray-600'
+          }`}
+        >
           <MapPin className="h-4 w-4 mr-2" />
           位置打卡
-        </TabsTrigger>
-        <TabsTrigger value="ip" className="text-center">
+        </button>
+        <button
+          onClick={() => setCheckInMethod('ip')}
+          className={`flex-1 rounded-xl py-3 px-4 font-medium flex items-center justify-center transition-colors ${
+            checkInMethod === 'ip' 
+              ? 'bg-white text-gray-800 shadow-sm' 
+              : 'text-gray-600'
+          }`}
+        >
           <Wifi className="h-4 w-4 mr-2" />
           IP打卡
-        </TabsTrigger>
-      </TabsList>
-      
-      <TabsContent value="location" className="mt-0">
-        <button
-          onClick={onLocationCheckIn}
-          disabled={loading}
-          className={`relative h-40 w-40 mx-auto rounded-full bg-white border-8 border-[#E6F4F9] flex items-center justify-center z-10 focus:outline-none transition-all duration-300 hover:border-[#0091D0]/50 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
-        >
-          <div className="location-ring bg-[#0091D0]/20 h-32 w-32"></div>
-          <div className="location-ring bg-[#0091D0]/10 h-36 w-36" style={{ animationDelay: "0.5s" }}></div>
-          
-          <div className="h-24 w-24 rounded-full bg-[#0091D0] flex items-center justify-center">
-            {actionType === 'check-in' ? (
-              <LogIn className="h-12 w-12 text-white" />
-            ) : (
-              <LogOut className="h-12 w-12 text-white" />
-            )}
-          </div>
         </button>
-        
-        <div className="mt-8 mb-12 text-center px-6">
-          <p className="text-xl font-bold">
-            {actionType === 'check-in' ? '上班了！' : '下班了！'}
-            <span className="text-[#0091D0]">定位打卡</span>
-          </p>
-          {loading && (
-            <p className="text-sm text-blue-600 animate-pulse mt-2">
-              處理中...請稍候
-            </p>
-          )}
-          {distance !== null && !error && !loading && (
-            <p className="text-sm text-gray-600 mt-3">
-              距離公司: <span className="font-medium">{Math.round(distance)} 公尺</span>
-            </p>
-          )}
-        </div>
-      </TabsContent>
+      </div>
       
-      <TabsContent value="ip" className="mt-0">
+      {/* Check-in button */}
+      <div className="text-center mb-8">
         <button
-          onClick={onIpCheckIn}
+          onClick={checkInMethod === 'location' ? onLocationCheckIn : onIpCheckIn}
           disabled={loading}
-          className={`relative h-40 w-40 mx-auto rounded-full bg-white border-8 border-[#E6F4F9] flex items-center justify-center z-10 focus:outline-none transition-all duration-300 hover:border-[#0091D0]/50 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+          className={`relative h-32 w-32 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
-          <div className="location-ring bg-[#0091D0]/20 h-32 w-32"></div>
-          <div className="location-ring bg-[#0091D0]/10 h-36 w-36" style={{ animationDelay: "0.5s" }}></div>
-          
-          <div className="h-24 w-24 rounded-full bg-[#0091D0] flex items-center justify-center">
-            {actionType === 'check-in' ? (
-              <LogIn className="h-12 w-12 text-white" />
-            ) : (
-              <LogOut className="h-12 w-12 text-white" />
-            )}
-          </div>
-        </button>
-        
-        <div className="mt-8 mb-12 text-center px-6">
-          <p className="text-xl font-bold">
-            {actionType === 'check-in' ? '上班了！' : '下班了！'}
-            <span className="text-[#0091D0]">IP打卡</span>
-          </p>
           {loading && (
-            <p className="text-sm text-blue-600 animate-pulse mt-2">
-              處理中...請稍候
-            </p>
+            <div className="absolute inset-0 rounded-full border-4 border-blue-200 border-t-white animate-spin"></div>
           )}
-          {!loading && (
-            <p className="text-sm text-gray-600 mt-3">
-              使用公司網路自動打卡
-            </p>
+          
+          {actionType === 'check-in' ? (
+            <LogIn className="h-12 w-12 text-white" />
+          ) : (
+            <LogOut className="h-12 w-12 text-white" />
           )}
-        </div>
-      </TabsContent>
-    </Tabs>
+        </button>
+      </div>
+      
+      {/* Status text */}
+      <div className="text-center">
+        <p className="text-lg font-medium text-gray-800 mb-2">
+          {actionType === 'check-in' ? '上班了！' : '下班了！'}
+          <span className="text-blue-600 ml-1">
+            {checkInMethod === 'location' ? '定位打卡' : 'IP打卡'}
+          </span>
+        </p>
+        
+        {loading && (
+          <p className="text-sm text-blue-600 animate-pulse">
+            處理中...請稍候
+          </p>
+        )}
+        
+        {distance !== null && !error && !loading && checkInMethod === 'location' && (
+          <p className="text-sm text-gray-600">
+            距離公司: <span className="font-medium">{Math.round(distance)} 公尺</span>
+          </p>
+        )}
+        
+        {!loading && checkInMethod === 'ip' && (
+          <p className="text-sm text-gray-600">
+            使用公司網路自動打卡
+          </p>
+        )}
+      </div>
+    </div>
   );
 };
 

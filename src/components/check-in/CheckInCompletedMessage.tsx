@@ -2,7 +2,6 @@
 import React from 'react';
 import { CheckCircle, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 
 const CheckInCompletedMessage: React.FC = () => {
   const navigate = useNavigate();
@@ -12,20 +11,24 @@ const CheckInCompletedMessage: React.FC = () => {
   };
 
   return (
-    <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center mt-6 relative">
-      <Button
-        variant="ghost"
-        size="lg"
-        onClick={handleViewAttendance}
-        className="mx-auto bg-green-100 hover:bg-green-200 border-2 border-green-300 text-green-700 h-16 w-16 rounded-full p-0 mb-3 shadow-md hover:shadow-lg transition-all duration-200"
-        title="查看個人出勤"
-      >
-        <Clock className="h-8 w-8" />
-      </Button>
-      
-      <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
-      <h3 className="text-lg font-medium text-green-800 mb-2">今日打卡完成</h3>
-      <p className="text-green-600">您已完成今日的上班與下班打卡</p>
+    <div className="w-full max-w-sm mx-auto px-4">
+      <div className="bg-green-50 rounded-3xl p-8 text-center">
+        <div className="mb-6">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="h-8 w-8 text-green-600" />
+          </div>
+          <h3 className="text-xl font-bold text-green-800 mb-2">打卡完成</h3>
+          <p className="text-green-600 text-sm">您已完成今日的上班與下班打卡</p>
+        </div>
+        
+        <button
+          onClick={handleViewAttendance}
+          className="w-full bg-white text-green-700 py-3 px-6 rounded-2xl font-medium shadow-sm hover:shadow-md transition-shadow flex items-center justify-center"
+        >
+          <Clock className="h-4 w-4 mr-2" />
+          查看個人出勤
+        </button>
+      </div>
     </div>
   );
 };

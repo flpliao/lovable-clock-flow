@@ -10,20 +10,17 @@ export const useDepartmentDelete = () => {
       console.log('刪除部門 ID:', id);
 
       // 檢查是否有員工屬於此部門
-      const staffQuery: {
-        data: { id: string }[] | null;
-        error: any;
-      } = await supabase
+      const { data: staffData, error: staffError } = await supabase
         .from('staff')
         .select('id')
         .eq('department_id', id);
 
-      if (staffQuery.error) {
-        console.error('檢查員工資料錯誤:', staffQuery.error);
-        throw staffQuery.error;
+      if (staffError) {
+        console.error('檢查員工資料錯誤:', staffError);
+        throw staffError;
       }
 
-      if (staffQuery.data && staffQuery.data.length > 0) {
+      if (staffData && staffData.length > 0) {
         toast({
           title: "無法刪除",
           description: "此部門下仍有員工，請先移除所有員工後再刪除部門",
@@ -32,17 +29,14 @@ export const useDepartmentDelete = () => {
         return false;
       }
 
-      const deleteQuery: {
-        data: any;
-        error: any;
-      } = await supabase
+      const { error: deleteError } = await supabase
         .from('departments')
         .delete()
         .eq('id', id);
 
-      if (deleteQuery.error) {
-        console.error('刪除部門錯誤:', deleteQuery.error);
-        throw deleteQuery.error;
+      if (deleteError) {
+        console.error('刪除部門錯誤:', deleteError);
+        throw deleteError;
       }
 
       console.log('成功刪除部門');

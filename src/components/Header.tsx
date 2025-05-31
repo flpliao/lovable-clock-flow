@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Menu, Shield, LogOut, BarChart3, Bell, FileText, Home, Calendar, User, Clock, Building2, Settings } from 'lucide-react';
+import { Menu, Shield, LogOut, BarChart3, Bell, FileText, Home, Calendar, User, Clock, Building2, Settings, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ApolloLogo from './ApolloLogo';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -59,6 +59,7 @@ const Header: React.FC<HeaderProps> = () => {
       { path: '/company-branch-management', label: '公司基本資料與營業處管理', icon: <Building2 className="mr-2 h-4 w-4" /> },
       { path: '/personnel-management', label: '人員與部門管理', icon: <User className="mr-2 h-4 w-4" /> },
       { path: '/staff-dashboard', label: '員工考勤儀表板', icon: <BarChart3 className="mr-2 h-4 w-4" /> },
+      { path: '/hr-management', label: '人事管理系統', icon: <DollarSign className="mr-2 h-4 w-4" /> },
       { path: '/system-settings', label: '系統設定', icon: <Settings className="mr-2 h-4 w-4" /> }
     );
   }

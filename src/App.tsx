@@ -20,6 +20,7 @@ import CompanyBranchManagement from '@/pages/CompanyBranchManagement';
 import StaffDashboard from '@/pages/StaffDashboard';
 import LeaveApprovalView from '@/pages/LeaveApprovalView';
 import SystemSettings from '@/pages/SystemSettings';
+import HRManagement from '@/pages/HRManagement';
 import NotFound from '@/pages/NotFound';
 import './App.css';
 
@@ -47,6 +48,7 @@ function App() {
                   <Route path="/staff-dashboard" element={<StaffDashboard />} />
                   <Route path="/leave-approval/:requestId" element={<LeaveApprovalView />} />
                   <Route path="/system-settings" element={<SystemSettings />} />
+                  <Route path="/hr-management" element={<HRManagement />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </div>

@@ -4,6 +4,7 @@ import { FormLabel } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Clock, CheckCircle2 } from 'lucide-react';
 import { useTimeSlotOperations } from '@/components/timeslot/hooks/useTimeSlotOperations';
+import { TimeSlotIcon } from './utils/timeSlotIcons';
 
 interface TimeSlotSelectorProps {
   selectedTimeSlots: string[];
@@ -35,12 +36,23 @@ const TimeSlotSelector = ({ selectedTimeSlots, onTimeSlotToggle }: TimeSlotSelec
               }`}
             >
               <div className="flex items-center justify-between w-full">
-                <div className="flex flex-col items-start text-left">
-                  <span className="font-medium text-sm sm:text-base">{timeSlot.name}</span>
-                  <span className={`text-xs sm:text-sm ${isSelected ? 'text-purple-100' : 'text-gray-500'}`}>
-                    {timeSlot.start_time} - {timeSlot.end_time}
-                  </span>
+                <div className="flex items-center space-x-3">
+                  {/* 時間段圖示 */}
+                  <div className="flex-shrink-0">
+                    <TimeSlotIcon 
+                      timeSlotName={timeSlot.name} 
+                      size="md"
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col items-start text-left">
+                    <span className="font-medium text-sm sm:text-base">{timeSlot.name}</span>
+                    <span className={`text-xs sm:text-sm ${isSelected ? 'text-purple-100' : 'text-gray-500'}`}>
+                      {timeSlot.start_time} - {timeSlot.end_time}
+                    </span>
+                  </div>
                 </div>
+                
                 {isSelected && (
                   <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-white ml-2 flex-shrink-0" />
                 )}

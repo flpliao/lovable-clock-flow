@@ -10,15 +10,19 @@ interface TimeSlotHeaderProps {
 
 const TimeSlotHeader = ({ onAddTimeSlot }: TimeSlotHeaderProps) => {
   return (
-    <CardHeader>
-      <div className="flex items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="h-5 w-5" />
-          時間段管理
+    <CardHeader className="pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+        <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+          <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+          <span>時間段管理</span>
         </CardTitle>
-        <Button onClick={onAddTimeSlot}>
-          <Plus className="h-4 w-4 mr-2" />
-          新增時間段
+        <Button 
+          onClick={onAddTimeSlot}
+          className="bg-purple-500 hover:bg-purple-600 text-white h-9 sm:h-10 px-3 sm:px-4 text-sm"
+        >
+          <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+          <span className="hidden xs:inline">新增時間段</span>
+          <span className="xs:hidden">新增</span>
         </Button>
       </div>
     </CardHeader>

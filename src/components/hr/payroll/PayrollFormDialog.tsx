@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -10,9 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useStaffManagementSafe } from '@/components/company/hooks/useStaffManagementSafe';
 import { usePayrollManagement } from '@/hooks/usePayrollManagement';
 import { formatCurrency } from '@/utils/payrollUtils';
+import StaffSelector from './StaffSelector';
 
 interface PayrollFormDialogProps {
   open: boolean;
@@ -29,7 +28,6 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
   initialData,
   title
 }) => {
-  const { staffList } = useStaffManagementSafe();
   const { salaryStructures } = usePayrollManagement();
   
   const [formData, setFormData] = useState({
@@ -146,21 +144,11 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="staff_id">員工</Label>
-              <Select value={formData.staff_id} onValueChange={(value) => setFormData(prev => ({ ...prev, staff_id: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="選擇員工" />
-                </SelectTrigger>
-                <SelectContent>
-                  {staffList.map((staff) => (
-                    <SelectItem key={staff.id} value={staff.id}>
-                      {staff.name} - {staff.position}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <StaffSelector
+              value={formData.staff_id}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, staff_id: value }))}
+              required
+            />
 
             <div>
               <Label htmlFor="salary_structure_id">薪資結構</Label>
@@ -169,13 +157,24 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
                   <SelectValue placeholder="選擇薪資結構" />
                 </SelectTrigger>
                 <SelectContent>
-                  {salaryStructures.map((structure) => (
-                    <SelectItem key={structure.id} value={structure.id}>
-                      {structure.position} - {structure.department} (Level {structure.level})
+                  {salaryStructures.length === 0 ? (
+                    <SelectItem value="" disabled>
+                      尚未建立薪資結構
                     </SelectItem>
-                  ))}
+                  ) : (
+                    salaryStructures.map((structure) => (
+                      <SelectItem key={structure.id} value={structure.id}>
+                        {structure.position} - {structure.department} (Level {structure.level})
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
+              {salaryStructures.length === 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  請先建立薪資結構
+                </p>
+              )}
             </div>
           </div>
 

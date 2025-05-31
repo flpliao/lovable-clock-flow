@@ -7,17 +7,24 @@ import { Clock, Plus, Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getExceptionTypeText, getExceptionStatusText, getExceptionStatusColor } from '@/utils/attendanceExceptionUtils';
+import { useStaffManagementSafe } from '@/components/company/hooks/useStaffManagementSafe';
 
 const AttendanceExceptionManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
 
-  // 模擬資料，實際使用時會從 Supabase 獲取
-  const exceptions = [
+  // 使用真實的員工資料
+  const { staffList } = useStaffManagementSafe();
+
+  // 模擬異常資料，但使用真實員工資料
+  const exceptions = staffList.length > 0 ? [
     {
       id: '1',
-      staff_name: '張小明',
+      staff_id: staffList[0]?.id || '',
+      staff_name: staffList[0]?.name || '張小明',
+      staff_department: staffList[0]?.department || 'IT部',
+      staff_position: staffList[0]?.position || '工程師',
       exception_date: '2024-01-15',
       exception_type: 'missing_check_in' as const,
       reason: '忘記打卡',
@@ -26,18 +33,22 @@ const AttendanceExceptionManagement: React.FC = () => {
     },
     {
       id: '2',
-      staff_name: '李小華',
+      staff_id: staffList[1]?.id || '',
+      staff_name: staffList[1]?.name || '李小華',
+      staff_department: staffList[1]?.department || 'HR部',
+      staff_position: staffList[1]?.position || '人事專員',
       exception_date: '2024-01-14',
       exception_type: 'late_check_in' as const,
       reason: '交通堵塞',
       status: 'approved' as const,
       created_at: '2024-01-14T10:30:00Z'
     }
-  ];
+  ] : [];
 
   const filteredExceptions = exceptions.filter(exception => {
     const matchesSearch = exception.staff_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         exception.reason.toLowerCase().includes(searchTerm.toLowerCase());
+                         exception.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         exception.staff_department.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || exception.status === statusFilter;
     const matchesType = typeFilter === 'all' || exception.exception_type === typeFilter;
     
@@ -63,7 +74,7 @@ const AttendanceExceptionManagement: React.FC = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="搜尋員工姓名或原因..."
+                placeholder="搜尋員工姓名、部門或原因..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 h-9 text-sm"
@@ -114,6 +125,9 @@ const AttendanceExceptionManagement: React.FC = () => {
                       </Badge>
                     </div>
                     <p className="text-xs text-gray-500 mb-1">
+                      {exception.staff_department} - {exception.staff_position}
+                    </p>
+                    <p className="text-xs text-gray-500 mb-1">
                       {getExceptionTypeText(exception.exception_type)}
                     </p>
                   </div>
@@ -154,7 +168,7 @@ const AttendanceExceptionManagement: React.FC = () => {
           <Card>
             <CardContent className="p-6">
               <div className="text-center text-gray-500 text-sm">
-                沒有找到相關的異常記錄
+                {staffList.length === 0 ? '尚未載入員工資料' : '沒有找到相關的異常記錄'}
               </div>
             </CardContent>
           </Card>

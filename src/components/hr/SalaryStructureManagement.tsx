@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,11 +9,13 @@ import { formatCurrency } from '@/utils/payrollUtils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePayrollManagement } from '@/hooks/usePayrollManagement';
 import SalaryStructureFormDialog from './salary/SalaryStructureFormDialog';
+import SalaryStructureQuickAddDialog from './salary/SalaryStructureQuickAddDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const SalaryStructureManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showQuickAddDialog, setShowQuickAddDialog] = useState(false);
   const [editingStructure, setEditingStructure] = useState<any>(null);
   const isMobile = useIsMobile();
 
@@ -40,6 +41,11 @@ const SalaryStructureManagement: React.FC = () => {
   const handleCreateStructure = async (structureData: any) => {
     await createSalaryStructure(structureData);
     setShowCreateDialog(false);
+  };
+
+  const handleQuickAddStructure = async (structureData: any) => {
+    await createSalaryStructure(structureData);
+    setShowQuickAddDialog(false);
   };
 
   const handleUpdateStructure = async (structureData: any) => {
@@ -102,9 +108,18 @@ const SalaryStructureManagement: React.FC = () => {
             <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
             重新整理
           </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs"
+            onClick={() => setShowQuickAddDialog(true)}
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            快速新增
+          </Button>
           <Button size="sm" className="text-xs" onClick={() => setShowCreateDialog(true)}>
             <Plus className="h-3 w-3 mr-1" />
-            新增
+            完整新增
           </Button>
         </div>
       </div>
@@ -284,6 +299,13 @@ const SalaryStructureManagement: React.FC = () => {
         onOpenChange={setShowCreateDialog}
         onSubmit={handleCreateStructure}
         title="新增薪資結構"
+      />
+
+      <SalaryStructureQuickAddDialog
+        open={showQuickAddDialog}
+        onOpenChange={setShowQuickAddDialog}
+        onSubmit={handleQuickAddStructure}
+        title="快速新增薪資結構"
       />
 
       <SalaryStructureFormDialog

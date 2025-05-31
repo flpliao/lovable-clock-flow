@@ -10,6 +10,7 @@ export const departments = [
   '西門門市'
 ];
 
+// 保留原有職位列表作為預設值，之後可以從職位管理系統動態獲取
 export const positions = [
   '主管', 
   '工程師', 

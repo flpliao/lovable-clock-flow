@@ -5,7 +5,8 @@ import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import StaffManagement from '@/components/staff/StaffManagement';
 import DepartmentManagement from '@/components/departments/DepartmentManagement';
-import { Users, Building } from 'lucide-react';
+import PositionManagement from '@/components/positions/PositionManagement';
+import { Users, Building, Briefcase } from 'lucide-react';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 
 const PersonnelManagement = () => {
@@ -28,9 +29,10 @@ const PersonnelManagement = () => {
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-2">
+            <TabsList className="grid w-full grid-cols-3 mb-2">
               <TabsTrigger value="staff" className="text-xs sm:text-sm">人員組織</TabsTrigger>
               <TabsTrigger value="departments" className="text-xs sm:text-sm">部門門市</TabsTrigger>
+              <TabsTrigger value="positions" className="text-xs sm:text-sm">職位管理</TabsTrigger>
             </TabsList>
             
             <TabsContent value="staff">
@@ -39,6 +41,10 @@ const PersonnelManagement = () => {
             
             <TabsContent value="departments">
               <DepartmentManagement />
+            </TabsContent>
+            
+            <TabsContent value="positions">
+              <PositionManagement />
             </TabsContent>
           </Tabs>
         </main>

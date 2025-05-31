@@ -19,70 +19,41 @@ import { useUser } from '@/contexts/UserContext';
 import { formatTime } from '@/utils/checkInUtils';
 
 const LocationCheckIn = () => {
-  const [checkInMethod, setCheckInMethod] = useState<'location' | 'ip'>('location');
-  const [actionType, setActionType] = useState<'check-in' | 'check-out'>('check-in');
-  const [loading, setLoading] = useState(false);
-  const [todayRecords, setTodayRecords] = useState<any>({ checkIn: null, checkOut: null });
-
-  const { onLocationCheckIn, onIpCheckIn, distance, error } = useCheckIn();
-  const { getTodayCheckInRecords } = useTodayCheckInRecords();
   const { currentUser } = useUser();
   const { toast } = useToast();
+  
+  // Only initialize useCheckIn if we have a currentUser
+  const {
+    loading,
+    error,
+    distance,
+    checkInMethod,
+    setCheckInMethod,
+    actionType,
+    todayRecords,
+    onLocationCheckIn,
+    onIpCheckIn
+  } = useCheckIn(currentUser?.id || '');
 
-  // 載入今日記錄
-  const loadTodayRecords = async () => {
-    if (currentUser) {
-      try {
-        const records = await getTodayCheckInRecords(currentUser.id);
-        setTodayRecords(records);
-      } catch (error) {
-        console.error('Failed to load today records:', error);
-      }
-    }
-  };
+  // Early return if no user
+  if (!currentUser) {
+    return (
+      <Card>
+        <CardContent className="p-4">
+          <div className="text-center text-gray-500">
+            請先登入以使用打卡功能
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-  useEffect(() => {
-    loadTodayRecords();
-  }, [currentUser]);
-
-  // 根據今日記錄決定顯示狀態
-  useEffect(() => {
-    if (todayRecords.checkIn && !todayRecords.checkOut) {
-      setActionType('check-out');
-    } else if (!todayRecords.checkIn) {
-      setActionType('check-in');
-    }
-  }, [todayRecords]);
-
-  const handleCheckIn = async () => {
-    setLoading(true);
-    try {
-      if (checkInMethod === 'location') {
-        await onLocationCheckIn();
-      } else {
-        await onIpCheckIn();
-      }
-      
-      toast({
-        title: actionType === 'check-in' ? '上班打卡成功' : '下班打卡成功',
-        description: `${checkInMethod === 'location' ? '位置' : 'IP'}打卡已完成`,
-      });
-      
-      await loadTodayRecords();
-    } catch (error) {
-      console.error('Check-in error:', error);
-      toast({
-        title: '打卡失敗',
-        description: '請稍後再試或聯繫系統管理員',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Handle the case where todayRecords might be undefined
+  const safeCheckIn = todayRecords?.checkIn;
+  const safeCheckOut = todayRecords?.checkOut;
 
   // 如果已完成今日打卡，顯示完成狀態
-  if (todayRecords.checkIn && todayRecords.checkOut) {
+  if (safeCheckIn && safeCheckOut) {
     return (
       <Card className="bg-green-50 border-green-200">
         <CardContent className="p-4">
@@ -100,10 +71,10 @@ const LocationCheckIn = () => {
                 </div>
                 <div className="text-center">
                   <div className="font-mono text-lg text-green-800">
-                    {formatTime(todayRecords.checkIn.timestamp)}
+                    {formatTime(safeCheckIn.timestamp)}
                   </div>
                   <div className="text-green-600 text-xs mt-1">
-                    {todayRecords.checkIn.type === 'location' ? '位置打卡' : 'IP打卡'}
+                    {safeCheckIn.type === 'location' ? '位置打卡' : 'IP打卡'}
                   </div>
                 </div>
               </div>
@@ -115,10 +86,10 @@ const LocationCheckIn = () => {
                 </div>
                 <div className="text-center">
                   <div className="font-mono text-lg text-green-800">
-                    {formatTime(todayRecords.checkOut.timestamp)}
+                    {formatTime(safeCheckOut.timestamp)}
                   </div>
                   <div className="text-green-600 text-xs mt-1">
-                    {todayRecords.checkOut.type === 'location' ? '位置打卡' : 'IP打卡'}
+                    {safeCheckOut.type === 'location' ? '位置打卡' : 'IP打卡'}
                   </div>
                 </div>
               </div>
@@ -140,13 +111,13 @@ const LocationCheckIn = () => {
       
       <CardContent className="space-y-4">
         {/* 如果已上班但未下班，顯示狀態 */}
-        {todayRecords.checkIn && !todayRecords.checkOut && (
+        {safeCheckIn && !safeCheckOut && (
           <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
             <div className="flex items-center justify-center space-x-2 text-blue-800">
               <CheckCircle2 className="h-4 w-4" />
               <span className="font-medium">已上班打卡</span>
               <Badge variant="secondary" className="text-xs">
-                {formatTime(todayRecords.checkIn.timestamp)}
+                {formatTime(safeCheckIn.timestamp)}
               </Badge>
             </div>
           </div>
@@ -177,7 +148,7 @@ const LocationCheckIn = () => {
         {/* 打卡按鈕 - 手機優化大按鈕 */}
         <div className="text-center">
           <Button
-            onClick={handleCheckIn}
+            onClick={checkInMethod === 'location' ? onLocationCheckIn : onIpCheckIn}
             disabled={loading}
             size="lg"
             className={`w-full h-16 text-lg font-semibold rounded-xl transition-all duration-200 ${

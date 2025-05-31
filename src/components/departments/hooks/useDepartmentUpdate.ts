@@ -1,7 +1,7 @@
 
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Department } from '../types';
+import { DepartmentApiService } from '../services/departmentApiService';
 
 export const useDepartmentUpdate = () => {
   const updateDepartment = async (department: Department): Promise<boolean> => {
@@ -17,35 +17,14 @@ export const useDepartmentUpdate = () => {
         throw new Error('部門類型不能為空');
       }
 
-      const updateData = {
-        name: department.name.trim(),
-        type: department.type,
-        location: department.location?.trim() || null,
-        manager_name: department.manager_name?.trim() || null,
-        manager_contact: department.manager_contact?.trim() || null,
-        updated_at: new Date().toISOString()
-      };
+      console.log('📝 呼叫 API 服務更新部門...');
+      const updatedDepartment = await DepartmentApiService.updateDepartment(department);
 
-      console.log('📝 準備更新的資料:', updateData);
-
-      const { data, error } = await supabase
-        .from('departments')
-        .update(updateData)
-        .eq('id', department.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('❌ 資料庫更新錯誤:', error);
-        throw error;
+      if (!updatedDepartment) {
+        throw new Error('API 服務更新失敗');
       }
 
-      console.log('✅ 資料庫更新成功:', data);
-      
-      toast({
-        title: "更新成功",
-        description: `部門 "${department.name}" 已成功更新`,
-      });
+      console.log('✅ API 服務更新成功:', updatedDepartment);
       
       return true;
     } catch (error: any) {
@@ -54,10 +33,6 @@ export const useDepartmentUpdate = () => {
       let errorMessage = "無法更新部門，請稍後再試";
       if (error.message) {
         errorMessage = error.message;
-      } else if (error.code === 'PGRST301') {
-        errorMessage = "找不到要更新的部門";
-      } else if (error.code === 'PGRST116') {
-        errorMessage = "沒有權限更新部門資料";
       }
       
       toast({

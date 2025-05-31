@@ -12,8 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useDepartmentManagement } from './useDepartmentManagement';
-import { useToast } from '@/hooks/use-toast';
+import { useDepartmentManagementContext } from './DepartmentManagementContext';
+import { toast } from '@/hooks/use-toast';
 
 const EditDepartmentDialog = () => {
   const { 
@@ -22,9 +22,7 @@ const EditDepartmentDialog = () => {
     currentDepartment, 
     setCurrentDepartment, 
     handleEditDepartment
-  } = useDepartmentManagement();
-
-  const { toast } = useToast();
+  } = useDepartmentManagementContext();
   
   if (!currentDepartment) return null;
 
@@ -41,14 +39,21 @@ const EditDepartmentDialog = () => {
       return;
     }
 
-    try {
-      await handleEditDepartment();
+    if (!currentDepartment.type) {
       toast({
-        title: "編輯成功",
-        description: `部門「${currentDepartment.name}」已成功更新`,
+        title: "驗證錯誤", 
+        description: "部門類型為必填欄位",
+        variant: "destructive",
       });
+      return;
+    }
+
+    try {
+      console.log('🔄 呼叫 handleEditDepartment...');
+      await handleEditDepartment();
+      console.log('✅ 編輯完成，準備關閉對話框');
     } catch (error) {
-      console.error('編輯部門失敗:', error);
+      console.error('💥 編輯部門失敗:', error);
       toast({
         title: "編輯失敗",
         description: "無法更新部門資料，請稍後再試",

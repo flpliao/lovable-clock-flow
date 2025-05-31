@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Position, NewPosition } from '../types';
 import { toast } from '@/hooks/use-toast';
@@ -24,8 +23,37 @@ export const usePositionManagement = () => {
     description: '',
     level: 1
   });
+  
+  // 新增篩選和排序狀態
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'level'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  const filteredPositions = positions.filter(p => p.is_active);
+  // 篩選和排序邏輯
+  const filteredPositions = positions
+    .filter(p => p.is_active)
+    .filter(p => 
+      searchTerm === '' || 
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.description && p.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
+    .sort((a, b) => {
+      let aValue, bValue;
+      
+      if (sortBy === 'name') {
+        aValue = a.name;
+        bValue = b.name;
+      } else {
+        aValue = a.level;
+        bValue = b.level;
+      }
+      
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
 
   const handleAddPosition = async (): Promise<boolean> => {
     if (!newPosition.name.trim()) {
@@ -148,6 +176,13 @@ export const usePositionManagement = () => {
     handleEditPosition,
     handleDeletePosition,
     openEditDialog,
-    refreshPositions
+    refreshPositions,
+    // 新增篩選和排序相關功能
+    searchTerm,
+    setSearchTerm,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder
   };
 };

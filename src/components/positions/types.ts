@@ -32,4 +32,11 @@ export interface PositionManagementContextType {
   handleDeletePosition: (id: string) => Promise<boolean>;
   openEditDialog: (position: Position) => void;
   refreshPositions: () => Promise<void>;
+  // 新增篩選和排序相關類型
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+  sortBy: 'name' | 'level';
+  setSortBy: (sort: 'name' | 'level') => void;
+  sortOrder: 'asc' | 'desc';
+  setSortOrder: (order: 'asc' | 'desc') => void;
 }

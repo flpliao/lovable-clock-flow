@@ -5,6 +5,7 @@ import { PositionManagementProvider } from './PositionManagementContext';
 import PositionTable from './PositionTable';
 import AddPositionDialog from './AddPositionDialog';
 import EditPositionDialog from './EditPositionDialog';
+import PositionFilters from './PositionFilters';
 
 const PositionManagement = () => {
   return (
@@ -16,6 +17,7 @@ const PositionManagement = () => {
             <AddPositionDialog />
           </CardHeader>
           <CardContent className="pt-0">
+            <PositionFilters />
             <PositionTable />
           </CardContent>
         </Card>

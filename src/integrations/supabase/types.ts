@@ -894,9 +894,109 @@ export type Database = {
           },
         ]
       }
+      payroll_approvals: {
+        Row: {
+          action: string
+          approver_id: string
+          approver_name: string
+          comment: string | null
+          created_at: string
+          id: string
+          payroll_id: string
+        }
+        Insert: {
+          action: string
+          approver_id: string
+          approver_name: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          payroll_id: string
+        }
+        Update: {
+          action?: string
+          approver_id?: string
+          approver_name?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          payroll_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_approvals_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_approvals_payroll_id_fkey"
+            columns: ["payroll_id"]
+            isOneToOne: false
+            referencedRelation: "payrolls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_payments: {
+        Row: {
+          amount: number
+          comment: string | null
+          created_at: string
+          id: string
+          paid_by: string
+          paid_by_name: string
+          payment_date: string
+          payment_method: string
+          payment_reference: string | null
+          payroll_id: string
+        }
+        Insert: {
+          amount: number
+          comment?: string | null
+          created_at?: string
+          id?: string
+          paid_by: string
+          paid_by_name: string
+          payment_date?: string
+          payment_method?: string
+          payment_reference?: string | null
+          payroll_id: string
+        }
+        Update: {
+          amount?: number
+          comment?: string | null
+          created_at?: string
+          id?: string
+          paid_by?: string
+          paid_by_name?: string
+          payment_date?: string
+          payment_method?: string
+          payment_reference?: string | null
+          payroll_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_payments_paid_by_fkey"
+            columns: ["paid_by"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_payments_payroll_id_fkey"
+            columns: ["payroll_id"]
+            isOneToOne: false
+            referencedRelation: "payrolls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payrolls: {
         Row: {
           allowances: number | null
+          approval_comment: string | null
           approval_date: string | null
           approved_by: string | null
           base_salary: number
@@ -912,9 +1012,13 @@ export type Database = {
           net_salary: number
           overtime_hours: number | null
           overtime_pay: number | null
+          paid_by: string | null
           paid_date: string | null
           pay_period_end: string
           pay_period_start: string
+          payment_comment: string | null
+          payment_method: string | null
+          payment_reference: string | null
           salary_structure_id: string
           staff_id: string
           status: string
@@ -923,6 +1027,7 @@ export type Database = {
         }
         Insert: {
           allowances?: number | null
+          approval_comment?: string | null
           approval_date?: string | null
           approved_by?: string | null
           base_salary: number
@@ -938,9 +1043,13 @@ export type Database = {
           net_salary: number
           overtime_hours?: number | null
           overtime_pay?: number | null
+          paid_by?: string | null
           paid_date?: string | null
           pay_period_end: string
           pay_period_start: string
+          payment_comment?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
           salary_structure_id: string
           staff_id: string
           status?: string
@@ -949,6 +1058,7 @@ export type Database = {
         }
         Update: {
           allowances?: number | null
+          approval_comment?: string | null
           approval_date?: string | null
           approved_by?: string | null
           base_salary?: number
@@ -964,9 +1074,13 @@ export type Database = {
           net_salary?: number
           overtime_hours?: number | null
           overtime_pay?: number | null
+          paid_by?: string | null
           paid_date?: string | null
           pay_period_end?: string
           pay_period_start?: string
+          payment_comment?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
           salary_structure_id?: string
           staff_id?: string
           status?: string
@@ -977,6 +1091,13 @@ export type Database = {
           {
             foreignKeyName: "payrolls_approved_by_fkey"
             columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payrolls_paid_by_fkey"
+            columns: ["paid_by"]
             isOneToOne: false
             referencedRelation: "staff"
             referencedColumns: ["id"]

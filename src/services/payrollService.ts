@@ -3,6 +3,8 @@ import { PayrollRecordService } from './payroll/payrollRecordService';
 import { SalaryStructureService } from './payroll/salaryStructureService';
 import { LeaveTypeService } from './payroll/leaveTypeService';
 import { PayrollStatsService } from './payroll/payrollStatsService';
+import { PayrollApprovalService } from './payroll/payrollApprovalService';
+import { PayrollPaymentService } from './payroll/payrollPaymentService';
 
 export class PayrollService {
   // 薪資發放記錄相關操作
@@ -55,5 +57,40 @@ export class PayrollService {
   // 統計相關
   static async getPayrollStats() {
     return PayrollStatsService.getPayrollStats();
+  }
+
+  // 核准相關操作
+  static async approvePayroll(payrollId: string, approverId: string, approverName: string, comment?: string) {
+    return PayrollApprovalService.approvePayroll(payrollId, approverId, approverName, comment);
+  }
+
+  static async rejectPayroll(payrollId: string, approverId: string, approverName: string, comment: string) {
+    return PayrollApprovalService.rejectPayroll(payrollId, approverId, approverName, comment);
+  }
+
+  static async getApprovalHistory(payrollId: string) {
+    return PayrollApprovalService.getApprovalHistory(payrollId);
+  }
+
+  // 發放相關操作
+  static async markAsPaid(
+    payrollId: string, 
+    paidBy: string, 
+    paidByName: string, 
+    paymentData: {
+      paymentMethod: string;
+      paymentReference?: string;
+      comment?: string;
+    }
+  ) {
+    return PayrollPaymentService.markAsPaid(payrollId, paidBy, paidByName, paymentData);
+  }
+
+  static async getPaymentHistory(payrollId: string) {
+    return PayrollPaymentService.getPaymentHistory(payrollId);
+  }
+
+  static async getAllPayments() {
+    return PayrollPaymentService.getAllPayments();
   }
 }

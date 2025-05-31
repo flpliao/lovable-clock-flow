@@ -2,9 +2,10 @@
 export const getPayrollStatusText = (status: string): string => {
   const statuses: Record<string, string> = {
     'draft': '草稿',
-    'calculated': '已計算',
+    'calculated': '待核准',
     'approved': '已核准',
-    'paid': '已發放'
+    'paid': '已發放',
+    'rejected': '已拒絕'
   };
   return statuses[status] || '未知';
 };
@@ -12,9 +13,10 @@ export const getPayrollStatusText = (status: string): string => {
 export const getPayrollStatusColor = (status: string): string => {
   const colors: Record<string, string> = {
     'draft': 'bg-gray-100 text-gray-800',
-    'calculated': 'bg-blue-100 text-blue-800',
+    'calculated': 'bg-orange-100 text-orange-800',
     'approved': 'bg-green-100 text-green-800',
-    'paid': 'bg-purple-100 text-purple-800'
+    'paid': 'bg-blue-100 text-blue-800',
+    'rejected': 'bg-red-100 text-red-800'
   };
   return colors[status] || 'bg-gray-100 text-gray-800';
 };

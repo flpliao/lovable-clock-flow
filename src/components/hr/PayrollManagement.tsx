@@ -22,6 +22,9 @@ const PayrollManagement: React.FC = () => {
     createPayroll,
     updatePayroll,
     deletePayroll,
+    approvePayroll,
+    rejectPayroll,
+    markAsPaid,
     refresh
   } = usePayrollManagement();
 
@@ -57,6 +60,18 @@ const PayrollManagement: React.FC = () => {
     if (confirm('確定要刪除這筆薪資記錄嗎？')) {
       await deletePayroll(id);
     }
+  };
+
+  const handleApprovePayroll = async (payrollId: string, comment?: string) => {
+    await approvePayroll(payrollId, comment);
+  };
+
+  const handleRejectPayroll = async (payrollId: string, comment: string) => {
+    await rejectPayroll(payrollId, comment);
+  };
+
+  const handleMarkAsPaid = async (payrollId: string, paymentData: any) => {
+    await markAsPaid(payrollId, paymentData);
   };
 
   return (
@@ -114,6 +129,9 @@ const PayrollManagement: React.FC = () => {
         onEdit={handleEditPayroll}
         onDelete={handleDeletePayroll}
         onUpdateStatus={updatePayroll}
+        onApprove={handleApprovePayroll}
+        onReject={handleRejectPayroll}
+        onMarkAsPaid={handleMarkAsPaid}
       />
 
       <PayrollFormDialog

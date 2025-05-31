@@ -1,13 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Edit, Trash2, Check, X } from 'lucide-react';
+import { Edit, Trash2, Check, X, DollarSign, Clock } from 'lucide-react';
 import { formatCurrency, getPayrollStatusText, getPayrollStatusColor } from '@/utils/payrollUtils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Skeleton } from '@/components/ui/skeleton';
+import PayrollApprovalDialog from './dialogs/PayrollApprovalDialog';
+import PayrollPaymentDialog from './dialogs/PayrollPaymentDialog';
 
 interface PayrollTableProps {
   payrolls: any[];
@@ -15,6 +17,9 @@ interface PayrollTableProps {
   onEdit: (payroll: any) => void;
   onDelete: (id: string) => void;
   onUpdateStatus: (id: string, updates: any) => void;
+  onApprove: (payrollId: string, comment?: string) => void;
+  onReject: (payrollId: string, comment: string) => void;
+  onMarkAsPaid: (payrollId: string, paymentData: any) => void;
 }
 
 const PayrollTable: React.FC<PayrollTableProps> = ({ 
@@ -22,9 +27,14 @@ const PayrollTable: React.FC<PayrollTableProps> = ({
   isLoading, 
   onEdit, 
   onDelete, 
-  onUpdateStatus 
+  onUpdateStatus,
+  onApprove,
+  onReject,
+  onMarkAsPaid
 }) => {
   const isMobile = useIsMobile();
+  const [approvalDialog, setApprovalDialog] = useState<{ open: boolean; payroll: any }>({ open: false, payroll: null });
+  const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; payroll: any }>({ open: false, payroll: null });
 
   if (isLoading) {
     return (
@@ -46,22 +56,12 @@ const PayrollTable: React.FC<PayrollTableProps> = ({
     );
   }
 
-  const handleApprove = (payroll: any) => {
-    onUpdateStatus(payroll.id, { 
-      status: 'approved',
-      approval_date: new Date().toISOString()
-    });
+  const handleOpenApprovalDialog = (payroll: any) => {
+    setApprovalDialog({ open: true, payroll });
   };
 
-  const handleReject = (payroll: any) => {
-    onUpdateStatus(payroll.id, { status: 'draft' });
-  };
-
-  const handleMarkPaid = (payroll: any) => {
-    onUpdateStatus(payroll.id, { 
-      status: 'paid',
-      paid_date: new Date().toISOString()
-    });
+  const handleOpenPaymentDialog = (payroll: any) => {
+    setPaymentDialog({ open: true, payroll });
   };
 
   if (isMobile) {
@@ -106,19 +106,24 @@ const PayrollTable: React.FC<PayrollTableProps> = ({
                 </Button>
                 
                 {payroll.status === 'calculated' && (
-                  <>
-                    <Button size="sm" className="text-xs bg-green-600" onClick={() => handleApprove(payroll)}>
-                      <Check className="h-3 w-3" />
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-xs text-red-600" onClick={() => handleReject(payroll)}>
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </>
+                  <Button 
+                    size="sm" 
+                    className="text-xs bg-blue-600 hover:bg-blue-700"
+                    onClick={() => handleOpenApprovalDialog(payroll)}
+                  >
+                    <Clock className="h-3 w-3 mr-1" />
+                    核准
+                  </Button>
                 )}
                 
                 {payroll.status === 'approved' && (
-                  <Button size="sm" className="text-xs bg-purple-600" onClick={() => handleMarkPaid(payroll)}>
-                    標記已發放
+                  <Button 
+                    size="sm" 
+                    className="text-xs bg-green-600 hover:bg-green-700"
+                    onClick={() => handleOpenPaymentDialog(payroll)}
+                  >
+                    <DollarSign className="h-3 w-3 mr-1" />
+                    發放
                   </Button>
                 )}
                 
@@ -129,6 +134,7 @@ const PayrollTable: React.FC<PayrollTableProps> = ({
             </CardContent>
           </Card>
         ))}
+        
         {payrolls.length === 0 && (
           <Card>
             <CardContent className="p-6">
@@ -138,6 +144,21 @@ const PayrollTable: React.FC<PayrollTableProps> = ({
             </CardContent>
           </Card>
         )}
+
+        <PayrollApprovalDialog
+          open={approvalDialog.open}
+          onOpenChange={(open) => setApprovalDialog({ open, payroll: null })}
+          payroll={approvalDialog.payroll}
+          onApprove={(comment) => onApprove(approvalDialog.payroll.id, comment)}
+          onReject={(comment) => onReject(approvalDialog.payroll.id, comment)}
+        />
+
+        <PayrollPaymentDialog
+          open={paymentDialog.open}
+          onOpenChange={(open) => setPaymentDialog({ open, payroll: null })}
+          payroll={paymentDialog.payroll}
+          onConfirmPayment={(paymentData) => onMarkAsPaid(paymentDialog.payroll.id, paymentData)}
+        />
       </div>
     );
   }
@@ -200,19 +221,22 @@ const PayrollTable: React.FC<PayrollTableProps> = ({
                     </Button>
                     
                     {payroll.status === 'calculated' && (
-                      <>
-                        <Button size="sm" className="bg-green-600" onClick={() => handleApprove(payroll)}>
-                          <Check className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-red-600" onClick={() => handleReject(payroll)}>
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </>
+                      <Button 
+                        size="sm" 
+                        className="bg-blue-600 hover:bg-blue-700"
+                        onClick={() => handleOpenApprovalDialog(payroll)}
+                      >
+                        <Clock className="h-4 w-4" />
+                      </Button>
                     )}
                     
                     {payroll.status === 'approved' && (
-                      <Button size="sm" className="bg-purple-600" onClick={() => handleMarkPaid(payroll)}>
-                        標記已發放
+                      <Button 
+                        size="sm" 
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => handleOpenPaymentDialog(payroll)}
+                      >
+                        <DollarSign className="h-4 w-4" />
                       </Button>
                     )}
                     
@@ -230,6 +254,21 @@ const PayrollTable: React.FC<PayrollTableProps> = ({
             沒有找到相關的薪資記錄
           </div>
         )}
+
+        <PayrollApprovalDialog
+          open={approvalDialog.open}
+          onOpenChange={(open) => setApprovalDialog({ open, payroll: null })}
+          payroll={approvalDialog.payroll}
+          onApprove={(comment) => onApprove(approvalDialog.payroll?.id, comment)}
+          onReject={(comment) => onReject(approvalDialog.payroll?.id, comment)}
+        />
+
+        <PayrollPaymentDialog
+          open={paymentDialog.open}
+          onOpenChange={(open) => setPaymentDialog({ open, payroll: null })}
+          payroll={paymentDialog.payroll}
+          onConfirmPayment={(paymentData) => onMarkAsPaid(paymentDialog.payroll?.id, paymentData)}
+        />
       </CardContent>
     </Card>
   );

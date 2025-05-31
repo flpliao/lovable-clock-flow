@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +21,7 @@ const LocationCheckIn = () => {
   const [actionType, setActionType] = useState<'check-in' | 'check-out'>('check-in');
   const [loading, setLoading] = useState(false);
 
-  const { handleLocationCheckIn, handleIpCheckIn, distance, error } = useCheckIn();
+  const { onLocationCheckIn, onIpCheckIn, distance, error } = useCheckIn();
   const { todayRecords, refreshRecords } = useTodayCheckInRecords();
   const { toast } = useToast();
 
@@ -39,9 +38,9 @@ const LocationCheckIn = () => {
     setLoading(true);
     try {
       if (checkInMethod === 'location') {
-        await handleLocationCheckIn(actionType);
+        await onLocationCheckIn();
       } else {
-        await handleIpCheckIn(actionType);
+        await onIpCheckIn();
       }
       
       toast({

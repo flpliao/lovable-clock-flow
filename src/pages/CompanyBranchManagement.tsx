@@ -21,18 +21,17 @@ const CompanyBranchManagement = () => {
     <StaffManagementProvider>
       <CompanyManagementProvider>
         <div className="flex flex-col min-h-screen bg-white">
-          <main className="flex-1 p-3 sm:p-4">
-            <div className="mb-4">
-              <h1 className="text-xl sm:text-2xl font-bold flex items-center">
-                <Building2 className="h-6 w-6 sm:h-8 sm:w-8 mr-2 text-blue-600" />
+          <main className="flex-1 p-2 sm:p-3">
+            <div className="mb-3">
+              <h1 className="text-lg sm:text-xl font-bold flex items-center">
+                <Building2 className="h-5 w-5 sm:h-6 sm:w-6 mr-2 text-blue-600" />
                 公司基本資料與營業處管理
               </h1>
-              <p className="text-sm text-gray-500 mt-1">管理公司基本資料與各營業處資訊</p>
             </div>
             
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-1 mb-3">
-                <TabsTrigger value="overview">公司與營業處管理</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-1 mb-2">
+                <TabsTrigger value="overview">管理</TabsTrigger>
               </TabsList>
               
               <TabsContent value="overview">

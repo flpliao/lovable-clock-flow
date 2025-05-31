@@ -23,26 +23,26 @@ const CompanyManagementRedesigned = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* 公司基本資料 */}
       <CompanyInfoCard />
 
       {/* 營業處管理區塊 */}
       <Card>
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center text-lg">
-              <Building2 className="h-5 w-5 mr-2 text-blue-600" />
-              營業處管理 ({branches?.length || 0})
+            <CardTitle className="flex items-center text-base">
+              <Building2 className="h-4 w-4 mr-2 text-blue-600" />
+              營業處 ({branches?.length || 0})
             </CardTitle>
             {canManageBranches && (
               <Button
                 onClick={handleAddBranch}
                 size="sm"
-                className="flex items-center"
+                className="flex items-center text-xs"
               >
-                <Plus className="h-4 w-4 mr-1" />
-                新增營業處
+                <Plus className="h-3 w-3 mr-1" />
+                新增
               </Button>
             )}
           </div>

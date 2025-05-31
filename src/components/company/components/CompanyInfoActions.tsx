@@ -20,15 +20,15 @@ export const CompanyInfoActions: React.FC<CompanyInfoActionsProps> = ({
   if (!canEdit) return null;
 
   return (
-    <div className="px-6 pb-4">
+    <div className="px-6 pb-2">
       <Button
         onClick={onEdit}
         variant="outline"
         size="sm"
-        className="flex items-center"
+        className="flex items-center text-xs h-7"
       >
-        <Edit className="h-4 w-4 mr-2" />
-        編輯資料
+        <Edit className="h-3 w-3 mr-1" />
+        編輯
       </Button>
     </div>
   );

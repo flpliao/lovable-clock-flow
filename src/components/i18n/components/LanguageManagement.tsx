@@ -123,16 +123,16 @@ export const LanguageManagement: React.FC = () => {
 
   return (
     <Card>
-      <CardHeader className="pb-4 px-6">
-        <CardTitle className="flex items-center text-lg">
-          <Globe className="h-5 w-5 mr-2" />
+      <CardHeader className="pb-3 px-4">
+        <CardTitle className="flex items-center text-base">
+          <Globe className="h-4 w-4 mr-2" />
           多語系管理
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="space-y-6 px-6 pb-6">
-        <div className="space-y-4">
-          <div className="space-y-2">
+      <CardContent className="space-y-4 px-4 pb-4">
+        <div className="space-y-3">
+          <div className="space-y-1.5">
             <label className="text-sm font-medium text-gray-700">國家地區</label>
             <CountrySelector
               value={selectedCountry}
@@ -141,7 +141,7 @@ export const LanguageManagement: React.FC = () => {
             />
           </div>
           
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="text-sm font-medium text-gray-700">語言</label>
             <LanguageSelector
               value={selectedLanguage}
@@ -152,9 +152,9 @@ export const LanguageManagement: React.FC = () => {
         </div>
 
         {selectedCountryInfo && selectedLanguageInfo && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 mb-3">選擇摘要：</h4>
-            <div className="space-y-1 text-sm text-blue-800">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <h4 className="font-medium text-blue-900 mb-2">選擇摘要：</h4>
+            <div className="space-y-0.5 text-sm text-blue-800">
               <p>國家：{selectedCountryInfo.name_zh} ({selectedCountryInfo.name_en})</p>
               <p>語言：{selectedLanguageInfo.name_zh} ({selectedLanguageInfo.name_native})</p>
               <p>時區：{selectedCountryInfo.timezone}</p>
@@ -164,7 +164,7 @@ export const LanguageManagement: React.FC = () => {
           </div>
         )}
 
-        <div className="flex gap-3 pt-2">
+        <div className="flex gap-2 pt-1">
           <Button
             onClick={handleSave}
             disabled={isLoading || !hasChanges}
@@ -187,7 +187,7 @@ export const LanguageManagement: React.FC = () => {
             variant="outline"
             onClick={handleReset}
             disabled={isLoading}
-            className="px-6"
+            className="px-4"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             重置

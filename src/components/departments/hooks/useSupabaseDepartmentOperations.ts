@@ -5,7 +5,18 @@ import { toast } from '@/hooks/use-toast';
 import { Department, NewDepartment } from '../types';
 import { transformDepartmentData, transformToDbFormat } from '../services/departmentTransformService';
 
-export const useSupabaseDepartmentOperations = () => {
+interface DepartmentOperationsReturn {
+  loading: boolean;
+  departments: Department[];
+  fetchDepartments: () => Promise<Department[]>;
+  refreshDepartments: () => Promise<void>;
+  addDepartment: (newDepartment: NewDepartment) => Promise<boolean>;
+  updateDepartment: (department: Department) => Promise<boolean>;
+  deleteDepartment: (id: string) => Promise<boolean>;
+  updateStaffCount: (departmentId: string) => Promise<void>;
+}
+
+export const useSupabaseDepartmentOperations = (): DepartmentOperationsReturn => {
   const [loading, setLoading] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
 

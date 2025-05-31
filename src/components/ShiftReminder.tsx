@@ -76,16 +76,16 @@ const ShiftReminder: React.FC = () => {
         if (!isWorkComplete) {
           let message = '';
           if (!hasCheckIn) {
-            message = `${currentUser.name}，你今天的上班時間為：${userShift.startTime} ~ ${userShift.endTime}，記得打卡喔！`;
+            message = `${currentUser.name}，你今天的上班時間為：${userShift.startTime} ~ ${userShift.endTime}，記得打卡喔！系統會在您忘記打卡時提醒您。`;
           } else if (!hasCheckOut) {
-            message = `${currentUser.name}，你已完成上班打卡，記得下班時也要打卡喔！`;
+            message = `${currentUser.name}，你已完成上班打卡，記得下班時也要打卡喔！系統會在下班時間後提醒您。`;
           }
 
           if (message) {
             toast({
               title: "今日排班提醒",
               description: message,
-              duration: 8000, // 8秒後自動消失
+              duration: 10000, // 10秒後自動消失
             });
           }
         } else {
@@ -126,6 +126,9 @@ const ShiftReminder: React.FC = () => {
             ? `${currentUser.name}，你今天的上班時間為：${todayShift.startTime} ~ ${todayShift.endTime}，記得打卡喔！`
             : `${currentUser.name}，你已完成上班打卡，記得下班時也要打卡喔！`
           }
+        </p>
+        <p className="text-xs text-amber-600 mt-1">
+          💡 系統會在您忘記打卡時自動提醒您（5分鐘提醒一次，共2次）
         </p>
       </div>
     </div>

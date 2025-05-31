@@ -10,6 +10,7 @@ import CheckInStatusDisplay from './check-in/CheckInStatusDisplay';
 import CheckInCompletedMessage from './check-in/CheckInCompletedMessage';
 import ActionTypeSelector from './check-in/ActionTypeSelector';
 import CheckInMethodSelector from './check-in/CheckInMethodSelector';
+import CheckInReminderSystem from './check-in/CheckInReminderSystem';
 
 // Custom hook
 import { useCheckIn } from '@/hooks/useCheckIn';
@@ -119,6 +120,9 @@ const LocationCheckIn: React.FC = () => {
   return (
     <div className="mt-10 flex flex-col items-center justify-center relative">
       <div className="bg-pattern bg-repeat-x w-full h-64 absolute -bottom-10 opacity-10 z-0"></div>
+      
+      {/* 自動補卡提醒系統 */}
+      <CheckInReminderSystem />
       
       {error && (
         <Alert variant="destructive" className="mb-4 max-w-md mx-auto">

@@ -1,12 +1,12 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { PositionManagementContextType } from './types';
-import { usePositionManagement } from './hooks/usePositionManagement';
+import { useSupabasePositionOperations } from './hooks/useSupabasePositionOperations';
 
 const PositionManagementContext = createContext<PositionManagementContextType | undefined>(undefined);
 
 export const PositionManagementProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const positionManagement = usePositionManagement();
+  const positionManagement = useSupabasePositionOperations();
 
   return (
     <PositionManagementContext.Provider value={positionManagement}>

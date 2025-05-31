@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { 
   Card, 
   CardContent, 
-  CardDescription, 
   CardHeader, 
   CardTitle 
 } from '@/components/ui/card';
@@ -23,39 +22,32 @@ const StaffManagement = () => {
 
   return (
     <CompanyManagementProvider>
-      <div className="space-y-4">
+      <div className="space-y-2">
         <AdminVerificationCard />
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle>人員管理</CardTitle>
-              <CardDescription>
-                {isAdmin() 
-                  ? "管理排班系統中的所有員工資料，包含營業處歸屬管理" 
-                  : "查看和管理您自己的員工資料"}
-              </CardDescription>
-            </div>
+            <CardTitle className="text-base">人員管理</CardTitle>
             <AddStaffDialog />
           </CardHeader>
-          <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-              <TabsList className="grid w-full grid-cols-3 mb-4">
-                <TabsTrigger value="list">人員列表</TabsTrigger>
-                <TabsTrigger value="org-chart">公司組織圖</TabsTrigger>
-                {isAdmin() && <TabsTrigger value="roles">角色與權限</TabsTrigger>}
+          <CardContent className="pt-0">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-3 mb-2 h-8">
+                <TabsTrigger value="list" className="text-xs">人員列表</TabsTrigger>
+                <TabsTrigger value="org-chart" className="text-xs">組織圖</TabsTrigger>
+                {isAdmin() && <TabsTrigger value="roles" className="text-xs">權限</TabsTrigger>}
               </TabsList>
               
-              <TabsContent value="list">
+              <TabsContent value="list" className="mt-2">
                 <StaffTable />
               </TabsContent>
               
-              <TabsContent value="org-chart">
+              <TabsContent value="org-chart" className="mt-2">
                 <OrganizationChart />
               </TabsContent>
               
               {isAdmin() && (
-                <TabsContent value="roles">
+                <TabsContent value="roles" className="mt-2">
                   <RoleManagement />
                 </TabsContent>
               )}

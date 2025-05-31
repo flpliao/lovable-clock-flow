@@ -23,36 +23,36 @@ const StaffTable: React.FC = () => {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>姓名</TableHead>
-                <TableHead>職位</TableHead>
-                <TableHead>部門</TableHead>
-                <TableHead>所屬營業處</TableHead>
-                <TableHead>上級主管</TableHead>
-                <TableHead>操作</TableHead>
+              <TableRow className="h-8">
+                <TableHead className="text-xs font-medium">姓名</TableHead>
+                <TableHead className="text-xs font-medium">職位</TableHead>
+                <TableHead className="text-xs font-medium">部門</TableHead>
+                <TableHead className="text-xs font-medium">營業處</TableHead>
+                <TableHead className="text-xs font-medium">主管</TableHead>
+                <TableHead className="text-xs font-medium">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredStaffList.map((staff) => (
-                <TableRow key={staff.id}>
-                  <TableCell className="font-medium">{staff.name}</TableCell>
-                  <TableCell>{staff.position}</TableCell>
-                  <TableCell>{staff.department}</TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                <TableRow key={staff.id} className="h-10">
+                  <TableCell className="font-medium text-sm py-1">{staff.name}</TableCell>
+                  <TableCell className="text-sm py-1">{staff.position}</TableCell>
+                  <TableCell className="text-sm py-1">{staff.department}</TableCell>
+                  <TableCell className="py-1">
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-blue-100 text-blue-800">
                       {staff.branch_name || '未設定'}
                     </span>
                   </TableCell>
-                  <TableCell>{getSupervisorName(staff.supervisor_id)}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
+                  <TableCell className="text-sm py-1">{getSupervisorName(staff.supervisor_id)}</TableCell>
+                  <TableCell className="py-1">
+                    <div className="flex items-center space-x-1">
                       <Button 
                         variant="ghost" 
                         size="sm"
                         onClick={() => openEditDialog(staff)}
-                        className="flex items-center"
+                        className="h-7 px-2 text-xs"
                       >
-                        <Pencil className="h-4 w-4 mr-1" />
+                        <Pencil className="h-3 w-3 mr-1" />
                         編輯
                       </Button>
                       
@@ -60,10 +60,10 @@ const StaffTable: React.FC = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="flex items-center"
+                          className="h-7 px-2 text-xs"
                         >
-                          <UserCog className="h-4 w-4 mr-1" />
-                          帳號設定
+                          <UserCog className="h-3 w-3 mr-1" />
+                          帳號
                         </Button>
                       </CredentialManagementDialog>
                       
@@ -71,10 +71,10 @@ const StaffTable: React.FC = () => {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="text-red-500 hover:text-red-700 flex items-center"
+                          className="text-red-500 hover:text-red-700 h-7 px-2 text-xs"
                           onClick={() => handleDeleteStaff(staff.id)}
                         >
-                          <Trash2 className="h-4 w-4 mr-1" />
+                          <Trash2 className="h-3 w-3 mr-1" />
                           刪除
                         </Button>
                       )}
@@ -86,8 +86,8 @@ const StaffTable: React.FC = () => {
           </Table>
         </div>
       ) : (
-        <div className="p-8 text-center">
-          <p className="text-muted-foreground">沒有員工資料</p>
+        <div className="p-4 text-center">
+          <p className="text-muted-foreground text-sm">沒有員工資料</p>
         </div>
       )}
     </div>

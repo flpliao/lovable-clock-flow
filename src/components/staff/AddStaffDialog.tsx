@@ -38,34 +38,34 @@ const AddStaffDialog = () => {
   return (
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="h-4 w-4 mr-1" /> 新增人員
+        <Button size="sm" className="h-7 px-2 text-xs">
+          <Plus className="h-3 w-3 mr-1" /> 新增
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle>新增人員</DialogTitle>
-          <DialogDescription>
-            新增員工至排班系統，完成後請點擊新增
+          <DialogTitle className="text-base">新增人員</DialogTitle>
+          <DialogDescription className="text-xs">
+            新增員工至系統
           </DialogDescription>
         </DialogHeader>
         
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
+        <div className="grid gap-3 py-2">
+          <div className="grid grid-cols-4 items-center gap-3">
+            <Label htmlFor="name" className="text-right text-xs">
               姓名
             </Label>
             <Input
               id="name"
               value={newStaff.name}
               onChange={(e) => setNewStaff({...newStaff, name: e.target.value})}
-              className="col-span-3"
+              className="col-span-3 h-8 text-xs"
             />
           </div>
           
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="branch" className="text-right">
-              所屬營業處
+          <div className="grid grid-cols-4 items-center gap-3">
+            <Label htmlFor="branch" className="text-right text-xs">
+              營業處
             </Label>
             <Select 
               value={newStaff.branch_id || ''} 
@@ -78,33 +78,33 @@ const AddStaffDialog = () => {
                 });
               }}
             >
-              <SelectTrigger className="col-span-3" id="branch">
+              <SelectTrigger className="col-span-3 h-8 text-xs" id="branch">
                 <SelectValue placeholder="選擇營業處" />
               </SelectTrigger>
               <SelectContent>
                 {branches.map((branch) => (
-                  <SelectItem key={branch.id} value={branch.id}>
-                    {branch.name} ({branch.type === 'headquarters' ? '總公司' : branch.type === 'branch' ? '分公司' : '門市'})
+                  <SelectItem key={branch.id} value={branch.id} className="text-xs">
+                    {branch.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="position" className="text-right">
+          <div className="grid grid-cols-4 items-center gap-3">
+            <Label htmlFor="position" className="text-right text-xs">
               職位
             </Label>
             <Select 
               value={newStaff.position} 
               onValueChange={(value) => setNewStaff({...newStaff, position: value})}
             >
-              <SelectTrigger className="col-span-3" id="position">
+              <SelectTrigger className="col-span-3 h-8 text-xs" id="position">
                 <SelectValue placeholder="選擇職位" />
               </SelectTrigger>
               <SelectContent>
                 {positions.map((position) => (
-                  <SelectItem key={position} value={position}>
+                  <SelectItem key={position} value={position} className="text-xs">
                     {position}
                   </SelectItem>
                 ))}
@@ -112,20 +112,20 @@ const AddStaffDialog = () => {
             </Select>
           </div>
           
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="department" className="text-right">
+          <div className="grid grid-cols-4 items-center gap-3">
+            <Label htmlFor="department" className="text-right text-xs">
               部門
             </Label>
             <Select 
               value={newStaff.department} 
               onValueChange={(value) => setNewStaff({...newStaff, department: value})}
             >
-              <SelectTrigger className="col-span-3" id="department">
+              <SelectTrigger className="col-span-3 h-8 text-xs" id="department">
                 <SelectValue placeholder="選擇部門" />
               </SelectTrigger>
               <SelectContent>
                 {departments.map((department) => (
-                  <SelectItem key={department} value={department}>
+                  <SelectItem key={department} value={department} className="text-xs">
                     {department}
                   </SelectItem>
                 ))}
@@ -133,44 +133,44 @@ const AddStaffDialog = () => {
             </Select>
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="supervisor" className="text-right">
-              上級主管
+          <div className="grid grid-cols-4 items-center gap-3">
+            <Label htmlFor="supervisor" className="text-right text-xs">
+              主管
             </Label>
             <Select 
               value={newStaff.supervisor_id || ''} 
               onValueChange={(value) => setNewStaff({...newStaff, supervisor_id: value || undefined})}
             >
-              <SelectTrigger className="col-span-3" id="supervisor">
-                <SelectValue placeholder="選擇上級主管" />
+              <SelectTrigger className="col-span-3 h-8 text-xs" id="supervisor">
+                <SelectValue placeholder="選擇主管" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">無上級主管</SelectItem>
+                <SelectItem value="" className="text-xs">無主管</SelectItem>
                 {staffList
                   .filter(staff => newStaff.branch_id ? staff.branch_id === newStaff.branch_id || staff.branch_id === '1' : true)
                   .map((staff) => (
-                  <SelectItem key={staff.id} value={staff.id}>
-                    {staff.name} ({staff.position}) - {staff.branch_name}
+                  <SelectItem key={staff.id} value={staff.id} className="text-xs">
+                    {staff.name} ({staff.position})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="contact" className="text-right">
-              聯絡電話
+          <div className="grid grid-cols-4 items-center gap-3">
+            <Label htmlFor="contact" className="text-right text-xs">
+              電話
             </Label>
             <Input
               id="contact"
               value={newStaff.contact}
               onChange={(e) => setNewStaff({...newStaff, contact: e.target.value})}
-              className="col-span-3"
+              className="col-span-3 h-8 text-xs"
             />
           </div>
           
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="role" className="text-right">
+          <div className="grid grid-cols-4 items-center gap-3">
+            <Label htmlFor="role" className="text-right text-xs">
               角色
             </Label>
             <Select 
@@ -188,12 +188,12 @@ const AddStaffDialog = () => {
                 }
               }}
             >
-              <SelectTrigger className="col-span-3" id="role">
+              <SelectTrigger className="col-span-3 h-8 text-xs" id="role">
                 <SelectValue placeholder="選擇角色" />
               </SelectTrigger>
               <SelectContent>
                 {roles.map((role) => (
-                  <SelectItem key={role.id} value={role.id}>
+                  <SelectItem key={role.id} value={role.id} className="text-xs">
                     {role.name}
                   </SelectItem>
                 ))}
@@ -203,8 +203,8 @@ const AddStaffDialog = () => {
         </div>
         
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>取消</Button>
-          <Button onClick={handleAddStaff}>新增</Button>
+          <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="h-8 text-xs">取消</Button>
+          <Button onClick={handleAddStaff} className="h-8 text-xs">新增</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -4,14 +4,14 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users } from 'lucide-react';
 import { Control } from 'react-hook-form';
-import { useStaffManagement } from '@/contexts/StaffManagementContext';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 
 interface StaffSelectorProps {
   control: Control<any>;
 }
 
 const StaffSelector = ({ control }: StaffSelectorProps) => {
-  const { staff } = useStaffManagement();
+  const { staff } = useStaffManagementContext();
 
   return (
     <FormField

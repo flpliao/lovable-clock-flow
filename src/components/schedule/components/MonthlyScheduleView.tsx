@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, getDay } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
+import { TimeSlotIcon } from '../utils/timeSlotIcons';
 
 interface MonthlyScheduleViewProps {
   selectedDate: Date;
@@ -40,10 +41,10 @@ const MonthlyScheduleView = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
+        <CardTitle className="text-base sm:text-lg">
           {format(selectedDate, 'yyyy年MM月', { locale: zhTW })} 排班總覽
           {selectedStaffId && (
-            <span className="ml-2 text-base text-gray-600">
+            <span className="ml-2 text-sm sm:text-base text-gray-600">
               - {getUserName(selectedStaffId)}
             </span>
           )}
@@ -55,7 +56,7 @@ const MonthlyScheduleView = ({
           {['日', '一', '二', '三', '四', '五', '六'].map((day, index) => (
             <div 
               key={day} 
-              className={`text-center text-sm font-medium py-2 ${
+              className={`text-center text-xs sm:text-sm font-medium py-2 ${
                 index === 0 || index === 6 ? 'text-red-500' : 'text-gray-700'
               }`}
             >
@@ -65,7 +66,7 @@ const MonthlyScheduleView = ({
           
           {/* 月初空白天數 */}
           {paddingDays.map((_, index) => (
-            <div key={`padding-${index}`} className="h-24"></div>
+            <div key={`padding-${index}`} className="h-16 sm:h-24"></div>
           ))}
           
           {/* 實際日期 */}
@@ -76,17 +77,42 @@ const MonthlyScheduleView = ({
             return (
               <div 
                 key={day.toISOString()} 
-                className={`border border-gray-200 h-24 p-1 ${
+                className={`border border-gray-200 h-16 sm:h-24 p-1 ${
                   isWeekend ? 'bg-red-50' : 'bg-white'
                 }`}
               >
-                <div className={`text-sm font-medium mb-1 ${
+                <div className={`text-xs sm:text-sm font-medium mb-1 ${
                   isWeekend ? 'text-red-600' : 'text-gray-900'
                 }`}>
                   {format(day, 'd')}
                 </div>
-                <div className="space-y-1">
-                  {daySchedules.map((schedule, index) => (
+                
+                {/* 手機版：使用圖示顯示 */}
+                <div className="space-y-1 sm:hidden">
+                  <div className="flex flex-wrap gap-1">
+                    {daySchedules.slice(0, 4).map((schedule, index) => (
+                      <div key={schedule.id} className="relative group">
+                        <TimeSlotIcon 
+                          timeSlotName={schedule.timeSlot} 
+                          size="sm"
+                        />
+                        {/* Tooltip 顯示詳細信息 */}
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap pointer-events-none">
+                          {selectedStaffId ? schedule.timeSlot : getUserName(schedule.userId)}
+                        </div>
+                      </div>
+                    ))}
+                    {daySchedules.length > 4 && (
+                      <div className="text-xs text-gray-500 bg-gray-100 rounded px-1">
+                        +{daySchedules.length - 4}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 桌面版：使用文字顯示 */}
+                <div className="space-y-1 hidden sm:block">
+                  {daySchedules.slice(0, 2).map((schedule, index) => (
                     <Badge 
                       key={schedule.id}
                       variant="secondary" 

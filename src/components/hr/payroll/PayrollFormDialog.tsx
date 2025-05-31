@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -44,7 +45,10 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
     deductions: 0,
     tax: 0,
     labor_insurance: 0,
-    health_insurance: 0
+    health_insurance: 0,
+    gross_salary: 0,
+    net_salary: 0,
+    status: 'draft'
   });
 
   useEffect(() => {
@@ -53,23 +57,28 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
     }
   }, [open]);
 
+  // 初始化表單資料
   useEffect(() => {
     if (initialData) {
+      console.log('📝 載入編輯資料:', initialData);
       setFormData({
         staff_id: initialData.staff_id || '',
         salary_structure_id: initialData.salary_structure_id || '',
         pay_period_start: initialData.pay_period_start || '',
         pay_period_end: initialData.pay_period_end || '',
-        base_salary: initialData.base_salary || 0,
-        overtime_hours: initialData.overtime_hours || 0,
-        overtime_pay: initialData.overtime_pay || 0,
-        holiday_hours: initialData.holiday_hours || 0,
-        holiday_pay: initialData.holiday_pay || 0,
-        allowances: initialData.allowances || 0,
-        deductions: initialData.deductions || 0,
-        tax: initialData.tax || 0,
-        labor_insurance: initialData.labor_insurance || 0,
-        health_insurance: initialData.health_insurance || 0
+        base_salary: Number(initialData.base_salary) || 0,
+        overtime_hours: Number(initialData.overtime_hours) || 0,
+        overtime_pay: Number(initialData.overtime_pay) || 0,
+        holiday_hours: Number(initialData.holiday_hours) || 0,
+        holiday_pay: Number(initialData.holiday_pay) || 0,
+        allowances: Number(initialData.allowances) || 0,
+        deductions: Number(initialData.deductions) || 0,
+        tax: Number(initialData.tax) || 0,
+        labor_insurance: Number(initialData.labor_insurance) || 0,
+        health_insurance: Number(initialData.health_insurance) || 0,
+        gross_salary: Number(initialData.gross_salary) || 0,
+        net_salary: Number(initialData.net_salary) || 0,
+        status: initialData.status || 'draft'
       });
     } else {
       // 重置表單
@@ -87,18 +96,21 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
         deductions: 0,
         tax: 0,
         labor_insurance: 0,
-        health_insurance: 0
+        health_insurance: 0,
+        gross_salary: 0,
+        net_salary: 0,
+        status: 'draft'
       });
     }
   }, [initialData, open]);
 
+  // 當薪資結構改變時，自動填入基本資料
   const handleSalaryStructureChange = (structureId: string) => {
     const structure = salaryStructures.find(s => s.id === structureId);
     if (structure) {
-      // 安全地計算津貼總額，確保型別正確
+      // 安全地計算津貼總額
       let allowancesTotal: number = 0;
       if (structure.allowances && typeof structure.allowances === 'object') {
-        // 確保 Object.values 返回的值被正確處理為數字
         const allowanceValues = Object.values(structure.allowances) as unknown[];
         allowancesTotal = allowanceValues.reduce<number>((sum: number, val: unknown) => {
           const numVal = Number(val) || 0;
@@ -106,40 +118,85 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
         }, 0);
       }
       
-      setFormData(prev => ({
-        ...prev,
-        salary_structure_id: structureId,
-        base_salary: structure.base_salary,
-        allowances: allowancesTotal
-      }));
+      setFormData(prev => {
+        const newData = {
+          ...prev,
+          salary_structure_id: structureId,
+          base_salary: structure.base_salary,
+          allowances: allowancesTotal
+        };
+        
+        // 重新計算薪資
+        const calculatedData = calculateSalaries(newData);
+        return calculatedData;
+      });
     }
   };
 
+  // 計算加班費
   const calculateOvertimePay = (hours: number) => {
     const structure = salaryStructures.find(s => s.id === formData.salary_structure_id);
     if (structure && formData.base_salary) {
       const hourlyRate = formData.base_salary / 30 / 8; // 假設月薪 / 30天 / 8小時
-      return hours * hourlyRate * structure.overtime_rate;
+      return Math.round(hours * hourlyRate * structure.overtime_rate);
     }
     return 0;
   };
 
+  // 計算假日工作費
   const calculateHolidayPay = (hours: number) => {
     const structure = salaryStructures.find(s => s.id === formData.salary_structure_id);
     if (structure && formData.base_salary) {
       const hourlyRate = formData.base_salary / 30 / 8;
-      return hours * hourlyRate * structure.holiday_rate;
+      return Math.round(hours * hourlyRate * structure.holiday_rate);
     }
     return 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
+  // 計算應發和實發薪資
+  const calculateSalaries = (data: typeof formData) => {
+    const grossSalary = data.base_salary + data.overtime_pay + data.holiday_pay + data.allowances;
+    const netSalary = grossSalary - data.deductions - data.tax - data.labor_insurance - data.health_insurance;
+    
+    return {
+      ...data,
+      gross_salary: grossSalary,
+      net_salary: netSalary
+    };
   };
 
-  const grossSalary = formData.base_salary + formData.overtime_pay + formData.holiday_pay + formData.allowances;
-  const netSalary = grossSalary - formData.deductions - formData.tax - formData.labor_insurance - formData.health_insurance;
+  // 更新表單資料並重新計算
+  const updateFormData = (updates: Partial<typeof formData>) => {
+    setFormData(prev => {
+      const newData = { ...prev, ...updates };
+      return calculateSalaries(newData);
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // 確保所有必要欄位都有值
+    const submitData = {
+      ...formData,
+      // 確保數值欄位是數字類型
+      base_salary: Number(formData.base_salary),
+      overtime_hours: Number(formData.overtime_hours),
+      overtime_pay: Number(formData.overtime_pay),
+      holiday_hours: Number(formData.holiday_hours),
+      holiday_pay: Number(formData.holiday_pay),
+      allowances: Number(formData.allowances),
+      deductions: Number(formData.deductions),
+      tax: Number(formData.tax),
+      labor_insurance: Number(formData.labor_insurance),
+      health_insurance: Number(formData.health_insurance),
+      gross_salary: Number(formData.gross_salary),
+      net_salary: Number(formData.net_salary)
+    };
+
+    console.log('💾 提交薪資記錄資料:', submitData);
+    onSubmit(submitData);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -152,7 +209,7 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <StaffSelector
               value={formData.staff_id}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, staff_id: value }))}
+              onValueChange={(value) => updateFormData({ staff_id: value })}
               required
             />
 
@@ -190,7 +247,7 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
               <Input
                 type="date"
                 value={formData.pay_period_start}
-                onChange={(e) => setFormData(prev => ({ ...prev, pay_period_start: e.target.value }))}
+                onChange={(e) => updateFormData({ pay_period_start: e.target.value })}
                 required
               />
             </div>
@@ -200,7 +257,7 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
               <Input
                 type="date"
                 value={formData.pay_period_end}
-                onChange={(e) => setFormData(prev => ({ ...prev, pay_period_end: e.target.value }))}
+                onChange={(e) => updateFormData({ pay_period_end: e.target.value })}
                 required
               />
             </div>
@@ -212,7 +269,7 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
               <Input
                 type="number"
                 value={formData.base_salary}
-                onChange={(e) => setFormData(prev => ({ ...prev, base_salary: Number(e.target.value) }))}
+                onChange={(e) => updateFormData({ base_salary: Number(e.target.value) })}
                 required
               />
             </div>
@@ -222,7 +279,7 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
               <Input
                 type="number"
                 value={formData.allowances}
-                onChange={(e) => setFormData(prev => ({ ...prev, allowances: Number(e.target.value) }))}
+                onChange={(e) => updateFormData({ allowances: Number(e.target.value) })}
               />
             </div>
           </div>
@@ -236,11 +293,11 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
                 value={formData.overtime_hours}
                 onChange={(e) => {
                   const hours = Number(e.target.value);
-                  setFormData(prev => ({ 
-                    ...prev, 
+                  const overtimePay = calculateOvertimePay(hours);
+                  updateFormData({ 
                     overtime_hours: hours,
-                    overtime_pay: calculateOvertimePay(hours)
-                  }));
+                    overtime_pay: overtimePay
+                  });
                 }}
               />
             </div>
@@ -250,7 +307,7 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
               <Input
                 type="number"
                 value={formData.overtime_pay}
-                onChange={(e) => setFormData(prev => ({ ...prev, overtime_pay: Number(e.target.value) }))}
+                onChange={(e) => updateFormData({ overtime_pay: Number(e.target.value) })}
               />
             </div>
 
@@ -262,11 +319,11 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
                 value={formData.holiday_hours}
                 onChange={(e) => {
                   const hours = Number(e.target.value);
-                  setFormData(prev => ({ 
-                    ...prev, 
+                  const holidayPay = calculateHolidayPay(hours);
+                  updateFormData({ 
                     holiday_hours: hours,
-                    holiday_pay: calculateHolidayPay(hours)
-                  }));
+                    holiday_pay: holidayPay
+                  });
                 }}
               />
             </div>
@@ -276,7 +333,7 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
               <Input
                 type="number"
                 value={formData.holiday_pay}
-                onChange={(e) => setFormData(prev => ({ ...prev, holiday_pay: Number(e.target.value) }))}
+                onChange={(e) => updateFormData({ holiday_pay: Number(e.target.value) })}
               />
             </div>
           </div>
@@ -287,7 +344,7 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
               <Input
                 type="number"
                 value={formData.tax}
-                onChange={(e) => setFormData(prev => ({ ...prev, tax: Number(e.target.value) }))}
+                onChange={(e) => updateFormData({ tax: Number(e.target.value) })}
               />
             </div>
 
@@ -296,7 +353,7 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
               <Input
                 type="number"
                 value={formData.labor_insurance}
-                onChange={(e) => setFormData(prev => ({ ...prev, labor_insurance: Number(e.target.value) }))}
+                onChange={(e) => updateFormData({ labor_insurance: Number(e.target.value) })}
               />
             </div>
 
@@ -305,7 +362,7 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
               <Input
                 type="number"
                 value={formData.health_insurance}
-                onChange={(e) => setFormData(prev => ({ ...prev, health_insurance: Number(e.target.value) }))}
+                onChange={(e) => updateFormData({ health_insurance: Number(e.target.value) })}
               />
             </div>
 
@@ -314,7 +371,7 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
               <Input
                 type="number"
                 value={formData.deductions}
-                onChange={(e) => setFormData(prev => ({ ...prev, deductions: Number(e.target.value) }))}
+                onChange={(e) => updateFormData({ deductions: Number(e.target.value) })}
               />
             </div>
           </div>
@@ -323,11 +380,11 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="font-medium">應發薪資: </span>
-                <span className="text-green-600">{formatCurrency(grossSalary)}</span>
+                <span className="text-green-600">{formatCurrency(formData.gross_salary)}</span>
               </div>
               <div>
                 <span className="font-medium">實發薪資: </span>
-                <span className="text-blue-600 font-bold">{formatCurrency(netSalary)}</span>
+                <span className="text-blue-600 font-bold">{formatCurrency(formData.net_salary)}</span>
               </div>
             </div>
           </div>

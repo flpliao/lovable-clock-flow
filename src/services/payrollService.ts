@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { Payroll, SalaryStructure, LeaveType } from '@/types/hr';
 
@@ -56,19 +55,19 @@ export class PayrollService {
       salary_structure_id: payrollData.salary_structure_id,
       pay_period_start: payrollData.pay_period_start,
       pay_period_end: payrollData.pay_period_end,
-      base_salary: payrollData.base_salary || 0,
-      overtime_hours: payrollData.overtime_hours || 0,
-      overtime_pay: payrollData.overtime_pay || 0,
-      holiday_hours: payrollData.holiday_hours || 0,
-      holiday_pay: payrollData.holiday_pay || 0,
-      allowances: payrollData.allowances || 0,
-      deductions: payrollData.deductions || 0,
-      tax: payrollData.tax || 0,
-      labor_insurance: payrollData.labor_insurance || 0,
-      health_insurance: payrollData.health_insurance || 0,
+      base_salary: Number(payrollData.base_salary) || 0,
+      overtime_hours: Number(payrollData.overtime_hours) || 0,
+      overtime_pay: Number(payrollData.overtime_pay) || 0,
+      holiday_hours: Number(payrollData.holiday_hours) || 0,
+      holiday_pay: Number(payrollData.holiday_pay) || 0,
+      allowances: Number(payrollData.allowances) || 0,
+      deductions: Number(payrollData.deductions) || 0,
+      tax: Number(payrollData.tax) || 0,
+      labor_insurance: Number(payrollData.labor_insurance) || 0,
+      health_insurance: Number(payrollData.health_insurance) || 0,
       gross_salary: grossSalary,
       net_salary: netSalary,
-      status: 'draft'
+      status: payrollData.status || 'draft'
     };
 
     const { data, error } = await supabase
@@ -89,30 +88,54 @@ export class PayrollService {
   static async updatePayroll(id: string, updates: any) {
     console.log('📝 更新薪資記錄:', id, updates);
 
-    // 重新計算薪資
-    if (updates.base_salary !== undefined || updates.overtime_pay !== undefined || 
-        updates.holiday_pay !== undefined || updates.allowances !== undefined ||
-        updates.deductions !== undefined || updates.tax !== undefined ||
-        updates.labor_insurance !== undefined || updates.health_insurance !== undefined) {
-      
-      const grossSalary = (updates.base_salary || 0) + 
-                         (updates.overtime_pay || 0) + 
-                         (updates.holiday_pay || 0) + 
-                         (updates.allowances || 0);
-      
-      const netSalary = grossSalary - 
-                       (updates.deductions || 0) - 
-                       (updates.tax || 0) - 
-                       (updates.labor_insurance || 0) - 
-                       (updates.health_insurance || 0);
+    // 確保數值欄位是數字類型並重新計算薪資
+    const numericUpdates = {
+      ...updates,
+      base_salary: updates.base_salary !== undefined ? Number(updates.base_salary) : undefined,
+      overtime_hours: updates.overtime_hours !== undefined ? Number(updates.overtime_hours) : undefined,
+      overtime_pay: updates.overtime_pay !== undefined ? Number(updates.overtime_pay) : undefined,
+      holiday_hours: updates.holiday_hours !== undefined ? Number(updates.holiday_hours) : undefined,
+      holiday_pay: updates.holiday_pay !== undefined ? Number(updates.holiday_pay) : undefined,
+      allowances: updates.allowances !== undefined ? Number(updates.allowances) : undefined,
+      deductions: updates.deductions !== undefined ? Number(updates.deductions) : undefined,
+      tax: updates.tax !== undefined ? Number(updates.tax) : undefined,
+      labor_insurance: updates.labor_insurance !== undefined ? Number(updates.labor_insurance) : undefined,
+      health_insurance: updates.health_insurance !== undefined ? Number(updates.health_insurance) : undefined
+    };
 
-      updates.gross_salary = grossSalary;
-      updates.net_salary = netSalary;
+    // 如果有薪資相關欄位更新，重新計算總薪資
+    if (numericUpdates.base_salary !== undefined || numericUpdates.overtime_pay !== undefined || 
+        numericUpdates.holiday_pay !== undefined || numericUpdates.allowances !== undefined ||
+        numericUpdates.deductions !== undefined || numericUpdates.tax !== undefined ||
+        numericUpdates.labor_insurance !== undefined || numericUpdates.health_insurance !== undefined) {
+      
+      // 先獲取現有資料
+      const { data: currentData } = await supabase
+        .from('payrolls')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (currentData) {
+        const grossSalary = (numericUpdates.base_salary ?? currentData.base_salary) + 
+                           (numericUpdates.overtime_pay ?? currentData.overtime_pay) + 
+                           (numericUpdates.holiday_pay ?? currentData.holiday_pay) + 
+                           (numericUpdates.allowances ?? currentData.allowances);
+        
+        const netSalary = grossSalary - 
+                         (numericUpdates.deductions ?? currentData.deductions) - 
+                         (numericUpdates.tax ?? currentData.tax) - 
+                         (numericUpdates.labor_insurance ?? currentData.labor_insurance) - 
+                         (numericUpdates.health_insurance ?? currentData.health_insurance);
+
+        numericUpdates.gross_salary = grossSalary;
+        numericUpdates.net_salary = netSalary;
+      }
     }
 
     const { data, error } = await supabase
       .from('payrolls')
-      .update(updates)
+      .update(numericUpdates)
       .eq('id', id)
       .select()
       .single();

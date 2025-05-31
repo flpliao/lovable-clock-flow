@@ -50,8 +50,12 @@ const EditDepartmentDialog = () => {
 
     try {
       console.log('🔄 呼叫 handleEditDepartment...');
-      await handleEditDepartment();
-      console.log('✅ 編輯完成，準備關閉對話框');
+      const success = await handleEditDepartment();
+      if (success) {
+        console.log('✅ 編輯完成，準備關閉對話框');
+        setIsEditDialogOpen(false);
+        setCurrentDepartment(null);
+      }
     } catch (error) {
       console.error('💥 編輯部門失敗:', error);
       toast({

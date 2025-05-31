@@ -59,25 +59,25 @@ export const useDepartmentManagement = () => {
     }
   };
 
-  const handleEditDepartment = async () => {
+  const handleEditDepartment = async (): Promise<boolean> => {
     if (!currentDepartment) {
       console.error('❌ 沒有選擇要編輯的部門');
-      return;
+      return false;
     }
 
     if (!validateEditDepartment(currentDepartment)) {
       console.error('❌ 部門資料驗證失敗');
-      return;
+      return false;
     }
 
     console.log('🚀 編輯部門開始:', currentDepartment);
     const success = await supabaseUpdateDepartment(currentDepartment);
     if (success) {
-      console.log('✅ 編輯部門成功，關閉對話框');
-      setIsEditDialogOpen(false);
-      setCurrentDepartment(null);
+      console.log('✅ 編輯部門成功');
       await refreshDepartments();
+      return true;
     }
+    return false;
   };
 
   const handleDeleteDepartment = async (id: string) => {

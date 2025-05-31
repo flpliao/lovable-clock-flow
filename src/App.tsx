@@ -13,6 +13,7 @@ import Login from '@/pages/Login';
 import LeaveRequest from '@/pages/LeaveRequest';
 import PersonalAttendance from '@/pages/PersonalAttendance';
 import Scheduling from '@/pages/Scheduling';
+import OvertimeManagement from '@/pages/OvertimeManagement';
 import CompanyAnnouncements from '@/pages/CompanyAnnouncements';
 import AnnouncementManagementPage from '@/pages/AnnouncementManagementPage';
 import PersonnelManagement from '@/pages/PersonnelManagement';

@@ -39,7 +39,7 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col px-3 sm:px-4">
         <WelcomeSection userName={currentUser?.name || '訪客'} />
         
         <LocationCheckIn />

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,16 +15,35 @@ import {
 import { useCheckIn } from '@/hooks/useCheckIn';
 import { useTodayCheckInRecords } from '@/hooks/useTodayCheckInRecords';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/contexts/UserContext';
 import { formatTime } from '@/utils/checkInUtils';
 
 const LocationCheckIn = () => {
   const [checkInMethod, setCheckInMethod] = useState<'location' | 'ip'>('location');
   const [actionType, setActionType] = useState<'check-in' | 'check-out'>('check-in');
   const [loading, setLoading] = useState(false);
+  const [todayRecords, setTodayRecords] = useState<any>({ checkIn: null, checkOut: null });
 
   const { onLocationCheckIn, onIpCheckIn, distance, error } = useCheckIn();
-  const { todayRecords, refreshRecords } = useTodayCheckInRecords();
+  const { getTodayCheckInRecords } = useTodayCheckInRecords();
+  const { currentUser } = useUser();
   const { toast } = useToast();
+
+  // 載入今日記錄
+  const loadTodayRecords = async () => {
+    if (currentUser) {
+      try {
+        const records = await getTodayCheckInRecords(currentUser.id);
+        setTodayRecords(records);
+      } catch (error) {
+        console.error('Failed to load today records:', error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    loadTodayRecords();
+  }, [currentUser]);
 
   // 根據今日記錄決定顯示狀態
   useEffect(() => {
@@ -48,7 +68,7 @@ const LocationCheckIn = () => {
         description: `${checkInMethod === 'location' ? '位置' : 'IP'}打卡已完成`,
       });
       
-      await refreshRecords();
+      await loadTodayRecords();
     } catch (error) {
       console.error('Check-in error:', error);
       toast({

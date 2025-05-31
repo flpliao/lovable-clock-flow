@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -25,7 +24,7 @@ type FormValues = {
 
 const ScheduleForm = () => {
   const { toast } = useToast();
-  const { addSchedules } = useScheduling();
+  const { addSchedules, loading, error } = useScheduling();
   const { staffList, getSubordinates } = useStaffManagementContext();
   const { currentUser } = useUser();
   const currentYear = new Date().getFullYear();
@@ -95,14 +94,9 @@ const ScheduleForm = () => {
     );
   };
 
-  const onSubmit = (data: FormValues) => {
-    const scheduleData = {
-      userId: data.userId,
-      year: selectedYear,
-      month: selectedMonth,
-      selectedDates,
-      selectedTimeSlots,
-      schedules: selectedDates.flatMap(date => 
+  const onSubmit = async (data: FormValues) => {
+    try {
+      const scheduleData = selectedDates.flatMap(date => 
         selectedTimeSlots.map(timeSlot => {
           const timeOption = timeOptions.find(opt => opt.value === timeSlot);
           return {
@@ -113,24 +107,31 @@ const ScheduleForm = () => {
             timeSlot: timeSlot,
           };
         })
-      ),
-    };
+      );
 
-    console.log('排班數據：', scheduleData);
-    
-    addSchedules(scheduleData.schedules);
-    
-    const isForSelf = data.userId === currentUser?.id;
-    const staffName = getUserName(data.userId);
-    
-    toast({
-      title: "排班成功",
-      description: `已為 ${staffName} 在 ${selectedYear}年${selectedMonth}月 安排 ${selectedDates.length} 天班次，共 ${selectedDates.length * selectedTimeSlots.length} 個時段。${isForSelf ? '' : '（代為排班）'}`,
-    });
-    
-    setSelectedDates([]);
-    setSelectedTimeSlots(['09:30-17:30']);
-    form.reset();
+      console.log('提交排班數據：', scheduleData);
+      
+      await addSchedules(scheduleData);
+      
+      const isForSelf = data.userId === currentUser?.id;
+      const staffName = getUserName(data.userId);
+      
+      toast({
+        title: "排班成功",
+        description: `已為 ${staffName} 在 ${selectedYear}年${selectedMonth}月 安排 ${selectedDates.length} 天班次，共 ${selectedDates.length * selectedTimeSlots.length} 個時段。${isForSelf ? '' : '（代為排班）'}`,
+      });
+      
+      setSelectedDates([]);
+      setSelectedTimeSlots(['09:30-17:30']);
+      form.reset();
+    } catch (err) {
+      console.error('排班提交失敗:', err);
+      toast({
+        title: "排班失敗",
+        description: err instanceof Error ? err.message : "發生未知錯誤，請稍後重試",
+        variant: "destructive",
+      });
+    }
   };
 
   const getUserName = (userId: string) => {
@@ -150,6 +151,12 @@ const ScheduleForm = () => {
         <CardTitle>創建新排班</CardTitle>
       </CardHeader>
       <CardContent>
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700">
+            錯誤：{error}
+          </div>
+        )}
+        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -215,9 +222,9 @@ const ScheduleForm = () => {
             <Button 
               type="submit" 
               className="w-full"
-              disabled={!form.watch('userId') || selectedDates.length === 0 || selectedTimeSlots.length === 0}
+              disabled={loading || !form.watch('userId') || selectedDates.length === 0 || selectedTimeSlots.length === 0}
             >
-              提交排班
+              {loading ? '提交中...' : '提交排班'}
             </Button>
           </form>
         </Form>

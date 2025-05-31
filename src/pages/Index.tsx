@@ -38,12 +38,19 @@ const Index = () => {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <WelcomeSection userName={currentUser?.name || '訪客'} />
+    <div className="min-h-screen bg-gray-50 pb-safe">
+      {/* 手機友善的間距調整 */}
+      <div className="px-3 sm:px-4">
+        <WelcomeSection userName={currentUser?.name || '訪客'} />
+      </div>
       
-      <LocationCheckIn />
+      {/* 打卡區塊 - 手機優化 */}
+      <div className="px-3 sm:px-4 mb-4">
+        <LocationCheckIn />
+      </div>
       
-      <div className="px-4 pb-8">
+      {/* 功能卡片 - 手機優化 */}
+      <div className="px-3 sm:px-4 pb-6">
         <FeatureCards 
           abnormalCount={0} 
           annualLeaveBalance={leaveHours} 

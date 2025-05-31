@@ -1,171 +1,215 @@
 
-import React, { useEffect, useState } from 'react';
-import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useUser } from '@/contexts/UserContext';
-import { supabase } from '@/integrations/supabase/client';
-
-// New components
-import CheckInStatusDisplay from './check-in/CheckInStatusDisplay';
-import CheckInCompletedMessage from './check-in/CheckInCompletedMessage';
-import ActionTypeSelector from './check-in/ActionTypeSelector';
-import CheckInMethodSelector from './check-in/CheckInMethodSelector';
-import CheckInReminderSystem from './check-in/CheckInReminderSystem';
-
-// Custom hook
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  MapPin, 
+  Wifi, 
+  LogIn, 
+  LogOut, 
+  AlertCircle,
+  CheckCircle2,
+  Clock
+} from 'lucide-react';
 import { useCheckIn } from '@/hooks/useCheckIn';
+import { useTodayCheckInRecords } from '@/hooks/useTodayCheckInRecords';
+import { useToast } from '@/hooks/use-toast';
+import { formatTime } from '@/utils/checkInUtils';
 
-const LocationCheckIn: React.FC = () => {
-  const { currentUser } = useUser();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authUserId, setAuthUserId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // 檢查 Supabase 認證狀態
+const LocationCheckIn = () => {
+  const [checkInMethod, setCheckInMethod] = useState<'location' | 'ip'>('location');
+  const [actionType, setActionType] = useState<'check-in' | 'check-out'>('check-in');
+  const [loading, setLoading] = useState(false);
+
+  const { handleLocationCheckIn, handleIpCheckIn, distance, error } = useCheckIn();
+  const { todayRecords, refreshRecords } = useTodayCheckInRecords();
+  const { toast } = useToast();
+
+  // 根據今日記錄決定顯示狀態
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        console.log('Auth check result:', { user, error, currentUser });
-        
-        if (user && !error) {
-          setIsAuthenticated(true);
-          setAuthUserId(user.id);
-          console.log('User authenticated via Supabase:', user.id);
-        } else if (currentUser?.id) {
-          // 如果沒有 Supabase 認證但有 currentUser，使用 mock 認證
-          setIsAuthenticated(true);
-          setAuthUserId(currentUser.id);
-          console.log('User authenticated via mock system:', currentUser.id);
-        } else {
-          setIsAuthenticated(false);
-          setAuthUserId(null);
-          console.log('No authentication found');
-        }
-      } catch (error) {
-        console.error('Auth check error:', error);
-        // 如果 Supabase 檢查失敗但有 currentUser，還是允許使用
-        if (currentUser?.id) {
-          setIsAuthenticated(true);
-          setAuthUserId(currentUser.id);
-          console.log('Fallback to currentUser auth:', currentUser.id);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (todayRecords.checkIn && !todayRecords.checkOut) {
+      setActionType('check-out');
+    } else if (!todayRecords.checkIn) {
+      setActionType('check-in');
+    }
+  }, [todayRecords]);
 
-    checkAuth();
-
-    // 監聽認證狀態變化
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id, currentUser);
-      if (session?.user) {
-        setIsAuthenticated(true);
-        setAuthUserId(session.user.id);
-      } else if (currentUser?.id) {
-        // 保持 mock 認證
-        setIsAuthenticated(true);
-        setAuthUserId(currentUser.id);
+  const handleCheckIn = async () => {
+    setLoading(true);
+    try {
+      if (checkInMethod === 'location') {
+        await handleLocationCheckIn(actionType);
       } else {
-        setIsAuthenticated(false);
-        setAuthUserId(null);
+        await handleIpCheckIn(actionType);
       }
-    });
+      
+      toast({
+        title: actionType === 'check-in' ? '上班打卡成功' : '下班打卡成功',
+        description: `${checkInMethod === 'location' ? '位置' : 'IP'}打卡已完成`,
+      });
+      
+      await refreshRecords();
+    } catch (error) {
+      console.error('Check-in error:', error);
+      toast({
+        title: '打卡失敗',
+        description: '請稍後再試或聯繫系統管理員',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return () => subscription.unsubscribe();
-  }, [currentUser]);
-  
-  // 使用有效的用戶 ID，確保認證正確
-  const effectiveUserId = authUserId || currentUser?.id || '';
-  
-  console.log('LocationCheckIn - Current user:', currentUser);
-  console.log('LocationCheckIn - Authenticated:', isAuthenticated);
-  console.log('LocationCheckIn - Effective userId:', effectiveUserId);
-  
-  const {
-    loading,
-    error,
-    distance,
-    checkInMethod,
-    setCheckInMethod,
-    actionType,
-    setActionType,
-    todayRecords,
-    onLocationCheckIn,
-    onIpCheckIn
-  } = useCheckIn(effectiveUserId);
-  
-  // 載入中狀態
-  if (isLoading) {
+  // 如果已完成今日打卡，顯示完成狀態
+  if (todayRecords.checkIn && todayRecords.checkOut) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">載入中...</p>
-        </div>
-      </div>
+      <Card className="bg-green-50 border-green-200">
+        <CardContent className="p-4">
+          <div className="text-center space-y-3">
+            <div className="flex items-center justify-center">
+              <CheckCircle2 className="h-8 w-8 text-green-600 mr-2" />
+              <span className="text-lg font-semibold text-green-800">今日打卡已完成</span>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="bg-white rounded-lg p-3 border border-green-200">
+                <div className="flex items-center justify-center mb-1">
+                  <LogIn className="h-4 w-4 text-green-600 mr-1" />
+                  <span className="font-medium">上班</span>
+                </div>
+                <div className="text-center">
+                  <div className="font-mono text-lg text-green-800">
+                    {formatTime(todayRecords.checkIn.timestamp)}
+                  </div>
+                  <div className="text-green-600 text-xs mt-1">
+                    {todayRecords.checkIn.type === 'location' ? '位置打卡' : 'IP打卡'}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg p-3 border border-green-200">
+                <div className="flex items-center justify-center mb-1">
+                  <LogOut className="h-4 w-4 text-green-600 mr-1" />
+                  <span className="font-medium">下班</span>
+                </div>
+                <div className="text-center">
+                  <div className="font-mono text-lg text-green-800">
+                    {formatTime(todayRecords.checkOut.timestamp)}
+                  </div>
+                  <div className="text-green-600 text-xs mt-1">
+                    {todayRecords.checkOut.type === 'location' ? '位置打卡' : 'IP打卡'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
-  
-  // 確保有有效的用戶且認證通過才顯示打卡功能
-  if (!currentUser || !isAuthenticated || !effectiveUserId) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <Alert variant="destructive" className="max-w-md mx-auto">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>請先登入才能使用打卡功能</AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-  
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 自動補卡提醒系統 */}
-      <CheckInReminderSystem />
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center justify-center space-x-2 text-lg">
+          <Clock className="h-5 w-5" />
+          <span>員工打卡</span>
+        </CardTitle>
+      </CardHeader>
       
-      {/* Error message */}
-      {error && (
-        <div className="px-4 pt-4">
-          <Alert variant="destructive" className="max-w-sm mx-auto">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+      <CardContent className="space-y-4">
+        {/* 如果已上班但未下班，顯示狀態 */}
+        {todayRecords.checkIn && !todayRecords.checkOut && (
+          <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+            <div className="flex items-center justify-center space-x-2 text-blue-800">
+              <CheckCircle2 className="h-4 w-4" />
+              <span className="font-medium">已上班打卡</span>
+              <Badge variant="secondary" className="text-xs">
+                {formatTime(todayRecords.checkIn.timestamp)}
+              </Badge>
+            </div>
+          </div>
+        )}
+
+        {/* 打卡方式選擇 - 手機優化 */}
+        <div className="grid grid-cols-2 gap-2 bg-gray-100 rounded-lg p-1">
+          <Button
+            variant={checkInMethod === 'location' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setCheckInMethod('location')}
+            className="flex items-center justify-center space-x-1 text-sm"
+          >
+            <MapPin className="h-4 w-4" />
+            <span>位置打卡</span>
+          </Button>
+          <Button
+            variant={checkInMethod === 'ip' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setCheckInMethod('ip')}
+            className="flex items-center justify-center space-x-1 text-sm"
+          >
+            <Wifi className="h-4 w-4" />
+            <span>IP打卡</span>
+          </Button>
         </div>
-      )}
-      
-      <div className="pt-8 pb-12">
-        {/* Today's Check-in and Check-out Status */}
-        {(todayRecords.checkIn || todayRecords.checkOut) && (
-          <CheckInStatusDisplay todayRecords={todayRecords} />
+
+        {/* 打卡按鈕 - 手機優化大按鈕 */}
+        <div className="text-center">
+          <Button
+            onClick={handleCheckIn}
+            disabled={loading}
+            size="lg"
+            className={`w-full h-16 text-lg font-semibold rounded-xl transition-all duration-200 ${
+              actionType === 'check-in' 
+                ? 'bg-green-500 hover:bg-green-600' 
+                : 'bg-blue-500 hover:bg-blue-600'
+            }`}
+          >
+            {loading ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>處理中...</span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                {actionType === 'check-in' ? (
+                  <LogIn className="h-6 w-6" />
+                ) : (
+                  <LogOut className="h-6 w-6" />
+                )}
+                <span>
+                  {actionType === 'check-in' ? '上班打卡' : '下班打卡'}
+                </span>
+              </div>
+            )}
+          </Button>
+        </div>
+
+        {/* 狀態資訊 */}
+        {distance !== null && !error && checkInMethod === 'location' && (
+          <div className="text-center text-sm text-gray-600">
+            <MapPin className="inline h-4 w-4 mr-1" />
+            距離公司: <span className="font-medium">{Math.round(distance)} 公尺</span>
+          </div>
         )}
-        
-        {/* Action type selection (check-in or check-out) */}
-        <ActionTypeSelector
-          actionType={actionType}
-          setActionType={setActionType}
-          todayRecords={todayRecords}
-        />
-        
-        {/* If both check-in and check-out are done, show completion message */}
-        {todayRecords.checkIn && todayRecords.checkOut ? (
-          <CheckInCompletedMessage />
-        ) : (
-          /* Method selection (location or IP) and action buttons */
-          <CheckInMethodSelector
-            checkInMethod={checkInMethod}
-            setCheckInMethod={setCheckInMethod}
-            onLocationCheckIn={onLocationCheckIn}
-            onIpCheckIn={onIpCheckIn}
-            loading={loading}
-            actionType={actionType}
-            distance={distance}
-            error={error}
-          />
+
+        {error && (
+          <div className="flex items-center justify-center space-x-2 text-red-600 text-sm bg-red-50 rounded-lg p-3">
+            <AlertCircle className="h-4 w-4" />
+            <span>{error}</span>
+          </div>
         )}
-      </div>
-    </div>
+
+        {!loading && checkInMethod === 'ip' && (
+          <div className="text-center text-sm text-gray-600">
+            <Wifi className="inline h-4 w-4 mr-1" />
+            使用公司網路自動打卡
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

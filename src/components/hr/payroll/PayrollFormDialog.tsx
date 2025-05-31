@@ -49,6 +49,27 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // 驗證必填欄位
+    if (!formData.staff_id) {
+      console.error('❌ 員工ID為必填');
+      return;
+    }
+    
+    if (!formData.salary_structure_id) {
+      console.error('❌ 薪資結構為必填');
+      return;
+    }
+    
+    if (!formData.pay_period_start) {
+      console.error('❌ 薪資期間開始為必填');
+      return;
+    }
+    
+    if (!formData.pay_period_end) {
+      console.error('❌ 薪資期間結束為必填');
+      return;
+    }
+    
     const submitData = {
       ...formData,
       base_salary: Number(formData.base_salary),
@@ -76,7 +97,7 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <PayrollBasicFields
             staffId={formData.staff_id}
             salaryStructureId={formData.salary_structure_id}

@@ -66,12 +66,20 @@ export const usePayrollForm = (initialData?: any, salaryStructures: any[] = []) 
         status: initialData.status || 'draft'
       });
     } else {
-      // 重置表單
+      // 重置表單並設定預設日期
+      const today = new Date();
+      const currentMonth = today.getMonth() + 1;
+      const currentYear = today.getFullYear();
+      
+      // 預設薪資期間為當月第一天到最後一天
+      const startDate = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01`;
+      const endDate = new Date(currentYear, currentMonth, 0).toISOString().split('T')[0];
+      
       setFormData({
         staff_id: '',
         salary_structure_id: '',
-        pay_period_start: '',
-        pay_period_end: '',
+        pay_period_start: startDate,
+        pay_period_end: endDate,
         base_salary: 0,
         overtime_hours: 0,
         overtime_pay: 0,

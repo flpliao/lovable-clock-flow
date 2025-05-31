@@ -6,7 +6,7 @@ import { Department, NewDepartment } from '../types';
 import { transformDepartmentData, transformToDbFormat } from '../services/departmentTransformService';
 
 export const useSupabaseDepartmentOperations = () => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [departments, setDepartments] = useState<Department[]>([]);
 
   const fetchDepartments = async (): Promise<Department[]> => {
@@ -226,5 +226,5 @@ export const useSupabaseDepartmentOperations = () => {
     updateDepartment,
     deleteDepartment,
     updateStaffCount
-  };
+  } as const;
 };

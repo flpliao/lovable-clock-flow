@@ -3,7 +3,8 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, Settings, Check, X } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Shield, Settings, Check, X, ChevronDown } from 'lucide-react';
 import { useRLSSettings } from '../hooks/useRLSSettings';
 
 export const RLSSettingsCard: React.FC = () => {
@@ -43,27 +44,39 @@ export const RLSSettingsCard: React.FC = () => {
           />
         </div>
 
-        {/* 表格設定 */}
-        <div className="space-y-1">
-          {tableRLSStatus.map((table) => (
-            <div key={table.tableName} className="flex items-center justify-between p-2 border rounded text-xs">
-              <div className="flex items-center min-w-0 flex-1">
-                <span className="truncate">{table.displayName}</span>
-                {table.enabled ? (
-                  <Check className="h-3 w-3 ml-2 text-green-500 flex-shrink-0" />
-                ) : (
-                  <X className="h-3 w-3 ml-2 text-gray-400 flex-shrink-0" />
-                )}
+        {/* 表格設定 - 使用 Accordion */}
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="table-settings" className="border rounded">
+            <AccordionTrigger className="px-2 py-2 text-xs font-medium hover:no-underline">
+              <div className="flex items-center">
+                <Settings className="h-3 w-3 mr-2" />
+                表格級別設定 ({tableRLSStatus.filter(t => t.enabled).length}/{tableRLSStatus.length} 啟用)
               </div>
-              <Switch
-                checked={table.enabled}
-                onCheckedChange={() => toggleTableRLS(table.tableName)}
-                disabled={loading}
-                className="ml-2 flex-shrink-0"
-              />
-            </div>
-          ))}
-        </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-2 pb-2">
+              <div className="space-y-1">
+                {tableRLSStatus.map((table) => (
+                  <div key={table.tableName} className="flex items-center justify-between p-2 border rounded text-xs">
+                    <div className="flex items-center min-w-0 flex-1">
+                      <span className="truncate">{table.displayName}</span>
+                      {table.enabled ? (
+                        <Check className="h-3 w-3 ml-2 text-green-500 flex-shrink-0" />
+                      ) : (
+                        <X className="h-3 w-3 ml-2 text-gray-400 flex-shrink-0" />
+                      )}
+                    </div>
+                    <Switch
+                      checked={table.enabled}
+                      onCheckedChange={() => toggleTableRLS(table.tableName)}
+                      disabled={loading}
+                      className="ml-2 flex-shrink-0"
+                    />
+                  </div>
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
 
         {/* 狀態提示 */}
         {!isGlobalRLSEnabled && (

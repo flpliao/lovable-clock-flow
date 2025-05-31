@@ -18,7 +18,7 @@ const SystemSettings = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4 h-auto">
+          <TabsList className="grid w-full grid-cols-3 mb-4 h-auto">
             <TabsTrigger value="general" className="text-xs p-2 flex flex-col items-center gap-1">
               <Settings className="h-3 w-3" />
               <span>一般設定</span>
@@ -27,12 +27,15 @@ const SystemSettings = () => {
               <Globe className="h-3 w-3" />
               <span>語系管理</span>
             </TabsTrigger>
+            <TabsTrigger value="diagnostics" className="text-xs p-2 flex flex-col items-center gap-1">
+              <Settings className="h-3 w-3" />
+              <span>診斷工具</span>
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="general">
             <div className="space-y-2">
               <RLSSettingsCard />
-              <ComprehensiveDiagnostics />
             </div>
           </TabsContent>
           
@@ -46,6 +49,12 @@ const SystemSettings = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="diagnostics">
+            <div className="space-y-2">
+              <ComprehensiveDiagnostics />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

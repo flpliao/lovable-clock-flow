@@ -11,7 +11,7 @@ interface StaffSelectorProps {
 }
 
 const StaffSelector = ({ control }: StaffSelectorProps) => {
-  const { staff } = useStaffManagementContext();
+  const { staffList } = useStaffManagementContext();
 
   return (
     <FormField
@@ -30,7 +30,7 @@ const StaffSelector = ({ control }: StaffSelectorProps) => {
                 <SelectValue placeholder="請選擇要排班的員工" />
               </SelectTrigger>
               <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg">
-                {staff.map((staffMember) => (
+                {staffList.map((staffMember) => (
                   <SelectItem 
                     key={staffMember.id} 
                     value={staffMember.id}

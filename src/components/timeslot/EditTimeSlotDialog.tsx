@@ -37,6 +37,7 @@ const EditTimeSlotDialog = ({ open, onOpenChange, timeSlot, onSubmit }: EditTime
   });
 
   useEffect(() => {
+    console.log('Setting form values for editing:', timeSlot);
     form.reset({
       name: timeSlot.name,
       start_time: timeSlot.start_time,
@@ -48,6 +49,28 @@ const EditTimeSlotDialog = ({ open, onOpenChange, timeSlot, onSubmit }: EditTime
   }, [timeSlot, form]);
 
   const handleSubmit = (data: FormData) => {
+    console.log('Edit form submission data:', data);
+    
+    // 驗證時間格式
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!timeRegex.test(data.start_time)) {
+      form.setError('start_time', { message: '請輸入有效的開始時間 (HH:MM)' });
+      return;
+    }
+    if (!timeRegex.test(data.end_time)) {
+      form.setError('end_time', { message: '請輸入有效的結束時間 (HH:MM)' });
+      return;
+    }
+
+    // 驗證結束時間是否晚於開始時間
+    const startTime = new Date(`2000-01-01 ${data.start_time}`);
+    const endTime = new Date(`2000-01-01 ${data.end_time}`);
+    
+    if (endTime <= startTime) {
+      form.setError('end_time', { message: '結束時間必須晚於開始時間' });
+      return;
+    }
+
     onSubmit({
       name: data.name,
       start_time: data.start_time,
@@ -84,12 +107,24 @@ const EditTimeSlotDialog = ({ open, onOpenChange, timeSlot, onSubmit }: EditTime
               <FormField
                 control={form.control}
                 name="start_time"
-                rules={{ required: '請選擇開始時間' }}
+                rules={{ 
+                  required: '請選擇開始時間',
+                  pattern: {
+                    value: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+                    message: '請輸入有效時間格式 (HH:MM)'
+                  }
+                }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>開始時間</FormLabel>
                     <FormControl>
-                      <Input type="time" {...field} />
+                      <Input 
+                        type="time" 
+                        {...field}
+                        step="300"
+                        min="00:00"
+                        max="23:59"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -99,12 +134,24 @@ const EditTimeSlotDialog = ({ open, onOpenChange, timeSlot, onSubmit }: EditTime
               <FormField
                 control={form.control}
                 name="end_time"
-                rules={{ required: '請選擇結束時間' }}
+                rules={{ 
+                  required: '請選擇結束時間',
+                  pattern: {
+                    value: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+                    message: '請輸入有效時間格式 (HH:MM)'
+                  }
+                }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>結束時間</FormLabel>
                     <FormControl>
-                      <Input type="time" {...field} />
+                      <Input 
+                        type="time" 
+                        {...field}
+                        step="300"
+                        min="00:00"
+                        max="23:59"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -159,7 +206,8 @@ const EditTimeSlotDialog = ({ open, onOpenChange, timeSlot, onSubmit }: EditTime
               name="sort_order"
               rules={{ 
                 required: '請輸入排序順序',
-                min: { value: 1, message: '排序必須大於 0' }
+                min: { value: 1, message: '排序必須大於 0' },
+                max: { value: 999, message: '排序不能超過 999' }
               }}
               render={({ field }) => (
                 <FormItem>
@@ -168,8 +216,12 @@ const EditTimeSlotDialog = ({ open, onOpenChange, timeSlot, onSubmit }: EditTime
                     <Input 
                       type="number" 
                       min="1"
+                      max="999"
                       {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(value === '' ? '' : parseInt(value) || 1);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />

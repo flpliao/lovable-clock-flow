@@ -2,18 +2,22 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { NewDepartment } from '../types';
-import { transformToDbFormat } from '../services/departmentTransformService';
 
 export const useDepartmentCreate = () => {
   const addDepartment = async (newDepartment: NewDepartment): Promise<boolean> => {
     try {
       console.log('新增部門:', newDepartment);
 
-      const dbData = transformToDbFormat(newDepartment);
-      
       const { data, error } = await supabase
         .from('departments')
-        .insert([dbData])
+        .insert([{
+          name: newDepartment.name.trim(),
+          type: newDepartment.type,
+          location: newDepartment.location?.trim() || null,
+          manager_name: newDepartment.manager_name?.trim() || null,
+          manager_contact: newDepartment.manager_contact?.trim() || null,
+          staff_count: 0
+        }])
         .select();
 
       if (error) {

@@ -2,7 +2,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Department } from '../types';
-import { transformDepartmentData } from '../services/departmentTransformService';
 
 export const useDepartmentFetch = () => {
   const fetchDepartments = async (): Promise<Department[]> => {
@@ -20,7 +19,10 @@ export const useDepartmentFetch = () => {
       }
 
       console.log('成功載入部門資料:', data);
-      return data ? data.map(transformDepartmentData) : [];
+      return data ? data.map(item => ({
+        ...item,
+        type: item.type as 'headquarters' | 'branch' | 'store'
+      })) : [];
     } catch (error) {
       console.error('載入部門資料失敗:', error);
       toast({

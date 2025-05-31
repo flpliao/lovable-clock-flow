@@ -6,7 +6,7 @@ import { toast } from '@/hooks/use-toast';
 export class DepartmentApiService {
   static async getAllDepartments(): Promise<Department[]> {
     try {
-      console.log('🔍 從 API 載入所有部門...');
+      console.log('🔍 從 Supabase 載入所有部門...');
       
       const { data, error } = await supabase
         .from('departments')
@@ -14,20 +14,20 @@ export class DepartmentApiService {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('❌ API 載入部門錯誤:', error);
+        console.error('❌ 載入部門錯誤:', error);
         throw error;
       }
 
-      console.log('✅ API 成功載入部門:', data?.length, '個');
+      console.log('✅ 成功載入部門:', data?.length, '個');
       return data ? data.map(item => ({
         ...item,
         type: item.type as 'headquarters' | 'branch' | 'store'
       })) : [];
     } catch (error) {
-      console.error('💥 API 載入部門失敗:', error);
+      console.error('💥 載入部門失敗:', error);
       toast({
         title: "載入失敗",
-        description: "無法從伺服器載入部門資料",
+        description: "無法從資料庫載入部門資料",
         variant: "destructive",
       });
       return [];
@@ -36,7 +36,7 @@ export class DepartmentApiService {
 
   static async createDepartment(department: NewDepartment): Promise<Department | null> {
     try {
-      console.log('➕ API 新增部門:', department);
+      console.log('➕ 新增部門:', department);
       
       const { data, error } = await supabase
         .from('departments')
@@ -52,20 +52,25 @@ export class DepartmentApiService {
         .single();
 
       if (error) {
-        console.error('❌ API 新增部門錯誤:', error);
+        console.error('❌ 新增部門錯誤:', error);
         throw error;
       }
 
-      console.log('✅ API 成功新增部門:', data);
+      console.log('✅ 成功新增部門:', data);
+      toast({
+        title: "新增成功",
+        description: `部門 "${data.name}" 已成功新增`,
+      });
+      
       return {
         ...data,
         type: data.type as 'headquarters' | 'branch' | 'store'
       };
     } catch (error) {
-      console.error('💥 API 新增部門失敗:', error);
+      console.error('💥 新增部門失敗:', error);
       toast({
         title: "新增失敗",
-        description: "無法新增部門到伺服器",
+        description: "無法新增部門到資料庫",
         variant: "destructive",
       });
       return null;
@@ -74,9 +79,8 @@ export class DepartmentApiService {
 
   static async updateDepartment(department: Department): Promise<Department | null> {
     try {
-      console.log('🔄 API 更新部門:', department.id);
+      console.log('🔄 更新部門:', department.id);
       
-      // 準備更新資料，移除空字串並轉為 null
       const updateData = {
         name: department.name.trim(),
         type: department.type,
@@ -97,11 +101,11 @@ export class DepartmentApiService {
         .single();
 
       if (error) {
-        console.error('❌ API 更新部門錯誤:', error);
+        console.error('❌ 更新部門錯誤:', error);
         throw error;
       }
 
-      console.log('✅ API 成功更新部門:', data);
+      console.log('✅ 成功更新部門:', data);
       
       toast({
         title: "更新成功",
@@ -113,14 +117,10 @@ export class DepartmentApiService {
         type: data.type as 'headquarters' | 'branch' | 'store'
       };
     } catch (error: any) {
-      console.error('💥 API 更新部門失敗:', error);
+      console.error('💥 更新部門失敗:', error);
       
-      let errorMessage = "無法更新部門到伺服器";
-      if (error.code === 'PGRST301') {
-        errorMessage = "找不到要更新的部門";
-      } else if (error.code === 'PGRST116') {
-        errorMessage = "沒有權限更新部門資料";
-      } else if (error.message) {
+      let errorMessage = "無法更新部門到資料庫";
+      if (error.message) {
         errorMessage = error.message;
       }
       
@@ -135,19 +135,39 @@ export class DepartmentApiService {
 
   static async deleteDepartment(id: string): Promise<boolean> {
     try {
-      console.log('🗑️ API 刪除部門:', id);
+      console.log('🗑️ 刪除部門:', id);
       
+      // 檢查是否有員工屬於此部門
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('id')
+        .eq('department', id);
+
+      if (staffError) {
+        console.error('❌ 檢查員工資料錯誤:', staffError);
+        throw staffError;
+      }
+
+      if (staffData && staffData.length > 0) {
+        toast({
+          title: "無法刪除",
+          description: "此部門下仍有員工，請先移除所有員工後再刪除部門",
+          variant: "destructive",
+        });
+        return false;
+      }
+
       const { error } = await supabase
         .from('departments')
         .delete()
         .eq('id', id);
 
       if (error) {
-        console.error('❌ API 刪除部門錯誤:', error);
+        console.error('❌ 刪除部門錯誤:', error);
         throw error;
       }
 
-      console.log('✅ API 成功刪除部門');
+      console.log('✅ 成功刪除部門');
       
       toast({
         title: "刪除成功",
@@ -156,14 +176,10 @@ export class DepartmentApiService {
       
       return true;
     } catch (error: any) {
-      console.error('💥 API 刪除部門失敗:', error);
+      console.error('💥 刪除部門失敗:', error);
       
-      let errorMessage = "無法從伺服器刪除部門";
-      if (error.code === 'PGRST301') {
-        errorMessage = "找不到要刪除的部門";
-      } else if (error.code === 'PGRST116') {
-        errorMessage = "沒有權限刪除部門資料";
-      } else if (error.message) {
+      let errorMessage = "無法從資料庫刪除部門";
+      if (error.message) {
         errorMessage = error.message;
       }
       

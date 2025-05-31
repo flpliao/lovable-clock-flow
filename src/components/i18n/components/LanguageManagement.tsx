@@ -77,7 +77,7 @@ export const LanguageManagement: React.FC = () => {
       }
 
       const preference: UserLanguagePreference = {
-        userId: 'current-user', // 這裡應該從用戶上下文獲取
+        userId: 'current-user',
         countryCode: selectedCountry,
         languageCode: selectedLanguage,
         timezone: country.timezone,
@@ -123,17 +123,17 @@ export const LanguageManagement: React.FC = () => {
 
   return (
     <Card>
-      <CardHeader className="pb-3 px-4">
-        <CardTitle className="flex items-center text-base">
+      <CardHeader className="pb-4 px-6">
+        <CardTitle className="flex items-center text-lg">
           <Globe className="h-5 w-5 mr-2" />
           多語系管理
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="space-y-4 px-4 pb-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <CardContent className="space-y-6 px-6 pb-6">
+        <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">國家地區</label>
+            <label className="text-sm font-medium text-gray-700">國家地區</label>
             <CountrySelector
               value={selectedCountry}
               onValueChange={handleCountryChange}
@@ -142,7 +142,7 @@ export const LanguageManagement: React.FC = () => {
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">語言</label>
+            <label className="text-sm font-medium text-gray-700">語言</label>
             <LanguageSelector
               value={selectedLanguage}
               onValueChange={handleLanguageChange}
@@ -152,25 +152,23 @@ export const LanguageManagement: React.FC = () => {
         </div>
 
         {selectedCountryInfo && selectedLanguageInfo && (
-          <Alert className="bg-blue-50 border-blue-200">
-            <AlertDescription className="text-sm">
-              <div className="space-y-1">
-                <p><strong>選擇摘要：</strong></p>
-                <p>國家：{selectedCountryInfo.name_zh} ({selectedCountryInfo.name_en})</p>
-                <p>語言：{selectedLanguageInfo.name_zh} ({selectedLanguageInfo.name_native})</p>
-                <p>時區：{selectedCountryInfo.timezone}</p>
-                <p>日期格式：{selectedCountryInfo.date_format}</p>
-                <p>時間格式：{selectedCountryInfo.time_format}</p>
-              </div>
-            </AlertDescription>
-          </Alert>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-medium text-blue-900 mb-3">選擇摘要：</h4>
+            <div className="space-y-1 text-sm text-blue-800">
+              <p>國家：{selectedCountryInfo.name_zh} ({selectedCountryInfo.name_en})</p>
+              <p>語言：{selectedLanguageInfo.name_zh} ({selectedLanguageInfo.name_native})</p>
+              <p>時區：{selectedCountryInfo.timezone}</p>
+              <p>日期格式：{selectedCountryInfo.date_format}</p>
+              <p>時間格式：{selectedCountryInfo.time_format}</p>
+            </div>
+          </div>
         )}
 
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-3 pt-2">
           <Button
             onClick={handleSave}
             disabled={isLoading || !hasChanges}
-            className="flex-1"
+            className="flex-1 bg-blue-600 hover:bg-blue-700"
           >
             {isLoading ? (
               <>
@@ -189,6 +187,7 @@ export const LanguageManagement: React.FC = () => {
             variant="outline"
             onClick={handleReset}
             disabled={isLoading}
+            className="px-6"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             重置
@@ -197,7 +196,7 @@ export const LanguageManagement: React.FC = () => {
 
         {hasChanges && (
           <Alert className="bg-yellow-50 border-yellow-200">
-            <AlertDescription className="text-sm">
+            <AlertDescription className="text-sm text-yellow-800">
               您有未儲存的變更，請記得點擊「儲存設定」。
             </AlertDescription>
           </Alert>

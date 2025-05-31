@@ -19,7 +19,10 @@ export class DepartmentApiService {
       }
 
       console.log('API 成功載入部門:', data?.length, '個');
-      return data || [];
+      return data ? data.map(item => ({
+        ...item,
+        type: item.type as 'headquarters' | 'branch' | 'store'
+      })) : [];
     } catch (error) {
       console.error('API 載入部門失敗:', error);
       toast({
@@ -54,7 +57,10 @@ export class DepartmentApiService {
       }
 
       console.log('API 成功新增部門:', data);
-      return data;
+      return {
+        ...data,
+        type: data.type as 'headquarters' | 'branch' | 'store'
+      };
     } catch (error) {
       console.error('API 新增部門失敗:', error);
       toast({
@@ -91,7 +97,10 @@ export class DepartmentApiService {
       }
 
       console.log('API 成功更新部門:', data);
-      return data;
+      return {
+        ...data,
+        type: data.type as 'headquarters' | 'branch' | 'store'
+      };
     } catch (error) {
       console.error('API 更新部門失敗:', error);
       toast({

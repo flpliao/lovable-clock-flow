@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Department, NewDepartment } from '../types';
@@ -7,6 +7,7 @@ import { transformDepartmentData, transformToDbFormat } from '../services/depart
 
 export const useSupabaseDepartmentOperations = () => {
   const [loading, setLoading] = useState(false);
+  const [departments, setDepartments] = useState<Department[]>([]);
 
   const fetchDepartments = async (): Promise<Department[]> => {
     try {
@@ -24,7 +25,9 @@ export const useSupabaseDepartmentOperations = () => {
       }
 
       console.log('成功載入部門資料:', data);
-      return data ? data.map(transformDepartmentData) : [];
+      const transformedData = data ? data.map(transformDepartmentData) : [];
+      setDepartments(transformedData);
+      return transformedData;
     } catch (error) {
       console.error('載入部門資料失敗:', error);
       toast({
@@ -37,6 +40,14 @@ export const useSupabaseDepartmentOperations = () => {
       setLoading(false);
     }
   };
+
+  const refreshDepartments = async (): Promise<void> => {
+    await fetchDepartments();
+  };
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
 
   const addDepartment = async (newDepartment: NewDepartment): Promise<boolean> => {
     try {
@@ -56,6 +67,7 @@ export const useSupabaseDepartmentOperations = () => {
       }
 
       console.log('成功新增部門:', data);
+      await refreshDepartments();
       toast({
         title: "新增成功",
         description: `部門 "${newDepartment.name}" 已成功新增`,
@@ -98,6 +110,7 @@ export const useSupabaseDepartmentOperations = () => {
       }
 
       console.log('成功更新部門:', data);
+      await refreshDepartments();
       toast({
         title: "更新成功",
         description: `部門 "${department.name}" 已成功更新`,
@@ -206,7 +219,9 @@ export const useSupabaseDepartmentOperations = () => {
 
   return {
     loading,
+    departments,
     fetchDepartments,
+    refreshDepartments,
     addDepartment,
     updateDepartment,
     deleteDepartment,

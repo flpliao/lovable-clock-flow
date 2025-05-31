@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, Clock, DollarSign, Settings, Globe } from 'lucide-react';
 import AttendanceExceptionManagement from '@/components/attendance/AttendanceExceptionManagement';
 import OvertimeManagement from '@/components/hr/OvertimeManagement';
+import PayrollManagement from '@/components/hr/PayrollManagement';
+import SalaryStructureManagement from '@/components/hr/SalaryStructureManagement';
 
 const HRManagement = () => {
   const { currentUser, isAdmin } = useUser();
@@ -59,8 +61,15 @@ const HRManagement = () => {
           </TabsContent>
           
           <TabsContent value="payroll">
-            <div className="text-center py-8 text-gray-500">
-              薪資管理功能開發中...
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <PayrollManagement />
+                </div>
+                <div>
+                  <SalaryStructureManagement />
+                </div>
+              </div>
             </div>
           </TabsContent>
           

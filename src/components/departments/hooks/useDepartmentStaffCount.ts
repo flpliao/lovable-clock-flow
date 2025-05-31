@@ -9,7 +9,7 @@ export const useDepartmentStaffCount = () => {
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
         .select('id')
-        .eq('department_id', departmentId);
+        .eq('department', departmentId);
 
       if (staffError) {
         console.error('計算員工數量錯誤:', staffError);

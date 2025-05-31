@@ -96,7 +96,7 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
       if (structure.allowances && typeof structure.allowances === 'object') {
         // 確保 Object.values 返回的值被正確處理為數字
         const allowanceValues = Object.values(structure.allowances) as unknown[];
-        allowancesTotal = allowanceValues.reduce((sum: number, val: unknown) => {
+        allowancesTotal = allowanceValues.reduce<number>((sum: number, val: unknown) => {
           const numVal = Number(val) || 0;
           return sum + numVal;
         }, 0);

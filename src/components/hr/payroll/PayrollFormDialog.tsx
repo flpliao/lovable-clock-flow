@@ -91,7 +91,15 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
   const handleSalaryStructureChange = (structureId: string) => {
     const structure = salaryStructures.find(s => s.id === structureId);
     if (structure) {
-      const allowancesTotal = Object.values(structure.allowances || {}).reduce((sum: number, val: any) => sum + (Number(val) || 0), 0);
+      // 安全地計算津貼總額，確保型別正確
+      let allowancesTotal = 0;
+      if (structure.allowances && typeof structure.allowances === 'object') {
+        allowancesTotal = Object.values(structure.allowances).reduce((sum: number, val: any) => {
+          const numVal = Number(val) || 0;
+          return sum + numVal;
+        }, 0);
+      }
+      
       setFormData(prev => ({
         ...prev,
         salary_structure_id: structureId,

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Staff, StaffRole } from '../types';
 import { EditStaffBasicFields } from './EditStaffBasicFields';
+import { EditStaffDepartmentField } from './EditStaffDepartmentField';
 import { EditStaffBranchField } from './EditStaffBranchField';
 import { EditStaffSupervisorField } from './EditStaffSupervisorField';
 import { EditStaffRoleField } from './EditStaffRoleField';
@@ -22,6 +23,11 @@ export const EditStaffFormContent: React.FC<EditStaffFormContentProps> = ({
   return (
     <div className="grid gap-4 py-4">
       <EditStaffBasicFields 
+        currentStaff={currentStaff}
+        setCurrentStaff={setCurrentStaff}
+      />
+      
+      <EditStaffDepartmentField 
         currentStaff={currentStaff}
         setCurrentStaff={setCurrentStaff}
       />

@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Building2, Plus } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { useCompanyManagementContext } from './CompanyManagementContext';
-import { useCompanyOperations } from './hooks/useCompanyOperations';
 import CompanyInfoCard from './CompanyInfoCard';
 import BranchTable from './BranchTable';
 import AddBranchDialog from './AddBranchDialog';
@@ -14,47 +13,32 @@ import EditCompanyDialog from './EditCompanyDialog';
 
 const CompanyManagementRedesigned = () => {
   const { currentUser } = useUser();
-  const { setIsAddBranchDialogOpen, branches, setIsEditCompanyDialogOpen } = useCompanyManagementContext();
-  const { company, loading, loadCompany, forceSyncFromBackend } = useCompanyOperations();
+  const { setIsAddBranchDialogOpen, branches } = useCompanyManagementContext();
   
   // 允許廖俊雄和管理員管理營業處
   const canManageBranches = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
 
-  console.log('CompanyManagementRedesigned - 當前用戶:', currentUser?.name);
-  console.log('CompanyManagementRedesigned - 營業處管理權限:', canManageBranches);
-  console.log('CompanyManagementRedesigned - 營業處數量:', branches?.length || 0);
-
   const handleAddBranch = () => {
-    console.log('📍 CompanyManagementRedesigned: 開啟新增營業處對話框');
     setIsAddBranchDialogOpen(true);
   };
 
-  const handleSyncCompany = async () => {
-    console.log('🔄 CompanyManagementRedesigned: 執行強制同步');
-    await forceSyncFromBackend();
-  };
-
-  const handleEditCompany = () => {
-    console.log('🖊️ CompanyManagementRedesigned: 開啟編輯公司對話框');
-    setIsEditCompanyDialogOpen(true);
-  };
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* 公司基本資料 */}
       <CompanyInfoCard />
 
       {/* 營業處管理區塊 */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Building2 className="h-6 w-6 mr-2 text-blue-600" />
-              <CardTitle>營業處管理</CardTitle>
-            </div>
+            <CardTitle className="flex items-center text-lg">
+              <Building2 className="h-5 w-5 mr-2 text-blue-600" />
+              營業處管理 ({branches?.length || 0})
+            </CardTitle>
             {canManageBranches && (
               <Button
                 onClick={handleAddBranch}
+                size="sm"
                 className="flex items-center"
               >
                 <Plus className="h-4 w-4 mr-1" />
@@ -63,7 +47,7 @@ const CompanyManagementRedesigned = () => {
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <BranchTable />
         </CardContent>
       </Card>

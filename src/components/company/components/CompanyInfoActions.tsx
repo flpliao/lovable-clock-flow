@@ -14,23 +14,22 @@ interface CompanyInfoActionsProps {
 }
 
 export const CompanyInfoActions: React.FC<CompanyInfoActionsProps> = ({
-  company,
   canEdit,
   onEdit
 }) => {
+  if (!canEdit) return null;
+
   return (
-    <div className="flex flex-wrap gap-2 mb-4">
-      {canEdit && (
-        <Button
-          onClick={onEdit}
-          variant="outline"
-          size="sm"
-          className="flex items-center"
-        >
-          <Edit className="h-4 w-4 mr-2" />
-          編輯資料
-        </Button>
-      )}
+    <div className="px-6 pb-4">
+      <Button
+        onClick={onEdit}
+        variant="outline"
+        size="sm"
+        className="flex items-center"
+      >
+        <Edit className="h-4 w-4 mr-2" />
+        編輯資料
+      </Button>
     </div>
   );
 };

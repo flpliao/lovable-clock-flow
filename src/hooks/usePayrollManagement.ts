@@ -6,8 +6,8 @@ import type { Payroll, SalaryStructure, LeaveType } from '@/types/hr';
 
 export const usePayrollManagement = () => {
   const [payrolls, setPayrolls] = useState<any[]>([]);
-  const [salaryStructures, setSalaryStructures] = useState<SalaryStructure[]>([]);
-  const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
+  const [salaryStructures, setSalaryStructures] = useState<any[]>([]);
+  const [leaveTypes, setLeaveTypes] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -66,7 +66,7 @@ export const usePayrollManagement = () => {
   };
 
   // 新增薪資記錄
-  const createPayroll = async (payrollData: Partial<Payroll>) => {
+  const createPayroll = async (payrollData: any) => {
     try {
       setIsLoading(true);
       await PayrollService.createPayroll(payrollData);
@@ -89,7 +89,7 @@ export const usePayrollManagement = () => {
   };
 
   // 更新薪資記錄
-  const updatePayroll = async (id: string, updates: Partial<Payroll>) => {
+  const updatePayroll = async (id: string, updates: any) => {
     try {
       setIsLoading(true);
       await PayrollService.updatePayroll(id, updates);
@@ -135,7 +135,7 @@ export const usePayrollManagement = () => {
   };
 
   // 新增薪資結構
-  const createSalaryStructure = async (structureData: Partial<SalaryStructure>) => {
+  const createSalaryStructure = async (structureData: any) => {
     try {
       setIsLoading(true);
       await PayrollService.createSalaryStructure(structureData);
@@ -157,7 +157,7 @@ export const usePayrollManagement = () => {
   };
 
   // 更新薪資結構
-  const updateSalaryStructure = async (id: string, updates: Partial<SalaryStructure>) => {
+  const updateSalaryStructure = async (id: string, updates: any) => {
     try {
       setIsLoading(true);
       await PayrollService.updateSalaryStructure(id, updates);

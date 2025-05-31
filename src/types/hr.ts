@@ -23,8 +23,8 @@ export interface SalaryStructure {
   base_salary: number;
   overtime_rate: number;
   holiday_rate: number;
-  allowances: Record<string, any>;
-  benefits: Record<string, any>;
+  allowances: any; // 使用 any 以配合 Supabase 的 Json 類型
+  benefits: any; // 使用 any 以配合 Supabase 的 Json 類型
   is_active: boolean;
   effective_date: string;
   created_at: string;

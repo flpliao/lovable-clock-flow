@@ -36,7 +36,7 @@ export class PayrollService {
     return data;
   }
 
-  static async createPayroll(payrollData: Partial<Payroll>) {
+  static async createPayroll(payrollData: any) {
     console.log('📝 創建薪資記錄:', payrollData);
 
     // 計算總薪資
@@ -51,14 +51,29 @@ export class PayrollService {
                      (payrollData.labor_insurance || 0) - 
                      (payrollData.health_insurance || 0);
 
+    const insertData = {
+      staff_id: payrollData.staff_id,
+      salary_structure_id: payrollData.salary_structure_id,
+      pay_period_start: payrollData.pay_period_start,
+      pay_period_end: payrollData.pay_period_end,
+      base_salary: payrollData.base_salary || 0,
+      overtime_hours: payrollData.overtime_hours || 0,
+      overtime_pay: payrollData.overtime_pay || 0,
+      holiday_hours: payrollData.holiday_hours || 0,
+      holiday_pay: payrollData.holiday_pay || 0,
+      allowances: payrollData.allowances || 0,
+      deductions: payrollData.deductions || 0,
+      tax: payrollData.tax || 0,
+      labor_insurance: payrollData.labor_insurance || 0,
+      health_insurance: payrollData.health_insurance || 0,
+      gross_salary: grossSalary,
+      net_salary: netSalary,
+      status: 'draft'
+    };
+
     const { data, error } = await supabase
       .from('payrolls')
-      .insert({
-        ...payrollData,
-        gross_salary: grossSalary,
-        net_salary: netSalary,
-        status: 'draft'
-      })
+      .insert(insertData)
       .select()
       .single();
 
@@ -71,7 +86,7 @@ export class PayrollService {
     return data;
   }
 
-  static async updatePayroll(id: string, updates: Partial<Payroll>) {
+  static async updatePayroll(id: string, updates: any) {
     console.log('📝 更新薪資記錄:', id, updates);
 
     // 重新計算薪資
@@ -145,12 +160,25 @@ export class PayrollService {
     return data;
   }
 
-  static async createSalaryStructure(structureData: Partial<SalaryStructure>) {
+  static async createSalaryStructure(structureData: any) {
     console.log('📝 創建薪資結構:', structureData);
+
+    const insertData = {
+      position: structureData.position,
+      department: structureData.department,
+      level: structureData.level || 1,
+      base_salary: structureData.base_salary || 0,
+      overtime_rate: structureData.overtime_rate || 1.34,
+      holiday_rate: structureData.holiday_rate || 2.0,
+      allowances: structureData.allowances || {},
+      benefits: structureData.benefits || {},
+      is_active: structureData.is_active !== undefined ? structureData.is_active : true,
+      effective_date: structureData.effective_date || new Date().toISOString().split('T')[0]
+    };
 
     const { data, error } = await supabase
       .from('salary_structures')
-      .insert(structureData)
+      .insert(insertData)
       .select()
       .single();
 
@@ -163,7 +191,7 @@ export class PayrollService {
     return data;
   }
 
-  static async updateSalaryStructure(id: string, updates: Partial<SalaryStructure>) {
+  static async updateSalaryStructure(id: string, updates: any) {
     console.log('📝 更新薪資結構:', id, updates);
 
     const { data, error } = await supabase
@@ -217,12 +245,25 @@ export class PayrollService {
     return data;
   }
 
-  static async createLeaveType(leaveTypeData: Partial<LeaveType>) {
+  static async createLeaveType(leaveTypeData: any) {
     console.log('📝 創建請假類型:', leaveTypeData);
+
+    const insertData = {
+      code: leaveTypeData.code,
+      name_zh: leaveTypeData.name_zh,
+      name_en: leaveTypeData.name_en,
+      is_paid: leaveTypeData.is_paid || false,
+      annual_reset: leaveTypeData.annual_reset !== undefined ? leaveTypeData.annual_reset : true,
+      max_days_per_year: leaveTypeData.max_days_per_year,
+      requires_attachment: leaveTypeData.requires_attachment || false,
+      description: leaveTypeData.description,
+      is_active: leaveTypeData.is_active !== undefined ? leaveTypeData.is_active : true,
+      sort_order: leaveTypeData.sort_order || 0
+    };
 
     const { data, error } = await supabase
       .from('leave_types')
-      .insert(leaveTypeData)
+      .insert(insertData)
       .select()
       .single();
 
@@ -235,7 +276,7 @@ export class PayrollService {
     return data;
   }
 
-  static async updateLeaveType(id: string, updates: Partial<LeaveType>) {
+  static async updateLeaveType(id: string, updates: any) {
     console.log('📝 更新請假類型:', id, updates);
 
     const { data, error } = await supabase

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useScheduling } from '@/contexts/SchedulingContext';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useUser } from '@/contexts/UserContext';
 import { timeOptions } from './schedule/constants';
 import ScheduleCalendar from './schedule/ScheduleCalendar';
 import TimeSlotSelector from './schedule/TimeSlotSelector';
@@ -25,14 +26,15 @@ type FormValues = {
 const ScheduleForm = () => {
   const { toast } = useToast();
   const { addSchedules } = useScheduling();
-  const { staffList } = useStaffManagementContext();
+  const { staffList, getSubordinates } = useStaffManagementContext();
+  const { currentUser } = useUser();
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
   const [selectedMonth, setSelectedMonth] = useState(currentMonth.toString());
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
-  const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>(['09:30-17:30']); // 預設早班
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>(['09:30-17:30']);
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -43,6 +45,39 @@ const ScheduleForm = () => {
       selectedTimeSlots: ['09:30-17:30'],
     },
   });
+
+  // 獲取可排班的員工列表（包含自己和下屬）
+  const getAvailableStaff = () => {
+    if (!currentUser) return [];
+    
+    const availableStaff = [];
+    
+    // 自己可以為自己排班
+    const selfStaff = staffList.find(staff => staff.id === currentUser.id);
+    if (selfStaff) {
+      availableStaff.push(selfStaff);
+    }
+    
+    // 如果是主管，可以為下屬排班
+    if (currentUser.role === 'admin' || currentUser.role === 'manager') {
+      const subordinates = getSubordinates(currentUser.id);
+      availableStaff.push(...subordinates);
+    }
+    
+    // 去重並排序
+    const uniqueStaff = availableStaff.filter((staff, index, self) => 
+      index === self.findIndex(s => s.id === staff.id)
+    );
+    
+    return uniqueStaff.sort((a, b) => {
+      // 自己排在最前面
+      if (a.id === currentUser.id) return -1;
+      if (b.id === currentUser.id) return 1;
+      return a.name.localeCompare(b.name);
+    });
+  };
+
+  const availableStaff = getAvailableStaff();
 
   const handleDateToggle = (date: string) => {
     setSelectedDates(prev => 
@@ -83,23 +118,30 @@ const ScheduleForm = () => {
 
     console.log('排班數據：', scheduleData);
     
-    // 保存到上下文
     addSchedules(scheduleData.schedules);
+    
+    const isForSelf = data.userId === currentUser?.id;
+    const staffName = getUserName(data.userId);
     
     toast({
       title: "排班成功",
-      description: `已為 ${getUserName(data.userId)} 在 ${selectedYear}年${selectedMonth}月 安排 ${selectedDates.length} 天班次，共 ${selectedDates.length * selectedTimeSlots.length} 個時段。`,
+      description: `已為 ${staffName} 在 ${selectedYear}年${selectedMonth}月 安排 ${selectedDates.length} 天班次，共 ${selectedDates.length * selectedTimeSlots.length} 個時段。${isForSelf ? '' : '（代為排班）'}`,
     });
     
-    // 重置表單
     setSelectedDates([]);
     setSelectedTimeSlots(['09:30-17:30']);
     form.reset();
   };
 
   const getUserName = (userId: string) => {
-    const user = staffList.find(u => u.id === userId);
+    const user = availableStaff.find(u => u.id === userId);
     return user ? user.name : '未知員工';
+  };
+
+  const getStaffRelation = (staffId: string) => {
+    if (staffId === currentUser?.id) return '（自己）';
+    if (getSubordinates(currentUser?.id || '').some(s => s.id === staffId)) return '（下屬）';
+    return '';
   };
 
   return (
@@ -126,15 +168,15 @@ const ScheduleForm = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {staffList.length > 0 ? (
-                        staffList.map(staff => (
+                      {availableStaff.length > 0 ? (
+                        availableStaff.map(staff => (
                           <SelectItem key={staff.id} value={staff.id}>
-                            {staff.name} - {staff.department} ({staff.position})
+                            {staff.name} - {staff.department} ({staff.position}) {getStaffRelation(staff.id)}
                           </SelectItem>
                         ))
                       ) : (
                         <SelectItem value="no-staff" disabled>
-                          暫無員工資料
+                          暫無可排班員工
                         </SelectItem>
                       )}
                     </SelectContent>

@@ -1,13 +1,15 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Trash2, Users } from 'lucide-react';
 import { format, startOfWeek, addDays, isSameDay, getDaysInMonth, startOfMonth } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { useScheduling } from '@/contexts/SchedulingContext';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import { Lunar } from 'lunar-javascript';
 
@@ -20,6 +22,7 @@ const mockUsers = [
 
 const ScheduleCalendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [viewMode, setViewMode] = useState<'self' | 'subordinates' | 'all'>('self');
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   
@@ -27,21 +30,67 @@ const ScheduleCalendar = () => {
   const [selectedMonth, setSelectedMonth] = useState(currentMonth.toString());
   
   const { schedules, getSchedulesForDate, removeSchedule } = useScheduling();
+  const { staffList, getSubordinates } = useStaffManagementContext();
+  const { currentUser } = useUser();
   const { toast } = useToast();
   
   console.log('ScheduleCalendar - All schedules:', schedules);
   
-  // 獲取選定日期的排班
+  // 獲取可查看的員工ID列表
+  const getViewableStaffIds = () => {
+    if (!currentUser) return [];
+    
+    const viewableIds = [];
+    
+    switch (viewMode) {
+      case 'self':
+        viewableIds.push(currentUser.id);
+        break;
+      case 'subordinates':
+        if (currentUser.role === 'admin' || currentUser.role === 'manager') {
+          const subordinates = getSubordinates(currentUser.id);
+          viewableIds.push(...subordinates.map(s => s.id));
+        }
+        break;
+      case 'all':
+        viewableIds.push(currentUser.id);
+        if (currentUser.role === 'admin' || currentUser.role === 'manager') {
+          const subordinates = getSubordinates(currentUser.id);
+          viewableIds.push(...subordinates.map(s => s.id));
+        }
+        break;
+    }
+    
+    return viewableIds;
+  };
+
+  const viewableStaffIds = getViewableStaffIds();
+  
+  // 過濾排班記錄
+  const getFilteredSchedulesForDate = (date: Date) => {
+    const dateString = format(date, 'yyyy-MM-dd');
+    const allSchedules = getSchedulesForDate(dateString);
+    return allSchedules.filter(schedule => viewableStaffIds.includes(schedule.userId));
+  };
+
   const selectedDateString = format(selectedDate, 'yyyy-MM-dd');
-  const shiftsForSelectedDate = getSchedulesForDate(selectedDateString);
+  const shiftsForSelectedDate = getFilteredSchedulesForDate(selectedDate);
   
   console.log('ScheduleCalendar - Selected date:', selectedDateString);
-  console.log('ScheduleCalendar - Shifts for selected date:', shiftsForSelectedDate);
+  console.log('ScheduleCalendar - Filtered shifts for selected date:', shiftsForSelectedDate);
 
   // 獲取用戶名稱
   const getUserName = (userId: string) => {
-    const user = mockUsers.find(u => u.id === userId);
+    const user = staffList.find(u => u.id === userId);
     return user ? user.name : '未知員工';
+  };
+
+  // 獲取用戶關係標記
+  const getUserRelation = (userId: string) => {
+    if (!currentUser) return '';
+    if (userId === currentUser.id) return '自己';
+    if (getSubordinates(currentUser.id).some(s => s.id === userId)) return '下屬';
+    return '';
   };
 
   // 獲取當週日期
@@ -56,11 +105,11 @@ const ScheduleCalendar = () => {
 
   const weekDays = getWeekDays(selectedDate);
 
-  // 獲取某日期的排班數量
+  // 獲取某日期的排班數量（已過濾）
   const getScheduleCountForDate = (date: Date) => {
-    const dateString = format(date, 'yyyy-MM-dd');
-    const count = getSchedulesForDate(dateString).length;
-    console.log(`ScheduleCalendar - Date ${dateString} has ${count} schedules`);
+    const filteredSchedules = getFilteredSchedulesForDate(date);
+    const count = filteredSchedules.length;
+    console.log(`ScheduleCalendar - Date ${format(date, 'yyyy-MM-dd')} has ${count} filtered schedules`);
     return count;
   };
 
@@ -71,6 +120,13 @@ const ScheduleCalendar = () => {
       title: '刪除成功',
       description: '排班記錄已刪除',
     });
+  };
+
+  // 檢查是否可以刪除排班
+  const canDeleteSchedule = (schedule: any) => {
+    if (!currentUser) return false;
+    // 管理員可以刪除所有排班，員工只能刪除自己的排班
+    return currentUser.role === 'admin' || schedule.userId === currentUser.id;
   };
 
   // 生成年份選項
@@ -144,8 +200,36 @@ const ScheduleCalendar = () => {
 
   const daysInMonth = generateDaysInMonth();
 
+  // 檢查是否為主管
+  const isManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
+  const hasSubordinates = isManager && getSubordinates(currentUser?.id || '').length > 0;
+
   return (
     <div className="space-y-4">
+      {/* 查看模式選擇器 */}
+      {hasSubordinates && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              查看範圍
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select value={viewMode} onValueChange={(value: 'self' | 'subordinates' | 'all') => setViewMode(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="self">僅自己的排班</SelectItem>
+                <SelectItem value="subordinates">僅下屬的排班</SelectItem>
+                <SelectItem value="all">自己和下屬的排班</SelectItem>
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+      )}
+
       {/* 日曆式日期選擇器 */}
       <Card>
         <CardHeader>
@@ -271,6 +355,7 @@ const ScheduleCalendar = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>員工</TableHead>
+                  <TableHead>關係</TableHead>
                   <TableHead>時間段</TableHead>
                   <TableHead>開始時間</TableHead>
                   <TableHead>結束時間</TableHead>
@@ -281,18 +366,25 @@ const ScheduleCalendar = () => {
                 {shiftsForSelectedDate.map((shift) => (
                   <TableRow key={shift.id}>
                     <TableCell className="font-medium">{getUserName(shift.userId)}</TableCell>
+                    <TableCell>
+                      <Badge variant={shift.userId === currentUser?.id ? 'default' : 'secondary'}>
+                        {getUserRelation(shift.userId)}
+                      </Badge>
+                    </TableCell>
                     <TableCell>{shift.timeSlot}</TableCell>
                     <TableCell>{shift.startTime}</TableCell>
                     <TableCell>{shift.endTime}</TableCell>
                     <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveSchedule(shift.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {canDeleteSchedule(shift) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveSchedule(shift.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -302,7 +394,7 @@ const ScheduleCalendar = () => {
             <div className="text-center py-8">
               <div className="text-gray-500 mb-2">該日期沒有排班記錄</div>
               <div className="text-sm text-gray-400">
-                總共有 {schedules.length} 個排班記錄在系統中
+                總共有 {schedules.filter(s => viewableStaffIds.includes(s.userId)).length} 個排班記錄在當前查看範圍內
               </div>
             </div>
           )}
@@ -347,8 +439,11 @@ const ScheduleCalendar = () => {
           </CardHeader>
           <CardContent className="text-sm text-yellow-700">
             <div>總排班數量: {schedules.length}</div>
+            <div>可查看排班數量: {schedules.filter(s => viewableStaffIds.includes(s.userId)).length}</div>
             <div>選定日期: {selectedDateString}</div>
             <div>該日期排班數量: {shiftsForSelectedDate.length}</div>
+            <div>查看模式: {viewMode}</div>
+            <div>可查看員工ID: {viewableStaffIds.join(', ')}</div>
             {schedules.length > 0 && (
               <div className="mt-2">
                 <div>所有排班日期:</div>

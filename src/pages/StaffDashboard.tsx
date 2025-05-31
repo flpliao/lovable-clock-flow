@@ -10,8 +10,8 @@ const StaffDashboard = () => {
   const { currentUser, isAdmin } = useUser();
   const [activeTab, setActiveTab] = useState('analytics');
   
-  // Only allow admin users or HR department to access this page
-  if (!currentUser || !(isAdmin() || currentUser.department === 'HR')) {
+  // Allow admin users to access this page
+  if (!currentUser || !isAdmin()) {
     return <Navigate to="/login" />;
   }
 

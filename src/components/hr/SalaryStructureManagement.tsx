@@ -3,43 +3,29 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Settings, Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Settings, Plus, Search, Edit, Trash2, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { formatCurrency } from '@/utils/payrollUtils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePayrollManagement } from '@/hooks/usePayrollManagement';
+import SalaryStructureFormDialog from './salary/SalaryStructureFormDialog';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const SalaryStructureManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingStructure, setEditingStructure] = useState<any>(null);
   const isMobile = useIsMobile();
 
-  // 模擬薪資結構資料
-  const salaryStructures = [
-    {
-      id: '1',
-      position: '軟體工程師',
-      department: 'IT部',
-      level: 2,
-      base_salary: 50000,
-      overtime_rate: 1.34,
-      holiday_rate: 2.0,
-      allowances: { transport: 2000, meal: 1000 },
-      is_active: true,
-      effective_date: '2024-01-01'
-    },
-    {
-      id: '2',
-      position: '業務經理',
-      department: '業務部',
-      level: 3,
-      base_salary: 60000,
-      overtime_rate: 1.34,
-      holiday_rate: 2.0,
-      allowances: { transport: 3000, meal: 1500, phone: 800 },
-      is_active: true,
-      effective_date: '2024-01-01'
-    }
-  ];
+  const {
+    salaryStructures,
+    isLoading,
+    createSalaryStructure,
+    updateSalaryStructure,
+    deleteSalaryStructure,
+    refresh
+  } = usePayrollManagement();
 
   const filteredStructures = salaryStructures.filter(structure => {
     const matchesSearch = structure.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -48,8 +34,55 @@ const SalaryStructureManagement: React.FC = () => {
   });
 
   const calculateTotalAllowances = (allowances: Record<string, number>): number => {
-    return Object.values(allowances).reduce((sum, amount) => sum + amount, 0);
+    return Object.values(allowances || {}).reduce((sum, amount) => sum + (Number(amount) || 0), 0);
   };
+
+  const handleCreateStructure = async (structureData: any) => {
+    await createSalaryStructure(structureData);
+    setShowCreateDialog(false);
+  };
+
+  const handleUpdateStructure = async (structureData: any) => {
+    if (editingStructure) {
+      await updateSalaryStructure(editingStructure.id, structureData);
+      setEditingStructure(null);
+    }
+  };
+
+  const handleEditStructure = (structure: any) => {
+    setEditingStructure(structure);
+  };
+
+  const handleDeleteStructure = async (id: string) => {
+    if (confirm('確定要刪除這個薪資結構嗎？')) {
+      await deleteSalaryStructure(id);
+    }
+  };
+
+  if (isLoading && salaryStructures.length === 0) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-8 w-16" />
+        </div>
+        <Card>
+          <CardContent className="p-3">
+            <Skeleton className="h-9 w-full" />
+          </CardContent>
+        </Card>
+        <div className="grid grid-cols-3 gap-2">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-3">
+                <Skeleton className="h-16 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
@@ -58,10 +91,22 @@ const SalaryStructureManagement: React.FC = () => {
           <Settings className="h-4 w-4 mr-2 text-blue-600" />
           薪資結構
         </h2>
-        <Button size="sm" className="text-xs">
-          <Plus className="h-3 w-3 mr-1" />
-          新增
-        </Button>
+        <div className="flex gap-1">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs"
+            onClick={refresh}
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+            重新整理
+          </Button>
+          <Button size="sm" className="text-xs" onClick={() => setShowCreateDialog(true)}>
+            <Plus className="h-3 w-3 mr-1" />
+            新增
+          </Button>
+        </div>
       </div>
 
       {/* 搜尋控制項 */}
@@ -85,7 +130,9 @@ const SalaryStructureManagement: React.FC = () => {
           <CardContent className="p-3">
             <div className="text-center">
               <p className="text-xs text-gray-600">活躍結構</p>
-              <p className="text-lg font-bold text-blue-600">{salaryStructures.filter(s => s.is_active).length}</p>
+              <p className="text-lg font-bold text-blue-600">
+                {salaryStructures.filter(s => s.is_active).length}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -94,7 +141,10 @@ const SalaryStructureManagement: React.FC = () => {
             <div className="text-center">
               <p className="text-xs text-gray-600">平均薪資</p>
               <p className="text-sm font-bold text-green-600">
-                {formatCurrency(salaryStructures.reduce((sum, s) => sum + s.base_salary, 0) / salaryStructures.length)}
+                {salaryStructures.length > 0 
+                  ? formatCurrency(salaryStructures.reduce((sum, s) => sum + s.base_salary, 0) / salaryStructures.length)
+                  : formatCurrency(0)
+                }
               </p>
             </div>
           </CardContent>
@@ -104,7 +154,10 @@ const SalaryStructureManagement: React.FC = () => {
             <div className="text-center">
               <p className="text-xs text-gray-600">最高薪資</p>
               <p className="text-sm font-bold text-purple-600">
-                {formatCurrency(Math.max(...salaryStructures.map(s => s.base_salary)))}
+                {salaryStructures.length > 0 
+                  ? formatCurrency(Math.max(...salaryStructures.map(s => s.base_salary)))
+                  : formatCurrency(0)
+                }
               </p>
             </div>
           </CardContent>
@@ -139,11 +192,11 @@ const SalaryStructureManagement: React.FC = () => {
                 </div>
                 
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 text-xs">
+                  <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => handleEditStructure(structure)}>
                     <Edit className="h-3 w-3 mr-1" />
                     編輯
                   </Button>
-                  <Button variant="outline" size="sm" className="text-red-600 text-xs">
+                  <Button variant="outline" size="sm" className="text-red-600 text-xs" onClick={() => handleDeleteStructure(structure.id)}>
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
@@ -205,10 +258,10 @@ const SalaryStructureManagement: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => handleEditStructure(structure)}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm" className="text-red-600">
+                        <Button variant="outline" size="sm" className="text-red-600" onClick={() => handleDeleteStructure(structure.id)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -225,6 +278,21 @@ const SalaryStructureManagement: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      <SalaryStructureFormDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onSubmit={handleCreateStructure}
+        title="新增薪資結構"
+      />
+
+      <SalaryStructureFormDialog
+        open={!!editingStructure}
+        onOpenChange={(open) => !open && setEditingStructure(null)}
+        onSubmit={handleUpdateStructure}
+        initialData={editingStructure}
+        title="編輯薪資結構"
+      />
     </div>
   );
 };

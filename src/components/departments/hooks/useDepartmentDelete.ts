@@ -1,9 +1,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 export const useDepartmentDelete = () => {
-  const deleteDepartment = async (id: string): Promise<boolean> => {
+  const deleteDepartment = async (id: string) => {
     try {
       console.log('刪除部門 ID:', id);
 

@@ -1203,6 +1203,7 @@ export type Database = {
           id: string
           start_time: string
           time_slot: string
+          time_slot_id: string | null
           updated_at: string
           user_id: string
           work_date: string
@@ -1214,6 +1215,7 @@ export type Database = {
           id?: string
           start_time: string
           time_slot: string
+          time_slot_id?: string | null
           updated_at?: string
           user_id: string
           work_date: string
@@ -1225,11 +1227,20 @@ export type Database = {
           id?: string
           start_time?: string
           time_slot?: string
+          time_slot_id?: string | null
           updated_at?: string
           user_id?: string
           work_date?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "schedules_time_slot_id_fkey"
+            columns: ["time_slot_id"]
+            isOneToOne: false
+            referencedRelation: "time_slots"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       staff: {
         Row: {
@@ -1348,6 +1359,45 @@ export type Database = {
           setting_key?: string
           setting_value?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      time_slots: {
+        Row: {
+          created_at: string
+          created_by: string
+          end_time: string
+          id: string
+          is_active: boolean
+          name: string
+          requires_checkin: boolean
+          sort_order: number
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          end_time: string
+          id?: string
+          is_active?: boolean
+          name: string
+          requires_checkin?: boolean
+          sort_order?: number
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          requires_checkin?: boolean
+          sort_order?: number
+          start_time?: string
+          updated_at?: string
         }
         Relationships: []
       }

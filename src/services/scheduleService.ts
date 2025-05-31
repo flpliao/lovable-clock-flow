@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Schedule {
@@ -8,6 +7,7 @@ export interface Schedule {
   start_time: string;
   end_time: string;
   time_slot: string;
+  time_slot_id?: string;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -19,6 +19,7 @@ export interface CreateSchedule {
   start_time: string;
   end_time: string;
   time_slot: string;
+  time_slot_id?: string;
   created_by: string;
 }
 

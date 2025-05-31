@@ -219,6 +219,75 @@ export type Database = {
           },
         ]
       }
+      attendance_exceptions: {
+        Row: {
+          approval_comment: string | null
+          approval_date: string | null
+          approved_by: string | null
+          created_at: string
+          exception_date: string
+          exception_type: string
+          id: string
+          original_check_in_time: string | null
+          original_check_out_time: string | null
+          reason: string
+          requested_check_in_time: string | null
+          requested_check_out_time: string | null
+          staff_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approval_comment?: string | null
+          approval_date?: string | null
+          approved_by?: string | null
+          created_at?: string
+          exception_date: string
+          exception_type: string
+          id?: string
+          original_check_in_time?: string | null
+          original_check_out_time?: string | null
+          reason: string
+          requested_check_in_time?: string | null
+          requested_check_out_time?: string | null
+          staff_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approval_comment?: string | null
+          approval_date?: string | null
+          approved_by?: string | null
+          created_at?: string
+          exception_date?: string
+          exception_type?: string
+          id?: string
+          original_check_in_time?: string | null
+          original_check_out_time?: string | null
+          reason?: string
+          requested_check_in_time?: string | null
+          requested_check_out_time?: string | null
+          staff_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_exceptions_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_exceptions_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branches: {
         Row: {
           address: string
@@ -388,6 +457,51 @@ export type Database = {
         }
         Relationships: []
       }
+      countries: {
+        Row: {
+          code: string
+          created_at: string
+          currency_code: string
+          date_format: string
+          id: string
+          is_active: boolean
+          name_en: string
+          name_zh: string
+          time_format: string
+          timezone: string
+          updated_at: string
+          week_start: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          currency_code: string
+          date_format?: string
+          id?: string
+          is_active?: boolean
+          name_en: string
+          name_zh: string
+          time_format?: string
+          timezone: string
+          updated_at?: string
+          week_start?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          currency_code?: string
+          date_format?: string
+          id?: string
+          is_active?: boolean
+          name_en?: string
+          name_zh?: string
+          time_format?: string
+          timezone?: string
+          updated_at?: string
+          week_start?: number
+        }
+        Relationships: []
+      }
       departments: {
         Row: {
           created_at: string
@@ -420,6 +534,102 @@ export type Database = {
           name?: string
           staff_count?: number
           type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      holidays: {
+        Row: {
+          branch_id: string | null
+          country_id: string | null
+          created_at: string
+          holiday_date: string
+          holiday_type: string
+          id: string
+          is_active: boolean
+          is_recurring: boolean
+          name_en: string
+          name_zh: string
+          recurring_rule: string | null
+          updated_at: string
+        }
+        Insert: {
+          branch_id?: string | null
+          country_id?: string | null
+          created_at?: string
+          holiday_date: string
+          holiday_type: string
+          id?: string
+          is_active?: boolean
+          is_recurring?: boolean
+          name_en: string
+          name_zh: string
+          recurring_rule?: string | null
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string | null
+          country_id?: string | null
+          created_at?: string
+          holiday_date?: string
+          holiday_type?: string
+          id?: string
+          is_active?: boolean
+          is_recurring?: boolean
+          name_en?: string
+          name_zh?: string
+          recurring_rule?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "holidays_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "holidays_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      i18n_labels: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          label_key: string
+          label_value: string
+          language_code: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          label_key: string
+          label_value: string
+          language_code: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          label_key?: string
+          label_value?: string
+          language_code?: string
           updated_at?: string
         }
         Relationships: []
@@ -500,6 +710,54 @@ export type Database = {
           },
         ]
       }
+      leave_types: {
+        Row: {
+          annual_reset: boolean
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_paid: boolean
+          max_days_per_year: number | null
+          name_en: string
+          name_zh: string
+          requires_attachment: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          annual_reset?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_paid?: boolean
+          max_days_per_year?: number | null
+          name_en: string
+          name_zh: string
+          requires_attachment?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          annual_reset?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_paid?: boolean
+          max_days_per_year?: number | null
+          name_en?: string
+          name_zh?: string
+          requires_attachment?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           action_required: boolean
@@ -564,6 +822,181 @@ export type Database = {
           },
         ]
       }
+      overtimes: {
+        Row: {
+          approval_comment: string | null
+          approval_date: string | null
+          approved_by: string | null
+          compensation_hours: number | null
+          compensation_type: string
+          created_at: string
+          end_time: string
+          hours: number
+          id: string
+          overtime_date: string
+          overtime_type: string
+          reason: string
+          staff_id: string
+          start_time: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approval_comment?: string | null
+          approval_date?: string | null
+          approved_by?: string | null
+          compensation_hours?: number | null
+          compensation_type: string
+          created_at?: string
+          end_time: string
+          hours: number
+          id?: string
+          overtime_date: string
+          overtime_type: string
+          reason: string
+          staff_id: string
+          start_time: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approval_comment?: string | null
+          approval_date?: string | null
+          approved_by?: string | null
+          compensation_hours?: number | null
+          compensation_type?: string
+          created_at?: string
+          end_time?: string
+          hours?: number
+          id?: string
+          overtime_date?: string
+          overtime_type?: string
+          reason?: string
+          staff_id?: string
+          start_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "overtimes_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "overtimes_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payrolls: {
+        Row: {
+          allowances: number | null
+          approval_date: string | null
+          approved_by: string | null
+          base_salary: number
+          calculated_at: string | null
+          created_at: string
+          deductions: number | null
+          gross_salary: number
+          health_insurance: number | null
+          holiday_hours: number | null
+          holiday_pay: number | null
+          id: string
+          labor_insurance: number | null
+          net_salary: number
+          overtime_hours: number | null
+          overtime_pay: number | null
+          paid_date: string | null
+          pay_period_end: string
+          pay_period_start: string
+          salary_structure_id: string
+          staff_id: string
+          status: string
+          tax: number | null
+          updated_at: string
+        }
+        Insert: {
+          allowances?: number | null
+          approval_date?: string | null
+          approved_by?: string | null
+          base_salary: number
+          calculated_at?: string | null
+          created_at?: string
+          deductions?: number | null
+          gross_salary: number
+          health_insurance?: number | null
+          holiday_hours?: number | null
+          holiday_pay?: number | null
+          id?: string
+          labor_insurance?: number | null
+          net_salary: number
+          overtime_hours?: number | null
+          overtime_pay?: number | null
+          paid_date?: string | null
+          pay_period_end: string
+          pay_period_start: string
+          salary_structure_id: string
+          staff_id: string
+          status?: string
+          tax?: number | null
+          updated_at?: string
+        }
+        Update: {
+          allowances?: number | null
+          approval_date?: string | null
+          approved_by?: string | null
+          base_salary?: number
+          calculated_at?: string | null
+          created_at?: string
+          deductions?: number | null
+          gross_salary?: number
+          health_insurance?: number | null
+          holiday_hours?: number | null
+          holiday_pay?: number | null
+          id?: string
+          labor_insurance?: number | null
+          net_salary?: number
+          overtime_hours?: number | null
+          overtime_pay?: number | null
+          paid_date?: string | null
+          pay_period_end?: string
+          pay_period_start?: string
+          salary_structure_id?: string
+          staff_id?: string
+          status?: string
+          tax?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payrolls_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payrolls_salary_structure_id_fkey"
+            columns: ["salary_structure_id"]
+            isOneToOne: false
+            referencedRelation: "salary_structures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payrolls_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissions: {
         Row: {
           category: string
@@ -590,6 +1023,69 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      reminder_settings: {
+        Row: {
+          branch_id: string | null
+          created_at: string
+          department: string | null
+          id: string
+          is_active: boolean
+          message_template: string
+          notification_method: string[]
+          reminder_days: number[]
+          reminder_time: string
+          reminder_type: string
+          staff_id: string | null
+          trigger_condition: Json
+          updated_at: string
+        }
+        Insert: {
+          branch_id?: string | null
+          created_at?: string
+          department?: string | null
+          id?: string
+          is_active?: boolean
+          message_template: string
+          notification_method?: string[]
+          reminder_days?: number[]
+          reminder_time: string
+          reminder_type: string
+          staff_id?: string | null
+          trigger_condition: Json
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string | null
+          created_at?: string
+          department?: string | null
+          id?: string
+          is_active?: boolean
+          message_template?: string
+          notification_method?: string[]
+          reminder_days?: number[]
+          reminder_time?: string
+          reminder_type?: string
+          staff_id?: string | null
+          trigger_condition?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminder_settings_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminder_settings_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       role_permissions: {
         Row: {
@@ -620,6 +1116,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      salary_structures: {
+        Row: {
+          allowances: Json | null
+          base_salary: number
+          benefits: Json | null
+          created_at: string
+          department: string
+          effective_date: string
+          holiday_rate: number
+          id: string
+          is_active: boolean
+          level: number
+          overtime_rate: number
+          position: string
+          updated_at: string
+        }
+        Insert: {
+          allowances?: Json | null
+          base_salary: number
+          benefits?: Json | null
+          created_at?: string
+          department: string
+          effective_date?: string
+          holiday_rate?: number
+          id?: string
+          is_active?: boolean
+          level?: number
+          overtime_rate?: number
+          position: string
+          updated_at?: string
+        }
+        Update: {
+          allowances?: Json | null
+          base_salary?: number
+          benefits?: Json | null
+          created_at?: string
+          department?: string
+          effective_date?: string
+          holiday_rate?: number
+          id?: string
+          is_active?: boolean
+          level?: number
+          overtime_rate?: number
+          position?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       staff: {
         Row: {

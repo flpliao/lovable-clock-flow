@@ -9,11 +9,13 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Holiday {
   id: string;
-  country_code: string;
+  country_id: string | null;
   name_zh: string;
   name_en: string;
   holiday_date: string;
   holiday_type: string;
+  is_active: boolean;
+  is_recurring: boolean;
 }
 
 const HolidayCalendar: React.FC = () => {
@@ -41,10 +43,10 @@ const HolidayCalendar: React.FC = () => {
   const loadHolidays = async () => {
     setLoading(true);
     try {
+      // Since we don't have countries table yet, we'll simulate by using a simple filter
       const { data, error } = await supabase
         .from('holidays')
         .select('*')
-        .eq('country_code', selectedCountry)
         .gte('holiday_date', `${selectedYear}-01-01`)
         .lte('holiday_date', `${selectedYear}-12-31`)
         .eq('is_active', true)
@@ -60,7 +62,13 @@ const HolidayCalendar: React.FC = () => {
         return;
       }
 
-      setHolidays(data || []);
+      // Filter by country code (simulated since we don't have proper country mapping yet)
+      const filteredHolidays = data?.filter(holiday => {
+        // For now, we'll assume all holidays in the DB are for Taiwan
+        return selectedCountry === 'TW';
+      }) || [];
+
+      setHolidays(filteredHolidays);
     } catch (error) {
       console.error('載入假日資料異常:', error);
       toast({

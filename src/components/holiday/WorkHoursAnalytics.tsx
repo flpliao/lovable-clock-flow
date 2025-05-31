@@ -7,12 +7,6 @@ import { Calendar, Clock, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-interface WorkTimeRule {
-  weekly_work_hours: number;
-  daily_work_hours: number;
-  annual_leave_days: number;
-}
-
 interface MonthlyData {
   month: string;
   workDays: number;
@@ -24,44 +18,25 @@ interface MonthlyData {
 const WorkHoursAnalytics: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedCountry, setSelectedCountry] = useState('TW');
-  const [workTimeRule, setWorkTimeRule] = useState<WorkTimeRule | null>(null);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-  const loadWorkTimeRules = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('work_time_rules')
-        .select('weekly_work_hours, daily_work_hours, annual_leave_days')
-        .eq('country_code', selectedCountry)
-        .eq('is_active', true)
-        .order('effective_from', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error) {
-        console.error('載入工時規則失敗:', error);
-        return;
-      }
-
-      setWorkTimeRule(data);
-    } catch (error) {
-      console.error('載入工時規則異常:', error);
-    }
+  // Taiwan labor law defaults
+  const workTimeDefaults = {
+    weekly_work_hours: 40,
+    daily_work_hours: 8,
+    annual_leave_days: 7
   };
 
   const calculateMonthlyData = async () => {
-    if (!workTimeRule) return;
-
     setLoading(true);
     try {
       const { data: holidays, error } = await supabase
         .from('holidays')
         .select('holiday_date')
-        .eq('country_code', selectedCountry)
         .gte('holiday_date', `${selectedYear}-01-01`)
         .lte('holiday_date', `${selectedYear}-12-31`)
         .eq('is_active', true);
@@ -97,8 +72,8 @@ const WorkHoursAnalytics: React.FC = () => {
           }
         }
 
-        const totalHours = workDays * workTimeRule.daily_work_hours;
-        const requiredHours = Math.floor((daysInMonth - holidayCount) * (workTimeRule.weekly_work_hours / 7));
+        const totalHours = workDays * workTimeDefaults.daily_work_hours;
+        const requiredHours = Math.floor((daysInMonth - holidayCount) * (workTimeDefaults.weekly_work_hours / 7));
 
         monthlyStats.push({
           month: `${month + 1}月`,
@@ -123,14 +98,8 @@ const WorkHoursAnalytics: React.FC = () => {
   };
 
   useEffect(() => {
-    loadWorkTimeRules();
-  }, [selectedCountry]);
-
-  useEffect(() => {
-    if (workTimeRule) {
-      calculateMonthlyData();
-    }
-  }, [selectedYear, selectedCountry, workTimeRule]);
+    calculateMonthlyData();
+  }, [selectedYear, selectedCountry]);
 
   const yearlyStats = {
     totalWorkDays: monthlyData.reduce((sum, month) => sum + month.workDays, 0),

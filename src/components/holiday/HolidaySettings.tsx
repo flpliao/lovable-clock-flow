@@ -12,12 +12,13 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Holiday {
   id: string;
-  country_code: string;
+  country_id: string | null;
   name_zh: string;
   name_en: string;
   holiday_date: string;
   holiday_type: string;
   is_recurring: boolean;
+  is_active: boolean;
 }
 
 const HolidaySettings: React.FC = () => {
@@ -25,7 +26,7 @@ const HolidaySettings: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [editingHoliday, setEditingHoliday] = useState<Holiday | null>(null);
   const [formData, setFormData] = useState({
-    country_code: 'TW',
+    country_id: null as string | null,
     name_zh: '',
     name_en: '',
     holiday_date: '',
@@ -79,11 +80,16 @@ const HolidaySettings: React.FC = () => {
     e.preventDefault();
     
     try {
+      const holidayData = {
+        ...formData,
+        is_active: true
+      };
+
       if (editingHoliday) {
         // 更新假日
         const { error } = await supabase
           .from('holidays')
-          .update(formData)
+          .update(holidayData)
           .eq('id', editingHoliday.id);
 
         if (error) throw error;
@@ -96,7 +102,7 @@ const HolidaySettings: React.FC = () => {
         // 新增假日
         const { error } = await supabase
           .from('holidays')
-          .insert([formData]);
+          .insert([holidayData]);
 
         if (error) throw error;
 
@@ -108,7 +114,7 @@ const HolidaySettings: React.FC = () => {
 
       // 重置表單
       setFormData({
-        country_code: 'TW',
+        country_id: null,
         name_zh: '',
         name_en: '',
         holiday_date: '',
@@ -130,7 +136,7 @@ const HolidaySettings: React.FC = () => {
   const handleEdit = (holiday: Holiday) => {
     setEditingHoliday(holiday);
     setFormData({
-      country_code: holiday.country_code,
+      country_id: holiday.country_id,
       name_zh: holiday.name_zh,
       name_en: holiday.name_en || '',
       holiday_date: holiday.holiday_date,
@@ -182,10 +188,10 @@ const HolidaySettings: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="country_code">地區</Label>
+                <Label htmlFor="country">地區</Label>
                 <Select 
-                  value={formData.country_code} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, country_code: value }))}
+                  value={formData.country_id || 'TW'} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, country_id: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -276,7 +282,7 @@ const HolidaySettings: React.FC = () => {
                   onClick={() => {
                     setEditingHoliday(null);
                     setFormData({
-                      country_code: 'TW',
+                      country_id: null,
                       name_zh: '',
                       name_en: '',
                       holiday_date: '',
@@ -312,7 +318,7 @@ const HolidaySettings: React.FC = () => {
                       {holiday.name_en && (
                         <span className="text-sm text-gray-500">({holiday.name_en})</span>
                       )}
-                      <Badge variant="outline">{holiday.country_code}</Badge>
+                      <Badge variant="outline">{holiday.country_id || 'TW'}</Badge>
                       <Badge className="text-xs">
                         {holidayTypes.find(t => t.value === holiday.holiday_type)?.label}
                       </Badge>

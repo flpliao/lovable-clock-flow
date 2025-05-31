@@ -9,7 +9,7 @@ export const useSupabaseDepartmentOperations = () => {
   const [loading, setLoading] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
 
-  const fetchDepartments = async (): Promise<Department[]> => {
+  const fetchDepartments = async () => {
     try {
       setLoading(true);
       console.log('開始從 Supabase 載入部門資料...');
@@ -41,7 +41,7 @@ export const useSupabaseDepartmentOperations = () => {
     }
   };
 
-  const refreshDepartments = async (): Promise<void> => {
+  const refreshDepartments = async () => {
     await fetchDepartments();
   };
 
@@ -49,7 +49,7 @@ export const useSupabaseDepartmentOperations = () => {
     fetchDepartments();
   }, []);
 
-  const addDepartment = async (newDepartment: NewDepartment): Promise<boolean> => {
+  const addDepartment = async (newDepartment: NewDepartment) => {
     try {
       setLoading(true);
       console.log('新增部門:', newDepartment);
@@ -86,7 +86,7 @@ export const useSupabaseDepartmentOperations = () => {
     }
   };
 
-  const updateDepartment = async (department: Department): Promise<boolean> => {
+  const updateDepartment = async (department: Department) => {
     try {
       setLoading(true);
       console.log('更新部門:', department);
@@ -129,7 +129,7 @@ export const useSupabaseDepartmentOperations = () => {
     }
   };
 
-  const deleteDepartment = async (id: string): Promise<boolean> => {
+  const deleteDepartment = async (id: string) => {
     try {
       setLoading(true);
       console.log('刪除部門 ID:', id);
@@ -183,7 +183,7 @@ export const useSupabaseDepartmentOperations = () => {
     }
   };
 
-  const updateStaffCount = async (departmentId: string): Promise<void> => {
+  const updateStaffCount = async (departmentId: string) => {
     try {
       console.log('更新部門員工數量:', departmentId);
       

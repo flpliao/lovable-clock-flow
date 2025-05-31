@@ -25,20 +25,20 @@ const PayrollManagement: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold flex items-center">
-          <DollarSign className="h-5 w-5 mr-2 text-green-600" />
+        <h2 className="text-lg font-semibold flex items-center">
+          <DollarSign className="h-4 w-4 mr-2 text-green-600" />
           薪資管理
         </h2>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <Calculator className="h-4 w-4 mr-2" />
-            批量計算
+        <div className="flex gap-1">
+          <Button variant="outline" size="sm" className="text-xs">
+            <Calculator className="h-3 w-3 mr-1" />
+            批量
           </Button>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            新增薪資記錄
+          <Button size="sm" className="text-xs">
+            <Plus className="h-3 w-3 mr-1" />
+            新增
           </Button>
         </div>
       </div>

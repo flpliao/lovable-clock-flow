@@ -7,12 +7,36 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { getPayrollStatusText, getPayrollStatusColor, formatCurrency } from '@/utils/payrollUtils';
 import { Payroll } from '@/types/hr';
 import { mockStaffData } from './mockPayrollData';
+import PayrollMobileCard from './PayrollMobileCard';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PayrollTableProps {
   payrolls: Payroll[];
 }
 
 const PayrollTable: React.FC<PayrollTableProps> = ({ payrolls }) => {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <div>
+        <h3 className="text-sm font-medium mb-3">薪資記錄 ({payrolls.length})</h3>
+        {payrolls.map((payroll) => (
+          <PayrollMobileCard key={payroll.id} payroll={payroll} />
+        ))}
+        {payrolls.length === 0 && (
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center text-gray-500 text-sm">
+                沒有找到相關的薪資記錄
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>

@@ -18,37 +18,37 @@ const HRManagement = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <main className="flex-1 p-2 sm:p-3">
-        <div className="mb-3">
-          <h1 className="text-lg sm:text-xl font-bold flex items-center">
-            <Users className="h-5 w-5 sm:h-6 sm:w-6 mr-2 text-green-600" />
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <main className="flex-1 p-3 space-y-4">
+        <div className="text-center">
+          <h1 className="text-xl font-bold flex items-center justify-center">
+            <Users className="h-5 w-5 mr-2 text-green-600" />
             人事管理系統
           </h1>
-          <p className="text-xs sm:text-sm text-gray-600 mt-1">管理考勤異常、加班、薪資等人事相關事務</p>
+          <p className="text-sm text-gray-600 mt-1">管理考勤異常、加班、薪資等人事相關事務</p>
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-3">
-            <TabsTrigger value="exceptions" className="text-xs sm:text-sm">
-              <Clock className="h-4 w-4 mr-1" />
-              異常處理
+          <TabsList className="grid w-full grid-cols-5 mb-4 h-auto">
+            <TabsTrigger value="exceptions" className="text-xs p-2 flex flex-col items-center gap-1">
+              <Clock className="h-3 w-3" />
+              <span>異常</span>
             </TabsTrigger>
-            <TabsTrigger value="overtime" className="text-xs sm:text-sm">
-              <Clock className="h-4 w-4 mr-1" />
-              加班管理
+            <TabsTrigger value="overtime" className="text-xs p-2 flex flex-col items-center gap-1">
+              <Clock className="h-3 w-3" />
+              <span>加班</span>
             </TabsTrigger>
-            <TabsTrigger value="payroll" className="text-xs sm:text-sm">
-              <DollarSign className="h-4 w-4 mr-1" />
-              薪資管理
+            <TabsTrigger value="payroll" className="text-xs p-2 flex flex-col items-center gap-1">
+              <DollarSign className="h-3 w-3" />
+              <span>薪資</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="text-xs sm:text-sm">
-              <Settings className="h-4 w-4 mr-1" />
-              系統設定
+            <TabsTrigger value="settings" className="text-xs p-2 flex flex-col items-center gap-1">
+              <Settings className="h-3 w-3" />
+              <span>設定</span>
             </TabsTrigger>
-            <TabsTrigger value="i18n" className="text-xs sm:text-sm">
-              <Globe className="h-4 w-4 mr-1" />
-              多語系
+            <TabsTrigger value="i18n" className="text-xs p-2 flex flex-col items-center gap-1">
+              <Globe className="h-3 w-3" />
+              <span>語系</span>
             </TabsTrigger>
           </TabsList>
           
@@ -61,15 +61,9 @@ const HRManagement = () => {
           </TabsContent>
           
           <TabsContent value="payroll">
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div>
-                  <PayrollManagement />
-                </div>
-                <div>
-                  <SalaryStructureManagement />
-                </div>
-              </div>
+            <div className="space-y-4">
+              <PayrollManagement />
+              <SalaryStructureManagement />
             </div>
           </TabsContent>
           

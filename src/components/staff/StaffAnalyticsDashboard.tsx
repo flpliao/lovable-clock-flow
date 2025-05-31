@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Activity, Clock, AlertCircle, CalendarDays, Users } from 'lucide-react';
 import StaffAttendanceTable from './StaffAttendanceTable';
@@ -55,104 +54,102 @@ const StaffAnalyticsDashboard = () => {
   const totalTardyCounts = mockStaffAttendanceData.reduce((sum, staff) => sum + staff.tardyCount, 0);
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="p-4 flex items-center justify-between">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+        <Card className="p-0">
+          <CardContent className="p-3 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">總員工數</p>
-              <h3 className="text-2xl font-bold">{totalStaff}</h3>
+              <p className="text-xs text-gray-500">總員工數</p>
+              <h3 className="text-lg font-bold">{totalStaff}</h3>
             </div>
-            <Users className="h-8 w-8 text-blue-500" />
+            <Users className="h-5 w-5 text-blue-500" />
           </CardContent>
         </Card>
         
-        <Card>
-          <CardContent className="p-4 flex items-center justify-between">
+        <Card className="p-0">
+          <CardContent className="p-3 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">總工時</p>
-              <h3 className="text-2xl font-bold">{totalWorkHours}小時</h3>
+              <p className="text-xs text-gray-500">總工時</p>
+              <h3 className="text-lg font-bold">{totalWorkHours}h</h3>
             </div>
-            <Activity className="h-8 w-8 text-green-500" />
+            <Activity className="h-5 w-5 text-green-500" />
           </CardContent>
         </Card>
         
-        <Card>
-          <CardContent className="p-4 flex items-center justify-between">
+        <Card className="p-0">
+          <CardContent className="p-3 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">總請假時數</p>
-              <h3 className="text-2xl font-bold">{totalLeaveHours}小時</h3>
+              <p className="text-xs text-gray-500">總請假</p>
+              <h3 className="text-lg font-bold">{totalLeaveHours}h</h3>
             </div>
-            <CalendarDays className="h-8 w-8 text-amber-500" />
+            <CalendarDays className="h-5 w-5 text-amber-500" />
           </CardContent>
         </Card>
         
-        <Card>
-          <CardContent className="p-4 flex items-center justify-between">
+        <Card className="p-0">
+          <CardContent className="p-3 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">異常打卡</p>
-              <h3 className="text-2xl font-bold">{totalAbnormalCheckIns}次</h3>
+              <p className="text-xs text-gray-500">異常打卡</p>
+              <h3 className="text-lg font-bold">{totalAbnormalCheckIns}</h3>
             </div>
-            <AlertCircle className="h-8 w-8 text-red-500" />
+            <AlertCircle className="h-5 w-5 text-red-500" />
           </CardContent>
         </Card>
         
-        <Card>
-          <CardContent className="p-4 flex items-center justify-between">
+        <Card className="p-0">
+          <CardContent className="p-3 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">遲到次數</p>
-              <h3 className="text-2xl font-bold">{totalTardyCounts}次</h3>
+              <p className="text-xs text-gray-500">遲到次數</p>
+              <h3 className="text-lg font-bold">{totalTardyCounts}</h3>
             </div>
-            <Clock className="h-8 w-8 text-purple-500" />
+            <Clock className="h-5 w-5 text-purple-500" />
           </CardContent>
         </Card>
       </div>
       
       {/* Tabs for different views */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="overview">概覽</TabsTrigger>
-          <TabsTrigger value="workHours">工時分析</TabsTrigger>
-          <TabsTrigger value="leaveAnalysis">請假分析</TabsTrigger>
-          <TabsTrigger value="attendance">考勤分析</TabsTrigger>
+        <TabsList className="mb-3 h-8 grid w-full grid-cols-4">
+          <TabsTrigger value="overview" className="text-xs">概覽</TabsTrigger>
+          <TabsTrigger value="workHours" className="text-xs">工時</TabsTrigger>
+          <TabsTrigger value="leaveAnalysis" className="text-xs">請假</TabsTrigger>
+          <TabsTrigger value="attendance" className="text-xs">考勤</TabsTrigger>
         </TabsList>
         
         {/* Overview Tab */}
-        <TabsContent value="overview">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>全體員工考勤數據</CardTitle>
+        <TabsContent value="overview" className="space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <Card className="p-0">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">員工考勤數據</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 <StaffAttendanceTable data={mockStaffAttendanceData} />
               </CardContent>
             </Card>
             
-            <Card>
-              <CardHeader>
-                <CardTitle>請假類型分布</CardTitle>
+            <Card className="p-0">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">請假類型分布</CardTitle>
               </CardHeader>
-              <CardContent className="h-80">
+              <CardContent className="pt-0 h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={leaveTypeData}
                       cx="50%"
                       cy="50%"
-                      labelLine={true}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
+                      outerRadius={60}
                       fill="#8884d8"
                       dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      labelLine={false}
                     >
                       {leaveTypeData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip />
-                    <Legend />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -162,21 +159,16 @@ const StaffAnalyticsDashboard = () => {
         
         {/* Work Hours Tab */}
         <TabsContent value="workHours">
-          <Card>
-            <CardHeader>
-              <CardTitle>月度工時統計</CardTitle>
+          <Card className="p-0">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">月度工時統計</CardTitle>
             </CardHeader>
-            <CardContent className="h-96">
+            <CardContent className="pt-0 h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={monthlyWorkHoursData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                >
+                <BarChart data={monthlyWorkHoursData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
-                  <Tooltip />
-                  <Legend />
                   <Bar dataKey="正常工時" fill="#8884d8" />
                   <Bar dataKey="加班時數" fill="#82ca9d" />
                 </BarChart>
@@ -187,29 +179,29 @@ const StaffAnalyticsDashboard = () => {
         
         {/* Leave Analysis Tab */}
         <TabsContent value="leaveAnalysis">
-          <Card>
-            <CardHeader>
-              <CardTitle>請假時數明細</CardTitle>
+          <Card className="p-0">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">請假時數明細</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>員工姓名</TableHead>
-                    <TableHead>請假時數</TableHead>
-                    <TableHead>年假剩餘</TableHead>
-                    <TableHead>病假使用</TableHead>
-                    <TableHead>事假使用</TableHead>
+                    <TableHead className="text-xs">員工</TableHead>
+                    <TableHead className="text-xs">請假</TableHead>
+                    <TableHead className="text-xs">年假剩餘</TableHead>
+                    <TableHead className="text-xs">病假</TableHead>
+                    <TableHead className="text-xs">事假</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {mockStaffAttendanceData.map((staff) => (
                     <TableRow key={staff.id}>
-                      <TableCell className="font-medium">{staff.name}</TableCell>
-                      <TableCell>{staff.leaveHours}</TableCell>
-                      <TableCell>{Math.floor(Math.random() * 40)}小時</TableCell>
-                      <TableCell>{Math.floor(Math.random() * 16)}小時</TableCell>
-                      <TableCell>{Math.floor(Math.random() * 24)}小時</TableCell>
+                      <TableCell className="text-xs font-medium">{staff.name}</TableCell>
+                      <TableCell className="text-xs">{staff.leaveHours}h</TableCell>
+                      <TableCell className="text-xs">{Math.floor(Math.random() * 40)}h</TableCell>
+                      <TableCell className="text-xs">{Math.floor(Math.random() * 16)}h</TableCell>
+                      <TableCell className="text-xs">{Math.floor(Math.random() * 24)}h</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -219,24 +211,18 @@ const StaffAnalyticsDashboard = () => {
         </TabsContent>
         
         {/* Attendance Tab */}
-        <TabsContent value="attendance">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>部門考勤數據</CardTitle>
+        <TabsContent value="attendance" className="space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <Card className="p-0">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">部門考勤數據</CardTitle>
               </CardHeader>
-              <CardContent className="h-80">
+              <CardContent className="pt-0 h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={departmentAttendanceData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    layout="vertical"
-                  >
+                  <BarChart data={departmentAttendanceData} layout="vertical" margin={{ top: 5, right: 10, left: 50, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" />
                     <YAxis type="category" dataKey="department" />
-                    <Tooltip />
-                    <Legend />
                     <Bar dataKey="正常考勤" fill="#82ca9d" stackId="a" />
                     <Bar dataKey="異常考勤" fill="#ff8042" stackId="a" />
                   </BarChart>
@@ -244,18 +230,18 @@ const StaffAnalyticsDashboard = () => {
               </CardContent>
             </Card>
             
-            <Card>
-              <CardHeader>
-                <CardTitle>異常考勤明細</CardTitle>
+            <Card className="p-0">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">異常考勤明細</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>員工姓名</TableHead>
-                      <TableHead>異常打卡次數</TableHead>
-                      <TableHead>遲到次數</TableHead>
-                      <TableHead>異常原因</TableHead>
+                      <TableHead className="text-xs">員工</TableHead>
+                      <TableHead className="text-xs">異常</TableHead>
+                      <TableHead className="text-xs">遲到</TableHead>
+                      <TableHead className="text-xs">原因</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -263,11 +249,11 @@ const StaffAnalyticsDashboard = () => {
                       .filter(staff => staff.abnormalCheckIns > 0 || staff.tardyCount > 0)
                       .map((staff) => (
                         <TableRow key={staff.id}>
-                          <TableCell className="font-medium">{staff.name}</TableCell>
-                          <TableCell>{staff.abnormalCheckIns}</TableCell>
-                          <TableCell>{staff.tardyCount}</TableCell>
-                          <TableCell>
-                            {staff.abnormalCheckIns > staff.tardyCount ? '未打卡/地點異常' : '遲到'}
+                          <TableCell className="text-xs font-medium">{staff.name}</TableCell>
+                          <TableCell className="text-xs">{staff.abnormalCheckIns}</TableCell>
+                          <TableCell className="text-xs">{staff.tardyCount}</TableCell>
+                          <TableCell className="text-xs">
+                            {staff.abnormalCheckIns > staff.tardyCount ? '未打卡' : '遲到'}
                           </TableCell>
                         </TableRow>
                       ))}

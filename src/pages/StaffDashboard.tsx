@@ -16,17 +16,17 @@ const StaffDashboard = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <main className="flex-1 p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">員工考勤儀表板</h1>
-          <p className="text-gray-500">管理所有員工考勤數據及分析</p>
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <main className="flex-1 p-2 sm:p-3">
+        <div className="mb-3">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900">員工考勤儀表板</h1>
+          <p className="text-xs sm:text-sm text-gray-600 mt-1">管理所有員工考勤數據及分析</p>
         </div>
         
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="analytics">數據分析</TabsTrigger>
-            <TabsTrigger value="check-ins">打卡管理</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="mb-3 h-8">
+            <TabsTrigger value="analytics" className="text-xs px-3 py-1">數據分析</TabsTrigger>
+            <TabsTrigger value="check-ins" className="text-xs px-3 py-1">打卡管理</TabsTrigger>
           </TabsList>
           
           <TabsContent value="analytics" className="mt-0">

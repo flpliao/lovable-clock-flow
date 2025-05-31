@@ -8,24 +8,24 @@ export const useDepartmentDialogs = () => {
   const [currentDepartment, setCurrentDepartment] = useState<Department | null>(null);
   const [newDepartment, setNewDepartment] = useState<NewDepartment>({
     name: '',
-    type: 'department',
+    type: 'headquarters',
     location: '',
-    managerName: '',
-    managerContact: ''
+    manager_name: '',
+    manager_contact: ''
   });
 
   const resetNewDepartment = () => {
     setNewDepartment({
       name: '',
-      type: 'department',
+      type: 'headquarters',
       location: '',
-      managerName: '',
-      managerContact: ''
+      manager_name: '',
+      manager_contact: ''
     });
   };
 
   const openEditDialog = (department: Department) => {
-    setCurrentDepartment({...department});
+    setCurrentDepartment(department);
     setIsEditDialogOpen(true);
   };
 

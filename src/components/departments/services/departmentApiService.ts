@@ -1,89 +1,132 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Department, NewDepartment } from '../types';
-import { transformDepartmentData, transformToDbFormat } from './departmentTransformService';
+import { toast } from '@/hooks/use-toast';
 
-export const departmentApiService = {
-  // 從 Supabase 載入部門資料
-  async loadDepartments(): Promise<Department[]> {
-    console.log('正在從 Supabase 載入部門資料...');
-    
-    const { data, error } = await supabase
-      .from('departments')
-      .select('*')
-      .order('created_at', { ascending: true });
+export class DepartmentApiService {
+  static async getAllDepartments(): Promise<Department[]> {
+    try {
+      console.log('從 API 載入所有部門...');
+      
+      const { data, error } = await supabase
+        .from('departments')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('載入部門資料失敗:', error);
-      throw new Error(error.message || '載入部門資料失敗');
+      if (error) {
+        console.error('API 載入部門錯誤:', error);
+        throw error;
+      }
+
+      console.log('API 成功載入部門:', data?.length, '個');
+      return data || [];
+    } catch (error) {
+      console.error('API 載入部門失敗:', error);
+      toast({
+        title: "載入失敗",
+        description: "無法從伺服器載入部門資料",
+        variant: "destructive",
+      });
+      return [];
     }
-
-    console.log('成功載入部門資料 (包含新增的資訊部門):', data);
-    return data?.map(transformDepartmentData) || [];
-  },
-
-  // 新增部門
-  async addDepartment(newDepartment: NewDepartment): Promise<Department> {
-    console.log('正在新增部門:', newDepartment);
-    
-    const dbData = transformToDbFormat(newDepartment);
-    
-    const { data, error } = await supabase
-      .from('departments')
-      .insert([dbData])
-      .select()
-      .single();
-
-    if (error) {
-      console.error('新增部門失敗:', error);
-      throw new Error(error.message || '新增部門時發生錯誤');
-    }
-
-    console.log('成功新增部門:', data);
-    return transformDepartmentData(data);
-  },
-
-  // 更新部門
-  async updateDepartment(department: Department): Promise<Department> {
-    console.log('正在更新部門:', department);
-    
-    const { data, error } = await supabase
-      .from('departments')
-      .update({
-        name: department.name,
-        type: department.type,
-        location: department.location,
-        manager_name: department.managerName,
-        manager_contact: department.managerContact,
-        staff_count: department.staffCount
-      })
-      .eq('id', department.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('更新部門失敗:', error);
-      throw new Error(error.message || '更新部門時發生錯誤');
-    }
-
-    console.log('成功更新部門:', data);
-    return transformDepartmentData(data);
-  },
-
-  // 刪除部門
-  async deleteDepartment(id: string): Promise<void> {
-    console.log('正在刪除部門:', id);
-    
-    const { error } = await supabase
-      .from('departments')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('刪除部門失敗:', error);
-      throw new Error(error.message || '刪除部門時發生錯誤');
-    }
-
-    console.log('成功刪除部門:', id);
   }
-};
+
+  static async createDepartment(department: NewDepartment): Promise<Department | null> {
+    try {
+      console.log('API 新增部門:', department);
+      
+      const { data, error } = await supabase
+        .from('departments')
+        .insert([{
+          name: department.name,
+          type: department.type,
+          location: department.location,
+          manager_name: department.manager_name,
+          manager_contact: department.manager_contact,
+          staff_count: 0
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('API 新增部門錯誤:', error);
+        throw error;
+      }
+
+      console.log('API 成功新增部門:', data);
+      return data;
+    } catch (error) {
+      console.error('API 新增部門失敗:', error);
+      toast({
+        title: "新增失敗",
+        description: "無法新增部門到伺服器",
+        variant: "destructive",
+      });
+      return null;
+    }
+  }
+
+  static async updateDepartment(department: Department): Promise<Department | null> {
+    try {
+      console.log('API 更新部門:', department.id);
+      
+      const { data, error } = await supabase
+        .from('departments')
+        .update({
+          name: department.name,
+          type: department.type,
+          location: department.location,
+          manager_name: department.manager_name,
+          manager_contact: department.manager_contact,
+          staff_count: department.staff_count,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', department.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('API 更新部門錯誤:', error);
+        throw error;
+      }
+
+      console.log('API 成功更新部門:', data);
+      return data;
+    } catch (error) {
+      console.error('API 更新部門失敗:', error);
+      toast({
+        title: "更新失敗",
+        description: "無法更新部門到伺服器",
+        variant: "destructive",
+      });
+      return null;
+    }
+  }
+
+  static async deleteDepartment(id: string): Promise<boolean> {
+    try {
+      console.log('API 刪除部門:', id);
+      
+      const { error } = await supabase
+        .from('departments')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('API 刪除部門錯誤:', error);
+        throw error;
+      }
+
+      console.log('API 成功刪除部門');
+      return true;
+    } catch (error) {
+      console.error('API 刪除部門失敗:', error);
+      toast({
+        title: "刪除失敗",
+        description: "無法從伺服器刪除部門",
+        variant: "destructive",
+      });
+      return false;
+    }
+  }
+}

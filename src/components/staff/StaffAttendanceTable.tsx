@@ -18,38 +18,40 @@ interface StaffAttendanceTableProps {
 
 const StaffAttendanceTable: React.FC<StaffAttendanceTableProps> = ({ data }) => {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>員工姓名</TableHead>
-          <TableHead>工時</TableHead>
-          <TableHead>請假時數</TableHead>
-          <TableHead>異常打卡</TableHead>
-          <TableHead>遲到次數</TableHead>
-          <TableHead>狀態</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data.map((record) => (
-          <TableRow key={record.id}>
-            <TableCell className="font-medium">{record.name}</TableCell>
-            <TableCell>{record.workHours}小時</TableCell>
-            <TableCell>{record.leaveHours}小時</TableCell>
-            <TableCell>{record.abnormalCheckIns}次</TableCell>
-            <TableCell>{record.tardyCount}次</TableCell>
-            <TableCell>
-              {record.abnormalCheckIns === 0 && record.tardyCount === 0 ? (
-                <Badge className="bg-green-500">正常</Badge>
-              ) : record.abnormalCheckIns > 2 || record.tardyCount > 3 ? (
-                <Badge className="bg-red-500">需關注</Badge>
-              ) : (
-                <Badge className="bg-yellow-500">輕微異常</Badge>
-              )}
-            </TableCell>
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-xs">員工</TableHead>
+            <TableHead className="text-xs">工時</TableHead>
+            <TableHead className="text-xs">請假</TableHead>
+            <TableHead className="text-xs">異常</TableHead>
+            <TableHead className="text-xs">遲到</TableHead>
+            <TableHead className="text-xs">狀態</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {data.map((record) => (
+            <TableRow key={record.id}>
+              <TableCell className="text-xs font-medium">{record.name}</TableCell>
+              <TableCell className="text-xs">{record.workHours}h</TableCell>
+              <TableCell className="text-xs">{record.leaveHours}h</TableCell>
+              <TableCell className="text-xs">{record.abnormalCheckIns}</TableCell>
+              <TableCell className="text-xs">{record.tardyCount}</TableCell>
+              <TableCell>
+                {record.abnormalCheckIns === 0 && record.tardyCount === 0 ? (
+                  <Badge className="bg-green-500 text-xs px-1 py-0">正常</Badge>
+                ) : record.abnormalCheckIns > 2 || record.tardyCount > 3 ? (
+                  <Badge className="bg-red-500 text-xs px-1 py-0">需關注</Badge>
+                ) : (
+                  <Badge className="bg-yellow-500 text-xs px-1 py-0">輕微異常</Badge>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 

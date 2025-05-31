@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,7 +13,6 @@ import ViewModeSelector from './schedule/components/ViewModeSelector';
 import CalendarGrid from './schedule/components/CalendarGrid';
 import ScheduleTable from './schedule/components/ScheduleTable';
 import WeekOverview from './schedule/components/WeekOverview';
-import DebugInfo from './schedule/components/DebugInfo';
 import MonthlyScheduleView from './schedule/components/MonthlyScheduleView';
 import StaffMonthSelector from './schedule/components/StaffMonthSelector';
 
@@ -198,14 +196,6 @@ const ScheduleCalendar = () => {
           />
         </TabsContent>
       </Tabs>
-
-      <DebugInfo
-        schedules={schedules}
-        viewableStaffIds={viewableStaffIds}
-        selectedDate={dateNavSelectedDate}
-        shiftsForSelectedDate={shiftsForSelectedDate}
-        viewMode={viewMode}
-      />
     </div>
   );
 };

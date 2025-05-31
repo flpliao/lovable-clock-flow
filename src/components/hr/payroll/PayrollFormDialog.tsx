@@ -48,6 +48,12 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
   });
 
   useEffect(() => {
+    if (open) {
+      console.log('💰 PayrollFormDialog 開啟，開始檢查員工資料載入狀態');
+    }
+  }, [open]);
+
+  useEffect(() => {
     if (initialData) {
       setFormData({
         staff_id: initialData.staff_id || '',

@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Clock, DollarSign } from 'lucide-react';
+import { Users, Clock, DollarSign, Settings } from 'lucide-react';
 import AttendanceExceptionManagement from '@/components/attendance/AttendanceExceptionManagement';
 import OvertimeManagement from '@/components/hr/OvertimeManagement';
 import PayrollManagement from '@/components/hr/PayrollManagement';
@@ -11,6 +12,7 @@ import SalaryStructureManagement from '@/components/hr/SalaryStructureManagement
 const HRManagement = () => {
   const { currentUser, isAdmin } = useUser();
   const [activeTab, setActiveTab] = useState('exceptions');
+  const [payrollSubTab, setPayrollSubTab] = useState('records');
   
   if (!currentUser || !(isAdmin() || currentUser.department === 'HR')) {
     return <Navigate to="/login" />;
@@ -44,10 +46,26 @@ const HRManagement = () => {
           </TabsContent>
           
           <TabsContent value="payroll">
-            <div className="space-y-4">
-              <PayrollManagement />
-              <SalaryStructureManagement />
-            </div>
+            <Tabs value={payrollSubTab} onValueChange={setPayrollSubTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4 h-auto">
+                <TabsTrigger value="records" className="text-xs p-2 flex flex-col items-center gap-1">
+                  <DollarSign className="h-3 w-3" />
+                  <span>薪資記錄</span>
+                </TabsTrigger>
+                <TabsTrigger value="structure" className="text-xs p-2 flex flex-col items-center gap-1">
+                  <Settings className="h-3 w-3" />
+                  <span>薪資結構</span>
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="records">
+                <PayrollManagement />
+              </TabsContent>
+              
+              <TabsContent value="structure">
+                <SalaryStructureManagement />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
       </main>

@@ -14,7 +14,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { useCompanyManagementContext } from '@/components/company/CompanyManagementContext';
-import { departments, positions } from './StaffConstants';
+import { usePositions } from './hooks/usePositions';
+import { departments } from './StaffConstants';
 
 const EditStaffDialog = () => {
   const { 
@@ -28,6 +29,8 @@ const EditStaffDialog = () => {
   } = useStaffManagementContext();
 
   const { branches } = useCompanyManagementContext();
+  const { getPositionNames } = usePositions();
+  const positions = getPositionNames();
 
   if (!currentStaff) return null;
 

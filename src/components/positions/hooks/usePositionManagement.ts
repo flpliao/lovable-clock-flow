@@ -1,19 +1,26 @@
+
 import { useState } from 'react';
 import { Position, NewPosition } from '../types';
 import { toast } from '@/hooks/use-toast';
 
+// 全局職位狀態，讓其他組件也能訪問
+let globalPositions: Position[] = [
+  { id: '1', name: '主管', level: 10, is_active: true },
+  { id: '2', name: '工程師', level: 5, is_active: true },
+  { id: '3', name: '設計師', level: 5, is_active: true },
+  { id: '4', name: '專員', level: 3, is_active: true },
+  { id: '5', name: '資深工程師', level: 7, is_active: true },
+  { id: '6', name: '行銷專員', level: 3, is_active: true },
+  { id: '7', name: '客服專員', level: 3, is_active: true },
+  { id: '8', name: '門市經理', level: 8, is_active: true },
+  { id: '9', name: '門市人員', level: 2, is_active: true },
+];
+
+// 導出給其他組件使用的函數
+export const getGlobalPositions = () => globalPositions;
+
 export const usePositionManagement = () => {
-  const [positions, setPositions] = useState<Position[]>([
-    { id: '1', name: '主管', level: 10, is_active: true },
-    { id: '2', name: '工程師', level: 5, is_active: true },
-    { id: '3', name: '設計師', level: 5, is_active: true },
-    { id: '4', name: '專員', level: 3, is_active: true },
-    { id: '5', name: '資深工程師', level: 7, is_active: true },
-    { id: '6', name: '行銷專員', level: 3, is_active: true },
-    { id: '7', name: '客服專員', level: 3, is_active: true },
-    { id: '8', name: '門市經理', level: 8, is_active: true },
-    { id: '9', name: '門市人員', level: 2, is_active: true },
-  ]);
+  const [positions, setPositions] = useState<Position[]>(globalPositions);
   const [loading, setLoading] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -55,6 +62,11 @@ export const usePositionManagement = () => {
       }
     });
 
+  const updateGlobalPositions = (newPositions: Position[]) => {
+    globalPositions = newPositions;
+    setPositions(newPositions);
+  };
+
   const handleAddPosition = async (): Promise<boolean> => {
     if (!newPosition.name.trim()) {
       toast({
@@ -82,7 +94,8 @@ export const usePositionManagement = () => {
       created_at: new Date().toISOString(),
     };
 
-    setPositions(prev => [...prev, position]);
+    const updatedPositions = [...positions, position];
+    updateGlobalPositions(updatedPositions);
     setNewPosition({ name: '', description: '', level: 1 });
     setIsAddDialogOpen(false);
     
@@ -116,11 +129,12 @@ export const usePositionManagement = () => {
       return false;
     }
 
-    setPositions(prev => prev.map(p => 
+    const updatedPositions = positions.map(p => 
       p.id === currentPosition.id 
         ? { ...currentPosition, updated_at: new Date().toISOString() }
         : p
-    ));
+    );
+    updateGlobalPositions(updatedPositions);
 
     setIsEditDialogOpen(false);
     setCurrentPosition(null);
@@ -137,9 +151,10 @@ export const usePositionManagement = () => {
     const position = positions.find(p => p.id === id);
     if (!position) return false;
 
-    setPositions(prev => prev.map(p => 
+    const updatedPositions = positions.map(p => 
       p.id === id ? { ...p, is_active: false } : p
-    ));
+    );
+    updateGlobalPositions(updatedPositions);
     
     toast({
       title: "刪除成功",

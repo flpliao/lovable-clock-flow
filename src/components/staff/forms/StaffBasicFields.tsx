@@ -4,7 +4,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { NewStaff } from '../types';
-import { departments, positions } from '../StaffConstants';
+import { departments } from '../StaffConstants';
+import { usePositions } from '../hooks/usePositions';
 
 interface StaffBasicFieldsProps {
   newStaff: NewStaff;
@@ -12,6 +13,9 @@ interface StaffBasicFieldsProps {
 }
 
 const StaffBasicFields: React.FC<StaffBasicFieldsProps> = ({ newStaff, setNewStaff }) => {
+  const { getPositionNames } = usePositions();
+  const positions = getPositionNames();
+
   return (
     <>
       <div className="grid grid-cols-4 items-center gap-3">

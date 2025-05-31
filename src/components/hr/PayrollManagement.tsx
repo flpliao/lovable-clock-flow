@@ -5,7 +5,7 @@ import { DollarSign, Plus, Calculator } from 'lucide-react';
 import PayrollFilters from './payroll/PayrollFilters';
 import PayrollStats from './payroll/PayrollStats';
 import PayrollTable from './payroll/PayrollTable';
-import { mockPayrolls } from './payroll/mockPayrollData';
+import { mockPayrolls, mockStaffData } from './payroll/mockPayrollData';
 
 const PayrollManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,9 +13,12 @@ const PayrollManagement: React.FC = () => {
   const [periodFilter, setPeriodFilter] = useState('current');
 
   const filteredPayrolls = mockPayrolls.filter(payroll => {
-    const matchesSearch = payroll.staff_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         payroll.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         payroll.department.toLowerCase().includes(searchTerm.toLowerCase());
+    const staffInfo = mockStaffData[payroll.staff_id as keyof typeof mockStaffData];
+    const matchesSearch = staffInfo ? (
+      staffInfo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      staffInfo.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      staffInfo.department.toLowerCase().includes(searchTerm.toLowerCase())
+    ) : false;
     const matchesStatus = statusFilter === 'all' || payroll.status === statusFilter;
     
     return matchesSearch && matchesStatus;

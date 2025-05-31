@@ -10,10 +10,12 @@ export const useDepartmentDelete = () => {
       console.log('刪除部門 ID:', id);
 
       // 檢查是否有員工屬於此部門
-      const staffResponse = await supabase
+      const staffQuery = supabase
         .from('staff')
         .select('id')
-        .eq('department_id', id) as any;
+        .eq('department_id', id);
+      
+      const staffResponse = await staffQuery;
 
       if (staffResponse.error) {
         console.error('檢查員工資料錯誤:', staffResponse.error);
@@ -29,10 +31,12 @@ export const useDepartmentDelete = () => {
         return false;
       }
 
-      const deleteResponse = await supabase
+      const deleteQuery = supabase
         .from('departments')
         .delete()
-        .eq('id', id) as any;
+        .eq('id', id);
+        
+      const deleteResponse = await deleteQuery;
 
       if (deleteResponse.error) {
         console.error('刪除部門錯誤:', deleteResponse.error);

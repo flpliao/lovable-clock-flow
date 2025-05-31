@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 export const useDepartmentDelete = () => {
   const { toast } = useToast();
   
-  const deleteDepartment = async (id: string): Promise<boolean> => {
+  const deleteDepartment = async (id: string) => {
     try {
       console.log('刪除部門 ID:', id);
 

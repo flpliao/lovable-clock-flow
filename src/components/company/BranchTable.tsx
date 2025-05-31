@@ -3,9 +3,11 @@ import React from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Pencil, Trash2, Building2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Pencil, Trash2, Building2, MapPin, Phone, User, Users } from 'lucide-react';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useUser } from '@/contexts/UserContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // 安全地使用 StaffManagementContext
 const useStaffManagementContextSafely = () => {
@@ -27,6 +29,7 @@ const BranchTable = () => {
   } = useCompanyManagementContext();
   
   const { currentUser } = useUser();
+  const isMobile = useIsMobile();
   
   // 安全地獲取員工數據
   const { staffList } = useStaffManagementContextSafely();
@@ -84,6 +87,117 @@ const BranchTable = () => {
     }
   };
 
+  // 手機版卡片視圖
+  if (isMobile) {
+    return (
+      <div className="space-y-2">
+        {filteredBranches.length > 0 ? (
+          filteredBranches.map((branch) => {
+            const staffCount = getBranchStaffCount(branch.id);
+            const branchStaff = getBranchStaffList(branch.id);
+            
+            return (
+              <Card key={branch.id} className="shadow-sm">
+                <CardContent className="p-3">
+                  <div className="space-y-2">
+                    {/* 標題列 */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <Building2 className="h-4 w-4 mr-2 text-gray-500" />
+                        <span className="font-medium text-sm">{branch.name}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Badge className={`text-xs ${getTypeColor(branch.type)}`}>
+                          {getTypeLabel(branch.type)}
+                        </Badge>
+                        <Badge variant={branch.is_active ? "default" : "secondary"} className="text-xs">
+                          {branch.is_active ? "營運中" : "暫停"}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* 代碼 */}
+                    <div className="text-xs text-gray-600">
+                      代碼: {branch.code}
+                    </div>
+
+                    {/* 地址 */}
+                    <div className="flex items-start text-xs">
+                      <MapPin className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-500" />
+                      <span className="break-words">{branch.address}</span>
+                    </div>
+
+                    {/* 電話 */}
+                    <div className="flex items-center text-xs">
+                      <Phone className="h-3 w-3 mr-1 flex-shrink-0 text-gray-500" />
+                      <span>{branch.phone}</span>
+                    </div>
+
+                    {/* 人員數量 */}
+                    <div className="flex items-center text-xs">
+                      <Users className="h-3 w-3 mr-1 flex-shrink-0 text-gray-500" />
+                      <span className="font-medium">{staffCount} 人</span>
+                      {staffCount > 0 && branchStaff.length > 0 && (
+                        <span className="text-gray-500 ml-1">
+                          ({branchStaff.slice(0, 2).map(staff => staff.name).join(', ')}
+                          {staffCount > 2 && `等 ${staffCount} 人`})
+                        </span>
+                      )}
+                    </div>
+
+                    {/* 負責人 */}
+                    {branch.manager_name && (
+                      <div className="flex items-center text-xs">
+                        <User className="h-3 w-3 mr-1 flex-shrink-0 text-gray-500" />
+                        <div>
+                          <span className="font-medium">{branch.manager_name}</span>
+                          {branch.manager_contact && (
+                            <span className="text-gray-500 ml-1">({branch.manager_contact})</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 操作按鈕 */}
+                    {canManageBranches && (
+                      <div className="flex gap-2 pt-1">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => openEditBranchDialog(branch)}
+                          className="flex-1 flex items-center justify-center text-xs h-7"
+                        >
+                          <Pencil className="h-3 w-3 mr-1" />
+                          編輯
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 text-red-500 hover:text-red-700 flex items-center justify-center text-xs h-7"
+                          onClick={() => handleDeleteBranch(branch.id)}
+                        >
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          刪除
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })
+        ) : (
+          <div className="p-8 text-center">
+            <Building2 className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+            <p className="text-muted-foreground text-sm">尚未建立營業處資料</p>
+            <p className="text-xs text-gray-400 mt-2">請新增營業處以開始管理組織架構</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // 桌面版表格視圖
   return (
     <div className="rounded-md border overflow-hidden">
       {filteredBranches.length > 0 ? (

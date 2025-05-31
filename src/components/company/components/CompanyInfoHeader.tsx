@@ -3,6 +3,7 @@ import React from 'react';
 import { Building2, CheckCircle, AlertCircle } from 'lucide-react';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Company } from '@/types/company';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CompanyInfoHeaderProps {
   company: Company | null;
@@ -10,6 +11,8 @@ interface CompanyInfoHeaderProps {
 }
 
 export const CompanyInfoHeader: React.FC<CompanyInfoHeaderProps> = ({ company, loading }) => {
+  const isMobile = useIsMobile();
+  
   const getStatusInfo = () => {
     if (loading) {
       return {
@@ -37,18 +40,18 @@ export const CompanyInfoHeader: React.FC<CompanyInfoHeaderProps> = ({ company, l
   const status = getStatusInfo();
 
   return (
-    <CardHeader className="pb-2">
-      <CardTitle className="flex items-center justify-between">
+    <CardHeader className={`${isMobile ? 'pb-2 px-4 pt-4' : 'pb-2'}`}>
+      <CardTitle className={`flex items-center justify-between ${isMobile ? 'flex-col items-start space-y-1' : ''}`}>
         <div className="flex items-center">
-          <Building2 className="h-4 w-4 mr-2" />
-          公司資料
-          <span className={`ml-2 text-xs px-2 py-0.5 rounded-full flex items-center ${status.badge}`}>
-            {status.icon}
-            {status.text}
-          </span>
+          <Building2 className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
+          <span className={isMobile ? 'text-sm' : 'text-base'}>公司基本資料</span>
         </div>
+        <span className={`${isMobile ? 'text-xs self-end' : 'text-xs'} px-2 py-0.5 rounded-full flex items-center ${status.badge}`}>
+          {status.icon}
+          {status.text}
+        </span>
       </CardTitle>
-      <CardDescription className="text-xs">
+      <CardDescription className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
         {company ? `${company.name}` : '載入公司基本資訊'}
       </CardDescription>
     </CardHeader>

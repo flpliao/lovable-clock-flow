@@ -5,6 +5,7 @@ import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useUser } from '@/contexts/UserContext';
 import { useCompanyOperations } from './hooks/useCompanyOperations';
 import { CompanyApiService } from './services/companyApiService';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { CompanyInfoHeader } from './components/CompanyInfoHeader';
 import { CompanyInfoContent } from './components/CompanyInfoContent';
 import { CompanyInfoActions } from './components/CompanyInfoActions';
@@ -15,6 +16,7 @@ const CompanyInfoCard = () => {
   const { setIsEditCompanyDialogOpen } = useCompanyManagementContext();
   const { company, loading, loadCompany, forceSyncFromBackend } = useCompanyOperations();
   const { isAdmin, currentUser } = useUser();
+  const isMobile = useIsMobile();
 
   console.log('CompanyInfoCard - 當前用戶:', currentUser?.name);
   console.log('CompanyInfoCard - 公司資料載入狀態:', { company: company?.name, loading });
@@ -84,18 +86,20 @@ const CompanyInfoCard = () => {
   }
 
   return (
-    <Card>
+    <Card className={isMobile ? 'shadow-sm' : ''}>
       <CompanyInfoHeader company={company} loading={loading} />
-      <div className="px-6 pb-2">
-        <CompanyInfoActions
-          company={company}
-          canEdit={canEdit}
-          onEdit={handleEdit}
-          onReload={loadCompany}
-          onForceReload={handleForceReload}
-          onForceSyncFromBackend={handleForceSyncFromBackend}
-        />
-      </div>
+      {canEdit && (
+        <div className={isMobile ? 'px-4 pb-2' : 'px-6 pb-2'}>
+          <CompanyInfoActions
+            company={company}
+            canEdit={canEdit}
+            onEdit={handleEdit}
+            onReload={loadCompany}
+            onForceReload={handleForceReload}
+            onForceSyncFromBackend={handleForceSyncFromBackend}
+          />
+        </div>
+      )}
       <CompanyInfoContent company={company} />
     </Card>
   );

@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
 import { Company } from '@/types/company';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CompanyInfoActionsProps {
   company: Company;
@@ -17,19 +18,19 @@ export const CompanyInfoActions: React.FC<CompanyInfoActionsProps> = ({
   canEdit,
   onEdit
 }) => {
+  const isMobile = useIsMobile();
+  
   if (!canEdit) return null;
 
   return (
-    <div className="px-6 pb-2">
-      <Button
-        onClick={onEdit}
-        variant="outline"
-        size="sm"
-        className="flex items-center text-xs h-7"
-      >
-        <Edit className="h-3 w-3 mr-1" />
-        編輯
-      </Button>
-    </div>
+    <Button
+      onClick={onEdit}
+      variant="outline"
+      size="sm"
+      className={`flex items-center ${isMobile ? 'text-xs h-7 w-full justify-center' : 'text-xs h-7'}`}
+    >
+      <Edit className={`mr-1 ${isMobile ? 'h-3 w-3' : 'h-3 w-3'}`} />
+      編輯公司資料
+    </Button>
   );
 };

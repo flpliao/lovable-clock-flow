@@ -4,7 +4,7 @@ import { Settings, Globe } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ComprehensiveDiagnostics } from '@/components/company/diagnostics/ComprehensiveDiagnostics';
 import { RLSSettingsCard } from '@/components/company/components/RLSSettingsCard';
-import { Card, CardContent } from '@/components/ui/card';
+import { LanguageManagement } from '@/components/i18n/components/LanguageManagement';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('general');
@@ -40,15 +40,7 @@ const SystemSettings = () => {
           </TabsContent>
           
           <TabsContent value="i18n">
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-center text-gray-500 text-sm">
-                  <Globe className="h-8 w-8 mx-auto mb-3 text-blue-500" />
-                  <h3 className="font-medium mb-2">多語系管理</h3>
-                  <p>語系設定功能開發中...</p>
-                </div>
-              </CardContent>
-            </Card>
+            <LanguageManagement />
           </TabsContent>
 
           <TabsContent value="diagnostics">

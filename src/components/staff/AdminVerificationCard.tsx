@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, User, CheckCircle } from 'lucide-react';
+import { Shield, CheckCircle } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { useStaffInitializer } from './hooks/useStaffInitializer';
 
@@ -23,60 +23,40 @@ const AdminVerificationCard = () => {
           管理者身份確認
         </CardTitle>
         <CardDescription>
-          當前登入用戶的管理者權限狀態
+          目前登入用戶：{currentUser?.name || '未知'}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <User className="h-4 w-4 text-gray-500" />
-              <span className="font-medium">用戶姓名:</span>
-              <span>{currentUser?.name || '未知'}</span>
-            </div>
-            {isAdmin() && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <span className="text-sm text-gray-600">權限狀態：</span>
+            {isAdmin() ? (
               <Badge className="bg-green-100 text-green-800 border-green-300">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 管理者
               </Badge>
+            ) : (
+              <Badge variant="secondary">一般用戶</Badge>
             )}
           </div>
           
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Shield className="h-4 w-4 text-gray-500" />
-              <span className="font-medium">權限級別:</span>
-              <span>{currentUser?.role || '未設定'}</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="font-medium">部門:</span>
-              <span>{currentUser?.department || '未設定'}</span>
-            </div>
-          </div>
-          
-          <div className="pt-2">
-            <Button 
-              onClick={handleVerifyAdmin}
-              variant="outline"
-              size="sm"
-              className="w-full"
-            >
-              重新驗證管理者權限
-            </Button>
-          </div>
-          
-          {isAdmin() && (
-            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-sm text-green-700 flex items-center">
-                <CheckCircle className="h-4 w-4 mr-2" />
-                ✅ 已確認：您具有系統管理者權限，可以管理所有員工和系統設定
-              </p>
-            </div>
-          )}
+          <Button 
+            onClick={handleVerifyAdmin}
+            variant="outline"
+            size="sm"
+          >
+            重新驗證
+          </Button>
         </div>
+        
+        {isAdmin() && (
+          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
+            <p className="text-sm text-green-700 flex items-center">
+              <CheckCircle className="h-4 w-4 mr-2" />
+              已確認管理者權限，可管理所有員工和系統設定
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

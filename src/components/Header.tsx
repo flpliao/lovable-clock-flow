@@ -50,7 +50,8 @@ const Header: React.FC<HeaderProps> = () => {
   navItems.push(
     { path: '/leave-request', label: '請假申請', icon: <Calendar className="mr-2 h-4 w-4" /> },
     { path: '/personal-attendance', label: '個人考勤', icon: <Clock className="mr-2 h-4 w-4" /> },
-    { path: '/scheduling', label: '排班', icon: <Calendar className="mr-2 h-4 w-4" /> }
+    { path: '/scheduling', label: '排班', icon: <Calendar className="mr-2 h-4 w-4" /> },
+    { path: '/overtime-management', label: '加班管理', icon: <Clock className="mr-2 h-4 w-4" /> }
   );
   
   // 如果是管理員或人資部門，新增其他管理選項

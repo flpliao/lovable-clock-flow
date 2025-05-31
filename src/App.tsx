@@ -41,6 +41,7 @@ function App() {
                   <Route path="/leave-request" element={<LeaveRequest />} />
                   <Route path="/personal-attendance" element={<PersonalAttendance />} />
                   <Route path="/scheduling" element={<Scheduling />} />
+                  <Route path="/overtime-management" element={<OvertimeManagement />} />
                   <Route path="/company-announcements" element={<CompanyAnnouncements />} />
                   <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
                   <Route path="/personnel-management" element={<PersonnelManagement />} />

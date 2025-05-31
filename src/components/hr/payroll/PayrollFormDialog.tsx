@@ -94,7 +94,9 @@ const PayrollFormDialog: React.FC<PayrollFormDialogProps> = ({
       // 安全地計算津貼總額，確保型別正確
       let allowancesTotal: number = 0;
       if (structure.allowances && typeof structure.allowances === 'object') {
-        allowancesTotal = Object.values(structure.allowances).reduce((sum: number, val: any) => {
+        // 確保 Object.values 返回的值被正確處理為數字
+        const allowanceValues = Object.values(structure.allowances) as unknown[];
+        allowancesTotal = allowanceValues.reduce((sum: number, val: unknown) => {
           const numVal = Number(val) || 0;
           return sum + numVal;
         }, 0);

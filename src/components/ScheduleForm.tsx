@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { format, getDaysInMonth, startOfMonth } from 'date-fns';
@@ -11,14 +12,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { useScheduling } from '@/contexts/SchedulingContext';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { Lunar } from 'lunar-javascript';
-
-// 模擬的用戶數據
-const mockUsers = [
-  { id: '1', name: '王小明', position: '主管', department: '人資部' },
-  { id: '2', name: '李小華', position: '工程師', department: '技術部' },
-  { id: '3', name: '張小美', position: '設計師', department: '設計部' },
-];
 
 // 時間選項
 const timeOptions = [
@@ -39,6 +34,7 @@ type FormValues = {
 const ScheduleForm = () => {
   const { toast } = useToast();
   const { addSchedules } = useScheduling();
+  const { staffList } = useStaffManagementContext();
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   
@@ -171,7 +167,7 @@ const ScheduleForm = () => {
   };
 
   const getUserName = (userId: string) => {
-    const user = mockUsers.find(u => u.id === userId);
+    const user = staffList.find(u => u.id === userId);
     return user ? user.name : '未知員工';
   };
 
@@ -201,11 +197,17 @@ const ScheduleForm = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {mockUsers.map(user => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.name} - {user.department}
+                      {staffList.length > 0 ? (
+                        staffList.map(staff => (
+                          <SelectItem key={staff.id} value={staff.id}>
+                            {staff.name} - {staff.department} ({staff.position})
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-staff" disabled>
+                          暫無員工資料
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />

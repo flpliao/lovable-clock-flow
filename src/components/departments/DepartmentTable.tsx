@@ -4,7 +4,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Pencil, Trash2, Building } from 'lucide-react';
-import { useDepartmentManagement } from './useDepartmentManagement';
+import { useDepartmentManagementContext } from './DepartmentManagementContext';
 import { useUser } from '@/contexts/UserContext';
 
 const DepartmentTable = () => {
@@ -12,7 +12,7 @@ const DepartmentTable = () => {
     filteredDepartments, 
     openEditDialog, 
     handleDeleteDepartment 
-  } = useDepartmentManagement();
+  } = useDepartmentManagementContext();
   
   const { isAdmin } = useUser();
 
@@ -95,7 +95,10 @@ const DepartmentTable = () => {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => openEditDialog(department)}
+                          onClick={() => {
+                            console.log('🔍 點擊編輯按鈕，部門:', department);
+                            openEditDialog(department);
+                          }}
                           className="h-5 px-1 text-xs"
                         >
                           <Pencil className="h-3 w-3" />

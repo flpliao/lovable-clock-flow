@@ -14,6 +14,7 @@ import LeaveRequest from '@/pages/LeaveRequest';
 import PersonalAttendance from '@/pages/PersonalAttendance';
 import Scheduling from '@/pages/Scheduling';
 import OvertimeManagement from '@/pages/OvertimeManagement';
+import HolidayManagement from '@/pages/HolidayManagement';
 import CompanyAnnouncements from '@/pages/CompanyAnnouncements';
 import AnnouncementManagementPage from '@/pages/AnnouncementManagementPage';
 import PersonnelManagement from '@/pages/PersonnelManagement';
@@ -43,6 +44,7 @@ function App() {
                   <Route path="/personal-attendance" element={<PersonalAttendance />} />
                   <Route path="/scheduling" element={<Scheduling />} />
                   <Route path="/overtime-management" element={<OvertimeManagement />} />
+                  <Route path="/holiday-management" element={<HolidayManagement />} />
                   <Route path="/company-announcements" element={<CompanyAnnouncements />} />
                   <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
                   <Route path="/personnel-management" element={<PersonnelManagement />} />

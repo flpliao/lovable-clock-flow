@@ -16,8 +16,8 @@ export const LanguageSummary: React.FC<LanguageSummaryProps> = ({
   }
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-      <h4 className="font-medium text-blue-900 mb-2">選擇摘要：</h4>
+    <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
+      <h4 className="font-medium text-blue-900 mb-1.5">選擇摘要：</h4>
       <div className="space-y-0.5 text-sm text-blue-800">
         <p>國家：{selectedCountryInfo.name_zh} ({selectedCountryInfo.name_en})</p>
         <p>語言：{selectedLanguageInfo.name_zh} ({selectedLanguageInfo.name_native})</p>

@@ -19,7 +19,7 @@ export const LanguageActions: React.FC<LanguageActionsProps> = ({
 }) => {
   return (
     <>
-      <div className="flex gap-2 pt-1">
+      <div className="flex gap-2">
         <Button
           onClick={onSave}
           disabled={isLoading || !hasChanges}

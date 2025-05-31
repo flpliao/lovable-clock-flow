@@ -25,14 +25,14 @@ export const LanguageManagement: React.FC = () => {
 
   return (
     <Card>
-      <CardHeader className="pb-3 px-4">
+      <CardHeader className="pb-2 px-3">
         <CardTitle className="flex items-center text-base">
-          <Globe className="h-4 w-4 mr-2" />
+          <Globe className="h-4 w-4 mr-1.5" />
           多語系管理
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="space-y-4 px-4 pb-4">
+      <CardContent className="space-y-2.5 px-3 pb-3">
         <LanguageForm
           selectedCountry={selectedCountry}
           selectedLanguage={selectedLanguage}

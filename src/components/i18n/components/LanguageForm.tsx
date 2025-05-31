@@ -19,8 +19,8 @@ export const LanguageForm: React.FC<LanguageFormProps> = ({
   isLoading
 }) => {
   return (
-    <div className="space-y-3">
-      <div className="space-y-1.5">
+    <div className="space-y-2.5">
+      <div className="space-y-1">
         <label className="text-sm font-medium text-gray-700">國家地區</label>
         <CountrySelector
           value={selectedCountry}
@@ -29,7 +29,7 @@ export const LanguageForm: React.FC<LanguageFormProps> = ({
         />
       </div>
       
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         <label className="text-sm font-medium text-gray-700">語言</label>
         <LanguageSelector
           value={selectedLanguage}

@@ -10,31 +10,31 @@ const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('general');
 
   return (
-    <div className="min-h-screen bg-gray-50 p-2">
-      <div className="space-y-3">
-        <div className="flex items-center mb-3">
-          <Settings className="h-4 w-4 mr-2 text-blue-600" />
+    <div className="min-h-screen bg-gray-50 p-1">
+      <div className="space-y-2">
+        <div className="flex items-center mb-2">
+          <Settings className="h-4 w-4 mr-1.5 text-blue-600" />
           <h1 className="text-lg font-bold">系統設定</h1>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-3 h-auto">
-            <TabsTrigger value="general" className="text-xs p-1.5 flex flex-col items-center gap-0.5">
+          <TabsList className="grid w-full grid-cols-3 mb-2 h-auto">
+            <TabsTrigger value="general" className="text-xs p-1 flex flex-col items-center gap-0.5">
               <Settings className="h-3 w-3" />
               <span>一般設定</span>
             </TabsTrigger>
-            <TabsTrigger value="i18n" className="text-xs p-1.5 flex flex-col items-center gap-0.5">
+            <TabsTrigger value="i18n" className="text-xs p-1 flex flex-col items-center gap-0.5">
               <Globe className="h-3 w-3" />
               <span>語系管理</span>
             </TabsTrigger>
-            <TabsTrigger value="diagnostics" className="text-xs p-1.5 flex flex-col items-center gap-0.5">
+            <TabsTrigger value="diagnostics" className="text-xs p-1 flex flex-col items-center gap-0.5">
               <Settings className="h-3 w-3" />
               <span>診斷工具</span>
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="general" className="mt-0">
-            <div className="space-y-3">
+            <div className="space-y-2">
               <RLSSettingsCard />
             </div>
           </TabsContent>
@@ -44,7 +44,7 @@ const SystemSettings = () => {
           </TabsContent>
 
           <TabsContent value="diagnostics" className="mt-0">
-            <div className="space-y-3">
+            <div className="space-y-2">
               <ComprehensiveDiagnostics />
             </div>
           </TabsContent>

@@ -5,22 +5,11 @@ import { toast } from '@/hooks/use-toast';
 import { Department, NewDepartment } from '../types';
 import { transformDepartmentData, transformToDbFormat } from '../services/departmentTransformService';
 
-interface DepartmentOperationsReturn {
-  loading: boolean;
-  departments: Department[];
-  fetchDepartments: () => Promise<Department[]>;
-  refreshDepartments: () => Promise<void>;
-  addDepartment: (newDepartment: NewDepartment) => Promise<boolean>;
-  updateDepartment: (department: Department) => Promise<boolean>;
-  deleteDepartment: (id: string) => Promise<boolean>;
-  updateStaffCount: (departmentId: string) => Promise<void>;
-}
-
-export const useSupabaseDepartmentOperations = (): DepartmentOperationsReturn => {
+export const useSupabaseDepartmentOperations = () => {
   const [loading, setLoading] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
 
-  const fetchDepartments = async () => {
+  const fetchDepartments = async (): Promise<Department[]> => {
     try {
       setLoading(true);
       console.log('開始從 Supabase 載入部門資料...');
@@ -52,7 +41,7 @@ export const useSupabaseDepartmentOperations = (): DepartmentOperationsReturn =>
     }
   };
 
-  const refreshDepartments = async () => {
+  const refreshDepartments = async (): Promise<void> => {
     await fetchDepartments();
   };
 
@@ -60,7 +49,7 @@ export const useSupabaseDepartmentOperations = (): DepartmentOperationsReturn =>
     fetchDepartments();
   }, []);
 
-  const addDepartment = async (newDepartment: NewDepartment) => {
+  const addDepartment = async (newDepartment: NewDepartment): Promise<boolean> => {
     try {
       setLoading(true);
       console.log('新增部門:', newDepartment);
@@ -97,7 +86,7 @@ export const useSupabaseDepartmentOperations = (): DepartmentOperationsReturn =>
     }
   };
 
-  const updateDepartment = async (department: Department) => {
+  const updateDepartment = async (department: Department): Promise<boolean> => {
     try {
       setLoading(true);
       console.log('更新部門:', department);
@@ -140,7 +129,7 @@ export const useSupabaseDepartmentOperations = (): DepartmentOperationsReturn =>
     }
   };
 
-  const deleteDepartment = async (id: string) => {
+  const deleteDepartment = async (id: string): Promise<boolean> => {
     try {
       setLoading(true);
       console.log('刪除部門 ID:', id);
@@ -194,7 +183,7 @@ export const useSupabaseDepartmentOperations = (): DepartmentOperationsReturn =>
     }
   };
 
-  const updateStaffCount = async (departmentId: string) => {
+  const updateStaffCount = async (departmentId: string): Promise<void> => {
     try {
       console.log('更新部門員工數量:', departmentId);
       

@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { FileText, Pin, Eye, EyeOff } from 'lucide-react';
+import { Calendar, User, Eye, FileText, Pin } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { CompanyAnnouncement } from '@/types/announcement';
 import { formatAnnouncementDate } from '@/utils/announcementUtils';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 
 interface AnnouncementCardProps {
   announcement: CompanyAnnouncement;
@@ -17,77 +18,97 @@ const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
   isRead,
   onClick
 }) => {
-  // Function to truncate content if it's too long
-  const truncateContent = (content: string, maxLength: number = 100) => {
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + '...';
-  };
-
-  // Get category color based on category
   const getCategoryColor = (category?: string) => {
     switch (category) {
       case 'HR':
-        return 'bg-blue-500 hover:bg-blue-600';
+        return 'bg-blue-500 text-white';
       case 'Administration':
-        return 'bg-amber-500 hover:bg-amber-600';
+        return 'bg-amber-500 text-white';
       case 'Meeting':
-        return 'bg-emerald-500 hover:bg-emerald-600';
+        return 'bg-emerald-500 text-white';
       case 'Official':
-        return 'bg-red-500 hover:bg-red-600';
+        return 'bg-red-500 text-white';
       default:
-        return 'bg-gray-500 hover:bg-gray-600';
+        return 'bg-gray-500 text-white';
     }
   };
 
   return (
     <Card 
-      className={`mb-3 sm:mb-4 cursor-pointer transition-shadow hover:shadow-lg ${
-        isRead ? 'bg-gray-50' : 'bg-white border-l-4 border-l-blue-500'
+      className={`mb-3 sm:mb-4 cursor-pointer transition-all duration-200 hover:shadow-md ${
+        !isRead ? 'border-l-4 border-l-blue-500 bg-blue-50/30' : 'border-l-4 border-l-transparent'
       }`}
       onClick={() => onClick(announcement)}
     >
-      <CardHeader className="pb-2 p-3 sm:p-4">
-        <div className="flex justify-between items-start">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              {announcement.is_pinned && (
-                <Pin className="h-3 w-3 sm:h-4 sm:w-4 text-red-500 flex-shrink-0" />
-              )}
-              <CardTitle className="text-base sm:text-lg truncate">{announcement.title}</CardTitle>
+      <CardContent className="p-4">
+        {/* Header with badges */}
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          {announcement.is_pinned && (
+            <Badge className="bg-yellow-500 text-white text-xs flex items-center gap-1">
+              <Pin className="h-3 w-3" />
+              置頂
+            </Badge>
+          )}
+          
+          {announcement.category && (
+            <Badge className={`text-xs ${getCategoryColor(announcement.category)}`}>
+              {announcement.category}
+            </Badge>
+          )}
+          
+          {announcement.file && (
+            <Badge variant="outline" className="text-xs flex items-center gap-1">
+              <FileText className="h-3 w-3" />
+              附件
+            </Badge>
+          )}
+          
+          {!isRead && (
+            <Badge className="bg-blue-600 text-white text-xs">
+              新
+            </Badge>
+          )}
+        </div>
+
+        {/* Title */}
+        <h3 className={`text-base sm:text-lg font-semibold mb-2 line-clamp-2 ${
+          !isRead ? 'text-gray-900' : 'text-gray-700'
+        }`}>
+          {announcement.title}
+        </h3>
+
+        {/* Content preview */}
+        <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+          {announcement.content}
+        </p>
+
+        {/* Footer with meta info and action */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex flex-col gap-1 text-xs text-gray-500">
+            <div className="flex items-center gap-1">
+              <User className="h-3 w-3" />
+              <span>{announcement.created_by.name}</span>
             </div>
-            <div className="flex items-center mt-1 text-xs sm:text-sm text-gray-500">
-              {formatAnnouncementDate(announcement.created_at)} · {announcement.created_by.name}
+            <div className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              <span>{formatAnnouncementDate(announcement.created_at)}</span>
             </div>
           </div>
           
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-2">
-            {announcement.category && (
-              <Badge className={`text-xs ${getCategoryColor(announcement.category)}`}>
-                {announcement.category}
-              </Badge>
-            )}
-            {announcement.file && (
-              <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
-            )}
-            {isRead ? (
-              <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
-            ) : (
-              <EyeOff className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
-            )}
-          </div>
+          <Button 
+            size="sm" 
+            variant="outline"
+            className="w-full sm:w-auto h-8 text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick(announcement);
+            }}
+          >
+            <Eye className="h-3 w-3 mr-1" />
+            查看詳情
+          </Button>
         </div>
-      </CardHeader>
-      <CardContent className="p-3 sm:p-4 pt-0">
-        <p className="text-sm sm:text-base text-gray-600">{truncateContent(announcement.content)}</p>
       </CardContent>
-      {announcement.file && (
-        <CardFooter className="pt-0 p-3 sm:p-4 text-xs text-gray-500">
-          <div className="flex items-center">
-            <FileText className="h-3 w-3 mr-1" />
-            <span className="truncate">{announcement.file.name}</span>
-          </div>
-        </CardFooter>
-      )}
     </Card>
   );
 };

@@ -45,107 +45,121 @@ const AttendanceExceptionManagement: React.FC = () => {
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold flex items-center">
-          <Clock className="h-5 w-5 mr-2 text-blue-600" />
+        <h2 className="text-lg font-semibold flex items-center">
+          <Clock className="h-4 w-4 mr-2 text-blue-600" />
           打卡異常處理
         </h2>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          新增異常申請
+        <Button size="sm" className="text-xs">
+          <Plus className="h-3 w-3 mr-1" />
+          新增
         </Button>
       </div>
 
       <Card>
-        <CardHeader>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="搜尋員工姓名或原因..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+        <CardContent className="p-3">
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="搜尋員工姓名或原因..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-9 text-sm"
+              />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-32">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="狀態" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部狀態</SelectItem>
-                <SelectItem value="pending">待審核</SelectItem>
-                <SelectItem value="approved">已核准</SelectItem>
-                <SelectItem value="rejected">已拒絕</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="類型" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部類型</SelectItem>
-                <SelectItem value="missing_check_in">漏打上班卡</SelectItem>
-                <SelectItem value="missing_check_out">漏打下班卡</SelectItem>
-                <SelectItem value="late_check_in">遲到</SelectItem>
-                <SelectItem value="early_check_out">早退</SelectItem>
-                <SelectItem value="manual_adjustment">人工調整</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {filteredExceptions.map((exception) => (
-              <div key={exception.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-medium">{exception.staff_name}</h3>
-                      <Badge className={getExceptionStatusColor(exception.status)}>
-                        {getExceptionStatusText(exception.status)}
-                      </Badge>
-                      <span className="text-sm text-gray-500">
-                        {getExceptionTypeText(exception.exception_type)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-2">
-                      異常日期: {exception.exception_date}
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      原因: {exception.reason}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      查看詳情
-                    </Button>
-                    {exception.status === 'pending' && (
-                      <>
-                        <Button variant="outline" size="sm" className="text-green-600">
-                          核准
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-red-600">
-                          拒絕
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-            {filteredExceptions.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                沒有找到相關的異常記錄
-              </div>
-            )}
+            <div className="grid grid-cols-2 gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-9 text-xs">
+                  <Filter className="h-3 w-3 mr-1" />
+                  <SelectValue placeholder="狀態" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部狀態</SelectItem>
+                  <SelectItem value="pending">待審核</SelectItem>
+                  <SelectItem value="approved">已核准</SelectItem>
+                  <SelectItem value="rejected">已拒絕</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="類型" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部類型</SelectItem>
+                  <SelectItem value="missing_check_in">漏打上班卡</SelectItem>
+                  <SelectItem value="missing_check_out">漏打下班卡</SelectItem>
+                  <SelectItem value="late_check_in">遲到</SelectItem>
+                  <SelectItem value="early_check_out">早退</SelectItem>
+                  <SelectItem value="manual_adjustment">人工調整</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      <div className="space-y-3">
+        {filteredExceptions.map((exception) => (
+          <Card key={exception.id}>
+            <CardContent className="p-3">
+              <div className="space-y-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-medium text-sm">{exception.staff_name}</h3>
+                      <Badge className={`${getExceptionStatusColor(exception.status)} text-xs`}>
+                        {getExceptionStatusText(exception.status)}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-gray-500 mb-1">
+                      {getExceptionTypeText(exception.exception_type)}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="text-xs">
+                  <span className="text-gray-500">異常日期:</span>
+                  <p className="font-medium mt-1">{exception.exception_date}</p>
+                </div>
+                
+                <div className="pt-1 border-t border-gray-100">
+                  <div className="text-xs">
+                    <span className="text-gray-500">原因:</span>
+                    <p className="mt-1">{exception.reason}</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2 pt-2">
+                  <Button variant="outline" size="sm" className="flex-1 text-xs">
+                    查看詳情
+                  </Button>
+                  {exception.status === 'pending' && (
+                    <>
+                      <Button variant="outline" size="sm" className="text-green-600 text-xs">
+                        核准
+                      </Button>
+                      <Button variant="outline" size="sm" className="text-red-600 text-xs">
+                        拒絕
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        {filteredExceptions.length === 0 && (
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center text-gray-500 text-sm">
+                沒有找到相關的異常記錄
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };

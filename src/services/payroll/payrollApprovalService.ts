@@ -7,7 +7,7 @@ export class PayrollApprovalService {
     console.log('✅ 核准薪資記錄:', payrollId);
 
     try {
-      // 開始事務
+      // 更新薪資記錄狀態為已核准
       const { data: payroll, error: updateError } = await supabase
         .from('payrolls')
         .update({
@@ -17,7 +17,15 @@ export class PayrollApprovalService {
           approval_comment: comment
         })
         .eq('id', payrollId)
-        .select()
+        .select(`
+          *,
+          staff:staff_id (
+            id,
+            name,
+            position,
+            department
+          )
+        `)
         .single();
 
       if (updateError) {
@@ -54,7 +62,7 @@ export class PayrollApprovalService {
     console.log('❌ 拒絕薪資記錄:', payrollId);
 
     try {
-      // 更新薪資記錄狀態
+      // 更新薪資記錄狀態為已拒絕
       const { data: payroll, error: updateError } = await supabase
         .from('payrolls')
         .update({
@@ -64,7 +72,15 @@ export class PayrollApprovalService {
           approval_comment: comment
         })
         .eq('id', payrollId)
-        .select()
+        .select(`
+          *,
+          staff:staff_id (
+            id,
+            name,
+            position,
+            department
+          )
+        `)
         .single();
 
       if (updateError) {

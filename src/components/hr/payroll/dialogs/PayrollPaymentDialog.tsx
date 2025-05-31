@@ -34,19 +34,25 @@ const PayrollPaymentDialog: React.FC<PayrollPaymentDialogProps> = ({
   const [paymentMethod, setPaymentMethod] = useState('bank_transfer');
   const [paymentReference, setPaymentReference] = useState('');
   const [comment, setComment] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleConfirm = () => {
-    onConfirmPayment({
-      paymentMethod,
-      paymentReference: paymentReference || undefined,
-      comment: comment || undefined
-    });
-    
-    // 重置表單
-    setPaymentMethod('bank_transfer');
-    setPaymentReference('');
-    setComment('');
-    onOpenChange(false);
+  const handleConfirm = async () => {
+    setIsProcessing(true);
+    try {
+      await onConfirmPayment({
+        paymentMethod,
+        paymentReference: paymentReference || undefined,
+        comment: comment || undefined
+      });
+      
+      // 重置表單
+      setPaymentMethod('bank_transfer');
+      setPaymentReference('');
+      setComment('');
+      onOpenChange(false);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (!payroll) return null;
@@ -117,12 +123,14 @@ const PayrollPaymentDialog: React.FC<PayrollPaymentDialogProps> = ({
               variant="outline"
               className="flex-1"
               onClick={() => onOpenChange(false)}
+              disabled={isProcessing}
             >
               取消
             </Button>
             <Button
               className="flex-1 bg-green-600 hover:bg-green-700"
               onClick={handleConfirm}
+              disabled={isProcessing}
             >
               <DollarSign className="h-4 w-4 mr-1" />
               確認發放

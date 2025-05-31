@@ -28,24 +28,33 @@ const PayrollApprovalDialog: React.FC<PayrollApprovalDialogProps> = ({
   onReject
 }) => {
   const [comment, setComment] = useState('');
-  const [action, setAction] = useState<'approve' | 'reject' | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleApprove = () => {
-    onApprove(comment);
-    setComment('');
-    setAction(null);
-    onOpenChange(false);
+  const handleApprove = async () => {
+    setIsProcessing(true);
+    try {
+      await onApprove(comment);
+      setComment('');
+      onOpenChange(false);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
     if (!comment.trim()) {
       alert('拒絕時必須填寫原因');
       return;
     }
-    onReject(comment);
-    setComment('');
-    setAction(null);
-    onOpenChange(false);
+    
+    setIsProcessing(true);
+    try {
+      await onReject(comment);
+      setComment('');
+      onOpenChange(false);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (!payroll) return null;
@@ -77,12 +86,12 @@ const PayrollApprovalDialog: React.FC<PayrollApprovalDialogProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="comment">核准意見 {action === 'reject' && <span className="text-red-500">*</span>}</Label>
+            <Label htmlFor="comment">核准意見</Label>
             <Textarea
               id="comment"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder={action === 'reject' ? '請說明拒絕原因...' : '可選填核准意見...'}
+              placeholder="可選填核准意見或必填拒絕原因..."
               className="mt-1"
             />
           </div>
@@ -91,20 +100,16 @@ const PayrollApprovalDialog: React.FC<PayrollApprovalDialogProps> = ({
             <Button
               variant="outline"
               className="flex-1 text-red-600 border-red-200"
-              onClick={() => {
-                setAction('reject');
-                handleReject();
-              }}
+              onClick={handleReject}
+              disabled={isProcessing}
             >
               <X className="h-4 w-4 mr-1" />
               拒絕
             </Button>
             <Button
               className="flex-1 bg-green-600 hover:bg-green-700"
-              onClick={() => {
-                setAction('approve');
-                handleApprove();
-              }}
+              onClick={handleApprove}
+              disabled={isProcessing}
             >
               <Check className="h-4 w-4 mr-1" />
               核准

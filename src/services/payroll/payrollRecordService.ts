@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export class PayrollRecordService {
-  // 薪資發放記錄相關操作
+  // 獲取薪資記錄
   static async getPayrolls() {
     console.log('🔍 獲取薪資發放記錄...');
     
@@ -67,13 +67,22 @@ export class PayrollRecordService {
       health_insurance: Number(payrollData.health_insurance) || 0,
       gross_salary: grossSalary,
       net_salary: netSalary,
-      status: payrollData.status || 'draft'
+      status: payrollData.status || 'calculated',
+      calculated_at: new Date().toISOString()
     };
 
     const { data, error } = await supabase
       .from('payrolls')
       .insert(insertData)
-      .select()
+      .select(`
+        *,
+        staff:staff_id (
+          id,
+          name,
+          position,
+          department
+        )
+      `)
       .single();
 
     if (error) {
@@ -137,7 +146,15 @@ export class PayrollRecordService {
       .from('payrolls')
       .update(numericUpdates)
       .eq('id', id)
-      .select()
+      .select(`
+        *,
+        staff:staff_id (
+          id,
+          name,
+          position,
+          department
+        )
+      `)
       .single();
 
     if (error) {

@@ -17,7 +17,7 @@ export class PayrollPaymentService {
 
     try {
       // 先獲取薪資記錄的淨薪資
-      const { data: payroll, error: fetchError } = await supabase
+      const { data: payrollInfo, error: fetchError } = await supabase
         .from('payrolls')
         .select('net_salary')
         .eq('id', payrollId)
@@ -28,8 +28,8 @@ export class PayrollPaymentService {
         throw fetchError;
       }
 
-      // 更新薪資記錄狀態
-      const { data: updatedPayroll, error: updateError } = await supabase
+      // 更新薪資記錄狀態為已發放
+      const { data: payroll, error: updateError } = await supabase
         .from('payrolls')
         .update({
           status: 'paid',
@@ -40,7 +40,15 @@ export class PayrollPaymentService {
           payment_comment: paymentData.comment
         })
         .eq('id', payrollId)
-        .select()
+        .select(`
+          *,
+          staff:staff_id (
+            id,
+            name,
+            position,
+            department
+          )
+        `)
         .single();
 
       if (updateError) {
@@ -57,7 +65,7 @@ export class PayrollPaymentService {
           paid_by_name: paidByName,
           payment_method: paymentData.paymentMethod,
           payment_reference: paymentData.paymentReference,
-          amount: payroll.net_salary,
+          amount: payrollInfo.net_salary,
           comment: paymentData.comment
         });
 
@@ -67,7 +75,7 @@ export class PayrollPaymentService {
       }
 
       console.log('✅ 薪資發放成功');
-      return updatedPayroll;
+      return payroll;
     } catch (error) {
       console.error('❌ 薪資發放失敗:', error);
       throw error;

@@ -41,50 +41,50 @@ const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
 
   return (
     <Card 
-      className={`mb-4 cursor-pointer transition-shadow hover:shadow-lg ${
+      className={`mb-3 sm:mb-4 cursor-pointer transition-shadow hover:shadow-lg ${
         isRead ? 'bg-gray-50' : 'bg-white border-l-4 border-l-blue-500'
       }`}
       onClick={() => onClick(announcement)}
     >
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 p-3 sm:p-4">
         <div className="flex justify-between items-start">
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               {announcement.is_pinned && (
-                <Pin className="h-4 w-4 text-red-500" />
+                <Pin className="h-3 w-3 sm:h-4 sm:w-4 text-red-500 flex-shrink-0" />
               )}
-              <CardTitle className="text-lg">{announcement.title}</CardTitle>
+              <CardTitle className="text-base sm:text-lg truncate">{announcement.title}</CardTitle>
             </div>
-            <div className="flex items-center mt-1 text-sm text-gray-500">
+            <div className="flex items-center mt-1 text-xs sm:text-sm text-gray-500">
               {formatAnnouncementDate(announcement.created_at)} · {announcement.created_by.name}
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-2">
             {announcement.category && (
-              <Badge className={getCategoryColor(announcement.category)}>
+              <Badge className={`text-xs ${getCategoryColor(announcement.category)}`}>
                 {announcement.category}
               </Badge>
             )}
             {announcement.file && (
-              <FileText className="h-4 w-4 text-blue-500" />
+              <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
             )}
             {isRead ? (
-              <Eye className="h-4 w-4 text-gray-400" />
+              <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
             ) : (
-              <EyeOff className="h-4 w-4 text-blue-500" />
+              <EyeOff className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
             )}
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <p className="text-gray-600">{truncateContent(announcement.content)}</p>
+      <CardContent className="p-3 sm:p-4 pt-0">
+        <p className="text-sm sm:text-base text-gray-600">{truncateContent(announcement.content)}</p>
       </CardContent>
       {announcement.file && (
-        <CardFooter className="pt-0 text-xs text-gray-500">
+        <CardFooter className="pt-0 p-3 sm:p-4 text-xs text-gray-500">
           <div className="flex items-center">
             <FileText className="h-3 w-3 mr-1" />
-            {announcement.file.name}
+            <span className="truncate">{announcement.file.name}</span>
           </div>
         </CardFooter>
       )}

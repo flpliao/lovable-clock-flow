@@ -55,7 +55,7 @@ const AnnouncementList: React.FC = () => {
 
   return (
     <div>
-      <div className="flex flex-col gap-4 mb-6 md:flex-row">
+      <div className="flex flex-col gap-3 mb-4 sm:mb-6 sm:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
           <Input
@@ -69,7 +69,7 @@ const AnnouncementList: React.FC = () => {
           value={selectedCategory}
           onValueChange={setSelectedCategory}
         >
-          <SelectTrigger className="w-full md:w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="選擇分類" />
           </SelectTrigger>
           <SelectContent>
@@ -85,13 +85,13 @@ const AnnouncementList: React.FC = () => {
         // Loading skeleton
         <>
           {[1, 2, 3].map((i) => (
-            <div key={i} className="mb-4">
-              <Skeleton className="h-32 w-full mb-4" />
+            <div key={i} className="mb-3 sm:mb-4">
+              <Skeleton className="h-28 sm:h-32 w-full" />
             </div>
           ))}
         </>
       ) : filteredAnnouncements.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-8 sm:py-12 text-gray-500">
           沒有找到符合條件的公告
         </div>
       ) : (

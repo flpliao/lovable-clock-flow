@@ -8,23 +8,16 @@ import { useUser } from '@/contexts/UserContext';
 const Index = () => {
   const { currentUser, annualLeaveBalance, userError, clearUserError } = useUser();
   
-  // 更積極地清除錯誤狀態
+  // 統一的錯誤清除邏輯
   useEffect(() => {
-    // 頁面載入時立即清除錯誤
     if (userError) {
-      console.log('Index page: clearing user error immediately:', userError);
-      clearUserError();
+      console.log('Index page: clearing user error:', userError);
+      const timeoutId = setTimeout(clearUserError, 100);
+      return () => clearTimeout(timeoutId);
     }
-    
-    // 也在組件掛載時清除錯誤
-    const timeoutId = setTimeout(() => {
-      clearUserError();
-    }, 100);
-    
-    return () => clearTimeout(timeoutId);
   }, [userError, clearUserError]);
   
-  // 當用戶狀態改變時也清除錯誤
+  // 當用戶狀態改變時清除錯誤
   useEffect(() => {
     if (currentUser) {
       console.log('User state changed, clearing any existing errors');

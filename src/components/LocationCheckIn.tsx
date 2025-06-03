@@ -1,28 +1,22 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { 
   MapPin, 
   Wifi, 
-  LogIn, 
-  LogOut, 
   AlertCircle,
-  CheckCircle2,
   Clock
 } from 'lucide-react';
 import { useCheckIn } from '@/hooks/useCheckIn';
-import { useTodayCheckInRecords } from '@/hooks/useTodayCheckInRecords';
-import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
-import { formatTime } from '@/utils/checkInUtils';
+import CheckInCompletedStatus from '@/components/check-in/CheckInCompletedStatus';
+import CheckInStatusInfo from '@/components/check-in/CheckInStatusInfo';
+import CheckInButton from '@/components/check-in/CheckInButton';
 
 const LocationCheckIn = () => {
   const { currentUser } = useUser();
-  const { toast } = useToast();
   
-  // Only initialize useCheckIn if we have a currentUser
   const {
     loading,
     error,
@@ -48,57 +42,15 @@ const LocationCheckIn = () => {
     );
   }
 
-  // Handle the case where todayRecords might be undefined
   const safeCheckIn = todayRecords?.checkIn;
   const safeCheckOut = todayRecords?.checkOut;
 
   // 如果已完成今日打卡，顯示完成狀態
   if (safeCheckIn && safeCheckOut) {
-    return (
-      <Card className="bg-green-50 border-green-200">
-        <CardContent className="p-4">
-          <div className="text-center space-y-3">
-            <div className="flex items-center justify-center">
-              <CheckCircle2 className="h-8 w-8 text-green-600 mr-2" />
-              <span className="text-lg font-semibold text-green-800">今日打卡已完成</span>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="bg-white rounded-lg p-3 border border-green-200">
-                <div className="flex items-center justify-center mb-1">
-                  <LogIn className="h-4 w-4 text-green-600 mr-1" />
-                  <span className="font-medium">上班</span>
-                </div>
-                <div className="text-center">
-                  <div className="font-mono text-lg text-green-800">
-                    {formatTime(safeCheckIn.timestamp)}
-                  </div>
-                  <div className="text-green-600 text-xs mt-1">
-                    {safeCheckIn.type === 'location' ? '位置打卡' : 'IP打卡'}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-lg p-3 border border-green-200">
-                <div className="flex items-center justify-center mb-1">
-                  <LogOut className="h-4 w-4 text-green-600 mr-1" />
-                  <span className="font-medium">下班</span>
-                </div>
-                <div className="text-center">
-                  <div className="font-mono text-lg text-green-800">
-                    {formatTime(safeCheckOut.timestamp)}
-                  </div>
-                  <div className="text-green-600 text-xs mt-1">
-                    {safeCheckOut.type === 'location' ? '位置打卡' : 'IP打卡'}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <CheckInCompletedStatus checkIn={safeCheckIn} checkOut={safeCheckOut} />;
   }
+
+  const handleCheckIn = checkInMethod === 'location' ? onLocationCheckIn : onIpCheckIn;
 
   return (
     <Card>
@@ -110,20 +62,9 @@ const LocationCheckIn = () => {
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {/* 如果已上班但未下班，顯示狀態 */}
-        {safeCheckIn && !safeCheckOut && (
-          <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-            <div className="flex items-center justify-center space-x-2 text-blue-800">
-              <CheckCircle2 className="h-4 w-4" />
-              <span className="font-medium">已上班打卡</span>
-              <Badge variant="secondary" className="text-xs">
-                {formatTime(safeCheckIn.timestamp)}
-              </Badge>
-            </div>
-          </div>
-        )}
+        <CheckInStatusInfo checkIn={safeCheckIn} checkOut={safeCheckOut} />
 
-        {/* 打卡方式選擇 - 手機優化 */}
+        {/* 打卡方式選擇 */}
         <div className="grid grid-cols-2 gap-2 bg-gray-100 rounded-lg p-1">
           <Button
             variant={checkInMethod === 'location' ? 'default' : 'ghost'}
@@ -145,37 +86,11 @@ const LocationCheckIn = () => {
           </Button>
         </div>
 
-        {/* 打卡按鈕 - 手機優化大按鈕 */}
-        <div className="text-center">
-          <Button
-            onClick={checkInMethod === 'location' ? onLocationCheckIn : onIpCheckIn}
-            disabled={loading}
-            size="lg"
-            className={`w-full h-16 text-lg font-semibold rounded-xl transition-all duration-200 ${
-              actionType === 'check-in' 
-                ? 'bg-green-500 hover:bg-green-600' 
-                : 'bg-blue-500 hover:bg-blue-600'
-            }`}
-          >
-            {loading ? (
-              <div className="flex items-center space-x-2">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>處理中...</span>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                {actionType === 'check-in' ? (
-                  <LogIn className="h-6 w-6" />
-                ) : (
-                  <LogOut className="h-6 w-6" />
-                )}
-                <span>
-                  {actionType === 'check-in' ? '上班打卡' : '下班打卡'}
-                </span>
-              </div>
-            )}
-          </Button>
-        </div>
+        <CheckInButton
+          actionType={actionType}
+          loading={loading}
+          onCheckIn={handleCheckIn}
+        />
 
         {/* 狀態資訊 */}
         {distance !== null && !error && checkInMethod === 'location' && (

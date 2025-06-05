@@ -10,6 +10,7 @@ import AnnouncementDetail from './AnnouncementDetail';
 import AnnouncementForm from './AnnouncementForm';
 import AnnouncementSearchFilter from './AnnouncementSearchFilter';
 import AnnouncementListView from './AnnouncementListView';
+import { visionProStyles } from '@/utils/visionProStyles';
 
 const AnnouncementManagement: React.FC = () => {
   const { toast } = useToast();
@@ -92,53 +93,62 @@ const AnnouncementManagement: React.FC = () => {
 
   if (!hasAdminAccess) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-xl font-semibold mb-2">無權限訪問</h2>
-        <p className="text-gray-500">您沒有權限管理公司公告</p>
+      <div className={`text-center py-12 ${visionProStyles.cardBackground} rounded-3xl`}>
+        <h2 className={`text-xl font-semibold mb-2 ${visionProStyles.primaryText} text-white`}>無權限訪問</h2>
+        <p className="text-white/70 font-medium drop-shadow-md">您沒有權限管理公司公告</p>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">載入中...</p>
+      <div className={`text-center py-12 ${visionProStyles.cardBackground} rounded-3xl`}>
+        <p className="text-white/70 font-medium drop-shadow-md">載入中...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header with create button */}
-      <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
-        <h2 className="text-lg sm:text-xl font-semibold">公告列表</h2>
-        <Button 
-          onClick={() => {
-            setSelectedAnnouncement(null);
-            setIsFormOpen(true);
-          }}
-          className="w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          新增公告
-        </Button>
+    <div className="space-y-6">
+      {/* 標題和新增按鈕 - Vision Pro 風格 */}
+      <div className={`${visionProStyles.cardBackground} rounded-3xl p-6 relative overflow-hidden`}>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10"></div>
+        <div className="relative z-10 flex flex-col space-y-3 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
+          <h2 className={`text-lg sm:text-xl font-semibold ${visionProStyles.primaryText} text-white`}>
+            公告列表
+          </h2>
+          <Button 
+            onClick={() => {
+              setSelectedAnnouncement(null);
+              setIsFormOpen(true);
+            }}
+            className={`w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm ${visionProStyles.glassButton} border-white/40 text-white font-semibold shadow-lg hover:bg-white/50 transition-all duration-300`}
+          >
+            <Plus className="h-4 w-4 mr-2 drop-shadow-md" />
+            新增公告
+          </Button>
+        </div>
       </div>
 
-      {/* Search and filter section */}
-      <AnnouncementSearchFilter
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        categories={categories}
-      />
+      {/* 搜尋和篩選區域 - Vision Pro 風格 */}
+      <div className={`${visionProStyles.cardBackground} rounded-3xl p-6`}>
+        <AnnouncementSearchFilter
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          categories={categories}
+        />
+      </div>
 
-      {/* Announcements display */}
-      <AnnouncementListView
-        announcements={filteredAnnouncements}
-        onView={handleViewAnnouncement}
-        onEdit={handleEditAnnouncement}
-      />
+      {/* 公告顯示區域 - Vision Pro 風格 */}
+      <div className={`${visionProStyles.cardBackground} rounded-3xl p-6`}>
+        <AnnouncementListView
+          announcements={filteredAnnouncements}
+          onView={handleViewAnnouncement}
+          onEdit={handleEditAnnouncement}
+        />
+      </div>
 
       {/* Create/Edit Form */}
       <AnnouncementForm

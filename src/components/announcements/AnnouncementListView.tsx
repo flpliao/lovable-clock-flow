@@ -4,6 +4,7 @@ import { CompanyAnnouncement } from '@/types/announcement';
 import { useIsMobile } from '@/hooks/use-mobile';
 import AnnouncementMobileCard from './AnnouncementMobileCard';
 import AnnouncementTable from './AnnouncementTable';
+import { visionProStyles } from '@/utils/visionProStyles';
 
 interface AnnouncementListViewProps {
   announcements: CompanyAnnouncement[];
@@ -20,8 +21,8 @@ const AnnouncementListView: React.FC<AnnouncementListViewProps> = ({
 
   if (announcements.length === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-        <p className="text-gray-500">沒有找到符合條件的公告</p>
+      <div className={`text-center py-12 ${visionProStyles.glassBackground} rounded-2xl border border-white/30`}>
+        <p className="text-white/70 font-medium drop-shadow-md">沒有找到符合條件的公告</p>
       </div>
     );
   }

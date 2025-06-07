@@ -13,6 +13,7 @@ import { LeaveTypeSelector } from '@/components/leave/LeaveTypeSelector';
 import { LeaveFormDetails } from '@/components/leave/LeaveFormDetails';
 import { LeaveApprovalWorkflow } from '@/components/leave/LeaveApprovalWorkflow';
 import { getApprovers } from '@/services/leaveRequestService';
+import { visionProStyles } from '@/utils/visionProStyles';
 
 interface LeaveRequestFormProps {
   onSubmit?: () => void;
@@ -73,28 +74,63 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <LeaveDateSelector 
-          form={form} 
-          calculatedHours={calculatedHours} 
-        />
-        
-        <LeaveTypeSelector 
-          form={form}
-          selectedLeaveType={selectedLeaveType}
-        />
-        
-        <LeaveFormDetails 
-          form={form}
-          selectedLeaveType={selectedLeaveType}
-        />
-        
-        <LeaveApprovalWorkflow approvers={approvers} />
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h2 className={`text-2xl font-bold mb-2 ${visionProStyles.primaryText} text-white drop-shadow-lg`}>
+          請假申請
+        </h2>
+        <p className="text-white/70 font-medium drop-shadow-md">
+          請填寫以下資訊提交您的請假申請
+        </p>
+      </div>
 
-        <Button type="submit" className="w-full">提交請假申請</Button>
-      </form>
-    </Form>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+          {/* 日期選擇區塊 */}
+          <div className={`${visionProStyles.glassBackground} rounded-2xl p-6 border border-white/30`}>
+            <h3 className="text-lg font-semibold text-white mb-4 drop-shadow-md">請假日期</h3>
+            <LeaveDateSelector 
+              form={form} 
+              calculatedHours={calculatedHours} 
+            />
+          </div>
+          
+          {/* 請假類型選擇 */}
+          <div className={`${visionProStyles.glassBackground} rounded-2xl p-6 border border-white/30`}>
+            <h3 className="text-lg font-semibold text-white mb-4 drop-shadow-md">請假類型</h3>
+            <LeaveTypeSelector 
+              form={form}
+              selectedLeaveType={selectedLeaveType}
+            />
+          </div>
+          
+          {/* 請假詳情 */}
+          <div className={`${visionProStyles.glassBackground} rounded-2xl p-6 border border-white/30`}>
+            <h3 className="text-lg font-semibold text-white mb-4 drop-shadow-md">請假詳情</h3>
+            <LeaveFormDetails 
+              form={form}
+              selectedLeaveType={selectedLeaveType}
+            />
+          </div>
+          
+          {/* 審核流程 */}
+          <div className={`${visionProStyles.cardBackground} rounded-2xl p-6 border border-white/30`}>
+            <h3 className="text-lg font-semibold text-white mb-4 drop-shadow-md">審核流程</h3>
+            <LeaveApprovalWorkflow approvers={approvers} />
+          </div>
+
+          {/* 提交按鈕 */}
+          <div className="flex justify-center pt-4">
+            <Button 
+              type="submit" 
+              className={`w-full sm:w-auto px-12 py-3 text-lg font-semibold ${visionProStyles.glassButton} border-white/40 text-white hover:bg-white/30 transition-all duration-300 shadow-2xl`}
+            >
+              提交請假申請
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 }
 

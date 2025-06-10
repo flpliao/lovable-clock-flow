@@ -8,7 +8,7 @@ import LeaveRequestDetail from '@/components/LeaveRequestDetail';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LeaveRequest as LeaveRequestType } from '@/types';
 import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
-import { Clock, Calendar } from 'lucide-react';
+import { Clock, Calendar, Bell, PiggyBank, FileText, History, User } from 'lucide-react';
 
 const LeaveRequest = () => {
   const [activeTab, setActiveTab] = useState<string>('request');
@@ -25,6 +25,11 @@ const LeaveRequest = () => {
         {/* Welcome Header */}
         <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8">
           <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/30 shadow-lg">
+                <User className="h-8 w-8 text-white" />
+              </div>
+            </div>
             <h1 className="text-4xl font-bold text-white mb-4 drop-shadow-lg">
               您好，廖俊雄
             </h1>
@@ -59,16 +64,39 @@ const LeaveRequest = () => {
 
         {/* Shift Reminder */}
         <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl overflow-hidden">
+          <div className="p-6 border-b border-white/20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-amber-500/80 rounded-xl flex items-center justify-center">
+                <Bell className="h-5 w-5 text-white" />
+              </div>
+              <h2 className="text-xl font-semibold text-white drop-shadow-md">班次提醒</h2>
+            </div>
+          </div>
           <ShiftReminder />
         </div>
         
         {/* Leave Balance */}
         <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-green-500/80 rounded-xl flex items-center justify-center">
+              <PiggyBank className="h-5 w-5 text-white" />
+            </div>
+            <h2 className="text-xl font-semibold text-white drop-shadow-md">特休假餘額</h2>
+          </div>
           <LeaveBalance />
         </div>
 
         {/* Main Content */}
         <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl overflow-hidden">
+          <div className="p-6 border-b border-white/20">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-blue-500/80 rounded-xl flex items-center justify-center">
+                <FileText className="h-5 w-5 text-white" />
+              </div>
+              <h2 className="text-xl font-semibold text-white drop-shadow-md">請假管理</h2>
+            </div>
+          </div>
+          
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="p-6">
               <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
@@ -116,6 +144,12 @@ const LeaveRequest = () => {
         
         {/* Leave History */}
         <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-purple-500/80 rounded-xl flex items-center justify-center">
+              <History className="h-5 w-5 text-white" />
+            </div>
+            <h2 className="text-xl font-semibold text-white drop-shadow-md">請假記錄</h2>
+          </div>
           <LeaveHistory />
         </div>
       </div>

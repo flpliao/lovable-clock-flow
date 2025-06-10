@@ -19,7 +19,7 @@ const LeaveRequest = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-50 to-white relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-50 to-white">
       {/* Header */}
       <div className="bg-white/40 backdrop-blur-lg border-b border-white/20 shadow-sm">
         <div className="container mx-auto py-4 px-4">
@@ -35,29 +35,29 @@ const LeaveRequest = () => {
 
       <div className="container mx-auto py-6 px-4 space-y-6">
         {/* Shift Reminder Card */}
-        <div className="bg-white/70 backdrop-blur-xl rounded-3xl border border-white/40 shadow-lg overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-xl">
           <ShiftReminder />
         </div>
         
         {/* Leave Balance Card */}
-        <div className="bg-white/70 backdrop-blur-xl rounded-3xl border border-white/40 shadow-lg overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-xl">
           <LeaveBalance />
         </div>
         
         {/* Main Content Card */}
-        <div className="bg-white/70 backdrop-blur-xl rounded-3xl border border-white/40 shadow-lg overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-xl">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="p-6 border-b border-white/20">
-              <TabsList className="grid w-full grid-cols-2 bg-white/50 backdrop-blur-xl rounded-2xl border border-white/30 p-1">
+              <TabsList className="grid w-full grid-cols-2 bg-white/60 backdrop-blur-xl rounded-xl border border-white/40 p-1">
                 <TabsTrigger 
                   value="request" 
-                  className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-xl font-medium transition-all duration-200"
+                  className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200"
                 >
                   申請請假
                 </TabsTrigger>
                 <TabsTrigger 
                   value="view" 
-                  className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-xl font-medium transition-all duration-200"
+                  className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200"
                 >
                   查看請假
                 </TabsTrigger>
@@ -91,7 +91,7 @@ const LeaveRequest = () => {
         </div>
         
         {/* Leave History Card */}
-        <div className="bg-white/70 backdrop-blur-xl rounded-3xl border border-white/40 shadow-lg overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-xl">
           <LeaveHistory />
         </div>
       </div>

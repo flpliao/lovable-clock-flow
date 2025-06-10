@@ -45,6 +45,7 @@ const AnnouncementList: React.FC = () => {
     }
     
     const isRead = await checkAnnouncementRead(announcementId);
+    // Ensure we always store and return a boolean
     const readValue = Boolean(isRead);
     setReadStatus(prev => ({ ...prev, [announcementId]: readValue }));
     return readValue;
@@ -53,7 +54,8 @@ const AnnouncementList: React.FC = () => {
   // Helper function to get read status with proper boolean type
   const getReadStatus = (announcementId: string): boolean => {
     const status = readStatus[announcementId];
-    return Boolean(status);
+    // Always return a boolean, defaulting to false if undefined
+    return status === true;
   };
 
   return (

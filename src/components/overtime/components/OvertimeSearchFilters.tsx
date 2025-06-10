@@ -22,8 +22,8 @@ const OvertimeSearchFilters: React.FC<OvertimeSearchFiltersProps> = ({
   onTypeFilterChange
 }) => {
   return (
-    <div className="space-y-4">
-      {/* 搜尋區域 - 單層設計 */}
+    <div className="space-y-6">
+      {/* 搜尋區域 */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <div className="p-2 bg-blue-500/80 rounded-lg shadow-md">
@@ -43,7 +43,7 @@ const OvertimeSearchFilters: React.FC<OvertimeSearchFiltersProps> = ({
         </div>
       </div>
       
-      {/* 篩選器區域 - 單層設計 */}
+      {/* 篩選器區域 */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <div className="p-2 bg-purple-500/80 rounded-lg shadow-md">

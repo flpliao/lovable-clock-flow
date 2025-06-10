@@ -59,24 +59,24 @@ const OvertimeHistory: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6">
-      {/* 標題和搜尋區域 - 單層設計 */}
+    <div className="space-y-8">
+      {/* 標題區域 */}
       <div className="backdrop-blur-xl bg-white/25 border border-white/30 rounded-2xl shadow-lg p-6">
         <OvertimeHistoryHeader />
-        <div className="mt-6">
-          <OvertimeSearchFilters
-            searchTerm={searchTerm}
-            statusFilter={statusFilter}
-            typeFilter={typeFilter}
-            onSearchTermChange={setSearchTerm}
-            onStatusFilterChange={setStatusFilter}
-            onTypeFilterChange={setTypeFilter}
-          />
-        </div>
       </div>
 
-      {/* 加班記錄列表 - 單層卡片設計 */}
-      <div className="space-y-4">
+      {/* 搜尋和篩選區域 - 移除背景容器 */}
+      <OvertimeSearchFilters
+        searchTerm={searchTerm}
+        statusFilter={statusFilter}
+        typeFilter={typeFilter}
+        onSearchTermChange={setSearchTerm}
+        onStatusFilterChange={setStatusFilter}
+        onTypeFilterChange={setTypeFilter}
+      />
+
+      {/* 加班記錄列表 */}
+      <div className="space-y-6">
         {filteredOvertimes.map((overtime) => (
           <OvertimeRecordCard key={overtime.id} overtime={overtime} />
         ))}

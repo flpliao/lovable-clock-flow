@@ -53,8 +53,8 @@ const LocationCheckIn = () => {
 
   return (
     <div className={`${createLiquidGlassEffect(true, true)} overflow-hidden relative`}>
-      {/* 淡藍色背景效果 */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-100/20 via-blue-50/15 to-cyan-50/10"></div>
+      {/* 極淡藍色背景效果 */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/15 via-slate-50/10 to-white/5"></div>
       
       <div className="relative z-10">
         <CardHeader className="pb-3">
@@ -68,12 +68,12 @@ const LocationCheckIn = () => {
           <CheckInStatusInfo checkIn={safeCheckIn} checkOut={safeCheckOut} />
 
           {/* 打卡方式選擇 */}
-          <div className="grid grid-cols-2 gap-2 bg-blue-100/30 backdrop-blur-xl rounded-lg p-1 border border-blue-200/30">
+          <div className="grid grid-cols-2 gap-2 bg-blue-50/20 backdrop-blur-xl rounded-lg p-1 border border-blue-50/30">
             <Button
               variant={checkInMethod === 'location' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setCheckInMethod('location')}
-              className="flex items-center justify-center space-x-1 text-sm bg-white/20 hover:bg-white/30 text-white border-blue-200/30"
+              className="flex items-center justify-center space-x-1 text-sm bg-white/20 hover:bg-white/30 text-white border-blue-50/20"
             >
               <MapPin className="h-4 w-4" />
               <span>位置打卡</span>
@@ -82,7 +82,7 @@ const LocationCheckIn = () => {
               variant={checkInMethod === 'ip' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setCheckInMethod('ip')}
-              className="flex items-center justify-center space-x-1 text-sm bg-white/20 hover:bg-white/30 text-white border-blue-200/30"
+              className="flex items-center justify-center space-x-1 text-sm bg-white/20 hover:bg-white/30 text-white border-blue-50/20"
             >
               <Wifi className="h-4 w-4" />
               <span>IP打卡</span>

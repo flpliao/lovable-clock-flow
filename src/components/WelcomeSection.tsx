@@ -25,10 +25,10 @@ const WelcomeSection = ({ userName }: WelcomeSectionProps) => {
   return (
     <div className="py-6 sm:py-8">
       <div className={`${createLiquidGlassEffect(true, true)} overflow-hidden relative group`}>
-        {/* 淡藍色漸變光效 - 增強效果 */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-200/20 to-cyan-200/20 group-hover:from-blue-200/25 group-hover:to-cyan-200/25 transition-all duration-500"></div>
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-300 via-cyan-300 to-blue-300 opacity-60 group-hover:opacity-80 transition-opacity duration-500"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-100/10 via-transparent to-cyan-100/10 group-hover:from-blue-100/15 group-hover:to-cyan-100/15 transition-all duration-500"></div>
+        {/* 極淡藍色漸變光效 */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50/15 to-slate-50/10 group-hover:from-blue-50/20 group-hover:to-slate-50/15 transition-all duration-500"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-100 via-blue-50 to-blue-100 opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/5 via-transparent to-slate-50/5 group-hover:from-blue-50/10 group-hover:to-slate-50/10 transition-all duration-500"></div>
         
         <CardContent className="p-6 sm:p-8 relative z-10">
           <div className="space-y-6">
@@ -45,7 +45,7 @@ const WelcomeSection = ({ userName }: WelcomeSectionProps) => {
             {/* 時間資訊 */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 mt-8">
               <div className={`flex items-center justify-center sm:justify-start space-x-4 ${createLiquidGlassEffect(false, true)} p-5 group-hover:scale-105 transition-all duration-300`}>
-                <div className="p-3 bg-blue-200/60 rounded-2xl shadow-xl backdrop-blur-xl border border-blue-200/50">
+                <div className="p-3 bg-blue-100/40 rounded-2xl shadow-xl backdrop-blur-xl border border-blue-50/30">
                   <Clock className="h-6 w-6 text-white drop-shadow-lg" />
                 </div>
                 <span className="text-2xl sm:text-3xl font-mono font-bold text-white drop-shadow-xl">
@@ -54,7 +54,7 @@ const WelcomeSection = ({ userName }: WelcomeSectionProps) => {
               </div>
               
               <div className={`flex items-center justify-center sm:justify-end space-x-4 ${createLiquidGlassEffect(false, true)} p-5 group-hover:scale-105 transition-all duration-300`}>
-                <div className="p-3 bg-blue-200/60 rounded-2xl shadow-xl backdrop-blur-xl border border-blue-200/50">
+                <div className="p-3 bg-blue-100/40 rounded-2xl shadow-xl backdrop-blur-xl border border-blue-50/30">
                   <Calendar className="h-6 w-6 text-white drop-shadow-lg" />
                 </div>
                 <span className="text-base sm:text-lg font-semibold text-white drop-shadow-lg">

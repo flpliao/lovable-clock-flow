@@ -80,7 +80,7 @@ const AnnouncementList: React.FC = () => {
     try {
       const isRead = await checkAnnouncementRead(announcementId);
       const booleanStatus = !!isRead;
-      setReadStatus(prev => ({ ...prev, [announcementId]: isRead }));
+      setReadStatus(prev => ({ ...prev, [announcementId]: !!isRead }));
       return booleanStatus;
     } catch (error) {
       console.error('檢查已讀狀態失敗:', error);

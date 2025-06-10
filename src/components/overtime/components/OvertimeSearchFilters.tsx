@@ -22,11 +22,11 @@ const OvertimeSearchFilters: React.FC<OvertimeSearchFiltersProps> = ({
   onTypeFilterChange
 }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* 搜尋區域 */}
-      <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6">
+      <div className="backdrop-blur-xl bg-white/15 border border-white/30 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-blue-500/80 rounded-lg shadow-md">
+          <div className="p-2 bg-blue-500/90 rounded-lg shadow-md">
             <Search className="h-4 w-4 text-white" />
           </div>
           <h4 className="text-lg font-medium text-white">搜尋條件</h4>
@@ -38,28 +38,28 @@ const OvertimeSearchFilters: React.FC<OvertimeSearchFiltersProps> = ({
             placeholder="搜尋加班原因..."
             value={searchTerm}
             onChange={(e) => onSearchTermChange(e.target.value)}
-            className="pl-12 h-14 bg-white/25 backdrop-blur-xl border-white/30 text-white placeholder-white/70 rounded-xl text-base"
+            className="pl-12 h-14 bg-white/30 backdrop-blur-xl border-white/40 text-white placeholder-white/70 rounded-xl text-base"
           />
         </div>
       </div>
       
       {/* 篩選器區域 */}
-      <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6">
+      <div className="backdrop-blur-xl bg-white/15 border border-white/30 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-purple-500/80 rounded-lg shadow-md">
+          <div className="p-2 bg-purple-500/90 rounded-lg shadow-md">
             <Filter className="h-4 w-4 text-white" />
           </div>
           <h4 className="text-lg font-medium text-white">篩選選項</h4>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-white/80 text-sm font-medium">
               <FileText className="h-4 w-4" />
               審核狀態
             </label>
             <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-              <SelectTrigger className="h-12 bg-white/25 backdrop-blur-xl border-white/30 text-white rounded-xl">
+              <SelectTrigger className="h-12 bg-white/30 backdrop-blur-xl border-white/40 text-white rounded-xl">
                 <SelectValue placeholder="選擇狀態" />
               </SelectTrigger>
               <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg">
@@ -77,7 +77,7 @@ const OvertimeSearchFilters: React.FC<OvertimeSearchFiltersProps> = ({
               加班類型
             </label>
             <Select value={typeFilter} onValueChange={onTypeFilterChange}>
-              <SelectTrigger className="h-12 bg-white/25 backdrop-blur-xl border-white/30 text-white rounded-xl">
+              <SelectTrigger className="h-12 bg-white/30 backdrop-blur-xl border-white/40 text-white rounded-xl">
                 <SelectValue placeholder="選擇類型" />
               </SelectTrigger>
               <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg">

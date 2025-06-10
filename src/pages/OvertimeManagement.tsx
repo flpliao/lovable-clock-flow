@@ -46,9 +46,9 @@ const OvertimeManagement = () => {
             </div>
           </div>
 
-          {/* 功能導航卡片 */}
-          <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-6">
-            <div className="flex items-center gap-3 mb-6">
+          {/* 功能導航 - 移除背景容器 */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-purple-500/80 rounded-xl flex items-center justify-center shadow-lg">
                 <FileText className="h-5 w-5 text-white" />
               </div>

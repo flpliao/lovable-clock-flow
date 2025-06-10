@@ -10,6 +10,7 @@ import AttendancePageHeader from '@/components/attendance/AttendancePageHeader';
 import AttendanceCalendarView from '@/components/attendance/AttendanceCalendarView';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 import { CheckInRecord } from '@/types';
+import { Calendar, Clock, User, History } from 'lucide-react';
 
 const PersonalAttendance = () => {
   const navigate = useNavigate();
@@ -69,12 +70,15 @@ const PersonalAttendance = () => {
   
   if (!currentUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg font-medium">請先登入</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 flex items-center justify-center p-4">
+        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8 text-center">
+          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-xl border border-white/30 shadow-lg">
+            <User className="h-8 w-8 text-white" />
+          </div>
+          <p className="text-lg font-medium text-white drop-shadow-lg mb-4">請先登入</p>
           <button 
             onClick={() => navigate('/login')}
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md"
+            className="px-6 py-3 bg-white/30 backdrop-blur-xl text-white rounded-2xl border border-white/40 hover:bg-white/40 transition-all duration-300 shadow-lg font-medium"
           >
             前往登入
           </button>
@@ -84,43 +88,109 @@ const PersonalAttendance = () => {
   }
   
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto py-6 px-4">
-        <div className="flex flex-col gap-6">
-          <AttendancePageHeader />
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Welcome Header */}
+        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8">
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/30 shadow-lg">
+                <User className="h-8 w-8 text-white" />
+              </div>
+            </div>
+            <h1 className="text-4xl font-bold text-white mb-4 drop-shadow-lg">
+              個人考勤管理
+            </h1>
+            <p className="text-white/80 text-lg font-medium drop-shadow-md">
+              查看您的打卡記錄和考勤統計
+            </p>
+          </div>
           
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full sm:w-auto mb-6">
-              <TabsTrigger value="history">打卡歷史</TabsTrigger>
-              <TabsTrigger value="calendar">月曆視圖</TabsTrigger>
-            </TabsList>
+          {/* Time and Date Cards */}
+          <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
+            <div className="bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-4 flex items-center gap-3 shadow-lg">
+              <div className="p-3 bg-blue-500/80 rounded-xl">
+                <Clock className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-white drop-shadow-md">15:01</div>
+                <div className="text-white/70 text-sm">當前時間</div>
+              </div>
+            </div>
             
-            <TabsContent value="history" className="mt-0">
-              <Card>
-                <CardHeader>
-                  <CardTitle>打卡歷史</CardTitle>
-                </CardHeader>
-                <CardContent>
+            <div className="bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-4 flex items-center gap-3 shadow-lg">
+              <div className="p-3 bg-green-500/80 rounded-xl">
+                <Calendar className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <div className="text-lg font-bold text-white drop-shadow-md">2025年6月10日 星期二</div>
+                <div className="text-white/70 text-sm">今天日期</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl overflow-hidden">
+          <div className="p-6 border-b border-white/20">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-blue-500/80 rounded-xl flex items-center justify-center">
+                <Calendar className="h-5 w-5 text-white" />
+              </div>
+              <h2 className="text-xl font-semibold text-white drop-shadow-md">考勤記錄</h2>
+            </div>
+          </div>
+          
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="p-6">
+              <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
+                <TabsTrigger 
+                  value="history" 
+                  className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                >
+                  <History className="h-4 w-4" />
+                  打卡歷史
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="calendar" 
+                  className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                >
+                  <Calendar className="h-4 w-4" />
+                  月曆視圖
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            
+            <div className="px-6 pb-6">
+              <TabsContent value="history" className="mt-0">
+                <div className="bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-6 shadow-lg">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-green-500/80 rounded-lg flex items-center justify-center">
+                      <History className="h-4 w-4 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-white drop-shadow-md">打卡歷史記錄</h3>
+                  </div>
                   <CheckInHistory />
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="calendar" className="mt-0">
-              <Card>
-                <CardHeader>
-                  <CardTitle>月曆視圖</CardTitle>
-                </CardHeader>
-                <CardContent>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="calendar" className="mt-0">
+                <div className="bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-6 shadow-lg">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 bg-purple-500/80 rounded-lg flex items-center justify-center">
+                      <Calendar className="h-4 w-4 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-white drop-shadow-md">月曆視圖</h3>
+                  </div>
                   <AttendanceCalendarView
                     date={date}
                     setDate={setDate}
                     selectedDateRecords={selectedDateRecords}
                     checkInRecords={checkInRecords}
                   />
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+              </TabsContent>
+            </div>
           </Tabs>
         </div>
       </div>

@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import WelcomeSection from '@/components/WelcomeSection';
 import FeatureCards from '@/components/FeatureCards';
 import LocationCheckIn from '@/components/LocationCheckIn';
+import DashboardStats from '@/components/DashboardStats';
 import { useUser } from '@/contexts/UserContext';
 
 const Index = () => {
@@ -35,6 +36,11 @@ const Index = () => {
       {/* 歡迎區塊 */}
       <div className="px-4 sm:px-6 lg:px-8">
         <WelcomeSection userName={currentUser?.name || '訪客'} />
+      </div>
+      
+      {/* Dashboard Stats - 新增儀表板統計卡片 */}
+      <div className="px-4 sm:px-6 lg:px-8 mb-6">
+        <DashboardStats />
       </div>
       
       {/* 打卡區塊 */}

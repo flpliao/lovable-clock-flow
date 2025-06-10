@@ -15,11 +15,13 @@ export const useAnnouncementReads = () => {
     }
   };
 
-  // Check if announcement is read
+  // Check if announcement is read - ensure boolean return type
   const checkAnnouncementRead = async (announcementId: string): Promise<boolean> => {
     if (!currentUser) return false;
     try {
-      return await AnnouncementReadService.checkAnnouncementRead(announcementId, currentUser.id);
+      const result = await AnnouncementReadService.checkAnnouncementRead(announcementId, currentUser.id);
+      // Explicitly convert to boolean to ensure type safety
+      return Boolean(result);
     } catch (error) {
       console.error('Error checking announcement read status:', error);
       return false;

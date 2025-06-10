@@ -31,19 +31,19 @@ const Index = () => {
     : 0;
 
   return (
-    <div className="min-h-screen pb-safe relative">
-      {/* 歡迎區塊 - 移除左右 padding 在手機上 */}
-      <div className="px-2 sm:px-4 lg:px-8">
+    <div className="w-full min-h-screen pb-safe relative mobile-fullscreen">
+      {/* 歡迎區塊 - 手機完全滿版 */}
+      <div className="w-full px-1 sm:px-4 lg:px-8">
         <WelcomeSection userName={currentUser?.name || '訪客'} />
       </div>
       
-      {/* 打卡區塊 - 移除左右 padding 在手機上 */}
-      <div className="px-2 sm:px-4 lg:px-8 mb-4 sm:mb-6">
+      {/* 打卡區塊 - 手機完全滿版 */}
+      <div className="w-full px-1 sm:px-4 lg:px-8 mb-2 sm:mb-6">
         <LocationCheckIn />
       </div>
       
-      {/* 功能卡片 - 移除左右 padding 在手機上 */}
-      <div className="px-2 sm:px-4 lg:px-8 pb-4 sm:pb-8">
+      {/* 功能卡片 - 手機完全滿版 */}
+      <div className="w-full px-1 sm:px-4 lg:px-8 pb-2 sm:pb-8">
         <FeatureCards 
           abnormalCount={0} 
           annualLeaveBalance={leaveHours} 

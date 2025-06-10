@@ -86,8 +86,9 @@ const AnnouncementList: React.FC = () => {
       return booleanStatus;
     } catch (error) {
       console.error('檢查已讀狀態失敗:', error);
-      setReadStatus(prev => ({ ...prev, [announcementId]: false }));
-      return false;
+      const fallbackStatus = false;
+      setReadStatus(prev => ({ ...prev, [announcementId]: fallbackStatus }));
+      return fallbackStatus;
     }
   };
 
@@ -95,7 +96,7 @@ const AnnouncementList: React.FC = () => {
   const getReadStatus = (announcementId: string): boolean => {
     const status = readStatus[announcementId];
     // Handle both undefined and any potential string values by converting to boolean
-    return Boolean(status);
+    return status !== undefined ? Boolean(status) : false;
   };
 
   return (

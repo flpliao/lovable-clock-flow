@@ -36,7 +36,7 @@ const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
 
   return (
     <Card 
-      className={`cursor-pointer transition-all duration-500 hover:scale-[1.02] group ${createLiquidGlassEffect(true, 'feature')} overflow-hidden relative ${
+      className={`cursor-pointer transition-all duration-500 hover:scale-[1.02] group backdrop-blur-2xl bg-white/30 border border-white/40 rounded-2xl shadow-lg hover:shadow-xl hover:border-white/60 hover:bg-white/40 overflow-hidden relative ${
         !isRead ? 'border-l-4 border-l-blue-400/80' : ''
       }`}
       onClick={() => onClick(announcement)}

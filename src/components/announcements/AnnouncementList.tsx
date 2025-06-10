@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AnnouncementCard from './AnnouncementCard';
 import AnnouncementDetail from './AnnouncementDetail';
 import AnnouncementSearchSection from './components/AnnouncementSearchSection';
@@ -32,26 +32,66 @@ const AnnouncementList: React.FC = () => {
   const [openAnnouncement, setOpenAnnouncement] = useState<CompanyAnnouncement | null>(null);
   const [readStatus, setReadStatus] = useState<Record<string, boolean>>({});
 
+  // 初始化時載入所有公告的已讀狀態
+  useEffect(() => {
+    const loadAllReadStatus = async () => {
+      if (announcements.length === 0) return;
+      
+      console.log('載入所有公告的已讀狀態...');
+      const statusMap: Record<string, boolean> = {};
+      
+      for (const announcement of announcements) {
+        try {
+          const isRead = await checkAnnouncementRead(announcement.id);
+          // 確保總是儲存布林值
+          statusMap[announcement.id] = Boolean(isRead);
+        } catch (error) {
+          console.error(`檢查公告 ${announcement.id} 已讀狀態失敗:`, error);
+          statusMap[announcement.id] = false;
+        }
+      }
+      
+      console.log('已讀狀態載入完成:', statusMap);
+      setReadStatus(statusMap);
+    };
+
+    loadAllReadStatus();
+  }, [announcements, checkAnnouncementRead]);
+
   const handleOpenAnnouncement = async (announcement: CompanyAnnouncement) => {
+    console.log('開啟公告:', announcement.title);
     setOpenAnnouncement(announcement);
-    await markAnnouncementAsRead(announcement.id);
-    setReadStatus(prev => ({ ...prev, [announcement.id]: true }));
+    
+    try {
+      await markAnnouncementAsRead(announcement.id);
+      // 確保設置為布林值
+      setReadStatus(prev => ({ ...prev, [announcement.id]: true }));
+      console.log('公告已標記為已讀:', announcement.id);
+    } catch (error) {
+      console.error('標記公告已讀失敗:', error);
+    }
   };
 
-  // Check if announcement is read
+  // 檢查公告是否已讀 - 確保返回布林值
   const checkIfRead = async (announcementId: string): Promise<boolean> => {
     const currentStatus = readStatus[announcementId];
     if (currentStatus !== undefined) {
       return Boolean(currentStatus);
     }
     
-    const isRead = await checkAnnouncementRead(announcementId);
-    const booleanStatus = Boolean(isRead);
-    setReadStatus(prev => ({ ...prev, [announcementId]: booleanStatus }));
-    return booleanStatus;
+    try {
+      const isRead = await checkAnnouncementRead(announcementId);
+      const booleanStatus = Boolean(isRead);
+      setReadStatus(prev => ({ ...prev, [announcementId]: booleanStatus }));
+      return booleanStatus;
+    } catch (error) {
+      console.error('檢查已讀狀態失敗:', error);
+      setReadStatus(prev => ({ ...prev, [announcementId]: false }));
+      return false;
+    }
   };
 
-  // Helper function to get read status - ensures boolean return
+  // 取得已讀狀態 - 確保返回布林值
   const getReadStatus = (announcementId: string): boolean => {
     const status = readStatus[announcementId];
     return Boolean(status);

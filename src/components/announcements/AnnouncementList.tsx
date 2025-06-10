@@ -30,6 +30,7 @@ const AnnouncementList: React.FC = () => {
   } = useAnnouncementFilters(announcements);
 
   const [openAnnouncement, setOpenAnnouncement] = useState<CompanyAnnouncement | null>(null);
+  // 明確定義 readStatus 為只包含布林值的記錄
   const [readStatus, setReadStatus] = useState<Record<string, boolean>>({});
 
   // 初始化時載入所有公告的已讀狀態
@@ -43,7 +44,8 @@ const AnnouncementList: React.FC = () => {
       for (const announcement of announcements) {
         try {
           const isRead = await checkAnnouncementRead(announcement.id);
-          statusMap[announcement.id] = Boolean(isRead);
+          // 確保只儲存布林值
+          statusMap[announcement.id] = isRead === true;
         } catch (error) {
           console.error(`檢查公告 ${announcement.id} 已讀狀態失敗:`, error);
           statusMap[announcement.id] = false;
@@ -73,7 +75,7 @@ const AnnouncementList: React.FC = () => {
   // 取得已讀狀態 - 確保返回布林值
   const getReadStatus = (announcementId: string): boolean => {
     const status = readStatus[announcementId];
-    // 確保只返回布林值，排除任何可能的字串值
+    // 明確檢查是否為 true，其他情況都回傳 false
     return status === true;
   };
 

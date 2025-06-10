@@ -22,9 +22,9 @@ const OvertimeManagement = () => {
       <div className="absolute top-1/2 left-3/4 w-1 h-1 bg-white/30 rounded-full animate-float"></div>
       
       <div className="relative z-10 p-6">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-8">
           {/* 頁面標題卡片 */}
-          <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8">
+          <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/30 shadow-lg">
@@ -47,7 +47,7 @@ const OvertimeManagement = () => {
           </div>
 
           {/* 功能導航卡片 */}
-          <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-6">
+          <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-purple-500/80 rounded-xl flex items-center justify-center shadow-lg">
                 <FileText className="h-5 w-5 text-white" />
@@ -75,11 +75,11 @@ const OvertimeManagement = () => {
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="request" className="mt-6">
+              <TabsContent value="request" className="mt-8">
                 <OvertimeRequestForm />
               </TabsContent>
               
-              <TabsContent value="history" className="mt-6">
+              <TabsContent value="history" className="mt-8">
                 <OvertimeHistory />
               </TabsContent>
             </Tabs>

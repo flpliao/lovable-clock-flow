@@ -54,18 +54,21 @@ const OvertimeRequestForm: React.FC = () => {
   };
 
   return (
-    <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="p-3 bg-blue-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50">
-          <Clock className="h-5 w-5 text-white" />
+    <div className="space-y-8">
+      {/* 表單標題 */}
+      <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-6">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-blue-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50">
+            <Clock className="h-5 w-5 text-white" />
+          </div>
+          <h3 className="text-xl font-semibold text-white drop-shadow-md">加班申請表</h3>
         </div>
-        <h3 className="text-xl font-semibold text-white drop-shadow-md">加班申請表</h3>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* 日期和類型區塊 */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-6 space-y-6">
-          <div className="flex items-center gap-3 mb-4">
+        <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8">
+          <div className="flex items-center gap-3 mb-6">
             <Calendar className="h-5 w-5 text-white/80" />
             <h4 className="text-lg font-medium text-white">基本資訊</h4>
           </div>
@@ -109,8 +112,8 @@ const OvertimeRequestForm: React.FC = () => {
         </div>
 
         {/* 時間區塊 */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-6 space-y-6">
-          <div className="flex items-center gap-3 mb-4">
+        <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8">
+          <div className="flex items-center gap-3 mb-6">
             <Timer className="h-5 w-5 text-white/80" />
             <h4 className="text-lg font-medium text-white">時間設定</h4>
           </div>
@@ -149,8 +152,8 @@ const OvertimeRequestForm: React.FC = () => {
         </div>
 
         {/* 補償方式區塊 */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-6 space-y-6">
-          <div className="flex items-center gap-3 mb-4">
+        <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8">
+          <div className="flex items-center gap-3 mb-6">
             <DollarSign className="h-5 w-5 text-white/80" />
             <h4 className="text-lg font-medium text-white">補償設定</h4>
           </div>
@@ -177,8 +180,8 @@ const OvertimeRequestForm: React.FC = () => {
         </div>
 
         {/* 原因說明區塊 */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-6 space-y-6">
-          <div className="flex items-center gap-3 mb-4">
+        <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8">
+          <div className="flex items-center gap-3 mb-6">
             <FileText className="h-5 w-5 text-white/80" />
             <h4 className="text-lg font-medium text-white">原因說明</h4>
           </div>
@@ -201,7 +204,7 @@ const OvertimeRequestForm: React.FC = () => {
         </div>
 
         {/* 提交按鈕 */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-6">
+        <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-6">
           <Button 
             type="submit" 
             className="w-full h-12 bg-white/20 hover:bg-white/30 backdrop-blur-xl border border-white/30 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"

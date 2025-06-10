@@ -70,24 +70,24 @@ const LeaveRequest = () => {
         {/* Main Content */}
         <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="p-8 border-b border-white/20">
-              <TabsList className="grid w-full grid-cols-2 bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 p-2 shadow-lg">
+            <div className="p-6">
+              <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
                 <TabsTrigger 
                   value="request" 
-                  className="text-white/80 data-[state=active]:bg-white/30 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3"
+                  className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl"
                 >
                   申請請假
                 </TabsTrigger>
                 <TabsTrigger 
                   value="view" 
-                  className="text-white/80 data-[state=active]:bg-white/30 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3"
+                  className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl"
                 >
                   查看請假
                 </TabsTrigger>
               </TabsList>
             </div>
             
-            <div className="p-8">
+            <div className="px-6 pb-6">
               <TabsContent value="request" className="mt-0">
                 <LeaveRequestForm onSubmit={handleNewLeaveRequest} />
               </TabsContent>

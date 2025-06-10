@@ -42,7 +42,8 @@ const AnnouncementList: React.FC = () => {
   // Check if announcement is read
   const checkIfRead = async (announcementId: string): Promise<boolean> => {
     if (readStatus[announcementId] !== undefined) {
-      return readStatus[announcementId];
+      // Explicitly ensure boolean return type
+      return Boolean(readStatus[announcementId]);
     }
     
     const isRead = await checkAnnouncementRead(announcementId);
@@ -56,7 +57,7 @@ const AnnouncementList: React.FC = () => {
   const getReadStatus = (announcementId: string): boolean => {
     const status = readStatus[announcementId];
     // Explicitly convert to boolean, defaulting to false if undefined
-    return status === undefined ? false : status;
+    return Boolean(status);
   };
 
   return (

@@ -43,7 +43,7 @@ const ScheduleForm = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* 員工選擇卡片 */}
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+          <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 bg-blue-500/80 rounded-xl shadow-lg">
                 <Users className="h-5 w-5 text-white" />
@@ -54,7 +54,7 @@ const ScheduleForm = () => {
           </div>
 
           {/* 年月選擇卡片 */}
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+          <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 bg-green-500/80 rounded-xl shadow-lg">
                 <Calendar className="h-5 w-5 text-white" />
@@ -70,7 +70,7 @@ const ScheduleForm = () => {
           </div>
 
           {/* 日期選擇卡片 */}
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+          <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 bg-purple-500/80 rounded-xl shadow-lg">
                 <Calendar className="h-5 w-5 text-white" />
@@ -86,7 +86,7 @@ const ScheduleForm = () => {
           </div>
 
           {/* 時間段選擇卡片 */}
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+          <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 bg-orange-500/80 rounded-xl shadow-lg">
                 <Clock className="h-5 w-5 text-white" />
@@ -101,7 +101,7 @@ const ScheduleForm = () => {
 
           {/* 預覽卡片 */}
           {(selectedDates.length > 0 || selectedTimeSlots.length > 0) && (
-            <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+            <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-teal-500/80 rounded-xl shadow-lg">
                   <Eye className="h-5 w-5 text-white" />
@@ -118,7 +118,7 @@ const ScheduleForm = () => {
           )}
 
           {/* 提交按鈕卡片 */}
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+          <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 bg-indigo-500/80 rounded-xl shadow-lg">
                 <CheckCircle className="h-5 w-5 text-white" />

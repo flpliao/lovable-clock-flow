@@ -20,7 +20,7 @@ const ScheduleHeader = ({
   onViewTypeChange,
 }: ScheduleHeaderProps) => {
   return (
-    <div className="space-y-6">
+    <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6 space-y-6">
       {/* 查看模式選擇器 */}
       <ViewModeSelector 
         viewMode={viewMode}

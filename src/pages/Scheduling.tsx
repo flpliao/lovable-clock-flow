@@ -57,60 +57,58 @@ const Scheduling = () => {
                 </div>
               </div>
 
-              {/* 主要內容卡片 */}
-              <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl overflow-hidden">
-                <Tabs defaultValue="view" className="w-full">
-                  {/* 標籤區域 */}
-                  <div className="p-6 border-b border-white/20">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 bg-purple-500/80 rounded-xl flex items-center justify-center shadow-lg">
-                        <Calendar className="h-5 w-5 text-white" />
-                      </div>
-                      <h2 className="text-xl font-semibold text-white drop-shadow-md">排班功能</h2>
+              {/* 主要內容區域 */}
+              <Tabs defaultValue="view" className="w-full">
+                {/* 標籤選擇器 */}
+                <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-purple-500/80 rounded-xl flex items-center justify-center shadow-lg">
+                      <Calendar className="h-5 w-5 text-white" />
                     </div>
-                    
-                    <TabsList className="grid w-full grid-cols-3 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
-                      <TabsTrigger 
-                        value="view" 
-                        className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
-                      >
-                        <Calendar className="h-4 w-4" />
-                        <span className="hidden sm:inline">查看班表</span>
-                        <span className="sm:hidden">班表</span>
-                      </TabsTrigger>
-                      <TabsTrigger 
-                        value="create"
-                        className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
-                      >
-                        <UserPlus className="h-4 w-4" />
-                        <span className="hidden sm:inline">創建排班</span>
-                        <span className="sm:hidden">排班</span>
-                      </TabsTrigger>
-                      <TabsTrigger 
-                        value="timeslots"
-                        className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
-                      >
-                        <Clock className="h-4 w-4" />
-                        <span className="hidden sm:inline">時間段</span>
-                        <span className="sm:hidden">時間</span>
-                      </TabsTrigger>
-                    </TabsList>
+                    <h2 className="text-xl font-semibold text-white drop-shadow-md">排班功能</h2>
                   </div>
+                  
+                  <TabsList className="grid w-full grid-cols-3 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
+                    <TabsTrigger 
+                      value="view" 
+                      className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      <span className="hidden sm:inline">查看班表</span>
+                      <span className="sm:hidden">班表</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="create"
+                      className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      <span className="hidden sm:inline">創建排班</span>
+                      <span className="sm:hidden">排班</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="timeslots"
+                      className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                    >
+                      <Clock className="h-4 w-4" />
+                      <span className="hidden sm:inline">時間段</span>
+                      <span className="sm:hidden">時間</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
-                  {/* 內容區域 */}
-                  <div className="p-6">
-                    <TabsContent value="view" className="mt-0">
-                      <ScheduleCalendar />
-                    </TabsContent>
-                    <TabsContent value="create" className="mt-0">
-                      <ScheduleForm />
-                    </TabsContent>
-                    <TabsContent value="timeslots" className="mt-0">
-                      <TimeSlotManagement />
-                    </TabsContent>
+                {/* 內容區域 */}
+                <TabsContent value="view" className="mt-0">
+                  <ScheduleCalendar />
+                </TabsContent>
+                <TabsContent value="create" className="mt-0">
+                  <ScheduleForm />
+                </TabsContent>
+                <TabsContent value="timeslots" className="mt-0">
+                  <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-6">
+                    <TimeSlotManagement />
                   </div>
-                </Tabs>
-              </div>
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </div>

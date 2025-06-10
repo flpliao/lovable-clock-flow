@@ -9,8 +9,8 @@ const CompanyAnnouncements: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen pb-safe relative">
-      {/* 動態背景漸層 - 與首頁一致 */}
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen pt-20 md:pt-24">
+      {/* 動態背景漸層 */}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-purple-400/20 via-transparent to-transparent"></div>
@@ -22,8 +22,8 @@ const CompanyAnnouncements: React.FC = () => {
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
       <div className="relative z-10 flex flex-col min-h-screen">
-        {/* Header with glass effect */}
-        <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 mt-4 mb-8 sticky top-4 z-20 shadow-xl">
+        {/* Header with glass effect - 與其他頁面一致 */}
+        <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 mt-4 mb-8 sticky top-24 z-20 shadow-xl">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center space-x-4">
               <Button 
@@ -86,7 +86,7 @@ const CompanyAnnouncements: React.FC = () => {
           </div>
         </div>
 
-        {/* Main content container - 移除中間背景區塊 */}
+        {/* Main content container */}
         <main className="flex-1 px-4 sm:px-6 lg:px-8 pb-8">
           <AnnouncementList />
         </main>

@@ -32,18 +32,18 @@ const Index = () => {
 
   return (
     <div className="min-h-screen pb-safe relative">
-      {/* 歡迎區塊 */}
-      <div className="px-4 sm:px-6 lg:px-8">
+      {/* 歡迎區塊 - 移除左右 padding 在手機上 */}
+      <div className="px-2 sm:px-4 lg:px-8">
         <WelcomeSection userName={currentUser?.name || '訪客'} />
       </div>
       
-      {/* 打卡區塊 */}
-      <div className="px-4 sm:px-6 lg:px-8 mb-6">
+      {/* 打卡區塊 - 移除左右 padding 在手機上 */}
+      <div className="px-2 sm:px-4 lg:px-8 mb-4 sm:mb-6">
         <LocationCheckIn />
       </div>
       
-      {/* 功能卡片 */}
-      <div className="px-4 sm:px-6 lg:px-8 pb-8">
+      {/* 功能卡片 - 移除左右 padding 在手機上 */}
+      <div className="px-2 sm:px-4 lg:px-8 pb-4 sm:pb-8">
         <FeatureCards 
           abnormalCount={0} 
           annualLeaveBalance={leaveHours} 

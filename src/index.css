@@ -91,6 +91,26 @@
 
   body {
     @apply bg-background text-foreground;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 確保手機滿版 */
+  @media (max-width: 768px) {
+    body {
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    
+    .min-h-screen {
+      min-height: 100vh;
+      min-height: 100dvh; /* 動態視窗高度，適用於手機瀏覽器 */
+    }
   }
 }
 
@@ -111,4 +131,14 @@
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+/* 手機滿版優化 */
+@media (max-width: 768px) {
+  .mobile-fullscreen {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
 }

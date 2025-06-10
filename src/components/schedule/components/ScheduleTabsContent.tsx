@@ -2,7 +2,7 @@
 import React from 'react';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, List } from 'lucide-react';
+import { Calendar, List, Clock, Users } from 'lucide-react';
 import CalendarGrid from './CalendarGrid';
 import ScheduleTable from './ScheduleTable';
 import MonthlyScheduleView from './MonthlyScheduleView';
@@ -64,94 +64,141 @@ const ScheduleTabsContent = ({
   getScheduleCountForDate,
 }: ScheduleTabsContentProps) => {
   return (
-    <div className="space-y-3 sm:space-y-4">
-      {/* 手機優化的Tab列表 */}
-      <TabsList className="grid w-full grid-cols-2 h-10 sm:h-12 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
-        <TabsTrigger 
-          value="calendar"
-          className="flex items-center justify-center space-x-1 sm:space-x-2 text-xs sm:text-sm font-medium h-8 sm:h-10 rounded-md data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-all"
-        >
-          <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-          <span className="hidden xs:inline">日曆檢視</span>
-          <span className="xs:hidden">日曆</span>
-        </TabsTrigger>
-        <TabsTrigger 
-          value="list"
-          className="flex items-center justify-center space-x-1 sm:space-x-2 text-xs sm:text-sm font-medium h-8 sm:h-10 rounded-md data-[state=active]:bg-green-500 data-[state=active]:text-white transition-all"
-        >
-          <List className="h-3 w-3 sm:h-4 sm:w-4" />
-          <span className="hidden xs:inline">列表檢視</span>
-          <span className="xs:hidden">列表</span>
-        </TabsTrigger>
-      </TabsList>
+    <div className="space-y-6">
+      {/* 視圖選擇卡片 */}
+      <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-3 bg-blue-500/80 rounded-xl shadow-lg">
+            <Calendar className="h-5 w-5 text-white" />
+          </div>
+          <h3 className="text-lg font-semibold text-white drop-shadow-md">選擇視圖</h3>
+        </div>
+        
+        <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
+          <TabsTrigger 
+            value="calendar"
+            className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+          >
+            <Calendar className="h-4 w-4" />
+            <span className="hidden xs:inline">日曆檢視</span>
+            <span className="xs:hidden">日曆</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="list"
+            className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+          >
+            <List className="h-4 w-4" />
+            <span className="hidden xs:inline">列表檢視</span>
+            <span className="xs:hidden">列表</span>
+          </TabsTrigger>
+        </TabsList>
+      </div>
 
-      <TabsContent value="calendar" className="mt-0 space-y-3 sm:space-y-4">
-        {/* 年月選擇器 */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-          <Select value={selectedYear} onValueChange={onYearChange}>
-            <SelectTrigger className="h-10 sm:h-12 text-xs sm:text-sm border-2 border-gray-200 rounded-lg">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">
-              {generateYears().map((year) => (
-                <SelectItem 
-                  key={year} 
-                  value={year.toString()}
-                  className="py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm hover:bg-gray-50"
-                >
-                  {year}年
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <TabsContent value="calendar" className="mt-0 space-y-6">
+        {/* 年月選擇器卡片 */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 bg-green-500/80 rounded-xl shadow-lg">
+              <Clock className="h-5 w-5 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-white drop-shadow-md">選擇年月</h3>
+          </div>
           
-          <Select value={selectedMonth} onValueChange={onMonthChange}>
-            <SelectTrigger className="h-10 sm:h-12 text-xs sm:text-sm border-2 border-gray-200 rounded-lg">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">
-              {generateMonths().map((month) => (
-                <SelectItem 
-                  key={month.value} 
-                  value={month.value}
-                  className="py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm hover:bg-gray-50"
-                >
-                  {month.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <Select value={selectedYear} onValueChange={onYearChange}>
+              <SelectTrigger className="h-12 text-sm border-2 border-white/30 rounded-xl bg-white/20 text-white backdrop-blur-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">
+                {generateYears().map((year) => (
+                  <SelectItem 
+                    key={year} 
+                    value={year.toString()}
+                    className="py-3 px-4 text-sm hover:bg-gray-50"
+                  >
+                    {year}年
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={selectedMonth} onValueChange={onMonthChange}>
+              <SelectTrigger className="h-12 text-sm border-2 border-white/30 rounded-xl bg-white/20 text-white backdrop-blur-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">
+                {generateMonths().map((month) => (
+                  <SelectItem 
+                    key={month.value} 
+                    value={month.value}
+                    className="py-3 px-4 text-sm hover:bg-gray-50"
+                  >
+                    {month.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        {/* 日曆網格 */}
-        <CalendarGrid
-          daysInMonth={daysInMonth}
-          onDateClick={onDateClick}
-          getScheduleCountForDate={getScheduleCountForDate}
-        />
+        {/* 日曆網格卡片 */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+          <CalendarGrid
+            daysInMonth={daysInMonth}
+            onDateClick={onDateClick}
+            getScheduleCountForDate={getScheduleCountForDate}
+          />
+        </div>
 
-        {/* 選中日期的排班詳情 */}
-        <ScheduleTable
-          shiftsForSelectedDate={shiftsForSelectedDate}
-          getUserName={getUserName}
-          getUserRelation={getUserRelation}
-          canDeleteSchedule={canDeleteSchedule}
-          onRemoveSchedule={onRemoveSchedule}
-          selectedDateNav={selectedDateNav}
-        />
+        {/* 選中日期的排班詳情卡片 */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 bg-purple-500/80 rounded-xl shadow-lg">
+              <Users className="h-5 w-5 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-white drop-shadow-md">排班詳情</h3>
+          </div>
+          
+          <ScheduleTable
+            shiftsForSelectedDate={shiftsForSelectedDate}
+            getUserName={getUserName}
+            getUserRelation={getUserRelation}
+            canDeleteSchedule={canDeleteSchedule}
+            onRemoveSchedule={onRemoveSchedule}
+            selectedDateNav={selectedDateNav}
+          />
+        </div>
       </TabsContent>
 
-      <TabsContent value="list" className="mt-0">
-        <StaffMonthSelector
-          availableStaff={availableStaff}
-          selectedStaffId={selectedStaffId}
-          selectedDate={selectedDate}
-          onStaffChange={onStaffChange}
-          onDateChange={onDateChange}
-          getUserRelation={getUserRelation}
-        />
+      <TabsContent value="list" className="mt-0 space-y-6">
+        {/* 員工月份選擇器卡片 */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 bg-orange-500/80 rounded-xl shadow-lg">
+              <Users className="h-5 w-5 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-white drop-shadow-md">員工選擇</h3>
+          </div>
+          
+          <StaffMonthSelector
+            availableStaff={availableStaff}
+            selectedStaffId={selectedStaffId}
+            selectedDate={selectedDate}
+            onStaffChange={onStaffChange}
+            onDateChange={onDateChange}
+            getUserRelation={getUserRelation}
+          />
+        </div>
         
-        <div className="mt-3 sm:mt-4">
+        {/* 月度排班視圖卡片 */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 bg-teal-500/80 rounded-xl shadow-lg">
+              <Calendar className="h-5 w-5 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-white drop-shadow-md">月度排班</h3>
+          </div>
+          
           <MonthlyScheduleView
             selectedDate={selectedDate}
             schedules={schedules.filter(schedule => viewableStaffIds.includes(schedule.userId))}

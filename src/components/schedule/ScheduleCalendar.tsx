@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { FormLabel } from '@/components/ui/form';
 import { generateDaysInMonth } from './utils/dateUtils';
 
 interface ScheduleCalendarProps {
@@ -15,17 +14,14 @@ const ScheduleCalendar = ({ selectedYear, selectedMonth, selectedDates, onDateTo
 
   return (
     <div>
-      <FormLabel className="text-sm sm:text-lg font-medium mb-3 sm:mb-4 block">
-        {selectedYear}年 {selectedMonth}月
-      </FormLabel>
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+      <div className="bg-white/20 backdrop-blur-xl rounded-xl border border-white/30 shadow-lg overflow-hidden">
         {/* 星期標題 */}
-        <div className="grid grid-cols-7 border-b border-gray-100">
+        <div className="grid grid-cols-7 border-b border-white/20">
           {['日', '一', '二', '三', '四', '五', '六'].map((day, index) => (
             <div 
               key={day} 
-              className={`text-center text-xs sm:text-sm font-medium py-2 sm:py-3 ${
-                index === 0 || index === 6 ? 'text-red-500' : 'text-gray-700'
+              className={`text-center text-sm font-medium py-3 text-white/90 ${
+                index === 0 || index === 6 ? 'text-red-300' : ''
               }`}
             >
               {day}
@@ -36,34 +32,34 @@ const ScheduleCalendar = ({ selectedYear, selectedMonth, selectedDates, onDateTo
         {/* 日期網格 */}
         <div className="grid grid-cols-7">
           {daysInMonth.map((day, index) => (
-            <div key={index} className="border-r border-b border-gray-50 last:border-r-0">
+            <div key={index} className="border-r border-b border-white/10 last:border-r-0">
               {day ? (
                 <button
                   type="button"
                   onClick={() => onDateToggle(day.value)}
-                  className={`w-full h-12 sm:h-16 flex flex-col items-center justify-center text-xs sm:text-sm transition-all hover:bg-gray-50 touch-manipulation ${
+                  className={`w-full h-16 flex flex-col items-center justify-center text-sm transition-all hover:bg-white/20 touch-manipulation ${
                     selectedDates.includes(day.value)
-                      ? 'bg-blue-500 text-white font-medium hover:bg-blue-600'
+                      ? 'bg-white/40 text-white font-bold backdrop-blur-xl hover:bg-white/50'
                       : day.isWeekend
-                      ? 'text-red-500'
-                      : 'text-gray-900'
+                      ? 'text-red-300'
+                      : 'text-white/90'
                   }`}
                 >
-                  <span className={`text-xs sm:text-sm ${selectedDates.includes(day.value) ? 'font-bold' : ''}`}>
+                  <span className={`text-sm ${selectedDates.includes(day.value) ? 'font-bold' : ''}`}>
                     {day.label}
                   </span>
                   {day.lunarDay && (
-                    <span className={`text-[10px] sm:text-xs mt-0.5 ${
+                    <span className={`text-xs mt-0.5 ${
                       selectedDates.includes(day.value) 
-                        ? 'text-blue-100' 
-                        : 'text-gray-500'
+                        ? 'text-white/80' 
+                        : 'text-white/60'
                     }`}>
                       {day.lunarDay}
                     </span>
                   )}
                 </button>
               ) : (
-                <div className="w-full h-12 sm:h-16"></div>
+                <div className="w-full h-16"></div>
               )}
             </div>
           ))}
@@ -71,7 +67,7 @@ const ScheduleCalendar = ({ selectedYear, selectedMonth, selectedDates, onDateTo
       </div>
       
       {selectedDates.length > 0 && (
-        <div className="mt-3 p-3 bg-blue-50 rounded-lg text-xs sm:text-sm text-blue-700 border border-blue-200">
+        <div className="mt-4 p-3 bg-white/20 backdrop-blur-xl rounded-xl text-sm text-white border border-white/30">
           已選擇 {selectedDates.length} 天：{selectedDates.sort((a, b) => parseInt(a) - parseInt(b)).join('、')}日
         </div>
       )}

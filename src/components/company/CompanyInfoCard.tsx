@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useUser } from '@/contexts/UserContext';
 import { useCompanyOperations } from './hooks/useCompanyOperations';
 import { CompanyApiService } from './services/companyApiService';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Building2, Phone, Mail, MapPin, Calendar, Users, Edit, RefreshCw, Sync } from 'lucide-react';
+import { Building2, Phone, Mail, MapPin, Calendar, Users, Edit, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const CompanyInfoCard = () => {

@@ -20,7 +20,7 @@ const ScheduleHeader = ({
   onViewTypeChange,
 }: ScheduleHeaderProps) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* 查看模式選擇器 */}
       <ViewModeSelector 
         viewMode={viewMode}
@@ -29,14 +29,20 @@ const ScheduleHeader = ({
       />
 
       {/* 視圖類型切換 */}
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="monthly" className="flex items-center gap-2">
+      <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
+        <TabsTrigger 
+          value="calendar" 
+          className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+        >
           <Grid className="h-4 w-4" />
-          月視圖
+          日曆視圖
         </TabsTrigger>
-        <TabsTrigger value="daily" className="flex items-center gap-2">
+        <TabsTrigger 
+          value="list"
+          className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+        >
           <Calendar className="h-4 w-4" />
-          日視圖
+          列表視圖
         </TabsTrigger>
       </TabsList>
     </div>

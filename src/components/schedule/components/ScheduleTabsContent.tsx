@@ -65,38 +65,29 @@ const ScheduleTabsContent = ({
 }: ScheduleTabsContentProps) => {
   return (
     <div className="space-y-6">
-      {/* 視圖選擇卡片 */}
-      <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 bg-blue-500/80 rounded-xl shadow-lg">
-            <Calendar className="h-5 w-5 text-white" />
-          </div>
-          <h3 className="text-lg font-semibold text-white drop-shadow-md">選擇視圖</h3>
-        </div>
-        
-        <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
-          <TabsTrigger 
-            value="calendar"
-            className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
-          >
-            <Calendar className="h-4 w-4" />
-            <span className="hidden xs:inline">日曆檢視</span>
-            <span className="xs:hidden">日曆</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="list"
-            className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
-          >
-            <List className="h-4 w-4" />
-            <span className="hidden xs:inline">列表檢視</span>
-            <span className="xs:hidden">列表</span>
-          </TabsTrigger>
-        </TabsList>
-      </div>
+      {/* 視圖選擇 */}
+      <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
+        <TabsTrigger 
+          value="calendar"
+          className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+        >
+          <Calendar className="h-4 w-4" />
+          <span className="hidden xs:inline">日曆檢視</span>
+          <span className="xs:hidden">日曆</span>
+        </TabsTrigger>
+        <TabsTrigger 
+          value="list"
+          className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+        >
+          <List className="h-4 w-4" />
+          <span className="hidden xs:inline">列表檢視</span>
+          <span className="xs:hidden">列表</span>
+        </TabsTrigger>
+      </TabsList>
 
       <TabsContent value="calendar" className="mt-0 space-y-6">
-        {/* 年月選擇器卡片 */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+        {/* 年月選擇器 */}
+        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 bg-green-500/80 rounded-xl shadow-lg">
               <Clock className="h-5 w-5 text-white" />
@@ -141,8 +132,14 @@ const ScheduleTabsContent = ({
           </div>
         </div>
 
-        {/* 日曆網格卡片 */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+        {/* 日曆網格 */}
+        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 bg-blue-500/80 rounded-xl shadow-lg">
+              <Calendar className="h-5 w-5 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-white drop-shadow-md">日曆檢視</h3>
+          </div>
           <CalendarGrid
             daysInMonth={daysInMonth}
             onDateClick={onDateClick}
@@ -150,8 +147,8 @@ const ScheduleTabsContent = ({
           />
         </div>
 
-        {/* 選中日期的排班詳情卡片 */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+        {/* 選中日期的排班詳情 */}
+        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 bg-purple-500/80 rounded-xl shadow-lg">
               <Users className="h-5 w-5 text-white" />
@@ -171,8 +168,8 @@ const ScheduleTabsContent = ({
       </TabsContent>
 
       <TabsContent value="list" className="mt-0 space-y-6">
-        {/* 員工月份選擇器卡片 */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+        {/* 員工月份選擇器 */}
+        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 bg-orange-500/80 rounded-xl shadow-lg">
               <Users className="h-5 w-5 text-white" />
@@ -190,8 +187,8 @@ const ScheduleTabsContent = ({
           />
         </div>
         
-        {/* 月度排班視圖卡片 */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg p-6">
+        {/* 月度排班視圖 */}
+        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 bg-teal-500/80 rounded-xl shadow-lg">
               <Calendar className="h-5 w-5 text-white" />

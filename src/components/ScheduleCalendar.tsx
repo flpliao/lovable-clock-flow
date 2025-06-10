@@ -69,16 +69,20 @@ const ScheduleCalendar = () => {
   const availableStaff = getAvailableStaff();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Tabs value={viewType} onValueChange={(value: any) => setViewType(value)} className="w-full">
-        <ScheduleHeader
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          hasSubordinates={hasSubordinates}
-          viewType={viewType}
-          onViewTypeChange={setViewType}
-        />
+        {/* 查看模式選擇器 */}
+        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+          <ScheduleHeader
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            hasSubordinates={hasSubordinates}
+            viewType={viewType}
+            onViewTypeChange={setViewType}
+          />
+        </div>
 
+        {/* 主要內容 */}
         <ScheduleTabsContent
           viewType={viewType}
           availableStaff={availableStaff}

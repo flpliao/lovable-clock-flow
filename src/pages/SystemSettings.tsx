@@ -10,7 +10,7 @@ const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('general');
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen pt-20 md:pt-24">
       {/* 動態背景漸層 */}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
@@ -24,7 +24,7 @@ const SystemSettings = () => {
 
       <div className="relative z-10 w-full">
         {/* 頁面標題區域 */}
-        <div className="w-full px-0 sm:px-4 lg:px-8 pt-6 pb-4">
+        <div className="w-full px-0 sm:px-4 lg:px-8 pt-4 pb-4">
           <div className="backdrop-blur-2xl bg-gradient-to-br from-white/70 to-white/50 border border-white/40 rounded-2xl shadow-lg p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
@@ -41,7 +41,7 @@ const SystemSettings = () => {
         </div>
 
         {/* 標籤導航 */}
-        <div className="w-full px-0 sm:px-4 lg:px-8 pb-4">
+        <div className="w-full px-0 sm:px-4 lg:px-8 pb-6">
           <div className="backdrop-blur-2xl bg-gradient-to-br from-white/70 to-white/50 border border-white/40 rounded-2xl shadow-lg p-4">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3 bg-white/30 rounded-xl h-auto p-1">

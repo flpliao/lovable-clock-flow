@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Shield, Settings, Check, X, ChevronDown } from 'lucide-react';
+import { Shield, Settings, Check, X, ChevronDown, Database, Lock, Unlock } from 'lucide-react';
 import { useRLSSettings } from '../hooks/useRLSSettings';
 
 export const RLSSettingsCard: React.FC = () => {
@@ -17,25 +17,43 @@ export const RLSSettingsCard: React.FC = () => {
   } = useRLSSettings();
 
   return (
-    <Card>
-      <CardHeader className="pb-2 px-3">
-        <CardTitle className="flex items-center text-sm">
-          <Shield className="h-4 w-4 mr-2" />
-          資料庫安全 (RLS)
+    <Card className="backdrop-blur-xl bg-white/30 border border-white/40 shadow-lg">
+      <CardHeader className="pb-3 px-4">
+        <CardTitle className="flex items-center text-lg text-gray-900 drop-shadow-sm">
+          <div className="p-2 bg-blue-500/90 rounded-lg shadow-md mr-3">
+            <Shield className="h-5 w-5 text-white" />
+          </div>
+          資料庫安全政策 (RLS)
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="space-y-3 px-3 pb-3">
+      <CardContent className="space-y-4 px-4 pb-4">
         {/* 全域設定 */}
-        <div className="flex items-center justify-between p-2 border rounded">
+        <div className="flex items-center justify-between p-4 backdrop-blur-xl bg-white/40 border border-white/50 rounded-xl shadow-md">
           <div className="flex items-center">
-            <Settings className="h-3 w-3 mr-2" />
-            <span className="text-xs font-medium">全域政策</span>
-            {isGlobalRLSEnabled ? (
-              <Check className="h-3 w-3 ml-2 text-green-500" />
-            ) : (
-              <X className="h-3 w-3 ml-2 text-red-500" />
-            )}
+            <div className="p-2 bg-purple-500/90 rounded-lg shadow-md mr-3">
+              {isGlobalRLSEnabled ? (
+                <Lock className="h-4 w-4 text-white" />
+              ) : (
+                <Unlock className="h-4 w-4 text-white" />
+              )}
+            </div>
+            <div>
+              <span className="text-sm font-semibold text-gray-900 drop-shadow-sm">全域安全政策</span>
+              <div className="flex items-center mt-1">
+                {isGlobalRLSEnabled ? (
+                  <div className="flex items-center">
+                    <Check className="h-3 w-3 mr-1 text-green-600" />
+                    <span className="text-xs text-green-700 font-medium">已啟用</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <X className="h-3 w-3 mr-1 text-red-500" />
+                    <span className="text-xs text-red-600 font-medium">已停用</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           <Switch
             checked={isGlobalRLSEnabled}
@@ -46,30 +64,50 @@ export const RLSSettingsCard: React.FC = () => {
 
         {/* 表格設定 - 使用 Accordion */}
         <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="table-settings" className="border rounded">
-            <AccordionTrigger className="px-2 py-2 text-xs font-medium hover:no-underline">
+          <AccordionItem value="table-settings" className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-xl shadow-md">
+            <AccordionTrigger className="px-4 py-3 text-sm font-semibold text-gray-900 drop-shadow-sm hover:no-underline">
               <div className="flex items-center">
-                <Settings className="h-3 w-3 mr-2" />
-                表格級別設定 ({tableRLSStatus.filter(t => t.enabled).length}/{tableRLSStatus.length} 啟用)
+                <div className="p-2 bg-teal-500/90 rounded-lg shadow-md mr-3">
+                  <Database className="h-4 w-4 text-white" />
+                </div>
+                <div className="text-left">
+                  <div>表格級別設定</div>
+                  <div className="text-xs text-gray-600 font-normal mt-1">
+                    ({tableRLSStatus.filter(t => t.enabled).length}/{tableRLSStatus.length} 已啟用)
+                  </div>
+                </div>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-2 pb-2">
-              <div className="space-y-1">
+            <AccordionContent className="px-4 pb-3">
+              <div className="space-y-2">
                 {tableRLSStatus.map((table) => (
-                  <div key={table.tableName} className="flex items-center justify-between p-2 border rounded text-xs">
+                  <div key={table.tableName} className="flex items-center justify-between p-3 backdrop-blur-xl bg-white/50 border border-white/60 rounded-lg text-sm shadow-sm">
                     <div className="flex items-center min-w-0 flex-1">
-                      <span className="truncate">{table.displayName}</span>
-                      {table.enabled ? (
-                        <Check className="h-3 w-3 ml-2 text-green-500 flex-shrink-0" />
-                      ) : (
-                        <X className="h-3 w-3 ml-2 text-gray-400 flex-shrink-0" />
-                      )}
+                      <div className="p-1.5 bg-gray-500/90 rounded-md shadow-sm mr-3">
+                        <Database className="h-3 w-3 text-white" />
+                      </div>
+                      <div>
+                        <span className="truncate font-medium text-gray-900 drop-shadow-sm">{table.displayName}</span>
+                        <div className="flex items-center mt-1">
+                          {table.enabled ? (
+                            <div className="flex items-center">
+                              <Check className="h-3 w-3 mr-1 text-green-600" />
+                              <span className="text-xs text-green-700 font-medium">安全</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center">
+                              <X className="h-3 w-3 mr-1 text-gray-400" />
+                              <span className="text-xs text-gray-500 font-medium">開放</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                     <Switch
                       checked={table.enabled}
                       onCheckedChange={() => toggleTableRLS(table.tableName)}
                       disabled={loading}
-                      className="ml-2 flex-shrink-0"
+                      className="ml-3 flex-shrink-0"
                     />
                   </div>
                 ))}
@@ -80,10 +118,12 @@ export const RLSSettingsCard: React.FC = () => {
 
         {/* 狀態提示 */}
         {!isGlobalRLSEnabled && (
-          <Alert className="py-2">
-            <X className="h-3 w-3" />
-            <AlertDescription className="text-xs">
-              開發模式：安全政策已關閉
+          <Alert className="backdrop-blur-xl bg-orange-100/60 border border-orange-200/60">
+            <div className="p-1.5 bg-orange-500/90 rounded-md shadow-sm">
+              <X className="h-3 w-3 text-white" />
+            </div>
+            <AlertDescription className="text-sm text-orange-800 font-medium ml-2">
+              開發模式：資料庫安全政策已關閉，請在生產環境中啟用
             </AlertDescription>
           </Alert>
         )}

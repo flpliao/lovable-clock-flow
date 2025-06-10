@@ -43,7 +43,6 @@ const AnnouncementList: React.FC = () => {
       for (const announcement of announcements) {
         try {
           const isRead = await checkAnnouncementRead(announcement.id);
-          // 強制轉換為布林值，確保類型安全
           statusMap[announcement.id] = Boolean(isRead);
         } catch (error) {
           console.error(`檢查公告 ${announcement.id} 已讀狀態失敗:`, error);
@@ -64,7 +63,6 @@ const AnnouncementList: React.FC = () => {
     
     try {
       await markAnnouncementAsRead(announcement.id);
-      // 強制轉換為布林值，確保類型安全
       setReadStatus(prev => ({ ...prev, [announcement.id]: true }));
       console.log('公告已標記為已讀:', announcement.id);
     } catch (error) {
@@ -72,11 +70,11 @@ const AnnouncementList: React.FC = () => {
     }
   };
 
-  // 檢查公告是否已讀 - 確保返回布林值
+  // 檢查公告是否已讀
   const checkIfRead = async (announcementId: string): Promise<boolean> => {
     const currentStatus = readStatus[announcementId];
     if (currentStatus !== undefined) {
-      return Boolean(currentStatus);
+      return currentStatus;
     }
     
     try {
@@ -91,10 +89,9 @@ const AnnouncementList: React.FC = () => {
     }
   };
 
-  // 取得已讀狀態 - 確保返回布林值
+  // 取得已讀狀態
   const getReadStatus = (announcementId: string): boolean => {
-    const status = readStatus[announcementId];
-    return Boolean(status);
+    return readStatus[announcementId] || false;
   };
 
   return (

@@ -75,7 +75,7 @@ const AnnouncementList: React.FC = () => {
   const checkIfRead = async (announcementId: string): Promise<boolean> => {
     const currentStatus = readStatus[announcementId];
     if (currentStatus !== undefined) {
-      return currentStatus;
+      return Boolean(currentStatus);
     }
     
     try {
@@ -93,7 +93,9 @@ const AnnouncementList: React.FC = () => {
 
   // 取得已讀狀態 - 確保返回布林值
   const getReadStatus = (announcementId: string): boolean => {
-    return Boolean(readStatus[announcementId]);
+    const status = readStatus[announcementId];
+    // Handle both undefined and any potential string values by converting to boolean
+    return Boolean(status);
   };
 
   return (

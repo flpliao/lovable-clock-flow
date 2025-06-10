@@ -73,7 +73,8 @@ const AnnouncementList: React.FC = () => {
   // 取得已讀狀態 - 確保返回布林值
   const getReadStatus = (announcementId: string): boolean => {
     const status = readStatus[announcementId];
-    return Boolean(status);
+    // 確保只返回布林值，排除任何可能的字串值
+    return status === true;
   };
 
   return (

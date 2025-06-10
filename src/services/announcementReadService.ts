@@ -28,7 +28,7 @@ export class AnnouncementReadService {
 
   /**
    * Check if an announcement has been read by the current user
-   * 確保返回明確的布林值
+   * 明確確保返回 boolean 型別
    */
   static async checkAnnouncementRead(announcementId: string, userId: string): Promise<boolean> {
     try {
@@ -43,16 +43,18 @@ export class AnnouncementReadService {
 
       if (error) {
         console.error('查詢已讀狀態失敗:', error);
-        throw new Error(`查詢已讀狀態失敗: ${error.message}`);
+        // 發生錯誤時回傳 false，確保型別一致
+        return false;
       }
 
-      // 明確返回布林值：如果有記錄則為已讀，否則為未讀
+      // 明確返回布林值：如果有記錄則為已讀(true)，否則為未讀(false)
       const isRead = data !== null;
       console.log('已讀狀態查詢結果:', { hasRecord: !!data, isRead });
       return isRead;
     } catch (error) {
       console.error('檢查已讀狀態失敗:', error);
-      throw error;
+      // 發生例外時回傳 false，確保型別一致
+      return false;
     }
   }
 }

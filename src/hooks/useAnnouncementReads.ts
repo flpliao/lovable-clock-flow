@@ -22,7 +22,7 @@ export const useAnnouncementReads = () => {
     }
   };
 
-  // Check if announcement is read - 確保布林返回類型
+  // Check if announcement is read - 明確確保返回 Promise<boolean>
   const checkAnnouncementRead = async (announcementId: string): Promise<boolean> => {
     if (!currentUser) {
       console.warn('無法檢查已讀狀態：用戶未登入');
@@ -32,8 +32,8 @@ export const useAnnouncementReads = () => {
     try {
       console.log('檢查公告已讀狀態:', { announcementId, userId: currentUser.id });
       const result = await AnnouncementReadService.checkAnnouncementRead(announcementId, currentUser.id);
-      // 明確轉換為布林值以確保類型安全
-      const isRead = Boolean(result);
+      // 明確確保返回布林值
+      const isRead = result === true;
       console.log('公告已讀狀態:', isRead);
       return isRead;
     } catch (error) {

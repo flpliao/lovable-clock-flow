@@ -30,7 +30,7 @@ const AnnouncementList: React.FC = () => {
   } = useAnnouncementFilters(announcements);
 
   const [openAnnouncement, setOpenAnnouncement] = useState<CompanyAnnouncement | null>(null);
-  const [readStatus, setReadStatus] = useState<Record<string, boolean>>({});
+  const [readStatus, setReadStatus] = useState<Record<string, string | boolean>>({});
 
   // 初始化時載入所有公告的已讀狀態
   useEffect(() => {
@@ -38,12 +38,12 @@ const AnnouncementList: React.FC = () => {
       if (announcements.length === 0) return;
       
       console.log('載入所有公告的已讀狀態...');
-      const statusMap: Record<string, boolean> = {};
+      const statusMap: Record<string, string | boolean> = {};
       
       for (const announcement of announcements) {
         try {
           const isRead = await checkAnnouncementRead(announcement.id);
-          statusMap[announcement.id] = Boolean(isRead);
+          statusMap[announcement.id] = isRead;
         } catch (error) {
           console.error(`檢查公告 ${announcement.id} 已讀狀態失敗:`, error);
           statusMap[announcement.id] = false;
@@ -74,13 +74,13 @@ const AnnouncementList: React.FC = () => {
   const checkIfRead = async (announcementId: string): Promise<boolean> => {
     const currentStatus = readStatus[announcementId];
     if (currentStatus !== undefined) {
-      return currentStatus;
+      return !!currentStatus;
     }
     
     try {
       const isRead = await checkAnnouncementRead(announcementId);
-      const booleanStatus = Boolean(isRead);
-      setReadStatus(prev => ({ ...prev, [announcementId]: booleanStatus }));
+      const booleanStatus = !!isRead;
+      setReadStatus(prev => ({ ...prev, [announcementId]: isRead }));
       return booleanStatus;
     } catch (error) {
       console.error('檢查已讀狀態失敗:', error);
@@ -91,7 +91,7 @@ const AnnouncementList: React.FC = () => {
 
   // 取得已讀狀態
   const getReadStatus = (announcementId: string): boolean => {
-    return readStatus[announcementId] || false;
+    return !!readStatus[announcementId];
   };
 
   return (

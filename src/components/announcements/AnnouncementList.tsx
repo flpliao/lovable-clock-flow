@@ -42,7 +42,7 @@ const AnnouncementList: React.FC = () => {
   const checkIfRead = async (announcementId: string): Promise<boolean> => {
     const currentStatus = readStatus[announcementId];
     if (currentStatus !== undefined) {
-      return currentStatus;
+      return Boolean(currentStatus);
     }
     
     const isRead = await checkAnnouncementRead(announcementId);
@@ -54,7 +54,7 @@ const AnnouncementList: React.FC = () => {
   // Helper function to get read status - ensures boolean return
   const getReadStatus = (announcementId: string): boolean => {
     const status = readStatus[announcementId];
-    return status === true;
+    return Boolean(status);
   };
 
   return (

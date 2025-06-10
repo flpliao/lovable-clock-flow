@@ -88,7 +88,7 @@ const PersonalAttendance = () => {
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 p-4 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Welcome Header */}
         <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8">
@@ -131,9 +131,9 @@ const PersonalAttendance = () => {
         </div>
 
         {/* Main Content */}
-        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl overflow-hidden">
+        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl">
           <div className="p-6 border-b border-white/20">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-500/80 rounded-xl flex items-center justify-center">
                 <Calendar className="h-5 w-5 text-white" />
               </div>
@@ -142,7 +142,7 @@ const PersonalAttendance = () => {
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="p-6">
+            <div className="p-6 pb-0">
               <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
                 <TabsTrigger 
                   value="history" 
@@ -161,7 +161,7 @@ const PersonalAttendance = () => {
               </TabsList>
             </div>
             
-            <div className="px-6 pb-6">
+            <div className="p-6">
               <TabsContent value="history" className="mt-0">
                 <div className="bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-6 shadow-lg">
                   <div className="flex items-center gap-3 mb-6">

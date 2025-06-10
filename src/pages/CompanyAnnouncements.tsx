@@ -22,8 +22,8 @@ const CompanyAnnouncements: React.FC = () => {
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
       <div className="relative z-10 flex flex-col min-h-screen">
-        {/* Header with glass effect - 調整 sticky 位置 */}
-        <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 mt-2 mb-8 sticky top-20 md:top-24 z-20 shadow-xl">
+        {/* Header with glass effect - 移除 sticky 讓它不會覆蓋下方內容 */}
+        <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 mt-2 mb-6 shadow-xl">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center space-x-4">
               <Button 

@@ -43,7 +43,8 @@ const AnnouncementList: React.FC = () => {
       for (const announcement of announcements) {
         try {
           const isRead = await checkAnnouncementRead(announcement.id);
-          statusMap[announcement.id] = !!isRead;
+          // Ensure we always store a boolean value
+          statusMap[announcement.id] = Boolean(isRead);
         } catch (error) {
           console.error(`檢查公告 ${announcement.id} 已讀狀態失敗:`, error);
           statusMap[announcement.id] = false;
@@ -79,7 +80,8 @@ const AnnouncementList: React.FC = () => {
     
     try {
       const isRead = await checkAnnouncementRead(announcementId);
-      const booleanStatus = !!isRead;
+      // Ensure we always work with boolean values
+      const booleanStatus = Boolean(isRead);
       setReadStatus(prev => ({ ...prev, [announcementId]: booleanStatus }));
       return booleanStatus;
     } catch (error) {
@@ -91,7 +93,7 @@ const AnnouncementList: React.FC = () => {
 
   // 取得已讀狀態 - 確保返回布林值
   const getReadStatus = (announcementId: string): boolean => {
-    return !!readStatus[announcementId];
+    return Boolean(readStatus[announcementId]);
   };
 
   return (

@@ -43,17 +43,9 @@ const CompanyAnnouncements: React.FC = () => {
           </div>
         </div>
 
-        {/* Main content with glass container */}
+        {/* Main content without white container - directly on background */}
         <main className="px-4 sm:px-6 lg:px-8 pb-8">
-          <div className={`${visionProStyles.liquidGlassCard} p-6 overflow-hidden relative`}>
-            {/* 柔和的背景效果 */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/3 to-white/1"></div>
-            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-            
-            <div className="relative z-10">
-              <AnnouncementList />
-            </div>
-          </div>
+          <AnnouncementList />
         </main>
       </div>
     </div>

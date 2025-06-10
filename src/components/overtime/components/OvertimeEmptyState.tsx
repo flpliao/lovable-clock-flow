@@ -4,17 +4,17 @@ import { FileText, Search, Clock } from 'lucide-react';
 
 const OvertimeEmptyState: React.FC = () => {
   return (
-    <div className="backdrop-blur-2xl bg-white/25 border border-white/40 rounded-3xl shadow-2xl p-12">
+    <div className="backdrop-blur-xl bg-white/25 border border-white/30 rounded-2xl shadow-lg p-8">
       <div className="text-center">
         <div className="flex justify-center items-center gap-3 mb-6">
-          <div className="p-4 bg-gray-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-gray-400/50">
-            <FileText className="h-8 w-8 text-white" />
+          <div className="p-3 bg-gray-500/70 rounded-lg shadow-md">
+            <FileText className="h-6 w-6 text-white" />
           </div>
-          <div className="p-4 bg-blue-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50">
-            <Search className="h-8 w-8 text-white" />
+          <div className="p-3 bg-blue-500/70 rounded-lg shadow-md">
+            <Search className="h-6 w-6 text-white" />
           </div>
-          <div className="p-4 bg-purple-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-purple-400/50">
-            <Clock className="h-8 w-8 text-white" />
+          <div className="p-3 bg-purple-500/70 rounded-lg shadow-md">
+            <Clock className="h-6 w-6 text-white" />
           </div>
         </div>
         

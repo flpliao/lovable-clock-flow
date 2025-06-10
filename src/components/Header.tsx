@@ -77,7 +77,7 @@ const Header: React.FC<HeaderProps> = () => {
   };
   
   return (
-    <header className="fixed top-0 left-0 right-0 w-full z-50 relative overflow-hidden">
+    <header className="fixed top-0 left-0 right-0 w-full z-50 overflow-hidden">
       {/* 背景漸層 - 與首頁一致 */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600"></div>
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>

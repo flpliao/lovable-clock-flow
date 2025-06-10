@@ -36,18 +36,18 @@ const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
 
   return (
     <Card 
-      className={`cursor-pointer transition-all duration-300 hover:scale-[1.02] group ${createLiquidGlassEffect(true)} overflow-hidden relative ${
-        !isRead ? 'border-l-4 border-l-blue-400/80' : 'border-l-4 border-l-transparent'
+      className={`cursor-pointer transition-all duration-500 hover:scale-[1.02] group ${visionProStyles.featureCard} overflow-hidden relative ${
+        !isRead ? 'border-l-4 border-l-blue-400/80' : ''
       }`}
       onClick={() => onClick(announcement)}
     >
-      {/* 柔和的背景光效 */}
-      <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-white/2 group-hover:from-white/8 group-hover:to-white/4 transition-all duration-500"></div>
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-60"></div>
+      {/* 與首頁一致的柔和背景光效 */}
+      <div className="absolute inset-0 bg-gradient-to-r from-white/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       
       <CardContent className="p-6 relative z-10">
         {/* Header with badges */}
-        <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="flex flex-wrap items-center gap-2 mb-6">
           {announcement.is_pinned && (
             <Badge className={`text-xs flex items-center gap-1 font-medium ${visionProStyles.coloredIconContainer.orange}`}>
               <Pin className="h-3 w-3" />
@@ -62,7 +62,7 @@ const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
           )}
           
           {announcement.file && (
-            <Badge className={`text-xs flex items-center gap-1 ${visionProStyles.glassButton} border-white/40 text-gray-800 font-medium bg-white/60`}>
+            <Badge className="text-xs flex items-center gap-1 bg-white/70 text-gray-800 border-white/40 backdrop-blur-xl font-semibold drop-shadow-sm px-3 py-1 rounded-full shadow-md">
               <FileText className="h-3 w-3" />
               附件
             </Badge>
@@ -75,36 +75,36 @@ const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
           )}
         </div>
 
-        {/* Title */}
-        <h3 className={`text-base sm:text-lg font-bold mb-3 line-clamp-2 ${visionProStyles.primaryText} group-hover:drop-shadow-md transition-all duration-300`}>
+        {/* Title - 與首頁卡片標題風格一致 */}
+        <h3 className="font-bold text-gray-800 text-lg sm:text-xl mb-4 drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300 line-clamp-2">
           {announcement.title}
         </h3>
 
-        {/* Content preview */}
-        <p className={`text-sm mb-4 line-clamp-2 font-medium ${visionProStyles.secondaryText}`}>
+        {/* Content preview - 與首頁描述文字風格一致 */}
+        <p className="text-gray-700 text-sm sm:text-base leading-relaxed drop-shadow-sm font-medium mb-6 line-clamp-2">
           {announcement.content}
         </p>
 
         {/* Footer with meta info and action */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className={`flex flex-col gap-2 text-xs ${visionProStyles.secondaryText}`}>
-            <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col gap-3 text-sm text-gray-700 font-medium">
+            <div className="flex items-center gap-3">
               <div className={visionProStyles.iconContainer}>
-                <User className="h-3 w-3" />
+                <User className="h-4 w-4" />
               </div>
-              <span className="font-medium">{announcement.created_by.name}</span>
+              <span>{announcement.created_by.name}</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className={visionProStyles.iconContainer}>
-                <Calendar className="h-3 w-3" />
+                <Calendar className="h-4 w-4" />
               </div>
-              <span className="font-medium">{formatAnnouncementDate(announcement.created_at)}</span>
+              <span>{formatAnnouncementDate(announcement.created_at)}</span>
             </div>
           </div>
           
           <Button 
             size="sm" 
-            className={`w-full sm:w-auto h-10 text-sm ${visionProStyles.glassButton} border-white/40 text-gray-800 font-semibold hover:bg-white/60 transition-all duration-300 group-hover:scale-105`}
+            className="w-full sm:w-auto h-10 text-sm bg-white/70 text-gray-800 border-white/40 backdrop-blur-xl font-semibold hover:bg-white/80 transition-all duration-300 group-hover:scale-105 shadow-md drop-shadow-sm"
             onClick={(e) => {
               e.stopPropagation();
               onClick(announcement);

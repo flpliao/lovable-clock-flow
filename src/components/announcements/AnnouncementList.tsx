@@ -76,24 +76,24 @@ const AnnouncementList: React.FC = () => {
       <div className="space-y-4">
         {/* Search bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-600" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-600" />
           <Input
             placeholder="搜尋公告標題或內容..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={`pl-10 h-12 text-base ${visionProStyles.glassButton} border-white/40 text-gray-800 placeholder:text-gray-600 bg-white/50 backdrop-blur-xl`}
+            className="pl-12 h-12 text-base bg-white/70 text-gray-800 border-white/40 backdrop-blur-xl font-medium placeholder:text-gray-600 shadow-md drop-shadow-sm"
           />
         </div>
 
         {/* Filter section */}
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" className={`flex-1 h-12 text-base ${visionProStyles.glassButton} border-white/40 text-gray-800 font-medium`}>
+              <Button variant="outline" className="flex-1 h-12 text-base bg-white/70 text-gray-800 border-white/40 backdrop-blur-xl font-semibold hover:bg-white/80 shadow-md drop-shadow-sm">
                 <Filter className="h-4 w-4 mr-2" />
                 篩選分類
                 {selectedCategory !== 'all' && (
-                  <span className="ml-2 px-2 py-1 bg-blue-500/80 text-white text-xs rounded-full">
+                  <span className="ml-2 px-2 py-1 bg-blue-500/90 text-white text-xs rounded-full shadow-sm">
                     1
                   </span>
                 )}
@@ -133,7 +133,7 @@ const AnnouncementList: React.FC = () => {
           {/* Desktop filter */}
           <div className="hidden sm:block flex-1">
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className={`h-12 text-base ${visionProStyles.glassButton} border-white/40 text-gray-800 bg-white/50 backdrop-blur-xl`}>
+              <SelectTrigger className="h-12 text-base bg-white/70 text-gray-800 border-white/40 backdrop-blur-xl font-medium shadow-md drop-shadow-sm">
                 <SelectValue placeholder="選擇分類" />
               </SelectTrigger>
               <SelectContent>
@@ -149,7 +149,7 @@ const AnnouncementList: React.FC = () => {
 
       {/* Results summary */}
       {!loading && (
-        <div className={`text-sm ${visionProStyles.secondaryText} px-1`}>
+        <div className="text-sm text-gray-700 font-medium px-1 drop-shadow-sm">
           共 {filteredAnnouncements.length} 則公告
           {(searchQuery || selectedCategory !== 'all') && (
             <Button 
@@ -169,31 +169,31 @@ const AnnouncementList: React.FC = () => {
         // Loading skeleton with glass effect
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className={`p-6 ${visionProStyles.liquidGlassCard}`}>
-              <div className="space-y-3">
+            <div key={i} className={`p-6 ${visionProStyles.featureCard}`}>
+              <div className="space-y-4">
                 <div className="flex gap-2">
-                  <Skeleton className="h-5 w-12 bg-white/30" />
-                  <Skeleton className="h-5 w-16 bg-white/30" />
+                  <Skeleton className="h-5 w-12 bg-white/40" />
+                  <Skeleton className="h-5 w-16 bg-white/40" />
                 </div>
-                <Skeleton className="h-6 w-3/4 bg-white/30" />
-                <Skeleton className="h-4 w-full bg-white/30" />
-                <Skeleton className="h-4 w-2/3 bg-white/30" />
+                <Skeleton className="h-6 w-3/4 bg-white/40" />
+                <Skeleton className="h-4 w-full bg-white/40" />
+                <Skeleton className="h-4 w-2/3 bg-white/40" />
                 <div className="flex justify-between items-center">
-                  <Skeleton className="h-4 w-24 bg-white/30" />
-                  <Skeleton className="h-8 w-20 bg-white/30" />
+                  <Skeleton className="h-4 w-24 bg-white/40" />
+                  <Skeleton className="h-8 w-20 bg-white/40" />
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : filteredAnnouncements.length === 0 ? (
-        <div className={`text-center py-12 ${visionProStyles.liquidGlassCard}`}>
-          <div className={`text-base mb-2 ${visionProStyles.primaryText}`}>沒有找到符合條件的公告</div>
+        <div className={`text-center py-12 ${visionProStyles.featureCard}`}>
+          <div className="text-base mb-2 text-gray-800 font-bold drop-shadow-sm">沒有找到符合條件的公告</div>
           {(searchQuery || selectedCategory !== 'all') && (
             <Button 
               variant="outline" 
               onClick={clearFilters}
-              className={`mt-2 ${visionProStyles.glassButton} border-white/40 text-gray-800`}
+              className="mt-4 bg-white/70 text-gray-800 border-white/40 backdrop-blur-xl font-semibold hover:bg-white/80 shadow-md"
             >
               查看所有公告
             </Button>
@@ -201,7 +201,7 @@ const AnnouncementList: React.FC = () => {
         </div>
       ) : (
         // Announcement cards
-        <div className="space-y-4">
+        <div className="space-y-6">
           {filteredAnnouncements.map((announcement) => (
             <AnnouncementCard
               key={announcement.id}

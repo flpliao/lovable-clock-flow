@@ -36,12 +36,12 @@ const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
 
   return (
     <Card 
-      className={`cursor-pointer transition-all duration-500 hover:scale-[1.02] group ${visionProStyles.featureCard} overflow-hidden relative ${
+      className={`cursor-pointer transition-all duration-500 hover:scale-[1.02] group ${createLiquidGlassEffect(true, 'feature')} overflow-hidden relative ${
         !isRead ? 'border-l-4 border-l-blue-400/80' : ''
       }`}
       onClick={() => onClick(announcement)}
     >
-      {/* 與首頁一致的柔和背景光效 */}
+      {/* 柔和的背景光效 - 與首頁一致 */}
       <div className="absolute inset-0 bg-gradient-to-r from-white/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       

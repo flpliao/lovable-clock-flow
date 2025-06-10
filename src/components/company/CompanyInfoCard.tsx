@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useUser } from '@/contexts/UserContext';
@@ -204,5 +205,3 @@ const CompanyInfoCard = () => {
 };
 
 export default CompanyInfoCard;
-
-</initial_code>

@@ -21,10 +21,9 @@ const LeaveRequest = () => {
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 p-4 md:p-6">
-      {/* Header Section */}
-      <div className="max-w-7xl mx-auto mb-8">
-        {/* Welcome Card - Similar to the main dashboard */}
-        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8 mb-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Welcome Header */}
+        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-white mb-4 drop-shadow-lg">
               您好，廖俊雄
@@ -58,21 +57,18 @@ const LeaveRequest = () => {
           </div>
         </div>
 
-        {/* Shift Reminder Card */}
-        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl mb-6 overflow-hidden">
+        {/* Shift Reminder */}
+        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl overflow-hidden">
           <ShiftReminder />
         </div>
         
-        {/* Leave Balance Card */}
-        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl mb-6 p-6">
+        {/* Leave Balance */}
+        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-6">
           <LeaveBalance />
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto">
-        {/* Main Content Card */}
-        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl overflow-hidden mb-6">
+        {/* Main Content */}
+        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="p-8 border-b border-white/20">
               <TabsList className="grid w-full grid-cols-2 bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 p-2 shadow-lg">
@@ -118,7 +114,7 @@ const LeaveRequest = () => {
           </Tabs>
         </div>
         
-        {/* Leave History Card */}
+        {/* Leave History */}
         <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-6">
           <LeaveHistory />
         </div>

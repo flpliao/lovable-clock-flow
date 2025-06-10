@@ -101,7 +101,7 @@ const CompanyInfoCard = () => {
               variant="outline"
               className="bg-green-500/25 border-green-400/40 text-white hover:bg-green-500/35 rounded-xl"
             >
-              <Sync className="h-4 w-4 mr-2" />
+              <RefreshCw className="h-4 w-4 mr-2" />
               後台同步
             </Button>
           </div>
@@ -204,3 +204,5 @@ const CompanyInfoCard = () => {
 };
 
 export default CompanyInfoCard;
+
+</initial_code>

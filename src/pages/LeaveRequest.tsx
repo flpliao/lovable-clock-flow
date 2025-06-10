@@ -8,6 +8,7 @@ import LeaveRequestDetail from '@/components/LeaveRequestDetail';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LeaveRequest as LeaveRequestType } from '@/types';
 import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
+import { Clock, Calendar } from 'lucide-react';
 
 const LeaveRequest = () => {
   const [activeTab, setActiveTab] = useState<string>('request');
@@ -19,52 +20,71 @@ const LeaveRequest = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-blue-600 relative">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute top-1/2 -left-40 w-96 h-96 bg-purple-300/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-20 right-1/4 w-60 h-60 bg-blue-300/15 rounded-full blur-xl animate-pulse delay-500"></div>
-      </div>
-
-      {/* Header */}
-      <div className="bg-white/20 backdrop-blur-2xl border-b border-white/30 shadow-lg relative z-10">
-        <div className="container mx-auto py-6 px-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-4 h-10 bg-gradient-to-b from-orange-400 to-orange-500 rounded-full shadow-lg"></div>
-              <h1 className="text-3xl font-bold text-white drop-shadow-lg">請假管理</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 p-4 md:p-6">
+      {/* Header Section */}
+      <div className="max-w-7xl mx-auto mb-8">
+        {/* Welcome Card - Similar to the main dashboard */}
+        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8 mb-6">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-white mb-4 drop-shadow-lg">
+              您好，廖俊雄
+            </h1>
+            <p className="text-white/80 text-lg font-medium drop-shadow-md">
+              歡迎使用員工請假系統
+            </p>
+          </div>
+          
+          {/* Time and Date Cards */}
+          <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
+            <div className="bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-4 flex items-center gap-3 shadow-lg">
+              <div className="p-3 bg-blue-500/80 rounded-xl">
+                <Clock className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-white drop-shadow-md">15:01</div>
+                <div className="text-white/70 text-sm">當前時間</div>
+              </div>
             </div>
-            <div className="text-sm text-white/80 font-medium drop-shadow-md">Dreams POS</div>
+            
+            <div className="bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-4 flex items-center gap-3 shadow-lg">
+              <div className="p-3 bg-green-500/80 rounded-xl">
+                <Calendar className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <div className="text-lg font-bold text-white drop-shadow-md">2025年6月10日 星期二</div>
+                <div className="text-white/70 text-sm">今天日期</div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="container mx-auto py-8 px-4 space-y-8 relative z-10">
         {/* Shift Reminder Card */}
-        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl hover:bg-white/25 transition-all duration-300">
+        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl mb-6 overflow-hidden">
           <ShiftReminder />
         </div>
         
         {/* Leave Balance Card */}
-        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl hover:bg-white/25 transition-all duration-300">
+        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl mb-6 p-6">
           <LeaveBalance />
         </div>
-        
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto">
         {/* Main Content Card */}
-        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl overflow-hidden hover:bg-white/25 transition-all duration-300">
+        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl overflow-hidden mb-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="p-8 border-b border-white/20">
-              <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-2 shadow-lg">
+              <TabsList className="grid w-full grid-cols-2 bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 p-2 shadow-lg">
                 <TabsTrigger 
                   value="request" 
-                  className="text-white/80 data-[state=active]:bg-white/40 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3"
+                  className="text-white/80 data-[state=active]:bg-white/30 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3"
                 >
                   申請請假
                 </TabsTrigger>
                 <TabsTrigger 
                   value="view" 
-                  className="text-white/80 data-[state=active]:bg-white/40 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3"
+                  className="text-white/80 data-[state=active]:bg-white/30 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3"
                 >
                   查看請假
                 </TabsTrigger>
@@ -99,7 +119,7 @@ const LeaveRequest = () => {
         </div>
         
         {/* Leave History Card */}
-        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl hover:bg-white/25 transition-all duration-300">
+        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-6">
           <LeaveHistory />
         </div>
       </div>

@@ -1,11 +1,8 @@
-
 import React, { useEffect, useState } from 'react';
 import { MapPin, Wifi, RefreshCw, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { CheckInRecord } from '@/types';
@@ -85,8 +82,8 @@ const CheckInHistory: React.FC = () => {
   }
   
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <h4 className="text-white font-medium drop-shadow-md">打卡記錄列表</h4>
         <Button 
           variant="outline" 
@@ -121,10 +118,10 @@ const CheckInHistory: React.FC = () => {
             總共 {checkInRecords.length} 筆記錄
           </div>
           
-          <div className="bg-white/20 backdrop-blur-xl rounded-xl border border-white/30 shadow-lg overflow-hidden">
+          <div className="bg-white/10 backdrop-blur-xl rounded-xl border border-white/20 shadow-lg overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="border-white/20 hover:bg-white/10">
+                <TableRow className="border-white/20 hover:bg-white/5">
                   <TableHead className="text-white/90 font-semibold">日期</TableHead>
                   <TableHead className="text-white/90 font-semibold">時間</TableHead>
                   <TableHead className="text-white/90 font-semibold">動作</TableHead>
@@ -135,7 +132,7 @@ const CheckInHistory: React.FC = () => {
               </TableHeader>
               <TableBody>
                 {checkInRecords.map((record: CheckInRecord) => (
-                  <TableRow key={record.id} className="border-white/20 hover:bg-white/10 transition-colors duration-200">
+                  <TableRow key={record.id} className="border-white/20 hover:bg-white/5 transition-colors duration-200">
                     <TableCell className="text-white/90 font-medium">{formatDate(record.timestamp)}</TableCell>
                     <TableCell className="text-white/90 font-medium">{formatTime(record.timestamp)}</TableCell>
                     <TableCell>

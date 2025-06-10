@@ -27,16 +27,18 @@ const AttendanceTabsContainer: React.FC<AttendanceTabsContainerProps> = ({
   checkInRecords
 }) => {
   return (
-    <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl">
+    <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl overflow-hidden">
+      {/* 標題區域 */}
       <div className="p-6 border-b border-white/20">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-500/80 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-blue-500/80 rounded-xl flex items-center justify-center shadow-lg">
             <Calendar className="h-5 w-5 text-white" />
           </div>
           <h2 className="text-xl font-semibold text-white drop-shadow-md">考勤記錄</h2>
         </div>
       </div>
       
+      {/* 標籤區域 */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="p-6 pb-0">
           <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
@@ -57,34 +59,19 @@ const AttendanceTabsContainer: React.FC<AttendanceTabsContainerProps> = ({
           </TabsList>
         </div>
         
+        {/* 內容區域 - 直接顯示內容，不再使用內嵌卡片 */}
         <div className="p-6">
           <TabsContent value="history" className="mt-0">
-            <div className="bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-6 shadow-lg">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 bg-green-500/80 rounded-lg flex items-center justify-center">
-                  <History className="h-4 w-4 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-white drop-shadow-md">打卡歷史記錄</h3>
-              </div>
-              <CheckInHistory />
-            </div>
+            <CheckInHistory />
           </TabsContent>
           
           <TabsContent value="calendar" className="mt-0">
-            <div className="bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-6 shadow-lg">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 bg-purple-500/80 rounded-lg flex items-center justify-center">
-                  <Calendar className="h-4 w-4 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-white drop-shadow-md">月曆視圖</h3>
-              </div>
-              <AttendanceCalendarView
-                date={date}
-                setDate={setDate}
-                selectedDateRecords={selectedDateRecords}
-                checkInRecords={checkInRecords}
-              />
-            </div>
+            <AttendanceCalendarView
+              date={date}
+              setDate={setDate}
+              selectedDateRecords={selectedDateRecords}
+              checkInRecords={checkInRecords}
+            />
           </TabsContent>
         </div>
       </Tabs>

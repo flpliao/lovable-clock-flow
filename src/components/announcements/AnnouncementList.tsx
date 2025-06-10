@@ -44,7 +44,7 @@ const AnnouncementList: React.FC = () => {
       for (const announcement of announcements) {
         try {
           const isRead = await checkAnnouncementRead(announcement.id);
-          // 確保只儲存布林值 - checkAnnouncementRead 現在確保返回 boolean
+          // checkAnnouncementRead 已確保返回 boolean
           statusMap[announcement.id] = isRead;
         } catch (error) {
           console.error(`檢查公告 ${announcement.id} 已讀狀態失敗:`, error);
@@ -65,6 +65,7 @@ const AnnouncementList: React.FC = () => {
     
     try {
       await markAnnouncementAsRead(announcement.id);
+      // 確保設定為 boolean 值
       setReadStatus(prev => ({ ...prev, [announcement.id]: true }));
       console.log('公告已標記為已讀:', announcement.id);
     } catch (error) {
@@ -75,8 +76,8 @@ const AnnouncementList: React.FC = () => {
   // 取得已讀狀態 - 確保返回布林值
   const getReadStatus = (announcementId: string): boolean => {
     const status = readStatus[announcementId];
-    // 由於 readStatus 現在確保只包含布林值，直接返回狀態或 false
-    return status || false;
+    // 由於 readStatus 確保只包含布林值，直接返回狀態或 false
+    return status === true;
   };
 
   return (

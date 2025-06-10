@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Activity, Clock, AlertCircle, CalendarDays, Users } from 'lucide-react';
+import { Activity, Clock, AlertCircle, CalendarDays, Users, TrendingUp, FileText, Target, PieChart as PieChartIcon } from 'lucide-react';
 import StaffAttendanceTable from './StaffAttendanceTable';
 
 // Mock data for charts and tables
@@ -54,86 +54,129 @@ const StaffAnalyticsDashboard = () => {
   const totalTardyCounts = mockStaffAttendanceData.reduce((sum, staff) => sum + staff.tardyCount, 0);
   
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
-        <Card className="p-0">
-          <CardContent className="p-3 flex items-center justify-between">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500">總員工數</p>
-              <h3 className="text-lg font-bold">{totalStaff}</h3>
+              <p className="text-sm text-white/70">總員工數</p>
+              <h3 className="text-xl font-bold text-white drop-shadow-md">{totalStaff}</h3>
             </div>
-            <Users className="h-5 w-5 text-blue-500" />
-          </CardContent>
-        </Card>
+            <div className="p-2 bg-blue-500/70 rounded-xl shadow-lg">
+              <Users className="h-5 w-5 text-white" />
+            </div>
+          </div>
+        </div>
         
-        <Card className="p-0">
-          <CardContent className="p-3 flex items-center justify-between">
+        <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500">總工時</p>
-              <h3 className="text-lg font-bold">{totalWorkHours}h</h3>
+              <p className="text-sm text-white/70">總工時</p>
+              <h3 className="text-xl font-bold text-white drop-shadow-md">{totalWorkHours}h</h3>
             </div>
-            <Activity className="h-5 w-5 text-green-500" />
-          </CardContent>
-        </Card>
+            <div className="p-2 bg-green-500/70 rounded-xl shadow-lg">
+              <Activity className="h-5 w-5 text-white" />
+            </div>
+          </div>
+        </div>
         
-        <Card className="p-0">
-          <CardContent className="p-3 flex items-center justify-between">
+        <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500">總請假</p>
-              <h3 className="text-lg font-bold">{totalLeaveHours}h</h3>
+              <p className="text-sm text-white/70">總請假</p>
+              <h3 className="text-xl font-bold text-white drop-shadow-md">{totalLeaveHours}h</h3>
             </div>
-            <CalendarDays className="h-5 w-5 text-amber-500" />
-          </CardContent>
-        </Card>
+            <div className="p-2 bg-amber-500/70 rounded-xl shadow-lg">
+              <CalendarDays className="h-5 w-5 text-white" />
+            </div>
+          </div>
+        </div>
         
-        <Card className="p-0">
-          <CardContent className="p-3 flex items-center justify-between">
+        <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500">異常打卡</p>
-              <h3 className="text-lg font-bold">{totalAbnormalCheckIns}</h3>
+              <p className="text-sm text-white/70">異常打卡</p>
+              <h3 className="text-xl font-bold text-white drop-shadow-md">{totalAbnormalCheckIns}</h3>
             </div>
-            <AlertCircle className="h-5 w-5 text-red-500" />
-          </CardContent>
-        </Card>
+            <div className="p-2 bg-red-500/70 rounded-xl shadow-lg">
+              <AlertCircle className="h-5 w-5 text-white" />
+            </div>
+          </div>
+        </div>
         
-        <Card className="p-0">
-          <CardContent className="p-3 flex items-center justify-between">
+        <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500">遲到次數</p>
-              <h3 className="text-lg font-bold">{totalTardyCounts}</h3>
+              <p className="text-sm text-white/70">遲到次數</p>
+              <h3 className="text-xl font-bold text-white drop-shadow-md">{totalTardyCounts}</h3>
             </div>
-            <Clock className="h-5 w-5 text-purple-500" />
-          </CardContent>
-        </Card>
+            <div className="p-2 bg-purple-500/70 rounded-xl shadow-lg">
+              <Clock className="h-5 w-5 text-white" />
+            </div>
+          </div>
+        </div>
       </div>
       
-      {/* Tabs for different views */}
+      {/* 標籤導航 */}
+      <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 bg-white/15 rounded-xl h-12">
+            <TabsTrigger 
+              value="overview" 
+              className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-lg flex items-center gap-2 text-sm"
+            >
+              <Target className="h-3 w-3" />
+              概覽
+            </TabsTrigger>
+            <TabsTrigger 
+              value="workHours" 
+              className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-lg flex items-center gap-2 text-sm"
+            >
+              <TrendingUp className="h-3 w-3" />
+              工時
+            </TabsTrigger>
+            <TabsTrigger 
+              value="leaveAnalysis" 
+              className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-lg flex items-center gap-2 text-sm"
+            >
+              <CalendarDays className="h-3 w-3" />
+              請假
+            </TabsTrigger>
+            <TabsTrigger 
+              value="attendance" 
+              className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-lg flex items-center gap-2 text-sm"
+            >
+              <FileText className="h-3 w-3" />
+              考勤
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+      
+      {/* 內容區域 - 直接顯示在主背景上 */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-3 h-8 grid w-full grid-cols-4">
-          <TabsTrigger value="overview" className="text-xs">概覽</TabsTrigger>
-          <TabsTrigger value="workHours" className="text-xs">工時</TabsTrigger>
-          <TabsTrigger value="leaveAnalysis" className="text-xs">請假</TabsTrigger>
-          <TabsTrigger value="attendance" className="text-xs">考勤</TabsTrigger>
-        </TabsList>
-        
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-3">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <Card className="p-0">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">員工考勤數據</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <StaffAttendanceTable data={mockStaffAttendanceData} />
-              </CardContent>
-            </Card>
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-blue-500/70 rounded-xl shadow-lg">
+                  <Users className="h-4 w-4 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-white drop-shadow-md">員工考勤數據</h3>
+              </div>
+              <StaffAttendanceTable data={mockStaffAttendanceData} />
+            </div>
             
-            <Card className="p-0">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">請假類型分布</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0 h-64">
+            <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-green-500/70 rounded-xl shadow-lg">
+                  <PieChartIcon className="h-4 w-4 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-white drop-shadow-md">請假類型分布</h3>
+              </div>
+              <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -152,18 +195,21 @@ const StaffAnalyticsDashboard = () => {
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </TabsContent>
         
         {/* Work Hours Tab */}
         <TabsContent value="workHours">
-          <Card className="p-0">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">月度工時統計</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0 h-72">
+          <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-purple-500/70 rounded-xl shadow-lg">
+                <TrendingUp className="h-4 w-4 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-white drop-shadow-md">月度工時統計</h3>
+            </div>
+            <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={monthlyWorkHoursData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -173,51 +219,55 @@ const StaffAnalyticsDashboard = () => {
                   <Bar dataKey="加班時數" fill="#82ca9d" />
                 </BarChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
         
         {/* Leave Analysis Tab */}
         <TabsContent value="leaveAnalysis">
-          <Card className="p-0">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">請假時數明細</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-xs">員工</TableHead>
-                    <TableHead className="text-xs">請假</TableHead>
-                    <TableHead className="text-xs">年假剩餘</TableHead>
-                    <TableHead className="text-xs">病假</TableHead>
-                    <TableHead className="text-xs">事假</TableHead>
+          <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-orange-500/70 rounded-xl shadow-lg">
+                <CalendarDays className="h-4 w-4 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-white drop-shadow-md">請假時數明細</h3>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-white/80 text-sm">員工</TableHead>
+                  <TableHead className="text-white/80 text-sm">請假</TableHead>
+                  <TableHead className="text-white/80 text-sm">年假剩餘</TableHead>
+                  <TableHead className="text-white/80 text-sm">病假</TableHead>
+                  <TableHead className="text-white/80 text-sm">事假</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {mockStaffAttendanceData.map((staff) => (
+                  <TableRow key={staff.id}>
+                    <TableCell className="text-white font-medium text-sm">{staff.name}</TableCell>
+                    <TableCell className="text-white/80 text-sm">{staff.leaveHours}h</TableCell>
+                    <TableCell className="text-white/80 text-sm">{Math.floor(Math.random() * 40)}h</TableCell>
+                    <TableCell className="text-white/80 text-sm">{Math.floor(Math.random() * 16)}h</TableCell>
+                    <TableCell className="text-white/80 text-sm">{Math.floor(Math.random() * 24)}h</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockStaffAttendanceData.map((staff) => (
-                    <TableRow key={staff.id}>
-                      <TableCell className="text-xs font-medium">{staff.name}</TableCell>
-                      <TableCell className="text-xs">{staff.leaveHours}h</TableCell>
-                      <TableCell className="text-xs">{Math.floor(Math.random() * 40)}h</TableCell>
-                      <TableCell className="text-xs">{Math.floor(Math.random() * 16)}h</TableCell>
-                      <TableCell className="text-xs">{Math.floor(Math.random() * 24)}h</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </TabsContent>
         
         {/* Attendance Tab */}
-        <TabsContent value="attendance" className="space-y-3">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <Card className="p-0">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">部門考勤數據</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0 h-64">
+        <TabsContent value="attendance" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-teal-500/70 rounded-xl shadow-lg">
+                  <Activity className="h-4 w-4 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-white drop-shadow-md">部門考勤數據</h3>
+              </div>
+              <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={departmentAttendanceData} layout="vertical" margin={{ top: 5, right: 10, left: 50, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -227,40 +277,41 @@ const StaffAnalyticsDashboard = () => {
                     <Bar dataKey="異常考勤" fill="#ff8042" stackId="a" />
                   </BarChart>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
             
-            <Card className="p-0">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">異常考勤明細</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-xs">員工</TableHead>
-                      <TableHead className="text-xs">異常</TableHead>
-                      <TableHead className="text-xs">遲到</TableHead>
-                      <TableHead className="text-xs">原因</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockStaffAttendanceData
-                      .filter(staff => staff.abnormalCheckIns > 0 || staff.tardyCount > 0)
-                      .map((staff) => (
-                        <TableRow key={staff.id}>
-                          <TableCell className="text-xs font-medium">{staff.name}</TableCell>
-                          <TableCell className="text-xs">{staff.abnormalCheckIns}</TableCell>
-                          <TableCell className="text-xs">{staff.tardyCount}</TableCell>
-                          <TableCell className="text-xs">
-                            {staff.abnormalCheckIns > staff.tardyCount ? '未打卡' : '遲到'}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-red-500/70 rounded-xl shadow-lg">
+                  <AlertCircle className="h-4 w-4 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-white drop-shadow-md">異常考勤明細</h3>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-white/80 text-sm">員工</TableHead>
+                    <TableHead className="text-white/80 text-sm">異常</TableHead>
+                    <TableHead className="text-white/80 text-sm">遲到</TableHead>
+                    <TableHead className="text-white/80 text-sm">原因</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mockStaffAttendanceData
+                    .filter(staff => staff.abnormalCheckIns > 0 || staff.tardyCount > 0)
+                    .map((staff) => (
+                      <TableRow key={staff.id}>
+                        <TableCell className="text-white font-medium text-sm">{staff.name}</TableCell>
+                        <TableCell className="text-white/80 text-sm">{staff.abnormalCheckIns}</TableCell>
+                        <TableCell className="text-white/80 text-sm">{staff.tardyCount}</TableCell>
+                        <TableCell className="text-white/80 text-sm">
+                          {staff.abnormalCheckIns > staff.tardyCount ? '未打卡' : '遲到'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </TabsContent>
       </Tabs>

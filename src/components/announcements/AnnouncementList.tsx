@@ -70,25 +70,6 @@ const AnnouncementList: React.FC = () => {
     }
   };
 
-  // 檢查公告是否已讀
-  const checkIfRead = async (announcementId: string): Promise<boolean> => {
-    const currentStatus = readStatus[announcementId];
-    if (currentStatus !== undefined) {
-      return currentStatus;
-    }
-    
-    try {
-      const isRead = await checkAnnouncementRead(announcementId);
-      const booleanStatus = Boolean(isRead);
-      setReadStatus(prev => ({ ...prev, [announcementId]: booleanStatus }));
-      return booleanStatus;
-    } catch (error) {
-      console.error('檢查已讀狀態失敗:', error);
-      setReadStatus(prev => ({ ...prev, [announcementId]: false }));
-      return false;
-    }
-  };
-
   // 取得已讀狀態 - 確保返回布林值
   const getReadStatus = (announcementId: string): boolean => {
     const status = readStatus[announcementId];

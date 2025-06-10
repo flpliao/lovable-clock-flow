@@ -92,7 +92,7 @@ const AnnouncementList: React.FC = () => {
   // 取得已讀狀態 - 確保返回布林值
   const getReadStatus = (announcementId: string): boolean => {
     const status = readStatus[announcementId];
-    return status === true;
+    return Boolean(status);
   };
 
   return (

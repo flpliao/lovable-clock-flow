@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, Clock, Calendar, DollarSign, FileText, Timer } from 'lucide-react';
+import { Search, Filter, Clock, Calendar, DollarSign, FileText, Timer, CheckCircle } from 'lucide-react';
 import { getOvertimeTypeText, getCompensationTypeText } from '@/utils/overtimeUtils';
 import { getExceptionStatusText, getExceptionStatusColor } from '@/utils/attendanceExceptionUtils';
 
@@ -61,59 +61,67 @@ const OvertimeHistory: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* 搜尋和篩選卡片 */}
-      <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-6">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8">
+        <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-green-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-green-400/50">
             <Search className="h-5 w-5 text-white" />
           </div>
           <h3 className="text-xl font-semibold text-white drop-shadow-md">搜尋篩選</h3>
         </div>
 
-        <div className="space-y-4">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/70" />
-            <Input
-              placeholder="搜尋加班原因..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 h-12 bg-white/20 backdrop-blur-xl border-white/30 text-white placeholder-white/70 rounded-xl"
-            />
+        <div className="space-y-6">
+          {/* 搜尋框區塊 */}
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-4">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/70" />
+              <Input
+                placeholder="搜尋加班原因..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-12 h-12 bg-white/20 backdrop-blur-xl border-white/30 text-white placeholder-white/70 rounded-xl"
+              />
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="h-12 bg-white/20 backdrop-blur-xl border-white/30 text-white rounded-xl">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="狀態" />
-              </SelectTrigger>
-              <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg">
-                <SelectItem value="all">全部狀態</SelectItem>
-                <SelectItem value="pending">待審核</SelectItem>
-                <SelectItem value="approved">已核准</SelectItem>
-                <SelectItem value="rejected">已拒絕</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="h-12 bg-white/20 backdrop-blur-xl border-white/30 text-white rounded-xl">
-                <SelectValue placeholder="類型" />
-              </SelectTrigger>
-              <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg">
-                <SelectItem value="all">全部類型</SelectItem>
-                <SelectItem value="weekday">平日加班</SelectItem>
-                <SelectItem value="weekend">假日加班</SelectItem>
-                <SelectItem value="holiday">國定假日加班</SelectItem>
-              </SelectContent>
-            </Select>
+          
+          {/* 篩選器區塊 */}
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-12 bg-white/20 backdrop-blur-xl border-white/30 text-white rounded-xl">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="狀態" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg">
+                  <SelectItem value="all">全部狀態</SelectItem>
+                  <SelectItem value="pending">待審核</SelectItem>
+                  <SelectItem value="approved">已核准</SelectItem>
+                  <SelectItem value="rejected">已拒絕</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="h-12 bg-white/20 backdrop-blur-xl border-white/30 text-white rounded-xl">
+                  <SelectValue placeholder="類型" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg">
+                  <SelectItem value="all">全部類型</SelectItem>
+                  <SelectItem value="weekday">平日加班</SelectItem>
+                  <SelectItem value="weekend">假日加班</SelectItem>
+                  <SelectItem value="holiday">國定假日加班</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </div>
 
       {/* 加班記錄列表 */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         {filteredOvertimes.map((overtime) => (
-          <div key={overtime.id} className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-6">
-            <div className="space-y-4">
+          <div key={overtime.id} className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8">
+            {/* 狀態和基本資訊區塊 */}
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-6 mb-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
@@ -128,6 +136,14 @@ const OvertimeHistory: React.FC = () => {
                     </span>
                   </div>
                 </div>
+              </div>
+            </div>
+            
+            {/* 時間和日期資訊區塊 */}
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-6 mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Calendar className="h-5 w-5 text-white/80" />
+                <h4 className="text-lg font-medium text-white">時間資訊</h4>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -147,14 +163,7 @@ const OvertimeHistory: React.FC = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3">
-                  <DollarSign className="h-4 w-4 text-white/70" />
-                  <div>
-                    <span className="text-white/70 text-sm">補償方式:</span>
-                    <p className="font-medium text-white">{getCompensationTypeText(overtime.compensation_type)}</p>
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="flex items-center gap-3">
                   <Clock className="h-4 w-4 text-white/70" />
                   <div>
@@ -165,20 +174,36 @@ const OvertimeHistory: React.FC = () => {
                     </p>
                   </div>
                 </div>
-              </div>
-              
-              <div className="pt-3 border-t border-white/20">
-                <div className="flex items-start gap-3">
-                  <FileText className="h-4 w-4 text-white/70 mt-1" />
-                  <div className="flex-1">
-                    <span className="text-white/70 text-sm">原因:</span>
-                    <p className="mt-1 text-white">{overtime.reason}</p>
+                <div className="flex items-center gap-3">
+                  <DollarSign className="h-4 w-4 text-white/70" />
+                  <div>
+                    <span className="text-white/70 text-sm">補償方式:</span>
+                    <p className="font-medium text-white">{getCompensationTypeText(overtime.compensation_type)}</p>
                   </div>
                 </div>
               </div>
+            </div>
+            
+            {/* 原因說明區塊 */}
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-6 mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <FileText className="h-5 w-5 text-white/80" />
+                <h4 className="text-lg font-medium text-white">原因說明</h4>
+              </div>
               
+              <div className="flex items-start gap-3">
+                <FileText className="h-4 w-4 text-white/70 mt-1" />
+                <div className="flex-1">
+                  <span className="text-white/70 text-sm">原因:</span>
+                  <p className="mt-1 text-white">{overtime.reason}</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* 申請時間區塊 */}
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-4">
               <div className="text-sm text-white/60 flex items-center gap-2">
-                <Calendar className="h-3 w-3" />
+                <CheckCircle className="h-3 w-3" />
                 申請時間: {new Date(overtime.created_at).toLocaleString('zh-TW')}
               </div>
             </div>

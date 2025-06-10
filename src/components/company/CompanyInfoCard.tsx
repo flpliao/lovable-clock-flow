@@ -1,16 +1,12 @@
 
 import React from 'react';
-import { Card } from '@/components/ui/card';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useUser } from '@/contexts/UserContext';
 import { useCompanyOperations } from './hooks/useCompanyOperations';
 import { CompanyApiService } from './services/companyApiService';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { CompanyInfoHeader } from './components/CompanyInfoHeader';
-import { CompanyInfoContent } from './components/CompanyInfoContent';
-import { CompanyInfoActions } from './components/CompanyInfoActions';
-import { CompanyLoadingState } from './components/CompanyLoadingState';
-import { CompanyEmptyState } from './components/CompanyEmptyState';
+import { Building2, Phone, Mail, MapPin, Calendar, Users, Edit, RefreshCw, Sync } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const CompanyInfoCard = () => {
   const { setIsEditCompanyDialogOpen } = useCompanyManagementContext();
@@ -20,8 +16,6 @@ const CompanyInfoCard = () => {
 
   console.log('CompanyInfoCard - 當前用戶:', currentUser?.name);
   console.log('CompanyInfoCard - 公司資料載入狀態:', { company: company?.name, loading });
-  console.log('CompanyInfoCard - 編輯對話框狀態檢查');
-  console.log('CompanyInfoCard - Context setIsEditCompanyDialogOpen:', typeof setIsEditCompanyDialogOpen);
 
   // 允許廖俊雄和管理員編輯公司資料
   const canEdit = currentUser?.name === '廖俊雄' || isAdmin();
@@ -43,9 +37,6 @@ const CompanyInfoCard = () => {
 
   const handleEdit = () => {
     console.log('🖊️ CompanyInfoCard: 開啟編輯公司資料對話框');
-    console.log('🖊️ 當前公司資料:', company);
-    console.log('🖊️ 用戶權限:', { canEdit, userName: currentUser?.name });
-    console.log('🖊️ setIsEditCompanyDialogOpen 函數:', setIsEditCompanyDialogOpen);
     
     if (!canEdit) {
       console.warn('⚠️ 用戶沒有編輯權限');
@@ -64,44 +55,152 @@ const CompanyInfoCard = () => {
     
     console.log('✅ 正在開啟編輯對話框...');
     setIsEditCompanyDialogOpen(true);
-    console.log('✅ 編輯對話框已設定為開啟狀態');
   };
 
   // 如果正在載入
   if (loading) {
-    return <CompanyLoadingState />;
+    return (
+      <div className="backdrop-blur-xl bg-white/25 border border-white/30 rounded-2xl shadow-lg p-6">
+        <div className="text-center py-8 text-white">載入中...</div>
+      </div>
+    );
   }
 
   // 如果沒有公司資料
   if (!company) {
     return (
-      <CompanyEmptyState
-        canEdit={canEdit}
-        onEdit={handleEdit}
-        onReload={loadCompany}
-        onForceReload={handleForceReload}
-        onForceSyncFromBackend={handleForceSyncFromBackend}
-      />
+      <div className="backdrop-blur-xl bg-white/25 border border-white/30 rounded-2xl shadow-lg p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="p-3 bg-red-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-red-400/50">
+            <Building2 className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-white drop-shadow-md">公司基本資料</h3>
+            <p className="text-white/80 text-sm mt-1">未找到公司資料</p>
+          </div>
+        </div>
+        
+        {canEdit && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Button
+              onClick={loadCompany}
+              variant="outline"
+              className="bg-white/25 border-white/40 text-white hover:bg-white/35 rounded-xl"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              重新載入
+            </Button>
+            <Button
+              onClick={handleForceReload}
+              variant="outline"
+              className="bg-blue-500/25 border-blue-400/40 text-white hover:bg-blue-500/35 rounded-xl"
+            >
+              強制重載
+            </Button>
+            <Button
+              onClick={handleForceSyncFromBackend}
+              variant="outline"
+              className="bg-green-500/25 border-green-400/40 text-white hover:bg-green-500/35 rounded-xl"
+            >
+              <Sync className="h-4 w-4 mr-2" />
+              後台同步
+            </Button>
+          </div>
+        )}
+        
+        <div className="text-center py-4 text-white/70">
+          請使用上方按鈕載入或同步公司資料
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className={isMobile ? 'shadow-sm' : ''}>
-      <CompanyInfoHeader company={company} loading={loading} />
-      {canEdit && (
-        <div className={isMobile ? 'px-4 pb-2' : 'px-6 pb-2'}>
-          <CompanyInfoActions
-            company={company}
-            canEdit={canEdit}
-            onEdit={handleEdit}
-            onReload={loadCompany}
-            onForceReload={handleForceReload}
-            onForceSyncFromBackend={handleForceSyncFromBackend}
-          />
+    <div className="backdrop-blur-xl bg-white/25 border border-white/30 rounded-2xl shadow-lg p-6">
+      {/* 標題區域 */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-green-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-green-400/50">
+            <Building2 className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-white drop-shadow-md">公司基本資料</h3>
+            <p className="text-white/80 text-sm mt-1">依美琦股份有限公司</p>
+          </div>
         </div>
-      )}
-      <CompanyInfoContent company={company} />
-    </Card>
+        
+        {canEdit && (
+          <div className="flex gap-2">
+            <Button
+              onClick={handleEdit}
+              className="bg-blue-500/80 hover:bg-blue-600/80 text-white border-0 rounded-xl shadow-lg backdrop-blur-xl"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              編輯
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* 公司資訊內容 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Building2 className="h-4 w-4 text-white/70" />
+            <div>
+              <div className="text-sm text-white/70">公司名稱</div>
+              <div className="text-white font-medium">{company.name}</div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Users className="h-4 w-4 text-white/70" />
+            <div>
+              <div className="text-sm text-white/70">統一編號</div>
+              <div className="text-white font-medium">{company.registration_number}</div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <MapPin className="h-4 w-4 text-white/70" />
+            <div>
+              <div className="text-sm text-white/70">公司地址</div>
+              <div className="text-white font-medium">{company.address}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Phone className="h-4 w-4 text-white/70" />
+            <div>
+              <div className="text-sm text-white/70">聯絡電話</div>
+              <div className="text-white font-medium">{company.phone}</div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Mail className="h-4 w-4 text-white/70" />
+            <div>
+              <div className="text-sm text-white/70">電子郵件</div>
+              <div className="text-white font-medium">{company.email}</div>
+            </div>
+          </div>
+          
+          {company.established_date && (
+            <div className="flex items-center gap-3">
+              <Calendar className="h-4 w-4 text-white/70" />
+              <div>
+                <div className="text-sm text-white/70">成立日期</div>
+                <div className="text-white font-medium">
+                  {new Date(company.established_date).toLocaleDateString('zh-TW')}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 

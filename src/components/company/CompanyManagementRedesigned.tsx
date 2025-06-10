@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Plus } from 'lucide-react';
+import { Building2, Plus, Building } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -25,34 +24,37 @@ const CompanyManagementRedesigned = () => {
   };
 
   return (
-    <div className={`space-y-3 ${isMobile ? 'space-y-2' : 'space-y-4'}`}>
+    <div className="space-y-6">
       {/* 公司基本資料 */}
       <CompanyInfoCard />
 
       {/* 營業處管理區塊 */}
-      <Card className={isMobile ? 'shadow-sm' : ''}>
-        <CardHeader className={`${isMobile ? 'pb-2 px-4 pt-4' : 'pb-3'}`}>
-          <div className={`flex items-center justify-between ${isMobile ? 'flex-col space-y-2' : ''}`}>
-            <CardTitle className={`flex items-center ${isMobile ? 'text-sm w-full justify-center' : 'text-base'}`}>
-              <Building2 className={`mr-2 text-blue-600 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
-              營業處管理 ({branches?.length || 0})
-            </CardTitle>
-            {canManageBranches && (
-              <Button
-                onClick={handleAddBranch}
-                size={isMobile ? "sm" : "default"}
-                className={`flex items-center ${isMobile ? 'w-full justify-center' : ''} ${isMobile ? 'text-xs h-8' : 'text-sm'}`}
-              >
-                <Plus className={`mr-1 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                新增營業處
-              </Button>
-            )}
+      <div className="backdrop-blur-xl bg-white/25 border border-white/30 rounded-2xl shadow-lg p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-orange-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-orange-400/50">
+              <Building className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-white drop-shadow-md">
+                營業處管理 ({branches?.length || 0})
+              </h3>
+              <p className="text-white/80 text-sm mt-1">管理所有營業處資訊</p>
+            </div>
           </div>
-        </CardHeader>
-        <CardContent className={`${isMobile ? 'pt-0 px-2' : 'pt-0'}`}>
-          <BranchTable />
-        </CardContent>
-      </Card>
+          {canManageBranches && (
+            <Button
+              onClick={handleAddBranch}
+              className="bg-blue-500/80 hover:bg-blue-600/80 text-white border-0 rounded-xl shadow-lg backdrop-blur-xl"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              新增營業處
+            </Button>
+          )}
+        </div>
+        
+        <BranchTable />
+      </div>
 
       {/* 對話框 */}
       <AddBranchDialog />

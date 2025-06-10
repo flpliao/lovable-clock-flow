@@ -32,8 +32,8 @@ export const useAnnouncementReads = () => {
     try {
       console.log('檢查公告已讀狀態:', { announcementId, userId: currentUser.id });
       const result = await AnnouncementReadService.checkAnnouncementRead(announcementId, currentUser.id);
-      // 明確確保返回布林值
-      const isRead = result === true;
+      // 明確處理可能的 string | boolean 返回值，確保返回布林值
+      const isRead = result === true || result === 'true';
       console.log('公告已讀狀態:', isRead);
       return isRead;
     } catch (error) {

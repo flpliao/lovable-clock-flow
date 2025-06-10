@@ -35,6 +35,7 @@ const AnnouncementList: React.FC = () => {
   const handleOpenAnnouncement = async (announcement: CompanyAnnouncement) => {
     setOpenAnnouncement(announcement);
     await markAnnouncementAsRead(announcement.id);
+    // Explicitly ensure boolean value
     setReadStatus(prev => ({ ...prev, [announcement.id]: true }));
   };
 
@@ -45,16 +46,16 @@ const AnnouncementList: React.FC = () => {
     }
     
     const isRead = await checkAnnouncementRead(announcementId);
-    // Ensure we store a boolean value
+    // Explicitly convert to boolean and ensure we store a boolean value
     const booleanStatus = Boolean(isRead);
     setReadStatus(prev => ({ ...prev, [announcementId]: booleanStatus }));
     return booleanStatus;
   };
 
-  // Helper function to get read status with proper boolean type
+  // Helper function to get read status with explicit boolean conversion
   const getReadStatus = (announcementId: string): boolean => {
     const status = readStatus[announcementId];
-    // Explicitly convert to boolean to handle any type
+    // Explicitly convert to boolean, defaulting to false if undefined
     return Boolean(status);
   };
 

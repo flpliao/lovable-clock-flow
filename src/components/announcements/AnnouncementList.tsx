@@ -49,6 +49,11 @@ const AnnouncementList: React.FC = () => {
     return isRead;
   };
 
+  // Helper function to get read status with proper boolean type
+  const getReadStatus = (announcementId: string): boolean => {
+    return readStatus[announcementId] === true;
+  };
+
   return (
     <div className="space-y-6">
       {/* Search and filter section */}
@@ -83,7 +88,7 @@ const AnnouncementList: React.FC = () => {
             <AnnouncementCard
               key={announcement.id}
               announcement={announcement}
-              isRead={readStatus[announcement.id] || false}
+              isRead={getReadStatus(announcement.id)}
               onClick={handleOpenAnnouncement}
             />
           ))}

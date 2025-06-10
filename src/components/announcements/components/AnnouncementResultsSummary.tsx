@@ -2,7 +2,6 @@
 import React from 'react';
 import { FileText, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { visionProStyles } from '@/utils/visionProStyles';
 
 interface AnnouncementResultsSummaryProps {
   totalCount: number;
@@ -20,10 +19,10 @@ const AnnouncementResultsSummary: React.FC<AnnouncementResultsSummaryProps> = ({
   if (loading) return null;
 
   return (
-    <div className={`${visionProStyles.liquidGlassCard} p-4 border border-white/40 shadow-lg`}>
+    <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl p-4 shadow-lg">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-4">
-          <div className={visionProStyles.coloredIconContainer.teal}>
+          <div className="p-3 bg-teal-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-teal-400/50 text-white">
             <FileText className="h-5 w-5" />
           </div>
           <div>
@@ -41,7 +40,7 @@ const AnnouncementResultsSummary: React.FC<AnnouncementResultsSummaryProps> = ({
             variant="ghost"
             size="sm"
             onClick={clearFilters}
-            className={`${visionProStyles.glassButton} border-white/40 text-gray-800 hover:bg-white/40 shadow-md`}
+            className="backdrop-blur-xl bg-white/30 border-white/40 text-gray-800 hover:bg-white/50 shadow-md rounded-xl"
           >
             <Eye className="h-4 w-4 mr-2" />
             查看所有公告

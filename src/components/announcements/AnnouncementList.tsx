@@ -43,7 +43,6 @@ const AnnouncementList: React.FC = () => {
       for (const announcement of announcements) {
         try {
           const isRead = await checkAnnouncementRead(announcement.id);
-          // Ensure we always store a boolean value
           statusMap[announcement.id] = Boolean(isRead);
         } catch (error) {
           console.error(`檢查公告 ${announcement.id} 已讀狀態失敗:`, error);
@@ -75,28 +74,25 @@ const AnnouncementList: React.FC = () => {
   const checkIfRead = async (announcementId: string): Promise<boolean> => {
     const currentStatus = readStatus[announcementId];
     if (currentStatus !== undefined) {
-      return Boolean(currentStatus);
+      return currentStatus;
     }
     
     try {
       const isRead = await checkAnnouncementRead(announcementId);
-      // Ensure we always work with boolean values
       const booleanStatus = Boolean(isRead);
       setReadStatus(prev => ({ ...prev, [announcementId]: booleanStatus }));
       return booleanStatus;
     } catch (error) {
       console.error('檢查已讀狀態失敗:', error);
-      const fallbackStatus = false;
-      setReadStatus(prev => ({ ...prev, [announcementId]: fallbackStatus }));
-      return fallbackStatus;
+      setReadStatus(prev => ({ ...prev, [announcementId]: false }));
+      return false;
     }
   };
 
   // 取得已讀狀態 - 確保返回布林值
   const getReadStatus = (announcementId: string): boolean => {
     const status = readStatus[announcementId];
-    // Handle both undefined and any potential string values by converting to boolean
-    return status !== undefined ? Boolean(status) : false;
+    return status === true;
   };
 
   return (

@@ -2,7 +2,6 @@
 import React from 'react';
 import { FileText, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { visionProStyles } from '@/utils/visionProStyles';
 
 interface AnnouncementEmptyStateProps {
   hasActiveFilters: boolean;
@@ -14,10 +13,10 @@ const AnnouncementEmptyState: React.FC<AnnouncementEmptyStateProps> = ({
   clearFilters
 }) => {
   return (
-    <div className={`${visionProStyles.liquidGlassCard} p-12 text-center border border-white/40 shadow-xl`}>
+    <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl p-12 text-center shadow-xl">
       <div className="space-y-6">
         <div className="flex justify-center">
-          <div className={visionProStyles.coloredIconContainer.gray}>
+          <div className="p-4 bg-gray-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-gray-400/50 text-white">
             {hasActiveFilters ? (
               <Search className="h-8 w-8" />
             ) : (
@@ -41,7 +40,7 @@ const AnnouncementEmptyState: React.FC<AnnouncementEmptyStateProps> = ({
         {hasActiveFilters && (
           <Button
             onClick={clearFilters}
-            className={`${visionProStyles.glassButton} border-white/50 text-gray-800 hover:bg-white/50 shadow-lg px-6 py-3`}
+            className="backdrop-blur-xl bg-white/30 border-white/40 text-gray-800 hover:bg-white/50 shadow-lg px-6 py-3 rounded-xl"
           >
             清除所有篩選
           </Button>

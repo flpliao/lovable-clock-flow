@@ -43,7 +43,7 @@ const AnnouncementList: React.FC = () => {
       for (const announcement of announcements) {
         try {
           const isRead = await checkAnnouncementRead(announcement.id);
-          statusMap[announcement.id] = isRead;
+          statusMap[announcement.id] = !!isRead;
         } catch (error) {
           console.error(`檢查公告 ${announcement.id} 已讀狀態失敗:`, error);
           statusMap[announcement.id] = false;
@@ -89,7 +89,7 @@ const AnnouncementList: React.FC = () => {
     }
   };
 
-  // 取得已讀狀態
+  // 取得已讀狀態 - 確保返回布林值
   const getReadStatus = (announcementId: string): boolean => {
     return !!readStatus[announcementId];
   };

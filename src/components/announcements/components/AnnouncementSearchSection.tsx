@@ -1,17 +1,11 @@
 
-import React, { useState } from 'react';
-import { Search, Filter } from 'lucide-react';
+import React from 'react';
+import { Search, Filter, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Badge } from '@/components/ui/badge';
+import { visionProStyles } from '@/utils/visionProStyles';
 
 interface AnnouncementSearchSectionProps {
   searchQuery: string;
@@ -30,80 +24,90 @@ const AnnouncementSearchSection: React.FC<AnnouncementSearchSectionProps> = ({
   categories,
   clearFilters
 }) => {
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'HR':
+        return visionProStyles.coloredIconContainer.blue;
+      case 'Administration':
+        return visionProStyles.coloredIconContainer.orange;
+      case 'Meeting':
+        return visionProStyles.coloredIconContainer.green;
+      case 'Official':
+        return visionProStyles.coloredIconContainer.red;
+      default:
+        return visionProStyles.coloredIconContainer.gray;
+    }
+  };
+
+  const hasActiveFilters = searchQuery || selectedCategory !== 'all';
 
   return (
-    <div className="space-y-4">
-      {/* Search bar */}
+    <div className={`${visionProStyles.liquidGlassCard} p-6 space-y-6 border border-white/40 shadow-xl`}>
+      {/* Search Bar */}
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-600" />
+        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <div className={visionProStyles.iconContainer}>
+            <Search className="h-4 w-4 text-gray-600" />
+          </div>
+        </div>
         <Input
+          type="text"
           placeholder="搜尋公告標題或內容..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-12 h-12 text-base bg-white/70 text-gray-800 border-white/40 backdrop-blur-xl font-medium placeholder:text-gray-600 shadow-md drop-shadow-sm"
+          className="pl-14 pr-4 py-3 text-base bg-white/70 border-white/50 rounded-xl shadow-md backdrop-blur-xl focus:bg-white/80 focus:ring-2 focus:ring-blue-400/50 transition-all duration-300"
         />
       </div>
 
-      {/* Filter section */}
-      <div className="flex gap-3">
-        <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="flex-1 h-12 text-base bg-white/70 text-gray-800 border-white/40 backdrop-blur-xl font-semibold hover:bg-white/80 shadow-md drop-shadow-sm">
-              <Filter className="h-4 w-4 mr-2" />
-              篩選分類
-              {selectedCategory !== 'all' && (
-                <span className="ml-2 px-2 py-1 bg-blue-500/90 text-white text-xs rounded-full shadow-sm">
-                  1
-                </span>
-              )}
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="h-[300px]">
-            <SheetHeader>
-              <SheetTitle>篩選公告</SheetTitle>
-              <SheetDescription>
-                選擇您想查看的公告分類
-              </SheetDescription>
-            </SheetHeader>
-            <div className="mt-6 space-y-4">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="h-12 text-base">
-                  <SelectValue placeholder="選擇分類" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">所有分類</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="flex gap-2">
-                <Button onClick={clearFilters} variant="outline" className="flex-1">
-                  清除篩選
-                </Button>
-                <Button onClick={() => setIsFilterOpen(false)} className="flex-1">
-                  確定
-                </Button>
-              </div>
+      {/* Filter Section */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="flex items-center space-x-3">
+            <div className={visionProStyles.coloredIconContainer.indigo}>
+              <Filter className="h-4 w-4" />
             </div>
-          </SheetContent>
-        </Sheet>
-
-        {/* Desktop filter */}
-        <div className="hidden sm:block flex-1">
+            <span className="text-sm font-semibold text-gray-800">篩選條件</span>
+          </div>
+          
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="h-12 text-base bg-white/70 text-gray-800 border-white/40 backdrop-blur-xl font-medium shadow-md drop-shadow-sm">
+            <SelectTrigger className="w-full sm:w-48 bg-white/70 border-white/50 rounded-xl shadow-md backdrop-blur-xl hover:bg-white/80 transition-all duration-300">
               <SelectValue placeholder="選擇分類" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">所有分類</SelectItem>
+            <SelectContent className="bg-white/95 border-white/50 rounded-xl shadow-xl backdrop-blur-xl">
+              <SelectItem value="all" className="rounded-lg">所有分類</SelectItem>
               {categories.map((category) => (
-                <SelectItem key={category} value={category}>{category}</SelectItem>
+                <SelectItem key={category} value={category} className="rounded-lg">
+                  {category}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
+
+        {/* Active Filters */}
+        {hasActiveFilters && (
+          <div className="flex flex-wrap gap-2 items-center">
+            {searchQuery && (
+              <Badge className="bg-white/80 text-gray-800 border-white/50 rounded-full px-3 py-1 shadow-md backdrop-blur-xl">
+                搜尋: {searchQuery}
+              </Badge>
+            )}
+            {selectedCategory !== 'all' && (
+              <Badge className={`rounded-full px-3 py-1 shadow-md ${getCategoryColor(selectedCategory)}`}>
+                {selectedCategory}
+              </Badge>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className={`${visionProStyles.glassButton} border-white/40 text-gray-800 hover:bg-white/40 rounded-full px-3 py-1 text-xs`}
+            >
+              <X className="h-3 w-3 mr-1" />
+              清除篩選
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

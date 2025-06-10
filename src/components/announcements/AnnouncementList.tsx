@@ -30,7 +30,7 @@ const AnnouncementList: React.FC = () => {
   } = useAnnouncementFilters(announcements);
 
   const [openAnnouncement, setOpenAnnouncement] = useState<CompanyAnnouncement | null>(null);
-  const [readStatus, setReadStatus] = useState<Record<string, string | boolean>>({});
+  const [readStatus, setReadStatus] = useState<Record<string, boolean>>({});
 
   // 初始化時載入所有公告的已讀狀態
   useEffect(() => {
@@ -38,7 +38,7 @@ const AnnouncementList: React.FC = () => {
       if (announcements.length === 0) return;
       
       console.log('載入所有公告的已讀狀態...');
-      const statusMap: Record<string, string | boolean> = {};
+      const statusMap: Record<string, boolean> = {};
       
       for (const announcement of announcements) {
         try {
@@ -74,13 +74,13 @@ const AnnouncementList: React.FC = () => {
   const checkIfRead = async (announcementId: string): Promise<boolean> => {
     const currentStatus = readStatus[announcementId];
     if (currentStatus !== undefined) {
-      return !!currentStatus;
+      return currentStatus;
     }
     
     try {
       const isRead = await checkAnnouncementRead(announcementId);
       const booleanStatus = !!isRead;
-      setReadStatus(prev => ({ ...prev, [announcementId]: !!isRead }));
+      setReadStatus(prev => ({ ...prev, [announcementId]: booleanStatus }));
       return booleanStatus;
     } catch (error) {
       console.error('檢查已讀狀態失敗:', error);

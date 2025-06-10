@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { Menu, Shield, LogOut, BarChart3, Bell, FileText, Home, Calendar, User, Clock, Building2, Settings, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import ApolloLogo from './ApolloLogo';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -104,26 +106,35 @@ const Header: React.FC<HeaderProps> = () => {
                   <Menu className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-60 bg-gray-900 text-white">
-                {navItems.map((item) => (
-                  <DropdownMenuItem key={item.path} asChild className="py-2 px-4 focus:bg-gray-800 focus:text-white">
-                    <Link to={item.path} className="flex items-center">
-                      {location.pathname === item.path && <Menu className="mr-2 h-4 w-4" />}
-                      <span className={location.pathname === item.path ? "ml-0 flex items-center" : "ml-8 flex items-center"}>
-                        {item.icon} {item.label}
-                      </span>
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuItem 
-                  className="py-2 px-4 focus:bg-gray-800 focus:text-white border-t border-gray-700"
-                  onClick={handleLogout}
-                >
-                  <div className="flex items-center text-red-400">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>登出</span>
+              <DropdownMenuContent 
+                align="end" 
+                className="w-60 bg-gray-900 text-white border-gray-700 z-50"
+                style={{ maxHeight: '80vh' }}
+              >
+                <ScrollArea className="h-full max-h-[70vh]">
+                  <div className="p-1">
+                    {navItems.map((item) => (
+                      <DropdownMenuItem key={item.path} asChild className="py-2 px-4 focus:bg-gray-800 focus:text-white rounded-md mb-1">
+                        <Link to={item.path} className="flex items-center">
+                          {location.pathname === item.path && <Menu className="mr-2 h-4 w-4" />}
+                          <span className={location.pathname === item.path ? "ml-0 flex items-center" : "ml-8 flex items-center"}>
+                            {item.icon} {item.label}
+                          </span>
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                    <div className="border-t border-gray-700 my-2"></div>
+                    <DropdownMenuItem 
+                      className="py-2 px-4 focus:bg-gray-800 focus:text-white rounded-md"
+                      onClick={handleLogout}
+                    >
+                      <div className="flex items-center text-red-400 ml-8">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>登出</span>
+                      </div>
+                    </DropdownMenuItem>
                   </div>
-                </DropdownMenuItem>
+                </ScrollArea>
               </DropdownMenuContent>
             </DropdownMenu>
           </>

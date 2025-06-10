@@ -12,13 +12,8 @@
   text-align: left;
 }
 
-/* 移除所有可能影響滿版的樣式 */
+/* 手機版保持滿版但內容有間距 */
 @media (max-width: 768px) {
-  * {
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-  
   #root {
     width: 100vw !important;
     max-width: 100vw !important;

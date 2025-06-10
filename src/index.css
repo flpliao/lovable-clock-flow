@@ -115,7 +115,7 @@
     padding: 0;
   }
 
-  /* 確保手機完全滿版 */
+  /* 手機版保持滿版但增加適當間距 */
   @media (max-width: 768px) {
     html, body {
       padding: 0 !important;
@@ -136,6 +136,14 @@
       min-height: 100vh !important;
       min-height: 100dvh !important;
       width: 100vw !important;
+    }
+
+    /* 手機版內容間距 */
+    .mobile-fullscreen {
+      padding: 10px !important;
+      margin: 0 !important;
+      width: 100vw !important;
+      box-sizing: border-box !important;
     }
   }
 }
@@ -159,17 +167,10 @@
   animation: float 6s ease-in-out infinite;
 }
 
-/* 手機完全滿版優化 */
-@media (max-width: 768px) {
-  .mobile-fullscreen {
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100vw !important;
-  }
-  
-  /* 移除所有可能的邊距和內距 */
+/* 桌面版保持原有間距 */
+@media (min-width: 769px) {
   .container {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }

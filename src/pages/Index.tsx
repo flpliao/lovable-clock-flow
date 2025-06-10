@@ -32,18 +32,18 @@ const Index = () => {
 
   return (
     <div className="w-full min-h-screen pb-safe relative mobile-fullscreen">
-      {/* 歡迎區塊 - 手機完全滿版 */}
-      <div className="w-full px-1 sm:px-4 lg:px-8">
+      {/* 歡迎區塊 */}
+      <div className="w-full px-0 sm:px-4 lg:px-8">
         <WelcomeSection userName={currentUser?.name || '訪客'} />
       </div>
       
-      {/* 打卡區塊 - 手機完全滿版 */}
-      <div className="w-full px-1 sm:px-4 lg:px-8 mb-2 sm:mb-6">
+      {/* 打卡區塊 */}
+      <div className="w-full px-0 sm:px-4 lg:px-8 mb-2 sm:mb-6">
         <LocationCheckIn />
       </div>
       
-      {/* 功能卡片 - 手機完全滿版 */}
-      <div className="w-full px-1 sm:px-4 lg:px-8 pb-2 sm:pb-8">
+      {/* 功能卡片 */}
+      <div className="w-full px-0 sm:px-4 lg:px-8 pb-2 sm:pb-8">
         <FeatureCards 
           abnormalCount={0} 
           annualLeaveBalance={leaveHours} 

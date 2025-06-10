@@ -56,7 +56,7 @@ const AnnouncementList: React.FC = () => {
   const getReadStatus = (announcementId: string): boolean => {
     const status = readStatus[announcementId];
     // Explicitly convert to boolean, defaulting to false if undefined
-    return Boolean(status);
+    return status === undefined ? false : Boolean(status);
   };
 
   return (

@@ -14,7 +14,7 @@ const OvertimeCompensationSection: React.FC<OvertimeCompensationSectionProps> = 
   onCompensationTypeChange
 }) => {
   return (
-    <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8 mb-8">
+    <div className="backdrop-blur-2xl bg-white/15 border border-white/25 rounded-3xl shadow-2xl p-8">
       <div className="flex items-center gap-3 mb-6">
         <DollarSign className="h-5 w-5 text-white/80" />
         <h4 className="text-lg font-medium text-white">補償設定</h4>
@@ -26,7 +26,7 @@ const OvertimeCompensationSection: React.FC<OvertimeCompensationSectionProps> = 
           補償方式
         </Label>
         <Select value={compensationType} onValueChange={onCompensationTypeChange}>
-          <SelectTrigger className="h-12 bg-white/20 backdrop-blur-xl border-white/30 text-white rounded-xl">
+          <SelectTrigger className="h-12 bg-white/25 backdrop-blur-xl border-white/30 text-white rounded-xl">
             <SelectValue placeholder="選擇補償方式" />
           </SelectTrigger>
           <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg">

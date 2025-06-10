@@ -58,10 +58,10 @@ const OvertimeRequestForm: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       <OvertimeFormHeader />
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-12">
         <OvertimeBasicInfoSection
           overtimeDate={formData.overtimeDate}
           overtimeType={formData.overtimeType}

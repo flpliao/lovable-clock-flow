@@ -18,7 +18,7 @@ const OvertimeTimeSection: React.FC<OvertimeTimeSectionProps> = ({
   onEndTimeChange
 }) => {
   return (
-    <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8 mb-8">
+    <div className="backdrop-blur-2xl bg-white/15 border border-white/25 rounded-3xl shadow-2xl p-8">
       <div className="flex items-center gap-3 mb-6">
         <Timer className="h-5 w-5 text-white/80" />
         <h4 className="text-lg font-medium text-white">時間設定</h4>
@@ -35,7 +35,7 @@ const OvertimeTimeSection: React.FC<OvertimeTimeSectionProps> = ({
             type="time"
             value={startTime}
             onChange={(e) => onStartTimeChange(e.target.value)}
-            className="h-12 bg-white/20 backdrop-blur-xl border-white/30 text-white placeholder-white/70 rounded-xl"
+            className="h-12 bg-white/25 backdrop-blur-xl border-white/30 text-white placeholder-white/70 rounded-xl"
             required
           />
         </div>
@@ -50,7 +50,7 @@ const OvertimeTimeSection: React.FC<OvertimeTimeSectionProps> = ({
             type="time"
             value={endTime}
             onChange={(e) => onEndTimeChange(e.target.value)}
-            className="h-12 bg-white/20 backdrop-blur-xl border-white/30 text-white placeholder-white/70 rounded-xl"
+            className="h-12 bg-white/25 backdrop-blur-xl border-white/30 text-white placeholder-white/70 rounded-xl"
             required
           />
         </div>

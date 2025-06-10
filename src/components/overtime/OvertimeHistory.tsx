@@ -59,7 +59,7 @@ const OvertimeHistory: React.FC = () => {
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       {/* 搜尋和篩選卡片 */}
       <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8">
         <OvertimeHistoryHeader />
@@ -74,7 +74,7 @@ const OvertimeHistory: React.FC = () => {
       </div>
 
       {/* 加班記錄列表 */}
-      <div className="space-y-8">
+      <div className="space-y-6">
         {filteredOvertimes.map((overtime) => (
           <OvertimeRecordCard key={overtime.id} overtime={overtime} />
         ))}

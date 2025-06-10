@@ -11,10 +11,10 @@ const OvertimeSubmitSection: React.FC<OvertimeSubmitSectionProps> = ({
   isSubmitting
 }) => {
   return (
-    <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-6">
+    <div className="backdrop-blur-2xl bg-white/15 border border-white/25 rounded-3xl shadow-2xl p-6">
       <Button 
         type="submit" 
-        className="w-full h-12 bg-white/20 hover:bg-white/30 backdrop-blur-xl border border-white/30 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
+        className="w-full h-12 bg-white/30 hover:bg-white/40 backdrop-blur-xl border border-white/30 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
         disabled={isSubmitting}
       >
         {isSubmitting ? (

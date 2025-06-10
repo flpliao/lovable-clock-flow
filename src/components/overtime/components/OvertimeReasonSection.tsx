@@ -14,7 +14,7 @@ const OvertimeReasonSection: React.FC<OvertimeReasonSectionProps> = ({
   onReasonChange
 }) => {
   return (
-    <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8 mb-8">
+    <div className="backdrop-blur-2xl bg-white/15 border border-white/25 rounded-3xl shadow-2xl p-8">
       <div className="flex items-center gap-3 mb-6">
         <FileText className="h-5 w-5 text-white/80" />
         <h4 className="text-lg font-medium text-white">原因說明</h4>
@@ -31,7 +31,7 @@ const OvertimeReasonSection: React.FC<OvertimeReasonSectionProps> = ({
           value={reason}
           onChange={(e) => onReasonChange(e.target.value)}
           rows={4}
-          className="bg-white/20 backdrop-blur-xl border-white/30 text-white placeholder-white/70 rounded-xl resize-none"
+          className="bg-white/25 backdrop-blur-xl border-white/30 text-white placeholder-white/70 rounded-xl resize-none"
           required
         />
       </div>

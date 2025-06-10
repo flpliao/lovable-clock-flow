@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AnnouncementCard from './AnnouncementCard';
 import AnnouncementDetail from './AnnouncementDetail';
@@ -30,7 +29,6 @@ const AnnouncementList: React.FC = () => {
   } = useAnnouncementFilters(announcements);
 
   const [openAnnouncement, setOpenAnnouncement] = useState<CompanyAnnouncement | null>(null);
-  // 明確定義 readStatus 為只包含布林值的記錄
   const [readStatus, setReadStatus] = useState<Record<string, boolean>>({});
 
   // 初始化時載入所有公告的已讀狀態
@@ -38,21 +36,15 @@ const AnnouncementList: React.FC = () => {
     const loadAllReadStatus = async () => {
       if (announcements.length === 0) return;
       
-      console.log('載入所有公告的已讀狀態...');
       const statusMap: Record<string, boolean> = {};
-      
       for (const announcement of announcements) {
         try {
-          const isRead = await checkAnnouncementRead(announcement.id);
-          // checkAnnouncementRead 已確保返回 boolean
-          statusMap[announcement.id] = isRead;
-        } catch (error) {
-          console.error(`檢查公告 ${announcement.id} 已讀狀態失敗:`, error);
+          const raw = await checkAnnouncementRead(announcement.id);
+          statusMap[announcement.id] = !!raw;  // 強制轉為 boolean
+        } catch {
           statusMap[announcement.id] = false;
         }
       }
-      
-      console.log('已讀狀態載入完成:', statusMap);
       setReadStatus(statusMap);
     };
 
@@ -60,29 +52,26 @@ const AnnouncementList: React.FC = () => {
   }, [announcements, checkAnnouncementRead]);
 
   const handleOpenAnnouncement = async (announcement: CompanyAnnouncement) => {
-    console.log('開啟公告:', announcement.title);
     setOpenAnnouncement(announcement);
-    
     try {
       await markAnnouncementAsRead(announcement.id);
-      // 確保設定為 boolean 值
       setReadStatus(prev => ({ ...prev, [announcement.id]: true }));
-      console.log('公告已標記為已讀:', announcement.id);
-    } catch (error) {
-      console.error('標記公告已讀失敗:', error);
+    } catch {
+      // 忽略標記失敗
     }
   };
 
-  // 取得已讀狀態 - 確保返回布林值
-  const getReadStatus = (announcementId: string): boolean => {
-    const status = readStatus[announcementId];
-    // 由於 readStatus 確保只包含布林值，直接返回狀態或 false
-    return status === true;
+  // 確保回傳純布林
+  const getReadStatus = (id: string): boolean => {
+    return !!readStatus[id];
   };
+
+  // 確保 hasActiveFilters 也是純布林
+  const hasFilters = !!hasActiveFilters;
 
   return (
     <div className="space-y-6">
-      {/* Search and filter section */}
+      {/* 搜索與篩選 */}
       <AnnouncementSearchSection
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -92,35 +81,36 @@ const AnnouncementList: React.FC = () => {
         clearFilters={clearFilters}
       />
 
-      {/* Results summary */}
+      {/* 結果摘要 */}
       <AnnouncementResultsSummary
         totalCount={filteredAnnouncements.length}
-        hasActiveFilters={hasActiveFilters}
+        hasActiveFilters={hasFilters}
         clearFilters={clearFilters}
-        loading={loading}
+        loading={!!loading}
       />
 
-      {/* Announcements list */}
+      {/* 列表內容 */}
       {loading ? (
         <AnnouncementLoadingState />
       ) : filteredAnnouncements.length === 0 ? (
         <AnnouncementEmptyState
-          hasActiveFilters={hasActiveFilters}
+          hasActiveFilters={hasFilters}
           clearFilters={clearFilters}
         />
       ) : (
         <div className="space-y-6">
-          {filteredAnnouncements.map((announcement) => (
+          {filteredAnnouncements.map(item => (
             <AnnouncementCard
-              key={announcement.id}
-              announcement={announcement}
-              isRead={getReadStatus(announcement.id)}
+              key={item.id}
+              announcement={item}
+              isRead={getReadStatus(item.id)}
               onClick={handleOpenAnnouncement}
             />
           ))}
         </div>
       )}
 
+      {/* 詳細視窗 */}
       <AnnouncementDetail
         announcement={openAnnouncement}
         isOpen={!!openAnnouncement}

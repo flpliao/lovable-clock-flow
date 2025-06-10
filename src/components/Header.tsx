@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Menu, Shield, LogOut, BarChart3, Bell, FileText, Home, Calendar, User, Clock, Building2, Settings, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -107,9 +108,10 @@ const Header: React.FC<HeaderProps> = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="end" 
-                className="w-60 bg-gray-900 text-white border-gray-700 z-50 max-h-[90vh] overflow-hidden"
+                className="w-60 bg-gray-900 text-white border-gray-700 z-50"
+                sideOffset={5}
               >
-                <ScrollArea className="max-h-[80vh]">
+                <div className="max-h-[calc(100vh-120px)] overflow-y-auto">
                   <div className="p-1">
                     {navItems.map((item) => (
                       <DropdownMenuItem key={item.path} asChild className="py-2 px-4 focus:bg-gray-800 focus:text-white rounded-md mb-1">
@@ -132,7 +134,7 @@ const Header: React.FC<HeaderProps> = () => {
                       </div>
                     </DropdownMenuItem>
                   </div>
-                </ScrollArea>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </>

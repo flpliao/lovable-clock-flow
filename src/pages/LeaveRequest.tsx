@@ -8,7 +8,6 @@ import LeaveRequestDetail from '@/components/LeaveRequestDetail';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LeaveRequest as LeaveRequestType } from '@/types';
 import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
-import { visionProStyles } from '@/utils/visionProStyles';
 
 const LeaveRequest = () => {
   const [activeTab, setActiveTab] = useState<string>('request');
@@ -20,73 +19,80 @@ const LeaveRequest = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
-      {/* Vision Pro 風格背景效果 */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-400/20 via-transparent to-transparent"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-purple-400/15 via-transparent to-transparent"></div>
-      
-      {/* 浮動光點效果 */}
-      <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-400/60 rounded-full animate-float"></div>
-      <div className="absolute top-3/4 right-1/4 w-3 h-3 bg-purple-400/40 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
-      <div className="absolute top-1/2 left-3/4 w-1 h-1 bg-white/30 rounded-full animate-float" style={{ animationDelay: '4s' }}></div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-50 to-white relative overflow-hidden">
+      {/* Header */}
+      <div className="bg-white/40 backdrop-blur-lg border-b border-white/20 shadow-sm">
+        <div className="container mx-auto py-4 px-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-3 h-8 bg-orange-400 rounded-full"></div>
+              <h1 className="text-2xl font-bold text-gray-800">請假管理</h1>
+            </div>
+            <div className="text-sm text-gray-600">Dreams POS</div>
+          </div>
+        </div>
+      </div>
 
-      <div className="relative z-10 container mx-auto py-8 px-4">
-        <div className="flex flex-col gap-6">
-          {/* 班次提醒 */}
-          <div className={`${visionProStyles.cardBackground} rounded-3xl border border-white/30 shadow-2xl overflow-hidden`}>
-            <ShiftReminder />
-          </div>
-          
-          {/* 假期餘額 */}
-          <div className={`${visionProStyles.cardBackground} rounded-3xl border border-white/30 shadow-2xl overflow-hidden`}>
-            <LeaveBalance />
-          </div>
-          
-          {/* 主要內容 - 請假申請和查看 */}
-          <div className={`${visionProStyles.glassBackground} rounded-3xl border border-white/30 shadow-2xl overflow-hidden`}>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <div className="p-6 border-b border-white/20">
-                <TabsList className="grid w-full grid-cols-2 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/30">
-                  <TabsTrigger 
-                    value="request" 
-                    className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-xl font-medium"
-                  >
-                    申請請假
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="view" 
-                    className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-xl font-medium"
-                  >
-                    查看請假
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+      <div className="container mx-auto py-6 px-4 space-y-6">
+        {/* Shift Reminder Card */}
+        <div className="bg-white/70 backdrop-blur-xl rounded-3xl border border-white/40 shadow-lg overflow-hidden">
+          <ShiftReminder />
+        </div>
+        
+        {/* Leave Balance Card */}
+        <div className="bg-white/70 backdrop-blur-xl rounded-3xl border border-white/40 shadow-lg overflow-hidden">
+          <LeaveBalance />
+        </div>
+        
+        {/* Main Content Card */}
+        <div className="bg-white/70 backdrop-blur-xl rounded-3xl border border-white/40 shadow-lg overflow-hidden">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="p-6 border-b border-white/20">
+              <TabsList className="grid w-full grid-cols-2 bg-white/50 backdrop-blur-xl rounded-2xl border border-white/30 p-1">
+                <TabsTrigger 
+                  value="request" 
+                  className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-xl font-medium transition-all duration-200"
+                >
+                  申請請假
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="view" 
+                  className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-xl font-medium transition-all duration-200"
+                >
+                  查看請假
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            
+            <div className="p-6">
+              <TabsContent value="request" className="mt-0">
+                <LeaveRequestForm onSubmit={handleNewLeaveRequest} />
+              </TabsContent>
               
-              <div className="p-6">
-                <TabsContent value="request" className="mt-0">
-                  <LeaveRequestForm onSubmit={handleNewLeaveRequest} />
-                </TabsContent>
-                
-                <TabsContent value="view" className="mt-0">
-                  {currentLeaveRequest ? (
-                    <LeaveRequestDetail 
-                      leaveRequest={currentLeaveRequest} 
-                      isApprover={isApproverForRequest(currentLeaveRequest)}
-                    />
-                  ) : (
-                    <div className="text-center py-12">
-                      <p className="text-white/70 font-medium drop-shadow-md">尚無進行中的請假申請</p>
+              <TabsContent value="view" className="mt-0">
+                {currentLeaveRequest ? (
+                  <LeaveRequestDetail 
+                    leaveRequest={currentLeaveRequest} 
+                    isApprover={isApproverForRequest(currentLeaveRequest)}
+                  />
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
                     </div>
-                  )}
-                </TabsContent>
-              </div>
-            </Tabs>
-          </div>
-          
-          {/* 請假歷史 */}
-          <div className={`${visionProStyles.cardBackground} rounded-3xl border border-white/30 shadow-2xl overflow-hidden`}>
-            <LeaveHistory />
-          </div>
+                    <p className="text-gray-500 font-medium">尚無進行中的請假申請</p>
+                  </div>
+                )}
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
+        
+        {/* Leave History Card */}
+        <div className="bg-white/70 backdrop-blur-xl rounded-3xl border border-white/40 shadow-lg overflow-hidden">
+          <LeaveHistory />
         </div>
       </div>
     </div>

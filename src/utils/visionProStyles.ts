@@ -7,11 +7,17 @@ export const visionProStyles = {
   // 卡片背景
   cardBackground: "backdrop-blur-3xl bg-gradient-to-br from-white/40 to-white/25 border border-white/50 shadow-2xl",
   
-  // Liquid Glass 卡片樣式 - 參考 Vision Pro 控制中心
-  liquidGlassCard: "backdrop-blur-3xl bg-gradient-to-br from-white/30 via-white/20 to-white/15 border border-white/40 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:border-white/60 hover:bg-gradient-to-br hover:from-white/35 hover:via-white/25 hover:to-white/20",
+  // Liquid Glass 卡片樣式 - 參考 Vision Pro 控制中心，添加淡藍色背景
+  liquidGlassCard: "backdrop-blur-3xl bg-gradient-to-br from-blue-200/30 via-blue-100/20 to-white/15 border border-blue-200/40 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:border-blue-200/60 hover:bg-gradient-to-br hover:from-blue-200/35 hover:via-blue-100/25 hover:to-white/20",
   
-  // 帶光線效果的 Liquid Glass 卡片
-  liquidGlassCardWithGlow: "backdrop-blur-3xl bg-gradient-to-br from-white/30 via-white/20 to-white/15 border border-white/40 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:border-white/60 hover:bg-gradient-to-br hover:from-white/35 hover:via-white/25 hover:to-white/20 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] before:absolute before:inset-0 before:rounded-3xl before:border before:border-transparent before:bg-gradient-to-br before:from-white/20 before:via-transparent before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300",
+  // 帶光線效果的 Liquid Glass 卡片 - 淡藍色版本
+  liquidGlassCardWithGlow: "backdrop-blur-3xl bg-gradient-to-br from-blue-200/30 via-blue-100/20 to-white/15 border border-blue-200/40 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:border-blue-200/60 hover:bg-gradient-to-br hover:from-blue-200/35 hover:via-blue-100/25 hover:to-white/20 hover:shadow-[0_0_40px_rgba(147,197,253,0.4)] before:absolute before:inset-0 before:rounded-3xl before:border before:border-transparent before:bg-gradient-to-br before:from-blue-200/20 before:via-transparent before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300",
+  
+  // 強化的淡藍色玻璃卡片 - 更接近圖片效果
+  softBlueGlassCard: "backdrop-blur-3xl bg-gradient-to-br from-blue-100/40 via-blue-50/30 to-cyan-50/20 border border-blue-200/50 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:border-blue-200/70 hover:bg-gradient-to-br hover:from-blue-100/50 hover:via-blue-50/40 hover:to-cyan-50/30",
+  
+  // 帶光效的強化淡藍色玻璃卡片
+  softBlueGlassCardWithGlow: "backdrop-blur-3xl bg-gradient-to-br from-blue-100/40 via-blue-50/30 to-cyan-50/20 border border-blue-200/50 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:border-blue-200/70 hover:bg-gradient-to-br hover:from-blue-100/50 hover:via-blue-50/40 hover:to-cyan-50/30 hover:shadow-[0_0_50px_rgba(147,197,253,0.5)] relative before:absolute before:inset-0 before:rounded-3xl before:border before:border-transparent before:bg-gradient-to-br before:from-blue-100/30 before:via-transparent before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300 before:pointer-events-none",
   
   // 按鈕樣式
   glassButton: "backdrop-blur-xl bg-white/40 rounded-2xl border border-white/40 shadow-lg",
@@ -52,8 +58,18 @@ export const createVisionProBackground = () => {
   return "bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden";
 };
 
-// Liquid Glass 效果組合
-export const createLiquidGlassEffect = (withGlow: boolean = false) => {
+// Liquid Glass 效果組合 - 新增淡藍色版本
+export const createLiquidGlassEffect = (withGlow: boolean = false, blueTheme: boolean = false) => {
+  if (blueTheme) {
+    const baseClasses = "backdrop-blur-3xl bg-gradient-to-br from-blue-100/40 via-blue-50/30 to-cyan-50/20 border border-blue-200/50 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:border-blue-200/70 hover:bg-gradient-to-br hover:from-blue-100/50 hover:via-blue-50/40 hover:to-cyan-50/30";
+    
+    if (withGlow) {
+      return `${baseClasses} hover:shadow-[0_0_50px_rgba(147,197,253,0.5)] relative before:absolute before:inset-0 before:rounded-3xl before:border before:border-transparent before:bg-gradient-to-br before:from-blue-100/30 before:via-transparent before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300 before:pointer-events-none`;
+    }
+    
+    return baseClasses;
+  }
+  
   const baseClasses = "backdrop-blur-3xl bg-gradient-to-br from-white/30 via-white/20 to-white/15 border border-white/40 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:border-white/60 hover:bg-gradient-to-br hover:from-white/35 hover:via-white/25 hover:to-white/20";
   
   if (withGlow) {

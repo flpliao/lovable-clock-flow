@@ -13,6 +13,7 @@ import { useUser } from '@/contexts/UserContext';
 import CheckInCompletedStatus from '@/components/check-in/CheckInCompletedStatus';
 import CheckInStatusInfo from '@/components/check-in/CheckInStatusInfo';
 import CheckInButton from '@/components/check-in/CheckInButton';
+import { createLiquidGlassEffect } from '@/utils/visionProStyles';
 
 const LocationCheckIn = () => {
   const { currentUser } = useUser();
@@ -32,13 +33,11 @@ const LocationCheckIn = () => {
   // Early return if no user
   if (!currentUser) {
     return (
-      <Card>
-        <CardContent className="p-4">
-          <div className="text-center text-gray-500">
-            請先登入以使用打卡功能
-          </div>
-        </CardContent>
-      </Card>
+      <div className={`${createLiquidGlassEffect(true, true)} p-6`}>
+        <div className="text-center text-white/80">
+          請先登入以使用打卡功能
+        </div>
+      </div>
     );
   }
 
@@ -53,68 +52,73 @@ const LocationCheckIn = () => {
   const handleCheckIn = checkInMethod === 'location' ? onLocationCheckIn : onIpCheckIn;
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center justify-center space-x-2 text-lg">
-          <Clock className="h-5 w-5" />
-          <span>員工打卡</span>
-        </CardTitle>
-      </CardHeader>
+    <div className={`${createLiquidGlassEffect(true, true)} overflow-hidden relative`}>
+      {/* 淡藍色背景效果 */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-100/20 via-blue-50/15 to-cyan-50/10"></div>
       
-      <CardContent className="space-y-4">
-        <CheckInStatusInfo checkIn={safeCheckIn} checkOut={safeCheckOut} />
+      <div className="relative z-10">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center justify-center space-x-2 text-lg text-white drop-shadow-lg">
+            <Clock className="h-5 w-5" />
+            <span>員工打卡</span>
+          </CardTitle>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
+          <CheckInStatusInfo checkIn={safeCheckIn} checkOut={safeCheckOut} />
 
-        {/* 打卡方式選擇 */}
-        <div className="grid grid-cols-2 gap-2 bg-gray-100 rounded-lg p-1">
-          <Button
-            variant={checkInMethod === 'location' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setCheckInMethod('location')}
-            className="flex items-center justify-center space-x-1 text-sm"
-          >
-            <MapPin className="h-4 w-4" />
-            <span>位置打卡</span>
-          </Button>
-          <Button
-            variant={checkInMethod === 'ip' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setCheckInMethod('ip')}
-            className="flex items-center justify-center space-x-1 text-sm"
-          >
-            <Wifi className="h-4 w-4" />
-            <span>IP打卡</span>
-          </Button>
-        </div>
-
-        <CheckInButton
-          actionType={actionType}
-          loading={loading}
-          onCheckIn={handleCheckIn}
-        />
-
-        {/* 狀態資訊 */}
-        {distance !== null && !error && checkInMethod === 'location' && (
-          <div className="text-center text-sm text-gray-600">
-            <MapPin className="inline h-4 w-4 mr-1" />
-            距離公司: <span className="font-medium">{Math.round(distance)} 公尺</span>
+          {/* 打卡方式選擇 */}
+          <div className="grid grid-cols-2 gap-2 bg-blue-100/30 backdrop-blur-xl rounded-lg p-1 border border-blue-200/30">
+            <Button
+              variant={checkInMethod === 'location' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setCheckInMethod('location')}
+              className="flex items-center justify-center space-x-1 text-sm bg-white/20 hover:bg-white/30 text-white border-blue-200/30"
+            >
+              <MapPin className="h-4 w-4" />
+              <span>位置打卡</span>
+            </Button>
+            <Button
+              variant={checkInMethod === 'ip' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setCheckInMethod('ip')}
+              className="flex items-center justify-center space-x-1 text-sm bg-white/20 hover:bg-white/30 text-white border-blue-200/30"
+            >
+              <Wifi className="h-4 w-4" />
+              <span>IP打卡</span>
+            </Button>
           </div>
-        )}
 
-        {error && (
-          <div className="flex items-center justify-center space-x-2 text-red-600 text-sm bg-red-50 rounded-lg p-3">
-            <AlertCircle className="h-4 w-4" />
-            <span>{error}</span>
-          </div>
-        )}
+          <CheckInButton
+            actionType={actionType}
+            loading={loading}
+            onCheckIn={handleCheckIn}
+          />
 
-        {!loading && checkInMethod === 'ip' && (
-          <div className="text-center text-sm text-gray-600">
-            <Wifi className="inline h-4 w-4 mr-1" />
-            使用公司網路自動打卡
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          {/* 狀態資訊 */}
+          {distance !== null && !error && checkInMethod === 'location' && (
+            <div className="text-center text-sm text-white/90 drop-shadow-md">
+              <MapPin className="inline h-4 w-4 mr-1" />
+              距離公司: <span className="font-medium">{Math.round(distance)} 公尺</span>
+            </div>
+          )}
+
+          {error && (
+            <div className="flex items-center justify-center space-x-2 text-red-200 text-sm bg-red-400/20 backdrop-blur-xl rounded-lg p-3 border border-red-300/30">
+              <AlertCircle className="h-4 w-4" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {!loading && checkInMethod === 'ip' && (
+            <div className="text-center text-sm text-white/90 drop-shadow-md">
+              <Wifi className="inline h-4 w-4 mr-1" />
+              使用公司網路自動打卡
+            </div>
+          )}
+        </CardContent>
+      </div>
+    </div>
   );
 };
 

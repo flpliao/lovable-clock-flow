@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { DollarSign, Plus, Calculator, RefreshCw } from 'lucide-react';
+import { DollarSign, Plus, Calculator, RefreshCw, TrendingUp, Users, FileText } from 'lucide-react';
 import PayrollFilters from './payroll/PayrollFilters';
 import PayrollStats from './payroll/PayrollStats';
 import PayrollTable from './payroll/PayrollTable';
@@ -75,64 +75,96 @@ const PayrollManagement: React.FC = () => {
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold flex items-center">
-          <DollarSign className="h-4 w-4 mr-2 text-green-600" />
-          薪資管理
-        </h2>
-        <div className="flex gap-1">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-xs"
-            onClick={refresh}
-            disabled={isLoading}
-          >
-            <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
-            重新整理
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-xs"
-            onClick={() => {/* TODO: 批量計算功能 */}}
-          >
-            <Calculator className="h-3 w-3 mr-1" />
-            批量計算
-          </Button>
-          <Button 
-            size="sm" 
-            className="text-xs"
-            onClick={() => setShowCreateDialog(true)}
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            新增
-          </Button>
+    <div className="space-y-6">
+      {/* 操作區域 */}
+      <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-500/70 rounded-xl shadow-lg">
+              <DollarSign className="h-4 w-4 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-white drop-shadow-md">薪資管理</h3>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs bg-white/20 backdrop-blur-xl border-white/30 text-white hover:bg-white/30"
+              onClick={refresh}
+              disabled={isLoading}
+            >
+              <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+              重新整理
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs bg-white/20 backdrop-blur-xl border-white/30 text-white hover:bg-white/30"
+              onClick={() => {/* TODO: 批量計算功能 */}}
+            >
+              <Calculator className="h-3 w-3 mr-1" />
+              批量計算
+            </Button>
+            <Button 
+              size="sm" 
+              className="text-xs bg-blue-500/70 hover:bg-blue-600/70 text-white border-0 rounded-xl shadow-lg backdrop-blur-xl"
+              onClick={() => setShowCreateDialog(true)}
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              新增
+            </Button>
+          </div>
         </div>
       </div>
 
-      <PayrollFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        periodFilter={periodFilter}
-        setPeriodFilter={setPeriodFilter}
-      />
+      {/* 篩選區域 */}
+      <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-purple-500/70 rounded-xl shadow-lg">
+            <FileText className="h-4 w-4 text-white" />
+          </div>
+          <h3 className="text-lg font-semibold text-white drop-shadow-md">篩選條件</h3>
+        </div>
+        <PayrollFilters
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          periodFilter={periodFilter}
+          setPeriodFilter={setPeriodFilter}
+        />
+      </div>
 
-      <PayrollStats stats={stats} isLoading={isLoading} />
+      {/* 統計區域 */}
+      <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-orange-500/70 rounded-xl shadow-lg">
+            <TrendingUp className="h-4 w-4 text-white" />
+          </div>
+          <h3 className="text-lg font-semibold text-white drop-shadow-md">統計資料</h3>
+        </div>
+        <PayrollStats stats={stats} isLoading={isLoading} />
+      </div>
 
-      <PayrollTable 
-        payrolls={filteredPayrolls} 
-        isLoading={isLoading}
-        onEdit={handleEditPayroll}
-        onDelete={handleDeletePayroll}
-        onUpdateStatus={updatePayroll}
-        onApprove={handleApprovePayroll}
-        onReject={handleRejectPayroll}
-        onMarkAsPaid={handleMarkAsPaid}
-      />
+      {/* 表格區域 */}
+      <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-blue-500/70 rounded-xl shadow-lg">
+            <Users className="h-4 w-4 text-white" />
+          </div>
+          <h3 className="text-lg font-semibold text-white drop-shadow-md">薪資記錄列表</h3>
+        </div>
+        <PayrollTable 
+          payrolls={filteredPayrolls} 
+          isLoading={isLoading}
+          onEdit={handleEditPayroll}
+          onDelete={handleDeletePayroll}
+          onUpdateStatus={updatePayroll}
+          onApprove={handleApprovePayroll}
+          onReject={handleRejectPayroll}
+          onMarkAsPaid={handleMarkAsPaid}
+        />
+      </div>
 
       <PayrollFormDialog
         open={showCreateDialog}

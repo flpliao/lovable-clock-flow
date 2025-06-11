@@ -35,7 +35,7 @@ const ListViewSection = ({
           <div className="p-3 bg-white/20 rounded-2xl">
             <User className="h-7 w-7 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-white">我的詳情</h3>
+          <h3 className="text-2xl font-bold text-black">我的詳情</h3>
         </div>
         
         <StaffMonthSelector
@@ -54,7 +54,7 @@ const ListViewSection = ({
           <div className="p-3 bg-white/20 rounded-2xl">
             <List className="h-7 w-7 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-white">月度排班</h3>
+          <h3 className="text-2xl font-bold text-black">月度排班</h3>
         </div>
         
         <MonthlyScheduleView

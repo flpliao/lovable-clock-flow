@@ -66,7 +66,7 @@ const ScheduleTabsContent = ({
           <div className="p-3 bg-white/20 rounded-2xl">
             <Grid className="h-7 w-7 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-white">視圖切換</h3>
+          <h3 className="text-2xl font-bold text-black">視圖切換</h3>
         </div>
         
         <TabsList className="grid w-full grid-cols-2 bg-white/20 backdrop-blur-xl rounded-2xl p-2 h-16 border border-white/30">

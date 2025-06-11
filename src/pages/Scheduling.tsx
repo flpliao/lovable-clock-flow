@@ -48,7 +48,7 @@ const Scheduling = () => {
                       </div>
                       <div>
                         <h1 className="text-3xl md:text-4xl font-bold text-white">排班管理</h1>
-                        <p className="text-white/80 text-lg">管理員工排班與時間設定</p>
+                        <p className="text-black text-lg font-medium">管理員工排班與時間設定</p>
                       </div>
                     </div>
                   </div>

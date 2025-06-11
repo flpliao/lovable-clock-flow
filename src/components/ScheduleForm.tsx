@@ -47,7 +47,7 @@ const ScheduleForm = () => {
               <div className="p-3 bg-white/20 rounded-2xl">
                 <Users className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white">選擇員工</h3>
+              <h3 className="text-2xl font-bold text-black">選擇員工</h3>
             </div>
             <StaffSelector control={form.control} />
           </div>
@@ -58,7 +58,7 @@ const ScheduleForm = () => {
               <div className="p-3 bg-white/20 rounded-2xl">
                 <Calendar className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white">選擇年月</h3>
+              <h3 className="text-2xl font-bold text-black">選擇年月</h3>
             </div>
             <YearMonthSelector
               selectedYear={selectedYear}
@@ -74,7 +74,7 @@ const ScheduleForm = () => {
               <div className="p-3 bg-white/20 rounded-2xl">
                 <Calendar className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white">選擇日期</h3>
+              <h3 className="text-2xl font-bold text-black">選擇日期</h3>
             </div>
             <ScheduleCalendar
               selectedYear={selectedYear}
@@ -90,7 +90,7 @@ const ScheduleForm = () => {
               <div className="p-3 bg-white/20 rounded-2xl">
                 <Clock className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white">選擇時間段</h3>
+              <h3 className="text-2xl font-bold text-black">選擇時間段</h3>
             </div>
             <TimeSlotSelector
               selectedTimeSlots={selectedTimeSlots}
@@ -105,7 +105,7 @@ const ScheduleForm = () => {
                 <div className="p-3 bg-white/20 rounded-2xl">
                   <Eye className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white">排班預覽</h3>
+                <h3 className="text-2xl font-bold text-black">排班預覽</h3>
               </div>
               <SchedulePreview
                 selectedDates={selectedDates}
@@ -122,7 +122,7 @@ const ScheduleForm = () => {
               <div className="p-3 bg-white/20 rounded-2xl">
                 <CheckCircle className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white">提交排班</h3>
+              <h3 className="text-2xl font-bold text-black">提交排班</h3>
             </div>
             <ScheduleFormActions
               loading={loading}

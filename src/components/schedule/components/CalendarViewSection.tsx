@@ -48,7 +48,7 @@ const CalendarViewSection = ({
           <div className="p-3 bg-white/20 rounded-2xl">
             <Calendar className="h-7 w-7 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-white">選擇年月</h3>
+          <h3 className="text-2xl font-bold text-black">選擇年月</h3>
         </div>
         <YearMonthSelectorCard
           selectedYear={selectedYear}
@@ -66,7 +66,7 @@ const CalendarViewSection = ({
           <div className="p-3 bg-white/20 rounded-2xl">
             <Grid className="h-7 w-7 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-white">日曆檢視</h3>
+          <h3 className="text-2xl font-bold text-black">日曆檢視</h3>
         </div>
         <CalendarGrid
           daysInMonth={daysInMonth}
@@ -81,7 +81,7 @@ const CalendarViewSection = ({
           <div className="p-3 bg-white/20 rounded-2xl">
             <Users className="h-7 w-7 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-white">排班詳情</h3>
+          <h3 className="text-2xl font-bold text-black">排班詳情</h3>
         </div>
         
         <ScheduleTable

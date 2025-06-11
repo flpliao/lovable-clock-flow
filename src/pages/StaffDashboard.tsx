@@ -32,9 +32,9 @@ const StaffDashboard = () => {
 
       <StaffManagementProvider>
         <div className="relative z-10">
-          <main className="p-2 sm:p-4 lg:p-6">
+          <main className="p-2 sm:p-4 lg:p-6 pt-8 sm:pt-12 lg:pt-16">
             {/* 頁面標題區域 */}
-            <div className="mb-6">
+            <div className="mb-8">
               <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">

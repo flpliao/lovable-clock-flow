@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { User, Users, Globe } from 'lucide-react';
+import { visionProStyles } from '@/utils/visionProStyles';
 
 interface ViewModeSelectorProps {
   viewMode: 'self' | 'subordinates' | 'all';
@@ -15,20 +16,20 @@ const ViewModeSelector = ({ viewMode, onViewModeChange, hasSubordinates }: ViewM
       value: 'self' as const, 
       label: '我的排班', 
       icon: User,
-      color: 'from-green-500 to-emerald-600'
+      color: 'green'
     },
     { 
       value: 'subordinates' as const, 
       label: '下屬排班', 
       icon: Users,
-      color: 'from-blue-500 to-cyan-600',
+      color: 'blue',
       disabled: !hasSubordinates
     },
     { 
       value: 'all' as const, 
       label: '全部排班', 
       icon: Globe,
-      color: 'from-purple-500 to-violet-600'
+      color: 'purple'
     }
   ];
 
@@ -42,8 +43,8 @@ const ViewModeSelector = ({ viewMode, onViewModeChange, hasSubordinates }: ViewM
           disabled={disabled}
           className={`h-16 p-4 rounded-2xl border-2 transition-all duration-300 ${
             viewMode === value
-              ? `bg-gradient-to-br ${color} text-white border-white/30 shadow-lg`
-              : 'bg-white/50 text-gray-700 border-white/60 hover:bg-white/70 hover:border-white/80'
+              ? `bg-gradient-to-br from-${color}-500 to-${color}-600 text-white border-white/30 shadow-lg`
+              : 'bg-white/70 text-gray-700 border-white/60 hover:bg-white/80 hover:border-white/80'
           } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <div className="flex items-center gap-3">

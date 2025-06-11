@@ -3,6 +3,7 @@ import React from 'react';
 import { Calendar, Users, List } from 'lucide-react';
 import MonthlyScheduleView from './MonthlyScheduleView';
 import StaffMonthSelector from './StaffMonthSelector';
+import { visionProStyles } from '@/utils/visionProStyles';
 
 interface ListViewSectionProps {
   availableStaff: any[];
@@ -30,12 +31,12 @@ const ListViewSection = ({
   return (
     <div className="space-y-8">
       {/* 員工月份選擇器 */}
-      <div className="backdrop-blur-2xl bg-white/80 border border-white/50 rounded-3xl shadow-xl p-8">
+      <div className={`${visionProStyles.dashboardCard} p-8`}>
         <div className="flex items-center gap-4 mb-6">
-          <div className="p-4 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-lg border border-white/30">
-            <Users className="h-6 w-6 text-white" />
+          <div className={visionProStyles.coloredIconContainer.orange}>
+            <Users className="h-6 w-6" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">我的詳情</h3>
+          <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>我的詳情</h3>
         </div>
         
         <StaffMonthSelector
@@ -49,12 +50,12 @@ const ListViewSection = ({
       </div>
       
       {/* 月度排班視圖 */}
-      <div className="backdrop-blur-2xl bg-white/80 border border-white/50 rounded-3xl shadow-xl p-8">
+      <div className={`${visionProStyles.dashboardCard} p-8`}>
         <div className="flex items-center gap-4 mb-6">
-          <div className="p-4 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl shadow-lg border border-white/30">
-            <List className="h-6 w-6 text-white" />
+          <div className={visionProStyles.coloredIconContainer.teal}>
+            <List className="h-6 w-6" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">月度排班</h3>
+          <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>月度排班</h3>
         </div>
         
         <MonthlyScheduleView

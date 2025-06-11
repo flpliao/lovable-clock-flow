@@ -4,6 +4,7 @@ import { Calendar, Users, Grid } from 'lucide-react';
 import CalendarGrid from './CalendarGrid';
 import ScheduleTable from './ScheduleTable';
 import YearMonthSelectorCard from './YearMonthSelectorCard';
+import { visionProStyles } from '@/utils/visionProStyles';
 
 interface CalendarViewSectionProps {
   selectedYear: string;
@@ -53,12 +54,12 @@ const CalendarViewSection = ({
       />
 
       {/* 日曆網格 */}
-      <div className="backdrop-blur-2xl bg-white/15 border border-white/20 rounded-3xl shadow-2xl p-8">
+      <div className={`${visionProStyles.dashboardCard} p-8`}>
         <div className="flex items-center gap-4 mb-6">
-          <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg border border-white/20">
-            <Grid className="h-6 w-6 text-white" />
+          <div className={visionProStyles.coloredIconContainer.blue}>
+            <Grid className="h-6 w-6" />
           </div>
-          <h3 className="text-2xl font-bold text-black drop-shadow-lg">日曆檢視</h3>
+          <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>日曆檢視</h3>
         </div>
         <CalendarGrid
           daysInMonth={daysInMonth}
@@ -68,12 +69,12 @@ const CalendarViewSection = ({
       </div>
 
       {/* 選中日期的排班詳情 */}
-      <div className="backdrop-blur-2xl bg-white/15 border border-white/20 rounded-3xl shadow-2xl p-8">
+      <div className={`${visionProStyles.dashboardCard} p-8`}>
         <div className="flex items-center gap-4 mb-6">
-          <div className="p-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-lg border border-white/20">
-            <Users className="h-6 w-6 text-white" />
+          <div className={visionProStyles.coloredIconContainer.purple}>
+            <Users className="h-6 w-6" />
           </div>
-          <h3 className="text-2xl font-bold text-black drop-shadow-lg">排班詳情</h3>
+          <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>排班詳情</h3>
         </div>
         
         <ScheduleTable

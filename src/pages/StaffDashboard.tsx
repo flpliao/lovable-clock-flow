@@ -34,8 +34,8 @@ const StaffDashboard = () => {
         <div className="relative z-10">
           <main className="p-2 sm:p-4 lg:p-6 pt-8 sm:pt-12 lg:pt-16">
             {/* 頁面標題區域 */}
-            <div className="mb-8">
-              <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6">
+            <div className="mb-10">
+              <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-8">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-blue-500/70 rounded-2xl shadow-lg backdrop-blur-xl border border-blue-400/30">
@@ -61,7 +61,7 @@ const StaffDashboard = () => {
             </div>
 
             {/* 標籤導航 */}
-            <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4 mb-6">
+            <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6 mb-8">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 bg-white/15 rounded-xl h-12">
                   <TabsTrigger 

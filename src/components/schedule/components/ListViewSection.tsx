@@ -35,7 +35,7 @@ const ListViewSection = ({
           <div className="p-4 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-lg border border-white/30">
             <Users className="h-6 w-6 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-800 drop-shadow-sm">員工選擇</h3>
+          <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">我的詳情</h3>
         </div>
         
         <StaffMonthSelector
@@ -54,7 +54,7 @@ const ListViewSection = ({
           <div className="p-4 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl shadow-lg border border-white/30">
             <List className="h-6 w-6 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-800 drop-shadow-sm">月度排班</h3>
+          <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">月度排班</h3>
         </div>
         
         <MonthlyScheduleView

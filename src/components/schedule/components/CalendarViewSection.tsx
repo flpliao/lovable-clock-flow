@@ -58,7 +58,7 @@ const CalendarViewSection = ({
           <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg border border-white/20">
             <Grid className="h-6 w-6 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-white drop-shadow-lg">日曆檢視</h3>
+          <h3 className="text-2xl font-bold text-black drop-shadow-lg">日曆檢視</h3>
         </div>
         <CalendarGrid
           daysInMonth={daysInMonth}
@@ -73,7 +73,7 @@ const CalendarViewSection = ({
           <div className="p-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-lg border border-white/20">
             <Users className="h-6 w-6 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-white drop-shadow-lg">排班詳情</h3>
+          <h3 className="text-2xl font-bold text-black drop-shadow-lg">排班詳情</h3>
         </div>
         
         <ScheduleTable

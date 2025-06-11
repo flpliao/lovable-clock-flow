@@ -33,7 +33,7 @@ const ScheduleForm = () => {
       {/* 錯誤提示 */}
       {error && (
         <div className="backdrop-blur-2xl bg-red-500/20 border border-red-400/30 rounded-3xl shadow-lg p-6">
-          <div className="text-red-100 text-sm font-medium drop-shadow-sm">
+          <div className="text-black text-sm font-medium drop-shadow-sm">
             錯誤：{error}
           </div>
         </div>
@@ -49,7 +49,9 @@ const ScheduleForm = () => {
               </div>
               <h3 className="text-2xl font-bold text-black drop-shadow-lg">選擇員工</h3>
             </div>
-            <StaffSelector control={form.control} />
+            <div className="text-black">
+              <StaffSelector control={form.control} />
+            </div>
           </div>
 
           {/* 年月選擇卡片 */}
@@ -60,12 +62,14 @@ const ScheduleForm = () => {
               </div>
               <h3 className="text-2xl font-bold text-black drop-shadow-lg">選擇年月</h3>
             </div>
-            <YearMonthSelector
-              selectedYear={selectedYear}
-              selectedMonth={selectedMonth}
-              onYearChange={setSelectedYear}
-              onMonthChange={setSelectedMonth}
-            />
+            <div className="text-black">
+              <YearMonthSelector
+                selectedYear={selectedYear}
+                selectedMonth={selectedMonth}
+                onYearChange={setSelectedYear}
+                onMonthChange={setSelectedMonth}
+              />
+            </div>
           </div>
 
           {/* 日期選擇卡片 */}
@@ -76,12 +80,14 @@ const ScheduleForm = () => {
               </div>
               <h3 className="text-2xl font-bold text-black drop-shadow-lg">選擇日期</h3>
             </div>
-            <ScheduleCalendar
-              selectedYear={selectedYear}
-              selectedMonth={selectedMonth}
-              selectedDates={selectedDates}
-              onDateToggle={handleDateToggle}
-            />
+            <div className="text-black">
+              <ScheduleCalendar
+                selectedYear={selectedYear}
+                selectedMonth={selectedMonth}
+                selectedDates={selectedDates}
+                onDateToggle={handleDateToggle}
+              />
+            </div>
           </div>
 
           {/* 時間段選擇卡片 */}
@@ -92,10 +98,12 @@ const ScheduleForm = () => {
               </div>
               <h3 className="text-2xl font-bold text-black drop-shadow-lg">選擇時間段</h3>
             </div>
-            <TimeSlotSelector
-              selectedTimeSlots={selectedTimeSlots}
-              onTimeSlotToggle={handleTimeSlotToggle}
-            />
+            <div className="text-black">
+              <TimeSlotSelector
+                selectedTimeSlots={selectedTimeSlots}
+                onTimeSlotToggle={handleTimeSlotToggle}
+              />
+            </div>
           </div>
 
           {/* 預覽卡片 */}
@@ -107,12 +115,14 @@ const ScheduleForm = () => {
                 </div>
                 <h3 className="text-2xl font-bold text-black drop-shadow-lg">排班預覽</h3>
               </div>
-              <SchedulePreview
-                selectedDates={selectedDates}
-                selectedTimeSlots={selectedTimeSlots}
-                selectedYear={selectedYear}
-                selectedMonth={selectedMonth}
-              />
+              <div className="text-black">
+                <SchedulePreview
+                  selectedDates={selectedDates}
+                  selectedTimeSlots={selectedTimeSlots}
+                  selectedYear={selectedYear}
+                  selectedMonth={selectedMonth}
+                />
+              </div>
             </div>
           )}
 
@@ -124,10 +134,12 @@ const ScheduleForm = () => {
               </div>
               <h3 className="text-2xl font-bold text-black drop-shadow-lg">提交排班</h3>
             </div>
-            <ScheduleFormActions
-              loading={loading}
-              disabled={!isFormValid}
-            />
+            <div className="text-black">
+              <ScheduleFormActions
+                loading={loading}
+                disabled={!isFormValid}
+              />
+            </div>
           </div>
         </form>
       </Form>

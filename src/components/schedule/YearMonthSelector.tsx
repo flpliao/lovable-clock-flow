@@ -29,17 +29,17 @@ const YearMonthSelector = ({ selectedYear, selectedMonth, onYearChange, onMonthC
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-2 gap-6">
       <Select value={selectedYear} onValueChange={onYearChange}>
-        <SelectTrigger className="h-12 text-sm border-2 border-white/30 rounded-xl bg-white/20 backdrop-blur-xl text-gray-900 placeholder:text-gray-700">
+        <SelectTrigger className="h-14 text-lg bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl text-white placeholder:text-white/70">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">
+        <SelectContent className="bg-white border border-gray-300 rounded-2xl shadow-xl z-50">
           {years.map((year) => (
             <SelectItem 
               key={year} 
               value={year.toString()}
-              className="py-3 px-4 text-sm hover:bg-gray-50 text-black"
+              className="py-4 px-6 text-lg hover:bg-gray-50 rounded-xl text-black"
             >
               {year}年
             </SelectItem>
@@ -48,15 +48,15 @@ const YearMonthSelector = ({ selectedYear, selectedMonth, onYearChange, onMonthC
       </Select>
       
       <Select value={selectedMonth} onValueChange={onMonthChange}>
-        <SelectTrigger className="h-12 text-sm border-2 border-white/30 rounded-xl bg-white/20 backdrop-blur-xl text-gray-900 placeholder:text-gray-700">
+        <SelectTrigger className="h-14 text-lg bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl text-white placeholder:text-white/70">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">
+        <SelectContent className="bg-white border border-gray-300 rounded-2xl shadow-xl z-50">
           {months.map((month) => (
             <SelectItem 
               key={month.value} 
               value={month.value}
-              className="py-3 px-4 text-sm hover:bg-gray-50 text-black"
+              className="py-4 px-6 text-lg hover:bg-gray-50 rounded-xl text-black"
             >
               {month.label}
             </SelectItem>

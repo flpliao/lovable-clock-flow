@@ -12,17 +12,17 @@ const ScheduleFormActions = ({ loading, disabled }: ScheduleFormActionsProps) =>
   return (
     <Button 
       type="submit" 
-      className="w-full h-14 text-lg font-semibold bg-white/30 hover:bg-white/40 text-white rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-xl border border-white/40"
+      className="w-full h-16 text-xl font-bold bg-white/20 hover:bg-white/30 text-white rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-xl border border-white/30 shadow-xl"
       disabled={disabled || loading}
     >
       {loading ? (
-        <div className="flex items-center space-x-2">
-          <Loader2 className="h-5 w-5 animate-spin" />
+        <div className="flex items-center space-x-3">
+          <Loader2 className="h-6 w-6 animate-spin" />
           <span>提交中...</span>
         </div>
       ) : (
-        <div className="flex items-center space-x-2">
-          <Plus className="h-5 w-5" />
+        <div className="flex items-center space-x-3">
+          <Plus className="h-6 w-6" />
           <span>提交排班</span>
         </div>
       )}

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, List } from 'lucide-react';
+import { Calendar, List, Grid } from 'lucide-react';
 import CalendarViewSection from './CalendarViewSection';
 import ListViewSection from './ListViewSection';
 
@@ -59,23 +59,30 @@ const ScheduleTabsContent = ({
   getScheduleCountForDate,
 }: ScheduleTabsContentProps) => {
   return (
-    <div className="space-y-6">
-      {/* 簡化的視圖選擇 */}
-      <div className="bg-white/60 backdrop-blur-sm border border-white/40 rounded-xl shadow-sm p-4">
-        <TabsList className="grid w-full grid-cols-2 bg-white/50 rounded-lg p-1 h-12">
+    <div className="space-y-8">
+      {/* 視圖選擇 */}
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-xl p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 bg-white/20 rounded-2xl">
+            <Grid className="h-7 w-7 text-white" />
+          </div>
+          <h3 className="text-2xl font-bold text-white">視圖切換</h3>
+        </div>
+        
+        <TabsList className="grid w-full grid-cols-2 bg-white/20 backdrop-blur-xl rounded-2xl p-2 h-16 border border-white/30">
           <TabsTrigger 
             value="calendar"
-            className="text-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md font-medium flex items-center gap-2"
+            className="text-white/90 data-[state=active]:bg-white/30 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold flex items-center gap-2 h-12"
           >
-            <Calendar className="h-4 w-4" />
+            <Calendar className="h-5 w-5" />
             <span className="hidden xs:inline">日曆檢視</span>
             <span className="xs:hidden">日曆</span>
           </TabsTrigger>
           <TabsTrigger 
             value="list"
-            className="text-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md font-medium flex items-center gap-2"
+            className="text-white/90 data-[state=active]:bg-white/30 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold flex items-center gap-2 h-12"
           >
-            <List className="h-4 w-4" />
+            <List className="h-5 w-5" />
             <span className="hidden xs:inline">列表檢視</span>
             <span className="xs:hidden">列表</span>
           </TabsTrigger>

@@ -30,9 +30,9 @@ const Scheduling = () => {
           <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-purple-200/50 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
           
           <div className="relative z-10 p-6">
-            <div className="max-w-7xl mx-auto space-y-12">
-              {/* 頁面標題卡片 - 使用 visionProStyles */}
-              <div className={`${visionProStyles.dashboardCard} p-8`}>
+            <div className="max-w-7xl mx-auto space-y-8">
+              {/* 頁面標題 - 簡化容器 */}
+              <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <Button 
@@ -44,20 +44,20 @@ const Scheduling = () => {
                       <ChevronLeft className="h-5 w-5" />
                     </Button>
                     <div className="flex items-center space-x-4">
-                      <div className={visionProStyles.coloredIconContainer.blue}>
+                      <div className="p-3 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
                         <Calendar className="h-8 w-8" />
                       </div>
                       <div>
-                        <h1 className={`text-4xl font-bold mb-2 ${visionProStyles.primaryText}`}>排班管理</h1>
-                        <p className={`text-lg font-medium ${visionProStyles.secondaryText}`}>管理員工排班與時間設定</p>
+                        <h1 className="text-4xl font-bold mb-2 text-gray-900 drop-shadow-sm">排班管理</h1>
+                        <p className="text-lg font-medium text-gray-700 drop-shadow-sm">管理員工排班與時間設定</p>
                       </div>
                     </div>
                   </div>
                   <div className="hidden md:flex items-center space-x-3">
-                    <div className={visionProStyles.coloredIconContainer.blue}>
+                    <div className="p-3 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
                       <BarChart3 className="h-6 w-6" />
                     </div>
-                    <div className={visionProStyles.coloredIconContainer.purple}>
+                    <div className="p-3 bg-purple-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-purple-400/50 text-white">
                       <Settings className="h-6 w-6" />
                     </div>
                   </div>
@@ -66,13 +66,13 @@ const Scheduling = () => {
 
               {/* 主要內容區域 */}
               <Tabs defaultValue="view" className="w-full">
-                {/* 標籤選擇器 */}
-                <div className={`${visionProStyles.dashboardCard} p-6 mb-12`}>
+                {/* 標籤選擇器 - 簡化容器 */}
+                <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6 mb-8">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className={visionProStyles.coloredIconContainer.purple}>
+                    <div className="p-3 bg-purple-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-purple-400/50 text-white">
                       <Sparkles className="h-6 w-6" />
                     </div>
-                    <h2 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>排班功能</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 drop-shadow-sm">排班功能</h2>
                   </div>
                   
                   <TabsList className="grid w-full grid-cols-3 bg-white/60 rounded-2xl border border-white/40 p-1 shadow-lg h-16">
@@ -111,12 +111,12 @@ const Scheduling = () => {
                   <ScheduleForm />
                 </TabsContent>
                 <TabsContent value="timeslots" className="mt-0">
-                  <div className={`${visionProStyles.dashboardCard} p-8`}>
+                  <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className={visionProStyles.coloredIconContainer.orange}>
+                      <div className="p-3 bg-orange-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-orange-400/50 text-white">
                         <Clock className="h-6 w-6" />
                       </div>
-                      <h2 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>時間段管理</h2>
+                      <h2 className="text-2xl font-bold text-gray-900 drop-shadow-sm">時間段管理</h2>
                     </div>
                     <TimeSlotManagement />
                   </div>

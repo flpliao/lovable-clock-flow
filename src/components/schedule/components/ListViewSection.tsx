@@ -3,7 +3,6 @@ import React from 'react';
 import { Calendar, Users, List } from 'lucide-react';
 import MonthlyScheduleView from './MonthlyScheduleView';
 import StaffMonthSelector from './StaffMonthSelector';
-import { visionProStyles } from '@/utils/visionProStyles';
 
 interface ListViewSectionProps {
   availableStaff: any[];
@@ -29,14 +28,14 @@ const ListViewSection = ({
   viewableStaffIds,
 }: ListViewSectionProps) => {
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
       {/* 員工月份選擇器 */}
-      <div className={`${visionProStyles.dashboardCard} p-8`}>
+      <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6">
         <div className="flex items-center gap-4 mb-6">
-          <div className={visionProStyles.coloredIconContainer.orange}>
+          <div className="p-3 bg-orange-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-orange-400/50 text-white">
             <Users className="h-6 w-6" />
           </div>
-          <h3 className={`text-2xl font-bold text-gray-800`}>我的詳情</h3>
+          <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">我的詳情</h3>
         </div>
         
         <StaffMonthSelector
@@ -50,12 +49,12 @@ const ListViewSection = ({
       </div>
       
       {/* 月度排班視圖 */}
-      <div className={`${visionProStyles.dashboardCard} p-8`}>
+      <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6">
         <div className="flex items-center gap-4 mb-6">
-          <div className={visionProStyles.coloredIconContainer.teal}>
+          <div className="p-3 bg-teal-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-teal-400/50 text-white">
             <List className="h-6 w-6" />
           </div>
-          <h3 className={`text-2xl font-bold text-gray-800`}>月度排班</h3>
+          <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">月度排班</h3>
         </div>
         
         <MonthlyScheduleView

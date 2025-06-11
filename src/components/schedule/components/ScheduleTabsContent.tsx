@@ -4,7 +4,6 @@ import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, List } from 'lucide-react';
 import CalendarViewSection from './CalendarViewSection';
 import ListViewSection from './ListViewSection';
-import { visionProStyles } from '@/utils/visionProStyles';
 
 interface ScheduleTabsContentProps {
   viewType: string;
@@ -60,9 +59,9 @@ const ScheduleTabsContent = ({
   getScheduleCountForDate,
 }: ScheduleTabsContentProps) => {
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
       {/* 視圖選擇 */}
-      <div className={`${visionProStyles.dashboardCard} p-6`}>
+      <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-4">
         <TabsList className="grid w-full grid-cols-2 bg-white/60 rounded-2xl border border-white/50 p-1 shadow-lg h-16">
           <TabsTrigger 
             value="calendar"

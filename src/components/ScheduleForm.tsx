@@ -9,7 +9,6 @@ import TimeSlotSelector from './schedule/TimeSlotSelector';
 import SchedulePreview from './schedule/SchedulePreview';
 import YearMonthSelector from './schedule/YearMonthSelector';
 import ScheduleFormActions from './schedule/ScheduleFormActions';
-import { visionProStyles } from '@/utils/visionProStyles';
 
 const ScheduleForm = () => {
   const {
@@ -30,10 +29,10 @@ const ScheduleForm = () => {
   const isFormValid = form.watch('userId') && selectedDates.length > 0 && selectedTimeSlots.length > 0;
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
       {/* 錯誤提示 */}
       {error && (
-        <div className="backdrop-blur-2xl bg-red-500/20 border border-red-400/30 rounded-3xl shadow-lg p-6">
+        <div className="backdrop-blur-xl bg-red-500/20 border border-red-400/30 rounded-2xl shadow-lg p-6">
           <div className="text-red-800 text-sm font-medium drop-shadow-sm">
             錯誤：{error}
           </div>
@@ -41,29 +40,29 @@ const ScheduleForm = () => {
       )}
       
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           {/* 員工選擇卡片 */}
-          <div className={`${visionProStyles.dashboardCard} p-8`}>
+          <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6">
             <div className="flex items-center gap-4 mb-6">
-              <div className={visionProStyles.coloredIconContainer.blue}>
+              <div className="p-3 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
                 <Users className="h-6 w-6" />
               </div>
-              <h3 className={`text-2xl font-bold text-gray-800`}>選擇員工</h3>
+              <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">選擇員工</h3>
             </div>
-            <div className="text-gray-800">
+            <div className="text-gray-900">
               <StaffSelector control={form.control} />
             </div>
           </div>
 
           {/* 年月選擇卡片 */}
-          <div className={`${visionProStyles.dashboardCard} p-8`}>
+          <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6">
             <div className="flex items-center gap-4 mb-6">
-              <div className={visionProStyles.coloredIconContainer.green}>
+              <div className="p-3 bg-green-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-green-400/50 text-white">
                 <Calendar className="h-6 w-6" />
               </div>
-              <h3 className={`text-2xl font-bold text-gray-800`}>選擇年月</h3>
+              <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">選擇年月</h3>
             </div>
-            <div className="text-gray-800">
+            <div className="text-gray-900">
               <YearMonthSelector
                 selectedYear={selectedYear}
                 selectedMonth={selectedMonth}
@@ -74,14 +73,14 @@ const ScheduleForm = () => {
           </div>
 
           {/* 日期選擇卡片 */}
-          <div className={`${visionProStyles.dashboardCard} p-8`}>
+          <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6">
             <div className="flex items-center gap-4 mb-6">
-              <div className={visionProStyles.coloredIconContainer.purple}>
+              <div className="p-3 bg-purple-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-purple-400/50 text-white">
                 <Calendar className="h-6 w-6" />
               </div>
-              <h3 className={`text-2xl font-bold text-gray-800`}>選擇日期</h3>
+              <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">選擇日期</h3>
             </div>
-            <div className="text-gray-800">
+            <div className="text-gray-900">
               <ScheduleCalendar
                 selectedYear={selectedYear}
                 selectedMonth={selectedMonth}
@@ -92,14 +91,14 @@ const ScheduleForm = () => {
           </div>
 
           {/* 時間段選擇卡片 */}
-          <div className={`${visionProStyles.dashboardCard} p-8`}>
+          <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6">
             <div className="flex items-center gap-4 mb-6">
-              <div className={visionProStyles.coloredIconContainer.orange}>
+              <div className="p-3 bg-orange-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-orange-400/50 text-white">
                 <Clock className="h-6 w-6" />
               </div>
-              <h3 className={`text-2xl font-bold text-gray-800`}>選擇時間段</h3>
+              <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">選擇時間段</h3>
             </div>
-            <div className="text-gray-800">
+            <div className="text-gray-900">
               <TimeSlotSelector
                 selectedTimeSlots={selectedTimeSlots}
                 onTimeSlotToggle={handleTimeSlotToggle}
@@ -109,14 +108,14 @@ const ScheduleForm = () => {
 
           {/* 預覽卡片 */}
           {(selectedDates.length > 0 || selectedTimeSlots.length > 0) && (
-            <div className={`${visionProStyles.dashboardCard} p-8`}>
+            <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6">
               <div className="flex items-center gap-4 mb-6">
-                <div className={visionProStyles.coloredIconContainer.teal}>
+                <div className="p-3 bg-teal-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-teal-400/50 text-white">
                   <Eye className="h-6 w-6" />
                 </div>
-                <h3 className={`text-2xl font-bold text-gray-800`}>排班預覽</h3>
+                <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">排班預覽</h3>
               </div>
-              <div className="text-gray-800">
+              <div className="text-gray-900">
                 <SchedulePreview
                   selectedDates={selectedDates}
                   selectedTimeSlots={selectedTimeSlots}
@@ -128,14 +127,14 @@ const ScheduleForm = () => {
           )}
 
           {/* 提交按鈕卡片 */}
-          <div className={`${visionProStyles.dashboardCard} p-8`}>
+          <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6">
             <div className="flex items-center gap-4 mb-6">
-              <div className={visionProStyles.coloredIconContainer.indigo}>
+              <div className="p-3 bg-indigo-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-indigo-400/50 text-white">
                 <CheckCircle className="h-6 w-6" />
               </div>
-              <h3 className={`text-2xl font-bold text-gray-800`}>提交排班</h3>
+              <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">提交排班</h3>
             </div>
-            <div className="text-gray-800">
+            <div className="text-gray-900">
               <ScheduleFormActions
                 loading={loading}
                 disabled={!isFormValid}

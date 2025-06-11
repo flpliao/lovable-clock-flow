@@ -2,7 +2,6 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Clock, Calendar } from 'lucide-react';
-import { visionProStyles } from '@/utils/visionProStyles';
 
 interface YearMonthSelectorCardProps {
   selectedYear: string;
@@ -22,12 +21,12 @@ const YearMonthSelectorCard = ({
   generateMonths,
 }: YearMonthSelectorCardProps) => {
   return (
-    <div className={`${visionProStyles.dashboardCard} p-8`}>
+    <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6">
       <div className="flex items-center gap-4 mb-6">
-        <div className={visionProStyles.coloredIconContainer.green}>
+        <div className="p-3 bg-green-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-green-400/50 text-white">
           <Calendar className="h-6 w-6" />
         </div>
-        <h3 className={`text-2xl font-bold text-gray-800`}>選擇年月</h3>
+        <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">選擇年月</h3>
       </div>
       
       <div className="grid grid-cols-2 gap-4">

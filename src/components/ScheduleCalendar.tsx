@@ -51,7 +51,6 @@ const ScheduleCalendar = () => {
   
   console.log('ScheduleCalendar - Filtered shifts for selected date:', shiftsForSelectedDate);
 
-  // 獲取某日期的排班數量（已過濾）
   const getScheduleCountForDate = (date: Date) => {
     const filteredSchedules = getFilteredSchedulesForDate(date);
     const count = filteredSchedules.length;
@@ -69,9 +68,9 @@ const ScheduleCalendar = () => {
   const availableStaff = getAvailableStaff();
 
   return (
-    <div className="space-y-8">
-      <Tabs value={viewType} onValueChange={(value: any) => setViewType(value)} className="w-full space-y-8">
-        {/* 查看模式選擇器 */}
+    <div className="space-y-6">
+      <Tabs value={viewType} onValueChange={(value: any) => setViewType(value)} className="w-full space-y-6">
+        {/* 簡化的查看模式選擇器 */}
         <ScheduleHeader
           viewMode={viewMode}
           onViewModeChange={setViewMode}

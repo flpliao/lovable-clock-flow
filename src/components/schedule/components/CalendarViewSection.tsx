@@ -41,7 +41,7 @@ const CalendarViewSection = ({
   getScheduleCountForDate,
 }: CalendarViewSectionProps) => {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* 年月選擇器 */}
       <YearMonthSelectorCard
         selectedYear={selectedYear}
@@ -53,12 +53,12 @@ const CalendarViewSection = ({
       />
 
       {/* 日曆網格 */}
-      <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="p-3 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
-            <Grid className="h-6 w-6" />
+      <div className="bg-white/60 backdrop-blur-sm border border-white/40 rounded-xl shadow-sm p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-blue-500 rounded-lg text-white">
+            <Grid className="h-5 w-5" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">日曆檢視</h3>
+          <h3 className="text-lg font-semibold text-gray-900">日曆檢視</h3>
         </div>
         <CalendarGrid
           daysInMonth={daysInMonth}
@@ -67,13 +67,13 @@ const CalendarViewSection = ({
         />
       </div>
 
-      {/* 選中日期的排班詳情 */}
-      <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="p-3 bg-purple-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-purple-400/50 text-white">
-            <Users className="h-6 w-6" />
+      {/* 排班詳情 */}
+      <div className="bg-white/60 backdrop-blur-sm border border-white/40 rounded-xl shadow-sm p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-purple-500 rounded-lg text-white">
+            <Users className="h-5 w-5" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">排班詳情</h3>
+          <h3 className="text-lg font-semibold text-gray-900">排班詳情</h3>
         </div>
         
         <ScheduleTable

@@ -21,25 +21,25 @@ const YearMonthSelectorCard = ({
   generateMonths,
 }: YearMonthSelectorCardProps) => {
   return (
-    <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-6">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="p-3 bg-green-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-green-400/50 text-white">
-          <Calendar className="h-6 w-6" />
+    <div className="bg-white/60 backdrop-blur-sm border border-white/40 rounded-xl shadow-sm p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-green-500 rounded-lg text-white">
+          <Calendar className="h-5 w-5" />
         </div>
-        <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">選擇年月</h3>
+        <h3 className="text-lg font-semibold text-gray-900">選擇年月</h3>
       </div>
       
       <div className="grid grid-cols-2 gap-4">
         <Select value={selectedYear} onValueChange={onYearChange}>
-          <SelectTrigger className="h-14 text-base bg-white/60 border border-white/50 rounded-2xl text-gray-800">
+          <SelectTrigger className="h-12 text-base bg-white/50 border border-white/40 rounded-lg">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-white/95 border border-white/30 rounded-2xl shadow-lg z-50">
+          <SelectContent className="bg-white/95 border border-white/30 rounded-lg shadow-lg">
             {generateYears().map((year) => (
               <SelectItem 
                 key={year} 
                 value={year.toString()}
-                className="py-4 px-6 text-base hover:bg-white/80 rounded-xl"
+                className="py-3 px-4 text-base hover:bg-white/80 rounded-md"
               >
                 {year}年
               </SelectItem>
@@ -48,15 +48,15 @@ const YearMonthSelectorCard = ({
         </Select>
         
         <Select value={selectedMonth} onValueChange={onMonthChange}>
-          <SelectTrigger className="h-14 text-base bg-white/60 border border-white/50 rounded-2xl text-gray-800">
+          <SelectTrigger className="h-12 text-base bg-white/50 border border-white/40 rounded-lg">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-white/95 border border-white/30 rounded-2xl shadow-lg z-50">
+          <SelectContent className="bg-white/95 border border-white/30 rounded-lg shadow-lg">
             {generateMonths().map((month) => (
               <SelectItem 
                 key={month.value} 
                 value={month.value}
-                className="py-4 px-6 text-base hover:bg-white/80 rounded-xl"
+                className="py-3 px-4 text-base hover:bg-white/80 rounded-md"
               >
                 {month.label}
               </SelectItem>

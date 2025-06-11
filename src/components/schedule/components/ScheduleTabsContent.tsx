@@ -59,23 +59,23 @@ const ScheduleTabsContent = ({
   getScheduleCountForDate,
 }: ScheduleTabsContentProps) => {
   return (
-    <div className="space-y-8">
-      {/* 視圖選擇 */}
-      <div className="backdrop-blur-xl bg-white/40 border border-white/30 rounded-2xl shadow-lg p-4">
-        <TabsList className="grid w-full grid-cols-2 bg-white/60 rounded-2xl border border-white/50 p-1 shadow-lg h-16">
+    <div className="space-y-6">
+      {/* 簡化的視圖選擇 */}
+      <div className="bg-white/60 backdrop-blur-sm border border-white/40 rounded-xl shadow-sm p-4">
+        <TabsList className="grid w-full grid-cols-2 bg-white/50 rounded-lg p-1 h-12">
           <TabsTrigger 
             value="calendar"
-            className="text-gray-700 data-[state=active]:bg-white/90 data-[state=active]:text-gray-800 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-4 px-6 text-base flex items-center gap-2"
+            className="text-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md font-medium flex items-center gap-2"
           >
-            <Calendar className="h-5 w-5" />
+            <Calendar className="h-4 w-4" />
             <span className="hidden xs:inline">日曆檢視</span>
             <span className="xs:hidden">日曆</span>
           </TabsTrigger>
           <TabsTrigger 
             value="list"
-            className="text-gray-700 data-[state=active]:bg-white/90 data-[state=active]:text-gray-800 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-4 px-6 text-base flex items-center gap-2"
+            className="text-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md font-medium flex items-center gap-2"
           >
-            <List className="h-5 w-5" />
+            <List className="h-4 w-4" />
             <span className="hidden xs:inline">列表檢視</span>
             <span className="xs:hidden">列表</span>
           </TabsTrigger>

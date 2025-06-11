@@ -66,10 +66,10 @@ const ScheduleTabsContent = ({
   return (
     <div className="space-y-6">
       {/* 視圖選擇 */}
-      <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
+      <TabsList className="grid w-full grid-cols-2 bg-slate-100 rounded-2xl border border-slate-200 p-1 shadow-lg h-14">
         <TabsTrigger 
           value="calendar"
-          className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+          className="text-slate-700 data-[state=active]:bg-white data-[state=active]:text-slate-800 data-[state=active]:shadow-md rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base flex items-center gap-2"
         >
           <Calendar className="h-4 w-4" />
           <span className="hidden xs:inline">日曆檢視</span>
@@ -77,7 +77,7 @@ const ScheduleTabsContent = ({
         </TabsTrigger>
         <TabsTrigger 
           value="list"
-          className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+          className="text-slate-700 data-[state=active]:bg-white data-[state=active]:text-slate-800 data-[state=active]:shadow-md rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base flex items-center gap-2"
         >
           <List className="h-4 w-4" />
           <span className="hidden xs:inline">列表檢視</span>
@@ -87,17 +87,17 @@ const ScheduleTabsContent = ({
 
       <TabsContent value="calendar" className="mt-0 space-y-6">
         {/* 年月選擇器 */}
-        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-green-500/80 rounded-xl shadow-lg">
+            <div className="p-3 bg-emerald-600 rounded-xl shadow-lg">
               <Clock className="h-5 w-5 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white drop-shadow-md">選擇年月</h3>
+            <h3 className="text-lg font-semibold text-slate-800">選擇年月</h3>
           </div>
           
           <div className="grid grid-cols-2 gap-3">
             <Select value={selectedYear} onValueChange={onYearChange}>
-              <SelectTrigger className="h-12 text-sm border-2 border-white/30 rounded-xl bg-white/20 text-white backdrop-blur-xl">
+              <SelectTrigger className="h-12 text-sm border-2 border-slate-200 rounded-xl bg-white text-slate-700">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">
@@ -114,7 +114,7 @@ const ScheduleTabsContent = ({
             </Select>
             
             <Select value={selectedMonth} onValueChange={onMonthChange}>
-              <SelectTrigger className="h-12 text-sm border-2 border-white/30 rounded-xl bg-white/20 text-white backdrop-blur-xl">
+              <SelectTrigger className="h-12 text-sm border-2 border-slate-200 rounded-xl bg-white text-slate-700">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">
@@ -133,12 +133,12 @@ const ScheduleTabsContent = ({
         </div>
 
         {/* 日曆網格 */}
-        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-blue-500/80 rounded-xl shadow-lg">
+            <div className="p-3 bg-blue-600 rounded-xl shadow-lg">
               <Calendar className="h-5 w-5 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white drop-shadow-md">日曆檢視</h3>
+            <h3 className="text-lg font-semibold text-slate-800">日曆檢視</h3>
           </div>
           <CalendarGrid
             daysInMonth={daysInMonth}
@@ -148,12 +148,12 @@ const ScheduleTabsContent = ({
         </div>
 
         {/* 選中日期的排班詳情 */}
-        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-purple-500/80 rounded-xl shadow-lg">
+            <div className="p-3 bg-indigo-600 rounded-xl shadow-lg">
               <Users className="h-5 w-5 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white drop-shadow-md">排班詳情</h3>
+            <h3 className="text-lg font-semibold text-slate-800">排班詳情</h3>
           </div>
           
           <ScheduleTable
@@ -169,12 +169,12 @@ const ScheduleTabsContent = ({
 
       <TabsContent value="list" className="mt-0 space-y-6">
         {/* 員工月份選擇器 */}
-        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-orange-500/80 rounded-xl shadow-lg">
+            <div className="p-3 bg-amber-600 rounded-xl shadow-lg">
               <Users className="h-5 w-5 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white drop-shadow-md">員工選擇</h3>
+            <h3 className="text-lg font-semibold text-slate-800">員工選擇</h3>
           </div>
           
           <StaffMonthSelector
@@ -188,12 +188,12 @@ const ScheduleTabsContent = ({
         </div>
         
         {/* 月度排班視圖 */}
-        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-teal-500/80 rounded-xl shadow-lg">
+            <div className="p-3 bg-cyan-600 rounded-xl shadow-lg">
               <Calendar className="h-5 w-5 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white drop-shadow-md">月度排班</h3>
+            <h3 className="text-lg font-semibold text-slate-800">月度排班</h3>
           </div>
           
           <MonthlyScheduleView

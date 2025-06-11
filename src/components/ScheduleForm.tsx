@@ -33,8 +33,8 @@ const ScheduleForm = () => {
     <div className="space-y-6">
       {/* 錯誤提示 */}
       {error && (
-        <div className="bg-red-500/20 backdrop-blur-xl rounded-2xl border border-red-400/30 shadow-lg p-4">
-          <div className="text-red-100 text-sm font-medium">
+        <div className="bg-red-50 border border-red-200 rounded-2xl shadow-lg p-4">
+          <div className="text-red-800 text-sm font-medium">
             錯誤：{error}
           </div>
         </div>
@@ -43,23 +43,23 @@ const ScheduleForm = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* 員工選擇卡片 */}
-          <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+          <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-blue-500/80 rounded-xl shadow-lg">
+              <div className="p-3 bg-blue-600 rounded-xl shadow-lg">
                 <Users className="h-5 w-5 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-white drop-shadow-md">選擇員工</h3>
+              <h3 className="text-lg font-semibold text-slate-800">選擇員工</h3>
             </div>
             <StaffSelector control={form.control} />
           </div>
 
           {/* 年月選擇卡片 */}
-          <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+          <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-green-500/80 rounded-xl shadow-lg">
+              <div className="p-3 bg-emerald-600 rounded-xl shadow-lg">
                 <Calendar className="h-5 w-5 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-white drop-shadow-md">選擇年月</h3>
+              <h3 className="text-lg font-semibold text-slate-800">選擇年月</h3>
             </div>
             <YearMonthSelector
               selectedYear={selectedYear}
@@ -70,12 +70,12 @@ const ScheduleForm = () => {
           </div>
 
           {/* 日期選擇卡片 */}
-          <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+          <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-purple-500/80 rounded-xl shadow-lg">
+              <div className="p-3 bg-indigo-600 rounded-xl shadow-lg">
                 <Calendar className="h-5 w-5 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-white drop-shadow-md">選擇日期</h3>
+              <h3 className="text-lg font-semibold text-slate-800">選擇日期</h3>
             </div>
             <ScheduleCalendar
               selectedYear={selectedYear}
@@ -86,12 +86,12 @@ const ScheduleForm = () => {
           </div>
 
           {/* 時間段選擇卡片 */}
-          <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+          <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-orange-500/80 rounded-xl shadow-lg">
+              <div className="p-3 bg-amber-600 rounded-xl shadow-lg">
                 <Clock className="h-5 w-5 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-white drop-shadow-md">選擇時間段</h3>
+              <h3 className="text-lg font-semibold text-slate-800">選擇時間段</h3>
             </div>
             <TimeSlotSelector
               selectedTimeSlots={selectedTimeSlots}
@@ -101,12 +101,12 @@ const ScheduleForm = () => {
 
           {/* 預覽卡片 */}
           {(selectedDates.length > 0 || selectedTimeSlots.length > 0) && (
-            <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+            <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-teal-500/80 rounded-xl shadow-lg">
+                <div className="p-3 bg-cyan-600 rounded-xl shadow-lg">
                   <Eye className="h-5 w-5 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-white drop-shadow-md">排班預覽</h3>
+                <h3 className="text-lg font-semibold text-slate-800">排班預覽</h3>
               </div>
               <SchedulePreview
                 selectedDates={selectedDates}
@@ -118,12 +118,12 @@ const ScheduleForm = () => {
           )}
 
           {/* 提交按鈕卡片 */}
-          <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+          <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-indigo-500/80 rounded-xl shadow-lg">
+              <div className="p-3 bg-violet-600 rounded-xl shadow-lg">
                 <CheckCircle className="h-5 w-5 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-white drop-shadow-md">提交排班</h3>
+              <h3 className="text-lg font-semibold text-slate-800">提交排班</h3>
             </div>
             <ScheduleFormActions
               loading={loading}

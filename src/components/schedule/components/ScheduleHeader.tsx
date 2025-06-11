@@ -20,7 +20,7 @@ const ScheduleHeader = ({
   onViewTypeChange,
 }: ScheduleHeaderProps) => {
   return (
-    <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6 space-y-6">
+    <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6 space-y-6">
       {/* 查看模式選擇器 */}
       <ViewModeSelector 
         viewMode={viewMode}
@@ -29,17 +29,17 @@ const ScheduleHeader = ({
       />
 
       {/* 視圖類型切換 */}
-      <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
+      <TabsList className="grid w-full grid-cols-2 bg-slate-100 rounded-2xl border border-slate-200 p-1 shadow-lg h-14">
         <TabsTrigger 
           value="calendar" 
-          className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+          className="text-slate-700 data-[state=active]:bg-white data-[state=active]:text-slate-800 data-[state=active]:shadow-md rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base flex items-center gap-2"
         >
           <Grid className="h-4 w-4" />
           日曆視圖
         </TabsTrigger>
         <TabsTrigger 
           value="list"
-          className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+          className="text-slate-700 data-[state=active]:bg-white data-[state=active]:text-slate-800 data-[state=active]:shadow-md rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base flex items-center gap-2"
         >
           <Calendar className="h-4 w-4" />
           列表視圖

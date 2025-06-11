@@ -12,7 +12,7 @@ const ScheduleFormActions = ({ loading, disabled }: ScheduleFormActionsProps) =>
   return (
     <Button 
       type="submit" 
-      className="w-full h-16 text-xl font-bold bg-white/20 hover:bg-white/30 text-white rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-xl border border-white/30 shadow-xl"
+      className="w-full h-16 text-xl font-bold bg-white/20 hover:bg-white/30 text-black rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-xl border border-white/30 shadow-xl"
       disabled={disabled || loading}
     >
       {loading ? (

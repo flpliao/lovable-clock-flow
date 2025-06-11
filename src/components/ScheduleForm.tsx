@@ -47,7 +47,7 @@ const ScheduleForm = () => {
               <div className="p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg border border-white/20">
                 <Users className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white drop-shadow-lg">選擇員工</h3>
+              <h3 className="text-2xl font-bold text-black drop-shadow-lg">選擇員工</h3>
             </div>
             <StaffSelector control={form.control} />
           </div>
@@ -58,7 +58,7 @@ const ScheduleForm = () => {
               <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-lg border border-white/20">
                 <Calendar className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white drop-shadow-lg">選擇年月</h3>
+              <h3 className="text-2xl font-bold text-black drop-shadow-lg">選擇年月</h3>
             </div>
             <YearMonthSelector
               selectedYear={selectedYear}
@@ -74,7 +74,7 @@ const ScheduleForm = () => {
               <div className="p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg border border-white/20">
                 <Calendar className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white drop-shadow-lg">選擇日期</h3>
+              <h3 className="text-2xl font-bold text-black drop-shadow-lg">選擇日期</h3>
             </div>
             <ScheduleCalendar
               selectedYear={selectedYear}
@@ -90,7 +90,7 @@ const ScheduleForm = () => {
               <div className="p-4 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-lg border border-white/20">
                 <Clock className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white drop-shadow-lg">選擇時間段</h3>
+              <h3 className="text-2xl font-bold text-black drop-shadow-lg">選擇時間段</h3>
             </div>
             <TimeSlotSelector
               selectedTimeSlots={selectedTimeSlots}
@@ -105,7 +105,7 @@ const ScheduleForm = () => {
                 <div className="p-4 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl shadow-lg border border-white/20">
                   <Eye className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white drop-shadow-lg">排班預覽</h3>
+                <h3 className="text-2xl font-bold text-black drop-shadow-lg">排班預覽</h3>
               </div>
               <SchedulePreview
                 selectedDates={selectedDates}
@@ -122,7 +122,7 @@ const ScheduleForm = () => {
               <div className="p-4 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl shadow-lg border border-white/20">
                 <CheckCircle className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white drop-shadow-lg">提交排班</h3>
+              <h3 className="text-2xl font-bold text-black drop-shadow-lg">提交排班</h3>
             </div>
             <ScheduleFormActions
               loading={loading}

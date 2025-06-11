@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Clock } from 'lucide-react';
+import { Clock, Calendar } from 'lucide-react';
 
 interface YearMonthSelectorCardProps {
   selectedYear: string;
@@ -21,25 +21,25 @@ const YearMonthSelectorCard = ({
   generateMonths,
 }: YearMonthSelectorCardProps) => {
   return (
-    <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="p-3 bg-emerald-600 rounded-xl shadow-lg">
-          <Clock className="h-5 w-5 text-white" />
+    <div className="backdrop-blur-2xl bg-white/15 border border-white/20 rounded-3xl shadow-2xl p-8">
+      <div className="flex items-center gap-4 mb-6">
+        <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-lg border border-white/20">
+          <Calendar className="h-6 w-6 text-white" />
         </div>
-        <h3 className="text-lg font-semibold text-slate-800">選擇年月</h3>
+        <h3 className="text-2xl font-bold text-white drop-shadow-lg">選擇年月</h3>
       </div>
       
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <Select value={selectedYear} onValueChange={onYearChange}>
-          <SelectTrigger className="h-12 text-sm border-2 border-slate-200 rounded-xl bg-white text-slate-700">
+          <SelectTrigger className="h-14 text-base backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl text-white">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">
+          <SelectContent className="backdrop-blur-xl bg-white/95 border border-white/30 rounded-2xl shadow-lg z-50">
             {generateYears().map((year) => (
               <SelectItem 
                 key={year} 
                 value={year.toString()}
-                className="py-3 px-4 text-sm hover:bg-gray-50"
+                className="py-4 px-6 text-base hover:bg-white/80 rounded-xl"
               >
                 {year}年
               </SelectItem>
@@ -48,15 +48,15 @@ const YearMonthSelectorCard = ({
         </Select>
         
         <Select value={selectedMonth} onValueChange={onMonthChange}>
-          <SelectTrigger className="h-12 text-sm border-2 border-slate-200 rounded-xl bg-white text-slate-700">
+          <SelectTrigger className="h-14 text-base backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl text-white">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">
+          <SelectContent className="backdrop-blur-xl bg-white/95 border border-white/30 rounded-2xl shadow-lg z-50">
             {generateMonths().map((month) => (
               <SelectItem 
                 key={month.value} 
                 value={month.value}
-                className="py-3 px-4 text-sm hover:bg-gray-50"
+                className="py-4 px-6 text-base hover:bg-white/80 rounded-xl"
               >
                 {month.label}
               </SelectItem>

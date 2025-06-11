@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Users } from 'lucide-react';
+import { Calendar, Users, List } from 'lucide-react';
 import MonthlyScheduleView from './MonthlyScheduleView';
 import StaffMonthSelector from './StaffMonthSelector';
 
@@ -28,14 +28,14 @@ const ListViewSection = ({
   viewableStaffIds,
 }: ListViewSectionProps) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* 員工月份選擇器 */}
-      <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 bg-amber-600 rounded-xl shadow-lg">
-            <Users className="h-5 w-5 text-white" />
+      <div className="backdrop-blur-2xl bg-white/15 border border-white/20 rounded-3xl shadow-2xl p-8">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="p-4 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-lg border border-white/20">
+            <Users className="h-6 w-6 text-white" />
           </div>
-          <h3 className="text-lg font-semibold text-slate-800">員工選擇</h3>
+          <h3 className="text-2xl font-bold text-white drop-shadow-lg">員工選擇</h3>
         </div>
         
         <StaffMonthSelector
@@ -49,12 +49,12 @@ const ListViewSection = ({
       </div>
       
       {/* 月度排班視圖 */}
-      <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 bg-cyan-600 rounded-xl shadow-lg">
-            <Calendar className="h-5 w-5 text-white" />
+      <div className="backdrop-blur-2xl bg-white/15 border border-white/20 rounded-3xl shadow-2xl p-8">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="p-4 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl shadow-lg border border-white/20">
+            <List className="h-6 w-6 text-white" />
           </div>
-          <h3 className="text-lg font-semibold text-slate-800">月度排班</h3>
+          <h3 className="text-2xl font-bold text-white drop-shadow-lg">月度排班</h3>
         </div>
         
         <MonthlyScheduleView

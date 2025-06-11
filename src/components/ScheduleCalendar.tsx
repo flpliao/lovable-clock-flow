@@ -69,45 +69,47 @@ const ScheduleCalendar = () => {
   const availableStaff = getAvailableStaff();
 
   return (
-    <Tabs value={viewType} onValueChange={(value: any) => setViewType(value)} className="w-full space-y-6">
-      {/* 查看模式選擇器 - 直接的玻璃卡片 */}
-      <ScheduleHeader
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        hasSubordinates={hasSubordinates}
-        viewType={viewType}
-        onViewTypeChange={setViewType}
-      />
+    <div className="space-y-8">
+      <Tabs value={viewType} onValueChange={(value: any) => setViewType(value)} className="w-full space-y-8">
+        {/* 查看模式選擇器 */}
+        <ScheduleHeader
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          hasSubordinates={hasSubordinates}
+          viewType={viewType}
+          onViewTypeChange={setViewType}
+        />
 
-      {/* 主要內容 - 直接的玻璃卡片 */}
-      <ScheduleTabsContent
-        viewType={viewType}
-        availableStaff={availableStaff}
-        selectedStaffId={selectedStaffId}
-        selectedDate={selectedDate}
-        onStaffChange={setSelectedStaffId}
-        onDateChange={setSelectedDate}
-        getUserRelation={getUserRelation}
-        schedules={schedules}
-        getUserName={getUserName}
-        viewableStaffIds={viewableStaffIds}
-        selectedYear={selectedYear}
-        selectedMonth={selectedMonth}
-        selectedDateNav={dateNavSelectedDate}
-        daysInMonth={daysInMonth}
-        onYearChange={setSelectedYear}
-        onMonthChange={setSelectedMonth}
-        onDateClick={handleDateClick}
-        generateYears={generateYears}
-        generateMonths={generateMonths}
-        shiftsForSelectedDate={shiftsForSelectedDate}
-        canDeleteSchedule={canDeleteSchedule}
-        onRemoveSchedule={handleRemoveSchedule}
-        currentUser={currentUser}
-        setSelectedDateNav={setDateNavSelectedDate}
-        getScheduleCountForDate={getScheduleCountForDate}
-      />
-    </Tabs>
+        {/* 主要內容 */}
+        <ScheduleTabsContent
+          viewType={viewType}
+          availableStaff={availableStaff}
+          selectedStaffId={selectedStaffId}
+          selectedDate={selectedDate}
+          onStaffChange={setSelectedStaffId}
+          onDateChange={setSelectedDate}
+          getUserRelation={getUserRelation}
+          schedules={schedules}
+          getUserName={getUserName}
+          viewableStaffIds={viewableStaffIds}
+          selectedYear={selectedYear}
+          selectedMonth={selectedMonth}
+          selectedDateNav={dateNavSelectedDate}
+          daysInMonth={daysInMonth}
+          onYearChange={setSelectedYear}
+          onMonthChange={setSelectedMonth}
+          onDateClick={handleDateClick}
+          generateYears={generateYears}
+          generateMonths={generateMonths}
+          shiftsForSelectedDate={shiftsForSelectedDate}
+          canDeleteSchedule={canDeleteSchedule}
+          onRemoveSchedule={handleRemoveSchedule}
+          currentUser={currentUser}
+          setSelectedDateNav={setDateNavSelectedDate}
+          getScheduleCountForDate={getScheduleCountForDate}
+        />
+      </Tabs>
+    </div>
   );
 };
 

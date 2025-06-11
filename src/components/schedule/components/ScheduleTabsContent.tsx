@@ -59,26 +59,28 @@ const ScheduleTabsContent = ({
   getScheduleCountForDate,
 }: ScheduleTabsContentProps) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* 視圖選擇 */}
-      <TabsList className="grid w-full grid-cols-2 bg-slate-100 rounded-2xl border border-slate-200 p-1 shadow-lg h-14">
-        <TabsTrigger 
-          value="calendar"
-          className="text-slate-700 data-[state=active]:bg-white data-[state=active]:text-slate-800 data-[state=active]:shadow-md rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base flex items-center gap-2"
-        >
-          <Calendar className="h-4 w-4" />
-          <span className="hidden xs:inline">日曆檢視</span>
-          <span className="xs:hidden">日曆</span>
-        </TabsTrigger>
-        <TabsTrigger 
-          value="list"
-          className="text-slate-700 data-[state=active]:bg-white data-[state=active]:text-slate-800 data-[state=active]:shadow-md rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base flex items-center gap-2"
-        >
-          <List className="h-4 w-4" />
-          <span className="hidden xs:inline">列表檢視</span>
-          <span className="xs:hidden">列表</span>
-        </TabsTrigger>
-      </TabsList>
+      <div className="backdrop-blur-2xl bg-white/15 border border-white/20 rounded-3xl shadow-2xl p-6">
+        <TabsList className="grid w-full grid-cols-2 backdrop-blur-xl bg-white/10 rounded-2xl border border-white/20 p-1 shadow-lg h-16">
+          <TabsTrigger 
+            value="calendar"
+            className="text-white/80 data-[state=active]:bg-white/25 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-4 px-6 text-base flex items-center gap-2 backdrop-blur-xl"
+          >
+            <Calendar className="h-5 w-5" />
+            <span className="hidden xs:inline">日曆檢視</span>
+            <span className="xs:hidden">日曆</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="list"
+            className="text-white/80 data-[state=active]:bg-white/25 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-4 px-6 text-base flex items-center gap-2 backdrop-blur-xl"
+          >
+            <List className="h-5 w-5" />
+            <span className="hidden xs:inline">列表檢視</span>
+            <span className="xs:hidden">列表</span>
+          </TabsTrigger>
+        </TabsList>
+      </div>
 
       <TabsContent value="calendar" className="mt-0">
         <CalendarViewSection

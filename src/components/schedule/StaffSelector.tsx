@@ -29,10 +29,10 @@ const StaffSelector = ({ control }: StaffSelectorProps) => {
                   <SelectItem 
                     key={staffMember.id} 
                     value={staffMember.id}
-                    className="py-3 px-4 text-sm hover:bg-gray-50"
+                    className="py-3 px-4 text-sm hover:bg-gray-50 text-black"
                   >
                     <div className="flex flex-col">
-                      <span className="font-medium">{staffMember.name}</span>
+                      <span className="font-medium text-black">{staffMember.name}</span>
                       <span className="text-xs text-gray-500">{staffMember.position}</span>
                     </div>
                   </SelectItem>

@@ -39,7 +39,7 @@ const YearMonthSelector = ({ selectedYear, selectedMonth, onYearChange, onMonthC
             <SelectItem 
               key={year} 
               value={year.toString()}
-              className="py-3 px-4 text-sm hover:bg-gray-50"
+              className="py-3 px-4 text-sm hover:bg-gray-50 text-black"
             >
               {year}年
             </SelectItem>
@@ -56,7 +56,7 @@ const YearMonthSelector = ({ selectedYear, selectedMonth, onYearChange, onMonthC
             <SelectItem 
               key={month.value} 
               value={month.value}
-              className="py-3 px-4 text-sm hover:bg-gray-50"
+              className="py-3 px-4 text-sm hover:bg-gray-50 text-black"
             >
               {month.label}
             </SelectItem>

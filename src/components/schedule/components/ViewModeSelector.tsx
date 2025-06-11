@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Eye } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { User, Users, Globe } from 'lucide-react';
 
 interface ViewModeSelectorProps {
   viewMode: 'self' | 'subordinates' | 'all';
@@ -10,41 +10,56 @@ interface ViewModeSelectorProps {
 }
 
 const ViewModeSelector = ({ viewMode, onViewModeChange, hasSubordinates }: ViewModeSelectorProps) => {
-  if (!hasSubordinates) return null;
+  const modes = [
+    { 
+      value: 'self' as const, 
+      label: '我的排班', 
+      icon: User,
+      color: 'from-green-500 to-emerald-600'
+    },
+    { 
+      value: 'subordinates' as const, 
+      label: '下屬排班', 
+      icon: Users,
+      color: 'from-blue-500 to-cyan-600',
+      disabled: !hasSubordinates
+    },
+    { 
+      value: 'all' as const, 
+      label: '全部排班', 
+      icon: Globe,
+      color: 'from-purple-500 to-violet-600'
+    }
+  ];
 
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-4">
-        <div className="p-3 bg-indigo-500/80 rounded-xl shadow-lg">
-          <Eye className="h-5 w-5 text-white" />
-        </div>
-        <h3 className="text-lg font-semibold text-white drop-shadow-md">查看範圍</h3>
-      </div>
-      <Select value={viewMode} onValueChange={onViewModeChange}>
-        <SelectTrigger className="h-12 text-sm border-2 border-white/30 rounded-xl bg-white/20 text-white backdrop-blur-xl">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">
-          <SelectItem value="self" className="py-3 px-4 text-sm hover:bg-gray-50">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              僅自己的排班
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {modes.map(({ value, label, icon: Icon, color, disabled }) => (
+        <Button
+          key={value}
+          variant={viewMode === value ? "default" : "outline"}
+          onClick={() => onViewModeChange(value)}
+          disabled={disabled}
+          className={`h-16 p-4 rounded-2xl border-2 transition-all duration-300 ${
+            viewMode === value
+              ? `bg-gradient-to-br ${color} text-white border-white/30 shadow-lg`
+              : 'bg-white/50 text-gray-700 border-white/60 hover:bg-white/70 hover:border-white/80'
+          } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-xl ${
+              viewMode === value 
+                ? 'bg-white/20' 
+                : 'bg-gray-100'
+            }`}>
+              <Icon className={`h-5 w-5 ${
+                viewMode === value ? 'text-white' : 'text-gray-600'
+              }`} />
             </div>
-          </SelectItem>
-          <SelectItem value="subordinates" className="py-3 px-4 text-sm hover:bg-gray-50">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              僅下屬的排班
-            </div>
-          </SelectItem>
-          <SelectItem value="all" className="py-3 px-4 text-sm hover:bg-gray-50">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              自己和下屬的排班
-            </div>
-          </SelectItem>
-        </SelectContent>
-      </Select>
+            <span className="font-semibold text-base">{label}</span>
+          </div>
+        </Button>
+      ))}
     </div>
   );
 };

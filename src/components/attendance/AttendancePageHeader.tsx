@@ -7,14 +7,16 @@ const AttendancePageHeader: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center gap-2 mb-4 pt-16 md:pt-20">
-      <button 
-        onClick={() => navigate('/')}
-        className="text-gray-500 hover:text-gray-700"
-      >
-        <ChevronLeft className="h-8 w-8" />
-      </button>
-      <h1 className="text-3xl font-bold text-gray-800">個人出勤</h1>
+    <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl mb-6">
+      <div className="flex items-center gap-2 p-6">
+        <button 
+          onClick={() => navigate('/')}
+          className="text-white hover:text-white/80 backdrop-blur-xl bg-white/30 border-white/40 hover:bg-white/50 p-2 rounded-xl shadow-lg transition-colors"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </button>
+        <h1 className="text-2xl font-bold text-white drop-shadow-md">個人出勤</h1>
+      </div>
     </div>
   );
 };

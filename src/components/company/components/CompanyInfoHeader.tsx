@@ -40,18 +40,18 @@ export const CompanyInfoHeader: React.FC<CompanyInfoHeaderProps> = ({ company, l
   const status = getStatusInfo();
 
   return (
-    <CardHeader className={`${isMobile ? 'pb-2 px-4 pt-20 md:pt-24' : 'pb-2 pt-16 md:pt-20'}`}>
+    <CardHeader className={`${isMobile ? 'pb-2 px-4 pt-4' : 'pb-2 pt-4'}`}>
       <CardTitle className={`flex items-center justify-between ${isMobile ? 'flex-col items-start space-y-1' : ''}`}>
         <div className="flex items-center">
-          <Building2 className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
-          <span className={isMobile ? 'text-sm' : 'text-base'}>公司基本資料</span>
+          <Building2 className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-white`} />
+          <span className={`${isMobile ? 'text-sm' : 'text-base'} text-white font-bold drop-shadow-sm`}>公司基本資料</span>
         </div>
         <span className={`${isMobile ? 'text-xs self-end' : 'text-xs'} px-2 py-0.5 rounded-full flex items-center ${status.badge}`}>
           {status.icon}
           {status.text}
         </span>
       </CardTitle>
-      <CardDescription className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
+      <CardDescription className={`${isMobile ? 'text-xs' : 'text-sm'} text-white/80 font-medium drop-shadow-sm`}>
         {company ? `${company.name}` : '載入公司基本資訊'}
       </CardDescription>
     </CardHeader>

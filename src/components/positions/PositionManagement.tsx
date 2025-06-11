@@ -9,7 +9,7 @@ import PositionFilters from './PositionFilters';
 
 const PositionManagement = () => {
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen pt-20 md:pt-24">
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
       {/* 動態背景漸層 */}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
@@ -21,7 +21,7 @@ const PositionManagement = () => {
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
-      <div className="relative z-10 pt-16 md:pt-20">
+      <div className="relative z-10 pt-[70px]">
         <PositionManagementProvider>
           <div className="space-y-6 p-6">
             <Card className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl">

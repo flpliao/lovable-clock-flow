@@ -27,16 +27,16 @@ const RoleManagement = () => {
   };
   
   return (
-    <div className="space-y-4">
-      <Card>
+    <div className="space-y-4 mt-6">
+      <Card className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div>
-            <CardTitle>角色管理</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-white">角色管理</CardTitle>
+            <CardDescription className="text-white/80">
               管理系統角色和權限設定
             </CardDescription>
           </div>
-          <Button size="sm" onClick={() => setIsAddDialogOpen(true)}>
+          <Button size="sm" onClick={() => setIsAddDialogOpen(true)} className="bg-white/20 hover:bg-white/30 text-white border-white/30">
             <Plus className="h-4 w-4 mr-1" /> 新增角色
           </Button>
         </CardHeader>

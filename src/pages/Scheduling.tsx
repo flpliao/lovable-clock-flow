@@ -16,13 +16,13 @@ const Scheduling = () => {
   return (
     <StaffManagementProvider>
       <SchedulingProvider>
-        <div className="w-full min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 relative overflow-hidden mobile-fullscreen pt-20 md:pt-24">
-          {/* 動態背景漸層 */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-indigo-800/90 via-purple-800/70 to-blue-800/90"></div>
+        <div className="w-full min-h-screen bg-gradient-to-br from-blue-400/35 via-blue-300/25 to-blue-200/15 relative overflow-hidden mobile-fullscreen pt-20 md:pt-24">
+          {/* 動態背景漸層 - 與首頁一致 */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-400/35 via-blue-300/25 to-blue-200/15"></div>
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent"></div>
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-purple-400/10 via-transparent to-transparent"></div>
           
-          {/* 浮動光點效果 */}
+          {/* 浮動光點效果 - 與首頁一致 */}
           <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-purple-300/40 rounded-full animate-pulse"></div>
           <div className="absolute top-3/5 right-1/3 w-2 h-2 bg-blue-300/50 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
           <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-indigo-300/60 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
@@ -31,14 +31,14 @@ const Scheduling = () => {
           <div className="relative z-10 p-6">
             <div className="max-w-7xl mx-auto space-y-8">
               {/* 頁面標題卡片 */}
-              <div className="backdrop-blur-2xl bg-white/15 border border-white/20 rounded-3xl shadow-2xl p-8">
+              <div className="backdrop-blur-2xl bg-gradient-to-br from-white/75 to-white/55 border border-white/40 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:border-white/60 p-8">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <Button 
                       variant="ghost" 
                       size="sm" 
                       onClick={() => navigate('/')}
-                      className="p-3 backdrop-blur-xl bg-white/20 hover:bg-white/30 border border-white/30 rounded-2xl shadow-lg text-white md:hidden"
+                      className="p-3 backdrop-blur-xl bg-white/30 hover:bg-white/50 border border-white/40 rounded-2xl shadow-lg text-gray-800 md:hidden"
                     >
                       <ChevronLeft className="h-5 w-5" />
                     </Button>
@@ -47,8 +47,8 @@ const Scheduling = () => {
                         <Calendar className="h-8 w-8 text-white" />
                       </div>
                       <div>
-                        <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">排班管理</h1>
-                        <p className="text-white/80 text-lg font-medium drop-shadow-sm">管理員工排班與時間設定</p>
+                        <h1 className="text-4xl font-bold text-gray-800 mb-2 drop-shadow-sm">排班管理</h1>
+                        <p className="text-gray-600 text-lg font-medium drop-shadow-sm">管理員工排班與時間設定</p>
                       </div>
                     </div>
                   </div>
@@ -66,18 +66,18 @@ const Scheduling = () => {
               {/* 主要內容區域 */}
               <Tabs defaultValue="view" className="w-full">
                 {/* 標籤選擇器 */}
-                <div className="backdrop-blur-2xl bg-white/15 border border-white/20 rounded-3xl shadow-2xl p-6">
+                <div className="backdrop-blur-2xl bg-gradient-to-br from-white/75 to-white/55 border border-white/40 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:border-white/60 p-6">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg border border-white/20">
                       <Sparkles className="h-6 w-6 text-white" />
                     </div>
-                    <h2 className="text-2xl font-bold text-white drop-shadow-lg">排班功能</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 drop-shadow-sm">排班功能</h2>
                   </div>
                   
-                  <TabsList className="grid w-full grid-cols-3 backdrop-blur-xl bg-white/10 rounded-2xl border border-white/20 p-1 shadow-lg h-16">
+                  <TabsList className="grid w-full grid-cols-3 backdrop-blur-xl bg-white/20 rounded-2xl border border-white/30 p-1 shadow-lg h-16">
                     <TabsTrigger 
                       value="view" 
-                      className="text-white/80 data-[state=active]:bg-white/25 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-4 px-6 text-base flex items-center gap-2 backdrop-blur-xl"
+                      className="text-gray-700 data-[state=active]:bg-white/40 data-[state=active]:text-gray-800 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-4 px-6 text-base flex items-center gap-2 backdrop-blur-xl"
                     >
                       <Calendar className="h-5 w-5" />
                       <span className="hidden sm:inline">查看班表</span>
@@ -85,7 +85,7 @@ const Scheduling = () => {
                     </TabsTrigger>
                     <TabsTrigger 
                       value="create"
-                      className="text-white/80 data-[state=active]:bg-white/25 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-4 px-6 text-base flex items-center gap-2 backdrop-blur-xl"
+                      className="text-gray-700 data-[state=active]:bg-white/40 data-[state=active]:text-gray-800 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-4 px-6 text-base flex items-center gap-2 backdrop-blur-xl"
                     >
                       <UserPlus className="h-5 w-5" />
                       <span className="hidden sm:inline">創建排班</span>
@@ -93,7 +93,7 @@ const Scheduling = () => {
                     </TabsTrigger>
                     <TabsTrigger 
                       value="timeslots"
-                      className="text-white/80 data-[state=active]:bg-white/25 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-4 px-6 text-base flex items-center gap-2 backdrop-blur-xl"
+                      className="text-gray-700 data-[state=active]:bg-white/40 data-[state=active]:text-gray-800 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-4 px-6 text-base flex items-center gap-2 backdrop-blur-xl"
                     >
                       <Clock className="h-5 w-5" />
                       <span className="hidden sm:inline">時間段</span>
@@ -110,12 +110,12 @@ const Scheduling = () => {
                   <ScheduleForm />
                 </TabsContent>
                 <TabsContent value="timeslots" className="mt-0">
-                  <div className="backdrop-blur-2xl bg-white/15 border border-white/20 rounded-3xl shadow-2xl p-8">
+                  <div className="backdrop-blur-2xl bg-gradient-to-br from-white/75 to-white/55 border border-white/40 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:border-white/60 p-8">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg border border-white/20">
                         <Clock className="h-6 w-6 text-white" />
                       </div>
-                      <h2 className="text-2xl font-bold text-white drop-shadow-lg">時間段管理</h2>
+                      <h2 className="text-2xl font-bold text-gray-800 drop-shadow-sm">時間段管理</h2>
                     </div>
                     <TimeSlotManagement />
                   </div>

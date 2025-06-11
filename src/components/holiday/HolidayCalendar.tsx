@@ -103,7 +103,7 @@ const HolidayCalendar: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mt-6">
       {/* 標題區域 */}
       <div className="backdrop-blur-xl bg-white/25 border border-white/30 rounded-2xl shadow-lg p-6">
         <div className="flex items-center justify-between">

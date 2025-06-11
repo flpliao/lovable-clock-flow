@@ -19,7 +19,7 @@ const HolidaySettings: React.FC = () => {
   } = useHolidaySettings();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mt-6">
       <HolidaySettingsHeader isEditing={!!editingHoliday} />
 
       <HolidayForm

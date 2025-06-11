@@ -29,14 +29,14 @@ const ListViewSection = ({
   viewableStaffIds,
 }: ListViewSectionProps) => {
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       {/* 員工月份選擇器 */}
       <div className={`${visionProStyles.dashboardCard} p-8`}>
         <div className="flex items-center gap-4 mb-6">
           <div className={visionProStyles.coloredIconContainer.orange}>
             <Users className="h-6 w-6" />
           </div>
-          <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>我的詳情</h3>
+          <h3 className={`text-2xl font-bold text-gray-800`}>我的詳情</h3>
         </div>
         
         <StaffMonthSelector
@@ -55,7 +55,7 @@ const ListViewSection = ({
           <div className={visionProStyles.coloredIconContainer.teal}>
             <List className="h-6 w-6" />
           </div>
-          <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>月度排班</h3>
+          <h3 className={`text-2xl font-bold text-gray-800`}>月度排班</h3>
         </div>
         
         <MonthlyScheduleView

@@ -27,7 +27,7 @@ const YearMonthSelectorCard = ({
         <div className={visionProStyles.coloredIconContainer.green}>
           <Calendar className="h-6 w-6" />
         </div>
-        <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>選擇年月</h3>
+        <h3 className={`text-2xl font-bold text-gray-800`}>選擇年月</h3>
       </div>
       
       <div className="grid grid-cols-2 gap-4">

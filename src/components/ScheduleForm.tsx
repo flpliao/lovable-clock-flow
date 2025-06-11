@@ -30,7 +30,7 @@ const ScheduleForm = () => {
   const isFormValid = form.watch('userId') && selectedDates.length > 0 && selectedTimeSlots.length > 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       {/* 錯誤提示 */}
       {error && (
         <div className="backdrop-blur-2xl bg-red-500/20 border border-red-400/30 rounded-3xl shadow-lg p-6">
@@ -41,14 +41,14 @@ const ScheduleForm = () => {
       )}
       
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12">
           {/* 員工選擇卡片 */}
           <div className={`${visionProStyles.dashboardCard} p-8`}>
             <div className="flex items-center gap-4 mb-6">
               <div className={visionProStyles.coloredIconContainer.blue}>
                 <Users className="h-6 w-6" />
               </div>
-              <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>選擇員工</h3>
+              <h3 className={`text-2xl font-bold text-gray-800`}>選擇員工</h3>
             </div>
             <div className="text-gray-800">
               <StaffSelector control={form.control} />
@@ -61,7 +61,7 @@ const ScheduleForm = () => {
               <div className={visionProStyles.coloredIconContainer.green}>
                 <Calendar className="h-6 w-6" />
               </div>
-              <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>選擇年月</h3>
+              <h3 className={`text-2xl font-bold text-gray-800`}>選擇年月</h3>
             </div>
             <div className="text-gray-800">
               <YearMonthSelector
@@ -79,7 +79,7 @@ const ScheduleForm = () => {
               <div className={visionProStyles.coloredIconContainer.purple}>
                 <Calendar className="h-6 w-6" />
               </div>
-              <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>選擇日期</h3>
+              <h3 className={`text-2xl font-bold text-gray-800`}>選擇日期</h3>
             </div>
             <div className="text-gray-800">
               <ScheduleCalendar
@@ -97,7 +97,7 @@ const ScheduleForm = () => {
               <div className={visionProStyles.coloredIconContainer.orange}>
                 <Clock className="h-6 w-6" />
               </div>
-              <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>選擇時間段</h3>
+              <h3 className={`text-2xl font-bold text-gray-800`}>選擇時間段</h3>
             </div>
             <div className="text-gray-800">
               <TimeSlotSelector
@@ -114,7 +114,7 @@ const ScheduleForm = () => {
                 <div className={visionProStyles.coloredIconContainer.teal}>
                   <Eye className="h-6 w-6" />
                 </div>
-                <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>排班預覽</h3>
+                <h3 className={`text-2xl font-bold text-gray-800`}>排班預覽</h3>
               </div>
               <div className="text-gray-800">
                 <SchedulePreview
@@ -133,7 +133,7 @@ const ScheduleForm = () => {
               <div className={visionProStyles.coloredIconContainer.indigo}>
                 <CheckCircle className="h-6 w-6" />
               </div>
-              <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>提交排班</h3>
+              <h3 className={`text-2xl font-bold text-gray-800`}>提交排班</h3>
             </div>
             <div className="text-gray-800">
               <ScheduleFormActions

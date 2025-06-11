@@ -42,7 +42,7 @@ const CalendarViewSection = ({
   getScheduleCountForDate,
 }: CalendarViewSectionProps) => {
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       {/* 年月選擇器 */}
       <YearMonthSelectorCard
         selectedYear={selectedYear}
@@ -59,7 +59,7 @@ const CalendarViewSection = ({
           <div className={visionProStyles.coloredIconContainer.blue}>
             <Grid className="h-6 w-6" />
           </div>
-          <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>日曆檢視</h3>
+          <h3 className={`text-2xl font-bold text-gray-800`}>日曆檢視</h3>
         </div>
         <CalendarGrid
           daysInMonth={daysInMonth}
@@ -74,7 +74,7 @@ const CalendarViewSection = ({
           <div className={visionProStyles.coloredIconContainer.purple}>
             <Users className="h-6 w-6" />
           </div>
-          <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>排班詳情</h3>
+          <h3 className={`text-2xl font-bold text-gray-800`}>排班詳情</h3>
         </div>
         
         <ScheduleTable

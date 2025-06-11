@@ -60,7 +60,7 @@ const ScheduleTabsContent = ({
   getScheduleCountForDate,
 }: ScheduleTabsContentProps) => {
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       {/* 視圖選擇 */}
       <div className={`${visionProStyles.dashboardCard} p-6`}>
         <TabsList className="grid w-full grid-cols-2 bg-white/60 rounded-2xl border border-white/50 p-1 shadow-lg h-16">

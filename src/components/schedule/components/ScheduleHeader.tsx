@@ -21,14 +21,14 @@ const ScheduleHeader = ({
   onViewTypeChange,
 }: ScheduleHeaderProps) => {
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       {/* 查看模式選擇器 */}
       <div className={`${visionProStyles.dashboardCard} p-8`}>
         <div className="flex items-center gap-4 mb-6">
           <div className={visionProStyles.coloredIconContainer.green}>
             <Users className="h-6 w-6" />
           </div>
-          <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>查看範圍</h3>
+          <h3 className={`text-2xl font-bold text-gray-800`}>查看範圍</h3>
         </div>
         <ViewModeSelector 
           viewMode={viewMode}
@@ -43,7 +43,7 @@ const ScheduleHeader = ({
           <div className={visionProStyles.coloredIconContainer.blue}>
             <Settings className="h-6 w-6" />
           </div>
-          <h3 className={`text-2xl font-bold ${visionProStyles.primaryText}`}>視圖模式</h3>
+          <h3 className={`text-2xl font-bold text-gray-800`}>視圖模式</h3>
         </div>
         <TabsList className="grid w-full grid-cols-2 bg-white/60 rounded-2xl border border-white/50 p-1 shadow-lg h-16">
           <TabsTrigger 

@@ -69,8 +69,8 @@ const ScheduleCalendar = () => {
   const availableStaff = getAvailableStaff();
 
   return (
-    <div className="space-y-8">
-      <Tabs value={viewType} onValueChange={(value: any) => setViewType(value)} className="w-full space-y-8">
+    <div className="space-y-12">
+      <Tabs value={viewType} onValueChange={(value: any) => setViewType(value)} className="w-full space-y-12">
         {/* 查看模式選擇器 */}
         <ScheduleHeader
           viewMode={viewMode}

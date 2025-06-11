@@ -30,7 +30,7 @@ const Scheduling = () => {
           <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-purple-200/50 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
           
           <div className="relative z-10 p-6">
-            <div className="max-w-7xl mx-auto space-y-8">
+            <div className="max-w-7xl mx-auto space-y-12">
               {/* 頁面標題卡片 - 使用 visionProStyles */}
               <div className={`${visionProStyles.dashboardCard} p-8`}>
                 <div className="flex items-center justify-between">
@@ -67,7 +67,7 @@ const Scheduling = () => {
               {/* 主要內容區域 */}
               <Tabs defaultValue="view" className="w-full">
                 {/* 標籤選擇器 */}
-                <div className={`${visionProStyles.dashboardCard} p-6`}>
+                <div className={`${visionProStyles.dashboardCard} p-6 mb-12`}>
                   <div className="flex items-center gap-3 mb-6">
                     <div className={visionProStyles.coloredIconContainer.purple}>
                       <Sparkles className="h-6 w-6" />

@@ -16,22 +16,21 @@ const OvertimeReasonSection: React.FC<OvertimeReasonSectionProps> = ({
   return (
     <div className="backdrop-blur-2xl bg-white/15 border border-white/25 rounded-3xl shadow-2xl p-8">
       <div className="flex items-center gap-3 mb-6">
-        <FileText className="h-5 w-5 text-white/80" />
-        <h4 className="text-lg font-medium text-white">原因說明</h4>
+        <FileText className="h-5 w-5 text-black" />
+        <h4 className="text-lg font-medium text-black">加班原因</h4>
       </div>
       
       <div className="space-y-3">
-        <Label htmlFor="reason" className="flex items-center gap-2 text-white font-medium">
+        <Label htmlFor="reason" className="flex items-center gap-2 text-black font-medium">
           <FileText className="h-4 w-4" />
-          加班原因
+          詳細說明
         </Label>
         <Textarea
           id="reason"
-          placeholder="請詳細說明加班原因..."
           value={reason}
           onChange={(e) => onReasonChange(e.target.value)}
-          rows={4}
-          className="bg-white/25 backdrop-blur-xl border-white/30 text-white placeholder-white/70 rounded-xl resize-none"
+          placeholder="請詳細說明加班原因..."
+          className="min-h-[100px] bg-white/40 backdrop-blur-xl border-white/50 text-black placeholder-black/60 rounded-xl font-medium resize-none"
           required
         />
       </div>

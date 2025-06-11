@@ -122,14 +122,14 @@ const Header: React.FC<HeaderProps> = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent 
                   align="end" 
-                  className="w-60 bg-gray-900 text-white border-gray-700 z-50"
+                  className="w-60 bg-white text-black border-gray-200 z-50"
                   sideOffset={5}
                 >
                   <div className="max-h-[calc(100vh-120px)] overflow-y-auto">
                     <div className="p-1">
                       {navItems.map((item) => (
-                        <DropdownMenuItem key={item.path} asChild className="py-2 px-4 focus:bg-gray-800 focus:text-white rounded-md mb-1">
-                          <Link to={item.path} className="flex items-center">
+                        <DropdownMenuItem key={item.path} asChild className="py-2 px-4 focus:bg-gray-100 focus:text-black rounded-md mb-1">
+                          <Link to={item.path} className="flex items-center text-black">
                             {location.pathname === item.path && <Menu className="mr-2 h-4 w-4" />}
                             <span className={location.pathname === item.path ? "ml-0 flex items-center" : "ml-8 flex items-center"}>
                               {item.icon} {item.label}
@@ -137,12 +137,12 @@ const Header: React.FC<HeaderProps> = () => {
                           </Link>
                         </DropdownMenuItem>
                       ))}
-                      <div className="border-t border-gray-700 my-2"></div>
+                      <div className="border-t border-gray-200 my-2"></div>
                       <DropdownMenuItem 
-                        className="py-2 px-4 focus:bg-gray-800 focus:text-white rounded-md"
+                        className="py-2 px-4 focus:bg-gray-100 focus:text-red-600 rounded-md"
                         onClick={handleLogout}
                       >
-                        <div className="flex items-center text-red-400 ml-8">
+                        <div className="flex items-center text-red-600 ml-8">
                           <LogOut className="mr-2 h-4 w-4" />
                           <span>登出</span>
                         </div>

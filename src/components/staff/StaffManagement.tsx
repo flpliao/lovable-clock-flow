@@ -19,7 +19,7 @@ const StaffManagement = () => {
   return (
     <CompanyManagementProvider>
       <DepartmentManagementProvider>
-        <div className="space-y-6 mt-6">
+        <div className="space-y-6">
           <AdminVerificationCard />
           
           {/* 人員管理主區塊 */}

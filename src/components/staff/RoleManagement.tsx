@@ -27,7 +27,7 @@ const RoleManagement = () => {
   };
   
   return (
-    <div className="space-y-4 mt-6">
+    <div className="space-y-4">
       <Card className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div>

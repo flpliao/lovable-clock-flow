@@ -16,7 +16,7 @@ const AdminVerificationCard = () => {
   };
 
   return (
-    <Card className="mb-4 border-blue-200 bg-blue-50">
+    <Card className="mb-4 border-blue-200 bg-blue-50 mt-6">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center text-lg">
           <Shield className="h-5 w-5 mr-2 text-blue-600" />

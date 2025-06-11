@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { Staff } from './types';
@@ -20,22 +21,22 @@ const OrganizationChart: React.FC = () => {
         {/* Staff node */}
         <div 
           className={`
-            bg-white border rounded-lg p-3 mb-2 shadow-sm hover:shadow-md transition-shadow
-            ${level === 0 ? 'bg-blue-50 border-blue-200' : 'ml-8'}
+            bg-white/20 border border-white/30 rounded-lg p-3 mb-2 shadow-sm hover:shadow-md transition-shadow backdrop-blur-sm
+            ${level === 0 ? 'bg-blue-50/30 border-blue-200/50' : 'ml-8'}
           `}
         >
           <div className="flex items-center">
             <div className={`
               h-10 w-10 rounded-full flex items-center justify-center mr-3
-              ${staff.role === 'admin' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}
+              ${staff.role === 'admin' ? 'bg-blue-100/30 text-blue-200' : 'bg-gray-100/30 text-gray-200'}
             `}>
               <UserRound className="h-5 w-5" />
             </div>
             <div className="flex-1">
-              <div className="font-medium">{staff.name}</div>
-              <div className="text-xs text-gray-500">{staff.position}</div>
+              <div className="font-medium text-white">{staff.name}</div>
+              <div className="text-xs text-white/70">{staff.position}</div>
             </div>
-            <div className="text-xs bg-gray-100 px-2 py-1 rounded">
+            <div className="text-xs bg-white/20 text-white px-2 py-1 rounded">
               {staff.department}
             </div>
           </div>
@@ -44,14 +45,14 @@ const OrganizationChart: React.FC = () => {
         {/* Vertical line connecting to subordinates */}
         {hasSubordinates && (
           <div className="flex items-center ml-5 mb-1">
-            <ChevronDown className="h-4 w-4 text-gray-400" />
-            <div className="text-xs text-gray-500 ml-1">管理 {subordinates.length} 人</div>
+            <ChevronDown className="h-4 w-4 text-white/60" />
+            <div className="text-xs text-white/70 ml-1">管理 {subordinates.length} 人</div>
           </div>
         )}
         
         {/* Subordinates */}
         {hasSubordinates && (
-          <div className="pl-4 border-l border-gray-200 ml-5">
+          <div className="pl-4 border-l border-white/30 ml-5">
             {subordinates.map(sub => renderOrganizationTree(sub, level + 1))}
           </div>
         )}
@@ -61,22 +62,22 @@ const OrganizationChart: React.FC = () => {
 
   if (topLevelManagers.length === 0) {
     return (
-      <Card>
+      <Card className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg">
         <CardHeader>
-          <CardTitle>公司組織圖</CardTitle>
+          <CardTitle className="text-white">公司組織圖</CardTitle>
         </CardHeader>
         <CardContent className="text-center py-8">
-          <Users className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">未找到組織結構數據，請先設置人員上下級關係</p>
+          <Users className="h-16 w-16 mx-auto text-white/40 mb-4" />
+          <p className="text-white/70">未找到組織結構數據，請先設置人員上下級關係</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
+    <Card className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg">
       <CardHeader className="pb-2">
-        <CardTitle>公司組織圖</CardTitle>
+        <CardTitle className="text-white">公司組織圖</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="p-4 overflow-auto max-h-[600px]">

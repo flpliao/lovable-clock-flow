@@ -31,7 +31,7 @@ const YearMonthSelector = ({ selectedYear, selectedMonth, onYearChange, onMonthC
   return (
     <div className="grid grid-cols-2 gap-3">
       <Select value={selectedYear} onValueChange={onYearChange}>
-        <SelectTrigger className="h-12 text-sm border-2 border-white/30 rounded-xl bg-white/20 text-white backdrop-blur-xl">
+        <SelectTrigger className="h-12 text-sm border-2 border-white/30 rounded-xl bg-white/20 backdrop-blur-xl text-gray-900 placeholder:text-gray-700">
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">
@@ -48,7 +48,7 @@ const YearMonthSelector = ({ selectedYear, selectedMonth, onYearChange, onMonthC
       </Select>
       
       <Select value={selectedMonth} onValueChange={onMonthChange}>
-        <SelectTrigger className="h-12 text-sm border-2 border-white/30 rounded-xl bg-white/20 text-white backdrop-blur-xl">
+        <SelectTrigger className="h-12 text-sm border-2 border-white/30 rounded-xl bg-white/20 backdrop-blur-xl text-gray-900 placeholder:text-gray-700">
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">

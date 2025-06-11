@@ -29,7 +29,7 @@ const YearMonthSelectorCard = ({
       
       <div className="grid grid-cols-2 gap-4">
         <Select value={selectedYear} onValueChange={onYearChange}>
-          <SelectTrigger className="h-12 text-base bg-white border border-gray-300 rounded-lg">
+          <SelectTrigger className="h-12 text-base bg-white border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-700">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-white border border-gray-300 rounded-lg shadow-lg z-50">
@@ -46,7 +46,7 @@ const YearMonthSelectorCard = ({
         </Select>
         
         <Select value={selectedMonth} onValueChange={onMonthChange}>
-          <SelectTrigger className="h-12 text-base bg-white border border-gray-300 rounded-lg">
+          <SelectTrigger className="h-12 text-base bg-white border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-700">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-white border border-gray-300 rounded-lg shadow-lg z-50">

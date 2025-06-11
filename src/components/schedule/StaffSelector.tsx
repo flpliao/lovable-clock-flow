@@ -21,7 +21,7 @@ const StaffSelector = ({ control }: StaffSelectorProps) => {
         <FormItem>
           <FormControl>
             <Select onValueChange={field.onChange} value={field.value}>
-              <SelectTrigger className="h-12 text-sm border-2 border-white/30 rounded-xl bg-white/20 text-white backdrop-blur-xl">
+              <SelectTrigger className="h-12 text-sm border-2 border-white/30 rounded-xl bg-white/20 backdrop-blur-xl text-gray-900 placeholder:text-gray-700">
                 <SelectValue placeholder="請選擇要排班的員工" />
               </SelectTrigger>
               <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg z-50">

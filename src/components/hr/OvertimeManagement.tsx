@@ -48,7 +48,7 @@ const OvertimeManagement: React.FC = () => {
   });
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 pt-16 md:pt-20">
       <HROvertimeHeader />
 
       <HROvertimeFilters

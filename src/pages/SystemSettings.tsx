@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Settings, Globe, Shield, Database, CheckCircle2, AlertCircle, Wrench, Languages, Server, Activity } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,9 +22,9 @@ const SystemSettings = () => {
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
-      <div className="relative z-10 w-full pt-32 md:pt-36">
+      <div className="relative z-10 w-full pt-20 md:pt-24">
         {/* 頁面標題區域 */}
-        <div className="w-full px-0 sm:px-4 lg:px-8 pt-12 pb-4">
+        <div className="w-full px-0 sm:px-4 lg:px-8 pt-16 md:pt-20 pb-4">
           <div className="backdrop-blur-2xl bg-gradient-to-br from-white/70 to-white/50 border border-white/40 rounded-2xl shadow-lg p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">

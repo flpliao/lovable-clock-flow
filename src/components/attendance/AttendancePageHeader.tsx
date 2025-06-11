@@ -7,7 +7,7 @@ const AttendancePageHeader: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center gap-2 mb-4 pt-12 md:pt-16">
+    <div className="flex items-center gap-2 mb-4 pt-16 md:pt-20">
       <button 
         onClick={() => navigate('/')}
         className="text-gray-500 hover:text-gray-700"

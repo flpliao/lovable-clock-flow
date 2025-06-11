@@ -40,7 +40,7 @@ export const CompanyInfoHeader: React.FC<CompanyInfoHeaderProps> = ({ company, l
   const status = getStatusInfo();
 
   return (
-    <CardHeader className={`${isMobile ? 'pb-2 px-4 pt-16 md:pt-20' : 'pb-2 pt-12 md:pt-16'}`}>
+    <CardHeader className={`${isMobile ? 'pb-2 px-4 pt-20 md:pt-24' : 'pb-2 pt-16 md:pt-20'}`}>
       <CardTitle className={`flex items-center justify-between ${isMobile ? 'flex-col items-start space-y-1' : ''}`}>
         <div className="flex items-center">
           <Building2 className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />

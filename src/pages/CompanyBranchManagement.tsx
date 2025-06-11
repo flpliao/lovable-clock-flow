@@ -21,16 +21,19 @@ const CompanyBranchManagement = () => {
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
       
-      <CompanyBranchPermissionGuard>
-        <StaffManagementProvider>
-          <CompanyManagementProvider>
-            <CompanyBranchLayout>
-              <CompanyBranchHeader />
-              <CompanyBranchTabs />
-            </CompanyBranchLayout>
-          </CompanyManagementProvider>
-        </StaffManagementProvider>
-      </CompanyBranchPermissionGuard>
+      {/* 增加額外的頂端間距 */}
+      <div className="pt-16 md:pt-20">
+        <CompanyBranchPermissionGuard>
+          <StaffManagementProvider>
+            <CompanyManagementProvider>
+              <CompanyBranchLayout>
+                <CompanyBranchHeader />
+                <CompanyBranchTabs />
+              </CompanyBranchLayout>
+            </CompanyManagementProvider>
+          </StaffManagementProvider>
+        </CompanyBranchPermissionGuard>
+      </div>
     </div>
   );
 };

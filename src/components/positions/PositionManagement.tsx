@@ -10,7 +10,7 @@ import PositionFilters from './PositionFilters';
 const PositionManagement = () => {
   return (
     <PositionManagementProvider>
-      <div className="space-y-2 pt-12 md:pt-16">
+      <div className="space-y-2 pt-16 md:pt-20">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-base">職位管理</CardTitle>

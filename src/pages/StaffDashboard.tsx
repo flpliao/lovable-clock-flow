@@ -32,7 +32,7 @@ const StaffDashboard = () => {
 
       <StaffManagementProvider>
         <div className="relative z-10">
-          <main className="p-2 sm:p-4 lg:p-6 pt-44 sm:pt-48 lg:pt-52">
+          <main className="p-2 sm:p-4 lg:p-6 pt-56 sm:pt-60 lg:pt-64">
             {/* 頁面標題區域 */}
             <div className="mb-10">
               <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-8">

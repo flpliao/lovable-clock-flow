@@ -23,6 +23,8 @@ export interface DepartmentManagementContextType {
   departments: Department[];
   filteredDepartments: Department[];
   loading: boolean;
+  searchFilter: string;
+  setSearchFilter: (filter: string) => void;
   isAddDialogOpen: boolean;
   setIsAddDialogOpen: (isOpen: boolean) => void;
   isEditDialogOpen: boolean;
@@ -31,9 +33,12 @@ export interface DepartmentManagementContextType {
   setCurrentDepartment: (department: Department | null) => void;
   newDepartment: NewDepartment;
   setNewDepartment: (department: NewDepartment) => void;
-  handleAddDepartment: () => void;
+  handleAddDepartment: () => Promise<boolean>;
   handleEditDepartment: () => Promise<boolean>;
   handleDeleteDepartment: (id: string) => void;
   openEditDialog: (department: Department) => void;
   refreshDepartments: () => Promise<void>;
+  performFullSync: () => Promise<any>;
+  canManage: boolean;
+  currentUser: any;
 }

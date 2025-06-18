@@ -1,19 +1,24 @@
+
 import React, { useEffect, useState } from 'react';
-import { MapPin, Wifi, RefreshCw, AlertCircle } from 'lucide-react';
+import { MapPin, Wifi, RefreshCw, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { CheckInRecord } from '@/types';
 import { formatDate, formatTime } from '@/utils/checkInUtils';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 
+const ITEMS_PER_PAGE = 10;
+
 const CheckInHistory: React.FC = () => {
   const { currentUser } = useUser();
   const { checkInRecords, loadCheckInRecords, loading } = useSupabaseCheckIn();
   const [refreshing, setRefreshing] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
   
   // 確保組件已掛載後才載入數據
@@ -53,12 +58,27 @@ const CheckInHistory: React.FC = () => {
 
   const isLoading = loading || refreshing;
 
+  // 分頁邏輯
+  const totalPages = Math.ceil(checkInRecords.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentRecords = checkInRecords.slice(startIndex, endIndex);
+
+  const handlePreviousPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  };
+
   console.log('CheckInHistory - 渲染狀態:', {
     mounted,
     currentUser: currentUser?.id,
     recordsCount: checkInRecords.length,
     isLoading,
-    records: checkInRecords
+    currentPage,
+    totalPages
   });
   
   if (!currentUser) {
@@ -84,7 +104,14 @@ const CheckInHistory: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h4 className="text-white font-medium drop-shadow-md">打卡記錄列表</h4>
+        <div className="flex items-center gap-4">
+          <h4 className="text-white font-medium drop-shadow-md">打卡記錄列表</h4>
+          {checkInRecords.length > 0 && (
+            <div className="text-sm text-white/80 font-medium drop-shadow-md">
+              總共 {checkInRecords.length} 筆記錄
+            </div>
+          )}
+        </div>
         <Button 
           variant="outline" 
           size="sm" 
@@ -114,65 +141,96 @@ const CheckInHistory: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="text-sm text-white/80 font-medium drop-shadow-md">
-            總共 {checkInRecords.length} 筆記錄
-          </div>
+          {/* 分頁資訊 */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-white/80 font-medium drop-shadow-md">
+                第 {currentPage} 頁，共 {totalPages} 頁
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className="bg-white/20 backdrop-blur-xl border-white/30 text-white hover:bg-white/30 rounded-lg"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-white/80 text-sm font-medium px-3">
+                  {currentPage} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="bg-white/20 backdrop-blur-xl border-white/30 text-white hover:bg-white/30 rounded-lg"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
           
+          {/* 表格容器 */}
           <div className="bg-white/10 backdrop-blur-xl rounded-xl border border-white/20 shadow-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-white/20 hover:bg-white/5">
-                  <TableHead className="text-white/90 font-semibold">日期</TableHead>
-                  <TableHead className="text-white/90 font-semibold">時間</TableHead>
-                  <TableHead className="text-white/90 font-semibold">動作</TableHead>
-                  <TableHead className="text-white/90 font-semibold">類型</TableHead>
-                  <TableHead className="text-white/90 font-semibold">狀態</TableHead>
-                  <TableHead className="text-white/90 font-semibold">詳情</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {checkInRecords.map((record: CheckInRecord) => (
-                  <TableRow key={record.id} className="border-white/20 hover:bg-white/5 transition-colors duration-200">
-                    <TableCell className="text-white/90 font-medium">{formatDate(record.timestamp)}</TableCell>
-                    <TableCell className="text-white/90 font-medium">{formatTime(record.timestamp)}</TableCell>
-                    <TableCell>
-                      <span className={`font-semibold ${record.action === 'check-in' ? 'text-green-300' : 'text-blue-300'}`}>
-                        {record.action === 'check-in' ? '上班打卡' : '下班打卡'}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center text-white/90">
-                        {record.type === 'location' ? (
-                          <MapPin className="h-3.5 w-3.5 mr-1" />
-                        ) : (
-                          <Wifi className="h-3.5 w-3.5 mr-1" />
-                        )}
-                        <span>
-                          {record.type === 'location' ? '位置打卡' : 'IP打卡'}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {record.status === 'success' ? (
-                        <Badge className="bg-green-500/80 text-white border-green-400/50 backdrop-blur-xl">成功</Badge>
-                      ) : (
-                        <Badge className="bg-red-500/80 text-white border-red-400/50 backdrop-blur-xl">失敗</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-white/80">
-                      {record.type === 'location' ? (
-                        <span>
-                          {record.details.locationName} 
-                          {record.details.distance && ` (${Math.round(record.details.distance)}公尺)`}
-                        </span>
-                      ) : (
-                        <span>IP: {record.details.ip}</span>
-                      )}
-                    </TableCell>
+            <ScrollArea className="h-[500px]">
+              <Table>
+                <TableHeader className="sticky top-0 bg-white/20 backdrop-blur-xl">
+                  <TableRow className="border-white/20 hover:bg-white/5">
+                    <TableHead className="text-white/90 font-semibold">日期</TableHead>
+                    <TableHead className="text-white/90 font-semibold">時間</TableHead>
+                    <TableHead className="text-white/90 font-semibold">動作</TableHead>
+                    <TableHead className="text-white/90 font-semibold">類型</TableHead>
+                    <TableHead className="text-white/90 font-semibold">狀態</TableHead>
+                    <TableHead className="text-white/90 font-semibold">詳情</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {currentRecords.map((record: CheckInRecord) => (
+                    <TableRow key={record.id} className="border-white/20 hover:bg-white/5 transition-colors duration-200">
+                      <TableCell className="text-white/90 font-medium">{formatDate(record.timestamp)}</TableCell>
+                      <TableCell className="text-white/90 font-medium">{formatTime(record.timestamp)}</TableCell>
+                      <TableCell>
+                        <span className={`font-semibold ${record.action === 'check-in' ? 'text-green-300' : 'text-blue-300'}`}>
+                          {record.action === 'check-in' ? '上班打卡' : '下班打卡'}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center text-white/90">
+                          {record.type === 'location' ? (
+                            <MapPin className="h-3.5 w-3.5 mr-1" />
+                          ) : (
+                            <Wifi className="h-3.5 w-3.5 mr-1" />
+                          )}
+                          <span>
+                            {record.type === 'location' ? '位置打卡' : 'IP打卡'}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {record.status === 'success' ? (
+                          <Badge className="bg-green-500/80 text-white border-green-400/50 backdrop-blur-xl">成功</Badge>
+                        ) : (
+                          <Badge className="bg-red-500/80 text-white border-red-400/50 backdrop-blur-xl">失敗</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-white/80">
+                        {record.type === 'location' ? (
+                          <span>
+                            {record.details.locationName} 
+                            {record.details.distance && ` (${Math.round(record.details.distance)}公尺)`}
+                          </span>
+                        ) : (
+                          <span>IP: {record.details.ip}</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </ScrollArea>
           </div>
         </div>
       )}

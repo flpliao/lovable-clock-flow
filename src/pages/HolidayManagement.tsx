@@ -29,7 +29,7 @@ const HolidayManagement = () => {
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
       
-      <div className="relative z-10 p-6 pt-[70px]">
+      <div className="relative z-10 p-6 pt-32 md:pt-36">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* 頁面標題卡片 */}
           <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8">

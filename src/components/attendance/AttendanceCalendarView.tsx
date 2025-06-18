@@ -31,8 +31,8 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-6">
-      <div className="md:w-1/2">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6">
         <Calendar
           mode="single"
           selected={date}
@@ -47,15 +47,15 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
         />
       </div>
       
-      <div className="md:w-1/2">
-        {date && (
+      {date && (
+        <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6">
           <DateRecordDetails
             date={date}
             selectedDateRecords={selectedDateRecords}
             recordsCount={getDayRecordsCount()}
           />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

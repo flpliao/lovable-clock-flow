@@ -29,33 +29,35 @@ const AnnouncementManagementPage: React.FC = () => {
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
-      <div className="relative z-10 flex flex-col min-h-screen pt-32 md:pt-36">
+      <div className="relative z-10 w-full">
         {/* Header with glass effect */}
-        <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 mt-4 mb-8 shadow-xl">
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => navigate(-1)}
-                className="p-3 md:hidden backdrop-blur-xl bg-white/30 border-white/40 text-gray-800 hover:bg-white/50 shadow-lg rounded-xl"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-white drop-shadow-md">公告管理</h1>
-                <p className="text-sm text-white/80 font-medium drop-shadow-sm hidden sm:block">管理公司公告、上傳附件和追蹤閱讀狀態</p>
+        <div className="w-full px-0 sm:px-4 lg:px-8 pt-32 md:pt-36 pb-4">
+          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => navigate(-1)}
+                  className="p-3 md:hidden backdrop-blur-xl bg-white/30 border-white/40 text-gray-800 hover:bg-white/50 shadow-lg rounded-xl"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold text-white drop-shadow-md">公告管理</h1>
+                  <p className="text-sm text-white/80 font-medium drop-shadow-sm hidden sm:block">管理公司公告、上傳附件和追蹤閱讀狀態</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* 主要內容區域 */}
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 pb-8">
-          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <div className="w-full px-0 sm:px-4 lg:px-8 pb-8">
+          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl mx-4 p-6 sm:p-8 shadow-2xl">
             <AnnouncementManagement />
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

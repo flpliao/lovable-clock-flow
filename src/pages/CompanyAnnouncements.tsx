@@ -21,64 +21,66 @@ const CompanyAnnouncements: React.FC = () => {
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
-      <div className="relative z-10 flex flex-col min-h-screen pt-32 md:pt-36">
+      <div className="relative z-10 w-full">
         {/* Header with glass effect */}
-        <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 mt-2 mb-6 shadow-xl">
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => navigate(-1)}
-                className="p-3 md:hidden backdrop-blur-xl bg-white/30 border-white/40 text-gray-800 hover:bg-white/50 shadow-lg rounded-xl"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div className="flex items-center space-x-3">
-                <div className="p-3 bg-blue-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
-                  <Megaphone className="h-6 w-6" />
-                </div>
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold text-white drop-shadow-md">公司公告</h1>
-                  <p className="text-sm text-white/80 font-medium drop-shadow-sm hidden sm:block">查看公司最新公告與通知</p>
-                </div>
-              </div>
-            </div>
-            
-            {/* 統計卡片區域 */}
-            <div className="hidden lg:flex items-center space-x-4">
-              <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg p-4 min-w-[120px]">
-                <div className="flex items-center space-x-2">
-                  <div className="p-2 bg-green-500/80 rounded-lg shadow-lg backdrop-blur-xl border border-green-400/50 text-white">
-                    <Bell className="h-4 w-4" />
+        <div className="w-full px-0 sm:px-4 lg:px-8 pt-32 md:pt-36 pb-6">
+          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => navigate(-1)}
+                  className="p-3 md:hidden backdrop-blur-xl bg-white/30 border-white/40 text-gray-800 hover:bg-white/50 shadow-lg rounded-xl"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <div className="flex items-center space-x-3">
+                  <div className="p-3 bg-blue-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
+                    <Megaphone className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-sm text-white/70 font-medium">最新公告</p>
-                    <p className="text-lg font-bold text-white">5</p>
+                    <h1 className="text-xl sm:text-2xl font-bold text-white drop-shadow-md">公司公告</h1>
+                    <p className="text-sm text-white/80 font-medium drop-shadow-sm hidden sm:block">查看公司最新公告與通知</p>
                   </div>
                 </div>
               </div>
               
-              <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg p-4 min-w-[120px]">
-                <div className="flex items-center space-x-2">
-                  <div className="p-2 bg-purple-500/80 rounded-lg shadow-lg backdrop-blur-xl border border-purple-400/50 text-white">
-                    <FileText className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-white/70 font-medium">總公告數</p>
-                    <p className="text-lg font-bold text-white">24</p>
+              {/* 統計卡片區域 */}
+              <div className="hidden lg:flex items-center space-x-4">
+                <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg p-4 min-w-[120px]">
+                  <div className="flex items-center space-x-2">
+                    <div className="p-2 bg-green-500/80 rounded-lg shadow-lg backdrop-blur-xl border border-green-400/50 text-white">
+                      <Bell className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-white/70 font-medium">最新公告</p>
+                      <p className="text-lg font-bold text-white">5</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg p-4 min-w-[120px]">
-                <div className="flex items-center space-x-2">
-                  <div className="p-2 bg-orange-500/80 rounded-lg shadow-lg backdrop-blur-xl border border-orange-400/50 text-white">
-                    <TrendingUp className="h-4 w-4" />
+                
+                <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg p-4 min-w-[120px]">
+                  <div className="flex items-center space-x-2">
+                    <div className="p-2 bg-purple-500/80 rounded-lg shadow-lg backdrop-blur-xl border border-purple-400/50 text-white">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-white/70 font-medium">總公告數</p>
+                      <p className="text-lg font-bold text-white">24</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-white/70 font-medium">閱讀率</p>
-                    <p className="text-lg font-bold text-white">85%</p>
+                </div>
+                
+                <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg p-4 min-w-[120px]">
+                  <div className="flex items-center space-x-2">
+                    <div className="p-2 bg-orange-500/80 rounded-lg shadow-lg backdrop-blur-xl border border-orange-400/50 text-white">
+                      <TrendingUp className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-white/70 font-medium">閱讀率</p>
+                      <p className="text-lg font-bold text-white">85%</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -87,9 +89,11 @@ const CompanyAnnouncements: React.FC = () => {
         </div>
 
         {/* Main content container */}
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 pb-8">
-          <AnnouncementList />
-        </main>
+        <div className="w-full px-0 sm:px-4 lg:px-8 pb-8">
+          <div className="mx-4">
+            <AnnouncementList />
+          </div>
+        </div>
       </div>
     </div>
   );

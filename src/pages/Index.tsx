@@ -46,20 +46,26 @@ const Index = () => {
       <div className="relative z-10 w-full min-h-screen pb-safe pt-32 md:pt-36">
         {/* 歡迎區塊 */}
         <div className="w-full px-0 sm:px-4 lg:px-8">
-          <WelcomeSection userName={currentUser?.name || '訪客'} />
+          <div className="mx-4">
+            <WelcomeSection userName={currentUser?.name || '訪客'} />
+          </div>
         </div>
         
         {/* 打卡區塊 */}
         <div className="w-full px-0 sm:px-4 lg:px-8 mb-2 sm:mb-6">
-          <LocationCheckIn />
+          <div className="mx-4">
+            <LocationCheckIn />
+          </div>
         </div>
         
         {/* 功能卡片 */}
         <div className="w-full px-0 sm:px-4 lg:px-8 pb-2 sm:pb-8">
-          <FeatureCards 
-            abnormalCount={0} 
-            annualLeaveBalance={leaveHours} 
-          />
+          <div className="mx-4">
+            <FeatureCards 
+              abnormalCount={0} 
+              annualLeaveBalance={leaveHours} 
+            />
+          </div>
         </div>
       </div>
     </div>

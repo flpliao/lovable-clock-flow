@@ -57,58 +57,60 @@ const HolidayManagement = () => {
 
         {/* 功能導航 - 保持50px間距 */}
         <div className="w-full px-0 sm:px-4 lg:px-8" style={{ paddingTop: '50px', paddingBottom: '24px' }}>
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-500/80 rounded-xl flex items-center justify-center shadow-lg">
-                <Calendar className="h-5 w-5 text-white" />
+          <div className="mx-4">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-500/80 rounded-xl flex items-center justify-center shadow-lg">
+                  <Calendar className="h-5 w-5 text-white" />
+                </div>
+                <h2 className="text-xl font-semibold text-white drop-shadow-md">假日功能</h2>
               </div>
-              <h2 className="text-xl font-semibold text-white drop-shadow-md">假日功能</h2>
-            </div>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className={`grid w-full ${isAdmin() ? 'grid-cols-3' : 'grid-cols-2'} bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14`}>
-                <TabsTrigger 
-                  value="calendar" 
-                  className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
-                >
-                  <Calendar className="h-4 w-4" />
-                  <span className="hidden sm:inline">假日行事曆</span>
-                  <span className="sm:hidden">行事曆</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="analytics"
-                  className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
-                >
-                  <BarChart3 className="h-4 w-4" />
-                  <span className="hidden sm:inline">工時統計</span>
-                  <span className="sm:hidden">統計</span>
-                </TabsTrigger>
-                {isAdmin() && (
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className={`grid w-full ${isAdmin() ? 'grid-cols-3' : 'grid-cols-2'} bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14`}>
                   <TabsTrigger 
-                    value="settings"
+                    value="calendar" 
                     className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
                   >
-                    <Settings className="h-4 w-4" />
-                    <span className="hidden sm:inline">假日設定</span>
-                    <span className="sm:hidden">設定</span>
+                    <Calendar className="h-4 w-4" />
+                    <span className="hidden sm:inline">假日行事曆</span>
+                    <span className="sm:hidden">行事曆</span>
                   </TabsTrigger>
-                )}
-              </TabsList>
-              
-              <TabsContent value="calendar" className="mt-8">
-                <HolidayCalendar />
-              </TabsContent>
-              
-              <TabsContent value="analytics" className="mt-8">
-                <WorkHoursAnalytics />
-              </TabsContent>
-              
-              {isAdmin() && (
-                <TabsContent value="settings" className="mt-8">
-                  <HolidaySettings />
+                  <TabsTrigger 
+                    value="analytics"
+                    className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    <span className="hidden sm:inline">工時統計</span>
+                    <span className="sm:hidden">統計</span>
+                  </TabsTrigger>
+                  {isAdmin() && (
+                    <TabsTrigger 
+                      value="settings"
+                      className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span className="hidden sm:inline">假日設定</span>
+                      <span className="sm:hidden">設定</span>
+                    </TabsTrigger>
+                  )}
+                </TabsList>
+                
+                <TabsContent value="calendar" className="mt-8">
+                  <HolidayCalendar />
                 </TabsContent>
-              )}
-            </Tabs>
+                
+                <TabsContent value="analytics" className="mt-8">
+                  <WorkHoursAnalytics />
+                </TabsContent>
+                
+                {isAdmin() && (
+                  <TabsContent value="settings" className="mt-8">
+                    <HolidaySettings />
+                  </TabsContent>
+                )}
+              </Tabs>
+            </div>
           </div>
         </div>
       </div>

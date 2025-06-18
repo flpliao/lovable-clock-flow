@@ -89,11 +89,15 @@ const StaffDashboard = () => {
           <div className="w-full px-0 sm:px-4 lg:px-8 pb-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsContent value="analytics" className="mt-0">
-                <StaffAnalyticsDashboard />
+                <div className="mx-4">
+                  <StaffAnalyticsDashboard />
+                </div>
               </TabsContent>
               
               <TabsContent value="check-ins" className="mt-0">
-                <TeamCheckInManagement />
+                <div className="mx-4">
+                  <TeamCheckInManagement />
+                </div>
               </TabsContent>
             </Tabs>
           </div>

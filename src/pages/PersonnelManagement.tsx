@@ -96,15 +96,21 @@ const PersonnelManagement = () => {
           <div className="w-full px-0 sm:px-4 lg:px-8 pb-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsContent value="staff" className="mt-0">
-                <StaffManagement />
+                <div className="mx-4">
+                  <StaffManagement />
+                </div>
               </TabsContent>
               
               <TabsContent value="departments" className="mt-0">
-                <DepartmentManagement />
+                <div className="mx-4">
+                  <DepartmentManagement />
+                </div>
               </TabsContent>
               
               <TabsContent value="positions" className="mt-0">
-                <PositionManagement />
+                <div className="mx-4">
+                  <PositionManagement />
+                </div>
               </TabsContent>
             </Tabs>
           </div>

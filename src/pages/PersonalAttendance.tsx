@@ -36,16 +36,29 @@ const PersonalAttendance = () => {
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
-      <div className="relative z-10 max-w-7xl mx-auto space-y-6 p-6 pt-32 md:pt-36">
-        <AttendanceWelcomeHeader />
-        <AttendanceTabsContainer
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          date={date}
-          setDate={setDate}
-          selectedDateRecords={selectedDateRecords}
-          checkInRecords={checkInRecords}
-        />
+      <div className="relative z-10 w-full">
+        <div className="w-full px-0 sm:px-4 lg:px-8 pt-32 md:pt-36 pb-6">
+          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
+            <div className="p-6">
+              <AttendanceWelcomeHeader />
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full px-0 sm:px-4 lg:px-8 pb-6">
+          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
+            <div className="p-6">
+              <AttendanceTabsContainer
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                date={date}
+                setDate={setDate}
+                selectedDateRecords={selectedDateRecords}
+                checkInRecords={checkInRecords}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

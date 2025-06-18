@@ -55,27 +55,29 @@ export interface StaffManagementContextType {
   // Staff management
   staffList: Staff[];
   filteredStaffList: Staff[];
+  loading: boolean;
   isAddDialogOpen: boolean;
-  setIsAddDialogOpen: (isOpen: boolean) => void;
+  setIsAddDialogOpen: (open: boolean) => void;
   isEditDialogOpen: boolean;
-  setIsEditDialogOpen: (isOpen: boolean) => void;
+  setIsEditDialogOpen: (open: boolean) => void;
   currentStaff: Staff | null;
   setCurrentStaff: (staff: Staff | null) => void;
   newStaff: NewStaff;
   setNewStaff: (staff: NewStaff) => void;
-  handleAddStaff: () => Promise<boolean>; // 改為 async
-  handleEditStaff: () => Promise<boolean>; // 改為 async
-  handleDeleteStaff: (id: string) => void;
+  handleAddStaff: () => Promise<boolean>;
+  handleEditStaff: () => Promise<boolean>;
+  handleDeleteStaff: (id: string) => Promise<void>;
   openEditDialog: (staff: Staff) => void;
   getSupervisorName: (supervisorId?: string) => string;
   getSubordinates: (staffId: string) => Staff[];
+  refreshData: () => Promise<void>;
   
   // Role management
   roles: StaffRole[];
-  addRole: (role: NewStaffRole) => Promise<boolean>;
+  addRole: (role: Omit<StaffRole, 'id'>) => Promise<boolean>;
   updateRole: (role: StaffRole) => Promise<boolean>;
-  deleteRole: (id: string) => Promise<boolean>;
-  getRole: (id: string) => StaffRole | undefined;
-  hasPermission: (roleId: string, permissionId: string) => boolean;
+  deleteRole: (id: string) => Promise<void>;
+  getRole: (roleId: string) => StaffRole | undefined;
+  hasPermission: (staffId: string, permissionCode: string) => boolean;
   assignRoleToStaff: (staffId: string, roleId: string) => Promise<boolean>;
 }

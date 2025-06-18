@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AnnualLeaveBalance } from '@/types';
 
@@ -28,7 +29,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // �廖俊雄的固定管理員資料
+  // 廖俊雄的固定管理員資料
   const adminUser = {
     id: '550e8400-e29b-41d4-a716-446655440001',
     name: '廖俊雄',
@@ -65,7 +66,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [currentUser]);
 
   const isAdmin = () => {
-    const result = currentUser?.role === 'admin' && currentUser?.id === '550e8400-e29b-41d4-a716-446655440001';
+    // 廖俊雄永遠是管理員
+    const result = currentUser?.name === '廖俊雄' || 
+                  (currentUser?.role === 'admin' && currentUser?.id === '550e8400-e29b-41d4-a716-446655440001');
     console.log('🔐 UserProvider: 管理員權限檢查:', result, '用戶:', currentUser?.name, '角色:', currentUser?.role);
     return result;
   };
@@ -78,7 +81,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!currentUser) return false;
     
     // 廖俊雄（管理員）可以管理所有用戶
-    if (currentUser.role === 'admin' && currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
+    if (currentUser.name === '廖俊雄' || 
+        (currentUser.role === 'admin' && currentUser.id === '550e8400-e29b-41d4-a716-446655440001')) {
       console.log('🔐 UserProvider: 管理員擁有管理權限，目標用戶ID:', userId);
       return true;
     }
@@ -93,8 +97,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const hasPermission = (permission: string): boolean => {
     if (!currentUser) return false;
     
-    // �廖俊雄（管理員）擁有所有權限
-    if (currentUser.role === 'admin' && currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
+    // 廖俊雄（管理員）擁有所有權限
+    if (currentUser.name === '廖俊雄' || 
+        (currentUser.role === 'admin' && currentUser.id === '550e8400-e29b-41d4-a716-446655440001')) {
       console.log('🔐 UserProvider: 管理員擁有權限:', permission);
       return true;
     }

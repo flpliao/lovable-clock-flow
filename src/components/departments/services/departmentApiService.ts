@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Department, NewDepartment } from '../types';
 import { toast } from '@/hooks/use-toast';
@@ -36,27 +35,43 @@ export class DepartmentApiService {
 
   static async createDepartment(department: NewDepartment): Promise<Department | null> {
     try {
-      console.log('➕ 新增部門:', department);
+      console.log('➕ 開始新增部門:', department);
+      
+      // 檢查用戶身份
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) {
+        console.error('❌ 身份驗證錯誤:', authError);
+      }
+      console.log('👤 執行新增的用戶ID:', user?.id);
+      
+      const insertData = {
+        name: department.name.trim(),
+        type: department.type,
+        location: department.location?.trim() || null,
+        manager_name: department.manager_name?.trim() || null,
+        manager_contact: department.manager_contact?.trim() || null,
+        staff_count: 0
+      };
+
+      console.log('📝 即將插入的資料:', insertData);
       
       const { data, error } = await supabase
         .from('departments')
-        .insert([{
-          name: department.name.trim(),
-          type: department.type,
-          location: department.location?.trim() || null,
-          manager_name: department.manager_name?.trim() || null,
-          manager_contact: department.manager_contact?.trim() || null,
-          staff_count: 0
-        }])
+        .insert([insertData])
         .select()
         .single();
 
       if (error) {
-        console.error('❌ 新增部門錯誤:', error);
+        console.error('❌ 新增部門錯誤詳情:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         throw error;
       }
 
-      console.log('✅ 成功新增部門:', data);
+      console.log('✅ 新增部門成功:', data);
       toast({
         title: "新增成功",
         description: `部門 "${data.name}" 已成功新增`,
@@ -66,11 +81,24 @@ export class DepartmentApiService {
         ...data,
         type: data.type as 'headquarters' | 'branch' | 'store'
       };
-    } catch (error) {
-      console.error('💥 新增部門失敗:', error);
+    } catch (error: any) {
+      console.error('💥 新增部門失敗完整錯誤:', error);
+      
+      let errorMessage = "無法新增部門到資料庫";
+      
+      if (error.message) {
+        if (error.message.includes('row-level security')) {
+          errorMessage = "權限不足，無法新增部門。請確認您有管理員權限。";
+        } else if (error.message.includes('duplicate') || error.message.includes('unique')) {
+          errorMessage = "部門名稱已存在，請使用不同的名稱";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "新增失敗",
-        description: "無法新增部門到資料庫",
+        description: errorMessage,
         variant: "destructive",
       });
       return null;

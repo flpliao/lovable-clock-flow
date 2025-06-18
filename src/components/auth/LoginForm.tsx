@@ -57,6 +57,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
             position = '一般員工';
             department = 'HR';
             role = 'user' as const;
+          } else if (emailLocalPart === 'alinzheng55') {
+            displayName = '鄭宇伶';
+            position = '一般員工';
+            department = 'HR';
+            role = 'user' as const;
           } else {
             displayName = `User ${validatedUserId}`;
             position = '一般員工';
@@ -148,6 +153,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
         <p><strong>測試帳號：</strong></p>
         <p>管理員：admin@example.com / password</p>
         <p>一般用戶：flpliao@gmail.com / password</p>
+        <p>鄭宇伶：alinzheng55@gmail.com / 0989022719</p>
       </div>
       
       <Button

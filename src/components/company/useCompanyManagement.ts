@@ -119,10 +119,7 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
       
       if (success) {
         console.log('✅ useCompanyManagement: 公司資料更新成功');
-        toast({
-          title: "更新成功",
-          description: "公司資料已成功更新",
-        });
+        // 移除自動顯示的成功通知，因為 updateCompany 已經有通知了
         return true;
       } else {
         console.log('❌ useCompanyManagement: 公司資料更新失敗');

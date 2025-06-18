@@ -34,7 +34,7 @@ export const useCompanyOperations = () => {
     };
   }, []);
 
-  // 載入公司資料
+  // 載入公司資料 - 移除成功時的 toast 通知
   const loadCompany = async () => {
     console.log('🔍 useCompanyOperations: 開始載入依美琦股份有限公司資料...');
     setLoading(true);
@@ -51,10 +51,7 @@ export const useCompanyOperations = () => {
         console.log('🆔 useCompanyOperations: 公司ID:', data.id);
         console.log('🏢 useCompanyOperations: 統一編號:', data.registration_number);
         
-        toast({
-          title: "載入成功",
-          description: `已載入${data.name}資料`,
-        });
+        // 移除成功載入的 toast 通知
       } else {
         console.log('⚠️ useCompanyOperations: 無法載入依美琦股份有限公司資料');
         toast({
@@ -82,7 +79,7 @@ export const useCompanyOperations = () => {
     }
   };
 
-  // 強制從後台同步資料
+  // 強制從後台同步資料 - 只在成功時顯示同步通知
   const forceSyncFromBackend = async () => {
     console.log('🔄 useCompanyOperations: 開始強制從後台同步資料...');
     setLoading(true);
@@ -100,6 +97,7 @@ export const useCompanyOperations = () => {
         setCompany(syncedCompany);
         console.log('✅ useCompanyOperations: 強制同步成功:', syncedCompany.name);
         
+        // 只有手動同步時才顯示成功通知
         toast({
           title: "同步成功",
           description: `已成功同步${syncedCompany.name}資料`,

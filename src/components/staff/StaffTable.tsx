@@ -10,29 +10,45 @@ import AddStaffDialog from './AddStaffDialog';
 
 const StaffTable: React.FC = () => {
   const { 
-    filteredStaffList, 
+    staffList,
+    loading,
     openEditDialog, 
     handleDeleteStaff,
-    getSupervisorName
+    getSupervisorName,
+    refreshData
   } = useStaffManagementContext();
   
   const { isAdmin, currentUser } = useUser();
 
   useEffect(() => {
     console.log('📋 員工表格渲染狀態:', {
-      staffCount: filteredStaffList.length,
+      staffCount: staffList.length,
       currentUser: currentUser?.name,
-      isAdmin: isAdmin()
+      isAdmin: isAdmin(),
+      loading
     });
-  }, [filteredStaffList.length, currentUser, isAdmin]);
+  }, [staffList.length, currentUser, isAdmin, loading]);
 
   const handleRefresh = async () => {
     console.log('🔄 廖俊雄手動重新載入員工資料');
-    // 這裡需要觸發重新載入，但由於我們在 StaffTable 中，需要通過 context 來觸發
-    window.location.reload(); // 暫時解決方案
+    await refreshData();
   };
   
-  if (filteredStaffList.length === 0) {
+  if (loading) {
+    return (
+      <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-xl shadow-lg p-8 text-center">
+        <div className="flex justify-center mb-4">
+          <div className="p-4 bg-blue-100/70 rounded-full">
+            <RefreshCw className="h-8 w-8 text-blue-500 animate-spin" />
+          </div>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">正在載入員工資料</h3>
+        <p className="text-gray-700">請稍等，正在從後台載入員工資料...</p>
+      </div>
+    );
+  }
+  
+  if (staffList.length === 0) {
     return (
       <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-xl shadow-lg p-8 text-center">
         <div className="flex justify-center mb-4">
@@ -63,7 +79,7 @@ const StaffTable: React.FC = () => {
         <div className="flex justify-between items-center">
           <div className="text-gray-800">
             <p className="text-sm">後台連線狀態：✅ 已連接</p>
-            <p className="text-sm">載入的員工數量：{filteredStaffList.length} 人</p>
+            <p className="text-sm">載入的員工數量：{staffList.length} 人</p>
           </div>
           <Button
             onClick={handleRefresh}
@@ -90,7 +106,7 @@ const StaffTable: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredStaffList.map((staff, index) => (
+            {staffList.map((staff, index) => (
               <TableRow 
                 key={staff.id} 
                 className={`border-white/30 hover:bg-white/40 transition-colors ${

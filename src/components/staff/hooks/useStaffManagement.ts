@@ -1,21 +1,23 @@
 
-import { useStaffOperations } from './useStaffOperations';
 import { useStaffHierarchy } from './useStaffHierarchy';
 import { useStaffDialogs } from './useStaffDialogs';
 import { useRoleManagement } from './useRoleManagement';
+import { useSupabaseStaffOperations } from './useSupabaseStaffOperations';
 import { useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 
 export const useStaffManagement = () => {
   const { currentUser, isAdmin } = useUser();
 
+  // Always call hooks - never conditionally
   const {
     staffList,
-    filteredStaffList,
-    handleAddStaff,
-    handleEditStaff,
-    handleDeleteStaff
-  } = useStaffOperations();
+    loading,
+    addStaff,
+    updateStaff,
+    deleteStaff,
+    refreshData
+  } = useSupabaseStaffOperations();
 
   const {
     getSupervisorName,
@@ -59,8 +61,8 @@ export const useStaffManagement = () => {
   }, [currentUser, staffList.length, isAdmin]);
 
   // Combine the add staff functionality
-  const handleAddStaffSubmit = async (): Promise<boolean> => {
-    const success = await handleAddStaff(newStaff);
+  const handleAddStaff = async (): Promise<boolean> => {
+    const success = await addStaff(newStaff);
     if (success) {
       resetNewStaff();
       setIsAddDialogOpen(false);
@@ -69,9 +71,9 @@ export const useStaffManagement = () => {
   };
 
   // Combine the edit staff functionality
-  const handleEditStaffSubmit = async (): Promise<boolean> => {
+  const handleEditStaff = async (): Promise<boolean> => {
     if (currentStaff) {
-      const success = await handleEditStaff(currentStaff);
+      const success = await updateStaff(currentStaff);
       if (success) {
         setIsEditDialogOpen(false);
       }
@@ -80,10 +82,16 @@ export const useStaffManagement = () => {
     return false;
   };
 
+  // Handle delete staff
+  const handleDeleteStaff = async (id: string) => {
+    await deleteStaff(id);
+  };
+
   return {
     // Staff management
     staffList,
-    filteredStaffList,
+    filteredStaffList: staffList, // For now, return all staff - filtering can be added later
+    loading,
     isAddDialogOpen,
     setIsAddDialogOpen,
     isEditDialogOpen,
@@ -92,12 +100,13 @@ export const useStaffManagement = () => {
     setCurrentStaff,
     newStaff,
     setNewStaff,
-    handleAddStaff: handleAddStaffSubmit,
-    handleEditStaff: handleEditStaffSubmit,
+    handleAddStaff,
+    handleEditStaff,
     handleDeleteStaff,
     openEditDialog,
     getSupervisorName,
     getSubordinates,
+    refreshData,
     
     // Role management
     roles,

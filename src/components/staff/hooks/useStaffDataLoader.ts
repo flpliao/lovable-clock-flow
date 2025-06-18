@@ -39,6 +39,7 @@ export const useStaffDataLoader = () => {
       console.log('🔄 正在同步後台員工資料到前台...');
       setLoading(true);
 
+      // 強制清除快取，直接查詢最新資料
       const { data, error } = await supabase
         .from('staff')
         .select('*')
@@ -46,6 +47,12 @@ export const useStaffDataLoader = () => {
 
       if (error) {
         console.error('❌ 員工資料同步失敗:', error);
+        console.error('錯誤詳情:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         setStaffList([]);
         return;
       }
@@ -73,6 +80,25 @@ export const useStaffDataLoader = () => {
       console.log('🔄 員工資料前後台同步完成，前台可用資料:', transformedData.length, '筆');
       setStaffList(transformedData);
       
+      // 如果資料為空，顯示更詳細的診斷資訊
+      if (transformedData.length === 0) {
+        console.log('⚠️ 員工資料為空，檢查後台資料庫狀態...');
+        
+        // 檢查資料庫中是否有資料
+        const { count, error: countError } = await supabase
+          .from('staff')
+          .select('*', { count: 'exact', head: true });
+        
+        if (countError) {
+          console.error('❌ 無法檢查員工資料數量:', countError);
+        } else {
+          console.log('📊 後台員工總數:', count);
+          if (count && count > 0) {
+            console.log('⚠️ 後台有資料但查詢結果為空，可能是權限問題');
+          }
+        }
+      }
+      
     } catch (error) {
       console.error('❌ 員工資料前後台同步系統錯誤:', error);
       setStaffList([]);
@@ -97,9 +123,21 @@ export const useStaffDataLoader = () => {
   const refreshData = async () => {
     console.log('🔄 觸發完整前後台資料同步...');
     setLoading(true);
-    await Promise.all([loadStaff(), loadRoles()]);
-    setLoading(false);
-    console.log('✅ 前後台資料同步完成');
+    try {
+      await Promise.all([loadStaff(), loadRoles()]);
+      console.log('✅ 前後台資料同步完成');
+    } catch (error) {
+      console.error('❌ 資料同步過程中發生錯誤:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 強制重新載入（清除所有快取）
+  const forceReload = async () => {
+    console.log('🔄 強制重新載入所有員工資料...');
+    setStaffList([]); // 先清空現有資料
+    await refreshData();
   };
 
   return {
@@ -111,6 +149,7 @@ export const useStaffDataLoader = () => {
     setLoading,
     loadStaff,
     loadRoles,
-    refreshData
+    refreshData,
+    forceReload
   };
 };

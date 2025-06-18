@@ -17,7 +17,8 @@ export const useStaffManagement = () => {
     addStaff,
     updateStaff,
     deleteStaff,
-    refreshData
+    refreshData,
+    forceReload
   } = useSupabaseStaffOperations();
 
   const {
@@ -114,7 +115,10 @@ export const useStaffManagement = () => {
   const performFullSync = async () => {
     console.log('🔄 手動觸發完整系統資料同步');
     const syncResult = await DataSyncManager.performFullSync();
-    await refreshData();
+    
+    // 使用強制重新載入確保獲取最新資料
+    await forceReload();
+    
     return syncResult;
   };
 

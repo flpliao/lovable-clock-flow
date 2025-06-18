@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, UserCog, Users, RefreshCw } from 'lucide-react';
@@ -15,10 +15,12 @@ const StaffTable: React.FC = () => {
     openEditDialog, 
     handleDeleteStaff,
     getSupervisorName,
-    refreshData
+    refreshData,
+    performFullSync
   } = useStaffManagementContext();
   
   const { isAdmin, currentUser } = useUser();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     console.log('📋 員工表格渲染狀態:', {
@@ -31,10 +33,26 @@ const StaffTable: React.FC = () => {
 
   const handleRefresh = async () => {
     console.log('🔄 廖俊雄手動重新載入員工資料');
-    await refreshData();
+    setIsRefreshing(true);
+    
+    try {
+      // 先執行完整同步
+      console.log('🔄 執行完整系統同步...');
+      await performFullSync();
+      
+      // 再執行本地資料重新載入
+      console.log('🔄 重新載入本地員工資料...');
+      await refreshData();
+      
+      console.log('✅ 員工資料重新載入完成');
+    } catch (error) {
+      console.error('❌ 員工資料重新載入失敗:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
   
-  if (loading) {
+  if (loading || isRefreshing) {
     return (
       <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-xl shadow-lg p-8 text-center">
         <div className="flex justify-center mb-4">
@@ -42,7 +60,9 @@ const StaffTable: React.FC = () => {
             <RefreshCw className="h-8 w-8 text-blue-500 animate-spin" />
           </div>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">正在載入員工資料</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          {isRefreshing ? '正在重新載入員工資料' : '正在載入員工資料'}
+        </h3>
         <p className="text-gray-700">請稍等，正在從後台載入員工資料...</p>
       </div>
     );
@@ -62,10 +82,11 @@ const StaffTable: React.FC = () => {
           <Button
             onClick={handleRefresh}
             variant="outline"
+            disabled={isRefreshing}
             className="bg-white/25 border-white/40 text-gray-700 hover:bg-white/35"
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            重新載入後台資料
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? '載入中...' : '重新載入後台資料'}
           </Button>
           <AddStaffDialog />
         </div>
@@ -85,10 +106,11 @@ const StaffTable: React.FC = () => {
             onClick={handleRefresh}
             variant="outline"
             size="sm"
+            disabled={isRefreshing}
             className="bg-white/25 border-white/40 text-gray-700 hover:bg-white/35"
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            重新載入後台資料
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? '載入中...' : '重新載入後台資料'}
           </Button>
         </div>
       </div>

@@ -13,7 +13,8 @@ export const useSupabaseStaffOperations = () => {
     setLoading,
     loadStaff,
     loadRoles,
-    refreshData
+    refreshData,
+    forceReload
   } = useStaffDataLoader();
 
   const {
@@ -56,6 +57,7 @@ export const useSupabaseStaffOperations = () => {
       await deleteStaff(id);
       await refreshAfterOperation();
     },
-    refreshData
+    refreshData,
+    forceReload
   };
 };

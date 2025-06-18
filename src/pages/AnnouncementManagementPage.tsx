@@ -52,9 +52,9 @@ const AnnouncementManagementPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 主要內容區域 */}
+        {/* 主要內容區域 - 直接放在淡藍色背景上 */}
         <div className="w-full px-0 sm:px-4 lg:px-8 pb-8">
-          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl mx-4 p-6 sm:p-8 shadow-2xl">
+          <div className="mx-4">
             <AnnouncementManagement />
           </div>
         </div>

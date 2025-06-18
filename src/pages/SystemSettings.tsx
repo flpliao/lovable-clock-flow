@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Settings, Globe, Shield, Database, CheckCircle2, AlertCircle, Wrench, Languages, Server, Activity } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,7 +10,7 @@ const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('general');
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen pt-20 md:pt-24">
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
       {/* 動態背景漸層 */}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
@@ -22,8 +23,8 @@ const SystemSettings = () => {
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
       <div className="relative z-10 w-full">
-        {/* 頁面標題區域 - 保持與頂部導航的距離 */}
-        <div className="w-full px-0 sm:px-4 lg:px-8 pt-24 md:pt-28 pb-4">
+        {/* 頁面標題區域 - 增加足夠的頂部間距避免與導航重疊 */}
+        <div className="w-full px-0 sm:px-4 lg:px-8 pt-32 md:pt-36 pb-4">
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
             <div className="flex items-center gap-4 p-6">
               <div className="p-3 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">

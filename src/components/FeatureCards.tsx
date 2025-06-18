@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -97,9 +98,9 @@ const FeatureCards = ({ abnormalCount, annualLeaveBalance }: FeatureCardsProps) 
   ];
 
   const FeatureCard = ({ feature }: { feature: any }) => (
-    <div className="group bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative w-full max-w-xs mx-auto">
+    <div className="group rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative w-full max-w-xs mx-auto">
       <Link to={feature.link} className="block">
-        <div className="p-6 sm:p-8 relative overflow-hidden h-full">
+        <div className="p-6 sm:p-8 relative overflow-hidden h-full bg-white/80 backdrop-blur-xl border border-white/40">
           <div className="relative z-10 h-full flex flex-col">
             <div className="flex items-start justify-between mb-6">
               <div className="flex-1">
@@ -132,7 +133,7 @@ const FeatureCards = ({ abnormalCount, annualLeaveBalance }: FeatureCardsProps) 
     <div className="w-full max-w-3xl mx-auto space-y-10 px-4">
       {/* 主要功能區 */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">主要功能</h2>
+        <h2 className="text-2xl font-bold text-white mb-8 text-center drop-shadow-lg">主要功能</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 justify-items-center">
           {mainFeatures.map((feature, index) => (
             <FeatureCard key={index} feature={feature} />
@@ -143,7 +144,7 @@ const FeatureCards = ({ abnormalCount, annualLeaveBalance }: FeatureCardsProps) 
       {/* 管理功能區 - 只有管理員可見 */}
       {(isAdmin() || isManager()) && (
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">管理功能</h2>
+          <h2 className="text-2xl font-bold text-white mb-8 text-center drop-shadow-lg">管理功能</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 justify-items-center">
             {adminFeatures.map((feature, index) => (
               <FeatureCard key={index} feature={feature} />

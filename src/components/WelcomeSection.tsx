@@ -35,7 +35,7 @@ const WelcomeSection = ({ userName }: WelcomeSectionProps) => {
         
         {/* 時間資訊 */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 mt-8">
-          <div className="flex items-center justify-center sm:justify-start space-x-4 backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 shadow-lg hover:scale-105 transition-all duration-300">
+          <div className="flex items-center justify-center sm:justify-start space-x-4 p-4">
             <div className="p-3 bg-blue-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
               <Clock className="h-6 w-6" />
             </div>
@@ -44,7 +44,7 @@ const WelcomeSection = ({ userName }: WelcomeSectionProps) => {
             </span>
           </div>
           
-          <div className="flex items-center justify-center sm:justify-end space-x-4 backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 shadow-lg hover:scale-105 transition-all duration-300">
+          <div className="flex items-center justify-center sm:justify-end space-x-4 p-4">
             <div className="p-3 bg-green-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-green-400/50 text-white">
               <Calendar className="h-6 w-6" />
             </div>

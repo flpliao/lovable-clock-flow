@@ -110,22 +110,20 @@ const AnnouncementManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 標題和新增按鈕區域 */}
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-        <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
-          <h2 className="text-lg sm:text-xl font-semibold text-white">
-            公告列表
-          </h2>
-          <Button 
-            onClick={() => {
-              setSelectedAnnouncement(null);
-              setIsFormOpen(true);
-            }}
-            className="w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm backdrop-blur-xl bg-white/30 border-white/40 text-white font-semibold shadow-lg hover:bg-white/50 transition-all duration-300"
-          >
-            <Plus className="h-4 w-4 mr-2 drop-shadow-md" />
-            新增公告
-          </Button>
-        </div>
+      <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
+        <h2 className="text-xl sm:text-2xl font-bold text-white drop-shadow-md">
+          公告列表
+        </h2>
+        <Button 
+          onClick={() => {
+            setSelectedAnnouncement(null);
+            setIsFormOpen(true);
+          }}
+          className="w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm backdrop-blur-xl bg-white/30 border-white/40 text-white font-semibold shadow-lg hover:bg-white/50 transition-all duration-300 rounded-xl"
+        >
+          <Plus className="h-4 w-4 mr-2 drop-shadow-md" />
+          新增公告
+        </Button>
       </div>
 
       {/* 搜尋和篩選區域 */}

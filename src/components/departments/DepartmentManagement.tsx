@@ -5,8 +5,7 @@ import { DepartmentManagementProvider } from './DepartmentManagementContext';
 import DepartmentTable from './DepartmentTable';
 import AddDepartmentDialog from './AddDepartmentDialog';
 import EditDepartmentDialog from './EditDepartmentDialog';
-import { Building, Plus, Users, MapPin } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Building } from 'lucide-react';
 
 const DepartmentManagement = () => {
   const { isAdmin } = useUser();
@@ -14,18 +13,16 @@ const DepartmentManagement = () => {
   return (
     <DepartmentManagementProvider>
       <div className="space-y-6">
-        {/* 部門管理區塊 */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-green-400/50">
-                <Building className="h-6 w-6 text-white" />
+        {/* 部門管理區塊 - 半透明設計 */}
+        <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-green-400/50">
+                <Building className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-white drop-shadow-md">
-                  部門門市管理
-                </h3>
-                <p className="text-white/80 text-sm mt-1">管理組織架構與部門資訊</p>
+                <h2 className="text-xl font-bold text-gray-900">部門門市管理</h2>
+                <p className="text-gray-700 text-sm mt-1">管理組織架構與部門資訊</p>
               </div>
             </div>
             {isAdmin() && (

@@ -15,21 +15,34 @@ declare global {
 // Initialize the credentials store if it doesn't exist
 export const initCredentialStore = (): void => {
   if (!window.userCredentialsStore) {
-    // 清空所有帳號資料，準備輸入正式資料
     window.userCredentialsStore = {};
-    console.log('Credential store initialized and cleared for production data');
-  } else {
-    // 清空所有帳號，準備輸入正式資料
-    window.userCredentialsStore = {};
-    console.log('Credential store cleared and ready for production data');
   }
-  console.log('Current credential store:', window.userCredentialsStore);
+  
+  // 確保廖俊雄的管理員帳號總是存在
+  const adminUserId = '550e8400-e29b-41d4-a716-446655440001';
+  window.userCredentialsStore[adminUserId] = {
+    userId: adminUserId,
+    email: 'admin@example.com',
+    password: 'password'
+  };
+  
+  // 確保一般用戶帳號也存在
+  const userUserId = '550e8400-e29b-41d4-a716-446655440002';
+  window.userCredentialsStore[userUserId] = {
+    userId: userUserId,
+    email: 'flpliao@gmail.com',
+    password: 'password'
+  };
+  
+  console.log('✅ 憑證存儲已初始化，廖俊雄管理員帳號已載入');
+  console.log('🔐 可用帳號:', Object.keys(window.userCredentialsStore));
+  console.log('📋 憑證存儲內容:', window.userCredentialsStore);
 };
 
 // Function to find a user by email
 export const findUserByEmail = (email: string) => {
-  console.log('Searching for user with email:', email);
-  console.log('Available credentials:', window.userCredentialsStore);
+  console.log('🔍 搜尋用戶，電子郵件:', email);
+  console.log('📊 可用憑證:', window.userCredentialsStore);
   
   // Convert to lowercase for case-insensitive comparison
   const lowerEmail = email.toLowerCase();
@@ -38,11 +51,11 @@ export const findUserByEmail = (email: string) => {
   for (const userId in window.userCredentialsStore) {
     const creds = window.userCredentialsStore[userId];
     if (creds.email.toLowerCase() === lowerEmail) {
-      console.log('Found user for email:', email, 'User:', { userId, credentials: creds });
+      console.log('✅ 找到用戶:', email, '用戶資料:', { userId, credentials: creds });
       return { userId, credentials: creds };
     }
   }
   
-  console.log('No user found for email:', email);
+  console.log('❌ 找不到用戶:', email);
   return null;
 };

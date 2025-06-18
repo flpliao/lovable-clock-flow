@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { UserProvider } from '@/contexts/UserContext';
 import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
@@ -7,6 +7,7 @@ import { SchedulingProvider } from '@/contexts/SchedulingContext';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { initCredentialStore } from '@/utils/credentialStore';
 import Header from '@/components/Header';
 import Index from '@/pages/Index';
 import Login from '@/pages/Login';
@@ -29,6 +30,12 @@ import './App.css';
 const queryClient = new QueryClient();
 
 function App() {
+  // 在應用程式啟動時初始化憑證存儲
+  useEffect(() => {
+    console.log('🚀 應用程式啟動，初始化憑證存儲');
+    initCredentialStore();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <UserProvider>

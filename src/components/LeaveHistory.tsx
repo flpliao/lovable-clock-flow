@@ -28,7 +28,7 @@ const LeaveHistory: React.FC<LeaveHistoryProps> = ({ onClick }) => {
             </svg>
           </div>
           <p className="text-gray-600 font-medium">尚無請假記錄</p>
-          <p className="text-gray-500 mt-1">您的請假記錄將會顯示在這裡</p>
+          <p className="text-gray-500 text-sm mt-1">您的請假記錄將會顯示在這裡</p>
         </div>
       ) : (
         leaveHistory.map((leave) => (

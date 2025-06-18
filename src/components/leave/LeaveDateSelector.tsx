@@ -26,15 +26,15 @@ export function LeaveDateSelector({ form, calculatedHours }: LeaveDateSelectorPr
           name="start_date"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel className="text-gray-700 font-medium">開始日期</FormLabel>
+              <FormLabel>開始日期</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
-                      variant={"outline"}
+                      variant="outline"
                       className={cn(
-                        "w-full pl-3 text-left font-normal bg-white border-gray-300 hover:bg-gray-50",
-                        !field.value && "text-gray-500"
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
                       )}
                     >
                       {field.value ? (
@@ -46,17 +46,16 @@ export function LeaveDateSelector({ form, calculatedHours }: LeaveDateSelectorPr
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-white border shadow-lg rounded-lg" align="start">
+                <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
                     initialFocus
-                    className="p-3"
                   />
                 </PopoverContent>
               </Popover>
-              <FormMessage className="text-red-500" />
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -66,15 +65,15 @@ export function LeaveDateSelector({ form, calculatedHours }: LeaveDateSelectorPr
           name="end_date"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel className="text-gray-700 font-medium">結束日期</FormLabel>
+              <FormLabel>結束日期</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
-                      variant={"outline"}
+                      variant="outline"
                       className={cn(
-                        "w-full pl-3 text-left font-normal bg-white border-gray-300 hover:bg-gray-50",
-                        !field.value && "text-gray-500"
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
                       )}
                     >
                       {field.value ? (
@@ -86,31 +85,30 @@ export function LeaveDateSelector({ form, calculatedHours }: LeaveDateSelectorPr
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-white border shadow-lg rounded-lg" align="start">
+                <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
                     initialFocus
-                    className="p-3"
                   />
                 </PopoverContent>
               </Popover>
-              <FormMessage className="text-red-500" />
+              <FormMessage />
             </FormItem>
           )}
         />
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
-        <p className="text-gray-700 font-medium">
-          計算請假時數: <span className="font-bold text-blue-600">{calculatedHours} 小時</span>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-md">
+        <p className="text-sm text-gray-700">
+          計算請假時數: <span className="font-semibold text-blue-600">{calculatedHours} 小時</span>
           {calculatedDays > 0 && (
             <span className="text-gray-600"> ({calculatedDays} 天)</span>
           )}
         </p>
         {form.watch('leave_type') === 'annual' && calculatedHours > 0 && (
-          <p className="text-blue-600 mt-1 text-sm">
+          <p className="text-blue-600 text-xs mt-1">
             * 以工作日計算，每個工作天 8 小時，不含週末
           </p>
         )}

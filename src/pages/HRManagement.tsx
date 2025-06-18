@@ -19,7 +19,7 @@ const HRManagement = () => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen pt-32 md:pt-36">
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
       {/* 動態背景漸層 */}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
@@ -32,9 +32,9 @@ const HRManagement = () => {
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
       <div className="relative z-10">
-        <main className="p-2 sm:p-4 lg:p-6 space-y-6">
-          {/* 頁面標題區域 */}
-          <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6">
+        <main className="p-2 sm:p-4 lg:p-6 pt-[80px] space-y-6">
+          {/* 頁面標題區域 - 調整頂部間距避免與導航重疊 */}
+          <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6 mt-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-green-500/70 rounded-2xl shadow-lg backdrop-blur-xl border border-green-400/30">

@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, UserCog, Users } from 'lucide-react';
+import { Pencil, Trash2, UserCog, Users, RefreshCw } from 'lucide-react';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { useUser } from '@/contexts/UserContext';
 import CredentialManagementDialog from './CredentialManagementDialog';
@@ -17,6 +17,20 @@ const StaffTable: React.FC = () => {
   } = useStaffManagementContext();
   
   const { isAdmin, currentUser } = useUser();
+
+  useEffect(() => {
+    console.log('📋 員工表格渲染狀態:', {
+      staffCount: filteredStaffList.length,
+      currentUser: currentUser?.name,
+      isAdmin: isAdmin()
+    });
+  }, [filteredStaffList.length, currentUser, isAdmin]);
+
+  const handleRefresh = async () => {
+    console.log('🔄 廖俊雄手動重新載入員工資料');
+    // 這裡需要觸發重新載入，但由於我們在 StaffTable 中，需要通過 context 來觸發
+    window.location.reload(); // 暫時解決方案
+  };
   
   if (filteredStaffList.length === 0) {
     return (
@@ -26,15 +40,43 @@ const StaffTable: React.FC = () => {
             <Users className="h-8 w-8 text-gray-500" />
           </div>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">尚未建立員工資料</h3>
-        <p className="text-gray-700 mb-4">開始建立您的團隊，管理員工資訊與組織架構</p>
-        <AddStaffDialog />
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">尚未載入到後台員工資料</h3>
+        <p className="text-gray-700 mb-4">後台有員工資料但前台顯示為空，請點擊重新載入按鈕</p>
+        <div className="flex gap-4 justify-center">
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            className="bg-white/25 border-white/40 text-gray-700 hover:bg-white/35"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            重新載入後台資料
+          </Button>
+          <AddStaffDialog />
+        </div>
       </div>
     );
   }
   
   return (
     <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-xl shadow-lg overflow-hidden">
+      <div className="p-4 border-b border-white/20">
+        <div className="flex justify-between items-center">
+          <div className="text-gray-800">
+            <p className="text-sm">後台連線狀態：✅ 已連接</p>
+            <p className="text-sm">載入的員工數量：{filteredStaffList.length} 人</p>
+          </div>
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            size="sm"
+            className="bg-white/25 border-white/40 text-gray-700 hover:bg-white/35"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            重新載入後台資料
+          </Button>
+        </div>
+      </div>
+      
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>

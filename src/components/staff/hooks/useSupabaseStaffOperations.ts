@@ -22,7 +22,7 @@ export const useSupabaseStaffOperations = () => {
     deleteStaff
   } = useStaffCrudOperations(staffList, setStaffList);
 
-  // 載入資料
+  // 初始化載入資料
   useEffect(() => {
     console.log('📋 useSupabaseStaffOperations: 初始化載入員工資料...');
     refreshData();

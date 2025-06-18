@@ -40,8 +40,8 @@ const SystemSettings = () => {
           </div>
         </div>
 
-        {/* 標籤導航 */}
-        <div className="w-full px-0 sm:px-4 lg:px-8 pb-6">
+        {/* 標籤導航 - 增加頂部間距到50px */}
+        <div className="w-full px-0 sm:px-4 lg:px-8 pt-12 pb-6">
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
             <div className="p-4">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

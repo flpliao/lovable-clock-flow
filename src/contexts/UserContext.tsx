@@ -109,6 +109,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       case 'delete_department':
         return currentUser.role === 'manager' || currentUser.role === 'admin';
       case 'create_announcement':
+      case 'manage_announcements':
+      case 'announcement:view':
+      case 'announcement:create':
+      case 'announcement:edit':
+      case 'announcement:delete':
+      case 'announcement:publish':
         return currentUser.department === 'HR' || currentUser.role === 'admin';
       default:
         return false;

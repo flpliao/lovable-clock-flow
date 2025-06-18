@@ -116,6 +116,43 @@ export const availablePermissions: Permission[] = [
     category: '請假管理'
   },
   
+  // Announcement management permissions
+  { 
+    id: 'announcement_view', 
+    name: '查看公告', 
+    code: 'announcement:view', 
+    description: '允許查看所有公告', 
+    category: '公告管理'
+  },
+  { 
+    id: 'announcement_create', 
+    name: '新增公告', 
+    code: 'announcement:create', 
+    description: '允許建立新公告', 
+    category: '公告管理'
+  },
+  { 
+    id: 'announcement_edit', 
+    name: '編輯公告', 
+    code: 'announcement:edit', 
+    description: '允許編輯現有公告', 
+    category: '公告管理'
+  },
+  { 
+    id: 'announcement_delete', 
+    name: '刪除公告', 
+    code: 'announcement:delete', 
+    description: '允許刪除公告', 
+    category: '公告管理'
+  },
+  { 
+    id: 'announcement_publish', 
+    name: '發布公告', 
+    code: 'announcement:publish', 
+    description: '允許發布公告給所有員工', 
+    category: '公告管理'
+  },
+  
   // Role management permissions (admin only)
   { 
     id: 'role_manage', 
@@ -144,7 +181,8 @@ export const defaultSystemRoles: StaffRole[] = [
       p.code === 'department:view' || 
       p.code === 'schedule:view' ||
       p.code === 'leave:view' ||
-      p.code === 'leave:create'
+      p.code === 'leave:create' ||
+      p.code === 'announcement:view'
     ),
     is_system_role: true
   },
@@ -155,6 +193,7 @@ export const defaultSystemRoles: StaffRole[] = [
     permissions: availablePermissions.filter(p => 
       p.category === '人員管理' || 
       p.category === '部門管理' || 
+      p.category === '公告管理' ||
       p.code === 'leave:approve'
     ),
     is_system_role: true
@@ -170,7 +209,9 @@ export const defaultSystemRoles: StaffRole[] = [
       p.code === 'schedule:create' ||
       p.code === 'schedule:edit' ||
       p.code === 'leave:view' ||
-      p.code === 'leave:approve'
+      p.code === 'leave:approve' ||
+      p.code === 'announcement:view' ||
+      p.code === 'announcement:create'
     ),
     is_system_role: true
   }

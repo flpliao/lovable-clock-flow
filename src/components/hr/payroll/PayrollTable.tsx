@@ -52,7 +52,7 @@ const PayrollTable: React.FC<PayrollTableProps> = ({
   }
 
   return (
-    <div>
+    <>
       {isMobile ? (
         <PayrollTableMobile
           payrolls={payrolls}
@@ -80,7 +80,7 @@ const PayrollTable: React.FC<PayrollTableProps> = ({
         onReject={onReject}
         onMarkAsPaid={onMarkAsPaid}
       />
-    </div>
+    </>
   );
 };
 

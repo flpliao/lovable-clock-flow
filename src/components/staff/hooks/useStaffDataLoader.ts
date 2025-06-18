@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { Staff, StaffRole } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -33,7 +32,6 @@ export const useStaffDataLoader = () => {
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [roles, setRoles] = useState<StaffRole[]>([]);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   // 載入員工資料 - 廖俊雄現在有特殊 RLS 權限
   const loadStaff = async () => {
@@ -49,12 +47,6 @@ export const useStaffDataLoader = () => {
 
       if (error) {
         console.error('❌ 載入員工資料失敗:', error);
-        
-        toast({
-          title: "載入失敗",
-          description: "無法載入員工資料，但廖俊雄管理員 RLS 權限已配置",
-          variant: "default"
-        });
         return;
       }
 
@@ -81,26 +73,12 @@ export const useStaffDataLoader = () => {
       console.log('🔄 轉換後的員工資料:', transformedData);
       setStaffList(transformedData);
       
-      if (transformedData && transformedData.length > 0) {
-        toast({
-          title: "載入成功",
-          description: `廖俊雄管理員已載入 ${transformedData.length} 筆員工資料`,
-        });
-      } else {
-        toast({
-          title: "提醒",
-          description: "目前無員工資料，您可以開始新增員工",
-        });
-      }
+      // 移除 toast 提醒以避免干擾
+      console.log(`員工資料載入完成 - 共 ${transformedData.length} 筆資料`);
       
     } catch (error) {
       console.error('❌ 載入員工資料系統錯誤:', error);
       setStaffList([]);
-      toast({
-        title: "系統提醒",
-        description: "廖俊雄管理員 RLS 權限已配置，系統正常運作",
-        variant: "default"
-      });
     } finally {
       setLoading(false);
     }

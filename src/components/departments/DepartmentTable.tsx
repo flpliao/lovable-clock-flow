@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -78,9 +79,9 @@ const DepartmentTable = () => {
     return (
       <div className="text-center py-12">
         <Building className="h-16 w-16 mx-auto text-white/50 mb-6" />
-        <h3 className="text-xl font-semibold text-white mb-4">尚未載入到後台部門資料</h3>
+        <h3 className="text-xl font-semibold text-white mb-4">目前沒有部門資料</h3>
         <p className="text-white/70 mb-6">
-          後台有部門資料但前台顯示為空，請點擊重新載入按鈕
+          系統已成功連接後台，但尚未載入到部門資料
         </p>
         <Button
           onClick={handleRefresh}

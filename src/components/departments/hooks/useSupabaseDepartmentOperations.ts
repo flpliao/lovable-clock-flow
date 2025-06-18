@@ -29,11 +29,9 @@ export const useSupabaseDepartmentOperations = () => {
       return transformedData;
     } catch (error) {
       console.error('❌ 廖俊雄載入後台部門資料失敗:', error);
-      // 即使失敗也要設定空陣列，避免永遠載入中
       setDepartments([]);
       return [];
     } finally {
-      // 確保載入狀態結束
       setLoading(false);
     }
   };
@@ -55,7 +53,7 @@ export const useSupabaseDepartmentOperations = () => {
           setLoading(false);
           setDepartments([]);
         }
-      }, 10000); // 10秒超時
+      }, 5000); // 減少到 5 秒超時
       
       fetchDepartments().then(() => {
         setIsInitialized(true);

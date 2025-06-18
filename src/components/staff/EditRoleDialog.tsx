@@ -29,6 +29,7 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
   const { updateRole } = useStaffManagementContext();
   const [activeTab, setActiveTab] = useState<string>('基本資料');
   const [editedRole, setEditedRole] = useState<StaffRole>({...role});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Update local state when prop changes
   useEffect(() => {
@@ -39,25 +40,45 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
   const permissionsByCategory = getPermissionsByCategory();
   
   const handleSubmit = async () => {
-    const success = await updateRole(editedRole);
-    if (success) {
-      onOpenChange(false);
+    console.log('開始儲存角色變更:', editedRole.name);
+    setIsSubmitting(true);
+    
+    try {
+      const success = await updateRole(editedRole);
+      console.log('更新結果:', success);
+      
+      if (success) {
+        console.log('角色更新成功，關閉對話框');
+        onOpenChange(false);
+        setActiveTab('基本資料'); // 重置到第一個標籤
+      } else {
+        console.error('角色更新失敗');
+      }
+    } catch (error) {
+      console.error('更新角色時發生錯誤:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
   const togglePermission = (permission: Permission) => {
+    console.log('切換權限:', permission.name);
     setEditedRole(prev => {
       const hasPermission = prev.permissions.some(p => p.id === permission.id);
       
       if (hasPermission) {
+        const newPermissions = prev.permissions.filter(p => p.id !== permission.id);
+        console.log('移除權限，剩餘權限數量:', newPermissions.length);
         return {
           ...prev,
-          permissions: prev.permissions.filter(p => p.id !== permission.id)
+          permissions: newPermissions
         };
       } else {
+        const newPermissions = [...prev.permissions, permission];
+        console.log('新增權限，總權限數量:', newPermissions.length);
         return {
           ...prev,
-          permissions: [...prev.permissions, permission]
+          permissions: newPermissions
         };
       }
     });
@@ -65,6 +86,13 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
   
   const isPermissionSelected = (permissionId: string) => {
     return editedRole.permissions.some(p => p.id === permissionId);
+  };
+  
+  const handleCancel = () => {
+    console.log('取消編輯，重置角色資料');
+    setEditedRole({...role}); // 重置到原始狀態
+    setActiveTab('基本資料'); // 重置到第一個標籤
+    onOpenChange(false);
   };
   
   // Disable editing of name/description for system roles, but allow permission editing
@@ -122,11 +150,15 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
             <div className="flex justify-end space-x-2 pt-4">
               <Button 
                 variant="outline" 
-                onClick={() => onOpenChange(false)}
+                onClick={handleCancel}
+                disabled={isSubmitting}
               >
                 取消
               </Button>
-              <Button onClick={() => setActiveTab('權限設定')}>
+              <Button 
+                onClick={() => setActiveTab('權限設定')}
+                disabled={isSubmitting}
+              >
                 下一步：設定權限
               </Button>
             </div>
@@ -144,6 +176,7 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
                           id={`edit-${permission.id}`} 
                           checked={isPermissionSelected(permission.id)}
                           onCheckedChange={() => togglePermission(permission)}
+                          disabled={isSubmitting}
                         />
                         <div>
                           <Label 
@@ -165,11 +198,15 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
               <Button 
                 variant="outline" 
                 onClick={() => setActiveTab('基本資料')}
+                disabled={isSubmitting}
               >
                 上一步
               </Button>
-              <Button onClick={handleSubmit}>
-                儲存變更
+              <Button 
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? '儲存中...' : '儲存變更'}
               </Button>
             </DialogFooter>
           </TabsContent>

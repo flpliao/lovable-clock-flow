@@ -18,7 +18,7 @@ export class DepartmentCreateService {
       const insertData = DepartmentValidationService.prepareInsertData(department);
       console.log('📝 即將插入的資料:', insertData);
       
-      // 暫時關閉 RLS 檢查，直接插入資料
+      // 直接插入資料
       const { data, error } = await supabase
         .from('departments')
         .insert([insertData])
@@ -32,38 +32,6 @@ export class DepartmentCreateService {
           details: error.details,
           hint: error.hint
         });
-        
-        // 對於權限錯誤，提供更友善的錯誤訊息
-        if (error.message?.includes('row-level security') || error.message?.includes('policy')) {
-          // 嘗試使用 RPC 函數來檢查權限並插入
-          console.log('🔄 嘗試使用管理員權限插入...');
-          
-          try {
-            const { data: rpcData, error: rpcError } = await supabase.rpc('create_department_as_admin', {
-              department_data: insertData
-            });
-            
-            if (rpcError) {
-              console.error('RPC 插入也失敗:', rpcError);
-              throw new Error('管理員權限不足，無法新增部門');
-            }
-            
-            if (rpcData) {
-              console.log('✅ 透過 RPC 新增部門成功:', rpcData);
-              toast({
-                title: "新增成功",
-                description: `部門 "${insertData.name}" 已成功新增`,
-              });
-              
-              return {
-                ...rpcData,
-                type: rpcData.type as 'headquarters' | 'branch' | 'store'
-              };
-            }
-          } catch (rpcError) {
-            console.error('RPC 函數執行失敗:', rpcError);
-          }
-        }
         
         throw error;
       }

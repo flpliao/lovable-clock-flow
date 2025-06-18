@@ -15,8 +15,10 @@ const LeaveBalance: React.FC = () => {
       
       setLoading(true);
       try {
+        // 先嘗試載入現有餘額
         let balanceData = await loadAnnualLeaveBalance(currentUser.id);
         
+        // 如果沒有餘額記錄，先初始化
         if (!balanceData) {
           await initializeAnnualLeaveBalance(currentUser.id);
           balanceData = await loadAnnualLeaveBalance(currentUser.id);
@@ -41,10 +43,12 @@ const LeaveBalance: React.FC = () => {
     );
   }
   
+  // Calculate remaining hours and percentage
   const totalDays = balance?.total_days || 0;
   const usedDays = balance?.used_days || 0;
   const remainingDays = balance?.remaining_days || (totalDays - usedDays);
   
+  // Convert to hours (8 hours per day)
   const totalHours = totalDays * 8;
   const usedHours = usedDays * 8;
   const remainingHours = remainingDays * 8;
@@ -54,29 +58,36 @@ const LeaveBalance: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gray-50 rounded-lg border p-4 text-center">
-          <div className="text-2xl font-bold text-gray-900">{totalHours}</div>
-          <div className="text-sm text-gray-600">年度總額（小時）</div>
-          <div className="text-xs text-gray-500">{totalDays} 天</div>
+        <div className="bg-gray-50 rounded-xl border p-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gray-900">{totalHours}</div>
+            <div className="text-gray-600 text-sm">年度總額（小時）</div>
+            <div className="text-gray-500 text-xs">{totalDays} 天</div>
+          </div>
         </div>
         
-        <div className="bg-gray-50 rounded-lg border p-4 text-center">
-          <div className="text-2xl font-bold text-gray-900">{usedHours}</div>
-          <div className="text-sm text-gray-600">已使用（小時）</div>
-          <div className="text-xs text-gray-500">{usedDays} 天</div>
+        <div className="bg-gray-50 rounded-xl border p-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gray-900">{usedHours}</div>
+            <div className="text-gray-600 text-sm">已使用（小時）</div>
+            <div className="text-gray-500 text-xs">{usedDays} 天</div>
+          </div>
         </div>
         
-        <div className="bg-gray-50 rounded-lg border p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600">{remainingHours}</div>
-          <div className="text-sm text-gray-600">剩餘時數（小時）</div>
-          <div className="text-xs text-gray-500">{remainingDays} 天</div>
+        <div className="bg-gray-50 rounded-xl border p-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-600">{remainingHours}</div>
+            <div className="text-gray-600 text-sm">剩餘時數（小時）</div>
+            <div className="text-gray-500 text-xs">{remainingDays} 天</div>
+          </div>
         </div>
       </div>
       
-      <div className="bg-gray-50 rounded-lg border p-4">
+      {/* Progress bar */}
+      <div className="bg-gray-50 rounded-xl border p-4">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-700">使用進度</span>
-          <span className="text-sm font-bold text-gray-900">{usagePercentage}%</span>
+          <span className="text-gray-700 font-medium">使用進度</span>
+          <span className="text-gray-900 font-bold">{usagePercentage}%</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 

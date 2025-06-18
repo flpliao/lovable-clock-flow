@@ -5,11 +5,13 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 
+// Mock shift data for simulation purposes
+// In a real app, this would come from an API or database
 const mockShifts = [
   {
     id: '1',
     userId: '1',
-    workDate: new Date().toISOString().split('T')[0],
+    workDate: new Date().toISOString().split('T')[0], // Today
     startTime: '09:00',
     endTime: '18:00',
   }
@@ -31,6 +33,7 @@ const ShiftReminder: React.FC = () => {
   const [hasShown, setHasShown] = useState(false);
   const [todayRecords, setTodayRecords] = useState<{ checkIn?: any, checkOut?: any }>({});
 
+  // 檢查今日打卡記錄
   useEffect(() => {
     const checkTodayRecords = async () => {
       if (currentUser?.id) {
@@ -44,11 +47,13 @@ const ShiftReminder: React.FC = () => {
   }, [currentUser?.id, getTodayCheckInRecords]);
 
   useEffect(() => {
+    // 只有在沒有顯示過提醒且使用者已登入的情況下才檢查
     const checkAndDisplayShift = () => {
       if (!currentUser || hasShown) return;
 
       const today = new Date().toISOString().split('T')[0];
       
+      // 檢查是否有今日排班
       const userShift = mockShifts.find(
         shift => shift.userId === currentUser.id && shift.workDate === today
       );
@@ -56,6 +61,7 @@ const ShiftReminder: React.FC = () => {
       if (userShift) {
         setTodayShift(userShift);
         
+        // 檢查是否已經完成今日打卡
         const hasCheckIn = todayRecords.checkIn;
         const hasCheckOut = todayRecords.checkOut;
         const isWorkComplete = hasCheckIn && hasCheckOut;
@@ -66,6 +72,7 @@ const ShiftReminder: React.FC = () => {
           isWorkComplete
         });
 
+        // 只有在尚未完成今日打卡時才顯示提醒
         if (!isWorkComplete) {
           let message = '';
           if (!hasCheckIn) {
@@ -78,7 +85,7 @@ const ShiftReminder: React.FC = () => {
             toast({
               title: "今日排班提醒",
               description: message,
-              duration: 10000,
+              duration: 10000, // 10秒後自動消失
             });
           }
         } else {
@@ -89,37 +96,40 @@ const ShiftReminder: React.FC = () => {
       }
     };
 
+    // 延遲檢查，確保打卡記錄已載入
     const timer = setTimeout(checkAndDisplayShift, 2000);
     
     return () => clearTimeout(timer);
   }, [currentUser, toast, hasShown, todayRecords]);
 
+  // 如果使用者沒有排班或已經顯示過通知，則不渲染任何內容
   if (!todayShift || !currentUser) {
     return null;
   }
 
+  // 檢查是否已完成今日打卡
   const isWorkComplete = todayRecords.checkIn && todayRecords.checkOut;
 
+  // 如果已完成打卡，不顯示提醒卡片
   if (isWorkComplete) {
     return null;
   }
 
+  // 可選的視覺提醒卡片（只在未完成打卡時顯示）
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-      <div className="flex items-start gap-3">
-        <Bell className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
-        <div>
-          <p className="font-medium text-amber-800">今日排班提醒</p>
-          <p className="text-amber-700 text-sm mt-1">
-            {!todayRecords.checkIn 
-              ? `${currentUser.name}，你今天的上班時間為：${todayShift.startTime} ~ ${todayShift.endTime}，記得打卡喔！`
-              : `${currentUser.name}，你已完成上班打卡，記得下班時也要打卡喔！`
-            }
-          </p>
-          <p className="text-xs text-amber-600 mt-2">
-            💡 系統會在您忘記打卡時自動提醒您（5分鐘提醒一次，共2次）
-          </p>
-        </div>
+    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start">
+      <Bell className="h-5 w-5 text-amber-600 mt-0.5 mr-3 flex-shrink-0" />
+      <div>
+        <p className="font-medium text-amber-800">今日排班提醒</p>
+        <p className="text-amber-700 mt-1">
+          {!todayRecords.checkIn 
+            ? `${currentUser.name}，你今天的上班時間為：${todayShift.startTime} ~ ${todayShift.endTime}，記得打卡喔！`
+            : `${currentUser.name}，你已完成上班打卡，記得下班時也要打卡喔！`
+          }
+        </p>
+        <p className="text-xs text-amber-600 mt-2">
+          💡 系統會在您忘記打卡時自動提醒您（5分鐘提醒一次，共2次）
+        </p>
       </div>
     </div>
   );

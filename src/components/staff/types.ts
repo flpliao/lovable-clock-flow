@@ -76,7 +76,7 @@ export interface StaffManagementContextType {
   roles: StaffRole[];
   addRole: (role: Omit<StaffRole, 'id'>) => Promise<boolean>;
   updateRole: (role: StaffRole) => Promise<boolean>;
-  deleteRole: (id: string) => Promise<void>;
+  deleteRole: (id: string) => Promise<boolean>;
   getRole: (roleId: string) => StaffRole | undefined;
   hasPermission: (staffId: string, permissionCode: string) => boolean;
   assignRoleToStaff: (staffId: string, roleId: string) => Promise<boolean>;

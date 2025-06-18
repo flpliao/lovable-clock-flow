@@ -19,16 +19,21 @@ export const useSupabaseDepartmentOperations = () => {
 
   const fetchDepartments = async (): Promise<Department[]> => {
     try {
-      console.log('🔄 開始載入後台部門資料...');
+      console.log('🔄 廖俊雄開始載入後台部門資料...');
       setLoading(true);
+      
       const transformedData = await baseFetchDepartments();
-      console.log('📥 從後台載入的部門資料:', transformedData);
+      console.log('📥 廖俊雄從後台載入的部門資料:', transformedData);
+      
       setDepartments(transformedData);
       return transformedData;
     } catch (error) {
-      console.error('❌ 載入後台部門資料失敗:', error);
+      console.error('❌ 廖俊雄載入後台部門資料失敗:', error);
+      // 即使失敗也要設定空陣列，避免永遠載入中
+      setDepartments([]);
       return [];
     } finally {
+      // 確保載入狀態結束
       setLoading(false);
     }
   };
@@ -41,21 +46,39 @@ export const useSupabaseDepartmentOperations = () => {
   // 初始化時載入資料
   useEffect(() => {
     if (!isInitialized) {
-      console.log('🚀 初始化部門資料載入');
+      console.log('🚀 廖俊雄初始化部門資料載入');
+      
+      // 設定較短的超時時間，避免永遠載入
+      const timeoutId = setTimeout(() => {
+        if (loading) {
+          console.log('⏰ 載入超時，廖俊雄管理員強制結束載入狀態');
+          setLoading(false);
+          setDepartments([]);
+        }
+      }, 10000); // 10秒超時
+      
       fetchDepartments().then(() => {
         setIsInitialized(true);
-        console.log('✅ 部門資料初始化完成');
+        clearTimeout(timeoutId);
+        console.log('✅ 廖俊雄部門資料初始化完成');
+      }).catch((error) => {
+        console.log('❌ 廖俊雄初始化失敗，但系統繼續運作:', error);
+        setIsInitialized(true);
+        setLoading(false);
+        clearTimeout(timeoutId);
       });
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [isInitialized]);
 
   const addDepartment = async (newDepartment: NewDepartment): Promise<boolean> => {
     try {
       setLoading(true);
-      console.log('➕ 新增部門到後台:', newDepartment);
+      console.log('➕ 廖俊雄新增部門到後台:', newDepartment);
       const success = await baseAddDepartment(newDepartment);
       if (success) {
-        console.log('✅ 部門新增成功，重新載入後台資料');
+        console.log('✅ 廖俊雄部門新增成功，重新載入後台資料');
         await refreshDepartments();
       }
       return success;
@@ -67,10 +90,10 @@ export const useSupabaseDepartmentOperations = () => {
   const updateDepartment = async (department: Department): Promise<boolean> => {
     try {
       setLoading(true);
-      console.log('✏️ 更新部門到後台:', department);
+      console.log('✏️ 廖俊雄更新部門到後台:', department);
       const success = await baseUpdateDepartment(department);
       if (success) {
-        console.log('✅ 部門更新成功，重新載入後台資料');
+        console.log('✅ 廖俊雄部門更新成功，重新載入後台資料');
         await refreshDepartments();
       }
       return success;
@@ -82,10 +105,10 @@ export const useSupabaseDepartmentOperations = () => {
   const deleteDepartment = async (id: string): Promise<boolean> => {
     try {
       setLoading(true);
-      console.log('🗑️ 從後台刪除部門:', id);
+      console.log('🗑️ 廖俊雄從後台刪除部門:', id);
       const success = await baseDeleteDepartment(id);
       if (success) {
-        console.log('✅ 部門刪除成功，重新載入後台資料');
+        console.log('✅ 廖俊雄部門刪除成功，重新載入後台資料');
         await refreshDepartments();
       }
       return success;

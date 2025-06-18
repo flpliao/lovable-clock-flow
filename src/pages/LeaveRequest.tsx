@@ -93,13 +93,13 @@ const LeaveRequest = () => {
                 <TabsList className="grid w-full grid-cols-2 backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-1 h-12">
                   <TabsTrigger 
                     value="request" 
-                    className="text-white/80 data-[state=active]:bg-white/40 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-4"
+                    className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-4"
                   >
                     申請請假
                   </TabsTrigger>
                   <TabsTrigger 
                     value="view" 
-                    className="text-white/80 data-[state=active]:bg-white/40 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-4"
+                    className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-4"
                   >
                     查看請假
                   </TabsTrigger>

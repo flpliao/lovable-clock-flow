@@ -32,56 +32,46 @@ const HRManagement = () => {
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
       <div className="relative z-10 w-full">
-        {/* 頁面標題區域 - 與加班管理頁面保持一致的間距 */}
-        <div className="w-full px-0 sm:px-4 lg:px-8 pt-32 md:pt-36 pb-4">
-          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
-            <div className="flex items-center gap-4 p-6">
-              <div className="p-3 bg-green-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-green-400/50 text-white">
-                <DollarSign className="h-6 w-6" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white drop-shadow-md">
-                  薪資系統
-                </h1>
-                <p className="text-white/80 font-medium drop-shadow-sm text-sm mt-1">管理考勤異常、薪資等人事相關事務</p>
-              </div>
+        {/* 頁面標題區域 */}
+        <div className="w-full px-4 lg:px-8 pt-32 md:pt-36 pb-8">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-green-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-green-400/50 text-white">
+              <DollarSign className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white drop-shadow-md">
+                薪資系統
+              </h1>
+              <p className="text-white/80 font-medium drop-shadow-sm text-sm mt-1">管理考勤異常、薪資等人事相關事務</p>
             </div>
           </div>
         </div>
 
-        {/* 主標籤導航 - 保持50px間距 */}
-        <div className="w-full px-0 sm:px-4 lg:px-8" style={{ paddingTop: '50px', paddingBottom: '24px' }}>
-          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
-            <div className="p-4">
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-white/30 rounded-xl h-12">
-                  <TabsTrigger 
-                    value="exceptions" 
-                    className="text-white data-[state=active]:bg-white/60 data-[state=active]:text-gray-900 rounded-lg flex items-center gap-2"
-                  >
-                    <Clock className="h-4 w-4" />
-                    考勤異常
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="payroll" 
-                    className="text-white data-[state=active]:bg-white/60 data-[state=active]:text-gray-900 rounded-lg flex items-center gap-2"
-                  >
-                    <DollarSign className="h-4 w-4" />
-                    薪資管理
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-          </div>
-        </div>
-        
-        {/* 內容區域 */}
-        <div className="w-full px-0 sm:px-4 lg:px-8 pb-6">
+        {/* 主標籤導航 */}
+        <div className="w-full px-4 lg:px-8 pb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsContent value="exceptions" className="mt-0">
-              <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
-                <div className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
+            <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
+              <TabsTrigger 
+                value="exceptions" 
+                className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+              >
+                <Clock className="h-4 w-4" />
+                考勤異常
+              </TabsTrigger>
+              <TabsTrigger 
+                value="payroll" 
+                className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+              >
+                <DollarSign className="h-4 w-4" />
+                薪資管理
+              </TabsTrigger>
+            </TabsList>
+            
+            {/* 內容區域 */}
+            <div className="mt-8">
+              <TabsContent value="exceptions" className="mt-0">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
                     <div className="p-2 bg-orange-500/90 rounded-xl shadow-lg border border-orange-400/50">
                       <Clock className="h-5 w-5 text-white" />
                     </div>
@@ -91,69 +81,63 @@ const HRManagement = () => {
                   </div>
                   <AttendanceExceptionManagement />
                 </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="payroll" className="mt-0">
-              {/* 薪資子標籤 */}
-              <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl mb-6">
-                <div className="p-4">
+              </TabsContent>
+              
+              <TabsContent value="payroll" className="mt-0">
+                {/* 薪資子標籤 */}
+                <div className="space-y-6">
                   <Tabs value={payrollSubTab} onValueChange={setPayrollSubTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 bg-white/30 rounded-xl h-12">
+                    <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
                       <TabsTrigger 
                         value="records" 
-                        className="text-white data-[state=active]:bg-white/60 data-[state=active]:text-gray-900 rounded-lg flex items-center gap-2"
+                        className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
                       >
                         <DollarSign className="h-4 w-4" />
                         薪資記錄
                       </TabsTrigger>
                       <TabsTrigger 
                         value="structure" 
-                        className="text-white data-[state=active]:bg-white/60 data-[state=active]:text-gray-900 rounded-lg flex items-center gap-2"
+                        className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
                       >
                         <Settings className="h-4 w-4" />
                         薪資結構
                       </TabsTrigger>
                     </TabsList>
+
+                    {/* 薪資內容區域 */}
+                    <div className="mt-8">
+                      <TabsContent value="records" className="mt-0">
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-green-500/90 rounded-xl shadow-lg border border-green-400/50">
+                              <DollarSign className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <h2 className="text-xl font-bold text-white drop-shadow-sm">薪資記錄管理</h2>
+                            </div>
+                          </div>
+                          <PayrollManagement />
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="structure" className="mt-0">
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-500/90 rounded-xl shadow-lg border border-blue-400/50">
+                              <Settings className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <h2 className="text-xl font-bold text-white drop-shadow-sm">薪資結構管理</h2>
+                            </div>
+                          </div>
+                          <SalaryStructureManagement />
+                        </div>
+                      </TabsContent>
+                    </div>
                   </Tabs>
                 </div>
-              </div>
-
-              {/* 薪資內容區域 */}
-              <Tabs value={payrollSubTab} onValueChange={setPayrollSubTab} className="w-full">
-                <TabsContent value="records" className="mt-0">
-                  <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
-                    <div className="p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-green-500/90 rounded-xl shadow-lg border border-green-400/50">
-                          <DollarSign className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <h2 className="text-xl font-bold text-white drop-shadow-sm">薪資記錄管理</h2>
-                        </div>
-                      </div>
-                      <PayrollManagement />
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="structure" className="mt-0">
-                  <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
-                    <div className="p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-blue-500/90 rounded-xl shadow-lg border border-blue-400/50">
-                          <Settings className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <h2 className="text-xl font-bold text-white drop-shadow-sm">薪資結構管理</h2>
-                        </div>
-                      </div>
-                      <SalaryStructureManagement />
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </TabsContent>
+              </TabsContent>
+            </div>
           </Tabs>
         </div>
       </div>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -69,21 +70,17 @@ const SalaryStructureManagement: React.FC = () => {
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-8 w-16" />
+          <Skeleton className="h-6 w-32 bg-white/20" />
+          <Skeleton className="h-8 w-16 bg-white/20" />
         </div>
-        <Card>
-          <CardContent className="p-3">
-            <Skeleton className="h-9 w-full" />
-          </CardContent>
-        </Card>
+        <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl p-3">
+          <Skeleton className="h-9 w-full bg-white/20" />
+        </div>
         <div className="grid grid-cols-3 gap-2">
           {[...Array(3)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-3">
-                <Skeleton className="h-16 w-full" />
-              </CardContent>
-            </Card>
+            <div key={i} className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl p-3">
+              <Skeleton className="h-16 w-full bg-white/20" />
+            </div>
           ))}
         </div>
       </div>
@@ -91,17 +88,17 @@ const SalaryStructureManagement: React.FC = () => {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold flex items-center">
-          <Settings className="h-4 w-4 mr-2 text-blue-600" />
+        <h2 className="text-lg font-semibold text-white flex items-center">
+          <Settings className="h-4 w-4 mr-2 text-white" />
           薪資結構
         </h2>
         <div className="flex gap-1">
           <Button 
             variant="outline" 
             size="sm" 
-            className="text-xs"
+            className="text-xs bg-white/20 backdrop-blur-xl border-white/30 text-white hover:bg-white/30"
             onClick={refresh}
             disabled={isLoading}
           >
@@ -111,13 +108,17 @@ const SalaryStructureManagement: React.FC = () => {
           <Button 
             variant="outline" 
             size="sm" 
-            className="text-xs"
+            className="text-xs bg-white/20 backdrop-blur-xl border-white/30 text-white hover:bg-white/30"
             onClick={() => setShowQuickAddDialog(true)}
           >
             <Plus className="h-3 w-3 mr-1" />
             快速新增
           </Button>
-          <Button size="sm" className="text-xs" onClick={() => setShowCreateDialog(true)}>
+          <Button 
+            size="sm" 
+            className="text-xs bg-blue-500/70 hover:bg-blue-600/70 text-white border-0 rounded-xl shadow-lg backdrop-blur-xl"
+            onClick={() => setShowCreateDialog(true)}
+          >
             <Plus className="h-3 w-3 mr-1" />
             完整新增
           </Button>
@@ -125,173 +126,176 @@ const SalaryStructureManagement: React.FC = () => {
       </div>
 
       {/* 搜尋控制項 */}
-      <Card>
-        <CardContent className="p-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="搜尋職位或部門..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-9 text-sm"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl p-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/60" />
+          <Input
+            placeholder="搜尋職位或部門..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 h-9 text-sm bg-white/20 border-white/30 text-white placeholder:text-white/60"
+          />
+        </div>
+      </div>
 
       {/* 薪資結構統計 */}
-      <div className="grid grid-cols-3 gap-2">
-        <Card>
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-gray-600">活躍結構</p>
-              <p className="text-lg font-bold text-blue-600">
-                {salaryStructures.filter(s => s.is_active).length}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-gray-600">平均薪資</p>
-              <p className="text-sm font-bold text-green-600">
-                {salaryStructures.length > 0 
-                  ? formatCurrency(salaryStructures.reduce((sum, s) => sum + s.base_salary, 0) / salaryStructures.length)
-                  : formatCurrency(0)
-                }
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-3">
-            <div className="text-center">
-              <p className="text-xs text-gray-600">最高薪資</p>
-              <p className="text-sm font-bold text-purple-600">
-                {salaryStructures.length > 0 
-                  ? formatCurrency(Math.max(...salaryStructures.map(s => s.base_salary)))
-                  : formatCurrency(0)
-                }
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl p-4">
+          <div className="text-center">
+            <p className="text-xs text-white/80">活躍結構</p>
+            <p className="text-lg font-bold text-white">
+              {salaryStructures.filter(s => s.is_active).length}
+            </p>
+          </div>
+        </div>
+        <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl p-4">
+          <div className="text-center">
+            <p className="text-xs text-white/80">平均薪資</p>
+            <p className="text-sm font-bold text-white">
+              {salaryStructures.length > 0 
+                ? formatCurrency(salaryStructures.reduce((sum, s) => sum + s.base_salary, 0) / salaryStructures.length)
+                : formatCurrency(0)
+              }
+            </p>
+          </div>
+        </div>
+        <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl p-4">
+          <div className="text-center">
+            <p className="text-xs text-white/80">最高薪資</p>
+            <p className="text-sm font-bold text-white">
+              {salaryStructures.length > 0 
+                ? formatCurrency(Math.max(...salaryStructures.map(s => s.base_salary)))
+                : formatCurrency(0)
+              }
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* 薪資結構列表 */}
       {isMobile ? (
         <div>
           {filteredStructures.map((structure) => (
-            <Card key={structure.id} className="mb-3">
-              <CardContent className="p-3">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h3 className="font-medium text-sm">{structure.position}</h3>
-                    <p className="text-xs text-gray-500">{structure.department} · Level {structure.level}</p>
-                  </div>
-                  <Badge className={structure.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                    {structure.is_active ? '啟用' : '停用'}
-                  </Badge>
+            <div key={structure.id} className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl p-4 mb-3">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <h3 className="font-medium text-sm text-white">{structure.position}</h3>
+                  <p className="text-xs text-white/70">{structure.department} · Level {structure.level}</p>
                 </div>
-                
-                <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                  <div>
-                    <span className="text-gray-500">基本薪資:</span>
-                    <p className="font-medium">{formatCurrency(structure.base_salary)}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">津貼總額:</span>
-                    <p className="font-medium">{formatCurrency(calculateTotalAllowances(structure.allowances))}</p>
-                  </div>
+                <Badge className={structure.is_active ? 'bg-green-500/20 text-green-100 border-green-400/30' : 'bg-gray-500/20 text-gray-100 border-gray-400/30'}>
+                  {structure.is_active ? '啟用' : '停用'}
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                <div>
+                  <span className="text-white/70">基本薪資:</span>
+                  <p className="font-medium text-white">{formatCurrency(structure.base_salary)}</p>
                 </div>
-                
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => handleEditStructure(structure)}>
-                    <Edit className="h-3 w-3 mr-1" />
-                    編輯
-                  </Button>
-                  <Button variant="outline" size="sm" className="text-red-600 text-xs" onClick={() => handleDeleteStructure(structure.id)}>
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                <div>
+                  <span className="text-white/70">津貼總額:</span>
+                  <p className="font-medium text-white">{formatCurrency(calculateTotalAllowances(structure.allowances))}</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1 text-xs bg-white/20 border-white/30 text-white hover:bg-white/30" 
+                  onClick={() => handleEditStructure(structure)}
+                >
+                  <Edit className="h-3 w-3 mr-1" />
+                  編輯
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-red-300 text-xs bg-red-500/20 border-red-400/30 hover:bg-red-500/30" 
+                  onClick={() => handleDeleteStructure(structure.id)}
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
           ))}
           {filteredStructures.length === 0 && (
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-center text-gray-500 text-sm">
-                  沒有找到相關的薪資結構
-                </div>
-              </CardContent>
-            </Card>
+            <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl p-6">
+              <div className="text-center text-white/70 text-sm">
+                沒有找到相關的薪資結構
+              </div>
+            </div>
           )}
         </div>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>薪資結構列表</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>職位</TableHead>
-                  <TableHead>部門</TableHead>
-                  <TableHead>等級</TableHead>
-                  <TableHead>基本薪資</TableHead>
-                  <TableHead>加班費率</TableHead>
-                  <TableHead>假日費率</TableHead>
-                  <TableHead>津貼總額</TableHead>
-                  <TableHead>生效日期</TableHead>
-                  <TableHead>狀態</TableHead>
-                  <TableHead>操作</TableHead>
+        <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-white/20 hover:bg-white/10">
+                <TableHead className="text-white/90">職位</TableHead>
+                <TableHead className="text-white/90">部門</TableHead>
+                <TableHead className="text-white/90">等級</TableHead>
+                <TableHead className="text-white/90">基本薪資</TableHead>
+                <TableHead className="text-white/90">加班費率</TableHead>
+                <TableHead className="text-white/90">假日費率</TableHead>
+                <TableHead className="text-white/90">津貼總額</TableHead>
+                <TableHead className="text-white/90">生效日期</TableHead>
+                <TableHead className="text-white/90">狀態</TableHead>
+                <TableHead className="text-white/90">操作</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredStructures.map((structure) => (
+                <TableRow key={structure.id} className="border-white/20 hover:bg-white/10">
+                  <TableCell className="font-medium text-white">{structure.position}</TableCell>
+                  <TableCell className="text-white/90">{structure.department}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="border-white/30 text-white/90">Level {structure.level}</Badge>
+                  </TableCell>
+                  <TableCell className="font-medium text-white">
+                    {formatCurrency(structure.base_salary)}
+                  </TableCell>
+                  <TableCell className="text-white/90">{structure.overtime_rate}x</TableCell>
+                  <TableCell className="text-white/90">{structure.holiday_rate}x</TableCell>
+                  <TableCell className="text-white/90">
+                    {formatCurrency(calculateTotalAllowances(structure.allowances))}
+                  </TableCell>
+                  <TableCell className="text-white/90">{structure.effective_date}</TableCell>
+                  <TableCell>
+                    <Badge className={structure.is_active ? 'bg-green-500/20 text-green-100 border-green-400/30' : 'bg-gray-500/20 text-gray-100 border-gray-400/30'}>
+                      {structure.is_active ? '啟用' : '停用'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+                        onClick={() => handleEditStructure(structure)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-red-300 bg-red-500/20 border-red-400/30 hover:bg-red-500/30" 
+                        onClick={() => handleDeleteStructure(structure.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStructures.map((structure) => (
-                  <TableRow key={structure.id}>
-                    <TableCell className="font-medium">{structure.position}</TableCell>
-                    <TableCell>{structure.department}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">Level {structure.level}</Badge>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {formatCurrency(structure.base_salary)}
-                    </TableCell>
-                    <TableCell>{structure.overtime_rate}x</TableCell>
-                    <TableCell>{structure.holiday_rate}x</TableCell>
-                    <TableCell>
-                      {formatCurrency(calculateTotalAllowances(structure.allowances))}
-                    </TableCell>
-                    <TableCell>{structure.effective_date}</TableCell>
-                    <TableCell>
-                      <Badge className={structure.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                        {structure.is_active ? '啟用' : '停用'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEditStructure(structure)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-red-600" onClick={() => handleDeleteStructure(structure.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            {filteredStructures.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                沒有找到相關的薪資結構
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              ))}
+            </TableBody>
+          </Table>
+          {filteredStructures.length === 0 && (
+            <div className="text-center py-8 text-white/70">
+              沒有找到相關的薪資結構
+            </div>
+          )}
+        </div>
       )}
 
       <SalaryStructureFormDialog

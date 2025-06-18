@@ -77,49 +77,47 @@ const PayrollManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 操作區域 */}
-      <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-500/70 rounded-xl shadow-lg">
-              <DollarSign className="h-4 w-4 text-white" />
-            </div>
-            <h3 className="text-lg font-semibold text-white drop-shadow-md">薪資管理</h3>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-green-500/70 rounded-xl shadow-lg">
+            <DollarSign className="h-4 w-4 text-white" />
           </div>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="text-xs bg-white/20 backdrop-blur-xl border-white/30 text-white hover:bg-white/30"
-              onClick={refresh}
-              disabled={isLoading}
-            >
-              <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
-              重新整理
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="text-xs bg-white/20 backdrop-blur-xl border-white/30 text-white hover:bg-white/30"
-              onClick={() => {/* TODO: 批量計算功能 */}}
-            >
-              <Calculator className="h-3 w-3 mr-1" />
-              批量計算
-            </Button>
-            <Button 
-              size="sm" 
-              className="text-xs bg-blue-500/70 hover:bg-blue-600/70 text-white border-0 rounded-xl shadow-lg backdrop-blur-xl"
-              onClick={() => setShowCreateDialog(true)}
-            >
-              <Plus className="h-3 w-3 mr-1" />
-              新增
-            </Button>
-          </div>
+          <h3 className="text-lg font-semibold text-white drop-shadow-md">薪資管理</h3>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs bg-white/20 backdrop-blur-xl border-white/30 text-white hover:bg-white/30"
+            onClick={refresh}
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+            重新整理
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs bg-white/20 backdrop-blur-xl border-white/30 text-white hover:bg-white/30"
+            onClick={() => {/* TODO: 批量計算功能 */}}
+          >
+            <Calculator className="h-3 w-3 mr-1" />
+            批量計算
+          </Button>
+          <Button 
+            size="sm" 
+            className="text-xs bg-blue-500/70 hover:bg-blue-600/70 text-white border-0 rounded-xl shadow-lg backdrop-blur-xl"
+            onClick={() => setShowCreateDialog(true)}
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            新增
+          </Button>
         </div>
       </div>
 
       {/* 篩選區域 */}
-      <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
           <div className="p-2 bg-purple-500/70 rounded-xl shadow-lg">
             <FileText className="h-4 w-4 text-white" />
           </div>
@@ -136,8 +134,8 @@ const PayrollManagement: React.FC = () => {
       </div>
 
       {/* 統計區域 */}
-      <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
           <div className="p-2 bg-orange-500/70 rounded-xl shadow-lg">
             <TrendingUp className="h-4 w-4 text-white" />
           </div>
@@ -147,8 +145,8 @@ const PayrollManagement: React.FC = () => {
       </div>
 
       {/* 表格區域 */}
-      <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-500/70 rounded-xl shadow-lg">
             <Users className="h-4 w-4 text-white" />
           </div>

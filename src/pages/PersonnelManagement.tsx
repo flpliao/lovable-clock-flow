@@ -32,86 +32,72 @@ const PersonnelManagement = () => {
 
       <StaffManagementProvider>
         <div className="relative z-10 w-full">
-          {/* 頁面標題區域 - 與加班管理頁面保持一致的間距 */}
-          <div className="w-full px-0 sm:px-4 lg:px-8 pt-32 md:pt-36 pb-4">
-            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
-              <div className="flex items-center justify-between p-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-purple-500/70 rounded-2xl shadow-lg backdrop-blur-xl border border-purple-400/30">
-                    <Users className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl font-bold text-white drop-shadow-md">
-                      人員與部門管理
-                    </h1>
-                    <p className="text-white/80 text-sm mt-1">管理組織架構、人員資料與職位權限</p>
-                  </div>
+          {/* 頁面標題區域 */}
+          <div className="w-full px-4 lg:px-8 pt-32 md:pt-36 pb-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-purple-500/70 rounded-2xl shadow-lg backdrop-blur-xl border border-purple-400/30">
+                  <Users className="h-6 w-6 text-white" />
                 </div>
-                <div className="hidden md:flex items-center gap-3">
-                  <div className="p-2 bg-green-500/60 rounded-lg shadow-md backdrop-blur-xl border border-green-400/40">
-                    <Database className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="p-2 bg-orange-500/60 rounded-lg shadow-md backdrop-blur-xl border border-orange-400/40">
-                    <Settings className="h-4 w-4 text-white" />
-                  </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white drop-shadow-md">
+                    人員與部門管理
+                  </h1>
+                  <p className="text-white/80 text-sm mt-1">管理組織架構、人員資料與職位權限</p>
+                </div>
+              </div>
+              <div className="hidden md:flex items-center gap-3">
+                <div className="p-2 bg-green-500/60 rounded-lg shadow-md backdrop-blur-xl border border-green-400/40">
+                  <Database className="h-4 w-4 text-white" />
+                </div>
+                <div className="p-2 bg-orange-500/60 rounded-lg shadow-md backdrop-blur-xl border border-orange-400/40">
+                  <Settings className="h-4 w-4 text-white" />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* 標籤導航 - 保持50px間距 */}
-          <div className="w-full px-0 sm:px-4 lg:px-8" style={{ paddingTop: '50px', paddingBottom: '24px' }}>
-            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
-              <div className="p-4">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-3 bg-white/15 rounded-xl h-12">
-                    <TabsTrigger 
-                      value="staff" 
-                      className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-lg flex items-center gap-2"
-                    >
-                      <UserCheck className="h-4 w-4" />
-                      人員組織
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="departments" 
-                      className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-lg flex items-center gap-2"
-                    >
-                      <Building className="h-4 w-4" />
-                      部門門市
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="positions" 
-                      className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-lg flex items-center gap-2"
-                    >
-                      <Briefcase className="h-4 w-4" />
-                      職位管理
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-            </div>
-          </div>
-          
-          {/* 內容區域 - 直接放在淡藍色背景上 */}
-          <div className="w-full px-0 sm:px-4 lg:px-8 pb-6">
+          {/* 標籤導航 */}
+          <div className="w-full px-4 lg:px-8 pb-8">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsContent value="staff" className="mt-0">
-                <div className="mx-4">
+              <TabsList className="grid w-full grid-cols-3 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
+                <TabsTrigger 
+                  value="staff" 
+                  className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                >
+                  <UserCheck className="h-4 w-4" />
+                  人員組織
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="departments" 
+                  className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                >
+                  <Building className="h-4 w-4" />
+                  部門門市
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="positions" 
+                  className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                >
+                  <Briefcase className="h-4 w-4" />
+                  職位管理
+                </TabsTrigger>
+              </TabsList>
+              
+              {/* 內容區域 */}
+              <div className="mt-8">
+                <TabsContent value="staff" className="mt-0">
                   <StaffManagement />
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="departments" className="mt-0">
-                <div className="mx-4">
+                </TabsContent>
+                
+                <TabsContent value="departments" className="mt-0">
                   <DepartmentManagement />
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="positions" className="mt-0">
-                <div className="mx-4">
+                </TabsContent>
+                
+                <TabsContent value="positions" className="mt-0">
                   <PositionManagement />
-                </div>
-              </TabsContent>
+                </TabsContent>
+              </div>
             </Tabs>
           </div>
         </div>

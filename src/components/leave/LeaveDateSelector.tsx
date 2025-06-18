@@ -102,19 +102,21 @@ export function LeaveDateSelector({ form, calculatedHours }: LeaveDateSelectorPr
         />
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
-        <p className="text-gray-700 font-medium">
-          計算請假時數: <span className="font-bold text-blue-600">{calculatedHours} 小時</span>
-          {calculatedDays > 0 && (
-            <span className="text-gray-600"> ({calculatedDays} 天)</span>
-          )}
-        </p>
-        {form.watch('leave_type') === 'annual' && calculatedHours > 0 && (
-          <p className="text-blue-600 mt-1 text-sm">
-            * 以工作日計算，每個工作天 8 小時，不含週末
+      {calculatedHours > 0 && (
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+          <p className="text-gray-700 font-medium">
+            計算請假時數: <span className="font-bold text-blue-600">{calculatedHours} 小時</span>
+            {calculatedDays > 0 && (
+              <span className="text-gray-600"> ({calculatedDays} 天)</span>
+            )}
           </p>
-        )}
-      </div>
+          {form.watch('leave_type') === 'annual' && calculatedHours > 0 && (
+            <p className="text-blue-600 mt-1 text-sm">
+              * 以工作日計算，每個工作天 8 小時，不含週末
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

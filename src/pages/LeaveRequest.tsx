@@ -24,7 +24,7 @@ const LeaveRequest = () => {
       <div className="w-full px-4 sm:px-6 lg:px-8 pb-6">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Welcome Header */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+          <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="text-center">
               <div className="flex justify-center mb-4">
                 <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
@@ -41,7 +41,7 @@ const LeaveRequest = () => {
             
             {/* Time and Date Cards */}
             <div className="flex flex-col sm:flex-row gap-4 mt-6 justify-center">
-              <div className="bg-gray-50 rounded-xl border p-4 flex items-center gap-3">
+              <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-3">
                 <div className="p-2 bg-blue-500 rounded-lg">
                   <Clock className="h-5 w-5 text-white" />
                 </div>
@@ -51,7 +51,7 @@ const LeaveRequest = () => {
                 </div>
               </div>
               
-              <div className="bg-gray-50 rounded-xl border p-4 flex items-center gap-3">
+              <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-3">
                 <div className="p-2 bg-green-500 rounded-lg">
                   <Calendar className="h-5 w-5 text-white" />
                 </div>
@@ -64,20 +64,10 @@ const LeaveRequest = () => {
           </div>
 
           {/* Shift Reminder */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg overflow-hidden">
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
-                  <Bell className="h-4 w-4 text-white" />
-                </div>
-                <h2 className="text-lg font-semibold text-gray-900">班次提醒</h2>
-              </div>
-            </div>
-            <ShiftReminder />
-          </div>
+          <ShiftReminder />
           
           {/* Leave Balance */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+          <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
                 <PiggyBank className="h-4 w-4 text-white" />
@@ -88,7 +78,7 @@ const LeaveRequest = () => {
           </div>
 
           {/* Main Content */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg overflow-hidden">
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
@@ -144,7 +134,7 @@ const LeaveRequest = () => {
           </div>
           
           {/* Leave History */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg p-6">
+          <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
                 <History className="h-4 w-4 text-white" />

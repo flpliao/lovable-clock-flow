@@ -117,19 +117,27 @@ const ShiftReminder: React.FC = () => {
 
   // 可選的視覺提醒卡片（只在未完成打卡時顯示）
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start">
-      <Bell className="h-5 w-5 text-amber-600 mt-0.5 mr-3 flex-shrink-0" />
-      <div>
-        <p className="font-medium text-amber-800">今日排班提醒</p>
-        <p className="text-amber-700 mt-1">
-          {!todayRecords.checkIn 
-            ? `${currentUser.name}，你今天的上班時間為：${todayShift.startTime} ~ ${todayShift.endTime}，記得打卡喔！`
-            : `${currentUser.name}，你已完成上班打卡，記得下班時也要打卡喔！`
-          }
-        </p>
-        <p className="text-xs text-amber-600 mt-2">
-          💡 系統會在您忘記打卡時自動提醒您（5分鐘提醒一次，共2次）
-        </p>
+    <div className="bg-white rounded-xl shadow-sm p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
+          <Bell className="h-4 w-4 text-white" />
+        </div>
+        <h2 className="text-lg font-semibold text-gray-900">班次提醒</h2>
+      </div>
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start">
+        <Bell className="h-5 w-5 text-amber-600 mt-0.5 mr-3 flex-shrink-0" />
+        <div>
+          <p className="font-medium text-amber-800">今日排班提醒</p>
+          <p className="text-amber-700 mt-1">
+            {!todayRecords.checkIn 
+              ? `${currentUser.name}，你今天的上班時間為：${todayShift.startTime} ~ ${todayShift.endTime}，記得打卡喔！`
+              : `${currentUser.name}，你已完成上班打卡，記得下班時也要打卡喔！`
+            }
+          </p>
+          <p className="text-xs text-amber-600 mt-2">
+            💡 系統會在您忘記打卡時自動提醒您（5分鐘提醒一次，共2次）
+          </p>
+        </div>
       </div>
     </div>
   );

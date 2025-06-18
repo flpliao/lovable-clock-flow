@@ -25,15 +25,18 @@ export const useSupabasePositionOperations = () => {
   const loadPositions = async () => {
     try {
       setLoading(true);
+      console.log('🔄 開始載入職位資料...');
       const data = await positionApiService.getPositions();
       setPositions(data);
+      console.log('✅ 職位資料載入完成，共', data.length, '筆');
     } catch (error) {
-      console.error('載入職位資料失敗:', error);
+      console.error('❌ 載入職位資料失敗:', error);
       toast({
         title: "載入失敗",
-        description: "無法載入職位資料",
+        description: "無法載入職位資料，請稍後再試",
         variant: "destructive",
       });
+      setPositions([]);
     } finally {
       setLoading(false);
     }
@@ -91,6 +94,7 @@ export const useSupabasePositionOperations = () => {
     }
 
     try {
+      console.log('🔄 開始新增職位:', newPosition);
       await positionApiService.addPosition(newPosition);
       await loadPositions(); // 重新載入資料
       setNewPosition({ name: '', description: '', level: 1 });
@@ -101,11 +105,25 @@ export const useSupabasePositionOperations = () => {
         description: `職位「${newPosition.name}」已新增`,
       });
 
+      console.log('✅ 職位新增流程完成');
       return true;
     } catch (error) {
+      console.error('❌ 新增職位失敗:', error);
+      let errorMessage = "無法新增職位，請稍後再試";
+      
+      // 檢查特定錯誤類型
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMsg = error.message as string;
+        if (errorMsg.includes('row-level security')) {
+          errorMessage = "權限不足，請確認您有新增職位的權限";
+        } else if (errorMsg.includes('duplicate')) {
+          errorMessage = "職位名稱已存在，請使用其他名稱";
+        }
+      }
+      
       toast({
         title: "新增失敗",
-        description: "無法新增職位，請稍後再試",
+        description: errorMessage,
         variant: "destructive",
       });
       return false;
@@ -135,6 +153,7 @@ export const useSupabasePositionOperations = () => {
     }
 
     try {
+      console.log('🔄 開始更新職位:', currentPosition);
       await positionApiService.updatePosition(currentPosition);
       await loadPositions(); // 重新載入資料
       setIsEditDialogOpen(false);
@@ -145,8 +164,10 @@ export const useSupabasePositionOperations = () => {
         description: `職位「${currentPosition.name}」已更新`,
       });
 
+      console.log('✅ 職位更新流程完成');
       return true;
     } catch (error) {
+      console.error('❌ 更新職位失敗:', error);
       toast({
         title: "編輯失敗",
         description: "無法更新職位，請稍後再試",
@@ -161,6 +182,7 @@ export const useSupabasePositionOperations = () => {
     if (!position) return false;
 
     try {
+      console.log('🔄 開始刪除職位:', position);
       await positionApiService.deletePosition(id);
       await loadPositions(); // 重新載入資料
       
@@ -169,8 +191,10 @@ export const useSupabasePositionOperations = () => {
         description: `職位「${position.name}」已刪除`,
       });
 
+      console.log('✅ 職位刪除流程完成');
       return true;
     } catch (error) {
+      console.error('❌ 刪除職位失敗:', error);
       toast({
         title: "刪除失敗",
         description: "無法刪除職位，請稍後再試",

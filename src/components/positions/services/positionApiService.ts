@@ -1,11 +1,14 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, ensureUserAuthenticated } from '@/integrations/supabase/client';
 import { Position, NewPosition } from '../types';
 
 export const positionApiService = {
   // 獲取所有職位
   async getPositions(): Promise<Position[]> {
     console.log('📋 正在從 Supabase 載入職位資料...');
+    
+    // 確保用戶認證
+    await ensureUserAuthenticated();
     
     const { data, error } = await supabase
       .from('positions')
@@ -26,12 +29,16 @@ export const positionApiService = {
   async addPosition(position: NewPosition): Promise<Position> {
     console.log('📝 正在新增職位:', position);
     
+    // 確保用戶認證
+    await ensureUserAuthenticated();
+    
     const { data, error } = await supabase
       .from('positions')
       .insert({
         name: position.name,
         description: position.description,
-        level: position.level
+        level: position.level,
+        is_active: true
       })
       .select()
       .single();
@@ -48,6 +55,9 @@ export const positionApiService = {
   // 更新職位
   async updatePosition(position: Position): Promise<Position> {
     console.log('📝 正在更新職位:', position);
+    
+    // 確保用戶認證
+    await ensureUserAuthenticated();
     
     const { data, error } = await supabase
       .from('positions')
@@ -73,6 +83,9 @@ export const positionApiService = {
   // 刪除職位（軟刪除）
   async deletePosition(id: string): Promise<void> {
     console.log('🗑️ 正在刪除職位:', id);
+    
+    // 確保用戶認證
+    await ensureUserAuthenticated();
     
     const { error } = await supabase
       .from('positions')

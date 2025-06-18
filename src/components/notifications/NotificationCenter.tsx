@@ -28,112 +28,17 @@ const NotificationCenter: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  // Debug logging
+  // Debug logging - 減少 log 頻率
   useEffect(() => {
-    if (currentUser) {
-      console.log(`NotificationCenter 狀態更新 - 用戶: ${currentUser.name} (${currentUser.role})`);
-      console.log(`  - 通知數量: ${notifications.length}`);
-      console.log(`  - 未讀數量: ${unreadCount}`);
-      console.log(`  - 載入狀態: ${isLoading}`);
-      console.log(`  - 通知詳情:`, notifications.map(n => ({ 
-        id: n.id, 
-        title: n.title, 
-        isRead: n.isRead,
-        type: n.type,
-        createdAt: n.createdAt 
-      })));
+    if (currentUser && notifications.length > 0) {
+      console.log(`NotificationCenter 狀態更新 - 用戶: ${currentUser.name} (${currentUser.role}), 通知數量: ${notifications.length}, 未讀: ${unreadCount}`);
     }
-  }, [notifications, unreadCount, isLoading, currentUser]);
+  }, [notifications.length, unreadCount, currentUser?.name]); // 減少依賴
 
-  // 監聽各種通知更新事件
-  useEffect(() => {
-    if (!currentUser) return;
-
-    const handleUserNotificationUpdate = (event: CustomEvent) => {
-      console.log(`收到用戶專屬通知事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
-      
-      // 不管是否針對當前用戶，都刷新通知（確保不漏通知）
-      console.log(`立即刷新 ${currentUser.name} 的通知`);
-      refreshNotifications();
-      setLastRefresh(new Date());
-    };
-
-    const handleUserSpecificRefresh = (event: CustomEvent) => {
-      console.log(`收到用戶專屬強制刷新事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
-      refreshNotifications();
-      setLastRefresh(new Date());
-    };
-
-    const handleNotificationUpdate = (event: CustomEvent) => {
-      console.log(`收到通知更新事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
-      
-      // 對於公告通知，所有用戶都應該刷新
-      console.log(`通用通知事件，為 ${currentUser.name} (${currentUser.role}) 刷新通知`);
-      refreshNotifications();
-      setLastRefresh(new Date());
-    };
-
-    const handleForceRefresh = (event: CustomEvent) => {
-      console.log(`收到強制刷新事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
-      refreshNotifications();
-      setLastRefresh(new Date());
-    };
-
-    const handleAnnouncementUpdate = (event: Event | CustomEvent) => {
-      console.log(`收到公告更新事件 for ${currentUser.name} (${currentUser.role})`);
-      if (event instanceof CustomEvent && event.detail) {
-        console.log('公告更新詳情:', event.detail);
-      }
-      
-      // 公告更新可能影響通知，立即刷新
-      refreshNotifications();
-      setLastRefresh(new Date());
-    };
-
-    // 註冊事件監聽器
-    window.addEventListener('userNotificationUpdated', handleUserNotificationUpdate as EventListener);
-    window.addEventListener(`forceNotificationRefresh-${currentUser.id}`, handleUserSpecificRefresh as EventListener);
-    window.addEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
-    window.addEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
-    window.addEventListener('refreshAnnouncements', handleAnnouncementUpdate);
-    window.addEventListener('announcementDataUpdated', handleAnnouncementUpdate);
-    
-    return () => {
-      window.removeEventListener('userNotificationUpdated', handleUserNotificationUpdate as EventListener);
-      window.removeEventListener(`forceNotificationRefresh-${currentUser.id}`, handleUserSpecificRefresh as EventListener);
-      window.removeEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
-      window.removeEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
-      window.removeEventListener('refreshAnnouncements', handleAnnouncementUpdate);
-      window.removeEventListener('announcementDataUpdated', handleAnnouncementUpdate);
-    };
-  }, [refreshNotifications, currentUser]);
-
-  // 定期自動刷新通知（每30秒）
-  useEffect(() => {
-    if (!currentUser) return;
-
-    const interval = setInterval(() => {
-      console.log(`定期刷新通知 for ${currentUser.name}`);
-      refreshNotifications();
-      setLastRefresh(new Date());
-    }, 30000); // 30秒
-
-    return () => clearInterval(interval);
-  }, [refreshNotifications, currentUser]);
-
-  // 當路由變更時刷新通知（但限制頻率）
-  useEffect(() => {
-    if (!currentUser) return;
-    
-    const now = new Date();
-    if (now.getTime() - lastRefresh.getTime() > 2000) { // 2秒限制
-      console.log(`路由變更刷新通知 for ${currentUser.name}`);
-      refreshNotifications();
-      setLastRefresh(now);
-    }
-  }, [location.pathname, refreshNotifications, lastRefresh, currentUser]);
+  // 移除大部分事件監聽器 - 依賴 useNotifications 處理
+  // 移除定期自動刷新 - 不需要
+  // 移除路由變更刷新 - 不需要
   
   const handleNotificationClick = (notification: Notification) => {
     console.log(`通知點擊 by ${currentUser?.name} (${currentUser?.role}):`, notification);
@@ -162,22 +67,17 @@ const NotificationCenter: React.FC = () => {
     }
   };
 
-  // Force refresh when popover opens（但限制頻率）
+  // 減少 popover 開啟時的刷新頻率
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
-    if (newOpen && currentUser) {
-      console.log(`popover 開啟刷新通知 for ${currentUser.name}`);
-      refreshNotifications();
-      setLastRefresh(new Date());
-    }
+    // 移除開啟時的自動刷新 - 數據應該已經是最新的
   };
 
-  // 手動刷新功能
+  // 手動刷新功能 - 保留
   const handleManualRefresh = () => {
     if (currentUser) {
       console.log(`手動刷新通知 by ${currentUser.name}`);
       refreshNotifications();
-      setLastRefresh(new Date());
     }
   };
   
@@ -254,10 +154,9 @@ const NotificationCenter: React.FC = () => {
         <div className="border-t p-2 text-xs text-gray-500 text-center">
           {currentUser && (
             <>
-              用戶: {currentUser.name} ({currentUser.role}) | 
+              用戶: {currentUser.name} ({currentUser.role})
             </>
           )}
-          最後更新: {lastRefresh.toLocaleTimeString()}
         </div>
       </PopoverContent>
     </Popover>

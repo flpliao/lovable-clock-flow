@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 import { useToast } from '@/hooks/use-toast';
@@ -35,6 +35,8 @@ const CheckInReminderSystem: React.FC = () => {
   const [reminderSettings, setReminderSettings] = useState<ReminderSettings | null>(null);
   const [reminderCount, setReminderCount] = useState(0);
   const [lastReminderTime, setLastReminderTime] = useState<Date | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const resetIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // 檢查今日排班
   useEffect(() => {
@@ -81,7 +83,7 @@ const CheckInReminderSystem: React.FC = () => {
           .eq('is_active', true)
           .single();
 
-        if (error && error.code !== 'PGRST116') { // PGRST116 是沒有找到記錄的錯誤
+        if (error && error.code !== 'PGRST116') {
           console.error('載入提醒設定失敗:', error);
           return;
         }
@@ -93,8 +95,8 @@ const CheckInReminderSystem: React.FC = () => {
           const defaultSettings: Omit<ReminderSettings, 'id'> = {
             staff_id: currentUser.id,
             reminder_type: 'check_in_missed',
-            reminder_time: '00:05:00', // 5分鐘後提醒
-            reminder_days: [1, 2, 3, 4, 5], // 工作日
+            reminder_time: '00:05:00',
+            reminder_days: [1, 2, 3, 4, 5],
             is_active: true,
             notification_method: ['toast'],
             message_template: '您還沒有打卡喔！請記得完成{action}打卡。',
@@ -126,7 +128,14 @@ const CheckInReminderSystem: React.FC = () => {
 
   // 檢查是否需要提醒
   useEffect(() => {
-    if (!todaySchedule || !reminderSettings || !currentUser?.id) return;
+    if (!todaySchedule || !reminderSettings || !currentUser?.id) {
+      // 清理現有的間隔器
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
 
     const checkMissedCheckIn = async () => {
       try {
@@ -145,12 +154,12 @@ const CheckInReminderSystem: React.FC = () => {
 
         // 檢查上班打卡提醒
         const shouldRemindCheckIn = !todayRecords.checkIn && 
-          now > new Date(scheduleStart.getTime() + 5 * 60 * 1000); // 上班時間後5分鐘
+          now > new Date(scheduleStart.getTime() + 5 * 60 * 1000);
 
         // 檢查下班打卡提醒
         const shouldRemindCheckOut = todayRecords.checkIn && 
           !todayRecords.checkOut && 
-          now > new Date(scheduleEnd.getTime() + 5 * 60 * 1000); // 下班時間後5分鐘
+          now > new Date(scheduleEnd.getTime() + 5 * 60 * 1000);
 
         if (shouldRemindCheckIn || shouldRemindCheckOut) {
           const action = shouldRemindCheckIn ? '上班' : '下班';
@@ -184,13 +193,21 @@ const CheckInReminderSystem: React.FC = () => {
       }
     };
 
-    // 每分鐘檢查一次
-    const interval = setInterval(checkMissedCheckIn, 60 * 1000);
+    // 每分鐘檢查一次 - 但防止重複設定
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    intervalRef.current = setInterval(checkMissedCheckIn, 60 * 1000);
     
     // 立即檢查一次
     checkMissedCheckIn();
 
-    return () => clearInterval(interval);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
   }, [todaySchedule, reminderSettings, currentUser?.id, getTodayCheckInRecords, toast, reminderCount, lastReminderTime]);
 
   // 重置提醒計數器（每天重置）
@@ -206,12 +223,32 @@ const CheckInReminderSystem: React.FC = () => {
       }
     };
 
-    // 每小時檢查一次是否需要重置
-    const interval = setInterval(resetReminders, 60 * 60 * 1000);
+    // 每小時檢查一次是否需要重置 - 但防止重複設定
+    if (resetIntervalRef.current) {
+      clearInterval(resetIntervalRef.current);
+    }
+    resetIntervalRef.current = setInterval(resetReminders, 60 * 60 * 1000);
     resetReminders(); // 立即檢查一次
 
-    return () => clearInterval(interval);
+    return () => {
+      if (resetIntervalRef.current) {
+        clearInterval(resetIntervalRef.current);
+        resetIntervalRef.current = null;
+      }
+    };
   }, [lastReminderTime]);
+
+  // 清理所有間隔器
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      if (resetIntervalRef.current) {
+        clearInterval(resetIntervalRef.current);
+      }
+    };
+  }, []);
 
   // 如果沒有排班，不顯示任何內容
   if (!todaySchedule) {

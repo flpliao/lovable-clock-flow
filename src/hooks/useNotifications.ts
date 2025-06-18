@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Notification } from '@/components/notifications/NotificationItem';
 import { useUser } from '@/contexts/UserContext';
 import { NotificationDatabaseOperations } from '@/services/notifications';
@@ -11,79 +11,62 @@ export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const lastRefreshRef = useRef<Date>(new Date());
+  const loadingRef = useRef(false);
 
-  // Load notifications from database
+  // Load notifications from database with debouncing
   const loadNotifications = useCallback(async () => {
-    if (!currentUser) {
-      console.log('No current user, clearing notifications');
-      setNotifications([]);
-      setUnreadCount(0);
+    if (!currentUser || loadingRef.current) {
+      return;
+    }
+
+    const now = new Date();
+    // 防止頻繁刷新 - 至少間隔 2 秒
+    if (now.getTime() - lastRefreshRef.current.getTime() < 2000) {
       return;
     }
 
     console.log('=== 開始載入通知 ===');
     console.log('Loading notifications for user:', currentUser.id, 'Name:', currentUser.name, 'Role:', currentUser.role);
     
-    // 特別檢查王小明
-    if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
-      console.log('🔍 正在為王小明載入通知...');
-    }
-    
+    loadingRef.current = true;
     setIsLoading(true);
 
     try {
       const formattedNotifications = await NotificationDatabaseOperations.loadNotifications(currentUser.id);
       const unread = formattedNotifications.filter(n => !n.isRead).length;
       
-      console.log('Raw loaded notifications:', formattedNotifications);
+      console.log('Raw loaded notifications:', formattedNotifications.length);
       console.log('Unread count:', unread);
-      
-      // 特別檢查王小明的通知
-      if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
-        console.log('🔍 王小明的通知詳情:', formattedNotifications.map(n => ({
-          id: n.id,
-          title: n.title,
-          message: n.message,
-          type: n.type,
-          isRead: n.isRead,
-          createdAt: n.createdAt
-        })));
-        console.log('🔍 王小明的未讀通知數量:', unread);
-      }
       
       setNotifications(formattedNotifications);
       setUnreadCount(unread);
+      lastRefreshRef.current = now;
       console.log(`通知載入完成 - 用戶: ${currentUser.name} (${currentUser.role}), 總計: ${formattedNotifications.length}, 未讀: ${unread}`);
-      console.log('=== 通知載入完成 ===');
+      
     } catch (error) {
       console.error('Error loading notifications:', error);
     } finally {
       setIsLoading(false);
+      loadingRef.current = false;
     }
   }, [currentUser]);
 
-  // Load notifications when user changes
+  // Load notifications when user changes - only once
   useEffect(() => {
     if (currentUser) {
       console.log('User changed, loading notifications for:', currentUser.id, currentUser.name, currentUser.role);
-      
-      // 特別提醒王小明的載入
-      if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
-        console.log('🔍 王小明登入，立即載入通知...');
-      }
-      
       loadNotifications();
     } else {
       console.log('No user, clearing notifications');
       setNotifications([]);
       setUnreadCount(0);
     }
-  }, [currentUser, loadNotifications]);
+  }, [currentUser?.id]); // 只依賴 currentUser.id
 
-  // Set up real-time subscription for notifications
+  // Set up real-time subscription for notifications - only once
   useEffect(() => {
     if (!currentUser) {
-      console.log('No current user for real-time subscription');
       return;
     }
 
@@ -93,101 +76,39 @@ export const useNotifications = () => {
       currentUser.id,
       () => {
         console.log(`Real-time event triggered for ${currentUser.name} (${currentUser.role}), reloading notifications`);
-        
-        // 特別標注王小明的實時更新
-        if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
-          console.log('🔍 王小明收到實時通知更新事件');
-        }
-        
         loadNotifications();
       }
     );
 
     return cleanup;
-  }, [currentUser, loadNotifications]);
+  }, [currentUser?.id]); // 只依賴 currentUser.id
 
-  // 監聽各種通知更新事件
+  // 監聽通知更新事件 - 減少事件監聽器數量
   useEffect(() => {
     if (!currentUser) return;
-
-    const handleUserNotificationUpdate = (event: CustomEvent) => {
-      console.log(`收到用戶專屬通知更新事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
-      
-      // 特別檢查是否為王小明的事件
-      if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
-        console.log('🔍 王小明收到專屬通知更新事件:', event.detail);
-      }
-      
-      // 立即刷新通知
-      console.log(`立即刷新 ${currentUser.name} (${currentUser.role}) 的通知`);
-      loadNotifications();
-    };
-
-    const handleUserSpecificRefresh = (event: CustomEvent) => {
-      console.log(`收到用戶專屬強制刷新事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
-      
-      if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
-        console.log('🔍 王小明收到強制刷新事件:', event.detail);
-      }
-      
-      loadNotifications();
-    };
 
     const handleNotificationUpdate = (event: CustomEvent) => {
       console.log(`收到通知更新事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
       
-      // 對於公告通知，所有用戶都應該刷新
-      console.log(`通用通知事件，為 ${currentUser.name} (${currentUser.role}) 刷新通知`);
-      
-      if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
-        console.log('🔍 王小明收到通用通知更新事件:', event.detail);
+      // 檢查是否需要刷新（防止頻繁刷新）
+      const now = new Date();
+      if (now.getTime() - lastRefreshRef.current.getTime() > 1000) { // 至少間隔 1 秒
+        loadNotifications();
       }
-      
-      loadNotifications();
     };
 
-    const handleForceRefresh = (event: Event | CustomEvent) => {
-      console.log(`收到強制刷新事件 for ${currentUser.name} (${currentUser.role})`);
-      if (event instanceof CustomEvent && event.detail) {
-        console.log('Force refresh detail:', event.detail);
-        
-        if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
-          console.log('🔍 王小明收到強制刷新事件詳情:', event.detail);
-        }
-      }
-      loadNotifications();
-    };
-
-    // 註冊事件監聽器
-    window.addEventListener('userNotificationUpdated', handleUserNotificationUpdate as EventListener);
-    window.addEventListener(`forceNotificationRefresh-${currentUser.id}`, handleUserSpecificRefresh as EventListener);
+    // 只註冊關鍵的事件監聽器
     window.addEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
-    window.addEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
+    window.addEventListener('forceNotificationRefresh', handleNotificationUpdate as EventListener);
     
     return () => {
-      window.removeEventListener('userNotificationUpdated', handleUserNotificationUpdate as EventListener);
-      window.removeEventListener(`forceNotificationRefresh-${currentUser.id}`, handleUserSpecificRefresh as EventListener);
       window.removeEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
-      window.removeEventListener('forceNotificationRefresh', handleForceRefresh as EventListener);
+      window.removeEventListener('forceNotificationRefresh', handleNotificationUpdate as EventListener);
     };
-  }, [loadNotifications, currentUser]);
+  }, [currentUser?.id, loadNotifications]);
 
-  // 定期自動刷新通知（每30秒）- 特別為王小明加強
-  useEffect(() => {
-    if (!currentUser) return;
-
-    const interval = setInterval(() => {
-      console.log(`定期刷新通知 for ${currentUser.name} (${currentUser.role})`);
-      
-      if (currentUser.name === '王小明' || currentUser.id === '550e8400-e29b-41d4-a716-446655440002') {
-        console.log('🔍 王小明定期刷新通知');
-      }
-      
-      loadNotifications();
-    }, 30000); // 30秒
-
-    return () => clearInterval(interval);
-  }, [loadNotifications, currentUser]);
+  // 移除定期自動刷新 - 依賴實時更新即可
+  // 移除路由變更時的刷新 - 不必要
 
   // Get notification actions
   const actions = useNotificationActions(

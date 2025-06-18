@@ -23,8 +23,8 @@ const SystemSettings = () => {
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
       <div className="relative z-10 w-full">
-        {/* 頁面標題區域 */}
-        <div className="w-full px-0 sm:px-4 lg:px-8 pt-16 md:pt-20 pb-6">
+        {/* 頁面標題區域 - 調整頂部間距 */}
+        <div className="w-full px-0 sm:px-4 lg:px-8 pt-6 md:pt-8 pb-4">
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
             <div className="flex items-center gap-4 p-6">
               <div className="p-3 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
@@ -40,8 +40,8 @@ const SystemSettings = () => {
           </div>
         </div>
 
-        {/* 標籤導航 - 增加頂部間距到50px */}
-        <div className="w-full px-0 sm:px-4 lg:px-8 pt-12 pb-6">
+        {/* 標籤導航 - 增加適當間距避免重疊 */}
+        <div className="w-full px-0 sm:px-4 lg:px-8 pt-6 pb-6">
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
             <div className="p-4">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

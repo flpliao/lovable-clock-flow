@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { Navigate } from 'react-router-dom';
@@ -32,7 +31,7 @@ const HRManagement = () => {
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
       <div className="relative z-10 w-full">
-        {/* 頁面標題區域 - 與系統設定頁面保持一致的間距 */}
+        {/* 頁面標題區域 - 與加班管理頁面保持一致的間距 */}
         <div className="w-full px-0 sm:px-4 lg:px-8 pt-32 md:pt-36 pb-4">
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
             <div className="flex items-center gap-4 p-6">

@@ -29,11 +29,11 @@ const HolidayManagement = () => {
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
       
-      <div className="relative z-10 p-6 pt-32 md:pt-36">
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* 頁面標題卡片 */}
-          <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8">
-            <div className="flex items-center justify-between">
+      <div className="relative z-10 w-full">
+        {/* 頁面標題區域 - 與加班管理頁面保持一致的間距 */}
+        <div className="w-full px-0 sm:px-4 lg:px-8 pt-32 md:pt-36 pb-4">
+          <div className="backdrop-blur-2xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-2xl">
+            <div className="flex items-center justify-between p-8">
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/30 shadow-lg">
                   <Calendar className="h-8 w-8 text-white" />
@@ -53,8 +53,10 @@ const HolidayManagement = () => {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* 功能導航 - 移除背景容器 */}
+        {/* 功能導航 - 保持50px間距 */}
+        <div className="w-full px-0 sm:px-4 lg:px-8" style={{ paddingTop: '50px', paddingBottom: '24px' }}>
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-purple-500/80 rounded-xl flex items-center justify-center shadow-lg">

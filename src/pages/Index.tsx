@@ -43,7 +43,7 @@ const Index = () => {
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
-      <div className="relative z-10 w-full min-h-screen pb-safe pt-[80px]">
+      <div className="relative z-10 w-full min-h-screen pb-safe pt-32 md:pt-36">
         {/* 歡迎區塊 */}
         <div className="w-full px-0 sm:px-4 lg:px-8">
           <WelcomeSection userName={currentUser?.name || '訪客'} />

@@ -20,7 +20,7 @@ const LeaveRequest = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-20 md:pt-24 p-4 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Welcome Header */}
         <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8">

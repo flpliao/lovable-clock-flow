@@ -32,7 +32,7 @@ const PersonnelManagement = () => {
 
       <StaffManagementProvider>
         <div className="relative z-10 w-full">
-          {/* 頁面標題區域 - 與系統設定頁面保持一致的間距 */}
+          {/* 頁面標題區域 - 與加班管理頁面保持一致的間距 */}
           <div className="w-full px-0 sm:px-4 lg:px-8 pt-32 md:pt-36 pb-4">
             <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
               <div className="flex items-center justify-between p-6">

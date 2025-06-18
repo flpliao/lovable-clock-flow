@@ -5,31 +5,30 @@ import PositionTable from './PositionTable';
 import AddPositionDialog from './AddPositionDialog';
 import EditPositionDialog from './EditPositionDialog';
 import PositionFilters from './PositionFilters';
-import { Briefcase, Plus } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const PositionManagement = () => {
   return (
     <PositionManagementProvider>
-      <div className="space-y-6">
-        {/* 標題和操作區域 */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-500/80 rounded-xl shadow-lg">
-              <Briefcase className="h-4 w-4 text-white" />
+      <Card className="backdrop-blur-2xl bg-gradient-to-br from-white/70 to-white/50 border border-white/40 shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <CardTitle className="flex items-center gap-3 text-gray-900">
+            <div className="p-2 bg-orange-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-orange-400/50">
+              <Briefcase className="h-5 w-5 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white drop-shadow-md">職位管理</h3>
-          </div>
+            職位管理
+          </CardTitle>
           <AddPositionDialog />
-        </div>
-
-        {/* 篩選器 */}
-        <PositionFilters />
+        </CardHeader>
         
-        {/* 職位表格 */}
-        <PositionTable />
+        <CardContent className="space-y-6">
+          <PositionFilters />
+          <PositionTable />
+        </CardContent>
+      </Card>
 
-        <EditPositionDialog />
-      </div>
+      <EditPositionDialog />
     </PositionManagementProvider>
   );
 };

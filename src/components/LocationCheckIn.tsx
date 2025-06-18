@@ -31,8 +31,8 @@ const LocationCheckIn = () => {
   // Early return if no user
   if (!currentUser) {
     return (
-      <div className="flex justify-center items-center w-full">
-        <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-6 shadow-lg max-w-md w-full mx-auto">
+      <div className="flex justify-center items-center w-full min-h-[400px]">
+        <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-6 shadow-lg max-w-md w-full mx-4">
           <div className="text-center text-white/80">
             請先登入以使用打卡功能
           </div>
@@ -47,8 +47,8 @@ const LocationCheckIn = () => {
   // 如果已完成今日打卡，顯示完成狀態
   if (safeCheckIn && safeCheckOut) {
     return (
-      <div className="flex justify-center items-center w-full">
-        <div className="max-w-md w-full mx-auto">
+      <div className="flex justify-center items-center w-full min-h-[400px]">
+        <div className="max-w-md w-full mx-4">
           <CheckInCompletedStatus checkIn={safeCheckIn} checkOut={safeCheckOut} />
         </div>
       </div>
@@ -58,8 +58,8 @@ const LocationCheckIn = () => {
   const handleCheckIn = checkInMethod === 'location' ? onLocationCheckIn : onIpCheckIn;
 
   return (
-    <div className="flex justify-center items-center w-full">
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-6 shadow-lg space-y-4 max-w-md w-full mx-auto">
+    <div className="flex justify-center items-center w-full min-h-[400px]">
+      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-6 shadow-lg space-y-4 max-w-md w-full mx-4">
         {/* 標題 */}
         <div className="flex items-center justify-center space-x-2 text-white mb-4">
           <div className="p-2 bg-blue-500/80 rounded-lg shadow-md backdrop-blur-xl border border-blue-400/50">

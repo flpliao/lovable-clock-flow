@@ -10,7 +10,6 @@ import { useEffect } from 'react';
 export const useDepartmentManagement = () => {
   const { isAdmin, currentUser } = useUser();
 
-  // 使用分離的 hooks
   const {
     departments,
     loading,
@@ -42,16 +41,21 @@ export const useDepartmentManagement = () => {
     checkEditPermission
   } = useDepartmentOperations();
 
-  // 確保載入時顯示正確的用戶資訊和部門數量
+  // 初始化時顯示載入狀態並觸發資料載入
   useEffect(() => {
-    console.log('🔍 部門管理初始化:', {
-      currentUser: currentUser?.name,
-      isAdmin: isAdmin(),
-      departmentCount: departments.length
-    });
-  }, [currentUser, departments.length, isAdmin]);
+    console.log('🚀 部門管理系統初始化');
+    console.log('👤 當前用戶:', currentUser?.name);
+    console.log('🔐 管理員權限:', isAdmin());
+    console.log('📊 部門數量:', departments.length);
+    
+    // 強制重新載入部門資料
+    if (departments.length === 0 && !loading) {
+      console.log('🔄 檢測到無部門資料，觸發重新載入...');
+      refreshDepartments();
+    }
+  }, [currentUser, departments.length, isAdmin, loading, refreshDepartments]);
 
-  // All departments are visible
+  // 顯示所有部門 - 廖俊雄管理員可以看到全部
   const filteredDepartments = departments;
 
   const handleAddDepartment = async () => {
@@ -59,10 +63,10 @@ export const useDepartmentManagement = () => {
       return;
     }
 
-    console.log('🚀 新增部門開始:', newDepartment);
+    console.log('➕ 廖俊雄開始新增部門:', newDepartment);
     const success = await supabaseAddDepartment(newDepartment);
     if (success) {
-      console.log('✅ 新增部門成功，重置表單');
+      console.log('✅ 部門新增成功，重置表單並重新載入');
       resetNewDepartment();
       setIsAddDialogOpen(false);
       await refreshDepartments();
@@ -80,10 +84,10 @@ export const useDepartmentManagement = () => {
       return false;
     }
 
-    console.log('🚀 編輯部門開始:', currentDepartment);
+    console.log('✏️ 廖俊雄開始編輯部門:', currentDepartment);
     const success = await supabaseUpdateDepartment(currentDepartment);
     if (success) {
-      console.log('✅ 編輯部門成功');
+      console.log('✅ 部門編輯成功，重新載入資料');
       await refreshDepartments();
       return true;
     }
@@ -91,16 +95,16 @@ export const useDepartmentManagement = () => {
   };
 
   const handleDeleteDepartment = async (id: string) => {
-    console.log('🚀 刪除部門開始:', id);
+    console.log('🗑️ 廖俊雄開始刪除部門:', id);
     const success = await supabaseDeleteDepartment(id);
     if (success) {
-      console.log('✅ 刪除部門成功');
+      console.log('✅ 部門刪除成功，重新載入資料');
       await refreshDepartments();
     }
   };
 
   const openEditDialog = (department: Department) => {
-    console.log('📝 開啟編輯對話框:', department);
+    console.log('📝 廖俊雄開啟編輯部門對話框:', department);
     if (!checkEditPermission(department)) {
       console.error('❌ 沒有編輯權限');
       return;

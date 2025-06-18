@@ -19,12 +19,13 @@ const DepartmentTable = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    console.log('📋 部門表格渲染:', {
+    console.log('📋 部門表格渲染狀態:', {
       departmentCount: filteredDepartments.length,
       loading,
-      currentUser: currentUser?.name
+      currentUser: currentUser?.name,
+      isAdmin: isAdmin()
     });
-  }, [filteredDepartments.length, loading, currentUser]);
+  }, [filteredDepartments.length, loading, currentUser, isAdmin]);
 
   const getTypeLabel = (type: string) => {
     switch (type) {
@@ -57,33 +58,38 @@ const DepartmentTable = () => {
   };
 
   const handleRefresh = async () => {
-    console.log('🔄 手動重新載入部門資料');
+    console.log('🔄 廖俊雄手動重新載入部門資料');
     await refreshDepartments();
   };
 
   // 載入中狀態
   if (loading) {
     return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-        <p className="text-white/70">載入部門資料中...</p>
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-6"></div>
+        <p className="text-white/70 text-lg">正在從後台載入部門資料...</p>
+        <p className="text-white/50 text-sm mt-2">廖俊雄管理員權限確認中</p>
       </div>
     );
   }
 
-  // 如果沒有部門資料
+  // 如果沒有部門資料但不在載入中
   if (filteredDepartments.length === 0) {
     return (
-      <div className="text-center py-8">
-        <Building className="h-12 w-12 mx-auto text-white/50 mb-4" />
-        <p className="text-white/70 mb-4">尚未載入部門資料</p>
+      <div className="text-center py-12">
+        <Building className="h-16 w-16 mx-auto text-white/50 mb-6" />
+        <h3 className="text-xl font-semibold text-white mb-4">尚未載入到後台部門資料</h3>
+        <p className="text-white/70 mb-6">
+          後台有部門資料但前台顯示為空，請點擊重新載入按鈕
+        </p>
         <Button
           onClick={handleRefresh}
           variant="outline"
           className="bg-white/25 border-white/40 text-white hover:bg-white/35"
+          size="lg"
         >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          重新載入
+          <RefreshCw className="h-5 w-5 mr-2" />
+          重新載入後台資料
         </Button>
       </div>
     );
@@ -93,6 +99,19 @@ const DepartmentTable = () => {
   if (isMobile) {
     return (
       <div className="space-y-4">
+        <div className="flex justify-between items-center mb-4">
+          <p className="text-white/80 text-sm">共 {filteredDepartments.length} 個部門</p>
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            size="sm"
+            className="bg-white/25 border-white/40 text-white hover:bg-white/35"
+          >
+            <RefreshCw className="h-4 w-4 mr-1" />
+            重載
+          </Button>
+        </div>
+        
         {filteredDepartments.map((department) => (
           <div key={department.id} className="backdrop-blur-sm bg-white/20 border border-white/30 rounded-xl p-4">
             <div className="flex items-start justify-between mb-3">
@@ -158,121 +177,138 @@ const DepartmentTable = () => {
 
   // 桌面版表格視圖
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-white/20">
-            <th className="text-left py-3 px-4 text-white/80 font-medium">
-              <div className="flex items-center gap-2">
-                <Building className="h-4 w-4" />
-                部門名稱
-              </div>
-            </th>
-            <th className="text-left py-3 px-4 text-white/80 font-medium">
-              <div className="flex items-center gap-2">
-                <Badge className="h-4 w-4" />
-                類型
-              </div>
-            </th>
-            <th className="text-left py-3 px-4 text-white/80 font-medium">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                地點
-              </div>
-            </th>
-            <th className="text-left py-3 px-4 text-white/80 font-medium">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                負責人
-              </div>
-            </th>
-            <th className="text-left py-3 px-4 text-white/80 font-medium">
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                人數
-              </div>
-            </th>
-            {isAdmin() && (
-              <th className="text-left py-3 px-4 text-white/80 font-medium">操作</th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {filteredDepartments.map((department) => (
-            <tr key={department.id} className="border-b border-white/10 hover:bg-white/10 transition-colors">
-              <td className="py-3 px-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-500/70 rounded-lg">
-                    <Building className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="font-medium text-white">{department.name}</div>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div className="text-white/80">
+          <p className="text-sm">後台連線狀態：✅ 已連接</p>
+          <p className="text-sm">載入的部門數量：{filteredDepartments.length} 個</p>
+        </div>
+        <Button
+          onClick={handleRefresh}
+          variant="outline"
+          className="bg-white/25 border-white/40 text-white hover:bg-white/35"
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          重新載入後台資料
+        </Button>
+      </div>
+      
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-white/20">
+              <th className="text-left py-3 px-4 text-white/80 font-medium">
+                <div className="flex items-center gap-2">
+                  <Building className="h-4 w-4" />
+                  部門名稱
                 </div>
-              </td>
-              <td className="py-3 px-4">
-                <div className={`inline-block px-3 py-1 rounded-lg text-sm ${getTypeColor(department.type)}`}>
-                  {getTypeLabel(department.type)}
+              </th>
+              <th className="text-left py-3 px-4 text-white/80 font-medium">
+                <div className="flex items-center gap-2">
+                  <Badge className="h-4 w-4" />
+                  類型
                 </div>
-              </td>
-              <td className="py-3 px-4 text-white/80">
-                {department.location ? (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-3 w-3 text-white/60" />
-                    {department.location}
-                  </div>
-                ) : (
-                  <span className="text-white/50">未設定</span>
-                )}
-              </td>
-              <td className="py-3 px-4 text-white/80">
-                {department.manager_name ? (
-                  <div>
-                    <div className="flex items-center gap-2 font-medium">
-                      <User className="h-3 w-3 text-white/60" />
-                      {department.manager_name}
-                    </div>
-                    {department.manager_contact && (
-                      <div className="flex items-center gap-2 text-xs text-white/60 mt-1">
-                        <Phone className="h-3 w-3" />
-                        {department.manager_contact}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-white/50">未設定</span>
-                )}
-              </td>
-              <td className="py-3 px-4">
-                <div className="flex items-center gap-2 text-white/80">
-                  <Users className="h-3 w-3 text-white/60" />
-                  <span className="font-medium">{department.staff_count || 0}</span>
+              </th>
+              <th className="text-left py-3 px-4 text-white/80 font-medium">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  地點
                 </div>
-              </td>
+              </th>
+              <th className="text-left py-3 px-4 text-white/80 font-medium">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  負責人
+                </div>
+              </th>
+              <th className="text-left py-3 px-4 text-white/80 font-medium">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  人數
+                </div>
+              </th>
               {isAdmin() && (
-                <td className="py-3 px-4">
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="bg-white/25 border-white/40 text-white hover:bg-white/35 rounded-lg"
-                      onClick={() => openEditDialog(department)}
-                    >
-                      <Pencil className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="bg-red-500/25 border-red-400/40 text-red-200 hover:bg-red-500/35 rounded-lg"
-                      onClick={() => handleDeleteDepartment(department.id)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </td>
+                <th className="text-left py-3 px-4 text-white/80 font-medium">操作</th>
               )}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredDepartments.map((department) => (
+              <tr key={department.id} className="border-b border-white/10 hover:bg-white/10 transition-colors">
+                <td className="py-3 px-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-500/70 rounded-lg">
+                      <Building className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="font-medium text-white">{department.name}</div>
+                  </div>
+                </td>
+                <td className="py-3 px-4">
+                  <div className={`inline-block px-3 py-1 rounded-lg text-sm ${getTypeColor(department.type)}`}>
+                    {getTypeLabel(department.type)}
+                  </div>
+                </td>
+                <td className="py-3 px-4 text-white/80">
+                  {department.location ? (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-3 w-3 text-white/60" />
+                      {department.location}
+                    </div>
+                  ) : (
+                    <span className="text-white/50">未設定</span>
+                  )}
+                </td>
+                <td className="py-3 px-4 text-white/80">
+                  {department.manager_name ? (
+                    <div>
+                      <div className="flex items-center gap-2 font-medium">
+                        <User className="h-3 w-3 text-white/60" />
+                        {department.manager_name}
+                      </div>
+                      {department.manager_contact && (
+                        <div className="flex items-center gap-2 text-xs text-white/60 mt-1">
+                          <Phone className="h-3 w-3" />
+                          {department.manager_contact}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-white/50">未設定</span>
+                  )}
+                </td>
+                <td className="py-3 px-4">
+                  <div className="flex items-center gap-2 text-white/80">
+                    <Users className="h-3 w-3 text-white/60" />
+                    <span className="font-medium">{department.staff_count || 0}</span>
+                  </div>
+                </td>
+                {isAdmin() && (
+                  <td className="py-3 px-4">
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="bg-white/25 border-white/40 text-white hover:bg-white/35 rounded-lg"
+                        onClick={() => openEditDialog(department)}
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="bg-red-500/25 border-red-400/40 text-red-200 hover:bg-red-500/35 rounded-lg"
+                        onClick={() => handleDeleteDepartment(department.id)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

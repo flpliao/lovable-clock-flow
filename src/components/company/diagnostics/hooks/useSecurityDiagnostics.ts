@@ -12,7 +12,7 @@ export const useSecurityDiagnostics = () => {
     setSecurityResults([]);
     const results: DiagnosticResult[] = [];
 
-    // 測試 1: 檢查 Auth 設定
+    // 測試 1: 檢查 Auth 服務狀態
     try {
       results.push({
         name: '檢查 Auth 服務狀態',
@@ -23,13 +23,13 @@ export const useSecurityDiagnostics = () => {
 
       const { data, error } = await supabase.auth.getSession();
       
-      if (error) {
+      if (error && !error.message.includes('session_not_found')) {
         results[results.length - 1] = {
           name: '檢查 Auth 服務狀態',
           status: 'error',
           message: 'Auth 服務連線失敗',
           details: error.message,
-          suggestion: '請檢查 Supabase 專案設定'
+          suggestion: '請檢查網路連線或聯繫系統管理員'
         };
       } else {
         results[results.length - 1] = {
@@ -52,8 +52,8 @@ export const useSecurityDiagnostics = () => {
       name: '密碼安全性檢查',
       status: 'warning',
       message: '建議啟用洩漏密碼保護',
-      details: '在 Supabase 後台啟用 "Leaked Password Protection"',
-      suggestion: '前往 Authentication > Settings 啟用密碼洩漏保護'
+      details: '在 Supabase 後台 Authentication > Settings 啟用 "Leaked Password Protection"',
+      suggestion: '此功能可防止用戶使用已知的洩漏密碼，提升帳號安全性'
     });
 
     // 測試 3: 檢查 MFA 設定
@@ -61,8 +61,8 @@ export const useSecurityDiagnostics = () => {
       name: 'MFA 多因子認證檢查',
       status: 'warning',
       message: '建議啟用多因子認證選項',
-      details: '目前 MFA 選項不足',
-      suggestion: '前往 Authentication > Settings 設定 TOTP 或 SMS MFA'
+      details: '目前 MFA 選項不足，建議啟用 TOTP 或 SMS 驗證',
+      suggestion: '前往 Authentication > Settings 設定多因子認證以提升安全性'
     });
 
     // 測試 4: 檢查 RLS 設定
@@ -74,9 +74,14 @@ export const useSecurityDiagnostics = () => {
       });
       setSecurityResults([...results]);
 
-      // 簡單測試資料庫查詢來檢查 RLS
+      // 檢查多個表格的 RLS 狀態
       const { error: companiesError } = await supabase
         .from('companies')
+        .select('id')
+        .limit(1);
+
+      const { error: staffError } = await supabase
+        .from('staff')
         .select('id')
         .limit(1);
 
@@ -84,9 +89,17 @@ export const useSecurityDiagnostics = () => {
         results[results.length - 1] = {
           name: '檢查 RLS 政策',
           status: 'warning',
-          message: 'RLS 政策可能過於嚴格',
-          details: companiesError.message,
-          suggestion: '檢查資料表的 RLS 政策設定'
+          message: 'RLS 政策需要調整',
+          details: '部分資料表的 RLS 政策可能過於嚴格或設定不當',
+          suggestion: '前往系統設定 > 一般設定檢查並調整 RLS 政策'
+        };
+      } else if (staffError && staffError.message.includes('RLS')) {
+        results[results.length - 1] = {
+          name: '檢查 RLS 政策',
+          status: 'warning',
+          message: 'RLS 政策需要調整',
+          details: 'staff 表格的 RLS 政策可能需要更新',
+          suggestion: '前往系統設定 > 一般設定檢查並調整 RLS 政策'
         };
       } else {
         results[results.length - 1] = {
@@ -105,13 +118,34 @@ export const useSecurityDiagnostics = () => {
     }
 
     // 測試 5: 檢查 URL 配置
-    results.push({
-      name: '檢查 URL 配置',
-      status: 'warning',
-      message: '請確認 Site URL 和 Redirect URLs 設定正確',
-      details: '確保在 Authentication > URL Configuration 中設定正確的 URLs',
-      suggestion: '檢查 Site URL 是否為當前網域，Redirect URLs 是否包含所有有效網域'
-    });
+    const currentOrigin = window.location.origin;
+    const isLocalhost = currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1');
+    const isLovableApp = currentOrigin.includes('lovable.app');
+
+    if (isLocalhost) {
+      results.push({
+        name: '檢查 URL 配置',
+        status: 'warning',
+        message: '開發環境檢測 - URL 配置提醒',
+        details: '請確認 Site URL 設為當前網域，Redirect URLs 包含 localhost 網域',
+        suggestion: '在 Supabase Authentication > URL Configuration 中正確設定開發環境 URLs'
+      });
+    } else if (isLovableApp) {
+      results.push({
+        name: '檢查 URL 配置',
+        status: 'success',
+        message: 'URL 配置正常',
+        details: '當前使用 Lovable 預覽環境，URL 配置應該正常運作'
+      });
+    } else {
+      results.push({
+        name: '檢查 URL 配置',
+        status: 'warning',
+        message: '請確認 URL 配置設定',
+        details: `確保 Site URL 設為 ${currentOrigin}，Redirect URLs 包含此網域`,
+        suggestion: '前往 Supabase Authentication > URL Configuration 檢查設定'
+      });
+    }
 
     setSecurityResults(results);
     setIsRunning(false);

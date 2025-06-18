@@ -3,13 +3,25 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Shield, ExternalLink } from 'lucide-react';
+import { Loader2, Shield, ExternalLink, Settings } from 'lucide-react';
 import { useSecurityDiagnostics } from '../hooks/useSecurityDiagnostics';
 import { DiagnosticResults } from './DiagnosticResults';
 import { DiagnosticOverallStatus } from './DiagnosticOverallStatus';
 
 export const SecurityDiagnostics: React.FC = () => {
   const { securityResults, isRunning, runSecurityTests } = useSecurityDiagnostics();
+
+  const handleOpenSupabaseAuth = () => {
+    window.open('https://supabase.com/dashboard/project/skfdbxhlbqnoflbczlfu/auth/providers', '_blank');
+  };
+
+  const handleOpenSupabaseSettings = () => {
+    window.open('https://supabase.com/dashboard/project/skfdbxhlbqnoflbczlfu/settings/auth', '_blank');
+  };
+
+  const handleOpenSupabaseURL = () => {
+    window.open('https://supabase.com/dashboard/project/skfdbxhlbqnoflbczlfu/auth/url-configuration', '_blank');
+  };
 
   return (
     <Card>
@@ -39,15 +51,6 @@ export const SecurityDiagnostics: React.FC = () => {
               </>
             )}
           </Button>
-          
-          <Button
-            variant="outline"
-            onClick={() => window.open('https://supabase.com/dashboard/project/skfdbxhlbqnoflbczlfu/settings/auth', '_blank')}
-            className="text-xs h-8"
-          >
-            <ExternalLink className="h-3 w-3 mr-1" />
-            設定
-          </Button>
         </div>
 
         <DiagnosticResults results={securityResults} />
@@ -55,19 +58,44 @@ export const SecurityDiagnostics: React.FC = () => {
         <DiagnosticOverallStatus results={securityResults} isRunning={isRunning} />
 
         {securityResults.length > 0 && (
-          <Alert className="bg-blue-50 border-blue-200 py-2">
-            <AlertDescription className="text-xs">
-              <div className="space-y-1">
-                <p className="font-medium">建議改進項目：</p>
-                <ul className="list-disc list-inside space-y-0.5 text-xs">
-                  <li>啟用密碼洩漏保護</li>
-                  <li>設定多因子認證</li>
-                  <li>檢查 URL 設定</li>
-                  <li>檢查 RLS 政策</li>
-                </ul>
-              </div>
-            </AlertDescription>
-          </Alert>
+          <div className="space-y-2">
+            <Alert className="bg-blue-50 border-blue-200 py-2">
+              <AlertDescription className="text-xs">
+                <div className="space-y-2">
+                  <p className="font-medium">快速修正連結：</p>
+                  <div className="grid grid-cols-1 gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleOpenSupabaseSettings}
+                      className="text-xs h-6 justify-start"
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      啟用密碼洩漏保護
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleOpenSupabaseAuth}
+                      className="text-xs h-6 justify-start"
+                    >
+                      <Settings className="h-3 w-3 mr-1" />
+                      設定多因子認證
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleOpenSupabaseURL}
+                      className="text-xs h-6 justify-start"
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      檢查 URL 設定
+                    </Button>
+                  </div>
+                </div>
+              </AlertDescription>
+            </Alert>
+          </div>
         )}
       </CardContent>
     </Card>

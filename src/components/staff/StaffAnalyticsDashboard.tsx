@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -118,61 +117,56 @@ const StaffAnalyticsDashboard = () => {
         </div>
       </div>
       
-      {/* 標籤導航 */}
-      <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-3xl shadow-xl p-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-white/30 backdrop-blur-xl rounded-xl h-12 border border-white/30">
-            <TabsTrigger 
-              value="overview" 
-              className="text-gray-800 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-lg flex items-center gap-2 text-sm font-medium"
-            >
-              <Target className="h-3 w-3" />
-              概覽
-            </TabsTrigger>
-            <TabsTrigger 
-              value="workHours" 
-              className="text-gray-800 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-lg flex items-center gap-2 text-sm font-medium"
-            >
-              <TrendingUp className="h-3 w-3" />
-              工時
-            </TabsTrigger>
-            <TabsTrigger 
-              value="leaveAnalysis" 
-              className="text-gray-800 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-lg flex items-center gap-2 text-sm font-medium"
-            >
-              <CalendarDays className="h-3 w-3" />
-              請假
-            </TabsTrigger>
-            <TabsTrigger 
-              value="attendance" 
-              className="text-gray-800 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-lg flex items-center gap-2 text-sm font-medium"
-            >
-              <FileText className="h-3 w-3" />
-              考勤
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-      
-      {/* 內容區域 - 直接顯示在主背景上，使用半透明卡片設計 */}
+      {/* Tabs Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4 bg-white/30 backdrop-blur-xl rounded-2xl h-14 border border-white/30 p-1">
+          <TabsTrigger 
+            value="overview" 
+            className="text-gray-900 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-xl flex items-center gap-2 text-sm font-semibold transition-all duration-300"
+          >
+            <Target className="h-4 w-4" />
+            概覽
+          </TabsTrigger>
+          <TabsTrigger 
+            value="workHours" 
+            className="text-gray-900 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-xl flex items-center gap-2 text-sm font-semibold transition-all duration-300"
+          >
+            <TrendingUp className="h-4 w-4" />
+            工時
+          </TabsTrigger>
+          <TabsTrigger 
+            value="leaveAnalysis" 
+            className="text-gray-900 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-xl flex items-center gap-2 text-sm font-semibold transition-all duration-300"
+          >
+            <CalendarDays className="h-4 w-4" />
+            請假
+          </TabsTrigger>
+          <TabsTrigger 
+            value="attendance" 
+            className="text-gray-900 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-xl flex items-center gap-2 text-sm font-semibold transition-all duration-300"
+          >
+            <FileText className="h-4 w-4" />
+            考勤
+          </TabsTrigger>
+        </TabsList>
+        
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value="overview" className="space-y-6 mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-3xl shadow-xl p-6">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-lg p-6">
+              <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-blue-500/70 rounded-xl shadow-lg">
-                  <Users className="h-4 w-4 text-white" />
+                  <Users className="h-5 w-5 text-white" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 drop-shadow-md">員工考勤數據</h3>
               </div>
               <StaffAttendanceTable data={mockStaffAttendanceData} />
             </div>
             
-            <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-3xl shadow-xl p-6">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-lg p-6">
+              <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-green-500/70 rounded-xl shadow-lg">
-                  <PieChartIcon className="h-4 w-4 text-white" />
+                  <PieChartIcon className="h-5 w-5 text-white" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 drop-shadow-md">請假類型分布</h3>
               </div>
@@ -201,11 +195,11 @@ const StaffAnalyticsDashboard = () => {
         </TabsContent>
         
         {/* Work Hours Tab */}
-        <TabsContent value="workHours">
-          <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-3xl shadow-xl p-6">
-            <div className="flex items-center gap-3 mb-4">
+        <TabsContent value="workHours" className="mt-6">
+          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-lg p-6">
+            <div className="flex items-center gap-3 mb-6">
               <div className="p-2 bg-purple-500/70 rounded-xl shadow-lg">
-                <TrendingUp className="h-4 w-4 text-white" />
+                <TrendingUp className="h-5 w-5 text-white" />
               </div>
               <h3 className="text-lg font-bold text-gray-900 drop-shadow-md">月度工時統計</h3>
             </div>
@@ -224,22 +218,22 @@ const StaffAnalyticsDashboard = () => {
         </TabsContent>
         
         {/* Leave Analysis Tab */}
-        <TabsContent value="leaveAnalysis">
-          <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-3xl shadow-xl p-6">
-            <div className="flex items-center gap-3 mb-4">
+        <TabsContent value="leaveAnalysis" className="mt-6">
+          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-lg p-6">
+            <div className="flex items-center gap-3 mb-6">
               <div className="p-2 bg-orange-500/70 rounded-xl shadow-lg">
-                <CalendarDays className="h-4 w-4 text-white" />
+                <CalendarDays className="h-5 w-5 text-white" />
               </div>
               <h3 className="text-lg font-bold text-gray-900 drop-shadow-md">請假時數明細</h3>
             </div>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-gray-800 text-sm font-semibold">員工</TableHead>
-                  <TableHead className="text-gray-800 text-sm font-semibold">請假</TableHead>
-                  <TableHead className="text-gray-800 text-sm font-semibold">年假剩餘</TableHead>
-                  <TableHead className="text-gray-800 text-sm font-semibold">病假</TableHead>
-                  <TableHead className="text-gray-800 text-sm font-semibold">事假</TableHead>
+                  <TableHead className="text-gray-900 text-sm font-semibold">員工</TableHead>
+                  <TableHead className="text-gray-900 text-sm font-semibold">請假</TableHead>
+                  <TableHead className="text-gray-900 text-sm font-semibold">年假剩餘</TableHead>
+                  <TableHead className="text-gray-900 text-sm font-semibold">病假</TableHead>
+                  <TableHead className="text-gray-900 text-sm font-semibold">事假</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -258,12 +252,12 @@ const StaffAnalyticsDashboard = () => {
         </TabsContent>
         
         {/* Attendance Tab */}
-        <TabsContent value="attendance" className="space-y-6">
+        <TabsContent value="attendance" className="space-y-6 mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-3xl shadow-xl p-6">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-lg p-6">
+              <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-teal-500/70 rounded-xl shadow-lg">
-                  <Activity className="h-4 w-4 text-white" />
+                  <Activity className="h-5 w-5 text-white" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 drop-shadow-md">部門考勤數據</h3>
               </div>
@@ -280,20 +274,20 @@ const StaffAnalyticsDashboard = () => {
               </div>
             </div>
             
-            <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-3xl shadow-xl p-6">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-lg p-6">
+              <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-red-500/70 rounded-xl shadow-lg">
-                  <AlertCircle className="h-4 w-4 text-white" />
+                  <AlertCircle className="h-5 w-5 text-white" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 drop-shadow-md">異常考勤明細</h3>
               </div>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-gray-800 text-sm font-semibold">員工</TableHead>
-                    <TableHead className="text-gray-800 text-sm font-semibold">異常</TableHead>
-                    <TableHead className="text-gray-800 text-sm font-semibold">遲到</TableHead>
-                    <TableHead className="text-gray-800 text-sm font-semibold">原因</TableHead>
+                    <TableHead className="text-gray-900 text-sm font-semibold">員工</TableHead>
+                    <TableHead className="text-gray-900 text-sm font-semibold">異常</TableHead>
+                    <TableHead className="text-gray-900 text-sm font-semibold">遲到</TableHead>
+                    <TableHead className="text-gray-900 text-sm font-semibold">原因</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

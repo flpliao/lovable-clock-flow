@@ -3,14 +3,10 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Users, 
-  Calendar, 
   Clock, 
   FileText, 
-  Settings,
-  BarChart3,
-  Bell,
-  MapPin
+  Calendar,
+  Bell
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
@@ -60,43 +56,6 @@ const FeatureCards = ({ abnormalCount, annualLeaveBalance }: FeatureCardsProps) 
     }
   ];
 
-  // 管理功能卡片
-  const adminFeatures = [
-    {
-      title: '人員管理',
-      description: '管理員工資料',
-      icon: Users,
-      link: '/personnel-management',
-      iconBg: 'bg-indigo-100',
-      iconColor: 'text-indigo-600'
-    },
-    {
-      title: '員工儀表板',
-      description: '查看員工狀態',
-      icon: BarChart3,
-      link: '/staff-dashboard',
-      iconBg: 'bg-teal-100',
-      iconColor: 'text-teal-600',
-      badge: abnormalCount > 0 ? `${abnormalCount}異常` : null
-    },
-    {
-      title: '系統設定',
-      description: '系統參數設定',
-      icon: Settings,
-      link: '/system-settings',
-      iconBg: 'bg-gray-100',
-      iconColor: 'text-gray-600'
-    },
-    {
-      title: '分公司管理',
-      description: '管理分公司資料',
-      icon: MapPin,
-      link: '/company-branch-management',
-      iconBg: 'bg-red-100',
-      iconColor: 'text-red-600'
-    }
-  ];
-
   const FeatureCard = ({ feature }: { feature: any }) => (
     <div className="group rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative w-full max-w-xs mx-auto">
       <Link to={feature.link} className="block">
@@ -140,18 +99,6 @@ const FeatureCards = ({ abnormalCount, annualLeaveBalance }: FeatureCardsProps) 
           ))}
         </div>
       </div>
-
-      {/* 管理功能區 - 只有管理員可見 */}
-      {(isAdmin() || isManager()) && (
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-8 text-center drop-shadow-lg">管理功能</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 justify-items-center">
-            {adminFeatures.map((feature, index) => (
-              <FeatureCard key={index} feature={feature} />
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

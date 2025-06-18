@@ -88,7 +88,7 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
           {/* 日期選擇區塊 */}
-          <div className={`${visionProStyles.glassBackground} rounded-2xl p-6 border border-white/30`}>
+          <div className="backdrop-blur-xl bg-white/20 rounded-3xl border border-white/30 shadow-xl p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 bg-blue-500/80 rounded-lg flex items-center justify-center">
                 <Calendar className="h-4 w-4 text-white" />
@@ -102,7 +102,7 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
           </div>
           
           {/* 請假類型選擇 */}
-          <div className={`${visionProStyles.glassBackground} rounded-2xl p-6 border border-white/30`}>
+          <div className="backdrop-blur-xl bg-white/20 rounded-3xl border border-white/30 shadow-xl p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 bg-green-500/80 rounded-lg flex items-center justify-center">
                 <FileType className="h-4 w-4 text-white" />
@@ -116,7 +116,7 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
           </div>
           
           {/* 請假詳情 */}
-          <div className={`${visionProStyles.glassBackground} rounded-2xl p-6 border border-white/30`}>
+          <div className="backdrop-blur-xl bg-white/20 rounded-3xl border border-white/30 shadow-xl p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 bg-orange-500/80 rounded-lg flex items-center justify-center">
                 <MessageSquare className="h-4 w-4 text-white" />
@@ -130,7 +130,7 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
           </div>
           
           {/* 審核流程 */}
-          <div className={`${visionProStyles.cardBackground} rounded-2xl p-6 border border-white/30`}>
+          <div className="backdrop-blur-xl bg-white/20 rounded-3xl border border-white/30 shadow-xl p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 bg-purple-500/80 rounded-lg flex items-center justify-center">
                 <GitBranch className="h-4 w-4 text-white" />

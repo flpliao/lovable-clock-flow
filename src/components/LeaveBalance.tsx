@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useSupabaseLeaveManagement } from '@/hooks/useSupabaseLeaveManagement';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const LeaveBalance: React.FC = () => {
   const { currentUser } = useUser();
@@ -38,14 +37,9 @@ const LeaveBalance: React.FC = () => {
   
   if (loading) {
     return (
-      <Card className="w-full">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium">特休假餘額</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-4">載入中...</div>
-        </CardContent>
-      </Card>
+      <div className="text-center py-4">
+        <div className="text-white/80 font-medium drop-shadow-md">載入中...</div>
+      </div>
     );
   }
   
@@ -62,38 +56,47 @@ const LeaveBalance: React.FC = () => {
   const usagePercentage = totalHours > 0 ? Math.round((usedHours / totalHours) * 100) : 0;
   
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-medium">特休假餘額</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">年度總額</span>
-            <span className="font-medium">{totalHours} 小時 ({totalDays} 天)</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">已使用</span>
-            <span className="font-medium">{usedHours} 小時 ({usedDays} 天)</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">剩餘時數</span>
-            <span className="font-medium text-primary">{remainingHours} 小時 ({remainingDays} 天)</span>
-          </div>
-          
-          {/* Progress bar */}
-          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-            <div 
-              className="bg-primary h-2.5 rounded-full" 
-              style={{ width: `${usagePercentage}%` }}
-            ></div>
-          </div>
-          <div className="text-xs text-right text-muted-foreground">
-            已使用 {usagePercentage}%
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="backdrop-blur-xl bg-white/20 rounded-2xl border border-white/30 p-4 shadow-lg">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-white drop-shadow-md">{totalHours}</div>
+            <div className="text-white/80 text-sm font-medium drop-shadow-md">年度總額（小時）</div>
+            <div className="text-white/70 text-xs drop-shadow-md">{totalDays} 天</div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+        
+        <div className="backdrop-blur-xl bg-white/20 rounded-2xl border border-white/30 p-4 shadow-lg">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-white drop-shadow-md">{usedHours}</div>
+            <div className="text-white/80 text-sm font-medium drop-shadow-md">已使用（小時）</div>
+            <div className="text-white/70 text-xs drop-shadow-md">{usedDays} 天</div>
+          </div>
+        </div>
+        
+        <div className="backdrop-blur-xl bg-white/20 rounded-2xl border border-white/30 p-4 shadow-lg">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-300 drop-shadow-md">{remainingHours}</div>
+            <div className="text-white/80 text-sm font-medium drop-shadow-md">剩餘時數（小時）</div>
+            <div className="text-white/70 text-xs drop-shadow-md">{remainingDays} 天</div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Progress bar */}
+      <div className="backdrop-blur-xl bg-white/20 rounded-2xl border border-white/30 p-4 shadow-lg">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-white/80 font-medium drop-shadow-md">使用進度</span>
+          <span className="text-white font-bold drop-shadow-md">{usagePercentage}%</span>
+        </div>
+        <div className="w-full bg-white/30 rounded-full h-3">
+          <div 
+            className="bg-gradient-to-r from-blue-400 to-blue-600 h-3 rounded-full transition-all duration-300" 
+            style={{ width: `${usagePercentage}%` }}
+          ></div>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { LeaveRequest } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
 import LeaveApprovalFlow from './LeaveApprovalFlow';
 import LeaveApprovalActions from './LeaveApprovalActions';
@@ -32,34 +31,35 @@ const LeaveRequestDetail: React.FC<LeaveRequestDetailProps> = ({
   };
   
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-lg font-medium">請假詳情</CardTitle>
-          <LeaveStatusBadge status={leaveRequest.status} />
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-white drop-shadow-md">請假詳情</h2>
+        <LeaveStatusBadge status={leaveRequest.status} />
+      </div>
+      
+      <div className="backdrop-blur-xl bg-white/20 rounded-3xl border border-white/30 shadow-xl p-6">
+        <LeaveRequestInfo leaveRequest={leaveRequest} />
+      </div>
+      
+      {leaveRequest.approvals && leaveRequest.approvals.length > 0 && (
+        <div className="backdrop-blur-xl bg-white/20 rounded-3xl border border-white/30 shadow-xl p-6">
+          <LeaveApprovalFlow 
+            approvals={leaveRequest.approvals} 
+            currentLevel={leaveRequest.approval_level || 0}
+          />
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <LeaveRequestInfo leaveRequest={leaveRequest} />
-          
-          {leaveRequest.approvals && leaveRequest.approvals.length > 0 && (
-            <LeaveApprovalFlow 
-              approvals={leaveRequest.approvals} 
-              currentLevel={leaveRequest.approval_level || 0}
-            />
-          )}
-          
-          {isApprover && leaveRequest.status === 'pending' && (
-            <LeaveApprovalActions
-              leaveRequest={leaveRequest}
-              onApprove={onApprove}
-              onReject={onReject}
-            />
-          )}
+      )}
+      
+      {isApprover && leaveRequest.status === 'pending' && (
+        <div className="backdrop-blur-xl bg-white/20 rounded-3xl border border-white/30 shadow-xl p-6">
+          <LeaveApprovalActions
+            leaveRequest={leaveRequest}
+            onApprove={onApprove}
+            onReject={onReject}
+          />
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };
 

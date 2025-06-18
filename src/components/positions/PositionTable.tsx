@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Pencil, Trash2, Briefcase } from 'lucide-react';
 import { usePositionManagementContext } from './PositionManagementContext';
 import { useUser } from '@/contexts/UserContext';
+import AddPositionDialog from './AddPositionDialog';
 
 const PositionTable = () => {
   const { 

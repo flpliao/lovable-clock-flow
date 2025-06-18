@@ -38,7 +38,7 @@ const LeaveBalance: React.FC = () => {
   if (loading) {
     return (
       <div className="text-center py-4">
-        <div className="text-white/80 font-medium drop-shadow-md">載入中...</div>
+        <div className="text-gray-600">載入中...</div>
       </div>
     );
   }
@@ -58,40 +58,40 @@ const LeaveBalance: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="backdrop-blur-xl bg-white/20 rounded-2xl border border-white/30 p-4 shadow-lg">
+        <div className="bg-gray-50 rounded-xl border p-4">
           <div className="text-center">
-            <div className="text-2xl font-bold text-white drop-shadow-md">{totalHours}</div>
-            <div className="text-white/80 text-sm font-medium drop-shadow-md">年度總額（小時）</div>
-            <div className="text-white/70 text-xs drop-shadow-md">{totalDays} 天</div>
+            <div className="text-2xl font-bold text-gray-900">{totalHours}</div>
+            <div className="text-gray-600 text-sm">年度總額（小時）</div>
+            <div className="text-gray-500 text-xs">{totalDays} 天</div>
           </div>
         </div>
         
-        <div className="backdrop-blur-xl bg-white/20 rounded-2xl border border-white/30 p-4 shadow-lg">
+        <div className="bg-gray-50 rounded-xl border p-4">
           <div className="text-center">
-            <div className="text-2xl font-bold text-white drop-shadow-md">{usedHours}</div>
-            <div className="text-white/80 text-sm font-medium drop-shadow-md">已使用（小時）</div>
-            <div className="text-white/70 text-xs drop-shadow-md">{usedDays} 天</div>
+            <div className="text-2xl font-bold text-gray-900">{usedHours}</div>
+            <div className="text-gray-600 text-sm">已使用（小時）</div>
+            <div className="text-gray-500 text-xs">{usedDays} 天</div>
           </div>
         </div>
         
-        <div className="backdrop-blur-xl bg-white/20 rounded-2xl border border-white/30 p-4 shadow-lg">
+        <div className="bg-gray-50 rounded-xl border p-4">
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-300 drop-shadow-md">{remainingHours}</div>
-            <div className="text-white/80 text-sm font-medium drop-shadow-md">剩餘時數（小時）</div>
-            <div className="text-white/70 text-xs drop-shadow-md">{remainingDays} 天</div>
+            <div className="text-2xl font-bold text-blue-600">{remainingHours}</div>
+            <div className="text-gray-600 text-sm">剩餘時數（小時）</div>
+            <div className="text-gray-500 text-xs">{remainingDays} 天</div>
           </div>
         </div>
       </div>
       
       {/* Progress bar */}
-      <div className="backdrop-blur-xl bg-white/20 rounded-2xl border border-white/30 p-4 shadow-lg">
+      <div className="bg-gray-50 rounded-xl border p-4">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-white/80 font-medium drop-shadow-md">使用進度</span>
-          <span className="text-white font-bold drop-shadow-md">{usagePercentage}%</span>
+          <span className="text-gray-700 font-medium">使用進度</span>
+          <span className="text-gray-900 font-bold">{usagePercentage}%</span>
         </div>
-        <div className="w-full bg-white/30 rounded-full h-3">
+        <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
-            className="bg-gradient-to-r from-blue-400 to-blue-600 h-3 rounded-full transition-all duration-300" 
+            className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
             style={{ width: `${usagePercentage}%` }}
           ></div>
         </div>

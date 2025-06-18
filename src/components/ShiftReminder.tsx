@@ -117,17 +117,17 @@ const ShiftReminder: React.FC = () => {
 
   // 可選的視覺提醒卡片（只在未完成打卡時顯示）
   return (
-    <div className="backdrop-blur-xl bg-amber-400/20 border border-amber-300/40 rounded-2xl p-4 shadow-lg flex items-start">
-      <Bell className="h-5 w-5 text-amber-300 mt-0.5 mr-3 flex-shrink-0" />
+    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start">
+      <Bell className="h-5 w-5 text-amber-600 mt-0.5 mr-3 flex-shrink-0" />
       <div>
-        <p className="font-semibold text-white drop-shadow-md">今日排班提醒</p>
-        <p className="text-white/90 mt-1 drop-shadow-md">
+        <p className="font-medium text-amber-800">今日排班提醒</p>
+        <p className="text-amber-700 mt-1">
           {!todayRecords.checkIn 
             ? `${currentUser.name}，你今天的上班時間為：${todayShift.startTime} ~ ${todayShift.endTime}，記得打卡喔！`
             : `${currentUser.name}，你已完成上班打卡，記得下班時也要打卡喔！`
           }
         </p>
-        <p className="text-xs text-white/70 mt-2 drop-shadow-md">
+        <p className="text-xs text-amber-600 mt-2">
           💡 系統會在您忘記打卡時自動提醒您（5分鐘提醒一次，共2次）
         </p>
       </div>

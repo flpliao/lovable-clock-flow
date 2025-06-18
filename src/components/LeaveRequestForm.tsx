@@ -13,7 +13,6 @@ import { LeaveTypeSelector } from '@/components/leave/LeaveTypeSelector';
 import { LeaveFormDetails } from '@/components/leave/LeaveFormDetails';
 import { LeaveApprovalWorkflow } from '@/components/leave/LeaveApprovalWorkflow';
 import { getApprovers } from '@/services/leaveRequestService';
-import { visionProStyles } from '@/utils/visionProStyles';
 import { Calendar, FileType, MessageSquare, GitBranch, Send } from 'lucide-react';
 
 interface LeaveRequestFormProps {
@@ -75,25 +74,25 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="text-center mb-8">
-        <h2 className={`text-2xl font-bold mb-2 ${visionProStyles.primaryText} text-white drop-shadow-lg`}>
+    <div className="space-y-6">
+      <div className="text-center mb-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">
           請假申請
         </h2>
-        <p className="text-white/70 font-medium drop-shadow-md">
+        <p className="text-gray-600">
           請填寫以下資訊提交您的請假申請
         </p>
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           {/* 日期選擇區塊 */}
-          <div className="backdrop-blur-xl bg-white/20 rounded-3xl border border-white/30 shadow-xl p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-blue-500/80 rounded-lg flex items-center justify-center">
-                <Calendar className="h-4 w-4 text-white" />
+          <div className="bg-gray-50 rounded-xl border p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-6 h-6 bg-blue-500 rounded-lg flex items-center justify-center">
+                <Calendar className="h-3 w-3 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-white drop-shadow-md">請假日期</h3>
+              <h3 className="font-medium text-gray-900">請假日期</h3>
             </div>
             <LeaveDateSelector 
               form={form} 
@@ -102,12 +101,12 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
           </div>
           
           {/* 請假類型選擇 */}
-          <div className="backdrop-blur-xl bg-white/20 rounded-3xl border border-white/30 shadow-xl p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-green-500/80 rounded-lg flex items-center justify-center">
-                <FileType className="h-4 w-4 text-white" />
+          <div className="bg-gray-50 rounded-xl border p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center">
+                <FileType className="h-3 w-3 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-white drop-shadow-md">請假類型</h3>
+              <h3 className="font-medium text-gray-900">請假類型</h3>
             </div>
             <LeaveTypeSelector 
               form={form}
@@ -116,12 +115,12 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
           </div>
           
           {/* 請假詳情 */}
-          <div className="backdrop-blur-xl bg-white/20 rounded-3xl border border-white/30 shadow-xl p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-orange-500/80 rounded-lg flex items-center justify-center">
-                <MessageSquare className="h-4 w-4 text-white" />
+          <div className="bg-gray-50 rounded-xl border p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-6 h-6 bg-orange-500 rounded-lg flex items-center justify-center">
+                <MessageSquare className="h-3 w-3 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-white drop-shadow-md">請假詳情</h3>
+              <h3 className="font-medium text-gray-900">請假詳情</h3>
             </div>
             <LeaveFormDetails 
               form={form}
@@ -130,23 +129,23 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
           </div>
           
           {/* 審核流程 */}
-          <div className="backdrop-blur-xl bg-white/20 rounded-3xl border border-white/30 shadow-xl p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-purple-500/80 rounded-lg flex items-center justify-center">
-                <GitBranch className="h-4 w-4 text-white" />
+          <div className="bg-gray-50 rounded-xl border p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-6 h-6 bg-purple-500 rounded-lg flex items-center justify-center">
+                <GitBranch className="h-3 w-3 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-white drop-shadow-md">審核流程</h3>
+              <h3 className="font-medium text-gray-900">審核流程</h3>
             </div>
             <LeaveApprovalWorkflow approvers={approvers} />
           </div>
 
           {/* 提交按鈕 */}
-          <div className="flex justify-center pt-4">
+          <div className="flex justify-center pt-2">
             <Button 
               type="submit" 
-              className={`w-full sm:w-auto px-12 py-3 text-lg font-semibold ${visionProStyles.glassButton} border-white/40 text-white hover:bg-white/30 transition-all duration-300 shadow-2xl flex items-center gap-3`}
+              className="w-full sm:w-auto px-8 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors duration-200 flex items-center gap-2"
             >
-              <Send className="h-5 w-5" />
+              <Send className="h-4 w-4" />
               提交請假申請
             </Button>
           </div>

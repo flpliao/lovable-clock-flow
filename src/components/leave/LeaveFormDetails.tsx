@@ -5,7 +5,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { UseFormReturn } from 'react-hook-form';
 import { LeaveFormValues, getLeaveTypeById } from '@/utils/leaveTypes';
-import { visionProStyles } from '@/utils/visionProStyles';
 
 interface LeaveFormDetailsProps {
   form: UseFormReturn<LeaveFormValues>;
@@ -16,22 +15,22 @@ export function LeaveFormDetails({ form, selectedLeaveType }: LeaveFormDetailsPr
   const currentLeaveType = selectedLeaveType ? getLeaveTypeById(selectedLeaveType) : null;
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <FormField
         control={form.control}
         name="reason"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-white font-medium drop-shadow-md">請假事由</FormLabel>
+            <FormLabel className="text-gray-700 font-medium">請假事由</FormLabel>
             <FormControl>
               <Textarea 
                 placeholder="請輸入請假事由" 
-                className="resize-none backdrop-blur-xl bg-white/20 border-white/30 text-white placeholder:text-white/60 rounded-xl hover:bg-white/30 focus:bg-white/30 transition-colors duration-200" 
+                className="resize-none bg-white border-gray-300 hover:bg-gray-50 focus:bg-white" 
                 rows={4}
                 {...field} 
               />
             </FormControl>
-            <FormMessage className="text-red-300 drop-shadow-md" />
+            <FormMessage className="text-red-500" />
           </FormItem>
         )}
       />
@@ -43,12 +42,12 @@ export function LeaveFormDetails({ form, selectedLeaveType }: LeaveFormDetailsPr
           name="attachment"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white font-medium drop-shadow-md">附件上傳</FormLabel>
+              <FormLabel className="text-gray-700 font-medium">附件上傳</FormLabel>
               <FormControl>
                 <div className="flex items-center gap-2">
                   <Input 
                     type="file" 
-                    className="flex-1 backdrop-blur-xl bg-white/20 border-white/30 text-white file:bg-white/30 file:text-white file:border-0 file:rounded-lg rounded-xl hover:bg-white/30 transition-colors duration-200" 
+                    className="flex-1 bg-white border-gray-300 file:bg-gray-100 file:text-gray-700 file:border-0 file:rounded-md hover:bg-gray-50" 
                     onChange={(e) => {
                       if (e.target.files?.[0]) {
                         field.onChange(e.target.files[0]);
@@ -57,10 +56,10 @@ export function LeaveFormDetails({ form, selectedLeaveType }: LeaveFormDetailsPr
                   />
                 </div>
               </FormControl>
-              <FormDescription className="text-white/80 font-medium drop-shadow-md">
+              <FormDescription className="text-gray-600">
                 請上傳相關證明文件 (如: 醫師診斷證明、證書等)
               </FormDescription>
-              <FormMessage className="text-red-300 drop-shadow-md" />
+              <FormMessage className="text-red-500" />
             </FormItem>
           )}
         />

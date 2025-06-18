@@ -71,6 +71,7 @@ export interface StaffManagementContextType {
   getSupervisorName: (supervisorId?: string) => string;
   getSubordinates: (staffId: string) => Staff[];
   refreshData: () => Promise<void>;
+  performFullSync: () => Promise<any>; // 新增完整同步功能
   
   // Role management
   roles: StaffRole[];

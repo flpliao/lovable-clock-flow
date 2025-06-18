@@ -2,7 +2,7 @@
 export interface Department {
   id: string;
   name: string;
-  type: 'headquarters' | 'branch' | 'store';
+  type: 'headquarters' | 'branch' | 'store' | 'department';
   location?: string;
   manager_name?: string;
   manager_contact?: string;
@@ -13,7 +13,7 @@ export interface Department {
 
 export interface NewDepartment {
   name: string;
-  type: 'headquarters' | 'branch' | 'store';
+  type: 'headquarters' | 'branch' | 'store' | 'department';
   location?: string;
   manager_name?: string;
   manager_contact?: string;

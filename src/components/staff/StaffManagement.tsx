@@ -23,8 +23,8 @@ const StaffManagement = () => {
           <AdminVerificationCard />
           
           {/* 人員管理主區塊 */}
-          <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-500/70 rounded-2xl shadow-lg backdrop-blur-xl border border-blue-400/30">
                   <Users className="h-6 w-6 text-white" />
@@ -41,47 +41,47 @@ const StaffManagement = () => {
 
             {/* 子標籤 */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <div className="backdrop-blur-sm bg-white/10 border border-white/15 rounded-2xl p-4 mb-6">
-                <TabsList className="grid w-full grid-cols-3 bg-white/15 rounded-xl h-10">
+              <TabsList className="grid w-full grid-cols-3 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
+                <TabsTrigger 
+                  value="list" 
+                  className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                >
+                  <UserCheck className="h-3 w-3" />
+                  人員列表
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="org-chart" 
+                  className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                >
+                  <Network className="h-3 w-3" />
+                  組織圖
+                </TabsTrigger>
+                {isAdmin() && (
                   <TabsTrigger 
-                    value="list" 
-                    className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-md flex items-center gap-2 text-sm"
+                    value="roles" 
+                    className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
                   >
-                    <UserCheck className="h-3 w-3" />
-                    人員列表
+                    <Shield className="h-3 w-3" />
+                    權限
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="org-chart" 
-                    className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-md flex items-center gap-2 text-sm"
-                  >
-                    <Network className="h-3 w-3" />
-                    組織圖
-                  </TabsTrigger>
-                  {isAdmin() && (
-                    <TabsTrigger 
-                      value="roles" 
-                      className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-md flex items-center gap-2 text-sm"
-                    >
-                      <Shield className="h-3 w-3" />
-                      權限
-                    </TabsTrigger>
-                  )}
-                </TabsList>
-              </div>
+                )}
+              </TabsList>
               
-              <TabsContent value="list" className="mt-0">
-                <StaffTable />
-              </TabsContent>
-              
-              <TabsContent value="org-chart" className="mt-0">
-                <OrganizationChart />
-              </TabsContent>
-              
-              {isAdmin() && (
-                <TabsContent value="roles" className="mt-0">
-                  <RoleManagement />
+              <div className="mt-8">
+                <TabsContent value="list" className="mt-0">
+                  <StaffTable />
                 </TabsContent>
-              )}
+                
+                <TabsContent value="org-chart" className="mt-0">
+                  <OrganizationChart />
+                </TabsContent>
+                
+                {isAdmin() && (
+                  <TabsContent value="roles" className="mt-0">
+                    <RoleManagement />
+                  </TabsContent>
+                )}
+              </div>
             </Tabs>
           </div>
 

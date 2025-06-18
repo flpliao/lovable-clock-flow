@@ -84,7 +84,7 @@ const PersonnelManagement = () => {
                 </TabsTrigger>
               </TabsList>
               
-              {/* 內容區域 */}
+              {/* 內容區域 - 直接顯示在淡藍色背景上 */}
               <div className="mt-8">
                 <TabsContent value="staff" className="mt-0">
                   <StaffManagement />

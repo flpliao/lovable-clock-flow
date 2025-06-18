@@ -15,8 +15,8 @@ const DepartmentManagement = () => {
     <DepartmentManagementProvider>
       <div className="space-y-6">
         {/* 部門管理區塊 */}
-        <div className="backdrop-blur-xl bg-white/25 border border-white/30 rounded-2xl shadow-lg p-6">
-          <div className="flex items-center justify-between mb-6">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-green-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-green-400/50">
                 <Building className="h-6 w-6 text-white" />

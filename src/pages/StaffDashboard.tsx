@@ -32,73 +32,61 @@ const StaffDashboard = () => {
 
       <StaffManagementProvider>
         <div className="relative z-10 w-full">
-          {/* 頁面標題區域 - 與加班管理頁面保持一致的間距 */}
-          <div className="w-full px-0 sm:px-4 lg:px-8 pt-32 md:pt-36 pb-4">
-            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
-              <div className="flex items-center justify-between p-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
-                    <BarChart3 className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl font-bold text-white drop-shadow-md">
-                      員工考勤儀表板
-                    </h1>
-                    <p className="text-white/80 font-medium drop-shadow-sm text-sm mt-1">管理所有員工考勤數據及分析</p>
-                  </div>
+          {/* 頁面標題區域 */}
+          <div className="w-full px-4 lg:px-8 pt-32 md:pt-36 pb-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
+                  <BarChart3 className="h-6 w-6" />
                 </div>
-                <div className="hidden md:flex items-center gap-3">
-                  <div className="p-2 bg-green-500/90 rounded-lg shadow-md backdrop-blur-xl border border-green-400/50">
-                    <Activity className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="p-2 bg-orange-500/90 rounded-lg shadow-md backdrop-blur-xl border border-orange-400/50">
-                    <Users className="h-4 w-4 text-white" />
-                  </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white drop-shadow-md">
+                    員工考勤儀表板
+                  </h1>
+                  <p className="text-white/80 font-medium drop-shadow-sm text-sm mt-1">管理所有員工考勤數據及分析</p>
+                </div>
+              </div>
+              <div className="hidden md:flex items-center gap-3">
+                <div className="p-2 bg-green-500/90 rounded-lg shadow-md backdrop-blur-xl border border-green-400/50">
+                  <Activity className="h-4 w-4 text-white" />
+                </div>
+                <div className="p-2 bg-orange-500/90 rounded-lg shadow-md backdrop-blur-xl border border-orange-400/50">
+                  <Users className="h-4 w-4 text-white" />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* 標籤導航 - 保持50px間距 */}
-          <div className="w-full px-0 sm:px-4 lg:px-8" style={{ paddingTop: '50px', paddingBottom: '24px' }}>
-            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
-              <div className="p-4">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 bg-white/30 rounded-xl h-12">
-                    <TabsTrigger 
-                      value="analytics" 
-                      className="text-white data-[state=active]:bg-white/60 data-[state=active]:text-gray-900 rounded-lg flex items-center gap-2"
-                    >
-                      <BarChart3 className="h-4 w-4" />
-                      數據分析
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="check-ins" 
-                      className="text-white data-[state=active]:bg-white/60 data-[state=active]:text-gray-900 rounded-lg flex items-center gap-2"
-                    >
-                      <Clock className="h-4 w-4" />
-                      打卡管理
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-            </div>
-          </div>
-          
-          {/* 內容區域 - 直接放在淡藍色背景上 */}
-          <div className="w-full px-0 sm:px-4 lg:px-8 pb-6">
+          {/* 標籤導航 */}
+          <div className="w-full px-4 lg:px-8 pb-8">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsContent value="analytics" className="mt-0">
-                <div className="mx-4">
-                  <StaffAnalyticsDashboard />
-                </div>
-              </TabsContent>
+              <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
+                <TabsTrigger 
+                  value="analytics" 
+                  className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  數據分析
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="check-ins" 
+                  className="text-white/90 data-[state=active]:bg-white/50 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                >
+                  <Clock className="h-4 w-4" />
+                  打卡管理
+                </TabsTrigger>
+              </TabsList>
               
-              <TabsContent value="check-ins" className="mt-0">
-                <div className="mx-4">
+              {/* 內容區域 - 直接顯示在淡藍色背景上 */}
+              <div className="mt-8">
+                <TabsContent value="analytics" className="mt-0">
+                  <StaffAnalyticsDashboard />
+                </TabsContent>
+                
+                <TabsContent value="check-ins" className="mt-0">
                   <TeamCheckInManagement />
-                </div>
-              </TabsContent>
+                </TabsContent>
+              </div>
             </Tabs>
           </div>
         </div>

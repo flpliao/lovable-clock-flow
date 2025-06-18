@@ -26,57 +26,74 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
     setIsLoading(true);
     
     console.log('Login attempt with email:', email);
+    console.log('Login attempt with password:', password);
     
     try {
       // Find user by email in our credentials store
       const userFound = findUserByEmail(email);
       console.log('User search result:', userFound);
       
-      if (userFound && userFound.credentials.password === password) {
-        // 使用統一的用戶ID驗證服務
-        const validatedUserId = UserIdValidationService.validateUserId(userFound.userId);
+      if (userFound) {
+        console.log('Found user credentials:', userFound.credentials);
+        console.log('Stored password:', userFound.credentials.password);
+        console.log('Input password:', password);
+        console.log('Password match:', userFound.credentials.password === password);
         
-        // Create user data based on the found credentials
-        const emailLocalPart = userFound.credentials.email.split('@')[0];
-        let displayName, position, department, role;
-        
-        if (emailLocalPart === 'admin') {
-          displayName = '廖俊雄';
-          position = '資深工程師';
-          department = '技術部';
-          role = 'admin' as const;
-        } else if (emailLocalPart === 'flpliao') {
-          displayName = '王小明';
-          position = '一般員工';
-          department = 'HR';
-          role = 'user' as const;
+        if (userFound.credentials.password === password) {
+          // 使用統一的用戶ID驗證服務
+          const validatedUserId = UserIdValidationService.validateUserId(userFound.userId);
+          
+          // Create user data based on the found credentials
+          const emailLocalPart = userFound.credentials.email.split('@')[0];
+          let displayName, position, department, role;
+          
+          if (emailLocalPart === 'admin') {
+            displayName = '廖俊雄';
+            position = '資深工程師';
+            department = '技術部';
+            role = 'admin' as const;
+          } else if (emailLocalPart === 'flpliao') {
+            displayName = '廖小雄';
+            position = '一般員工';
+            department = 'HR';
+            role = 'user' as const;
+          } else {
+            displayName = `User ${validatedUserId}`;
+            position = '一般員工';
+            department = 'HR';
+            role = 'user' as const;
+          }
+          
+          const mockUserData = {
+            id: validatedUserId, // 使用驗證過的 UUID
+            name: displayName,
+            position: position,
+            department: department,
+            onboard_date: '2023-01-15',
+            role: role,
+          };
+          
+          console.log('Setting current user with validated UUID:', mockUserData);
+          setCurrentUser(mockUserData);
+          
+          toast({
+            title: '登錄成功',
+            description: `歡迎回來，${mockUserData.name}`,
+          });
+          
+          navigate('/');
         } else {
-          displayName = `User ${validatedUserId}`;
-          position = '一般員工';
-          department = 'HR';
-          role = 'user' as const;
+          console.log('Login failed - password mismatch');
+          console.log('Expected:', userFound.credentials.password);
+          console.log('Received:', password);
+          toast({
+            variant: 'destructive',
+            title: '登錄失敗',
+            description: '電子郵件或密碼不正確',
+          });
         }
-        
-        const mockUserData = {
-          id: validatedUserId, // 使用驗證過的 UUID
-          name: displayName,
-          position: position,
-          department: department,
-          onboard_date: '2023-01-15',
-          role: role,
-        };
-        
-        console.log('Setting current user with validated UUID:', mockUserData);
-        setCurrentUser(mockUserData);
-        
-        toast({
-          title: '登錄成功',
-          description: `歡迎回來，${mockUserData.name}`,
-        });
-        
-        navigate('/');
       } else {
-        console.log('Login failed - invalid credentials');
+        console.log('Login failed - user not found');
         toast({
           variant: 'destructive',
           title: '登錄失敗',

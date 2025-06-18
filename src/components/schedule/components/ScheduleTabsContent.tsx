@@ -72,7 +72,7 @@ const ScheduleTabsContent = ({
         <TabsList className="grid w-full grid-cols-2 bg-white/20 backdrop-blur-xl rounded-2xl p-2 h-16 border border-white/30">
           <TabsTrigger 
             value="calendar"
-            className="text-white/90 data-[state=active]:bg-white/30 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold flex items-center gap-2 h-12"
+            className="text-gray-800 data-[state=active]:bg-white/30 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold flex items-center gap-2 h-12"
           >
             <Calendar className="h-5 w-5" />
             <span className="hidden xs:inline">日曆檢視</span>
@@ -80,7 +80,7 @@ const ScheduleTabsContent = ({
           </TabsTrigger>
           <TabsTrigger 
             value="list"
-            className="text-white/90 data-[state=active]:bg-white/30 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold flex items-center gap-2 h-12"
+            className="text-gray-800 data-[state=active]:bg-white/30 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold flex items-center gap-2 h-12"
           >
             <List className="h-5 w-5" />
             <span className="hidden xs:inline">列表檢視</span>

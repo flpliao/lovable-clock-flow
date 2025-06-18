@@ -29,7 +29,7 @@ export const RLSSettingsCard: React.FC = () => {
       
       <CardContent className="space-y-4 px-4 pb-4">
         {/* 全域設定 */}
-        <div className="flex items-center justify-between p-4 backdrop-blur-xl bg-white/40 border border-white/50 rounded-xl shadow-md">
+        <div className="flex items-center justify-between py-4 px-4 border-b border-white/20">
           <div className="flex items-center">
             <div className="p-2 bg-purple-500/90 rounded-lg shadow-md mr-3">
               {isGlobalRLSEnabled ? (
@@ -64,8 +64,8 @@ export const RLSSettingsCard: React.FC = () => {
 
         {/* 表格設定 - 使用 Accordion */}
         <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="table-settings" className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-xl shadow-md">
-            <AccordionTrigger className="px-4 py-3 text-sm font-semibold text-gray-900 drop-shadow-sm hover:no-underline">
+          <AccordionItem value="table-settings" className="border border-white/30 rounded-lg">
+            <AccordionTrigger className="px-4 py-3 text-sm font-semibold text-gray-900 drop-shadow-sm hover:no-underline hover:bg-white/10 rounded-t-lg">
               <div className="flex items-center">
                 <div className="p-2 bg-teal-500/90 rounded-lg shadow-md mr-3">
                   <Database className="h-4 w-4 text-white" />
@@ -78,10 +78,10 @@ export const RLSSettingsCard: React.FC = () => {
                 </div>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-4 pb-3">
-              <div className="space-y-2">
+            <AccordionContent className="px-4 pb-4">
+              <div className="space-y-3 pt-2">
                 {tableRLSStatus.map((table) => (
-                  <div key={table.tableName} className="flex items-center justify-between p-3 backdrop-blur-xl bg-white/50 border border-white/60 rounded-lg text-sm shadow-sm">
+                  <div key={table.tableName} className="flex items-center justify-between p-3 bg-white/20 border border-white/30 rounded-lg text-sm hover:bg-white/25 transition-colors duration-200">
                     <div className="flex items-center min-w-0 flex-1">
                       <div className="p-1.5 bg-gray-500/90 rounded-md shadow-sm mr-3">
                         <Database className="h-3 w-3 text-white" />
@@ -118,7 +118,7 @@ export const RLSSettingsCard: React.FC = () => {
 
         {/* 狀態提示 */}
         {!isGlobalRLSEnabled && (
-          <Alert className="backdrop-blur-xl bg-orange-100/60 border border-orange-200/60">
+          <Alert className="bg-orange-100/60 border border-orange-200/60 backdrop-blur-sm">
             <div className="p-1.5 bg-orange-500/90 rounded-md shadow-sm">
               <X className="h-3 w-3 text-white" />
             </div>

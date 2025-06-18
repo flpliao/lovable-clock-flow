@@ -1,21 +1,83 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import StaffManagement from '@/components/staff/StaffManagement';
 import DepartmentManagement from '@/components/departments/DepartmentManagement';
 import PositionManagement from '@/components/positions/PositionManagement';
-import { Users, Building, Briefcase, UserCheck, Settings, Database } from 'lucide-react';
+import { Users, Building, Briefcase, UserCheck, Settings, Database, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
+import { DataSyncManager } from '@/utils/dataSync';
 
 const PersonnelManagement = () => {
   const { currentUser, isAdmin } = useUser();
   const [activeTab, setActiveTab] = useState('staff');
+  const [syncStatus, setSyncStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
+  const [lastSyncTime, setLastSyncTime] = useState<string>('');
   
   if (!currentUser || !(isAdmin() || currentUser.department === 'HR')) {
     return <Navigate to="/login" />;
   }
+
+  // 檢查系統同步狀態
+  useEffect(() => {
+    const checkSyncStatus = async () => {
+      console.log('🔍 檢查系統前後台同步狀態...');
+      const isConnected = await DataSyncManager.checkBackendConnection();
+      
+      setSyncStatus(isConnected ? 'connected' : 'disconnected');
+      
+      if (isConnected) {
+        setLastSyncTime(new Date().toLocaleString('zh-TW'));
+        console.log('✅ 系統前後台連線正常');
+      } else {
+        console.log('❌ 系統前後台連線異常');
+      }
+    };
+
+    checkSyncStatus();
+  }, []);
+
+  // 手動同步資料
+  const handleManualSync = async () => {
+    console.log('🔄 使用者觸發手動同步');
+    setSyncStatus('checking');
+    
+    const syncResult = await DataSyncManager.performFullSync();
+    
+    if (syncResult.connectionStatus) {
+      setSyncStatus('connected');
+      setLastSyncTime(new Date().toLocaleString('zh-TW'));
+      console.log('✅ 手動同步完成');
+    } else {
+      setSyncStatus('disconnected');
+      console.log('❌ 手動同步失敗');
+    }
+  };
+
+  const getSyncStatusIcon = () => {
+    switch (syncStatus) {
+      case 'checking':
+        return <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />;
+      case 'connected':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'disconnected':
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+    }
+  };
+
+  const getSyncStatusText = () => {
+    switch (syncStatus) {
+      case 'checking':
+        return '檢查中...';
+      case 'connected':
+        return `已連線 (${lastSyncTime})`;
+      case 'disconnected':
+        return '連線異常';
+    }
+  };
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
@@ -46,14 +108,41 @@ const PersonnelManagement = () => {
                   <p className="text-white/80 text-sm mt-1">管理組織架構、人員資料與職位權限</p>
                 </div>
               </div>
+              
+              {/* 系統同步狀態顯示 */}
               <div className="hidden md:flex items-center gap-3">
-                <div className="p-2 bg-green-500/60 rounded-lg shadow-md backdrop-blur-xl border border-green-400/40">
-                  <Database className="h-4 w-4 text-white" />
+                <div className="flex items-center gap-2 p-2 bg-white/20 rounded-lg shadow-md backdrop-blur-xl border border-white/30">
+                  {getSyncStatusIcon()}
+                  <span className="text-white text-sm font-medium">{getSyncStatusText()}</span>
                 </div>
-                <div className="p-2 bg-orange-500/60 rounded-lg shadow-md backdrop-blur-xl border border-orange-400/40">
-                  <Settings className="h-4 w-4 text-white" />
-                </div>
+                <Button
+                  onClick={handleManualSync}
+                  variant="outline"
+                  size="sm"
+                  disabled={syncStatus === 'checking'}
+                  className="bg-white/25 border-white/40 text-white hover:bg-white/35"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${syncStatus === 'checking' ? 'animate-spin' : ''}`} />
+                  同步資料
+                </Button>
               </div>
+            </div>
+            
+            {/* 手機版同步狀態 */}
+            <div className="md:hidden mt-4 flex items-center justify-between">
+              <div className="flex items-center gap-2 p-2 bg-white/20 rounded-lg shadow-md backdrop-blur-xl border border-white/30">
+                {getSyncStatusIcon()}
+                <span className="text-white text-sm font-medium">{getSyncStatusText()}</span>
+              </div>
+              <Button
+                onClick={handleManualSync}
+                variant="outline"
+                size="sm"
+                disabled={syncStatus === 'checking'}
+                className="bg-white/25 border-white/40 text-white hover:bg-white/35"
+              >
+                <RefreshCw className={`h-4 w-4 ${syncStatus === 'checking' ? 'animate-spin' : ''}`} />
+              </Button>
             </div>
           </div>
 

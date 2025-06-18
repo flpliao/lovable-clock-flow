@@ -1,124 +1,202 @@
 
 import { Staff } from '@/components/staff/types';
-import { getCheckInRecords, saveCheckInRecord } from './checkInUtils';
-import { CheckInRecord } from '@/types';
+import { Department } from '@/components/departments/types';
+import { Company, Branch } from '@/types/company';
+import { supabase } from '@/integrations/supabase/client';
 
-/**
- * 当员工数据变化时同步相关数据
- * 这个函数将确保当员工名称、部门等信息变化时，关联的数据也会更新
- */
-export const syncStaffDataChanges = (oldStaff: Staff, newStaff: Staff) => {
-  // 如果员工ID变化，这个函数不适用 - 需要更复杂的合并策略
-  if (oldStaff.id !== newStaff.id) {
-    console.warn('尝试同步不同ID的员工数据，跳过同步');
-    return;
-  }
-  
-  // 如果员工基本数据未变化，不需要同步
-  if (
-    oldStaff.name === newStaff.name && 
-    oldStaff.department === newStaff.department &&
-    oldStaff.position === newStaff.position
-  ) {
-    return;
-  }
-  
-  // 更新打卡记录中的员工信息
-  syncCheckInRecords(newStaff);
-  
-  // 这里可以添加其他数据类型的同步 
-  // 例如: 同步请假记录、同步排班信息等
-  
-  console.log(`已同步员工 ${newStaff.id} (${newStaff.name}) 的所有相关数据`);
-};
-
-/**
- * 同步打卡记录
- * 注意：目前我们只是存储员工ID作为关联，而不是员工的其他信息
- * 在实际应用中可能需要存储员工的额外信息，如姓名、部门等
- */
-const syncCheckInRecords = (staff: Staff) => {
-  // 此功能预留，打卡记录仅存储员工ID，不存储其他信息
-  // 如果未来需要在打卡记录中添加更多员工信息，可在此处实现
-};
-
-/**
- * 当员工被删除时，处理关联数据
- * 可选策略：
- * 1. 删除所有关联数据（如打卡记录）
- * 2. 保留数据但标记为"已删除员工"
- * 3. 转移数据到其他员工
- */
-export const handleStaffDeletion = (staffId: string, strategy: 'delete' | 'mark' | 'transfer' = 'mark', transferToId?: string) => {
-  switch (strategy) {
-    case 'delete':
-      // 删除所有关联的打卡记录
-      deleteAllCheckInRecords(staffId);
-      break;
-    
-    case 'mark':
-      // 标记为已删除员工的打卡记录
-      markCheckInRecordsAsDeletedStaff(staffId);
-      break;
+export class DataSyncManager {
+  // 檢查後台連線狀態
+  static async checkBackendConnection(): Promise<boolean> {
+    try {
+      console.log('🔍 檢查後台連線狀態...');
+      const { error } = await supabase.from('staff').select('count').limit(1);
       
-    case 'transfer':
-      // 转移到其他员工
-      if (transferToId) {
-        transferCheckInRecords(staffId, transferToId);
-      } else {
-        console.error('转移员工数据时需要提供目标员工ID');
+      if (error) {
+        console.error('❌ 後台連線失敗:', error);
+        return false;
       }
-      break;
+      
+      console.log('✅ 後台連線正常');
+      return true;
+    } catch (error) {
+      console.error('💥 後台連線檢查系統錯誤:', error);
+      return false;
+    }
   }
-};
 
-/**
- * 删除员工的所有打卡记录
- */
-const deleteAllCheckInRecords = (staffId: string) => {
-  const allRecords = getCheckInRecords();
-  const filteredRecords = allRecords.filter(record => record.userId !== staffId);
-  localStorage.setItem('checkInRecords', JSON.stringify(filteredRecords));
-  console.log(`已删除员工 ${staffId} 的所有打卡记录`);
-};
+  // 同步所有員工資料
+  static async syncStaffData(): Promise<Staff[]> {
+    try {
+      console.log('🔄 開始同步員工資料...');
+      
+      const { data, error } = await supabase
+        .from('staff')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-/**
- * 标记员工打卡记录为已删除员工
- */
-const markCheckInRecordsAsDeletedStaff = (staffId: string) => {
-  const allRecords = getCheckInRecords();
-  const updatedRecords = allRecords.map(record => {
-    if (record.userId === staffId) {
+      if (error) {
+        console.error('❌ 員工資料同步失敗:', error);
+        return [];
+      }
+
+      const staffData = (data || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        position: item.position,
+        department: item.department,
+        branch_id: item.branch_id || '',
+        branch_name: item.branch_name || '',
+        contact: item.contact || '',
+        role: item.role as 'admin' | 'user' | string,
+        role_id: item.role_id || 'user',
+        supervisor_id: item.supervisor_id,
+        username: item.username,
+        email: item.email,
+        permissions: []
+      }));
+
+      console.log('✅ 員工資料同步完成，共', staffData.length, '筆資料');
+      return staffData;
+    } catch (error) {
+      console.error('💥 員工資料同步系統錯誤:', error);
+      return [];
+    }
+  }
+
+  // 同步所有部門資料
+  static async syncDepartmentData(): Promise<Department[]> {
+    try {
+      console.log('🔄 開始同步部門資料...');
+      
+      const { data, error } = await supabase
+        .from('departments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ 部門資料同步失敗:', error);
+        return [];
+      }
+
+      const departmentData = (data || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        type: item.type as 'headquarters' | 'branch' | 'store' | 'department',
+        location: item.location || '',
+        manager_name: item.manager_name || '',
+        manager_contact: item.manager_contact || '',
+        staff_count: item.staff_count || 0,
+        created_at: item.created_at,
+        updated_at: item.updated_at
+      }));
+
+      console.log('✅ 部門資料同步完成，共', departmentData.length, '個部門');
+      return departmentData;
+    } catch (error) {
+      console.error('💥 部門資料同步系統錯誤:', error);
+      return [];
+    }
+  }
+
+  // 同步公司和營業處資料
+  static async syncCompanyData(): Promise<{ company: Company | null; branches: Branch[] }> {
+    try {
+      console.log('🔄 開始同步公司和營業處資料...');
+      
+      // 載入公司資料
+      const { data: companyData, error: companyError } = await supabase
+        .from('companies')
+        .select('*')
+        .limit(1)
+        .single();
+
+      if (companyError && companyError.code !== 'PGRST116') {
+        console.error('❌ 公司資料同步失敗:', companyError);
+      }
+
+      // 載入營業處資料
+      const { data: branchData, error: branchError } = await supabase
+        .from('branches')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (branchError) {
+        console.error('❌ 營業處資料同步失敗:', branchError);
+      }
+
+      const branches = (branchData || []).map(item => ({
+        id: item.id,
+        company_id: item.company_id,
+        name: item.name,
+        code: item.code,
+        type: item.type as 'headquarters' | 'branch' | 'store',
+        address: item.address,
+        phone: item.phone,
+        email: item.email,
+        manager_name: item.manager_name,
+        manager_contact: item.manager_contact,
+        business_license: item.business_license,
+        is_active: item.is_active,
+        staff_count: item.staff_count,
+        created_at: item.created_at,
+        updated_at: item.updated_at
+      }));
+
+      console.log('✅ 公司和營業處資料同步完成');
+      console.log('📊 公司資料:', companyData ? '已載入' : '未設定');
+      console.log('📊 營業處數量:', branches.length);
+
       return {
-        ...record,
-        details: {
-          ...record.details,
-          deletedStaff: true
-        }
+        company: companyData as Company | null,
+        branches
+      };
+    } catch (error) {
+      console.error('💥 公司和營業處資料同步系統錯誤:', error);
+      return { company: null, branches: [] };
+    }
+  }
+
+  // 執行完整的系統資料同步
+  static async performFullSync(): Promise<{
+    connectionStatus: boolean;
+    staffData: Staff[];
+    departmentData: Department[];
+    companyData: { company: Company | null; branches: Branch[] };
+  }> {
+    console.log('🚀 開始執行完整系統資料同步...');
+    
+    // 檢查連線狀態
+    const connectionStatus = await this.checkBackendConnection();
+    
+    if (!connectionStatus) {
+      console.error('❌ 後台連線失敗，無法進行資料同步');
+      return {
+        connectionStatus: false,
+        staffData: [],
+        departmentData: [],
+        companyData: { company: null, branches: [] }
       };
     }
-    return record;
-  });
-  
-  localStorage.setItem('checkInRecords', JSON.stringify(updatedRecords));
-  console.log(`已标记员工 ${staffId} 的所有打卡记录为已删除员工`);
-};
 
-/**
- * 转移员工打卡记录到其他员工
- */
-const transferCheckInRecords = (fromStaffId: string, toStaffId: string) => {
-  const allRecords = getCheckInRecords();
-  const updatedRecords = allRecords.map(record => {
-    if (record.userId === fromStaffId) {
-      return {
-        ...record,
-        userId: toStaffId
-      };
-    }
-    return record;
-  });
-  
-  localStorage.setItem('checkInRecords', JSON.stringify(updatedRecords));
-  console.log(`已将员工 ${fromStaffId} 的所有打卡记录转移至员工 ${toStaffId}`);
-};
+    // 並行同步所有資料
+    const [staffData, departmentData, companyData] = await Promise.all([
+      this.syncStaffData(),
+      this.syncDepartmentData(),
+      this.syncCompanyData()
+    ]);
+
+    console.log('🎉 完整系統資料同步完成！');
+    console.log('📊 同步結果統計:');
+    console.log(`   - 員工資料: ${staffData.length} 筆`);
+    console.log(`   - 部門資料: ${departmentData.length} 個`);
+    console.log(`   - 公司資料: ${companyData.company ? '已同步' : '未設定'}`);
+    console.log(`   - 營業處資料: ${companyData.branches.length} 個`);
+
+    return {
+      connectionStatus: true,
+      staffData,
+      departmentData,
+      companyData
+    };
+  }
+}

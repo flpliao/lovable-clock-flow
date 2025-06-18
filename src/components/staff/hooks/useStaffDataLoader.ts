@@ -33,11 +33,10 @@ export const useStaffDataLoader = () => {
   const [roles, setRoles] = useState<StaffRole[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // 載入員工資料 - 廖俊雄現在有特殊 RLS 權限
+  // 載入員工資料 - 確保完整前後台同步
   const loadStaff = async () => {
     try {
-      console.log('🔄 廖俊雄管理員從 Supabase 載入員工資料...');
-      console.log('🔐 使用特殊 RLS 政策 - 完整存取權限');
+      console.log('🔄 正在同步後台員工資料到前台...');
       setLoading(true);
 
       const { data, error } = await supabase
@@ -46,14 +45,15 @@ export const useStaffDataLoader = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('❌ 載入員工資料失敗:', error);
+        console.error('❌ 員工資料同步失敗:', error);
+        setStaffList([]);
         return;
       }
 
-      console.log('✅ 廖俊雄管理員成功載入員工資料:', data?.length || 0, '筆資料');
-      console.log('📋 員工資料內容:', data);
+      console.log('✅ 後台員工資料載入成功，資料筆數:', data?.length || 0);
+      console.log('📊 後台員工資料內容:', data);
       
-      // 轉換資料格式以符合前端介面
+      // 轉換資料格式以符合前台介面
       const transformedData = (data || []).map(item => ({
         id: item.id,
         name: item.name,
@@ -70,14 +70,11 @@ export const useStaffDataLoader = () => {
         permissions: []
       }));
 
-      console.log('🔄 轉換後的員工資料:', transformedData);
+      console.log('🔄 員工資料前後台同步完成，前台可用資料:', transformedData.length, '筆');
       setStaffList(transformedData);
       
-      // 移除 toast 提醒以避免干擾
-      console.log(`員工資料載入完成 - 共 ${transformedData.length} 筆資料`);
-      
     } catch (error) {
-      console.error('❌ 載入員工資料系統錯誤:', error);
+      console.error('❌ 員工資料前後台同步系統錯誤:', error);
       setStaffList([]);
     } finally {
       setLoading(false);
@@ -87,22 +84,22 @@ export const useStaffDataLoader = () => {
   // 載入角色資料
   const loadRoles = async () => {
     try {
-      console.log('正在載入角色資料...');
+      console.log('🔄 載入角色資料...');
       setRoles(mockRoles);
-      console.log('✅ 成功載入角色資料');
+      console.log('✅ 角色資料載入完成');
     } catch (error) {
-      console.error('載入角色資料失敗，使用預設角色:', error);
+      console.error('❌ 載入角色資料失敗，使用預設角色:', error);
       setRoles(mockRoles);
     }
   };
 
-  // 刷新資料
+  // 完整資料同步
   const refreshData = async () => {
-    console.log('🔄 廖俊雄管理員觸發重新載入資料...');
-    console.log('🔐 使用特殊 RLS 政策確保完整權限');
+    console.log('🔄 觸發完整前後台資料同步...');
     setLoading(true);
     await Promise.all([loadStaff(), loadRoles()]);
     setLoading(false);
+    console.log('✅ 前後台資料同步完成');
   };
 
   return {

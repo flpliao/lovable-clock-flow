@@ -1,24 +1,26 @@
 
-import { useUser } from '@/contexts/UserContext';
-import { Department, NewDepartment } from './types';
-import { useSupabaseDepartmentOperations } from './hooks/useSupabaseDepartmentOperations';
+import { useState } from 'react';
+import { Department, NewDepartment, DepartmentManagementContextType } from './types';
 import { useDepartmentDialogs } from './hooks/useDepartmentDialogs';
-import { useDepartmentFormValidation } from './hooks/useDepartmentFormValidation';
-import { useDepartmentOperations } from './hooks/useDepartmentOperations';
-import { useEffect } from 'react';
+import { useSupabaseDepartmentOperations } from './hooks/useSupabaseDepartmentOperations';
+import { useUser } from '@/contexts/UserContext';
+import { DataSyncManager } from '@/utils/dataSync';
 
-export const useDepartmentManagement = () => {
+export const useDepartmentManagement = (): DepartmentManagementContextType => {
   const { isAdmin, currentUser } = useUser();
+  const [searchFilter, setSearchFilter] = useState('');
 
+  // 使用 Supabase 操作 hooks
   const {
-    departments,
     loading,
-    addDepartment: supabaseAddDepartment,
-    updateDepartment: supabaseUpdateDepartment,
-    deleteDepartment: supabaseDeleteDepartment,
+    departments,
+    addDepartment,
+    updateDepartment,
+    deleteDepartment,
     refreshDepartments
   } = useSupabaseDepartmentOperations();
 
+  // 使用對話框管理 hooks
   const {
     isAddDialogOpen,
     setIsAddDialogOpen,
@@ -28,94 +30,99 @@ export const useDepartmentManagement = () => {
     setCurrentDepartment,
     newDepartment,
     setNewDepartment,
-    resetNewDepartment,
-    openEditDialog: baseOpenEditDialog
+    openEditDialog,
+    resetNewDepartment
   } = useDepartmentDialogs();
 
-  const {
-    validateNewDepartment,
-    validateEditDepartment
-  } = useDepartmentFormValidation();
+  // 篩選部門
+  const filteredDepartments = departments.filter(department =>
+    searchFilter === '' ||
+    department.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+    department.type.toLowerCase().includes(searchFilter.toLowerCase()) ||
+    (department.location && department.location.toLowerCase().includes(searchFilter.toLowerCase())) ||
+    (department.manager_name && department.manager_name.toLowerCase().includes(searchFilter.toLowerCase()))
+  );
 
-  const {
-    checkEditPermission
-  } = useDepartmentOperations();
+  // 新增部門處理
+  const handleAddDepartment = async (): Promise<boolean> => {
+    if (!isAdmin()) {
+      console.warn('⚠️ 非管理員用戶嘗試新增部門');
+      return false;
+    }
 
-  // 初始化時顯示載入狀態並觸發資料載入
-  useEffect(() => {
-    console.log('🚀 部門管理系統初始化');
-    console.log('👤 當前用戶:', currentUser?.name);
-    console.log('🔐 管理員權限:', isAdmin());
-    console.log('📊 部門數量:', departments.length);
+    console.log('➕ 開始新增部門:', newDepartment);
+    const success = await addDepartment(newDepartment);
     
-    // 強制重新載入部門資料
-    if (departments.length === 0 && !loading) {
-      console.log('🔄 檢測到無部門資料，觸發重新載入...');
-      refreshDepartments();
-    }
-  }, [currentUser, departments.length, isAdmin, loading, refreshDepartments]);
-
-  // 顯示所有部門 - 廖俊雄管理員可以看到全部
-  const filteredDepartments = departments;
-
-  const handleAddDepartment = async () => {
-    if (!validateNewDepartment(newDepartment)) {
-      return;
-    }
-
-    console.log('➕ 廖俊雄開始新增部門:', newDepartment);
-    const success = await supabaseAddDepartment(newDepartment);
     if (success) {
-      console.log('✅ 部門新增成功，重置表單並重新載入');
       resetNewDepartment();
       setIsAddDialogOpen(false);
+      console.log('✅ 部門新增成功，重新同步後台資料');
+      // 新增成功後重新同步資料
       await refreshDepartments();
     }
+    
+    return success;
   };
 
+  // 編輯部門處理
   const handleEditDepartment = async (): Promise<boolean> => {
+    if (!isAdmin()) {
+      console.warn('⚠️ 非管理員用戶嘗試編輯部門');
+      return false;
+    }
+
     if (!currentDepartment) {
-      console.error('❌ 沒有選擇要編輯的部門');
+      console.warn('⚠️ 沒有選擇要編輯的部門');
       return false;
     }
 
-    if (!validateEditDepartment(currentDepartment)) {
-      console.error('❌ 部門資料驗證失敗');
-      return false;
-    }
-
-    console.log('✏️ 廖俊雄開始編輯部門:', currentDepartment);
-    const success = await supabaseUpdateDepartment(currentDepartment);
+    console.log('✏️ 開始編輯部門:', currentDepartment);
+    const success = await updateDepartment(currentDepartment);
+    
     if (success) {
-      console.log('✅ 部門編輯成功，重新載入資料');
+      setIsEditDialogOpen(false);
+      console.log('✅ 部門編輯成功，重新同步後台資料');
+      // 編輯成功後重新同步資料
       await refreshDepartments();
-      return true;
     }
-    return false;
+    
+    return success;
   };
 
+  // 刪除部門處理
   const handleDeleteDepartment = async (id: string) => {
-    console.log('🗑️ 廖俊雄開始刪除部門:', id);
-    const success = await supabaseDeleteDepartment(id);
-    if (success) {
-      console.log('✅ 部門刪除成功，重新載入資料');
-      await refreshDepartments();
-    }
-  };
-
-  const openEditDialog = (department: Department) => {
-    console.log('📝 廖俊雄開啟編輯部門對話框:', department);
-    if (!checkEditPermission(department)) {
-      console.error('❌ 沒有編輯權限');
+    if (!isAdmin()) {
+      console.warn('⚠️ 非管理員用戶嘗試刪除部門');
       return;
     }
-    baseOpenEditDialog(department);
+
+    console.log('🗑️ 開始刪除部門, ID:', id);
+    const success = await deleteDepartment(id);
+    
+    if (success) {
+      console.log('✅ 部門刪除成功，重新同步後台資料');
+      // 刪除成功後重新同步資料
+      await refreshDepartments();
+    }
+  };
+
+  // 手動觸發完整同步
+  const performFullSync = async () => {
+    console.log('🔄 部門管理：手動觸發完整系統資料同步');
+    const syncResult = await DataSyncManager.performFullSync();
+    await refreshDepartments();
+    return syncResult;
   };
 
   return {
+    // 基本狀態
+    loading,
     departments,
     filteredDepartments,
-    loading,
+    searchFilter,
+    setSearchFilter,
+
+    // 對話框狀態
     isAddDialogOpen,
     setIsAddDialogOpen,
     isEditDialogOpen,
@@ -124,10 +131,17 @@ export const useDepartmentManagement = () => {
     setCurrentDepartment,
     newDepartment,
     setNewDepartment,
+
+    // 操作方法
     handleAddDepartment,
     handleEditDepartment,
     handleDeleteDepartment,
     openEditDialog,
-    refreshDepartments
+    refreshDepartments,
+    performFullSync, // 新增完整同步功能
+
+    // 權限檢查
+    canManage: isAdmin(),
+    currentUser
   };
 };

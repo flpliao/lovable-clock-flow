@@ -43,12 +43,12 @@ const CalendarViewSection = ({
   return (
     <div className="space-y-8">
       {/* 年月選擇器 */}
-      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-xl p-6">
+      <div>
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-white/20 rounded-2xl">
             <Calendar className="h-7 w-7 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-black">選擇年月</h3>
+          <h3 className="text-2xl font-bold text-white drop-shadow-lg">選擇年月</h3>
         </div>
         <YearMonthSelectorCard
           selectedYear={selectedYear}
@@ -61,12 +61,12 @@ const CalendarViewSection = ({
       </div>
 
       {/* 日曆網格 */}
-      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-xl p-6">
+      <div>
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-white/20 rounded-2xl">
             <Grid className="h-7 w-7 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-black">日曆檢視</h3>
+          <h3 className="text-2xl font-bold text-white drop-shadow-lg">日曆檢視</h3>
         </div>
         <CalendarGrid
           daysInMonth={daysInMonth}
@@ -76,12 +76,12 @@ const CalendarViewSection = ({
       </div>
 
       {/* 排班詳情 */}
-      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-xl p-6">
+      <div>
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-white/20 rounded-2xl">
             <Users className="h-7 w-7 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-black">排班詳情</h3>
+          <h3 className="text-2xl font-bold text-white drop-shadow-lg">排班詳情</h3>
         </div>
         
         <ScheduleTable

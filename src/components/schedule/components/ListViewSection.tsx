@@ -30,12 +30,12 @@ const ListViewSection = ({
   return (
     <div className="space-y-8">
       {/* 員工月份選擇器 */}
-      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-xl p-6">
+      <div>
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-white/20 rounded-2xl">
             <User className="h-7 w-7 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-black">我的詳情</h3>
+          <h3 className="text-2xl font-bold text-white drop-shadow-lg">我的詳情</h3>
         </div>
         
         <StaffMonthSelector
@@ -49,12 +49,12 @@ const ListViewSection = ({
       </div>
       
       {/* 月度排班視圖 */}
-      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-xl p-6">
+      <div>
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-white/20 rounded-2xl">
             <List className="h-7 w-7 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-black">月度排班</h3>
+          <h3 className="text-2xl font-bold text-white drop-shadow-lg">月度排班</h3>
         </div>
         
         <MonthlyScheduleView

@@ -6,7 +6,9 @@ export class DepartmentFetchService {
   static async getAllDepartments(): Promise<Department[]> {
     try {
       console.log('🔄 正在同步後台部門資料到前台...');
+      console.log('🔍 特別檢查部門 ID: 56727091-50b7-4ef4-93f7-c3d09c91d537');
       
+      // 強制清除任何可能的快取，直接查詢最新資料
       const { data, error } = await supabase
         .from('departments')
         .select('*')
@@ -24,8 +26,19 @@ export class DepartmentFetchService {
         return [];
       }
 
+      console.log('📥 從後台獲取的原始資料:', data);
       console.log('✅ 後台部門資料載入成功，部門數量:', data?.length || 0);
-      console.log('📊 後台部門資料內容:', data);
+      
+      // 檢查是否包含目標部門
+      const targetDepartment = data?.find(item => item.id === '56727091-50b7-4ef4-93f7-c3d09c91d537');
+      if (targetDepartment) {
+        console.log('🎯 找到目標部門資料:', targetDepartment);
+      } else {
+        console.log('⚠️ 目標部門未在查詢結果中，所有部門 ID:');
+        data?.forEach((dept, index) => {
+          console.log(`  ${index + 1}. ${dept.id} - ${dept.name}`);
+        });
+      }
       
       // 轉換資料格式以符合前台介面
       const transformedData = (data || []).map(item => ({
@@ -41,6 +54,14 @@ export class DepartmentFetchService {
       }));
 
       console.log('🔄 部門資料前後台同步完成，前台可用部門:', transformedData.length, '個');
+      
+      // 再次檢查轉換後的資料
+      const transformedTargetDepartment = transformedData.find(dept => dept.id === '56727091-50b7-4ef4-93f7-c3d09c91d537');
+      if (transformedTargetDepartment) {
+        console.log('✅ 目標部門已轉換:', transformedTargetDepartment);
+      } else {
+        console.log('❌ 目標部門在轉換過程中遺失');
+      }
       
       return transformedData;
       

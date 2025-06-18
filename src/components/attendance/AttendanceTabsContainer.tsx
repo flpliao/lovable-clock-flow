@@ -59,7 +59,7 @@ const AttendanceTabsContainer: React.FC<AttendanceTabsContainerProps> = ({
           </TabsList>
         </div>
         
-        {/* 內容區域 - 直接顯示內容，不再使用內嵌卡片 */}
+        {/* 內容區域 */}
         <div className="p-6">
           <TabsContent value="history" className="mt-0">
             <CheckInHistory />

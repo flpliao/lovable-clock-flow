@@ -1,8 +1,7 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Pencil, Trash2, Building, MapPin, User, Users, Phone } from 'lucide-react';
+import { Pencil, Trash2, Building, MapPin, User, Users, Phone, RefreshCw } from 'lucide-react';
 import { useDepartmentManagementContext } from './DepartmentManagementContext';
 import { useUser } from '@/contexts/UserContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -11,11 +10,21 @@ const DepartmentTable = () => {
   const { 
     filteredDepartments, 
     openEditDialog, 
-    handleDeleteDepartment 
+    handleDeleteDepartment,
+    loading,
+    refreshDepartments
   } = useDepartmentManagementContext();
   
-  const { isAdmin } = useUser();
+  const { isAdmin, currentUser } = useUser();
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    console.log('📋 部門表格渲染:', {
+      departmentCount: filteredDepartments.length,
+      loading,
+      currentUser: currentUser?.name
+    });
+  }, [filteredDepartments.length, loading, currentUser]);
 
   const getTypeLabel = (type: string) => {
     switch (type) {
@@ -25,6 +34,8 @@ const DepartmentTable = () => {
         return '分部';
       case 'store':
         return '門市';
+      case 'department':
+        return '部門';
       default:
         return type;
     }
@@ -38,17 +49,42 @@ const DepartmentTable = () => {
         return 'bg-green-500/70 text-white';
       case 'store':
         return 'bg-orange-500/70 text-white';
+      case 'department':
+        return 'bg-purple-500/70 text-white';
       default:
         return 'bg-gray-500/70 text-white';
     }
   };
+
+  const handleRefresh = async () => {
+    console.log('🔄 手動重新載入部門資料');
+    await refreshDepartments();
+  };
+
+  // 載入中狀態
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+        <p className="text-white/70">載入部門資料中...</p>
+      </div>
+    );
+  }
 
   // 如果沒有部門資料
   if (filteredDepartments.length === 0) {
     return (
       <div className="text-center py-8">
         <Building className="h-12 w-12 mx-auto text-white/50 mb-4" />
-        <p className="text-white/70">尚未建立部門資料</p>
+        <p className="text-white/70 mb-4">尚未載入部門資料</p>
+        <Button
+          onClick={handleRefresh}
+          variant="outline"
+          className="bg-white/25 border-white/40 text-white hover:bg-white/35"
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          重新載入
+        </Button>
       </div>
     );
   }

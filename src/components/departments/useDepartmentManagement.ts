@@ -5,9 +5,10 @@ import { useSupabaseDepartmentOperations } from './hooks/useSupabaseDepartmentOp
 import { useDepartmentDialogs } from './hooks/useDepartmentDialogs';
 import { useDepartmentFormValidation } from './hooks/useDepartmentFormValidation';
 import { useDepartmentOperations } from './hooks/useDepartmentOperations';
+import { useEffect } from 'react';
 
 export const useDepartmentManagement = () => {
-  const { isAdmin } = useUser();
+  const { isAdmin, currentUser } = useUser();
 
   // 使用分離的 hooks
   const {
@@ -40,6 +41,15 @@ export const useDepartmentManagement = () => {
   const {
     checkEditPermission
   } = useDepartmentOperations();
+
+  // 確保載入時顯示正確的用戶資訊和部門數量
+  useEffect(() => {
+    console.log('🔍 部門管理初始化:', {
+      currentUser: currentUser?.name,
+      isAdmin: isAdmin(),
+      departmentCount: departments.length
+    });
+  }, [currentUser, departments.length, isAdmin]);
 
   // All departments are visible
   const filteredDepartments = departments;

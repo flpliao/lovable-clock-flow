@@ -32,36 +32,34 @@ const StaffDashboard = () => {
 
       <StaffManagementProvider>
         <div className="relative z-10">
-          <main className="p-2 sm:p-4 lg:p-6 pt-56 sm:pt-60 lg:pt-64">
-            {/* 頁面標題區域 */}
-            <div className="mb-10">
-              <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-8">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-blue-500/70 rounded-2xl shadow-lg backdrop-blur-xl border border-blue-400/30">
-                      <BarChart3 className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <h1 className="text-2xl font-bold text-white drop-shadow-md">
-                        員工考勤儀表板
-                      </h1>
-                      <p className="text-white/80 text-sm mt-1">管理所有員工考勤數據及分析</p>
-                    </div>
+          <main className="p-2 sm:p-4 lg:p-6 pt-[80px] space-y-6">
+            {/* 頁面標題區域 - 調整頂部間距避免與導航重疊 */}
+            <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6 mt-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-blue-500/70 rounded-2xl shadow-lg backdrop-blur-xl border border-blue-400/30">
+                    <BarChart3 className="h-6 w-6 text-white" />
                   </div>
-                  <div className="hidden md:flex items-center gap-3">
-                    <div className="p-2 bg-green-500/60 rounded-lg shadow-md backdrop-blur-xl border border-green-400/40">
-                      <Activity className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="p-2 bg-orange-500/60 rounded-lg shadow-md backdrop-blur-xl border border-orange-400/40">
-                      <Users className="h-4 w-4 text-white" />
-                    </div>
+                  <div>
+                    <h1 className="text-2xl font-bold text-white drop-shadow-md">
+                      員工考勤儀表板
+                    </h1>
+                    <p className="text-white/80 text-sm mt-1">管理所有員工考勤數據及分析</p>
+                  </div>
+                </div>
+                <div className="hidden md:flex items-center gap-3">
+                  <div className="p-2 bg-green-500/60 rounded-lg shadow-md backdrop-blur-xl border border-green-400/40">
+                    <Activity className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="p-2 bg-orange-500/60 rounded-lg shadow-md backdrop-blur-xl border border-orange-400/40">
+                    <Users className="h-4 w-4 text-white" />
                   </div>
                 </div>
               </div>
             </div>
 
             {/* 標籤導航 */}
-            <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6 mb-8">
+            <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 bg-white/15 rounded-xl h-12">
                   <TabsTrigger 

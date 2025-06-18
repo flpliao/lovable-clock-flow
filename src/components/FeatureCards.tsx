@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -98,7 +97,7 @@ const FeatureCards = ({ abnormalCount, annualLeaveBalance }: FeatureCardsProps) 
   ];
 
   const FeatureCard = ({ feature }: { feature: any }) => (
-    <div className="group bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative w-full">
+    <div className="group bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative w-full max-w-xs mx-auto">
       <Link to={feature.link} className="block">
         <div className="p-6 sm:p-8 relative overflow-hidden h-full">
           <div className="relative z-10 h-full flex flex-col">
@@ -130,15 +129,13 @@ const FeatureCards = ({ abnormalCount, annualLeaveBalance }: FeatureCardsProps) 
   );
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-10">
+    <div className="w-full max-w-3xl mx-auto space-y-10 px-4">
       {/* 主要功能區 */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">主要功能</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 justify-items-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 justify-items-center">
           {mainFeatures.map((feature, index) => (
-            <div key={index} className="w-full max-w-sm">
-              <FeatureCard feature={feature} />
-            </div>
+            <FeatureCard key={index} feature={feature} />
           ))}
         </div>
       </div>
@@ -147,11 +144,9 @@ const FeatureCards = ({ abnormalCount, annualLeaveBalance }: FeatureCardsProps) 
       {(isAdmin() || isManager()) && (
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">管理功能</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 justify-items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 justify-items-center">
             {adminFeatures.map((feature, index) => (
-              <div key={index} className="w-full max-w-sm">
-                <FeatureCard feature={feature} />
-              </div>
+              <FeatureCard key={index} feature={feature} />
             ))}
           </div>
         </div>

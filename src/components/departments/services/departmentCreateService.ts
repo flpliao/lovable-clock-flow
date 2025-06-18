@@ -15,18 +15,10 @@ export class DepartmentCreateService {
         throw new Error(validationError);
       }
       
-      // 檢查用戶身份
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) {
-        console.error('❌ 身份驗證錯誤:', authError);
-        // 在模擬環境中繼續執行
-      }
-      console.log('👤 執行新增的用戶ID:', user?.id);
-      
       const insertData = DepartmentValidationService.prepareInsertData(department);
       console.log('📝 即將插入的資料:', insertData);
       
-      // 直接嘗試插入，讓 RLS 政策處理權限檢查
+      // 直接嘗試插入，讓新的 RLS 政策處理權限檢查
       const { data, error } = await supabase
         .from('departments')
         .insert([insertData])
@@ -56,11 +48,11 @@ export class DepartmentCreateService {
     } catch (error: any) {
       console.error('💥 新增部門失敗完整錯誤:', error);
       
-      let errorMessage = "無法新增部門到資料庫";
+      let errorMessage = "無法新增部門";
       
       if (error.message) {
         if (error.message.includes('row-level security') || error.message.includes('policy')) {
-          errorMessage = "系統權限設定問題，請重新整理頁面後再試";
+          errorMessage = "權限不足，請確認您有管理部門的權限";
         } else if (error.message.includes('duplicate') || error.message.includes('unique')) {
           errorMessage = "部門名稱已存在，請使用不同的名稱";
         } else if (error.message.includes('violates') || error.message.includes('constraint')) {

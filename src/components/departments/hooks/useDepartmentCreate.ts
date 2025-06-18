@@ -11,27 +11,17 @@ export const useDepartmentCreate = () => {
       const result = await DepartmentService.createDepartment(newDepartment);
       return result !== null;
     } catch (error: any) {
-      console.error('💥 新增部門完整錯誤資訊:', error);
+      console.error('💥 新增部門錯誤:', error);
       
-      let errorMessage = "無法新增部門，請檢查資料後重試";
-      
-      if (error.message) {
-        if (error.message.includes('row-level security') || error.message.includes('policy')) {
-          errorMessage = "系統權限設定問題，請聯繫管理員";
-        } else if (error.message.includes('violates') || error.message.includes('constraint')) {
-          errorMessage = "資料格式錯誤或違反約束條件";
-        } else if (error.message.includes('duplicate') || error.message.includes('unique')) {
-          errorMessage = "部門名稱已存在，請使用不同的名稱";
-        } else {
-          errorMessage = error.message;
-        }
+      // 讓 service 層處理錯誤訊息，這裡只做基本的錯誤處理
+      if (!error.message || !error.message.includes('新增失敗')) {
+        toast({
+          title: "新增失敗",
+          description: "系統發生錯誤，請稍後再試",
+          variant: "destructive",
+        });
       }
       
-      toast({
-        title: "新增失敗",
-        description: errorMessage,
-        variant: "destructive",
-      });
       return false;
     }
   };

@@ -1572,6 +1572,10 @@ export type Database = {
         Args: { staff_uuid: string; target_year: number }
         Returns: undefined
       }
+      is_admin_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       mark_announcement_as_read: {
         Args: { user_uuid: string; announcement_uuid: string }
         Returns: undefined

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AnnualLeaveBalance } from '@/types';
 
@@ -29,9 +28,9 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // 廖俊雄的固定管理員資料，對應依美琦股份有限公司
+  // �廖俊雄的固定管理員資料
   const adminUser = {
-    id: '550e8400-e29b-41d4-a716-446655440001', // 固定的管理員ID
+    id: '550e8400-e29b-41d4-a716-446655440001',
     name: '廖俊雄',
     position: '資深工程師',
     department: '技術部',
@@ -47,8 +46,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     console.log('👤 UserProvider: 初始化管理員用戶');
     console.log('🆔 UserProvider: 用戶ID:', adminUser.id);
-    console.log('🏢 UserProvider: 關聯公司ID: 550e8400-e29b-41d4-a716-446655440000');
     console.log('👨‍💼 UserProvider: 管理員名稱:', adminUser.name);
+    console.log('🔐 UserProvider: 管理員角色:', adminUser.role);
     setIsUserLoaded(true);
   }, []);
 
@@ -67,7 +66,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const isAdmin = () => {
     const result = currentUser?.role === 'admin' && currentUser?.id === '550e8400-e29b-41d4-a716-446655440001';
-    console.log('🔐 UserProvider: 管理員權限檢查:', result, '用戶:', currentUser?.name);
+    console.log('🔐 UserProvider: 管理員權限檢查:', result, '用戶:', currentUser?.name, '角色:', currentUser?.role);
     return result;
   };
 
@@ -94,7 +93,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const hasPermission = (permission: string): boolean => {
     if (!currentUser) return false;
     
-    // 廖俊雄（管理員）擁有所有權限
+    // �廖俊雄（管理員）擁有所有權限
     if (currentUser.role === 'admin' && currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
       console.log('🔐 UserProvider: 管理員擁有權限:', permission);
       return true;
@@ -118,7 +117,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const resetUserState = () => {
     console.log('🔄 UserProvider: 重置用戶狀態到管理員');
-    // 重置為預設的管理員用戶而不是清空
     setCurrentUser(adminUser);
     setAnnualLeaveBalance(null);
     setUserError(null);

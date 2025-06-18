@@ -14,6 +14,7 @@ export const useDepartmentCreate = () => {
       
       if (authError) {
         console.error('❌ 身份驗證錯誤:', authError);
+        // 在模擬環境中繼續執行
       }
 
       // 準備要插入的資料
@@ -28,6 +29,7 @@ export const useDepartmentCreate = () => {
 
       console.log('📝 準備插入的部門資料:', departmentData);
 
+      // 嘗試插入部門資料
       const { data, error } = await supabase
         .from('departments')
         .insert([departmentData])
@@ -56,10 +58,12 @@ export const useDepartmentCreate = () => {
       let errorMessage = "無法新增部門，請檢查資料後重試";
       
       if (error.message) {
-        if (error.message.includes('row-level security')) {
-          errorMessage = "權限不足，無法新增部門";
-        } else if (error.message.includes('violates')) {
+        if (error.message.includes('row-level security') || error.message.includes('policy')) {
+          errorMessage = "系統權限設定問題，請聯繫管理員";
+        } else if (error.message.includes('violates') || error.message.includes('constraint')) {
           errorMessage = "資料格式錯誤或違反約束條件";
+        } else if (error.message.includes('duplicate') || error.message.includes('unique')) {
+          errorMessage = "部門名稱已存在，請使用不同的名稱";
         } else {
           errorMessage = error.message;
         }

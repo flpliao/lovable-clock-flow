@@ -34,7 +34,15 @@ export const initCredentialStore = (): void => {
     password: 'password'
   };
   
-  console.log('✅ 憑證存儲已初始化，廖俊雄管理員帳號已載入');
+  // 清理並重新設定鄭宇伶的帳號，移除任何隱藏字符
+  const zhengUserId = 'f3e9c716-8992-45cc-beee-3aa3bc02b6fc';
+  window.userCredentialsStore[zhengUserId] = {
+    userId: zhengUserId,
+    email: 'alinzheng55@gmail.com',
+    password: '0989022719' // 清理後的密碼，沒有隱藏字符
+  };
+  
+  console.log('✅ 憑證存儲已初始化，所有帳號已載入');
   console.log('🔐 可用帳號:', Object.keys(window.userCredentialsStore));
   console.log('📋 憑證存儲內容:', window.userCredentialsStore);
 };

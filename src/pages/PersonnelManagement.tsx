@@ -31,11 +31,11 @@ const PersonnelManagement = () => {
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
       <StaffManagementProvider>
-        <div className="relative z-10">
-          <main className="p-2 sm:p-4 lg:p-6 pt-[80px] space-y-6">
-            {/* 頁面標題區域 - 調整頂部間距避免與導航重疊 */}
-            <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-6 mt-8">
-              <div className="flex items-center justify-between">
+        <div className="relative z-10 w-full">
+          {/* 頁面標題區域 - 與系統設定頁面保持一致的間距 */}
+          <div className="w-full px-0 sm:px-4 lg:px-8 pt-32 md:pt-36 pb-4">
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
+              <div className="flex items-center justify-between p-6">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-purple-500/70 rounded-2xl shadow-lg backdrop-blur-xl border border-purple-400/30">
                     <Users className="h-6 w-6 text-white" />
@@ -57,37 +57,43 @@ const PersonnelManagement = () => {
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* 標籤導航 */}
-            <div className="backdrop-blur-xl bg-white/20 border border-white/20 rounded-3xl shadow-xl p-4">
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-white/15 rounded-xl h-12">
-                  <TabsTrigger 
-                    value="staff" 
-                    className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-lg flex items-center gap-2"
-                  >
-                    <UserCheck className="h-4 w-4" />
-                    人員組織
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="departments" 
-                    className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-lg flex items-center gap-2"
-                  >
-                    <Building className="h-4 w-4" />
-                    部門門市
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="positions" 
-                    className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-lg flex items-center gap-2"
-                  >
-                    <Briefcase className="h-4 w-4" />
-                    職位管理
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+          {/* 標籤導航 - 保持50px間距 */}
+          <div className="w-full px-0 sm:px-4 lg:px-8" style={{ paddingTop: '50px', paddingBottom: '24px' }}>
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
+              <div className="p-4">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 bg-white/15 rounded-xl h-12">
+                    <TabsTrigger 
+                      value="staff" 
+                      className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-lg flex items-center gap-2"
+                    >
+                      <UserCheck className="h-4 w-4" />
+                      人員組織
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="departments" 
+                      className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-lg flex items-center gap-2"
+                    >
+                      <Building className="h-4 w-4" />
+                      部門門市
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="positions" 
+                      className="text-white data-[state=active]:bg-white/30 data-[state=active]:text-white rounded-lg flex items-center gap-2"
+                    >
+                      <Briefcase className="h-4 w-4" />
+                      職位管理
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
             </div>
-            
-            {/* 內容區域 - 直接顯示在主背景上 */}
+          </div>
+          
+          {/* 內容區域 */}
+          <div className="w-full px-0 sm:px-4 lg:px-8 pb-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsContent value="staff" className="mt-0">
                 <StaffManagement />
@@ -101,7 +107,7 @@ const PersonnelManagement = () => {
                 <PositionManagement />
               </TabsContent>
             </Tabs>
-          </main>
+          </div>
         </div>
       </StaffManagementProvider>
     </div>

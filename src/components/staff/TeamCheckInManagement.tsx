@@ -52,10 +52,10 @@ const TeamCheckInManagement: React.FC = () => {
       
       <CardContent>
         <Tabs value={filter} onValueChange={(value) => setFilter(value as 'today' | 'week' | 'month')}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="today">今日</TabsTrigger>
-            <TabsTrigger value="week">本週</TabsTrigger>
-            <TabsTrigger value="month">本月</TabsTrigger>
+          <TabsList className="mb-4 bg-white/30 backdrop-blur-xl rounded-xl border border-white/30">
+            <TabsTrigger value="today" className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900">今日</TabsTrigger>
+            <TabsTrigger value="week" className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900">本週</TabsTrigger>
+            <TabsTrigger value="month" className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900">本月</TabsTrigger>
           </TabsList>
           
           <TabsContent value={filter} className="mt-0">

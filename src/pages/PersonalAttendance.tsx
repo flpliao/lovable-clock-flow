@@ -46,17 +46,15 @@ const PersonalAttendance = () => {
         </div>
 
         <div className="w-full px-0 sm:px-4 lg:px-8 pb-6">
-          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl mx-4 shadow-xl">
-            <div className="p-6">
-              <AttendanceTabsContainer
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                date={date}
-                setDate={setDate}
-                selectedDateRecords={selectedDateRecords}
-                checkInRecords={checkInRecords}
-              />
-            </div>
+          <div className="mx-4">
+            <AttendanceTabsContainer
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              date={date}
+              setDate={setDate}
+              selectedDateRecords={selectedDateRecords}
+              checkInRecords={checkInRecords}
+            />
           </div>
         </div>
       </div>

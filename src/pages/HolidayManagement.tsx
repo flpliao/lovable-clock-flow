@@ -55,7 +55,7 @@ const HolidayManagement = () => {
           </div>
         </div>
 
-        {/* 功能導航 - 保持50px間距 */}
+        {/* 功能導航 - 保持50px間距，直接放在淡藍色背景上 */}
         <div className="w-full px-0 sm:px-4 lg:px-8" style={{ paddingTop: '50px', paddingBottom: '24px' }}>
           <div className="mx-4">
             <div className="space-y-6">

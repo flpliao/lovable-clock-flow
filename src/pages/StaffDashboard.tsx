@@ -85,7 +85,7 @@ const StaffDashboard = () => {
             </div>
           </div>
           
-          {/* 內容區域 */}
+          {/* 內容區域 - 直接放在淡藍色背景上 */}
           <div className="w-full px-0 sm:px-4 lg:px-8 pb-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsContent value="analytics" className="mt-0">

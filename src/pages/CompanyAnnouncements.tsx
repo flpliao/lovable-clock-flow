@@ -88,7 +88,7 @@ const CompanyAnnouncements: React.FC = () => {
           </div>
         </div>
 
-        {/* Main content container */}
+        {/* Main content container - 直接放在淡藍色背景上 */}
         <div className="w-full px-0 sm:px-4 lg:px-8 pb-8">
           <div className="mx-4">
             <AnnouncementList />

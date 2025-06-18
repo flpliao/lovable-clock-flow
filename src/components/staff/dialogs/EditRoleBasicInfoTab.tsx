@@ -8,7 +8,7 @@ import { StaffRole } from '../types';
 
 interface EditRoleBasicInfoTabProps {
   editedRole: StaffRole;
-  setEditedRole: (role: StaffRole) => void;
+  setEditedRole: (role: StaffRole | ((prev: StaffRole) => StaffRole)) => void;
   isSystemRole: boolean;
   isSubmitting: boolean;
   onCancel: () => void;

@@ -7,7 +7,7 @@ import { getPermissionCategories, getPermissionsByCategory } from '../RoleConsta
 
 interface EditRolePermissionsTabProps {
   editedRole: StaffRole;
-  setEditedRole: (role: StaffRole) => void;
+  setEditedRole: (role: StaffRole | ((prev: StaffRole) => StaffRole)) => void;
   isSubmitting: boolean;
 }
 

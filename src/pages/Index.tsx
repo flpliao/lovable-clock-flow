@@ -45,27 +45,21 @@ const Index = () => {
 
       <div className="relative z-10 w-full min-h-screen pb-safe pt-32 md:pt-36">
         {/* 歡迎區塊 */}
-        <div className="w-full px-0 sm:px-4 lg:px-8">
-          <div className="mx-4">
-            <WelcomeSection userName={currentUser?.name || '訪客'} />
-          </div>
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <WelcomeSection userName={currentUser?.name || '訪客'} />
         </div>
         
         {/* 打卡區塊 */}
-        <div className="w-full px-0 sm:px-4 lg:px-8 mb-2 sm:mb-6">
-          <div className="mx-4">
-            <LocationCheckIn />
-          </div>
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-2 sm:mb-6">
+          <LocationCheckIn />
         </div>
         
         {/* 功能卡片 */}
-        <div className="w-full px-0 sm:px-4 lg:px-8 pb-2 sm:pb-8">
-          <div className="mx-4">
-            <FeatureCards 
-              abnormalCount={0} 
-              annualLeaveBalance={leaveHours} 
-            />
-          </div>
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-2 sm:pb-8">
+          <FeatureCards 
+            abnormalCount={0} 
+            annualLeaveBalance={leaveHours} 
+          />
         </div>
       </div>
     </div>

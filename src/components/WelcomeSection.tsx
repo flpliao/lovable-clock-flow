@@ -1,8 +1,11 @@
+
 import React from 'react';
 import { Calendar, Clock } from 'lucide-react';
+
 interface WelcomeSectionProps {
   userName: string;
 }
+
 const WelcomeSection = ({
   userName
 }: WelcomeSectionProps) => {
@@ -18,12 +21,19 @@ const WelcomeSection = ({
     day: 'numeric',
     weekday: 'long'
   });
-  return <div className="py-6 sm:py-[20px] px-[10px]">
+
+  // 確保顯示實際的用戶名稱，而不是 UUID 或其他技術標識符
+  const displayName = userName && userName !== 'User' && !userName.includes('-') && !userName.startsWith('User ') 
+    ? userName 
+    : '訪客';
+
+  return (
+    <div className="py-6 sm:py-[20px] px-[10px]">
       <div className="space-y-6">
         {/* 問候語 */}
         <div className="text-center px-[10px]">
           <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-white drop-shadow-lg lg:text-4xl py-[30px]">
-            您好，{userName}
+            您好，{displayName}
           </h1>
           <p className="text-white/90 text-base sm:text-lg font-medium drop-shadow-md">
             歡迎使用員工考勤系統
@@ -51,6 +61,8 @@ const WelcomeSection = ({
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default WelcomeSection;

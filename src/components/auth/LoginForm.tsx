@@ -4,16 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, User } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
-import { UserIdValidationService } from '@/services/userIdValidationService';
-import { supabase } from '@/integrations/supabase/client';
+import { AuthService } from '@/services/authService';
 
-interface LoginFormProps {
-  findUserByEmail: (email: string) => { userId: string, credentials: { userId: string, email: string, password: string } } | null;
-}
-
-const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
+const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -26,105 +20,43 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
     e.preventDefault();
     setIsLoading(true);
     
-    console.log('Login attempt with email:', email);
+    console.log('登入嘗試，電子郵件:', email);
     
     try {
-      // Find user by email in our credentials store
-      const userFound = findUserByEmail(email);
-      console.log('User search result:', userFound);
+      // 使用新的 AuthService 進行驗證
+      const authResult = await AuthService.authenticate(email, password);
       
-      if (userFound) {
-        console.log('Found user credentials:', userFound.credentials);
+      if (authResult.success && authResult.user) {
+        console.log('登入成功，用戶資料:', authResult.user);
         
-        if (userFound.credentials.password === password) {
-          // 使用統一的用戶ID驗證服務
-          const validatedUserId = UserIdValidationService.validateUserId(userFound.userId);
-          
-          // Create user data based on the found credentials
-          const emailLocalPart = userFound.credentials.email.split('@')[0];
-          let displayName, position, department, role;
-          
-          if (emailLocalPart === 'admin') {
-            displayName = '廖俊雄';
-            position = '資深工程師';
-            department = '技術部';
-            role = 'admin' as const;
-          } else if (emailLocalPart === 'flpliao') {
-            displayName = '廖小雄';
-            position = '一般員工';
-            department = 'HR';
-            role = 'user' as const;
-          } else if (emailLocalPart === 'alinzheng55') {
-            displayName = '鄭宇伶';
-            position = '一般員工';
-            department = 'HR';
-            role = 'user' as const;  
-          } else if (emailLocalPart === 'lshuahua' || email.includes('廖淑華')) {
-            displayName = '廖淑華';
-            position = '主管';
-            department = '管理部';
-            role = 'manager' as const;
-          } else if (email === 'liao.junxiong@company.com') {
-            displayName = '廖俊雄';
-            position = '最高管理者';
-            department = '管理部';
-            role = 'admin' as const;
-          } 
-            else if (email === 'liaoyuwii@yahoo.tw') {
-            displayName = 'test1';
-            position = '最高管理者';
-            department = '管理部';
-            role = 'admin' as const;
-          }
-            else {
-            displayName = `User ${validatedUserId}`;
-            position = '一般員工';
-            department = 'HR';
-            role = 'user' as const;
-          }
-          
-          const mockUserData = {
-            id: validatedUserId,
-            name: displayName,
-            position: position,
-            department: department,
-            onboard_date: '2023-01-15',
-            role: role,
-          };
-          
-          console.log('Setting current user:', mockUserData);
-          
-          // 模擬設定 Supabase 會話（在實際應用中會進行真實認證）
-          if (role === 'admin') {
-            console.log('🔐 模擬管理員認證狀態');
-          }
-          
-          setCurrentUser(mockUserData);
-          
-          toast({
-            title: '登錄成功',
-            description: `歡迎回來，${displayName}！`,
-          });
-          
-          navigate('/');
-        } else {
-          console.log('Login failed - password mismatch');
-          toast({
-            variant: 'destructive',
-            title: '登錄失敗',
-            description: '電子郵件或密碼不正確1',
-          });
-        }
+        // 構建用戶資料用於 UserContext
+        const userData = {
+          id: authResult.user.id,
+          name: authResult.user.name,
+          position: authResult.user.position,
+          department: authResult.user.department,
+          onboard_date: '2023-01-15', // 預設值
+          role: authResult.user.role,
+        };
+        
+        setCurrentUser(userData);
+        
+        toast({
+          title: '登錄成功',
+          description: `歡迎回來，${authResult.user.name}！`,
+        });
+        
+        navigate('/');
       } else {
-        console.log('Login failed - user not found');
+        console.log('登入失敗:', authResult.error);
         toast({
           variant: 'destructive',
           title: '登錄失敗',
-          description: '沒有找到用戶',
+          description: authResult.error || '帳號或密碼不正確',
         });
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('登入錯誤:', error);
       toast({
         variant: 'destructive',
         title: '登錄失敗',
@@ -174,6 +106,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
         <p>一般用戶：flpliao@gmail.com / password</p>
         <p>鄭宇伶：alinzheng55@gmail.com / 0989022719</p>
         <p>廖淑華：lshuahua@company.com / password123</p>
+        <p>測試用戶：liaoyuwii@yahoo.tw / 123456</p>
       </div>
       
       <Button

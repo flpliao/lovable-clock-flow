@@ -5,7 +5,6 @@ import { useUser } from '@/contexts/UserContext';
 import CredentialManagement from '@/components/staff/CredentialManagement';
 import LoginForm from '@/components/auth/LoginForm';
 import ManageAccountPrompt from '@/components/auth/ManageAccountPrompt';
-import { initCredentialStore, findUserByEmail } from '@/utils/credentialStore';
 import { useToast } from '@/hooks/use-toast';
 import {
   Tabs,
@@ -18,12 +17,6 @@ const Login = () => {
   const [activeTab, setActiveTab] = useState('login');
   const { currentUser } = useUser();
   const { toast } = useToast();
-
-  // Initialize the credential store
-  useEffect(() => {
-    console.log('Login page initializing credential store');
-    initCredentialStore();
-  }, []);
 
   const handleCredentialUpdateSuccess = () => {
     toast({
@@ -67,7 +60,7 @@ const Login = () => {
             </TabsList>
             
             <TabsContent value="login">
-              <LoginForm findUserByEmail={findUserByEmail} />
+              <LoginForm />
             </TabsContent>
             
             <TabsContent value="manage">

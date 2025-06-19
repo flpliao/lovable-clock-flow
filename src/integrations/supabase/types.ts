@@ -1373,6 +1373,7 @@ export type Database = {
           email: string | null
           id: string
           name: string
+          password: string | null
           position: string
           role: string
           role_id: string
@@ -1389,6 +1390,7 @@ export type Database = {
           email?: string | null
           id?: string
           name: string
+          password?: string | null
           position: string
           role?: string
           role_id?: string
@@ -1405,6 +1407,7 @@ export type Database = {
           email?: string | null
           id?: string
           name?: string
+          password?: string | null
           position?: string
           role?: string
           role_id?: string

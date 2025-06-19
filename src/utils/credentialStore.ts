@@ -1,3 +1,8 @@
+/**
+ * @deprecated 此檔案已棄用，現在使用 Supabase staff 表格進行驗證
+ * 請使用 src/services/authService.ts 代替
+ */
+
 interface Credentials {
   userId: string;
   email: string;
@@ -11,9 +16,9 @@ interface CredentialStore {
 let credentialStore: CredentialStore = {};
 
 export const initCredentialStore = () => {
-  console.log('🔐 初始化憑證存儲');
+  console.log('⚠️ credentialStore 已棄用，請使用 AuthService');
   
-  // 初始化預設憑證
+  // 保留舊的初始化邏輯以防萬一
   credentialStore = {
     'admin@example.com': {
       userId: '550e8400-e29b-41d4-a716-446655440001',
@@ -47,10 +52,12 @@ export const initCredentialStore = () => {
     }
   };
   
-  console.log('🔐 憑證存儲初始化完成，包含帳號:', Object.keys(credentialStore));
+  console.log('⚠️ 建議遷移到使用 Supabase AuthService 進行驗證');
 };
 
+// 保留舊的函數以防萬一，但標記為已棄用
 export const addCredential = (email: string, password: string, userId?: string) => {
+  console.warn('⚠️ addCredential 已棄用，請使用 Supabase staff 表格');
   console.log('🔐 新增憑證:', email);
   
   const finalUserId = userId || generateUserId();
@@ -68,6 +75,7 @@ export const addCredential = (email: string, password: string, userId?: string) 
 };
 
 export const updateCredential = (email: string, newPassword: string) => {
+  console.warn('⚠️ updateCredential 已棄用，請使用 Supabase staff 表格');
   console.log('🔐 更新憑證:', email);
   
   if (credentialStore[email]) {
@@ -81,6 +89,7 @@ export const updateCredential = (email: string, newPassword: string) => {
 };
 
 export const findUserByEmail = (email: string) => {
+  console.warn('⚠️ findUserByEmail 已棄用，請使用 AuthService.findUserByEmail');
   console.log('🔍 搜尋用戶:', email);
   console.log('🔍 目前存儲的帳號:', Object.keys(credentialStore));
   
@@ -98,7 +107,7 @@ export const findUserByEmail = (email: string) => {
 };
 
 export const getAllCredentials = () => {
-  console.log('🔍 取得所有憑證');
+  console.warn('⚠️ getAllCredentials 已棄用，請直接查詢 Supabase staff 表格');
   return Object.values(credentialStore);
 };
 

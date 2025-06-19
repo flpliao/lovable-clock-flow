@@ -17,6 +17,16 @@ export const initCredentialStore = () => {
   // 清空測試帳號，準備載入實際員工資料
   credentialStore = {};
   
+  // 首先確保廖俊雄的管理員帳號存在
+  const adminCredential = {
+    userId: '550e8400-e29b-41d4-a716-446655440001',
+    email: 'liao.junxiong@company.com',
+    password: 'password123'
+  };
+  
+  credentialStore[adminCredential.email] = adminCredential;
+  console.log('🔐 廖俊雄管理員帳號已建立:', adminCredential.email);
+  
   console.log('🔐 憑證存儲初始化完成，等待載入實際員工帳號');
 };
 
@@ -24,7 +34,21 @@ export const initCredentialStore = () => {
 export const loadStaffCredentials = (staffList: any[]) => {
   console.log('📋 載入員工憑證資料，員工數量:', staffList.length);
   
+  // 確保廖俊雄的管理員帳號總是存在
+  const adminCredential = {
+    userId: '550e8400-e29b-41d4-a716-446655440001',
+    email: 'liao.junxiong@company.com',
+    password: 'password123'
+  };
+  credentialStore[adminCredential.email] = adminCredential;
+  
   staffList.forEach(staff => {
+    // 跳過廖俊雄，因為已經設定了管理員帳號
+    if (staff.id === '550e8400-e29b-41d4-a716-446655440001' || staff.name === '廖俊雄') {
+      console.log('🔐 跳過廖俊雄，使用預設管理員帳號');
+      return;
+    }
+    
     // 檢查員工是否已有設定的憑證
     if (window.userCredentialsStore && window.userCredentialsStore[staff.id]) {
       const existingCredential = window.userCredentialsStore[staff.id];

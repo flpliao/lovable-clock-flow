@@ -47,25 +47,26 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
           const emailLocalPart = userFound.credentials.email.split('@')[0];
           let displayName, position, department, role;
           
-          if (emailLocalPart === 'admin') {
+          // 根據email或userId確定用戶資訊
+          if (emailLocalPart === 'admin' || emailLocalPart === 'liaojunxiong' || userFound.userId === '550e8400-e29b-41d4-a716-446655440001') {
             displayName = '廖俊雄';
-            position = '資深工程師';
-            department = '技術部';
+            position = '總經理';
+            department = '資訊';
             role = 'admin' as const;
-          } else if (emailLocalPart === 'flpliao') {
-            displayName = '廖小雄';
-            position = '一般員工';
-            department = 'HR';
-            role = 'user' as const;
-          } else if (emailLocalPart === 'alinzheng55') {
-            displayName = '鄭宇伶';
-            position = '一般員工';
-            department = 'HR';
-            role = 'user' as const;
-          } else if (emailLocalPart === 'lshuahua' || email.includes('廖淑華')) {
+          } else if (emailLocalPart === 'lshuahua' || emailLocalPart === 'liaoshuhua' || userFound.userId === '550e8400-e29b-41d4-a716-446655440004') {
             displayName = '廖淑華';
-            position = '主管';
-            department = '管理部';
+            position = '經理';
+            department = '營業診所-台南';
+            role = 'manager' as const;
+          } else if (emailLocalPart === 'alinzheng55' || emailLocalPart === 'zhengyuling' || userFound.userId === '550e8400-e29b-41d4-a716-446655440003') {
+            displayName = '鄭宇伶';
+            position = 'HR';
+            department = '人資';
+            role = 'user' as const;
+          } else if (emailLocalPart === 'flpliao' || emailLocalPart === 'liaoxiaoxiong' || userFound.userId === '550e8400-e29b-41d4-a716-446655440002') {
+            displayName = '廖小雄';
+            position = '經理';
+            department = '資訊';
             role = 'manager' as const;
           } else {
             displayName = `User ${validatedUserId}`;
@@ -156,10 +157,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
       
       <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
         <p><strong>測試帳號：</strong></p>
-        <p>管理員：admin@example.com / password</p>
-        <p>一般用戶：flpliao@gmail.com / password</p>
-        <p>鄭宇伶：alinzheng55@gmail.com / 0989022719</p>
-        <p>廖淑華：lshuahua@company.com / password123</p>
+        <p>廖俊雄(總經理)：admin@example.com 或 liaojunxiong@company.com / password</p>
+        <p>廖淑華(經理)：lshuahua@company.com 或 liaoshuhua@company.com / password123</p>
+        <p>鄭宇伶(HR)：alinzheng55@gmail.com 或 zhengyuling@company.com / 0989022719</p>
+        <p>廖小雄(經理)：flpliao@gmail.com 或 liaoxiaoxiong@company.com / password</p>
       </div>
       
       <Button

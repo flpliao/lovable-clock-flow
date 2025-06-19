@@ -14,27 +14,54 @@ let credentialStore: CredentialStore = {};
 export const initCredentialStore = () => {
   console.log('🔐 初始化憑證存儲');
   
-  // 初始化預設憑證
+  // 初始化預設憑證，包含人員管理中的所有員工
   credentialStore = {
+    // 廖俊雄 - 總經理
     'admin@example.com': {
       userId: '550e8400-e29b-41d4-a716-446655440001',
       email: 'admin@example.com',
       password: 'password'
     },
-    'flpliao@gmail.com': {
-      userId: '550e8400-e29b-41d4-a716-446655440002',
-      email: 'flpliao@gmail.com',
+    'liaojunxiong@company.com': {
+      userId: '550e8400-e29b-41d4-a716-446655440001',
+      email: 'liaojunxiong@company.com',
       password: 'password'
     },
+    
+    // 廖淑華 - 經理
+    'lshuahua@company.com': {
+      userId: '550e8400-e29b-41d4-a716-446655440004',
+      email: 'lshuahua@company.com',
+      password: 'password123'
+    },
+    'liaoshuhua@company.com': {
+      userId: '550e8400-e29b-41d4-a716-446655440004',
+      email: 'liaoshuhua@company.com',
+      password: 'password123'
+    },
+    
+    // 鄭宇伶 - HR
     'alinzheng55@gmail.com': {
       userId: '550e8400-e29b-41d4-a716-446655440003',
       email: 'alinzheng55@gmail.com',
       password: '0989022719'
     },
-    'lshuahua@company.com': {
-      userId: '550e8400-e29b-41d4-a716-446655440004',
-      email: 'lshuahua@company.com',
-      password: 'password123'
+    'zhengyuling@company.com': {
+      userId: '550e8400-e29b-41d4-a716-446655440003',
+      email: 'zhengyuling@company.com',
+      password: '0989022719'
+    },
+    
+    // 廖小雄 - 經理
+    'flpliao@gmail.com': {
+      userId: '550e8400-e29b-41d4-a716-446655440002',
+      email: 'flpliao@gmail.com',
+      password: 'password'
+    },
+    'liaoxiaoxiong@company.com': {
+      userId: '550e8400-e29b-41d4-a716-446655440002',
+      email: 'liaoxiaoxiong@company.com',
+      password: 'password'
     }
   };
   

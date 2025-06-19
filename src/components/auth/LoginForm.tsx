@@ -108,13 +108,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
             description: '電子郵件或密碼不正確1',
           });
         }
-      } /*else {
+      } else {
         console.log('Login failed - user not found');
         toast({
           variant: 'destructive',
           title: '登錄失敗',
           description: '電子郵件或密碼不正確2',
-        });*/
+        });
       }
     } catch (error) {
       console.error('Login error:', error);

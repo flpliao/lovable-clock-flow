@@ -46,7 +46,7 @@ const Index = () => {
         </div>
 
         {/* 打卡區塊（壓縮下邊距） */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-[-4px] sm:mb-0">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-[-20px] sm:mb-0">
           <LocationCheckIn />
         </div>
 

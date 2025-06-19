@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface TableRLSStatus {
@@ -77,6 +76,8 @@ export class RLSSettingsService {
    */
   static async getTableRLSStatus(tableName: string): Promise<boolean> {
     try {
+      console.log(`檢查 ${tableName} 的 RLS 狀態...`);
+      
       const { data, error } = await supabase.rpc('get_table_rls_status', {
         table_name: tableName
       });
@@ -86,6 +87,7 @@ export class RLSSettingsService {
         return false;
       }
 
+      console.log(`${tableName} RLS 狀態:`, data);
       return data || false;
     } catch (error) {
       console.error(`獲取 ${tableName} RLS 狀態時發生錯誤:`, error);
@@ -126,6 +128,8 @@ export class RLSSettingsService {
    */
   static async toggleTableRLS(tableName: string, enabled: boolean): Promise<boolean> {
     try {
+      console.log(`切換 ${tableName} RLS 狀態為:`, enabled);
+      
       const { data, error } = await supabase.rpc('toggle_table_rls', {
         table_name: tableName,
         enabled: enabled
@@ -136,6 +140,7 @@ export class RLSSettingsService {
         return false;
       }
 
+      console.log(`${tableName} RLS 切換結果:`, data);
       return data || false;
     } catch (error) {
       console.error(`切換 ${tableName} RLS 狀態時發生錯誤:`, error);

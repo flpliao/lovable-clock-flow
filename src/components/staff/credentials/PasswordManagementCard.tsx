@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Key, ShieldAlert } from 'lucide-react';
+import { Key, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,12 +26,14 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
   const { toast } = useToast();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!newPassword) {
+    if (!newPassword.trim()) {
       toast({
         title: "請輸入新密碼",
         description: "新密碼不能為空",
@@ -61,14 +63,16 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
     setIsSubmitting(true);
     
     try {
-      // No current password required - pass empty string
+      // 傳遞空字串作為當前密碼，因為管理員可以直接重設密碼
       await onPasswordChange('', newPassword);
       
-      // Reset form
+      // 重設表單
       setNewPassword('');
       setConfirmPassword('');
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
     } catch (error) {
-      // Error handling is done in the hook
+      // 錯誤處理已在 hook 中完成
       console.error('Password update failed:', error);
     } finally {
       setIsSubmitting(false);
@@ -91,24 +95,58 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="new-password">新密碼</Label>
-              <Input
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="請輸入新密碼（至少6個字符）"
-              />
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={showNewPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="請輸入新密碼（至少6個字符）"
+                  disabled={isSubmitting}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  disabled={isSubmitting}
+                >
+                  {showNewPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="confirm-password">確認新密碼</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="請再次輸入新密碼"
-              />
+              <div className="relative">
+                <Input
+                  id="confirm-password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="請再次輸入新密碼"
+                  disabled={isSubmitting}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  disabled={isSubmitting}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
             
             {!managingOwnAccount && (
@@ -124,10 +162,10 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
         <CardFooter>
           <Button 
             type="submit" 
-            disabled={isSubmitting}
+            disabled={isSubmitting || !newPassword.trim() || !confirmPassword.trim()}
             className="w-full md:w-auto"
           >
-            {isSubmitting ? '處理中...' : '更新密碼'}
+            {isSubmitting ? '更新中...' : '更新密碼'}
           </Button>
         </CardFooter>
       </form>

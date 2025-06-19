@@ -30,7 +30,7 @@ const EmailManagementCard: React.FC<EmailManagementCardProps> = ({
   const handleEmailChange = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email) {
+    if (!email.trim()) {
       toast({
         title: "請輸入電子郵件",
         description: "電子郵件不能為空",
@@ -49,18 +49,24 @@ const EmailManagementCard: React.FC<EmailManagementCardProps> = ({
       });
       return;
     }
+
+    if (email === currentEmail) {
+      toast({
+        title: "電子郵件未變更",
+        description: "新的電子郵件與當前電子郵件相同",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setIsSubmitting(true);
     
     try {
       await onEmailChange(email);
-      setEmail('');
+      setEmail(''); // 清空輸入框
     } catch (error) {
-      toast({
-        title: "更新失敗",
-        description: "電子郵件更新失敗，請稍後再試",
-        variant: "destructive"
-      });
+      // 錯誤處理已在 hook 中完成
+      console.error('Email update failed:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -81,13 +87,24 @@ const EmailManagementCard: React.FC<EmailManagementCardProps> = ({
         <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">新電子郵件地址</Label>
+              <Label htmlFor="current-email">目前電子郵件</Label>
               <Input
-                id="email"
+                id="current-email"
                 type="email"
-                placeholder={currentEmail || "new-email@example.com"}
+                value={currentEmail || '未設定'}
+                disabled
+                className="bg-gray-50"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-email">新電子郵件地址</Label>
+              <Input
+                id="new-email"
+                type="email"
+                placeholder="請輸入新的電子郵件地址"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isSubmitting}
               />
             </div>
           </div>
@@ -95,10 +112,10 @@ const EmailManagementCard: React.FC<EmailManagementCardProps> = ({
         <CardFooter>
           <Button 
             type="submit" 
-            disabled={isSubmitting}
+            disabled={isSubmitting || !email.trim()}
             className="w-full md:w-auto"
           >
-            {isSubmitting ? '處理中...' : '更新電子郵件'}
+            {isSubmitting ? '更新中...' : '更新電子郵件'}
           </Button>
         </CardFooter>
       </form>

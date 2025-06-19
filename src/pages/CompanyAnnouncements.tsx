@@ -30,8 +30,8 @@ const CompanyAnnouncements: React.FC = () => {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={() => navigate(-1)}
-                  className="p-3 md:hidden backdrop-blur-xl bg-white/30 border-white/40 text-gray-800 hover:bg-white/50 shadow-lg rounded-xl"
+                  onClick={() => navigate('/')}
+                  className="p-3 backdrop-blur-xl bg-white/30 border-white/40 text-gray-800 hover:bg-white/50 shadow-lg rounded-xl"
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>

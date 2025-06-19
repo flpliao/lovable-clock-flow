@@ -49,7 +49,7 @@ export const EditRolePermissionsTab: React.FC<EditRolePermissionsTabProps> = ({
 
   return (
     <div className="py-4">
-      <ScrollArea className="h-[400px] w-full rounded-md border p-4">
+      <ScrollArea className="h-[500px] w-full rounded-md border p-4">
         <div className="space-y-6">
           {permissionCategories.map(category => (
             <div key={category} className="space-y-2">

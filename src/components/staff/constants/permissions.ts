@@ -63,6 +63,36 @@ export const availablePermissions: Permission[] = [
     category: '部門管理'
   },
   
+  // Position management permissions
+  { 
+    id: 'position_view', 
+    name: '查看職位資料', 
+    code: 'position:view', 
+    description: '允許查看所有職位資料', 
+    category: '職位管理'
+  },
+  { 
+    id: 'position_create', 
+    name: '新增職位', 
+    code: 'position:create', 
+    description: '允許新增職位到系統', 
+    category: '職位管理'
+  },
+  { 
+    id: 'position_edit', 
+    name: '編輯職位', 
+    code: 'position:edit', 
+    description: '允許編輯職位資料', 
+    category: '職位管理'
+  },
+  { 
+    id: 'position_delete', 
+    name: '刪除職位', 
+    code: 'position:delete', 
+    description: '允許刪除職位', 
+    category: '職位管理'
+  },
+  
   // Schedule management permissions
   { 
     id: 'schedule_view', 

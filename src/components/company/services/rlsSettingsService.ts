@@ -5,165 +5,171 @@ export interface TableRLSStatus {
   tableName: string;
   displayName: string;
   enabled: boolean;
-  description: string;
 }
 
 export class RLSSettingsService {
-  // 支援的表格清單
-  static readonly SUPPORTED_TABLES = [
-    { name: 'staff', displayName: '員工表格', description: '控制員工資料的存取權限' },
-    { name: 'departments', displayName: '部門表格', description: '控制部門資料的存取權限' },
-    { name: 'companies', displayName: '公司表格', description: '控制公司資料的存取權限' },
-    { name: 'branches', displayName: '營業處表格', description: '控制營業處資料的存取權限' },
-    { name: 'announcements', displayName: '公告表格', description: '控制公告資料的存取權限' },
-    { name: 'leave_requests', displayName: '請假申請表格', description: '控制請假申請的存取權限' },
-    { name: 'check_in_records', displayName: '打卡記錄表格', description: '控制打卡記錄的存取權限' },
-    { name: 'notifications', displayName: '通知表格', description: '控制通知資料的存取權限' }
+  // 定義需要管理的表格
+  private static readonly MANAGED_TABLES = [
+    { name: 'staff', displayName: '員工資料' },
+    { name: 'departments', displayName: '部門資料' },
+    { name: 'positions', displayName: '職位管理' },
+    { name: 'companies', displayName: '公司資料' },
+    { name: 'branches', displayName: '分店資料' },
+    { name: 'announcements', displayName: '公告資料' },
+    { name: 'leave_requests', displayName: '請假申請' },
+    { name: 'check_in_records', displayName: '簽到記錄' },
+    { name: 'notifications', displayName: '通知資料' },
+    { name: 'annual_leave_balance', displayName: '年假餘額' },
+    { name: 'approval_records', displayName: '審批記錄' },
+    { name: 'announcement_reads', displayName: '公告閱讀記錄' }
   ];
 
-  // 獲取全域 RLS 設定狀態
+  /**
+   * 獲取全域 RLS 狀態
+   */
   static async getRLSStatus(): Promise<boolean> {
-    console.log('🔍 RLSSettingsService: 查詢全域 RLS 設定狀態...');
-    
     try {
       const { data, error } = await supabase
         .from('system_settings')
         .select('setting_value')
-        .eq('setting_key', 'rls_enabled')
+        .eq('setting_key', 'global_rls_enabled')
         .maybeSingle();
 
       if (error) {
-        console.error('❌ RLSSettingsService: 查詢全域 RLS 設定失敗:', error);
-        return false;
+        console.error('無法獲取全域 RLS 狀態:', error);
+        return true; // 預設啟用
       }
 
-      const isEnabled = data?.setting_value === 'true';
-      console.log('✅ RLSSettingsService: 全域 RLS 設定狀態:', isEnabled ? '開啟' : '關閉');
-      return isEnabled;
+      return data?.setting_value === 'true';
     } catch (error) {
-      console.error('❌ RLSSettingsService: 查詢過程發生錯誤:', error);
-      return false;
+      console.error('獲取全域 RLS 狀態時發生錯誤:', error);
+      return true; // 預設啟用
     }
   }
 
-  // 獲取所有表格的 RLS 狀態
-  static async getAllTableRLSStatus(): Promise<TableRLSStatus[]> {
-    console.log('🔍 RLSSettingsService: 查詢所有表格 RLS 狀態...');
-    
-    try {
-      const results: TableRLSStatus[] = [];
-      
-      for (const table of this.SUPPORTED_TABLES) {
-        const { data, error } = await supabase
-          .rpc('get_table_rls_status', { table_name: table.name });
-
-        if (error) {
-          console.error(`❌ 查詢 ${table.name} RLS 狀態失敗:`, error);
-          results.push({
-            tableName: table.name,
-            displayName: table.displayName,
-            enabled: false,
-            description: table.description
-          });
-        } else {
-          results.push({
-            tableName: table.name,
-            displayName: table.displayName,
-            enabled: data || false,
-            description: table.description
-          });
-        }
-      }
-
-      console.log('✅ RLSSettingsService: 所有表格 RLS 狀態已獲取');
-      return results;
-    } catch (error) {
-      console.error('❌ RLSSettingsService: 獲取表格 RLS 狀態失敗:', error);
-      return this.SUPPORTED_TABLES.map(table => ({
-        tableName: table.name,
-        displayName: table.displayName,
-        enabled: false,
-        description: table.description
-      }));
-    }
-  }
-
-  // 切換特定表格的 RLS 狀態
-  static async toggleTableRLS(tableName: string, enabled: boolean): Promise<boolean> {
-    console.log(`🔄 RLSSettingsService: 切換 ${tableName} RLS 狀態為:`, enabled ? '開啟' : '關閉');
-    
-    try {
-      const { data, error } = await supabase
-        .rpc('toggle_table_rls', { 
-          table_name: tableName, 
-          enabled: enabled 
-        });
-
-      if (error || !data) {
-        console.error(`❌ RLSSettingsService: 切換 ${tableName} RLS 失敗:`, error);
-        return false;
-      }
-
-      // 同時更新系統設定記錄
-      const settingKey = `rls_${tableName}_enabled`;
-      await supabase
-        .from('system_settings')
-        .update({ 
-          setting_value: enabled.toString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('setting_key', settingKey);
-
-      console.log(`✅ RLSSettingsService: ${tableName} RLS 狀態更新成功`);
-      return true;
-    } catch (error) {
-      console.error(`❌ RLSSettingsService: 切換 ${tableName} RLS 過程發生錯誤:`, error);
-      return false;
-    }
-  }
-
-  // 更新全域 RLS 設定
-  static async updateRLSStatus(enabled: boolean): Promise<boolean> {
-    console.log('🔄 RLSSettingsService: 更新全域 RLS 設定為:', enabled ? '開啟' : '關閉');
-    
+  /**
+   * 設定全域 RLS 狀態
+   */
+  static async setRLSStatus(enabled: boolean): Promise<boolean> {
     try {
       const { error } = await supabase
         .from('system_settings')
-        .update({ 
+        .upsert({
+          setting_key: 'global_rls_enabled',
           setting_value: enabled.toString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('setting_key', 'rls_enabled');
+          description: '全域 Row Level Security 設定'
+        });
 
       if (error) {
-        console.error('❌ RLSSettingsService: 更新全域 RLS 設定失敗:', error);
+        console.error('無法設定全域 RLS 狀態:', error);
         return false;
       }
 
-      console.log('✅ RLSSettingsService: 全域 RLS 設定更新成功');
       return true;
     } catch (error) {
-      console.error('❌ RLSSettingsService: 更新過程發生錯誤:', error);
+      console.error('設定全域 RLS 狀態時發生錯誤:', error);
       return false;
     }
   }
 
-  // 應用全域 RLS 設定到所有表格
-  static async applyGlobalRLSSettings(enabled: boolean): Promise<boolean> {
-    console.log('🔧 RLSSettingsService: 應用全域 RLS 設定到所有表格:', enabled ? '開啟' : '關閉');
-    
+  /**
+   * 獲取特定表格的 RLS 狀態
+   */
+  static async getTableRLSStatus(tableName: string): Promise<boolean> {
     try {
-      const updateSuccess = await this.updateRLSStatus(enabled);
-      
-      if (updateSuccess) {
-        console.log('✅ RLSSettingsService: 全域 RLS 設定已儲存');
-        return true;
+      const { data, error } = await supabase.rpc('get_table_rls_status', {
+        table_name: tableName
+      });
+
+      if (error) {
+        console.error(`無法獲取 ${tableName} 的 RLS 狀態:`, error);
+        return false;
       }
-      
-      return false;
+
+      return data || false;
     } catch (error) {
-      console.error('❌ RLSSettingsService: 應用全域 RLS 設定失敗:', error);
+      console.error(`獲取 ${tableName} RLS 狀態時發生錯誤:`, error);
       return false;
+    }
+  }
+
+  /**
+   * 獲取所有表格的 RLS 狀態
+   */
+  static async getAllTableRLSStatus(): Promise<TableRLSStatus[]> {
+    const results: TableRLSStatus[] = [];
+
+    for (const table of this.MANAGED_TABLES) {
+      try {
+        const enabled = await this.getTableRLSStatus(table.name);
+        results.push({
+          tableName: table.name,
+          displayName: table.displayName,
+          enabled
+        });
+      } catch (error) {
+        console.error(`獲取 ${table.name} RLS 狀態失敗:`, error);
+        // 添加失敗的表格，預設為 false
+        results.push({
+          tableName: table.name,
+          displayName: table.displayName,
+          enabled: false
+        });
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * 切換特定表格的 RLS 狀態
+   */
+  static async toggleTableRLS(tableName: string, enabled: boolean): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.rpc('toggle_table_rls', {
+        table_name: tableName,
+        enabled: enabled
+      });
+
+      if (error) {
+        console.error(`無法切換 ${tableName} 的 RLS 狀態:`, error);
+        return false;
+      }
+
+      return data || false;
+    } catch (error) {
+      console.error(`切換 ${tableName} RLS 狀態時發生錯誤:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * 批量應用全域 RLS 設定
+   */
+  static async applyGlobalRLSSettings(enabled: boolean): Promise<{ success: boolean; connectionStatus: boolean }> {
+    try {
+      // 1. 設定全域 RLS 狀態
+      const globalResult = await this.setRLSStatus(enabled);
+      
+      if (!globalResult) {
+        return { success: false, connectionStatus: false };
+      }
+
+      // 2. 對所有表格應用相同的 RLS 設定
+      const applyPromises = this.MANAGED_TABLES.map(table => 
+        this.toggleTableRLS(table.name, enabled)
+      );
+
+      const results = await Promise.all(applyPromises);
+      const allSuccessful = results.every(result => result === true);
+
+      return { 
+        success: allSuccessful, 
+        connectionStatus: true 
+      };
+    } catch (error) {
+      console.error('應用全域 RLS 設定時發生錯誤:', error);
+      return { success: false, connectionStatus: false };
     }
   }
 }

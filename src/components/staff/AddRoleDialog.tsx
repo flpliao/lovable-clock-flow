@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { NewStaffRole, Permission } from './types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -74,7 +75,7 @@ const AddRoleDialog = ({ open, onOpenChange }: AddRoleDialogProps) => {
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>新增角色</DialogTitle>
           <DialogDescription>
@@ -82,7 +83,7 @@ const AddRoleDialog = ({ open, onOpenChange }: AddRoleDialogProps) => {
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="基本資料">基本資料</TabsTrigger>
             <TabsTrigger value="權限設定">權限設定</TabsTrigger>
@@ -129,36 +130,38 @@ const AddRoleDialog = ({ open, onOpenChange }: AddRoleDialogProps) => {
             </div>
           </TabsContent>
           
-          <TabsContent value="權限設定" className="py-4">
-            <div className="space-y-6">
-              {permissionCategories.map(category => (
-                <div key={category} className="space-y-2">
-                  <h3 className="text-sm font-semibold text-gray-700 border-b pb-1">{category}</h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {permissionsByCategory[category].map(permission => (
-                      <div key={permission.id} className="flex items-start space-x-2 p-2 rounded hover:bg-gray-50">
-                        <Checkbox 
-                          id={permission.id} 
-                          checked={isPermissionSelected(permission.id)}
-                          onCheckedChange={() => togglePermission(permission)}
-                        />
-                        <div>
-                          <Label 
-                            htmlFor={permission.id} 
-                            className="font-medium cursor-pointer"
-                          >
-                            {permission.name}
-                          </Label>
-                          <p className="text-xs text-gray-500">{permission.description}</p>
+          <TabsContent value="權限設定" className="py-4 flex-1 flex flex-col">
+            <ScrollArea className="h-[400px] w-full rounded-md border p-4 flex-1">
+              <div className="space-y-6">
+                {permissionCategories.map(category => (
+                  <div key={category} className="space-y-2">
+                    <h3 className="text-sm font-semibold text-gray-700 border-b pb-1 sticky top-0 bg-white z-10">{category}</h3>
+                    <div className="grid grid-cols-1 gap-2">
+                      {permissionsByCategory[category].map(permission => (
+                        <div key={permission.id} className="flex items-start space-x-2 p-2 rounded hover:bg-gray-50">
+                          <Checkbox 
+                            id={permission.id} 
+                            checked={isPermissionSelected(permission.id)}
+                            onCheckedChange={() => togglePermission(permission)}
+                          />
+                          <div className="flex-1">
+                            <Label 
+                              htmlFor={permission.id} 
+                              className="font-medium cursor-pointer"
+                            >
+                              {permission.name}
+                            </Label>
+                            <p className="text-xs text-gray-500 mt-1">{permission.description}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </ScrollArea>
             
-            <DialogFooter className="mt-6">
+            <DialogFooter className="mt-4 pt-4 border-t">
               <Button 
                 variant="outline" 
                 onClick={() => setActiveTab('基本資料')}

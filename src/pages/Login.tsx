@@ -5,10 +5,8 @@ import { useUser } from '@/contexts/UserContext';
 import CredentialManagement from '@/components/staff/CredentialManagement';
 import LoginForm from '@/components/auth/LoginForm';
 import ManageAccountPrompt from '@/components/auth/ManageAccountPrompt';
-import Header from '@/components/Header';
-import { initCredentialStore, findUserByEmail, loadStaffCredentials } from '@/utils/credentialStore';
+import { initCredentialStore, findUserByEmail } from '@/utils/credentialStore';
 import { useToast } from '@/hooks/use-toast';
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import {
   Tabs,
   TabsContent,
@@ -20,19 +18,12 @@ const Login = () => {
   const [activeTab, setActiveTab] = useState('login');
   const { currentUser } = useUser();
   const { toast } = useToast();
-  const { staffList } = useStaffManagementContext();
 
-  // Initialize the credential store and load staff credentials
+  // Initialize the credential store
   useEffect(() => {
-    console.log('🔑 登入頁面初始化憑證系統');
+    console.log('Login page initializing credential store');
     initCredentialStore();
-    
-    // 載入員工憑證資料
-    if (staffList && staffList.length > 0) {
-      console.log('📋 載入', staffList.length, '位員工的憑證資料');
-      loadStaffCredentials(staffList);
-    }
-  }, [staffList]);
+  }, []);
 
   const handleCredentialUpdateSuccess = () => {
     toast({
@@ -42,10 +33,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden">
-      {/* Header 組件 */}
-      <Header />
-      
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen pt-20 md:pt-24">
       {/* 動態背景漸層 */}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
@@ -57,18 +45,13 @@ const Login = () => {
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
-      <div className="relative z-10 flex items-center justify-center min-h-screen px-4 pt-20">
+      <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
         <div className="w-full max-w-md p-8 space-y-8 backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-white drop-shadow-md">員工登入系統</h1>
+            <h1 className="text-3xl font-bold text-white drop-shadow-md">帳號管理</h1>
             <p className="mt-2 text-white/80 font-medium drop-shadow-sm">
-              使用您的員工帳號登入
+              登入或管理您的帳號設定
             </p>
-            {staffList && staffList.length > 0 && (
-              <p className="mt-1 text-sm text-white/70">
-                已載入 {staffList.length} 位員工帳號
-              </p>
-            )}
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">

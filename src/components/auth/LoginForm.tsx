@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { Mail, User } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { UserIdValidationService } from '@/services/userIdValidationService';
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 
 interface LoginFormProps {
   findUserByEmail: (email: string) => { userId: string, credentials: { userId: string, email: string, password: string } } | null;
@@ -20,59 +20,82 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { setCurrentUser } = useUser();
-  const { staffList } = useStaffManagementContext();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    console.log('🔑 員工登入嘗試:', email);
+    console.log('Login attempt with email:', email);
+    console.log('Login attempt with password:', password);
     
     try {
-      // Find user by email from staff credentials
+      // Find user by email in our credentials store
       const userFound = findUserByEmail(email);
-      console.log('🔍 員工搜尋結果:', userFound);
+      console.log('User search result:', userFound);
       
       if (userFound) {
-        console.log('✅ 找到員工憑證:', userFound.credentials);
+        console.log('Found user credentials:', userFound.credentials);
+        console.log('Stored password:', userFound.credentials.password);
+        console.log('Input password:', password);
+        console.log('Password match:', userFound.credentials.password === password);
         
         if (userFound.credentials.password === password) {
-          // 從員工清單中找到對應的員工資料
-          const staffMember = staffList.find(staff => staff.id === userFound.userId);
+          // 使用統一的用戶ID驗證服務
+          const validatedUserId = UserIdValidationService.validateUserId(userFound.userId);
           
-          if (staffMember) {
-            console.log('👤 員工資料:', staffMember);
-            
-            const validatedUserId = UserIdValidationService.validateUserId(userFound.userId);
-            
-            const userData = {
-              id: validatedUserId,
-              name: staffMember.name,
-              position: staffMember.position,
-              department: staffMember.department,
-              onboard_date: '2023-01-15', // 預設入職日期
-              role: staffMember.role as 'admin' | 'manager' | 'user',
-            };
-            
-            console.log('✅ 員工登入成功:', userData);
-            setCurrentUser(userData);
-            
-            toast({
-              title: '登錄成功',
-              description: `歡迎回來，${staffMember.name}！`,
-            });
-            
-            navigate('/');
+          // Create user data based on the found credentials
+          const emailLocalPart = userFound.credentials.email.split('@')[0];
+          let displayName, position, department, role;
+          
+          if (emailLocalPart === 'admin') {
+            displayName = '廖俊雄';
+            position = '資深工程師';
+            department = '技術部';
+            role = 'admin' as const;
+          } else if (emailLocalPart === 'flpliao') {
+            displayName = '廖小雄';
+            position = '一般員工';
+            department = 'HR';
+            role = 'user' as const;
+          } else if (emailLocalPart === 'alinzheng55') {
+            displayName = '鄭宇伶';
+            position = '一般員工';
+            department = 'HR';
+            role = 'user' as const;
+          } else if (emailLocalPart === 'lshuahua' || email.includes('廖淑華')) {
+            displayName = '廖淑華';
+            position = '主管';
+            department = '管理部';
+            role = 'manager' as const;
           } else {
-            console.log('❌ 找不到對應的員工資料');
-            toast({
-              variant: 'destructive',
-              title: '登錄失敗',
-              description: '員工資料不存在，請聯繫管理員',
-            });
+            displayName = `User ${validatedUserId}`;
+            position = '一般員工';
+            department = 'HR';
+            role = 'user' as const;
           }
+          
+          const mockUserData = {
+            id: validatedUserId, // 使用驗證過的 UUID
+            name: displayName,
+            position: position,
+            department: department,
+            onboard_date: '2023-01-15',
+            role: role,
+          };
+          
+          console.log('Setting current user with validated UUID:', mockUserData);
+          setCurrentUser(mockUserData);
+          
+          toast({
+            title: '登錄成功',
+            description: `歡迎回來，${displayName}！`,
+          });
+          
+          navigate('/');
         } else {
-          console.log('❌ 密碼不正確');
+          console.log('Login failed - password mismatch');
+          console.log('Expected:', userFound.credentials.password);
+          console.log('Received:', password);
           toast({
             variant: 'destructive',
             title: '登錄失敗',
@@ -80,7 +103,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
           });
         }
       } else {
-        console.log('❌ 找不到該電子郵件的帳號');
+        console.log('Login failed - user not found');
         toast({
           variant: 'destructive',
           title: '登錄失敗',
@@ -88,7 +111,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
         });
       }
     } catch (error) {
-      console.error('❌ 登入系統錯誤:', error);
+      console.error('Login error:', error);
       toast({
         variant: 'destructive',
         title: '登錄失敗',
@@ -108,7 +131,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
         <Input
           id="email"
           type="email"
-          placeholder="請輸入您的公司電子郵件"
+          placeholder="email@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -132,14 +155,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
       </div>
       
       <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-        <p><strong>員工登入須知：</strong></p>
-        <p>• 請使用公司分配給您的電子郵件地址</p>
-        <p>• 如果是首次登入，預設密碼為 password123</p>
-        <p>• 登入後請立即修改您的密碼</p>
-        <p>• 如有登入問題，請聯繫系統管理員</p>
-        {staffList && staffList.length > 0 && (
-          <p>• 系統已載入 {staffList.length} 位員工帳號</p>
-        )}
+        <p><strong>測試帳號：</strong></p>
+        <p>管理員：admin@example.com / password</p>
+        <p>一般用戶：flpliao@gmail.com / password</p>
+        <p>鄭宇伶：alinzheng55@gmail.com / 0989022719</p>
+        <p>廖淑華：lshuahua@company.com / password123</p>
       </div>
       
       <Button

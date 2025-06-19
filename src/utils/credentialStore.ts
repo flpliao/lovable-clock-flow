@@ -12,60 +12,56 @@ interface CredentialStore {
 let credentialStore: CredentialStore = {};
 
 export const initCredentialStore = () => {
-  console.log('🔐 初始化憑證存儲');
+  console.log('🔐 初始化憑證存儲 - 準備載入實際員工帳號');
   
-  // 初始化預設憑證，包含人員管理中的所有員工
-  credentialStore = {
-    // 廖俊雄 - 總經理
-    'admin@example.com': {
-      userId: '550e8400-e29b-41d4-a716-446655440001',
-      email: 'admin@example.com',
-      password: 'password'
-    },
-    'liaojunxiong@company.com': {
-      userId: '550e8400-e29b-41d4-a716-446655440001',
-      email: 'liaojunxiong@company.com',
-      password: 'password'
-    },
-    
-    // 廖淑華 - 經理
-    'lshuahua@company.com': {
-      userId: '550e8400-e29b-41d4-a716-446655440004',
-      email: 'lshuahua@company.com',
-      password: 'password123'
-    },
-    'liaoshuhua@company.com': {
-      userId: '550e8400-e29b-41d4-a716-446655440004',
-      email: 'liaoshuhua@company.com',
-      password: 'password123'
-    },
-    
-    // 鄭宇伶 - HR
-    'alinzheng55@gmail.com': {
-      userId: '550e8400-e29b-41d4-a716-446655440003',
-      email: 'alinzheng55@gmail.com',
-      password: '0989022719'
-    },
-    'zhengyuling@company.com': {
-      userId: '550e8400-e29b-41d4-a716-446655440003',
-      email: 'zhengyuling@company.com',
-      password: '0989022719'
-    },
-    
-    // 廖小雄 - 經理
-    'flpliao@gmail.com': {
-      userId: '550e8400-e29b-41d4-a716-446655440002',
-      email: 'flpliao@gmail.com',
-      password: 'password'
-    },
-    'liaoxiaoxiong@company.com': {
-      userId: '550e8400-e29b-41d4-a716-446655440002',
-      email: 'liaoxiaoxiong@company.com',
-      password: 'password'
+  // 清空測試帳號，準備載入實際員工資料
+  credentialStore = {};
+  
+  console.log('🔐 憑證存儲初始化完成，等待載入實際員工帳號');
+};
+
+// 從人員管理系統載入員工憑證
+export const loadStaffCredentials = (staffList: any[]) => {
+  console.log('📋 載入員工憑證資料，員工數量:', staffList.length);
+  
+  staffList.forEach(staff => {
+    // 檢查員工是否已有設定的憑證
+    if (window.userCredentialsStore && window.userCredentialsStore[staff.id]) {
+      const existingCredential = window.userCredentialsStore[staff.id];
+      console.log('🔐 載入員工憑證:', staff.name, '信箱:', existingCredential.email);
+      
+      credentialStore[existingCredential.email] = {
+        userId: staff.id,
+        email: existingCredential.email,
+        password: existingCredential.password
+      };
+    } else {
+      // 如果員工還沒有設定憑證，使用預設格式
+      const defaultEmail = staff.email || `${staff.name.toLowerCase()}@company.com`;
+      const defaultPassword = 'password123'; // 預設密碼，員工需要修改
+      
+      console.log('🔐 建立預設憑證:', staff.name, '信箱:', defaultEmail);
+      
+      credentialStore[defaultEmail] = {
+        userId: staff.id,
+        email: defaultEmail,
+        password: defaultPassword
+      };
+      
+      // 同時更新全域憑證存儲
+      if (!window.userCredentialsStore) {
+        window.userCredentialsStore = {};
+      }
+      window.userCredentialsStore[staff.id] = {
+        userId: staff.id,
+        email: defaultEmail,
+        password: defaultPassword
+      };
     }
-  };
+  });
   
-  console.log('🔐 憑證存儲初始化完成，包含帳號:', Object.keys(credentialStore));
+  console.log('🔐 員工憑證載入完成，總計:', Object.keys(credentialStore).length, '個帳號');
+  console.log('🔐 可用帳號:', Object.keys(credentialStore));
 };
 
 export const addCredential = (email: string, password: string, userId?: string) => {
@@ -80,7 +76,6 @@ export const addCredential = (email: string, password: string, userId?: string) 
   };
   
   console.log('🔐 憑證新增成功:', email, 'UserID:', finalUserId);
-  console.log('🔐 目前存儲的所有帳號:', Object.keys(credentialStore));
   
   return finalUserId;
 };
@@ -120,8 +115,11 @@ export const getAllCredentials = () => {
   return Object.values(credentialStore);
 };
 
+export const getCredentialStore = () => {
+  return credentialStore;
+};
+
 const generateUserId = () => {
-  // 生成簡單的 UUID 格式
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
     const v = c === 'x' ? r : (r & 0x3 | 0x8);

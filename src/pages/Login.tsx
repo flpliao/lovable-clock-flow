@@ -5,8 +5,9 @@ import { useUser } from '@/contexts/UserContext';
 import CredentialManagement from '@/components/staff/CredentialManagement';
 import LoginForm from '@/components/auth/LoginForm';
 import ManageAccountPrompt from '@/components/auth/ManageAccountPrompt';
-import { initCredentialStore, findUserByEmail } from '@/utils/credentialStore';
+import { initCredentialStore, findUserByEmail, loadStaffCredentials } from '@/utils/credentialStore';
 import { useToast } from '@/hooks/use-toast';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import {
   Tabs,
   TabsContent,
@@ -18,12 +19,19 @@ const Login = () => {
   const [activeTab, setActiveTab] = useState('login');
   const { currentUser } = useUser();
   const { toast } = useToast();
+  const { staffList } = useStaffManagementContext();
 
-  // Initialize the credential store
+  // Initialize the credential store and load staff credentials
   useEffect(() => {
-    console.log('Login page initializing credential store');
+    console.log('🔑 登入頁面初始化憑證系統');
     initCredentialStore();
-  }, []);
+    
+    // 載入員工憑證資料
+    if (staffList && staffList.length > 0) {
+      console.log('📋 載入', staffList.length, '位員工的憑證資料');
+      loadStaffCredentials(staffList);
+    }
+  }, [staffList]);
 
   const handleCredentialUpdateSuccess = () => {
     toast({
@@ -48,10 +56,15 @@ const Login = () => {
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
         <div className="w-full max-w-md p-8 space-y-8 backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-white drop-shadow-md">帳號管理</h1>
+            <h1 className="text-3xl font-bold text-white drop-shadow-md">員工登入系統</h1>
             <p className="mt-2 text-white/80 font-medium drop-shadow-sm">
-              登入或管理您的帳號設定
+              使用您的員工帳號登入
             </p>
+            {staffList && staffList.length > 0 && (
+              <p className="mt-1 text-sm text-white/70">
+                已載入 {staffList.length} 位員工帳號
+              </p>
+            )}
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">

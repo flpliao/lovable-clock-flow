@@ -50,7 +50,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
               name: staffMember.name,
               position: staffMember.position,
               department: staffMember.department,
-              onboard_date: staffMember.created_at ? staffMember.created_at.split('T')[0] : '2023-01-15',
+              onboard_date: '2023-01-15', // 預設入職日期
               role: staffMember.role as 'admin' | 'manager' | 'user',
             };
             

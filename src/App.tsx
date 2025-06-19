@@ -1,20 +1,20 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import Index from '@/pages/Index';
 import Login from '@/pages/Login';
 import PersonnelManagement from '@/pages/PersonnelManagement';
-import AnnouncementManagement from '@/pages/AnnouncementManagement';
-import CompanyManagement from '@/pages/CompanyManagement';
-import LeaveManagement from '@/pages/LeaveManagement';
-import PayrollManagement from '@/pages/PayrollManagement';
+import AnnouncementManagementPage from '@/pages/AnnouncementManagementPage';
 import { UserProvider } from '@/contexts/UserContext';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <QueryClient>
+    <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <UserProvider>
           <StaffManagementProvider>
@@ -24,16 +24,13 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/personnel" element={<PersonnelManagement />} />
-                <Route path="/announcements" element={<AnnouncementManagement />} />
-                <Route path="/company" element={<CompanyManagement />} />
-                <Route path="/leave" element={<LeaveManagement />} />
-                <Route path="/payroll" element={<PayrollManagement />} />
+                <Route path="/announcements" element={<AnnouncementManagementPage />} />
               </Routes>
             </div>
           </StaffManagementProvider>
         </UserProvider>
       </BrowserRouter>
-    </QueryClient>
+    </QueryClientProvider>
   );
 }
 

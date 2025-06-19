@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import WelcomeSection from '@/components/WelcomeSection';
 import FeatureCards from '@/components/FeatureCards';
@@ -7,7 +6,7 @@ import { useUser } from '@/contexts/UserContext';
 
 const Index = () => {
   const { currentUser, annualLeaveBalance, userError, clearUserError } = useUser();
-  
+
   // 統一的錯誤清除邏輯
   useEffect(() => {
     if (userError) {
@@ -16,7 +15,7 @@ const Index = () => {
       return () => clearTimeout(timeoutId);
     }
   }, [userError, clearUserError]);
-  
+
   // 當用戶狀態改變時清除錯誤
   useEffect(() => {
     if (currentUser) {
@@ -24,10 +23,10 @@ const Index = () => {
       clearUserError();
     }
   }, [currentUser, clearUserError]);
-  
+
   // Calculate leave balance in hours (1 day = 8 hours)
-  const leaveHours = annualLeaveBalance 
-    ? (annualLeaveBalance.total_days - annualLeaveBalance.used_days) * 8 
+  const leaveHours = annualLeaveBalance
+    ? (annualLeaveBalance.total_days - annualLeaveBalance.used_days) * 8
     : 0;
 
   return (
@@ -36,26 +35,26 @@ const Index = () => {
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-purple-400/20 via-transparent to-transparent"></div>
-      
+
       {/* 浮動光點效果 */}
       <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-white/30 rounded-full animate-pulse"></div>
       <div className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
-      <div className="relative z-10 w-full min-h-screen pb-safe pt-32 md:pt-36">
+      <div className="relative z-10 w-full min-h-screen pb-safe pt-16 md:pt-24">
         {/* 歡迎區塊 */}
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <WelcomeSection userName={currentUser?.name || '訪客'} />
         </div>
-        
+
         {/* 打卡區塊 */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-0.5 sm:mb-2">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-1 sm:mb-2">
           <LocationCheckIn />
         </div>
-        
+
         {/* 功能卡片 */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-2 sm:pb-6">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-2">
           <FeatureCards 
             abnormalCount={0} 
             annualLeaveBalance={leaveHours} 

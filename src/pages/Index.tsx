@@ -49,12 +49,12 @@ const Index = () => {
         </div>
 
         {/* 打卡區塊 */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-0 sm:mb-1">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-0 sm:mb-0.5">
           <LocationCheckIn />
         </div>
 
         {/* 功能卡片 */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-0 sm:pt-1">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-0 sm:pt-0.5">
           <FeatureCards 
             abnormalCount={0} 
             annualLeaveBalance={leaveHours} 

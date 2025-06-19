@@ -1,69 +1,103 @@
 
-// Define a type for the global userCredentialsStore
-declare global {
-  interface Window {
-    userCredentialsStore: {
-      [key: string]: {
-        userId: string;
-        email: string;
-        password: string;
-      }
-    }
-  }
+interface Credentials {
+  userId: string;
+  email: string;
+  password: string;
 }
 
-// Initialize the credentials store if it doesn't exist
-export const initCredentialStore = (): void => {
-  if (!window.userCredentialsStore) {
-    window.userCredentialsStore = {};
-  }
+interface CredentialStore {
+  [key: string]: Credentials;
+}
+
+let credentialStore: CredentialStore = {};
+
+export const initCredentialStore = () => {
+  console.log('🔐 初始化憑證存儲');
   
-  // 確保廖俊雄的管理員帳號總是存在
-  const adminUserId = '550e8400-e29b-41d4-a716-446655440001';
-  window.userCredentialsStore[adminUserId] = {
-    userId: adminUserId,
-    email: 'admin@example.com',
-    password: 'password'
+  // 初始化預設憑證
+  credentialStore = {
+    'admin@example.com': {
+      userId: '550e8400-e29b-41d4-a716-446655440001',
+      email: 'admin@example.com',
+      password: 'password'
+    },
+    'flpliao@gmail.com': {
+      userId: '550e8400-e29b-41d4-a716-446655440002',
+      email: 'flpliao@gmail.com',
+      password: 'password'
+    },
+    'alinzheng55@gmail.com': {
+      userId: '550e8400-e29b-41d4-a716-446655440003',
+      email: 'alinzheng55@gmail.com',
+      password: '0989022719'
+    },
+    'lshuahua@company.com': {
+      userId: '550e8400-e29b-41d4-a716-446655440004',
+      email: 'lshuahua@company.com',
+      password: 'password123'
+    }
   };
   
-  // 確保一般用戶帳號也存在
-  const userUserId = '550e8400-e29b-41d4-a716-446655440002';
-  window.userCredentialsStore[userUserId] = {
-    userId: userUserId,
-    email: 'flpliao@gmail.com',
-    password: 'password'
-  };
-  
-  // 清理並重新設定鄭宇伶的帳號，移除任何隱藏字符
-  const zhengUserId = 'f3e9c716-8992-45cc-beee-3aa3bc02b6fc';
-  window.userCredentialsStore[zhengUserId] = {
-    userId: zhengUserId,
-    email: 'alinzheng55@gmail.com',
-    password: '0989022719' // 清理後的密碼，沒有隱藏字符
-  };
-  
-  console.log('✅ 憑證存儲已初始化，所有帳號已載入');
-  console.log('🔐 可用帳號:', Object.keys(window.userCredentialsStore));
-  console.log('📋 憑證存儲內容:', window.userCredentialsStore);
+  console.log('🔐 憑證存儲初始化完成，包含帳號:', Object.keys(credentialStore));
 };
 
-// Function to find a user by email
-export const findUserByEmail = (email: string) => {
-  console.log('🔍 搜尋用戶，電子郵件:', email);
-  console.log('📊 可用憑證:', window.userCredentialsStore);
+export const addCredential = (email: string, password: string, userId?: string) => {
+  console.log('🔐 新增憑證:', email);
   
-  // Convert to lowercase for case-insensitive comparison
-  const lowerEmail = email.toLowerCase();
+  const finalUserId = userId || generateUserId();
   
-  // Search through the credentials store
-  for (const userId in window.userCredentialsStore) {
-    const creds = window.userCredentialsStore[userId];
-    if (creds.email.toLowerCase() === lowerEmail) {
-      console.log('✅ 找到用戶:', email, '用戶資料:', { userId, credentials: creds });
-      return { userId, credentials: creds };
-    }
+  credentialStore[email] = {
+    userId: finalUserId,
+    email: email,
+    password: password
+  };
+  
+  console.log('🔐 憑證新增成功:', email, 'UserID:', finalUserId);
+  console.log('🔐 目前存儲的所有帳號:', Object.keys(credentialStore));
+  
+  return finalUserId;
+};
+
+export const updateCredential = (email: string, newPassword: string) => {
+  console.log('🔐 更新憑證:', email);
+  
+  if (credentialStore[email]) {
+    credentialStore[email].password = newPassword;
+    console.log('🔐 憑證更新成功:', email);
+    return true;
   }
   
-  console.log('❌ 找不到用戶:', email);
+  console.log('🔐 憑證更新失敗 - 找不到帳號:', email);
+  return false;
+};
+
+export const findUserByEmail = (email: string) => {
+  console.log('🔍 搜尋用戶:', email);
+  console.log('🔍 目前存儲的帳號:', Object.keys(credentialStore));
+  
+  const credentials = credentialStore[email];
+  if (credentials) {
+    console.log('🔍 找到用戶:', credentials);
+    return {
+      userId: credentials.userId,
+      credentials: credentials
+    };
+  }
+  
+  console.log('🔍 未找到用戶:', email);
   return null;
+};
+
+export const getAllCredentials = () => {
+  console.log('🔍 取得所有憑證');
+  return Object.values(credentialStore);
+};
+
+const generateUserId = () => {
+  // 生成簡單的 UUID 格式
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
 };

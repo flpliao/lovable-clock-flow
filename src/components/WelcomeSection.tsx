@@ -22,8 +22,13 @@ const WelcomeSection = ({
     weekday: 'long'
   });
 
-  // 確保顯示實際的用戶名稱，而不是 UUID 或其他技術標識符
-  const displayName = userName && userName !== 'User' && !userName.includes('-') && !userName.startsWith('User ') 
+  // 確保顯示實際的用戶名稱，改善判斷邏輯
+  const displayName = userName && 
+    userName !== 'User' && 
+    userName !== '訪客' &&
+    !userName.includes('-') && 
+    !userName.startsWith('User ') &&
+    !userName.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
     ? userName 
     : '訪客';
 

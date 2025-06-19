@@ -71,7 +71,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
             role = 'admin' as const;
           } 
             else if (email === 'liaoyuwii@yahoo.tw') {
-            displayName = 'test';
+            displayName = 'test1';
             position = '最高管理者';
             department = '管理部';
             role = 'admin' as const;

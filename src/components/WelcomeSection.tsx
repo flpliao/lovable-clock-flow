@@ -1,17 +1,16 @@
-
 import React from 'react';
 import { Calendar, Clock } from 'lucide-react';
-
 interface WelcomeSectionProps {
   userName: string;
 }
-
-const WelcomeSection = ({ userName }: WelcomeSectionProps) => {
+const WelcomeSection = ({
+  userName
+}: WelcomeSectionProps) => {
   const currentTime = new Date();
-  const timeString = currentTime.toLocaleTimeString('zh-TW', { 
-    hour: '2-digit', 
+  const timeString = currentTime.toLocaleTimeString('zh-TW', {
+    hour: '2-digit',
     minute: '2-digit',
-    hour12: false 
+    hour12: false
   });
   const dateString = currentTime.toLocaleDateString('zh-TW', {
     year: 'numeric',
@@ -19,12 +18,10 @@ const WelcomeSection = ({ userName }: WelcomeSectionProps) => {
     day: 'numeric',
     weekday: 'long'
   });
-
-  return (
-    <div className="py-6 sm:py-8">
+  return <div className="py-6 sm:py-[20px] px-[10px]">
       <div className="space-y-6">
         {/* 問候語 */}
-        <div className="text-center">
+        <div className="text-center px-[10px]">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 text-white drop-shadow-lg">
             您好，{userName}
           </h1>
@@ -54,8 +51,6 @@ const WelcomeSection = ({ userName }: WelcomeSectionProps) => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default WelcomeSection;

@@ -120,7 +120,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
         toast({
           variant: 'destructive',
           title: '登錄失敗',
-          description: '電子郵件或密碼不正確2',
+          description: '沒有找到用戶',
         });
       }
     } catch (error) {

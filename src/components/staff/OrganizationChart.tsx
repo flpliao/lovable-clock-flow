@@ -65,7 +65,7 @@ const OrganizationChart: React.FC = () => {
   }
   return <Card className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg">
       <CardHeader className="pb-2">
-        <CardTitle className="text-slate-600">公司組織圖</CardTitle>
+        <CardTitle className="text-slate-900">公司組織圖</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="p-4 overflow-auto max-h-[600px]">

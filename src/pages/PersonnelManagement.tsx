@@ -6,17 +6,17 @@ import { Button } from '@/components/ui/button';
 import StaffManagement from '@/components/staff/StaffManagement';
 import DepartmentManagement from '@/components/departments/DepartmentManagement';
 import PositionManagement from '@/components/positions/PositionManagement';
+import Header from '@/components/Header';
 import { Users, Building, Briefcase, UserCheck, Settings, Database, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 import { DataSyncManager } from '@/utils/dataSync';
+
 const PersonnelManagement = () => {
-  const {
-    currentUser,
-    isAdmin
-  } = useUser();
+  const { currentUser, isAdmin } = useUser();
   const [activeTab, setActiveTab] = useState('staff');
   const [syncStatus, setSyncStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
   const [lastSyncTime, setLastSyncTime] = useState<string>('');
+
   if (!currentUser || !(isAdmin() || currentUser.department === 'HR')) {
     return <Navigate to="/login" />;
   }
@@ -71,7 +71,11 @@ const PersonnelManagement = () => {
         return '連線異常';
     }
   };
-  return <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
+  return (
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
+      {/* Header 組件 */}
+      <Header />
+      
       {/* 動態背景漸層 */}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
@@ -79,15 +83,9 @@ const PersonnelManagement = () => {
       
       {/* 浮動光點效果 */}
       <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-white/30 rounded-full animate-pulse"></div>
-      <div className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{
-      animationDelay: '2s'
-    }}></div>
-      <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{
-      animationDelay: '4s'
-    }}></div>
-      <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{
-      animationDelay: '6s'
-    }}></div>
+      <div className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
+      <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
       <StaffManagementProvider>
         <div className="relative z-10 w-full">
@@ -164,6 +162,8 @@ const PersonnelManagement = () => {
           </div>
         </div>
       </StaffManagementProvider>
-    </div>;
+    </div>
+  );
 };
+
 export default PersonnelManagement;

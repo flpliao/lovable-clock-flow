@@ -1,4 +1,3 @@
-
 interface Credentials {
   userId: string;
   email: string;
@@ -20,6 +19,11 @@ export const initCredentialStore = () => {
       userId: '550e8400-e29b-41d4-a716-446655440001',
       email: 'admin@example.com',
       password: 'password'
+    },
+    'liao.junxiong@company.com': {
+      userId: '550e8400-e29b-41d4-a716-446655440001',
+      email: 'liao.junxiong@company.com',
+      password: 'password123'
     },
     'flpliao@gmail.com': {
       userId: '550e8400-e29b-41d4-a716-446655440002',

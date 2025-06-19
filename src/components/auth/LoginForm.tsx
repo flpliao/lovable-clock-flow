@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Mail, User } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { UserIdValidationService } from '@/services/userIdValidationService';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LoginFormProps {
   findUserByEmail: (email: string) => { userId: string, credentials: { userId: string, email: string, password: string } } | null;
@@ -26,7 +27,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
     setIsLoading(true);
     
     console.log('Login attempt with email:', email);
-    console.log('Login attempt with password:', password);
     
     try {
       // Find user by email in our credentials store
@@ -35,9 +35,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
       
       if (userFound) {
         console.log('Found user credentials:', userFound.credentials);
-        console.log('Stored password:', userFound.credentials.password);
-        console.log('Input password:', password);
-        console.log('Password match:', userFound.credentials.password === password);
         
         if (userFound.credentials.password === password) {
           // 使用統一的用戶ID驗證服務
@@ -61,12 +58,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
             displayName = '鄭宇伶';
             position = '一般員工';
             department = 'HR';
-            role = 'user' as const;
+            role = 'user' as const;  
           } else if (emailLocalPart === 'lshuahua' || email.includes('廖淑華')) {
             displayName = '廖淑華';
             position = '主管';
             department = '管理部';
             role = 'manager' as const;
+          } else if (email === 'liao.junxiong@company.com') {
+            displayName = '廖俊雄';
+            position = '最高管理者';
+            department = '管理部';
+            role = 'admin' as const;
           } else {
             displayName = `User ${validatedUserId}`;
             position = '一般員工';
@@ -75,7 +77,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
           }
           
           const mockUserData = {
-            id: validatedUserId, // 使用驗證過的 UUID
+            id: validatedUserId,
             name: displayName,
             position: position,
             department: department,
@@ -83,7 +85,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
             role: role,
           };
           
-          console.log('Setting current user with validated UUID:', mockUserData);
+          console.log('Setting current user:', mockUserData);
+          
+          // 模擬設定 Supabase 會話（在實際應用中會進行真實認證）
+          if (role === 'admin') {
+            console.log('🔐 模擬管理員認證狀態');
+          }
+          
           setCurrentUser(mockUserData);
           
           toast({
@@ -94,8 +102,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
           navigate('/');
         } else {
           console.log('Login failed - password mismatch');
-          console.log('Expected:', userFound.credentials.password);
-          console.log('Received:', password);
           toast({
             variant: 'destructive',
             title: '登錄失敗',
@@ -156,7 +162,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ findUserByEmail }) => {
       
       <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
         <p><strong>測試帳號：</strong></p>
-        <p>管理員：admin@example.com / password</p>
+        <p>廖俊雄管理員：liao.junxiong@company.com / password123</p>
+        <p>系統管理員：admin@example.com / password</p>
         <p>一般用戶：flpliao@gmail.com / password</p>
         <p>鄭宇伶：alinzheng55@gmail.com / 0989022719</p>
         <p>廖淑華：lshuahua@company.com / password123</p>

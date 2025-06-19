@@ -22,7 +22,7 @@ const WelcomeSection = ({
       <div className="space-y-6">
         {/* 問候語 */}
         <div className="text-center px-[10px]">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 text-white drop-shadow-lg">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-white drop-shadow-lg lg:text-4xl py-[30px]">
             您好，{userName}
           </h1>
           <p className="text-white/90 text-base sm:text-lg font-medium drop-shadow-md">

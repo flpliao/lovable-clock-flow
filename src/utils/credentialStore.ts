@@ -39,6 +39,11 @@ export const initCredentialStore = () => {
       userId: '550e8400-e29b-41d4-a716-446655440004',
       email: 'lshuahua@company.com',
       password: 'password123'
+    },
+    'liaoyuwii@yahoo.tw': {
+      userId: '550e8400-e29b-41d4-a716-446655440004',
+      email: 'liaoyuwii@yahoo.tw',
+      password: '123456'
     }
   };
   

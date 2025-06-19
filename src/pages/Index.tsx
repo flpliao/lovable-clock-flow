@@ -50,7 +50,7 @@ const Index = () => {
         </div>
         
         {/* 打卡區塊 */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-2 sm:mb-3">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-0.5 sm:mb-2">
           <LocationCheckIn />
         </div>
         

@@ -39,18 +39,20 @@ const Index = () => {
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
-      <div className="relative z-10 w-full min-h-screen pb-safe pt-12 md:pt-20">
+      <div className="relative z-10 w-full min-h-screen pb-safe pt-4 md:pt-12">
         {/* 歡迎區塊 */}
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <WelcomeSection userName={currentUser?.name || '訪客'} />
         </div>
 
-        {/* 打卡區塊（壓縮下邊距） */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-[-20px] sm:mb-0">
-          <LocationCheckIn />
+        {/* 打卡區塊：取消底部圓角 */}
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-[-12px] sm:mb-[-6px]">
+          <div className="rounded-b-none">
+            <LocationCheckIn />
+          </div>
         </div>
 
-        {/* 功能卡片（完全貼上打卡區） */}
+        {/* 功能卡片 */}
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-0">
           <FeatureCards 
             abnormalCount={0} 

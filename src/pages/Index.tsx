@@ -39,19 +39,19 @@ const Index = () => {
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
 
-      <div className="relative z-10 w-full min-h-screen pb-safe pt-2 md:pt-6">
+      <div className="relative z-10 w-full min-h-screen pb-safe pt-1 md:pt-4">
         {/* 歡迎區塊 */}
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <WelcomeSection userName={currentUser?.name || '訪客'} />
         </div>
 
         {/* 打卡區塊 */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-1 sm:mb-2">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-0 sm:mb-1">
           <LocationCheckIn />
         </div>
 
         {/* 功能卡片 */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-1 sm:pt-2">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-0">
           <FeatureCards 
             abnormalCount={0} 
             annualLeaveBalance={leaveHours} 

@@ -13,6 +13,8 @@ import AdminVerificationCard from './AdminVerificationCard';
 import { Users, UserCheck, Network, Shield } from 'lucide-react';
 
 const StaffManagement = () => {
+  console.log('🎯 StaffManagement rendering');
+  
   const { isAdmin } = useUser();
   const [activeTab, setActiveTab] = useState('list');
 

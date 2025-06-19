@@ -16,17 +16,32 @@ import { useUser } from '@/contexts/UserContext';
 import AddStaffForm from './forms/AddStaffForm';
 
 const AddStaffDialog = () => {
+  console.log('🎯 AddStaffDialog rendering');
+  
+  const { isAdmin } = useUser();
+  
+  // Add error boundary for context usage
+  let staffManagementContext;
+  try {
+    staffManagementContext = useStaffManagementContext();
+    console.log('✅ Successfully got staff management context');
+  } catch (error) {
+    console.error('❌ Failed to get staff management context:', error);
+    return null; // Return null if context is not available
+  }
+  
   const { 
     isAddDialogOpen, 
     setIsAddDialogOpen, 
     newStaff, 
     setNewStaff, 
     handleAddStaff
-  } = useStaffManagementContext();
+  } = staffManagementContext;
   
-  const { isAdmin } = useUser();
-  
-  if (!isAdmin()) return null;
+  if (!isAdmin()) {
+    console.log('🚫 User is not admin, hiding AddStaffDialog');
+    return null;
+  }
   
   return (
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>

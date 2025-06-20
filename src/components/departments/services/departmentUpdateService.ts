@@ -39,7 +39,8 @@ export class DepartmentUpdateService {
 
       return {
         ...data,
-        type: data.type as 'headquarters' | 'branch' | 'store'
+        type: data.type as 'headquarters' | 'branch' | 'store' | 'department',
+        gps_status: (data.gps_status as 'not_converted' | 'converted' | 'failed') || 'not_converted'
       };
     } catch (error: any) {
       console.error('💥 更新部門失敗:', error);

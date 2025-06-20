@@ -53,7 +53,7 @@ export class DepartmentFetchService {
         longitude: item.longitude,
         address_verified: item.address_verified || false,
         check_in_radius: item.check_in_radius || 100,
-        gps_status: item.gps_status || 'not_converted',
+        gps_status: (item.gps_status as 'not_converted' | 'converted' | 'failed') || 'not_converted',
         created_at: item.created_at,
         updated_at: item.updated_at
       }));

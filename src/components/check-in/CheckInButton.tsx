@@ -7,18 +7,20 @@ interface CheckInButtonProps {
   actionType: 'check-in' | 'check-out';
   loading: boolean;
   onCheckIn: () => void;
+  disabled?: boolean;
 }
 
 const CheckInButton: React.FC<CheckInButtonProps> = ({
   actionType,
   loading,
-  onCheckIn
+  onCheckIn,
+  disabled = false
 }) => {
   return (
     <div className="text-center">
       <Button
         onClick={onCheckIn}
-        disabled={loading}
+        disabled={loading || disabled}
         size="lg"
         className={`w-full h-16 text-lg font-semibold rounded-xl transition-all duration-200 ${
           actionType === 'check-in' 

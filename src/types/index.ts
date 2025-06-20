@@ -76,12 +76,16 @@ export interface CheckInRecord {
   timestamp: string;
   type: 'location' | 'ip';
   status: 'success' | 'failed';
-  action: 'check-in' | 'check-out';  // Field to track check-in or check-out
+  action: 'check-in' | 'check-out';
   details: {
     latitude?: number;
     longitude?: number;
     distance?: number;
     ip?: string;
     locationName?: string;
+    departmentLatitude?: number;
+    departmentLongitude?: number;
+    departmentName?: string;
+    gpsComparisonResult?: any;
   };
 }

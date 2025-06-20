@@ -1,8 +1,7 @@
 
 import { CheckInRecord } from '@/types';
-import { getCurrentPosition, calculateDistance, COMPANY_LOCATION, ALLOWED_DISTANCE } from './geolocation';
-import { getUserIP } from './networkUtils';
-import { validateCheckInLocationSync, getDepartmentForCheckIn } from './departmentCheckInUtils';
+import { getCurrentPosition, calculateDistance, COMPANY_LOCATION, ALLOWED_DISTANCE } from '../geolocation';
+import { validateCheckInLocationSync, getDepartmentForCheckIn } from '../departmentCheckInUtils';
 import { Department } from '@/components/departments/types';
 
 // 位置打卡的函數 - 支援部門GPS驗證，使用調整後的距離限制
@@ -164,37 +163,5 @@ export const handleLocationCheckIn = async (
   } catch (error) {
     console.error('❌ 位置打卡失敗:', error);
     onError(error instanceof Error ? error.message : '位置打卡失敗');
-  }
-};
-
-// IP 打卡的函數 - 保持不變
-export const handleIpCheckIn = async (
-  userId: string,
-  actionType: 'check-in' | 'check-out',
-  onSuccess: (record: CheckInRecord) => void,
-  onError: (error: string) => void
-) => {
-  try {
-    const ip = await getUserIP();
-    console.log('取得 IP 位址:', ip);
-    
-    const record: CheckInRecord = {
-      id: Date.now().toString(),
-      userId,
-      timestamp: new Date().toISOString(),
-      type: 'ip',
-      status: 'success',
-      action: actionType,
-      details: {
-        ip,
-        locationName: 'IP遠端打卡'
-      }
-    };
-    
-    console.log('產生的IP打卡記錄:', record);
-    onSuccess(record);
-  } catch (error) {
-    console.error('IP 打卡失敗:', error);
-    onError(error instanceof Error ? error.message : 'IP 打卡失敗');
   }
 };

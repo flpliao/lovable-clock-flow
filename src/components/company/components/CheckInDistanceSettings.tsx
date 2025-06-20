@@ -127,7 +127,7 @@ const CheckInDistanceSettings = () => {
           <h4 className="font-medium text-blue-900 mb-2">設定說明</h4>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• 距離 ≤ {distance} 公尺：允許正常打卡</li>
-            <li>• 距離 > {distance} 公尺：顯示打卡失敗提示</li>
+            <li>• 距離 &gt; {distance} 公尺：顯示打卡失敗提示</li>
             <li>• 此設定將套用至所有部門與使用者</li>
             <li>• 建議根據實際工作環境調整合適的距離</li>
           </ul>

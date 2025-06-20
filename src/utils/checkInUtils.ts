@@ -14,7 +14,7 @@ export {
 export {
   handleLocationCheckIn,
   handleIpCheckIn
-} from './checkInHandlers';
+} from './checkIn';
 
 export {
   formatDate,

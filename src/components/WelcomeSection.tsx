@@ -1,11 +1,8 @@
-
 import React from 'react';
 import { Calendar, Clock } from 'lucide-react';
-
 interface WelcomeSectionProps {
   userName: string;
 }
-
 const WelcomeSection = ({
   userName
 }: WelcomeSectionProps) => {
@@ -23,26 +20,15 @@ const WelcomeSection = ({
   });
 
   // 確保顯示實際的用戶名稱，改善判斷邏輯
-  const displayName = userName && 
-    userName !== 'User' && 
-    userName !== '訪客' &&
-    !userName.includes('-') && 
-    !userName.startsWith('User ') &&
-    !userName.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
-    ? userName 
-    : '訪客';
-
-  return (
-    <div className="py-6 sm:py-[20px] px-[10px]">
+  const displayName = userName && userName !== 'User' && userName !== '訪客' && !userName.includes('-') && !userName.startsWith('User ') && !userName.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i) ? userName : '訪客';
+  return <div className="py-6 sm:py-[20px] px-[10px]">
       <div className="space-y-6">
         {/* 問候語 */}
         <div className="text-center px-[10px]">
           <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-white drop-shadow-lg lg:text-4xl py-[30px]">
             您好，{displayName}
           </h1>
-          <p className="text-white/90 text-base sm:text-lg font-medium drop-shadow-md">
-            歡迎使用員工考勤系統
-          </p>
+          
         </div>
         
         {/* 時間資訊 */}
@@ -66,8 +52,6 @@ const WelcomeSection = ({
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default WelcomeSection;

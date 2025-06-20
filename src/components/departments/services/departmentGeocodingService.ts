@@ -1,7 +1,7 @@
 
 import { toast } from '@/hooks/use-toast';
 import { GeocodingService } from '@/services/geocodingService';
-import { DepartmentService } from './departmentService';
+import { supabase } from '@/integrations/supabase/client';
 
 export class DepartmentGeocodingService {
   static async convertDepartmentAddressToGPS(departmentId: string, address: string): Promise<boolean> {
@@ -63,11 +63,29 @@ export class DepartmentGeocodingService {
     longitude: number
   ): Promise<boolean> {
     try {
-      // 這裡需要調用更新部門GPS的API
-      // 暫時使用現有的DepartmentService，需要擴展其功能
       console.log('📍 更新部門GPS座標:', { departmentId, latitude, longitude });
       
-      // 實際的更新邏輯會在下一步實現
+      const { error } = await supabase
+        .from('departments')
+        .update({
+          latitude,
+          longitude,
+          address_verified: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', departmentId);
+
+      if (error) {
+        console.error('❌ 更新部門GPS座標失敗:', error);
+        toast({
+          title: "更新失敗",
+          description: `無法更新部門GPS座標: ${error.message}`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      console.log('✅ 部門GPS座標更新成功');
       return true;
       
     } catch (error) {

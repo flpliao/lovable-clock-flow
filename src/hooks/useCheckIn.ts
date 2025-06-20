@@ -8,9 +8,13 @@ import {
 } from '@/utils/checkInHandlers';
 import { useSupabaseCheckIn } from './useSupabaseCheckIn';
 import { UserIdValidationService } from '@/services/userIdValidationService';
+import { useUser } from '@/contexts/UserContext';
+import { useDepartmentManagementContext } from '@/components/departments/DepartmentManagementContext';
 
 export const useCheckIn = (userId: string) => {
   const { toast } = useToast();
+  const { currentUser } = useUser();
+  const { departments } = useDepartmentManagementContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
@@ -29,7 +33,6 @@ export const useCheckIn = (userId: string) => {
         return;
       }
 
-      // 驗證用戶ID
       const validatedUserId = UserIdValidationService.validateUserId(userId);
       console.log('Loading today records for validated user:', validatedUserId);
       
@@ -38,7 +41,6 @@ export const useCheckIn = (userId: string) => {
         console.log('Loaded today records:', records);
         setTodayRecords(records);
 
-        // 設定下一個動作類型
         if (records.checkIn && !records.checkOut) {
           setActionType('check-out');
         } else {
@@ -46,7 +48,6 @@ export const useCheckIn = (userId: string) => {
         }
       } catch (error) {
         console.error('Error loading today records:', error);
-        // 靜默處理錯誤，不顯示通知避免干擾用戶體驗
         setTodayRecords({});
       }
     };
@@ -66,6 +67,8 @@ export const useCheckIn = (userId: string) => {
 
     const validatedUserId = UserIdValidationService.validateUserId(userId);
     console.log('Location check-in with validated user ID:', validatedUserId);
+    console.log('Available departments:', departments.length);
+    console.log('Current user department:', currentUser?.department);
 
     setLoading(true);
     setError(null);
@@ -79,7 +82,6 @@ export const useCheckIn = (userId: string) => {
         
         console.log('Creating check-in record:', record);
         
-        // 儲存到 Supabase
         const success = await createCheckInRecord(record);
         if (success) {
           toast({
@@ -87,7 +89,6 @@ export const useCheckIn = (userId: string) => {
             description: `您已成功在${record.details.locationName}${actionMsg}。距離: ${Math.round(record.details.distance || 0)}公尺`,
           });
 
-          // 更新本地狀態
           if (actionType === 'check-in') {
             setTodayRecords(prev => ({ ...prev, checkIn: record }));
             setActionType('check-out');
@@ -106,7 +107,9 @@ export const useCheckIn = (userId: string) => {
           variant: "destructive",
         });
       },
-      setDistance
+      setDistance,
+      departments, // 傳遞部門列表
+      currentUser?.department // 傳遞用戶部門
     );
   };
 
@@ -135,7 +138,6 @@ export const useCheckIn = (userId: string) => {
         
         console.log('Creating IP check-in record:', record);
         
-        // 儲存到 Supabase
         const success = await createCheckInRecord(record);
         if (success) {
           toast({
@@ -143,7 +145,6 @@ export const useCheckIn = (userId: string) => {
             description: `您已成功遠端${actionMsg}。IP: ${record.details.ip}`,
           });
 
-          // 更新本地狀態
           if (actionType === 'check-in') {
             setTodayRecords(prev => ({ ...prev, checkIn: record }));
             setActionType('check-out');

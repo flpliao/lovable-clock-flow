@@ -2,48 +2,86 @@
 import { CheckInRecord } from '@/types';
 import { getCurrentPosition, calculateDistance, COMPANY_LOCATION, ALLOWED_DISTANCE } from './geolocation';
 import { getUserIP } from './networkUtils';
+import { validateCheckInLocation, getDepartmentForCheckIn } from './departmentCheckInUtils';
+import { Department } from '@/components/departments/types';
 
-// 位置打卡的函數
+// 位置打卡的函數 - 支援部門GPS驗證
 export const handleLocationCheckIn = async (
   userId: string,
   actionType: 'check-in' | 'check-out',
   onSuccess: (record: CheckInRecord) => void,
   onError: (error: string) => void,
-  setDistance?: (distance: number) => void
+  setDistance?: (distance: number) => void,
+  departments?: Department[],
+  employeeDepartment?: string
 ) => {
   try {
     const position = await getCurrentPosition();
     const userLat = position.coords.latitude;
     const userLon = position.coords.longitude;
     
-    const distance = calculateDistance(
-      userLat, 
-      userLon, 
-      COMPANY_LOCATION.latitude, 
-      COMPANY_LOCATION.longitude
-    );
+    let distance: number;
+    let locationName: string;
+    let isValidLocation = false;
+    
+    // 檢查是否為管理員（簡單的開發模式檢查）
+    const isAdmin = userId === '550e8400-e29b-41d4-a716-446655440001'; // 廖俊雄的ID
+    
+    // 嘗試使用部門GPS驗證
+    if (departments && employeeDepartment) {
+      console.log('🏢 嘗試使用部門GPS驗證:', { employeeDepartment, departmentCount: departments.length });
+      
+      const targetDepartment = getDepartmentForCheckIn(departments, employeeDepartment);
+      
+      if (targetDepartment) {
+        console.log('✅ 找到目標部門，進行GPS驗證:', targetDepartment.name);
+        
+        const validation = validateCheckInLocation(userLat, userLon, targetDepartment);
+        distance = validation.distance;
+        locationName = targetDepartment.name;
+        isValidLocation = validation.isValid;
+        
+        console.log('📍 部門GPS驗證結果:', {
+          department: targetDepartment.name,
+          distance,
+          isValid: validation.isValid,
+          message: validation.message
+        });
+      } else {
+        console.log('⚠️ 無法找到有效的部門GPS資料，改用公司總部位置');
+        // 降級使用公司總部位置
+        distance = calculateDistance(userLat, userLon, COMPANY_LOCATION.latitude, COMPANY_LOCATION.longitude);
+        locationName = COMPANY_LOCATION.name;
+        isValidLocation = distance <= ALLOWED_DISTANCE;
+      }
+    } else {
+      console.log('📍 使用公司總部位置進行驗證');
+      // 使用原有的公司總部位置驗證
+      distance = calculateDistance(userLat, userLon, COMPANY_LOCATION.latitude, COMPANY_LOCATION.longitude);
+      locationName = COMPANY_LOCATION.name;
+      isValidLocation = distance <= ALLOWED_DISTANCE;
+    }
     
     if (setDistance) {
       setDistance(distance);
     }
     
-    console.log('位置打卡距離計算:', {
+    console.log('位置打卡驗證結果:', {
       userPosition: { lat: userLat, lon: userLon },
-      companyPosition: { lat: COMPANY_LOCATION.latitude, lon: COMPANY_LOCATION.longitude },
-      calculatedDistance: distance,
-      allowedDistance: ALLOWED_DISTANCE
+      distance,
+      locationName,
+      isValidLocation,
+      isAdmin
     });
     
-    // 檢查是否為管理員（簡單的開發模式檢查）
-    const isAdmin = userId === '550e8400-e29b-41d4-a716-446655440001'; // 廖俊雄的ID
-    
-    if (distance > ALLOWED_DISTANCE && !isAdmin) {
-      onError(`您距離公司 ${Math.round(distance)} 公尺，超過允許範圍 ${ALLOWED_DISTANCE} 公尺`);
+    // 檢查位置是否有效
+    if (!isValidLocation && !isAdmin) {
+      onError(`您距離${locationName} ${Math.round(distance)} 公尺，超過允許範圍`);
       return;
     }
     
     // 如果是管理員且超過距離，給予警告但允許打卡
-    if (distance > ALLOWED_DISTANCE && isAdmin) {
+    if (!isValidLocation && isAdmin) {
       console.warn(`管理員模式：允許遠距離打卡 (${Math.round(distance)} 公尺)`);
     }
     
@@ -57,8 +95,8 @@ export const handleLocationCheckIn = async (
       details: {
         latitude: userLat,
         longitude: userLon,
-        distance: Math.round(distance), // 確保轉換為整數
-        locationName: COMPANY_LOCATION.name
+        distance: Math.round(distance),
+        locationName
       }
     };
     
@@ -70,7 +108,7 @@ export const handleLocationCheckIn = async (
   }
 };
 
-// IP 打卡的函數
+// IP 打卡的函數 - 保持不變
 export const handleIpCheckIn = async (
   userId: string,
   actionType: 'check-in' | 'check-out',
@@ -90,7 +128,7 @@ export const handleIpCheckIn = async (
       action: actionType,
       details: {
         ip,
-        locationName: 'IP遠端打卡' // 確保有位置名稱
+        locationName: 'IP遠端打卡'
       }
     };
     

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -19,12 +18,25 @@ const StaffTable = () => {
   } = useStaffManagementContext();
   const { currentUser } = useUser();
   const [selectedStaffForCredentials, setSelectedStaffForCredentials] = useState<Staff | null>(null);
+  const [isCredentialDialogOpen, setIsCredentialDialogOpen] = useState(false);
 
   // 檢查是否有帳號管理權限
   const canManageAccounts = currentUser && (
     hasPermission(currentUser.id, 'account:email:manage') ||
     hasPermission(currentUser.id, 'account:password:manage')
   );
+
+  const handleCredentialManagement = (staff: Staff) => {
+    console.log('🔐 開啟帳號設定對話框:', staff.name);
+    setSelectedStaffForCredentials(staff);
+    setIsCredentialDialogOpen(true);
+  };
+
+  const handleCredentialDialogClose = () => {
+    console.log('🔐 關閉帳號設定對話框');
+    setIsCredentialDialogOpen(false);
+    setSelectedStaffForCredentials(null);
+  };
 
   if (loading) {
     return (
@@ -91,7 +103,7 @@ const StaffTable = () => {
                         編輯
                       </DropdownMenuItem>
                       {canManageAccounts && (
-                        <DropdownMenuItem onClick={() => setSelectedStaffForCredentials(staff)}>
+                        <DropdownMenuItem onClick={() => handleCredentialManagement(staff)}>
                           <Key className="mr-2 h-4 w-4" />
                           帳號設定
                         </DropdownMenuItem>
@@ -116,7 +128,8 @@ const StaffTable = () => {
       {selectedStaffForCredentials && (
         <CredentialManagementDialog
           staff={selectedStaffForCredentials}
-          children={<></>}
+          open={isCredentialDialogOpen}
+          onOpenChange={setIsCredentialDialogOpen}
         />
       )}
     </>

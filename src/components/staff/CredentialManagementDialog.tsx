@@ -6,38 +6,39 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import CredentialManagement from './CredentialManagement';
 import { Staff } from './types';
 import { useToast } from '@/hooks/use-toast';
 
 interface CredentialManagementDialogProps {
   staff: Staff;
-  children?: React.ReactNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-const CredentialManagementDialog: React.FC<CredentialManagementDialogProps> = ({ staff, children }) => {
-  const [open, setOpen] = React.useState(false);
+const CredentialManagementDialog: React.FC<CredentialManagementDialogProps> = ({ 
+  staff, 
+  open, 
+  onOpenChange 
+}) => {
   const { toast } = useToast();
   
   const handleSuccess = () => {
+    console.log('✅ 帳號設定更新成功:', staff.name);
+    
     // Show success toast
     toast({
       title: "帳號設定已更新",
-      description: "用戶需要使用新的憑據登錄。",
+      description: `${staff.name} 的帳號設定已成功更新，該用戶需要使用新的憑據登錄。`,
     });
     
     // Close dialog after successful update
-    setOpen(false);
+    onOpenChange(false);
   };
   
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>管理 {staff.name} 的帳號設定</DialogTitle>

@@ -1,146 +1,163 @@
 
 import React from 'react';
-import { Pencil, Trash2, MapPin, Users } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Building, MapPin, Search, Users, Edit, Trash, Navigation } from 'lucide-react';
 import { useDepartmentManagementContext } from './DepartmentManagementContext';
+import { useSystemSettings } from '@/hooks/useSystemSettings';
+import DepartmentGPSStatus from './DepartmentGPSStatus';
 import DepartmentGPSConverter from './DepartmentGPSConverter';
 
 const DepartmentTable = () => {
   const {
     filteredDepartments,
-    loading,
-    canManage,
+    searchFilter,
+    setSearchFilter,
     openEditDialog,
     handleDeleteDepartment,
-    searchFilter,
-    setSearchFilter
+    canManage,
+    loading
   } = useDepartmentManagementContext();
 
-  const getDepartmentTypeLabel = (type: string) => {
-    const typeMap = {
-      'headquarters': '總公司',
-      'branch': '分公司',
-      'store': '門市',
-      'department': '部門'
-    };
-    return typeMap[type as keyof typeof typeMap] || type;
-  };
-
-  const getDepartmentTypeBadge = (type: string) => {
-    const colorMap = {
-      'headquarters': 'bg-blue-500',
-      'branch': 'bg-green-500',
-      'store': 'bg-purple-500',
-      'department': 'bg-orange-500'
-    };
-    return colorMap[type as keyof typeof colorMap] || 'bg-gray-500';
-  };
+  const { checkInDistanceLimit } = useSystemSettings();
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-gray-600">載入中...</div>
-      </div>
+      <Card className="backdrop-blur-xl bg-white/30 border border-white/40 shadow-lg">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <span className="ml-2 text-gray-700">載入中...</span>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* 搜尋欄位 */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center">
-        <div className="flex-1 w-full">
-          <input
-            type="text"
-            placeholder="搜尋部門名稱、類型、位置或主管..."
+    <div className="space-y-4">
+      {/* 搜尋區塊 */}
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+          <Input
+            placeholder="搜尋部門名稱、類型、地址或負責人..."
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
-            className="w-full px-4 py-2 border border-white/30 rounded-xl bg-white/20 backdrop-blur-xl text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="pl-10 bg-white/60 border-white/40"
           />
         </div>
-        <div className="text-sm text-gray-700">
-          共 {filteredDepartments.length} 個部門
-        </div>
       </div>
 
-      {/* 部門卡片列表 */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filteredDepartments.map((dept) => (
-          <Card key={dept.id} className="backdrop-blur-xl bg-white/30 border border-white/30 shadow-lg">
-            <CardContent className="p-4 space-y-4">
-              {/* 部門基本資訊 */}
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold text-gray-900">{dept.name}</h3>
-                    <Badge className={`${getDepartmentTypeBadge(dept.type)} text-white text-xs`}>
-                      {getDepartmentTypeLabel(dept.type)}
-                    </Badge>
-                  </div>
-                  
-                  {dept.location && (
-                    <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
-                      <MapPin className="h-3 w-3" />
-                      <span>{dept.location}</span>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center gap-1 text-sm text-gray-600">
-                    <Users className="h-3 w-3" />
-                    <span>{dept.staff_count} 人</span>
-                  </div>
-                </div>
-
-                {canManage && (
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openEditDialog(dept)}
-                      className="h-8 w-8 p-0 hover:bg-white/20"
-                    >
-                      <Pencil className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteDepartment(dept.id)}
-                      className="h-8 w-8 p-0 hover:bg-red-500/20 text-red-600"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* 主管資訊 */}
-              {dept.manager_name && (
-                <div className="text-sm">
-                  <span className="text-gray-600">主管：</span>
-                  <span className="text-gray-900">{dept.manager_name}</span>
-                  {dept.manager_contact && (
-                    <span className="text-gray-600 ml-2">({dept.manager_contact})</span>
-                  )}
-                </div>
-              )}
-
-              {/* GPS 轉換器 */}
-              {canManage && (
-                <div className="border-t border-white/20 pt-3">
-                  <DepartmentGPSConverter department={dept} />
-                </div>
-              )}
+      {/* 部門列表 */}
+      <div className="grid gap-4">
+        {filteredDepartments.length === 0 ? (
+          <Card className="backdrop-blur-xl bg-white/30 border border-white/40 shadow-lg">
+            <CardContent className="p-8 text-center">
+              <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-700 mb-2">尚無部門資料</h3>
+              <p className="text-gray-600">
+                {searchFilter ? '找不到符合條件的部門' : '請新增第一個部門'}
+              </p>
             </CardContent>
           </Card>
-        ))}
-      </div>
+        ) : (
+          filteredDepartments.map((department) => (
+            <Card key={department.id} className="backdrop-blur-xl bg-white/30 border border-white/40 shadow-lg">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-500/90 rounded-lg shadow-sm">
+                      <Building className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-gray-900 text-lg">{department.name}</CardTitle>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="px-2 py-1 bg-blue-100/60 text-blue-800 text-xs rounded-full font-medium">
+                          {department.type}
+                        </span>
+                        <span className="flex items-center gap-1 text-gray-600 text-sm">
+                          <Users className="h-3 w-3" />
+                          {department.staff_count} 人
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  {canManage && (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditDialog(department)}
+                        className="bg-white/40 border-white/30 text-gray-700 hover:bg-white/60"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteDepartment(department.id)}
+                        className="bg-red-50/40 border-red-200/30 text-red-700 hover:bg-red-100/60"
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-3">
+                  {/* 地址資訊 */}
+                  {department.location && (
+                    <div className="flex items-start gap-2">
+                      <MapPin className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700 text-sm">{department.location}</span>
+                    </div>
+                  )}
 
-      {filteredDepartments.length === 0 && (
-        <div className="text-center py-8 text-gray-600">
-          {searchFilter ? '沒有找到符合條件的部門' : '尚未新增任何部門'}
-        </div>
-      )}
+                  {/* 負責人資訊 */}
+                  {department.manager_name && (
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      <span className="text-gray-700 text-sm">
+                        負責人：{department.manager_name}
+                        {department.manager_contact && ` (${department.manager_contact})`}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* GPS 狀態和允許範圍 */}
+                  <div className="flex items-center justify-between bg-white/40 rounded-lg p-3">
+                    <div className="flex items-center gap-3">
+                      <DepartmentGPSStatus department={department} />
+                      <div className="flex items-center gap-2">
+                        <Navigation className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm text-gray-700">
+                          允許範圍：{checkInDistanceLimit}公尺
+                        </span>
+                      </div>
+                    </div>
+                    {canManage && (
+                      <DepartmentGPSConverter
+                        departmentId={department.id}
+                        address={department.location || ''}
+                      />
+                    )}
+                  </div>
+
+                  {/* GPS 座標資訊 */}
+                  {department.latitude && department.longitude && (
+                    <div className="text-xs text-gray-600 bg-white/20 rounded p-2">
+                      GPS座標：({department.latitude.toFixed(6)}, {department.longitude.toFixed(6)})
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
     </div>
   );
 };

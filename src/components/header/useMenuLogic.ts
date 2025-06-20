@@ -8,7 +8,14 @@ export const useMenuLogic = (currentUser: User | null, isAuthenticated: boolean)
     if (!isAuthenticated) return [];
     
     return menuItems.filter(item => {
-      if (item.adminOnly && currentUser?.role !== 'admin') return false;
+      // 檢查管理員權限
+      if (item.adminOnly && currentUser?.role !== 'admin') {
+        // 公告管理特例：HR部門也可以訪問
+        if (item.path === '/announcement-management' && currentUser?.department === 'HR') {
+          return true;
+        }
+        return false;
+      }
       return !item.public;
     });
   }, [currentUser, isAuthenticated]);

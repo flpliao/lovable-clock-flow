@@ -3,9 +3,12 @@
 export {
   COMPANY_LOCATION,
   ALLOWED_DISTANCE,
-  calculateDistance,
-  getCurrentPosition
+  calculateDistance
 } from './geolocation';
+
+export {
+  getCurrentPosition
+} from './geolocationUtils';
 
 export {
   getUserIP

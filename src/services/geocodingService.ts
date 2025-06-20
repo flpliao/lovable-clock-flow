@@ -66,6 +66,58 @@ export class GeocodingService {
     return null;
   }
   
+  // 地址格式驗證和建議 - 放寬驗證條件
+  static validateAddressFormat(address: string): {
+    isValid: boolean;
+    suggestions: string[];
+    errors: string[];
+  } {
+    const errors: string[] = [];
+    const suggestions: string[] = [];
+    
+    // 基本檢查 - 放寬條件
+    if (!address || address.trim().length < 3) {
+      errors.push('地址長度太短，請提供更多資訊');
+      return {
+        isValid: false,
+        suggestions: ['建議格式：台南市東區長榮路一段85號'],
+        errors
+      };
+    }
+    
+    // 如果沒有明顯的錯誤，就認為是有效的
+    // 只做最基本的檢查，讓地理編碼服務來處理具體的地址解析
+    const hasBasicContent = address.trim().length >= 5;
+    
+    if (!hasBasicContent) {
+      errors.push('請提供更完整的地址資訊');
+      suggestions.push('建議格式：城市 + 區域 + 路名 + 門牌號碼');
+      suggestions.push('範例：台南市東區長榮路一段85號');
+    }
+    
+    return {
+      isValid: hasBasicContent,
+      suggestions,
+      errors
+    };
+  }
+  
+  // 記錄轉換失敗的日誌
+  static logGeocodingFailure(address: string, error: string, strategy?: string) {
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      address: address,
+      error: error,
+      strategy: strategy || 'unknown',
+      userAgent: navigator.userAgent
+    };
+    
+    console.error('🚨 地址轉換失敗日誌:', logEntry);
+    
+    // 可以在這裡添加發送到後台日誌系統的邏輯
+    // 例如發送到 Supabase 或其他日誌服務
+  }
+
   // Google Maps 地理編碼嘗試
   private static async tryGoogleGeocoding(address: string): Promise<GeocodeResult | null> {
     try {
@@ -282,72 +334,5 @@ export class GeocodingService {
   // 延遲函數
   private static delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
-  
-  // 地址格式驗證和建議
-  static validateAddressFormat(address: string): {
-    isValid: boolean;
-    suggestions: string[];
-    errors: string[];
-  } {
-    const errors: string[] = [];
-    const suggestions: string[] = [];
-    
-    // 檢查基本格式
-    if (!address || address.trim().length < 5) {
-      errors.push('地址長度太短，請提供完整地址');
-    }
-    
-    // 檢查是否包含城市
-    if (!address.includes('市') && !address.includes('縣')) {
-      errors.push('請包含城市名稱（如：台南市）');
-      suggestions.push('建議格式：台南市東區長榮路一段85號');
-    }
-    
-    // 檢查是否包含區域
-    if (!address.includes('區') && !address.includes('鄉') && !address.includes('鎮')) {
-      errors.push('請包含區域名稱（如：東區）');
-    }
-    
-    // 檢查是否包含路名
-    if (!address.includes('路') && !address.includes('街') && !address.includes('巷') && !address.includes('大道')) {
-      errors.push('請包含完整路名（如：長榮路一段）');
-    }
-    
-    // 檢查門牌號碼
-    if (!/\d+號?$/.test(address)) {
-      errors.push('請包含門牌號碼（如：85號）');
-    }
-    
-    // 提供格式建議
-    if (errors.length > 0) {
-      suggestions.push('標準格式：城市 + 區域 + 路名 + 門牌號碼');
-      suggestions.push('範例：台南市東區長榮路一段85號');
-      suggestions.push('範例：高雄市前金區中正四路211號');
-      suggestions.push('範例：台北市大安區忠孝東路四段169號');
-      suggestions.push('建議加上郵遞區號：701台南市東區長榮路一段85號');
-    }
-    
-    return {
-      isValid: errors.length === 0,
-      suggestions,
-      errors
-    };
-  }
-  
-  // 記錄轉換失敗的日誌
-  static logGeocodingFailure(address: string, error: string, strategy?: string) {
-    const logEntry = {
-      timestamp: new Date().toISOString(),
-      address: address,
-      error: error,
-      strategy: strategy || 'unknown',
-      userAgent: navigator.userAgent
-    };
-    
-    console.error('🚨 地址轉換失敗日誌:', logEntry);
-    
-    // 可以在這裡添加發送到後台日誌系統的邏輯
-    // 例如發送到 Supabase 或其他日誌服務
   }
 }

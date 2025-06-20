@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,15 +10,18 @@ import { Department } from './types';
 import { GeocodingService, AddressSuggestion } from '@/services/geocodingService';
 import { toast } from '@/hooks/use-toast';
 import DepartmentGPSStatus from './DepartmentGPSStatus';
+
 interface DepartmentGPSConverterProps {
   department: Department;
 }
+
 const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
   department
 }) => {
   const {
     convertAddressToGPS
   } = useDepartmentManagementContext();
+  
   const [address, setAddress] = useState(department.location || '');
   const [loading, setLoading] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
@@ -29,12 +33,17 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
   const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // 即時地址格式驗證
+  // 即時地址格式驗證 - 放寬驗證條件
   const handleAddressChange = (value: string) => {
     setAddress(value);
     if (value.length > 3) {
-      const result = GeocodingService.validateAddressFormat(value);
-      setValidation(result);
+      // 放寬驗證，只做基本檢查
+      const basicValidation = {
+        isValid: value.trim().length >= 5, // 只要求基本長度
+        suggestions: value.trim().length < 5 ? ['請輸入更完整的地址'] : [],
+        errors: value.trim().length < 5 ? ['地址長度太短'] : []
+      };
+      setValidation(basicValidation);
     } else {
       setValidation(null);
     }
@@ -79,9 +88,14 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
   const handleSelectSuggestion = (suggestion: AddressSuggestion) => {
     setAddress(suggestion.address);
     setShowSuggestions(false);
-    const result = GeocodingService.validateAddressFormat(suggestion.address);
+    const result = {
+      isValid: true,
+      suggestions: [],
+      errors: []
+    };
     setValidation(result);
   };
+
   const handleConvert = async () => {
     if (!address.trim()) {
       toast({
@@ -92,24 +106,22 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
       return;
     }
 
-    // 最終驗證
-    const finalValidation = GeocodingService.validateAddressFormat(address);
-    if (!finalValidation.isValid) {
-      // 記錄轉換失敗日誌
-      GeocodingService.logGeocodingFailure(address, finalValidation.errors[0], 'validation');
+    // 放寬最終驗證 - 只要有基本內容就允許轉換
+    if (address.trim().length < 5) {
       toast({
-        title: "地址格式不正確",
-        description: finalValidation.errors[0] + '。' + (finalValidation.suggestions[0] || ''),
+        title: "地址太短",
+        description: "請輸入更完整的地址資訊",
         variant: "destructive"
       });
       return;
     }
+
     setLoading(true);
     try {
       const success = await convertAddressToGPS(department.id, address);
       if (!success) {
-        // 記錄轉換失敗日誌
-        GeocodingService.logGeocodingFailure(address, 'GPS轉換服務失敗', 'geocoding');
+        // 記錄轉換失敗日誌，但不阻止用戶操作
+        console.warn('GPS轉換失敗，但允許用戶繼續操作');
       }
     } finally {
       setLoading(false);
@@ -122,6 +134,7 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
     const googleMapsUrl = `https://www.google.com/maps/search/${encodedAddress}`;
     window.open(googleMapsUrl, '_blank');
   };
+
   const getStatusMessage = () => {
     switch (department.gps_status) {
       case 'converted':
@@ -132,7 +145,9 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
         return '尚未轉換GPS座標，員工無法使用位置打卡';
     }
   };
-  return <div className="space-y-4">
+
+  return (
+    <div className="space-y-4">
       <div className="flex items-center gap-2">
         <MapPin className="h-4 w-4 text-blue-600" />
         <span className="text-sm font-medium">GPS地址轉換</span>
@@ -146,59 +161,113 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
           部門地址
         </Label>
         <div className="space-y-2">
-          <Input id={`address-${department.id}`} value={address} onChange={e => handleAddressChange(e.target.value)} placeholder="請輸入完整地址（如：台南市東區長榮路一段85號）" className={`text-sm ${validation && !validation.isValid ? 'border-red-300 focus:border-red-500' : ''}`} disabled={loading} />
+          <Input 
+            id={`address-${department.id}`} 
+            value={address} 
+            onChange={e => handleAddressChange(e.target.value)} 
+            placeholder="請輸入完整地址（如：台南市東區長榮路一段85號）" 
+            className={`text-sm ${validation && !validation.isValid ? 'border-red-300 focus:border-red-500' : ''}`} 
+            disabled={loading} 
+          />
           
           {/* 地址輔助工具 */}
           <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleGetSuggestions}
+              disabled={loading || loadingSuggestions || !address.trim()}
+              className="text-xs"
+            >
+              {loadingSuggestions ? (
+                <>
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                  搜尋中...
+                </>
+              ) : (
+                <>
+                  <Lightbulb className="h-3 w-3 mr-1" />
+                  取得建議
+                </>
+              )}
+            </Button>
             
-            
-            
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleOpenGoogleMaps}
+              className="text-xs"
+            >
+              <ExternalLink className="h-3 w-3 mr-1" />
+              Google Maps
+            </Button>
           </div>
         </div>
         
-        {/* 地址格式提示 */}
-        {validation && !validation.isValid && <div className="flex items-start gap-2 p-2 bg-red-50 border border-red-200 rounded text-xs">
+        {/* 地址格式提示 - 只在真正有錯誤時顯示 */}
+        {validation && !validation.isValid && validation.errors.length > 0 && (
+          <div className="flex items-start gap-2 p-2 bg-red-50 border border-red-200 rounded text-xs">
             <AlertCircle className="h-3 w-3 text-red-500 mt-0.5 flex-shrink-0" />
             <div className="space-y-1">
-              <div className="text-red-700 font-medium">地址格式需要改進：</div>
-              {validation.errors.map((error, index) => <div key={index} className="text-red-600">• {error}</div>)}
-              {validation.suggestions.length > 0 && <div className="text-red-600 mt-1">
-                  <div className="font-medium">建議格式：</div>
-                  {validation.suggestions.slice(0, 3).map((suggestion, index) => <div key={index} className="ml-2">• {suggestion}</div>)}
-                </div>}
+              <div className="text-red-700 font-medium">請檢查地址：</div>
+              {validation.errors.map((error, index) => (
+                <div key={index} className="text-red-600">• {error}</div>
+              ))}
             </div>
-          </div>}
+          </div>
+        )}
         
         {/* 格式正確提示 */}
-        {validation && validation.isValid && <div className="flex items-center gap-2 text-xs text-green-600">
+        {validation && validation.isValid && (
+          <div className="flex items-center gap-2 text-xs text-green-600">
             <CheckCircle2 className="h-3 w-3" />
             <span>地址格式正確</span>
-          </div>}
+          </div>
+        )}
         
         {/* 地址建議列表 */}
-        {showSuggestions && addressSuggestions.length > 0 && <Card className="mt-2">
+        {showSuggestions && addressSuggestions.length > 0 && (
+          <Card className="mt-2">
             <CardContent className="p-3">
               <div className="text-xs font-medium mb-2 text-gray-700">建議地址：</div>
               <div className="space-y-1 max-h-32 overflow-y-auto">
-                {addressSuggestions.slice(0, 5).map((suggestion, index) => <button key={index} onClick={() => handleSelectSuggestion(suggestion)} className="w-full text-left p-2 text-xs hover:bg-gray-50 rounded border border-gray-200 transition-colors">
+                {addressSuggestions.slice(0, 5).map((suggestion, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSelectSuggestion(suggestion)}
+                    className="w-full text-left p-2 text-xs hover:bg-gray-50 rounded border border-gray-200 transition-colors"
+                  >
                     <div className="font-medium text-gray-900">{suggestion.address}</div>
                     <div className="text-gray-500 mt-1">
                       來源: {suggestion.source} | 信心度: {(suggestion.confidence * 100).toFixed(1)}%
                     </div>
-                  </button>)}
+                  </button>
+                ))}
               </div>
             </CardContent>
-          </Card>}
+          </Card>
+        )}
       </div>
 
-      <Button onClick={handleConvert} disabled={loading || !address.trim() || validation && !validation.isValid} size="sm" className="w-full">
-        {loading ? <>
+      <Button 
+        onClick={handleConvert} 
+        disabled={loading || !address.trim()} 
+        size="sm" 
+        className="w-full"
+      >
+        {loading ? (
+          <>
             <Loader2 className="h-3 w-3 mr-1 animate-spin" />
             轉換中...
-          </> : <>
+          </>
+        ) : (
+          <>
             <MapPin className="h-3 w-3 mr-1" />
             {department.gps_status === 'converted' ? '重新轉換GPS座標' : '轉換為GPS座標'}
-          </>}
+          </>
+        )}
       </Button>
 
       {/* 狀態說明和提示 */}
@@ -206,7 +275,8 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
         <div className="font-medium">狀態說明：</div>
         <div>{getStatusMessage()}</div>
         
-        {department.gps_status === 'failed' && <div className="bg-yellow-50 border border-yellow-200 p-2 rounded mt-2">
+        {department.gps_status === 'failed' && (
+          <div className="bg-yellow-50 border border-yellow-200 p-2 rounded mt-2">
             <div className="font-medium text-yellow-800 mb-1">轉換失敗解決建議：</div>
             <ul className="text-yellow-700 space-y-1">
               <li>• 點擊「取得建議」查看系統找到的相似地址</li>
@@ -214,8 +284,11 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
               <li>• 嘗試添加郵遞區號（如：701台南市東區...）</li>
               <li>• 使用 Google Maps 上搜尋得到的完整地址格式</li>
             </ul>
-          </div>}
+          </div>
+        )}
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default DepartmentGPSConverter;

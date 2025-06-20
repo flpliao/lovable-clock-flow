@@ -98,15 +98,23 @@ const SystemSettings = () => {
               <TabsContent value="maps" className="mt-0">
                 <div className="space-y-6">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-500/90 rounded-xl shadow-lg border border-green-400/50">
+                    <div className="p-2 bg-orange-500/90 rounded-xl shadow-lg border border-orange-400/50">
                       <MapPin className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold text-white drop-shadow-sm">地圖服務設定</h2>
-                      <p className="text-white/80 font-medium drop-shadow-sm text-sm">GPS 轉換和地圖服務配置</p>
+                      <h2 className="text-xl font-bold text-white drop-shadow-sm">地圖服務</h2>
+                      <p className="text-white/80 font-medium drop-shadow-sm text-sm">地圖相關服務和功能設定</p>
                     </div>
                   </div>
-                  <GoogleMapsApiKeySettings />
+                  
+                  <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 p-8 text-center">
+                    <MapPin className="h-12 w-12 text-white/60 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-white mb-2">地圖服務設定</h3>
+                    <p className="text-white/70 mb-4">
+                      地圖服務和GPS設定已整合到「一般設定」標籤中，<br />
+                      請切換到一般設定進行相關配置。
+                    </p>
+                  </div>
                 </div>
               </TabsContent>
               

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import CompanyManagementHeader from './components/CompanyManagementHeader';
 import CompanyInfoCard from './CompanyInfoCard';
 import BranchTable from './BranchTable';
-import RLSSettingsCard from './components/RLSSettingsCard';
+import { RLSSettingsCard } from './components/RLSSettingsCard';
 import CheckInDistanceSettings from './components/CheckInDistanceSettings';
 import { useCompanyManagement } from './useCompanyManagement';
 

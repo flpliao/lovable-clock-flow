@@ -44,10 +44,7 @@ export const useNotificationActions = (
       
       setUnreadCount(0);
 
-      toast({
-        title: "已標記為已讀",
-        description: "所有通知已標記為已讀"
-      });
+      // 移除成功提醒
     }
   };
 
@@ -61,10 +58,7 @@ export const useNotificationActions = (
       setNotifications([]);
       setUnreadCount(0);
       
-      toast({
-        title: "通知已清空",
-        description: "所有通知已被清空"
-      });
+      // 移除成功提醒
     }
   };
 
@@ -82,11 +76,11 @@ export const useNotificationActions = (
       // Reload notifications to get the latest data
       await refreshNotifications();
       
-      // Also show a toast for real-time feedback
+      // 保留即時通知提醒，但縮短顯示時間
       toast({
         title: notification.title,
         description: notification.message,
-        duration: 5000
+        duration: 3000  // 從 5 秒縮短到 3 秒
       });
     }
     

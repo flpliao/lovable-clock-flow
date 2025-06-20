@@ -37,11 +37,7 @@ export const useIpCheckIn = (userId: string, actionType: 'check-in' | 'check-out
       const success = await createCheckInRecord(checkInData);
       
       if (success) {
-        toast({
-          title: actionType === 'check-in' ? "上班打卡成功" : "下班打卡成功",
-          description: `IP位址：${ipData.ip}`,
-        });
-        
+        // 移除成功提醒，保持簡潔的使用者體驗
         return true;
       }
 

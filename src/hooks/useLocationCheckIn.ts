@@ -1,21 +1,51 @@
 
-import { useState } from 'react';
-import { useDepartmentManagementContext } from '@/components/departments/DepartmentManagementContext';
-import { useSystemSettings } from './useSystemSettings';
 import { useSupabaseCheckIn } from './useSupabaseCheckIn';
-import { isWithinCheckInRange, isDepartmentReadyForCheckIn } from '@/utils/departmentCheckInUtils';
-import { getCurrentPosition } from '@/utils/geolocationUtils';
+import { useUser } from '@/contexts/UserContext';
 import { toast } from './use-toast';
+import { getCurrentPosition } from '@/utils/geolocationUtils';
+import { 
+  getDepartmentForCheckIn, 
+  isWithinCheckInRange 
+} from '@/utils/departmentCheckInUtils';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import { CheckInRecord } from '@/types';
 
 export const useLocationCheckIn = (userId: string, actionType: 'check-in' | 'check-out') => {
-  const [distance, setDistance] = useState<number | null>(null);
-  const { departments } = useDepartmentManagementContext();
-  const { checkInDistanceLimit } = useSystemSettings();
   const { createCheckInRecord } = useSupabaseCheckIn();
+  const { currentUser } = useUser();
+  const [distance, setDistance] = useState<number | null>(null);
+
+  // 查詢部門資料
+  const { data: departments = [] } = useQuery({
+    queryKey: ['departments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('departments')
+        .select('*');
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  // 查詢系統設定
+  const { data: systemSettings } = useQuery({
+    queryKey: ['system-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('*')
+        .single();
+      
+      if (error) throw error;
+      return data;
+    }
+  });
 
   const onLocationCheckIn = async () => {
-    if (!userId) {
+    if (!userId || !currentUser) {
       toast({
         title: "打卡失敗",
         description: "使用者資訊不完整",
@@ -25,46 +55,40 @@ export const useLocationCheckIn = (userId: string, actionType: 'check-in' | 'che
     }
 
     try {
-      // 取得使用者位置
+      // 取得位置
       const position = await getCurrentPosition();
       const { latitude, longitude } = position.coords;
       
-      console.log('📍 使用者位置:', { latitude, longitude });
+      // 取得部門資料
+      const department = getDepartmentForCheckIn(departments, currentUser.department);
+      
+      if (!department) {
+        toast({
+          title: "打卡失敗",
+          description: "找不到部門資料",
+          variant: "destructive",
+        });
+        return false;
+      }
 
-      // 取得使用者部門資料
-      const userDepartment = departments.find(dept => 
-        isDepartmentReadyForCheckIn(dept)
+      // 檢查打卡範圍
+      const systemDistanceLimit = systemSettings?.check_in_distance_limit || 500;
+      const rangeCheck = isWithinCheckInRange(
+        latitude, 
+        longitude, 
+        department, 
+        systemDistanceLimit
       );
+      
+      setDistance(rangeCheck.distance);
 
-      let locationName = '總公司';
-      let departmentLat: number | null = null;
-      let departmentLng: number | null = null;
-      let departmentName: string | null = null;
-
-      if (userDepartment) {
-        // 檢查是否在允許範圍內
-        const rangeCheck = isWithinCheckInRange(
-          latitude, 
-          longitude, 
-          userDepartment,
-          checkInDistanceLimit
-        );
-        
-        setDistance(rangeCheck.distance);
-        locationName = userDepartment.name;
-        departmentLat = userDepartment.latitude;
-        departmentLng = userDepartment.longitude;
-        departmentName = userDepartment.name;
-
-        if (!rangeCheck.isWithinRange) {
-          const errorMsg = `距離過遠：${rangeCheck.distance}公尺 (允許範圍：${rangeCheck.allowedDistance}公尺)`;
-          toast({
-            title: "打卡失敗",
-            description: `您距離 ${locationName} 過遠，目前距離 ${rangeCheck.distance} 公尺，允許範圍為 ${rangeCheck.allowedDistance} 公尺`,
-            variant: "destructive",
-          });
-          throw new Error(errorMsg);
-        }
+      if (!rangeCheck.isWithinRange) {
+        toast({
+          title: "打卡失敗",
+          description: `距離過遠 (${rangeCheck.distance}公尺)，超過允許範圍 ${rangeCheck.allowedDistance}公尺`,
+          variant: "destructive",
+        });
+        return false;
       }
 
       // 建立打卡記錄
@@ -77,67 +101,49 @@ export const useLocationCheckIn = (userId: string, actionType: 'check-in' | 'che
         details: {
           latitude: latitude,
           longitude: longitude,
-          distance: distance,
-          locationName: locationName,
-          departmentLatitude: departmentLat,
-          departmentLongitude: departmentLng,
-          departmentName: departmentName,
-          gpsComparisonResult: userDepartment ? {
-            target_location: {
-              name: userDepartment.name,
-              latitude: userDepartment.latitude,
-              longitude: userDepartment.longitude
-            },
-            user_location: {
-              latitude: latitude,
-              longitude: longitude
-            },
-            distance: distance,
-            allowed_distance: checkInDistanceLimit,
-            is_within_range: true
-          } : null
+          distance: rangeCheck.distance,
+          locationName: department.name,
+          address: department.location || ''
         }
       };
 
       const success = await createCheckInRecord(checkInData);
       
       if (success) {
-        toast({
-          title: actionType === 'check-in' ? "上班打卡成功" : "下班打卡成功",
-          description: distance !== null 
-            ? `位置：${locationName}，距離：${distance}公尺` 
-            : `位置：${locationName}`,
-        });
-        
+        // 移除成功提醒，保持簡潔的使用者體驗
         return true;
       }
 
       return false;
     } catch (error) {
       console.error('位置打卡失敗:', error);
-      let errorMessage = '打卡失敗，請稍後重試';
       
       if (error instanceof GeolocationPositionError) {
+        let errorMessage = '無法取得位置資訊';
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = '請允許存取位置權限';
+            errorMessage = '請允許位置存取權限';
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = '無法取得位置資訊';
+            errorMessage = '位置資訊無法取得';
             break;
           case error.TIMEOUT:
-            errorMessage = '位置請求逾時';
+            errorMessage = '位置取得超時，請重試';
             break;
         }
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
+        
+        toast({
+          title: "打卡失敗",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "打卡失敗",
+          description: "位置打卡失敗，請稍後重試",
+          variant: "destructive",
+        });
       }
-      
-      toast({
-        title: "打卡失敗",
-        description: errorMessage,
-        variant: "destructive",
-      });
       
       throw error;
     }

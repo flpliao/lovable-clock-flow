@@ -41,11 +41,7 @@ const LoginForm: React.FC = () => {
         
         setCurrentUser(userData);
         
-        toast({
-          title: '登錄成功',
-          description: `歡迎回來，${authResult.user.name}！`,
-        });
-        
+        // 移除成功提醒，直接跳轉
         navigate('/');
       } else {
         console.log('登入失敗:', authResult.error);

@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
+import { useDepartmentManagementContext } from './DepartmentManagementContext';
 import DepartmentTable from './DepartmentTable';
 import AddDepartmentDialog from './AddDepartmentDialog';
 import EditDepartmentDialog from './EditDepartmentDialog';

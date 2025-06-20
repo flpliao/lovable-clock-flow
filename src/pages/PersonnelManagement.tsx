@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { Navigate } from 'react-router-dom';
@@ -9,6 +10,7 @@ import PositionManagement from '@/components/positions/PositionManagement';
 import { Users, Building, Briefcase, UserCheck, Settings, Database, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 import { DataSyncManager } from '@/utils/dataSync';
+
 const PersonnelManagement = () => {
   console.log('🎯 PersonnelManagement rendering');
   const {
@@ -18,6 +20,7 @@ const PersonnelManagement = () => {
   const [activeTab, setActiveTab] = useState('staff');
   const [syncStatus, setSyncStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
   const [lastSyncTime, setLastSyncTime] = useState<string>('');
+  
   if (!currentUser || !(isAdmin() || currentUser.department === 'HR')) {
     return <Navigate to="/login" />;
   }
@@ -52,6 +55,7 @@ const PersonnelManagement = () => {
       console.log('❌ 手動同步失敗');
     }
   };
+  
   const getSyncStatusIcon = () => {
     switch (syncStatus) {
       case 'checking':
@@ -62,6 +66,7 @@ const PersonnelManagement = () => {
         return <AlertCircle className="h-4 w-4 text-red-500" />;
     }
   };
+  
   const getSyncStatusText = () => {
     switch (syncStatus) {
       case 'checking':
@@ -72,7 +77,9 @@ const PersonnelManagement = () => {
         return '連線異常';
     }
   };
-  return <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
+  
+  return (
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
       {/* 動態背景漸層 */}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
@@ -81,14 +88,14 @@ const PersonnelManagement = () => {
       {/* 浮動光點效果 */}
       <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-white/30 rounded-full animate-pulse"></div>
       <div className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{
-      animationDelay: '2s'
-    }}></div>
+        animationDelay: '2s'
+      }}></div>
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{
-      animationDelay: '4s'
-    }}></div>
+        animationDelay: '4s'
+      }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{
-      animationDelay: '6s'
-    }}></div>
+        animationDelay: '6s'
+      }}></div>
 
       <div className="relative z-10 w-full">
         {/* 頁面標題區域 */}
@@ -104,12 +111,6 @@ const PersonnelManagement = () => {
                 </h1>
                 <p className="text-white/80 text-sm mt-1">管理組織架構、人員資料與職位權限</p>
               </div>
-            </div>
-            
-            {/* 系統同步狀態顯示 */}
-            <div className="hidden md:flex items-center gap-3">
-              
-              
             </div>
           </div>
           
@@ -162,6 +163,8 @@ const PersonnelManagement = () => {
           </Tabs>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default PersonnelManagement;

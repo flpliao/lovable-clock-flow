@@ -18,13 +18,22 @@ import { useDepartmentManagementContext } from './DepartmentManagementContext';
 import { useUser } from '@/contexts/UserContext';
 
 const AddDepartmentDialog = () => {
+  // 確保組件在正確的上下文中使用
+  let departmentContext;
+  try {
+    departmentContext = useDepartmentManagementContext();
+  } catch (error) {
+    console.error('AddDepartmentDialog: Context not available:', error);
+    return null; // 如果上下文不可用，不渲染組件
+  }
+
   const { 
     isAddDialogOpen, 
     setIsAddDialogOpen, 
     newDepartment, 
     setNewDepartment, 
     handleAddDepartment 
-  } = useDepartmentManagementContext();
+  } = departmentContext;
   
   const { isAdmin, currentUser } = useUser();
 

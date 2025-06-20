@@ -103,6 +103,94 @@ export class SystemSettingsService {
   }
 
   /**
+   * 取得 Google Maps API 金鑰
+   */
+  static async getGoogleMapsApiKey(): Promise<string | null> {
+    try {
+      console.log('🔍 嘗試取得 Google Maps API 金鑰...');
+      
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('setting_value')
+        .eq('setting_key', 'google_maps_api_key')
+        .maybeSingle();
+
+      if (error) {
+        console.error('❌ 無法取得 Google Maps API 金鑰:', error);
+        return null;
+      }
+
+      if (data) {
+        console.log('✅ 成功取得 Google Maps API 金鑰');
+        return data.setting_value;
+      }
+
+      console.log('⚠️ 未找到 Google Maps API 金鑰設定');
+      return null;
+    } catch (error) {
+      console.error('❌ 取得 Google Maps API 金鑰時發生錯誤:', error);
+      return null;
+    }
+  }
+
+  /**
+   * 設定 Google Maps API 金鑰
+   */
+  static async setGoogleMapsApiKey(apiKey: string): Promise<boolean> {
+    try {
+      console.log('💾 嘗試設定 Google Maps API 金鑰...');
+      
+      // 先檢查是否已存在設定
+      const { data: existingSetting, error: selectError } = await supabase
+        .from('system_settings')
+        .select('id')
+        .eq('setting_key', 'google_maps_api_key')
+        .maybeSingle();
+
+      if (selectError) {
+        console.error('❌ 檢查現有設定時發生錯誤:', selectError);
+        return false;
+      }
+
+      let result;
+      
+      if (existingSetting) {
+        // 更新現有設定
+        console.log('🔄 更新現有設定...');
+        result = await supabase
+          .from('system_settings')
+          .update({
+            setting_value: apiKey,
+            description: 'Google Maps API 金鑰',
+            updated_at: new Date().toISOString()
+          })
+          .eq('setting_key', 'google_maps_api_key');
+      } else {
+        // 新增設定
+        console.log('➕ 新增設定...');
+        result = await supabase
+          .from('system_settings')
+          .insert({
+            setting_key: 'google_maps_api_key',
+            setting_value: apiKey,
+            description: 'Google Maps API 金鑰'
+          });
+      }
+
+      if (result.error) {
+        console.error('❌ 設定 Google Maps API 金鑰失敗:', result.error);
+        return false;
+      }
+
+      console.log('✅ Google Maps API 金鑰已更新');
+      return true;
+    } catch (error) {
+      console.error('❌ 設定 Google Maps API 金鑰時發生錯誤:', error);
+      return false;
+    }
+  }
+
+  /**
    * 初始化預設系統設定
    */
   static async initializeDefaultSettings(): Promise<void> {

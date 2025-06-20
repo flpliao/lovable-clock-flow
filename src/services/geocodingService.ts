@@ -1,4 +1,3 @@
-
 // 地理編碼服務 - 將地址轉換為GPS座標
 export interface GeocodeResult {
   latitude: number;
@@ -86,9 +85,14 @@ export class GeocodingService {
   
   // 取得 Google Maps API 金鑰
   private static async getGoogleMapsApiKey(): Promise<string | null> {
-    // 這裡可以從 Supabase Edge Function Secrets 或環境變數中取得
-    // 暫時返回 null，需要用戶設定
-    return null;
+    try {
+      // 動態導入以避免循環依賴
+      const { SystemSettingsService } = await import('@/services/systemSettingsService');
+      return await SystemSettingsService.getGoogleMapsApiKey();
+    } catch (error) {
+      console.error('❌ 取得 Google Maps API 金鑰失敗:', error);
+      return null;
+    }
   }
   
   // 清理地址格式

@@ -1,10 +1,12 @@
 
 import React, { useState } from 'react';
-import { Settings, Globe, Shield, Database, CheckCircle2, AlertCircle, Wrench, Languages, Server, Activity } from 'lucide-react';
+import { Settings, Globe, Shield, Database, CheckCircle2, AlertCircle, Wrench, Languages, Server, Activity, MapPin } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ComprehensiveDiagnostics } from '@/components/company/diagnostics/ComprehensiveDiagnostics';
 import { RLSSettingsCard } from '@/components/company/components/RLSSettingsCard';
 import { LanguageManagement } from '@/components/i18n/components/LanguageManagement';
+import CheckInDistanceSettings from '@/components/company/components/CheckInDistanceSettings';
+import GoogleMapsApiKeySettings from '@/components/company/components/GoogleMapsApiKeySettings';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('general');
@@ -41,24 +43,31 @@ const SystemSettings = () => {
         {/* 標籤導航 */}
         <div className="w-full px-4 lg:px-8 pb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
+            <TabsList className="grid w-full grid-cols-4 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
               <TabsTrigger 
                 value="general" 
-                className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-4 text-sm data-[state=active]:backdrop-blur-xl flex items-center gap-2"
               >
                 <Settings className="h-4 w-4" />
                 一般設定
               </TabsTrigger>
               <TabsTrigger 
+                value="maps" 
+                className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-4 text-sm data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+              >
+                <MapPin className="h-4 w-4" />
+                地圖服務
+              </TabsTrigger>
+              <TabsTrigger 
                 value="i18n" 
-                className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-4 text-sm data-[state=active]:backdrop-blur-xl flex items-center gap-2"
               >
                 <Globe className="h-4 w-4" />
                 語系管理
               </TabsTrigger>
               <TabsTrigger 
                 value="diagnostics" 
-                className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-4 text-sm data-[state=active]:backdrop-blur-xl flex items-center gap-2"
               >
                 <Wrench className="h-4 w-4" />
                 診斷工具
@@ -74,18 +83,37 @@ const SystemSettings = () => {
                       <Shield className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold text-white drop-shadow-sm">安全設定</h2>
-                      <p className="text-white/80 font-medium drop-shadow-sm text-sm">資料庫安全政策配置</p>
+                      <h2 className="text-xl font-bold text-white drop-shadow-sm">一般設定</h2>
+                      <p className="text-white/80 font-medium drop-shadow-sm text-sm">系統基本配置和安全設定</p>
                     </div>
                   </div>
-                  <RLSSettingsCard />
+                  
+                  <div className="space-y-6">
+                    <CheckInDistanceSettings />
+                    <RLSSettingsCard />
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="maps" className="mt-0">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-500/90 rounded-xl shadow-lg border border-green-400/50">
+                      <MapPin className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-white drop-shadow-sm">地圖服務設定</h2>
+                      <p className="text-white/80 font-medium drop-shadow-sm text-sm">GPS 轉換和地圖服務配置</p>
+                    </div>
+                  </div>
+                  <GoogleMapsApiKeySettings />
                 </div>
               </TabsContent>
               
               <TabsContent value="i18n" className="mt-0">
                 <div className="space-y-6">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-500/90 rounded-xl shadow-lg border border-green-400/50">
+                    <div className="p-2 bg-blue-500/90 rounded-xl shadow-lg border border-blue-400/50">
                       <Languages className="h-5 w-5 text-white" />
                     </div>
                     <div>

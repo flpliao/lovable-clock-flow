@@ -54,7 +54,7 @@ const Header = () => {
     if (!isAuthenticated) return [];
     
     return menuItems.filter(item => {
-      if (item.adminOnly && !currentUser?.role === 'admin') return false;
+      if (item.adminOnly && currentUser?.role !== 'admin') return false;
       return !item.public;
     });
   };

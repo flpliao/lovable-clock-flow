@@ -41,14 +41,14 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/20 backdrop-blur-xl border-b border-white/30 shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/15 backdrop-blur-2xl border-b border-white/20 shadow-xl">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <HeaderLogo />
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Desktop Navigation - 極簡設計 */}
+          <div className="hidden lg:flex items-center space-x-8">
             {/* 導航選單 - 只在登入時顯示 */}
             {isAuthenticated && (
               <DesktopNavigation
@@ -68,17 +68,16 @@ const Header = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <Button
               onClick={toggleMobileMenu}
               variant="ghost"
-              size="sm"
-              className="text-white/90 hover:text-white hover:bg-white/20"
+              className="text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 p-3 rounded-lg"
             >
               {isMobileMenuOpen ? (
-                <X className="h-5 w-5" />
+                <X className="h-6 w-6" />
               ) : (
-                <Menu className="h-5 w-5" />
+                <Menu className="h-6 w-6" />
               )}
             </Button>
           </div>

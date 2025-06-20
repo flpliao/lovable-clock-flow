@@ -5,6 +5,7 @@ import { User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { User as UserType } from '@/contexts/UserContext';
 import { MenuItem } from './menuConfig';
+import { Separator } from '@/components/ui/separator';
 
 interface MobileNavigationProps {
   isOpen: boolean;
@@ -32,59 +33,70 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="md:hidden border-t border-white/30 py-4">
+    <div className="md:hidden border-t border-white/20 bg-white/5 backdrop-blur-sm">
       {isAuthenticated && currentUser ? (
-        <div className="space-y-3">
-          {/* 用戶資訊 */}
-          <div className="flex items-center space-x-2 text-white/90 px-2 pb-3 border-b border-white/20">
-            <User className="h-4 w-4" />
-            <span className="text-sm font-medium">
-              {currentUser.name}
-            </span>
-            <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
-              {currentUser.role === 'admin' ? '管理員' : 
-               currentUser.role === 'manager' ? '主管' : '員工'}
-            </span>
+        <div className="p-4 space-y-4">
+          {/* 用戶資訊卡片 */}
+          <div className="bg-white/10 rounded-lg p-4 mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="bg-white/20 rounded-full p-2">
+                <User className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <div className="text-white font-medium text-sm">
+                  {currentUser.name}
+                </div>
+                <div className="text-white/70 text-xs">
+                  {currentUser.role === 'admin' ? '管理員' : 
+                   currentUser.role === 'manager' ? '主管' : '員工'}
+                </div>
+              </div>
+            </div>
           </div>
           
           {/* 導航選單 */}
-          {visibleMenuItems.map((item) => (
-            <Button
-              key={item.path}
-              onClick={() => onNavigation(item.path)}
-              variant="ghost"
-              size="sm"
-              className={`w-full justify-start text-white/90 hover:text-white hover:bg-white/20 ${
-                location.pathname === item.path ? 'bg-white/20' : ''
-              }`}
-            >
-              <item.icon className="h-4 w-4 mr-2" />
-              {item.label}
-            </Button>
-          ))}
+          <div className="space-y-2">
+            {visibleMenuItems.map((item) => (
+              <Button
+                key={item.path}
+                onClick={() => onNavigation(item.path)}
+                variant="ghost"
+                className={`
+                  w-full justify-start text-white/80 hover:text-white hover:bg-white/10 
+                  transition-all duration-200 p-4 rounded-lg font-medium
+                  ${location.pathname === item.path ? 'bg-white/15 text-white' : ''}
+                `}
+              >
+                <item.icon className="h-5 w-5 mr-3" />
+                {item.label}
+              </Button>
+            ))}
+          </div>
+          
+          <Separator className="bg-white/20 my-4" />
           
           {/* 登出按鈕 */}
           <Button
             onClick={onLogout}
             variant="ghost"
-            size="sm"
-            className="w-full justify-start text-white/90 hover:text-white hover:bg-white/20 mt-4 pt-3 border-t border-white/20"
+            className="w-full justify-start text-white/80 hover:text-white hover:bg-red-500/20 transition-all duration-200 p-4 rounded-lg font-medium"
           >
-            <LogOut className="h-4 w-4 mr-2" />
+            <LogOut className="h-5 w-5 mr-3" />
             登出
           </Button>
         </div>
       ) : (
         !isLoginPage && (
-          <Button
-            onClick={onLogin}
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start text-white/90 hover:text-white hover:bg-white/20"
-          >
-            <User className="h-4 w-4 mr-2" />
-            登入
-          </Button>
+          <div className="p-4">
+            <Button
+              onClick={onLogin}
+              variant="ghost"
+              className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 p-4 rounded-lg font-medium"
+            >
+              <User className="h-5 w-5 mr-3" />
+              登入
+            </Button>
+          </div>
         )
       )}
     </div>

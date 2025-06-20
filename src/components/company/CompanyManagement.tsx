@@ -1,45 +1,38 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import CompanyManagementHeader from './components/CompanyManagementHeader';
 import CompanyInfoCard from './CompanyInfoCard';
 import BranchTable from './BranchTable';
-import { useSupabaseConnectionTest } from './hooks/useSupabaseConnectionTest';
-import { useCompanyManagementContext } from './CompanyManagementContext';
-import { useDataLoader } from './hooks/useDataLoader';
-import { CompanyManagementHeader } from './components/CompanyManagementHeader';
-import { CompanyDialogs } from './components/CompanyDialogs';
+import RLSSettingsCard from './components/RLSSettingsCard';
+import CheckInDistanceSettings from './components/CheckInDistanceSettings';
+import { useCompanyManagement } from './useCompanyManagement';
 
-const CompanyManagement: React.FC = () => {
-  const { testSupabaseConnection, isTestingConnection } = useSupabaseConnectionTest();
-  const { setIsAddBranchDialogOpen } = useCompanyManagementContext();
-  const { refreshData, loading } = useDataLoader();
+const CompanyManagement = () => {
+  const [activeTab, setActiveTab] = useState('company');
+  const companyData = useCompanyManagement();
 
-  const handleRefreshData = async () => {
-    console.log('手動重新整理資料...');
-    await refreshData();
-  };
-
-  const handleAddBranch = () => {
-    setIsAddBranchDialogOpen(true);
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'company':
+        return <CompanyInfoCard {...companyData} />;
+      case 'branches':
+        return <BranchTable {...companyData} />;
+      case 'settings':
+        return <RLSSettingsCard />;
+      case 'checkin':
+        return <CheckInDistanceSettings />;
+      default:
+        return <CompanyInfoCard {...companyData} />;
+    }
   };
 
   return (
     <div className="space-y-6">
-      <CompanyManagementHeader
-        onRefreshData={handleRefreshData}
-        onTestConnection={testSupabaseConnection}
-        onAddBranch={handleAddBranch}
-        loading={loading}
-        isTestingConnection={isTestingConnection}
+      <CompanyManagementHeader 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
       />
-
-      {/* 公司基本資料 */}
-      <CompanyInfoCard />
-
-      {/* 分支機構管理 */}
-      <BranchTable />
-
-      {/* 對話框 */}
-      <CompanyDialogs />
+      {renderTabContent()}
     </div>
   );
 };

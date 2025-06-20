@@ -7,7 +7,7 @@ import { Department } from '@/components/departments/types';
 // 位置打卡的函數 - 支援部門GPS驗證，使用調整後的距離限制
 export const handleLocationCheckIn = async (
   userId: string,
-  actionType: 'check-in' | '開out',
+  actionType: 'check-in' | 'check-out',
   onSuccess: (record: CheckInRecord) => void,
   onError: (error: string) => void,
   setDistance?: (distance: number) => void,

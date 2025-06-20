@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { CheckInRecord } from '@/types';
 import { 
   handleLocationCheckIn, 
   handleIpCheckIn
-} from '@/utils/checkInHandlers';
+} from '@/utils/checkIn';
 import { useSupabaseCheckIn } from './useSupabaseCheckIn';
 import { UserIdValidationService } from '@/services/userIdValidationService';
 import { useUser } from '@/contexts/UserContext';

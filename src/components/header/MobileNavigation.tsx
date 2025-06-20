@@ -33,20 +33,20 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="lg:hidden border-t border-white/20 bg-white/10 backdrop-blur-xl">
+    <div className="lg:hidden border-t border-white/20 bg-white/95 backdrop-blur-xl">
       {isAuthenticated && currentUser ? (
         <div className="p-4 space-y-4">
           {/* 用戶資訊卡片 */}
-          <div className="bg-white/20 rounded-lg p-4 mb-4 border border-white/30">
+          <div className="bg-gray-100 rounded-lg p-4 mb-4 border border-gray-200">
             <div className="flex items-center space-x-3">
-              <div className="bg-white/30 rounded-full p-2">
-                <User className="h-5 w-5 text-white" />
+              <div className="bg-gray-200 rounded-full p-2">
+                <User className="h-5 w-5 text-gray-700" />
               </div>
               <div>
-                <div className="text-white font-semibold text-sm drop-shadow-sm">
+                <div className="text-gray-900 font-semibold text-sm">
                   {currentUser.name}
                 </div>
-                <div className="text-white/90 text-xs font-medium">
+                <div className="text-gray-600 text-xs font-medium">
                   {currentUser.role === 'admin' ? '管理員' : 
                    currentUser.role === 'manager' ? '主管' : '員工'}
                 </div>
@@ -62,27 +62,27 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                 onClick={() => onNavigation(item.path)}
                 variant="ghost"
                 className={`
-                  w-full justify-start text-white font-semibold hover:text-white hover:bg-white/20 
-                  transition-all duration-200 p-4 rounded-lg text-base
-                  ${location.pathname === item.path ? 'bg-white/25 text-white shadow-sm' : 'text-white/95'}
+                  w-full justify-start text-gray-800 hover:text-gray-900 hover:bg-gray-100 
+                  transition-all duration-200 p-4 rounded-lg text-base font-semibold
+                  ${location.pathname === item.path ? 'bg-gray-200 text-gray-900 shadow-sm' : ''}
                 `}
               >
-                <item.icon className="h-5 w-5 mr-3 text-white" />
-                <span className="drop-shadow-sm">{item.label}</span>
+                <item.icon className="h-5 w-5 mr-3 text-gray-700" />
+                <span>{item.label}</span>
               </Button>
             ))}
           </div>
           
-          <Separator className="bg-white/30 my-4" />
+          <Separator className="bg-gray-300 my-4" />
           
           {/* 登出按鈕 */}
           <Button
             onClick={onLogout}
             variant="ghost"
-            className="w-full justify-start text-white font-semibold hover:text-white hover:bg-red-500/30 transition-all duration-200 p-4 rounded-lg text-base border border-white/20"
+            className="w-full justify-start text-red-700 font-semibold hover:text-red-800 hover:bg-red-50 transition-all duration-200 p-4 rounded-lg text-base border border-red-200"
           >
-            <LogOut className="h-5 w-5 mr-3 text-white" />
-            <span className="drop-shadow-sm">登出</span>
+            <LogOut className="h-5 w-5 mr-3 text-red-600" />
+            <span>登出</span>
           </Button>
         </div>
       ) : (
@@ -91,10 +91,10 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
             <Button
               onClick={onLogin}
               variant="ghost"
-              className="w-full justify-start text-white font-semibold hover:text-white hover:bg-white/20 transition-all duration-200 p-4 rounded-lg text-base"
+              className="w-full justify-start text-gray-800 font-semibold hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 p-4 rounded-lg text-base"
             >
-              <User className="h-5 w-5 mr-3 text-white" />
-              <span className="drop-shadow-sm">登入</span>
+              <User className="h-5 w-5 mr-3 text-gray-700" />
+              <span>登入</span>
             </Button>
           </div>
         )

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,12 +8,9 @@ import TimeSlotManagement from '@/components/TimeSlotManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 import { SchedulingProvider } from '@/contexts/SchedulingContext';
-
 const Scheduling = () => {
   const navigate = useNavigate();
-  
-  return (
-    <StaffManagementProvider>
+  return <StaffManagementProvider>
       <SchedulingProvider>
         <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
           {/* 動態背景效果 - 與首頁一致 */}
@@ -24,21 +20,22 @@ const Scheduling = () => {
           
           {/* 浮動光點效果 */}
           <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-white/30 rounded-full animate-pulse"></div>
-          <div className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
-          <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
+          <div className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{
+          animationDelay: '2s'
+        }}></div>
+          <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{
+          animationDelay: '4s'
+        }}></div>
+          <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{
+          animationDelay: '6s'
+        }}></div>
           
           <div className="relative z-10 w-full">
             {/* 頁面標題區域 */}
             <div className="w-full px-4 lg:px-8 pt-32 md:pt-36 pb-8">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => navigate('/')}
-                    className="p-3 bg-white/20 hover:bg-white/30 border border-white/30 rounded-2xl md:hidden text-white"
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="p-3 bg-white/20 hover:bg-white/30 border border-white/30 rounded-2xl md:hidden text-white">
                     <ChevronLeft className="h-5 w-5" />
                   </Button>
                   <div className="flex items-center space-x-4">
@@ -47,17 +44,13 @@ const Scheduling = () => {
                     </div>
                     <div>
                       <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">排班管理</h1>
-                      <p className="text-white/80 text-lg font-medium drop-shadow-md">管理員工排班與時間設定</p>
+                      
                     </div>
                   </div>
                 </div>
                 <div className="hidden md:flex items-center space-x-3">
-                  <div className="p-3 bg-blue-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50">
-                    <Users className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="p-3 bg-green-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-green-400/50">
-                    <Clock className="h-6 w-6 text-white" />
-                  </div>
+                  
+                  
                 </div>
               </div>
             </div>
@@ -73,26 +66,17 @@ const Scheduling = () => {
               
               <Tabs defaultValue="view" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
-                  <TabsTrigger 
-                    value="view" 
-                    className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
-                  >
+                  <TabsTrigger value="view" className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     <span className="hidden sm:inline">查看班表</span>
                     <span className="sm:hidden">班表</span>
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="create"
-                    className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
-                  >
+                  <TabsTrigger value="create" className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2">
                     <UserPlus className="h-4 w-4" />
                     <span className="hidden sm:inline">創建排班</span>
                     <span className="sm:hidden">排班</span>
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="timeslots"
-                    className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
-                  >
+                  <TabsTrigger value="timeslots" className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2">
                     <Clock className="h-4 w-4" />
                     <span className="hidden sm:inline">時間段</span>
                     <span className="sm:hidden">時間</span>
@@ -124,8 +108,6 @@ const Scheduling = () => {
           </div>
         </div>
       </SchedulingProvider>
-    </StaffManagementProvider>
-  );
+    </StaffManagementProvider>;
 };
-
 export default Scheduling;

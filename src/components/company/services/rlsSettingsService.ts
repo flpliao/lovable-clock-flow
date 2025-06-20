@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface TableRLSStatus {
@@ -20,7 +21,8 @@ export class RLSSettingsService {
     { name: 'notifications', displayName: '通知資料' },
     { name: 'annual_leave_balance', displayName: '年假餘額' },
     { name: 'approval_records', displayName: '審批記錄' },
-    { name: 'announcement_reads', displayName: '公告閱讀記錄' }
+    { name: 'announcement_reads', displayName: '公告閱讀記錄' },
+    { name: 'system_settings', displayName: 'GPS打卡距離設定' }
   ];
 
   /**

@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Shield, Settings, Check, X, ChevronDown, Database, Lock, Unlock } from 'lucide-react';
+import { Shield, Settings, Check, X, ChevronDown, Database, Lock, Unlock, MapPin } from 'lucide-react';
 import { useRLSSettings } from '../hooks/useRLSSettings';
 
 export const RLSSettingsCard: React.FC = () => {
@@ -15,6 +15,9 @@ export const RLSSettingsCard: React.FC = () => {
     toggleTableRLS,
     loading 
   } = useRLSSettings();
+
+  // 找出 GPS 打卡距離設定的狀態
+  const gpsSettingStatus = tableRLSStatus.find(t => t.tableName === 'system_settings');
 
   return (
     <Card className="backdrop-blur-xl bg-white/30 border border-white/40 shadow-lg">
@@ -62,6 +65,38 @@ export const RLSSettingsCard: React.FC = () => {
           />
         </div>
 
+        {/* GPS 打卡距離設定 - 特別突出顯示 */}
+        {gpsSettingStatus && (
+          <div className="flex items-center justify-between py-4 px-4 bg-blue-50/60 border border-blue-200/60 rounded-lg">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-500/90 rounded-lg shadow-md mr-3">
+                <MapPin className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-gray-900 drop-shadow-sm">GPS打卡距離設定</span>
+                <div className="flex items-center mt-1">
+                  {gpsSettingStatus.enabled ? (
+                    <div className="flex items-center">
+                      <Check className="h-3 w-3 mr-1 text-green-600" />
+                      <span className="text-xs text-green-700 font-medium">安全政策已啟用</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <X className="h-3 w-3 mr-1 text-orange-500" />
+                      <span className="text-xs text-orange-600 font-medium">安全政策已停用</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <Switch
+              checked={gpsSettingStatus.enabled}
+              onCheckedChange={() => toggleTableRLS('system_settings')}
+              disabled={loading}
+            />
+          </div>
+        )}
+
         {/* 表格設定 - 使用 Accordion */}
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="table-settings" className="border border-white/30 rounded-lg">
@@ -71,16 +106,16 @@ export const RLSSettingsCard: React.FC = () => {
                   <Database className="h-4 w-4 text-white" />
                 </div>
                 <div className="text-left">
-                  <div>表格級別設定</div>
+                  <div>其他表格級別設定</div>
                   <div className="text-xs text-gray-600 font-normal mt-1">
-                    ({tableRLSStatus.filter(t => t.enabled).length}/{tableRLSStatus.length} 已啟用)
+                    ({tableRLSStatus.filter(t => t.enabled && t.tableName !== 'system_settings').length}/{tableRLSStatus.filter(t => t.tableName !== 'system_settings').length} 已啟用)
                   </div>
                 </div>
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4">
               <div className="space-y-3 pt-2">
-                {tableRLSStatus.map((table) => (
+                {tableRLSStatus.filter(table => table.tableName !== 'system_settings').map((table) => (
                   <div key={table.tableName} className="flex items-center justify-between p-3 bg-white/20 border border-white/30 rounded-lg text-sm hover:bg-white/25 transition-colors duration-200">
                     <div className="flex items-center min-w-0 flex-1">
                       <div className="p-1.5 bg-gray-500/90 rounded-md shadow-sm mr-3">

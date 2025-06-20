@@ -30,7 +30,6 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // 移除自動登入的廖俊雄帳號，改為 null
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [annualLeaveBalance, setAnnualLeaveBalance] = useState<AnnualLeaveBalance | null>(null);
   const [isUserLoaded, setIsUserLoaded] = useState(false);
@@ -55,6 +54,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     }
     
+    // 確保載入狀態設為 true，無論是否有用戶
     setIsUserLoaded(true);
   }, []);
 

@@ -20,14 +20,14 @@ const LoginForm: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    console.log('登入嘗試，電子郵件:', email);
+    console.log('🔐 登入嘗試，電子郵件:', email);
     
     try {
       // 使用新的 AuthService 進行驗證
       const authResult = await AuthService.authenticate(email, password);
       
       if (authResult.success && authResult.user) {
-        console.log('登入成功，用戶資料:', authResult.user);
+        console.log('✅ 登入成功，用戶資料:', authResult.user);
         
         // 構建用戶資料用於 UserContext
         const userData = {
@@ -41,10 +41,19 @@ const LoginForm: React.FC = () => {
         
         setCurrentUser(userData);
         
-        // 移除成功提醒，直接跳轉
-        navigate('/');
+        // 登入成功提醒
+        toast({
+          title: '登入成功',
+          description: `歡迎回來，${authResult.user.name}！`,
+        });
+        
+        // 稍微延遲跳轉，讓用戶看到成功提醒
+        setTimeout(() => {
+          console.log('🔄 跳轉到主頁面');
+          navigate('/');
+        }, 1000);
       } else {
-        console.log('登入失敗:', authResult.error);
+        console.log('❌ 登入失敗:', authResult.error);
         toast({
           variant: 'destructive',
           title: '登錄失敗',
@@ -52,7 +61,7 @@ const LoginForm: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('登入錯誤:', error);
+      console.error('🔥 登入錯誤:', error);
       toast({
         variant: 'destructive',
         title: '登錄失敗',
@@ -66,7 +75,7 @@ const LoginForm: React.FC = () => {
   return (
     <form onSubmit={handleLogin} className="mt-8 space-y-6">
       <div className="space-y-2">
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="email" className="block text-sm font-medium text-white">
           電子郵件
         </label>
         <Input
@@ -76,12 +85,12 @@ const LoginForm: React.FC = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full"
+          className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60"
         />
       </div>
       
       <div className="space-y-2">
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="password" className="block text-sm font-medium text-white">
           密碼
         </label>
         <Input
@@ -91,13 +100,13 @@ const LoginForm: React.FC = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="w-full"
+          className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60"
         />
       </div>
       
       <Button
         type="submit"
-        className="w-full bg-blue-600 hover:bg-blue-700"
+        className="w-full bg-blue-600/80 hover:bg-blue-700/80 text-white"
         disabled={isLoading}
       >
         {isLoading ? '登入中...' : '登入'}

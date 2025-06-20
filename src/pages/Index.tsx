@@ -10,15 +10,7 @@ const Index = () => {
   const { currentUser, annualLeaveBalance, userError, clearUserError, isUserLoaded, isAuthenticated } = useUser();
   const navigate = useNavigate();
 
-  // 檢查登入狀態，若未登入則重定向到登入頁
-  useEffect(() => {
-    if (isUserLoaded && !isAuthenticated) {
-      console.log('🚫 用戶未登入，重定向到登入頁面');
-      navigate('/login');
-      return;
-    }
-  }, [isUserLoaded, isAuthenticated, navigate]);
-
+  // 清理錯誤狀態
   useEffect(() => {
     if (userError) {
       console.log('Index page: clearing user error:', userError);
@@ -36,6 +28,7 @@ const Index = () => {
 
   // 在載入用戶狀態期間顯示載入畫面
   if (!isUserLoaded) {
+    console.log('🔄 Index: 正在載入用戶狀態...');
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
         <div className="text-white text-center">
@@ -46,10 +39,21 @@ const Index = () => {
     );
   }
 
-  // 若用戶未登入，不渲染主頁面內容（重定向邏輯會處理）
-  if (!isAuthenticated || !currentUser) {
+  // 檢查登入狀態，若未登入則重定向到登入頁
+  if (!isAuthenticated) {
+    console.log('🚫 Index: 用戶未登入，重定向到登入頁面');
+    navigate('/login');
     return null;
   }
+
+  // 確保有用戶資料才渲染主頁面
+  if (!currentUser) {
+    console.log('⚠️ Index: 已驗證但無用戶資料，重定向到登入頁面');
+    navigate('/login');
+    return null;
+  }
+
+  console.log('✅ Index: 用戶已登入，顯示主頁面:', currentUser.name);
 
   const leaveHours = annualLeaveBalance
     ? (annualLeaveBalance.total_days - annualLeaveBalance.used_days) * 8

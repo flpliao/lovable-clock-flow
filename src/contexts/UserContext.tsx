@@ -24,30 +24,37 @@ interface UserContextType {
   userError: string | null;
   clearUserError: () => void;
   resetUserState: () => void;
+  isAuthenticated: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // 廖俊雄的最高管理員資料
-  const superAdminUser = {
-    id: '550e8400-e29b-41d4-a716-446655440001',
-    name: '廖俊雄',
-    position: '最高管理者',
-    department: '管理部',
-    onboard_date: '2023-01-01',
-    role: 'admin' as const
-  };
-
-  const [currentUser, setCurrentUser] = useState<User | null>(superAdminUser);
+  // 移除自動登入的廖俊雄帳號，改為 null
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [annualLeaveBalance, setAnnualLeaveBalance] = useState<AnnualLeaveBalance | null>(null);
-  const [isUserLoaded, setIsUserLoaded] = useState(true);
+  const [isUserLoaded, setIsUserLoaded] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
 
+  // 檢查是否已驗證登入
+  const isAuthenticated = currentUser !== null;
+
   useEffect(() => {
-    console.log('👤 UserProvider: 廖俊雄最高管理員已登入');
-    console.log('🆔 管理員ID:', superAdminUser.id);
-    console.log('🔐 權限等級: 最高管理員');
+    console.log('👤 UserProvider: 初始化用戶狀態管理');
+    
+    // 檢查本地存儲是否有用戶 session
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        console.log('👤 UserProvider: 從本地存儲恢復用戶:', user.name);
+        setCurrentUser(user);
+      } catch (error) {
+        console.error('👤 UserProvider: 解析存儲用戶資料失敗:', error);
+        localStorage.removeItem('currentUser');
+      }
+    }
+    
     setIsUserLoaded(true);
   }, []);
 
@@ -56,10 +63,14 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!currentUser) {
       setAnnualLeaveBalance(null);
       setUserError(null);
+      localStorage.removeItem('currentUser');
       console.log('👤 UserProvider: 用戶登出，清除所有狀態');
     } else {
       console.log('👤 UserProvider: 用戶登入:', currentUser.name, '權限等級:', currentUser.role);
       console.log('🆔 UserProvider: 用戶ID:', currentUser.id);
+      
+      // 將用戶資料存儲到本地存儲
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
       setUserError(null);
     }
   }, [currentUser]);
@@ -126,7 +137,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return true;
     }
     
-    // Add specific permission logic here based on role
+    // 根據角色檢查特定權限
     switch (permission) {
       case 'view_staff':
       case 'manage_leave':
@@ -134,7 +145,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       case 'create_department':
       case 'edit_department':
       case 'delete_department':
-        return currentUser.role === 'manager' || currentUser.role === 'admin';
+        return currentUser.role === 'manager';
       case 'create_announcement':
       case 'manage_announcements':
       case 'announcement:view':
@@ -142,11 +153,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       case 'announcement:edit':
       case 'announcement:delete':
       case 'announcement:publish':
-        return currentUser.department === 'HR' || currentUser.role === 'admin';
+        return currentUser.department === 'HR';
       // 帳號管理權限檢查 - 系統管理員擁有所有權限
       case 'account:email:manage':
       case 'account:password:manage':
-        return currentUser.role === 'admin';
+        return false; // 只有 admin 角色才有這些權限，上面已經處理
       default:
         return false;
     }
@@ -157,11 +168,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const resetUserState = () => {
-    console.log('🔄 UserProvider: 重置用戶狀態到最高管理員 - 廖俊雄');
-    setCurrentUser(superAdminUser);
+    console.log('🔄 UserProvider: 重置用戶狀態 - 登出');
+    setCurrentUser(null);
     setAnnualLeaveBalance(null);
     setUserError(null);
     setIsUserLoaded(true);
+    localStorage.removeItem('currentUser');
   };
 
   return (
@@ -177,7 +189,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       isUserLoaded,
       userError,
       clearUserError,
-      resetUserState
+      resetUserState,
+      isAuthenticated
     }}>
       {children}
     </UserContext.Provider>

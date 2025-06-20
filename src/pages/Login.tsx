@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, KeyRound } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import CredentialManagement from '@/components/staff/CredentialManagement';
@@ -15,8 +16,17 @@ import {
 
 const Login = () => {
   const [activeTab, setActiveTab] = useState('login');
-  const { currentUser } = useUser();
+  const { currentUser, isAuthenticated, isUserLoaded } = useUser();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // 檢查是否已登入，若已登入則重定向到主頁
+  useEffect(() => {
+    if (isUserLoaded && isAuthenticated && currentUser) {
+      console.log('🔐 用戶已登入，重定向到主頁面');
+      navigate('/');
+    }
+  }, [isUserLoaded, isAuthenticated, currentUser, navigate]);
 
   const handleCredentialUpdateSuccess = () => {
     toast({
@@ -24,6 +34,18 @@ const Login = () => {
       description: "請使用新的帳號設定登錄",
     });
   };
+
+  // 在載入用戶狀態期間或已登入時顯示載入畫面
+  if (!isUserLoaded || (isAuthenticated && currentUser)) {
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+          <p>{isAuthenticated ? '正在跳轉...' : '載入中...'}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen pt-20 md:pt-24">

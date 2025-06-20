@@ -99,16 +99,6 @@ const LoginForm: React.FC = () => {
         />
       </div>
       
-      <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-        <p><strong>測試帳號：</strong></p>
-        <p>廖俊雄管理員：liao.junxiong@company.com / password123</p>
-        <p>系統管理員：admin@example.com / password</p>
-        <p>一般用戶：flpliao@gmail.com / password</p>
-        <p>鄭宇伶：alinzheng55@gmail.com / 0989022719</p>
-        <p>廖淑華：lshuahua@company.com / password123</p>
-        <p>測試用戶：liaoyuwii@yahoo.tw / 123456</p>
-      </div>
-      
       <Button
         type="submit"
         className="w-full bg-blue-600 hover:bg-blue-700"

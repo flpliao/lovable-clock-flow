@@ -1,11 +1,23 @@
+
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import WelcomeSection from '@/components/WelcomeSection';
 import FeatureCards from '@/components/FeatureCards';
 import LocationCheckIn from '@/components/LocationCheckIn';
 import { useUser } from '@/contexts/UserContext';
 
 const Index = () => {
-  const { currentUser, annualLeaveBalance, userError, clearUserError } = useUser();
+  const { currentUser, annualLeaveBalance, userError, clearUserError, isUserLoaded, isAuthenticated } = useUser();
+  const navigate = useNavigate();
+
+  // 檢查登入狀態，若未登入則重定向到登入頁
+  useEffect(() => {
+    if (isUserLoaded && !isAuthenticated) {
+      console.log('🚫 用戶未登入，重定向到登入頁面');
+      navigate('/login');
+      return;
+    }
+  }, [isUserLoaded, isAuthenticated, navigate]);
 
   useEffect(() => {
     if (userError) {
@@ -21,6 +33,23 @@ const Index = () => {
       clearUserError();
     }
   }, [currentUser, clearUserError]);
+
+  // 在載入用戶狀態期間顯示載入畫面
+  if (!isUserLoaded) {
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+          <p>載入中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 若用戶未登入，不渲染主頁面內容（重定向邏輯會處理）
+  if (!isAuthenticated || !currentUser) {
+    return null;
+  }
 
   const leaveHours = annualLeaveBalance
     ? (annualLeaveBalance.total_days - annualLeaveBalance.used_days) * 8
@@ -42,7 +71,7 @@ const Index = () => {
       <div className="relative z-10 w-full min-h-screen pb-safe pt-12 md:pt-20">
         {/* 歡迎區塊 */}
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <WelcomeSection userName={currentUser?.name || '訪客'} />
+          <WelcomeSection userName={currentUser.name} />
         </div>
 
         {/* 打卡區塊（壓縮下邊距） */}

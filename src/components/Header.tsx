@@ -1,165 +1,141 @@
 
-import React from 'react';
-import { Menu, Shield, LogOut, BarChart3, Bell, FileText, Home, Calendar, User, Clock, Building2, Settings, DollarSign } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import ApolloLogo from './ApolloLogo';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { User, LogOut, Menu, X } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
-import { useToast } from '@/hooks/use-toast';
-import NotificationCenter from './notifications/NotificationCenter';
+import { Button } from '@/components/ui/button';
 
-interface HeaderProps {
-  notificationCount?: number;
-}
-
-const Header: React.FC<HeaderProps> = () => {
-  const location = useLocation();
+const Header = () => {
+  const { currentUser, resetUserState, isAuthenticated } = useUser();
   const navigate = useNavigate();
-  const { currentUser, isAdmin, setCurrentUser } = useUser();
-  const { toast } = useToast();
+  const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // 添加調試信息
-  console.log('Header - currentUser:', currentUser);
-  console.log('Header - isAdmin():', isAdmin());
-  console.log('Rendering admin badge check - isAdmin():', isAdmin());
-  
-  // 判斷是否為管理員或人資部門
-  const isAdminOrHR = () => {
-    return currentUser && (isAdmin() || currentUser.department === 'HR');
-  };
-  
-  let navItems = [
-    { path: '/', label: '首頁', icon: <Home className="mr-2 h-4 w-4" /> },
-    { path: '/company-announcements', label: '公司公告', icon: <FileText className="mr-2 h-4 w-4" /> },
-  ];
-  
-  // 如果是管理員或人資部門，在公司公告後添加公告管理系統
-  if (isAdminOrHR()) {
-    navItems.push(
-      { path: '/announcement-management', label: '公告管理系統', icon: <FileText className="mr-2 h-4 w-4" /> }
-    );
-  }
-  
-  // 添加其他選項
-  navItems.push(
-    { path: '/leave-request', label: '請假申請', icon: <Calendar className="mr-2 h-4 w-4" /> },
-    { path: '/personal-attendance', label: '個人考勤', icon: <Clock className="mr-2 h-4 w-4" /> },
-    { path: '/scheduling', label: '排班', icon: <Calendar className="mr-2 h-4 w-4" /> },
-    { path: '/overtime-management', label: '加班管理', icon: <Clock className="mr-2 h-4 w-4" /> },
-    { path: '/holiday-management', label: '假日管理', icon: <Calendar className="mr-2 h-4 w-4" /> }
-  );
-  
-  // 如果是管理員或人資部門，新增其他管理選項
-  if (isAdminOrHR()) {
-    navItems.push(
-      { path: '/company-branch-management', label: '公司基本資料與營業處管理', icon: <Building2 className="mr-2 h-4 w-4" /> },
-      { path: '/personnel-management', label: '人員與部門管理', icon: <User className="mr-2 h-4 w-4" /> },
-      { path: '/staff-dashboard', label: '員工考勤儀表板', icon: <BarChart3 className="mr-2 h-4 w-4" /> },
-      { path: '/hr-management', label: '薪資系統', icon: <DollarSign className="mr-2 h-4 w-4" /> },
-      { path: '/system-settings', label: '系統設定', icon: <Settings className="mr-2 h-4 w-4" /> }
-    );
-  }
-  
-  const handleLogout = () => {
-    setCurrentUser(null);
-    toast({
-      title: '登出成功',
-      description: '您已成功登出系統',
-    });
-    navigate('/login');
-  };
-  
-  return (
-    <header className="fixed top-0 left-0 right-0 w-full z-50 overflow-hidden">
-      {/* 背景漸層 - 與首頁一致 */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600"></div>
-      <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-purple-400/20 via-transparent to-transparent"></div>
-      
-      {/* 浮動光點效果 */}
-      <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-white/30 rounded-full animate-pulse"></div>
-      <div className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
-      <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
-      <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
+  const isLoginPage = location.pathname === '/login';
 
-      {/* Header 內容 */}
-      <div className="relative z-10 py-2 px-3 md:py-4 md:px-5 flex justify-between items-center">
-        <div className="flex items-center min-w-0 flex-1 mr-2">
-          <ApolloLogo />
-          {isAdmin() && (
-            <Badge className="ml-2 bg-blue-500 hover:bg-blue-600 text-xs px-2 py-1 flex-shrink-0 flex items-center min-w-0">
-              <Shield className="w-3 h-3 mr-1 flex-shrink-0" />
-              <span className="hidden xs:inline sm:inline whitespace-nowrap">管理員</span>
-              <span className="xs:hidden sm:hidden text-xs">管</span>
-            </Badge>
-          )}
-          {!isAdmin() && currentUser?.department === 'HR' && (
-            <Badge className="ml-2 bg-violet-500 hover:bg-violet-600 text-xs px-2 py-1 flex-shrink-0 flex items-center min-w-0">
-              <BarChart3 className="w-3 h-3 mr-1 flex-shrink-0" />
-              <span className="hidden xs:inline sm:inline whitespace-nowrap">人資管理</span>
-              <span className="xs:hidden sm:hidden text-xs">人資</span>
-            </Badge>
-          )}
-        </div>
-        <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-          {currentUser ? (
-            <>
-              <NotificationCenter />
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="text-gray-400">
-                    <Menu className="w-5 h-5 md:w-6 md:h-6" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="end" 
-                  className="w-60 bg-white text-black border-gray-200 z-50"
-                  sideOffset={5}
+  const handleLogout = () => {
+    console.log('🚪 用戶登出');
+    resetUserState();
+    navigate('/login');
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleLogin = () => {
+    navigate('/login');
+    setIsMobileMenuOpen(false);
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/20 backdrop-blur-xl border-b border-white/30 shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex items-center">
+            <h1 className="text-xl font-bold text-white drop-shadow-md">
+              員工考勤系統
+            </h1>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-4">
+            {isAuthenticated && currentUser ? (
+              <>
+                <div className="flex items-center space-x-2 text-white/90">
+                  <User className="h-4 w-4" />
+                  <span className="text-sm font-medium drop-shadow-sm">
+                    {currentUser.name}
+                  </span>
+                  <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
+                    {currentUser.role === 'admin' ? '管理員' : 
+                     currentUser.role === 'manager' ? '主管' : '員工'}
+                  </span>
+                </div>
+                <Button
+                  onClick={handleLogout}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white/90 hover:text-white hover:bg-white/20"
                 >
-                  <div className="max-h-[calc(100vh-120px)] overflow-y-auto">
-                    <div className="p-1">
-                      {navItems.map((item) => (
-                        <DropdownMenuItem key={item.path} asChild className="py-2 px-4 focus:bg-gray-100 focus:text-black rounded-md mb-1">
-                          <Link to={item.path} className="flex items-center text-black">
-                            {location.pathname === item.path && <Menu className="mr-2 h-4 w-4" />}
-                            <span className={location.pathname === item.path ? "ml-0 flex items-center" : "ml-8 flex items-center"}>
-                              {item.icon} {item.label}
-                            </span>
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                      <div className="border-t border-gray-200 my-2"></div>
-                      <DropdownMenuItem 
-                        className="py-2 px-4 focus:bg-gray-100 focus:text-red-600 rounded-md"
-                        onClick={handleLogout}
-                      >
-                        <div className="flex items-center text-red-600 ml-8">
-                          <LogOut className="mr-2 h-4 w-4" />
-                          <span>登出</span>
-                        </div>
-                      </DropdownMenuItem>
-                    </div>
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
-          ) : (
-            <Link to="/login">
-              <Badge className="bg-blue-600 hover:bg-blue-700 cursor-pointer text-xs px-2 py-1">
-                登入
-              </Badge>
-            </Link>
-          )}
+                  <LogOut className="h-4 w-4 mr-2" />
+                  登出
+                </Button>
+              </>
+            ) : (
+              !isLoginPage && (
+                <Button
+                  onClick={handleLogin}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white/90 hover:text-white hover:bg-white/20"
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  登入
+                </Button>
+              )
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <Button
+              onClick={toggleMobileMenu}
+              variant="ghost"
+              size="sm"
+              className="text-white/90 hover:text-white hover:bg-white/20"
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-white/30 py-4">
+            {isAuthenticated && currentUser ? (
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2 text-white/90 px-2">
+                  <User className="h-4 w-4" />
+                  <span className="text-sm font-medium">
+                    {currentUser.name}
+                  </span>
+                  <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
+                    {currentUser.role === 'admin' ? '管理員' : 
+                     currentUser.role === 'manager' ? '主管' : '員工'}
+                  </span>
+                </div>
+                <Button
+                  onClick={handleLogout}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-white/90 hover:text-white hover:bg-white/20"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  登出
+                </Button>
+              </div>
+            ) : (
+              !isLoginPage && (
+                <Button
+                  onClick={handleLogin}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-white/90 hover:text-white hover:bg-white/20"
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  登入
+                </Button>
+              )
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

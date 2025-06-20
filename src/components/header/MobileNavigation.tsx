@@ -33,7 +33,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="md:hidden border-t border-white/20 bg-white/5 backdrop-blur-sm">
+    <div className="lg:hidden border-t border-white/20 bg-white/5 backdrop-blur-sm">
       {isAuthenticated && currentUser ? (
         <div className="p-4 space-y-4">
           {/* 用戶資訊卡片 */}

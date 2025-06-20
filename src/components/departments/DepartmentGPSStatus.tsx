@@ -1,17 +1,14 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
 import { Department } from './types';
-
 interface DepartmentGPSStatusProps {
   department: Department;
   showDetails?: boolean;
 }
-
-const DepartmentGPSStatus: React.FC<DepartmentGPSStatusProps> = ({ 
-  department, 
-  showDetails = false 
+const DepartmentGPSStatus: React.FC<DepartmentGPSStatusProps> = ({
+  department,
+  showDetails = false
 }) => {
   const getGPSStatusInfo = () => {
     switch (department.gps_status) {
@@ -41,44 +38,13 @@ const DepartmentGPSStatus: React.FC<DepartmentGPSStatusProps> = ({
         };
     }
   };
-
   const statusInfo = getGPSStatusInfo();
-
   if (showDetails) {
-    return (
-      <div className={`p-3 rounded-lg border ${statusInfo.bgColor}`}>
-        <div className="flex items-center gap-2 mb-2">
-          <MapPin className="h-4 w-4 text-gray-600" />
-          <span className="font-medium text-sm">GPS狀態</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {statusInfo.icon}
-          <span className={`text-sm ${statusInfo.color}`}>
-            {statusInfo.label}
-          </span>
-        </div>
-        {department.gps_status === 'converted' && department.latitude && department.longitude && (
-          <div className="mt-2 text-xs text-gray-500">
-            <div>緯度: {department.latitude.toFixed(6)}</div>
-            <div>經度: {department.longitude.toFixed(6)}</div>
-            <div>允許範圍: {department.check_in_radius || 100}公尺</div>
-          </div>
-        )}
-        {department.gps_status === 'failed' && (
-          <div className="mt-2 text-xs text-red-600">
-            請檢查地址格式或使用 Google Maps 建議格式
-          </div>
-        )}
-      </div>
-    );
+    return;
   }
-
-  return (
-    <Badge variant={statusInfo.variant} className="flex items-center gap-1">
+  return <Badge variant={statusInfo.variant} className="flex items-center gap-1">
       {statusInfo.icon}
       <span>{statusInfo.label}</span>
-    </Badge>
-  );
+    </Badge>;
 };
-
 export default DepartmentGPSStatus;

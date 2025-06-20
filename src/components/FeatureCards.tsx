@@ -57,7 +57,7 @@ const FeatureCards = ({ abnormalCount, annualLeaveBalance }: FeatureCardsProps) 
   ];
 
   const FeatureCard = ({ feature }: { feature: any }) => (
-    <div className="group rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative w-full max-w-xs mx-auto">
+    <div className="group rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative w-full">
       <Link to={feature.link} className="block">
         <div className="p-5 sm:p-6 relative overflow-hidden h-full bg-white/80 backdrop-blur-xl border border-white/40">
           <div className="relative z-10 h-full flex flex-col">
@@ -93,10 +93,12 @@ const FeatureCards = ({ abnormalCount, annualLeaveBalance }: FeatureCardsProps) 
       {/* 主要功能區 */}
       <div>
         <h2 className="text-2xl font-bold text-white mb-6 text-center drop-shadow-lg">主要功能</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 justify-items-center">
-          {mainFeatures.map((feature, index) => (
-            <FeatureCard key={index} feature={feature} />
-          ))}
+        <div className="flex flex-col items-center justify-center w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg sm:max-w-none place-items-center">
+            {mainFeatures.map((feature, index) => (
+              <FeatureCard key={index} feature={feature} />
+            ))}
+          </div>
         </div>
       </div>
     </div>

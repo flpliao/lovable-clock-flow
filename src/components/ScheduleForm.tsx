@@ -26,6 +26,7 @@ const ScheduleForm = () => {
     onSubmit,
   } = useScheduleFormLogic();
 
+  // 表單驗證：需要選擇員工、日期和時間段
   const isFormValid = form.watch('userId') && selectedDates.length > 0 && selectedTimeSlots.length > 0;
 
   return (
@@ -91,6 +92,11 @@ const ScheduleForm = () => {
                 <Clock className="h-7 w-7 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-white drop-shadow-lg">選擇時間段</h3>
+              {selectedTimeSlots.length === 0 && (
+                <div className="text-yellow-300 text-sm ml-2">
+                  (請選擇一個時間段)
+                </div>
+              )}
             </div>
             <TimeSlotSelector
               selectedTimeSlots={selectedTimeSlots}

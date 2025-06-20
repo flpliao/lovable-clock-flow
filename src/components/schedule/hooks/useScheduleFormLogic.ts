@@ -26,7 +26,7 @@ export const useScheduleFormLogic = () => {
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
   const [selectedMonth, setSelectedMonth] = useState(currentMonth.toString());
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
-  const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>(['09:30-17:30']);
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]); // 移除預設選擇
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -34,7 +34,7 @@ export const useScheduleFormLogic = () => {
       selectedYear: currentYear.toString(),
       selectedMonth: currentMonth.toString(),
       selectedDates: [],
-      selectedTimeSlots: ['09:30-17:30'],
+      selectedTimeSlots: [], // 移除預設選擇
     },
   });
 
@@ -46,12 +46,17 @@ export const useScheduleFormLogic = () => {
     );
   };
 
+  // 修改時間段選擇邏輯，確保一天只能選擇一個班次
   const handleTimeSlotToggle = (timeSlot: string) => {
-    setSelectedTimeSlots(prev => 
-      prev.includes(timeSlot) 
-        ? prev.filter(t => t !== timeSlot)
-        : [...prev, timeSlot]
-    );
+    setSelectedTimeSlots(prev => {
+      if (prev.includes(timeSlot)) {
+        // 如果已選中，則取消選擇
+        return prev.filter(t => t !== timeSlot);
+      } else {
+        // 如果未選中，則只選擇這一個時間段（替換之前的選擇）
+        return [timeSlot];
+      }
+    });
   };
 
   const getUserName = (userId: string) => {
@@ -99,7 +104,7 @@ export const useScheduleFormLogic = () => {
       });
       
       setSelectedDates([]);
-      setSelectedTimeSlots(['09:30-17:30']);
+      setSelectedTimeSlots([]); // 清空時間段選擇
       form.reset();
     } catch (err) {
       console.error('排班提交失敗:', err);

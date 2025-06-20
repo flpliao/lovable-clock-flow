@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Dialog,
@@ -12,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MapPin, Navigation, ExternalLink } from 'lucide-react';
+import { MapPin, Navigation, ExternalLink, Building, User, Phone } from 'lucide-react';
 import { useDepartmentManagementContext } from './DepartmentManagementContext';
 import { toast } from '@/hooks/use-toast';
 import DepartmentGPSStatus from './DepartmentGPSStatus';
@@ -89,7 +88,7 @@ const EditDepartmentDialog = () => {
   
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-lg">編輯部門</DialogTitle>
           <DialogDescription className="text-sm">
@@ -97,85 +96,104 @@ const EditDepartmentDialog = () => {
           </DialogDescription>
         </DialogHeader>
         
-        <div className="grid gap-4 py-4">
-          {/* 基本資訊 */}
-          <div className="grid grid-cols-4 items-center gap-3">
-            <Label htmlFor="edit-name" className="text-right text-sm">
-              名稱 <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="edit-name"
-              value={currentDepartment.name}
-              onChange={(e) => setCurrentDepartment({...currentDepartment, name: e.target.value})}
-              className="col-span-3 text-sm"
-              placeholder="請輸入部門名稱"
-              required
-            />
-          </div>
-          
-          <div className="grid grid-cols-4 items-center gap-3">
-            <Label htmlFor="edit-type" className="text-right text-sm">
-              類型 <span className="text-red-500">*</span>
-            </Label>
-            <Select 
-              value={currentDepartment.type} 
-              onValueChange={(value: 'headquarters' | 'branch' | 'store') => setCurrentDepartment({...currentDepartment, type: value})}
-            >
-              <SelectTrigger className="col-span-3 text-sm" id="edit-type">
-                <SelectValue placeholder="選擇類型" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="headquarters" className="text-sm">總部</SelectItem>
-                <SelectItem value="branch" className="text-sm">分部</SelectItem>
-                <SelectItem value="store" className="text-sm">門市</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="grid grid-cols-4 items-center gap-3">
-            <Label htmlFor="edit-location" className="text-right text-sm">
-              地點
-            </Label>
-            <Input
-              id="edit-location"
-              value={currentDepartment.location || ''}
-              onChange={(e) => setCurrentDepartment({...currentDepartment, location: e.target.value})}
-              className="col-span-3 text-sm"
-              placeholder="請輸入地點"
-            />
-          </div>
-          
-          <div className="grid grid-cols-4 items-center gap-3">
-            <Label htmlFor="edit-manager_name" className="text-right text-sm">
-              負責人
-            </Label>
-            <Input
-              id="edit-manager_name"
-              value={currentDepartment.manager_name || ''}
-              onChange={(e) => setCurrentDepartment({...currentDepartment, manager_name: e.target.value})}
-              className="col-span-3 text-sm"
-              placeholder="請輸入負責人姓名"
-            />
-          </div>
-          
-          <div className="grid grid-cols-4 items-center gap-3">
-            <Label htmlFor="edit-manager_contact" className="text-right text-sm">
-              聯絡方式
-            </Label>
-            <Input
-              id="edit-manager_contact"
-              value={currentDepartment.manager_contact || ''}
-              onChange={(e) => setCurrentDepartment({...currentDepartment, manager_contact: e.target.value})}
-              className="col-span-3 text-sm"
-              placeholder="請輸入聯絡方式"
-            />
+        <div className="space-y-6 py-4">
+          {/* 基本資訊區塊 - 重新設計 */}
+          <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+            <div className="flex items-center gap-2 mb-4">
+              <Building className="h-4 w-4 text-slate-600" />
+              <h3 className="text-sm font-semibold text-slate-900">基本資訊</h3>
+            </div>
+            
+            <div className="space-y-4">
+              {/* 第一行：部門名稱和類型 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name" className="text-sm font-medium text-slate-700">
+                    部門名稱 <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="edit-name"
+                    value={currentDepartment.name}
+                    onChange={(e) => setCurrentDepartment({...currentDepartment, name: e.target.value})}
+                    className="text-sm"
+                    placeholder="請輸入部門名稱"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-type" className="text-sm font-medium text-slate-700">
+                    部門類型 <span className="text-red-500">*</span>
+                  </Label>
+                  <Select 
+                    value={currentDepartment.type} 
+                    onValueChange={(value: 'headquarters' | 'branch' | 'store') => setCurrentDepartment({...currentDepartment, type: value})}
+                  >
+                    <SelectTrigger className="text-sm" id="edit-type">
+                      <SelectValue placeholder="選擇類型" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="headquarters" className="text-sm">總部</SelectItem>
+                      <SelectItem value="branch" className="text-sm">分部</SelectItem>
+                      <SelectItem value="store" className="text-sm">門市</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              {/* 第二行：地點 */}
+              <div className="space-y-2">
+                <Label htmlFor="edit-location" className="text-sm font-medium text-slate-700 flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  部門地點
+                </Label>
+                <Input
+                  id="edit-location"
+                  value={currentDepartment.location || ''}
+                  onChange={(e) => setCurrentDepartment({...currentDepartment, location: e.target.value})}
+                  className="text-sm"
+                  placeholder="請輸入完整地址"
+                />
+              </div>
+              
+              {/* 第三行：負責人和聯絡方式 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-manager_name" className="text-sm font-medium text-slate-700 flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    負責人
+                  </Label>
+                  <Input
+                    id="edit-manager_name"
+                    value={currentDepartment.manager_name || ''}
+                    onChange={(e) => setCurrentDepartment({...currentDepartment, manager_name: e.target.value})}
+                    className="text-sm"
+                    placeholder="請輸入負責人姓名"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-manager_contact" className="text-sm font-medium text-slate-700 flex items-center gap-1">
+                    <Phone className="h-3 w-3" />
+                    聯絡方式
+                  </Label>
+                  <Input
+                    id="edit-manager_contact"
+                    value={currentDepartment.manager_contact || ''}
+                    onChange={(e) => setCurrentDepartment({...currentDepartment, manager_contact: e.target.value})}
+                    className="text-sm"
+                    placeholder="請輸入聯絡方式"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* GPS 位置資訊區塊 */}
-          <div className="col-span-4 border-t pt-4 mt-2">
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <div className="flex items-center gap-2 mb-3">
               <MapPin className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium">GPS 位置資訊</span>
+              <span className="text-sm font-semibold text-blue-900">GPS 位置資訊</span>
             </div>
             
             {/* GPS 狀態顯示 */}

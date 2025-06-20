@@ -68,13 +68,7 @@ const Login = () => {
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-            <TabsList className="grid w-full grid-cols-2 bg-white/30 rounded-xl">
-              <TabsTrigger value="login" className="flex items-center text-white data-[state=active]:bg-white/60 data-[state=active]:text-gray-900 rounded-lg">
-                <User className="mr-2 h-4 w-4" />
-                登入
-              </TabsTrigger>
-              
-            </TabsList>
+            
             
             <TabsContent value="login">
               <LoginForm />

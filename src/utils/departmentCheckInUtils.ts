@@ -161,8 +161,6 @@ export const getDepartmentGPSStatusMessage = (department: Department): string =>
   switch (department.gps_status) {
     case 'not_converted':
       return '尚未轉換GPS座標，請點擊轉換按鈕';
-    case 'converting':
-      return '正在轉換GPS座標...';
     case 'converted':
       return department.latitude && department.longitude 
         ? `GPS座標已設定 (${department.latitude.toFixed(6)}, ${department.longitude.toFixed(6)})`

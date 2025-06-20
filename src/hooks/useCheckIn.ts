@@ -105,35 +105,34 @@ export const useCheckIn = (userId: string) => {
 
       // 建立打卡記錄
       const checkInData: Omit<CheckInRecord, 'id'> = {
-        user_id: userId,
-        staff_id: userId,
-        action: actionType,
+        userId: userId,
+        timestamp: new Date().toISOString(),
         type: 'location',
         status: 'success',
-        latitude: latitude,
-        longitude: longitude,
-        location_name: locationName,
-        department_name: departmentName,
-        department_latitude: departmentLat,
-        department_longitude: departmentLng,
-        distance: distance,
-        timestamp: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        gps_comparison_result: userDepartment ? {
-          target_location: {
-            name: userDepartment.name,
-            latitude: userDepartment.latitude,
-            longitude: userDepartment.longitude
-          },
-          user_location: {
-            latitude: latitude,
-            longitude: longitude
-          },
+        action: actionType,
+        details: {
+          latitude: latitude,
+          longitude: longitude,
           distance: distance,
-          allowed_distance: checkInDistanceLimit, // 使用系統設定的距離限制
-          is_within_range: true
-        } : null
+          locationName: locationName,
+          departmentLatitude: departmentLat,
+          departmentLongitude: departmentLng,
+          departmentName: departmentName,
+          gpsComparisonResult: userDepartment ? {
+            target_location: {
+              name: userDepartment.name,
+              latitude: userDepartment.latitude,
+              longitude: userDepartment.longitude
+            },
+            user_location: {
+              latitude: latitude,
+              longitude: longitude
+            },
+            distance: distance,
+            allowed_distance: checkInDistanceLimit, // 使用系統設定的距離限制
+            is_within_range: true
+          } : null
+        }
       };
 
       const success = await createCheckInRecord(checkInData);
@@ -200,16 +199,15 @@ export const useCheckIn = (userId: string) => {
       
       // 建立打卡記錄
       const checkInData: Omit<CheckInRecord, 'id'> = {
-        user_id: userId,
-        staff_id: userId,
-        action: actionType,
+        userId: userId,
+        timestamp: new Date().toISOString(),
         type: 'ip',
         status: 'success',
-        ip_address: ipData.ip,
-        location_name: 'IP打卡',
-        timestamp: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        action: actionType,
+        details: {
+          ip: ipData.ip,
+          locationName: 'IP打卡'
+        }
       };
 
       const success = await createCheckInRecord(checkInData);

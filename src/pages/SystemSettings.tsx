@@ -43,20 +43,13 @@ const SystemSettings = () => {
         {/* 標籤導航 */}
         <div className="w-full px-4 lg:px-8 pb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
+            <TabsList className="grid w-full grid-cols-3 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
               <TabsTrigger 
                 value="general" 
                 className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-4 text-sm data-[state=active]:backdrop-blur-xl flex items-center gap-2"
               >
                 <Settings className="h-4 w-4" />
                 一般設定
-              </TabsTrigger>
-              <TabsTrigger 
-                value="maps" 
-                className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-4 text-sm data-[state=active]:backdrop-blur-xl flex items-center gap-2"
-              >
-                <MapPin className="h-4 w-4" />
-                地圖服務
               </TabsTrigger>
               <TabsTrigger 
                 value="i18n" 
@@ -91,29 +84,6 @@ const SystemSettings = () => {
                   <div className="space-y-6">
                     <GoogleMapsApiKeySettings />
                     <CheckInDistanceSettings />
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="maps" className="mt-0">
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-500/90 rounded-xl shadow-lg border border-orange-400/50">
-                      <MapPin className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-white drop-shadow-sm">地圖服務</h2>
-                      <p className="text-white/80 font-medium drop-shadow-sm text-sm">地圖相關服務和功能設定</p>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 p-8 text-center">
-                    <MapPin className="h-12 w-12 text-white/60 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-white mb-2">地圖服務設定</h3>
-                    <p className="text-white/70 mb-4">
-                      地圖服務和GPS設定已整合到「一般設定」標籤中，<br />
-                      請切換到一般設定進行相關配置。
-                    </p>
                   </div>
                 </div>
               </TabsContent>

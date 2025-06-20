@@ -8,8 +8,14 @@ export interface GeocodeResult {
   source?: string;
 }
 
+export interface AddressSuggestion {
+  address: string;
+  source: string;
+  confidence: number;
+}
+
 export class GeocodingService {
-  // 主要地理編碼方法 - 使用多重策略
+  // 主要地理編碼方法 - 使用多重策略，優先使用 Google Maps
   static async geocodeAddress(address: string): Promise<GeocodeResult | null> {
     console.log('🌍 開始地理編碼（多重策略）:', address);
     
@@ -17,37 +23,71 @@ export class GeocodingService {
     const cleanedAddress = this.cleanAddress(address);
     console.log('🧹 清理後的地址:', cleanedAddress);
     
-    // 策略1: 使用原始地址搜尋
-    let result = await this.tryNominatimSearch(address, '原始地址');
-    if (result) return result;
-    
-    // 策略2: 使用清理後的地址搜尋
-    if (cleanedAddress !== address) {
-      result = await this.tryNominatimSearch(cleanedAddress, '清理後地址');
-      if (result) return result;
+    // 策略1: 嘗試使用 Google Maps API（如果可用）
+    const googleResult = await this.tryGoogleGeocoding(cleanedAddress);
+    if (googleResult) {
+      console.log('✅ Google Maps 地理編碼成功');
+      return googleResult;
     }
     
-    // 策略3: 嘗試不同的地址格式變化
+    // 策略2: 使用 Nominatim 作為備用
+    let result = await this.tryNominatimSearch(address, '原始地址');
+    if (result && result.confidence && result.confidence > 0.1) return result;
+    
+    // 策略3: 使用清理後的地址搜尋
+    if (cleanedAddress !== address) {
+      result = await this.tryNominatimSearch(cleanedAddress, '清理後地址');
+      if (result && result.confidence && result.confidence > 0.1) return result;
+    }
+    
+    // 策略4: 嘗試不同的地址格式變化
     const addressVariations = this.generateAddressVariations(cleanedAddress);
     for (let i = 0; i < addressVariations.length; i++) {
       const variation = addressVariations[i];
       console.log(`🔄 嘗試地址變化 ${i + 1}:`, variation);
       result = await this.tryNominatimSearch(variation, `變化${i + 1}`);
-      if (result) return result;
+      if (result && result.confidence && result.confidence > 0.1) return result;
       
       // 添加延遲避免API限制
       await this.delay(200);
     }
     
-    // 策略4: 嘗試簡化地址（移除門牌號碼）
+    // 策略5: 嘗試簡化地址（移除門牌號碼）
     const simplifiedAddress = this.simplifyAddress(cleanedAddress);
     if (simplifiedAddress !== cleanedAddress) {
       console.log('🎯 嘗試簡化地址:', simplifiedAddress);
       result = await this.tryNominatimSearch(simplifiedAddress, '簡化地址');
-      if (result) return result;
+      if (result && result.confidence && result.confidence > 0.05) {
+        // 簡化地址可接受較低的信心度
+        return result;
+      }
     }
     
     console.warn('⚠️ 所有地理編碼策略均失敗:', address);
+    return null;
+  }
+  
+  // Google Maps 地理編碼嘗試
+  private static async tryGoogleGeocoding(address: string): Promise<GeocodeResult | null> {
+    try {
+      // 檢查是否有 Google Maps API 金鑰
+      const apiKey = await this.getGoogleMapsApiKey();
+      if (!apiKey) {
+        console.log('🗺️ Google Maps API 金鑰未設定，跳過 Google 地理編碼');
+        return null;
+      }
+      
+      return await this.geocodeAddressWithGoogle(address, apiKey);
+    } catch (error) {
+      console.error('❌ Google Maps 地理編碼失敗:', error);
+      return null;
+    }
+  }
+  
+  // 取得 Google Maps API 金鑰
+  private static async getGoogleMapsApiKey(): Promise<string | null> {
+    // 這裡可以從 Supabase Edge Function Secrets 或環境變數中取得
+    // 暫時返回 null，需要用戶設定
     return null;
   }
   
@@ -63,7 +103,7 @@ export class GeocodingService {
       .replace(/號$/g, '號'); // 確保以"號"結尾
   }
   
-  // 生成地址變化
+  // 生成台灣地址的多種變化格式
   private static generateAddressVariations(address: string): string[] {
     const variations = [];
     
@@ -80,13 +120,21 @@ export class GeocodingService {
     if (address.includes('三段')) {
       variations.push(address.replace('三段', '3段'));
     }
+    if (address.includes('四段')) {
+      variations.push(address.replace('四段', '4段'));
+    }
     
     // 變化3: 數字變化（85號 -> 85)
     variations.push(address.replace(/(\d+)號$/, '$1'));
     
-    // 變化4: 添加縣市全名
+    // 變化4: 添加郵遞區號格式
+    if (address.includes('台南市東區')) {
+      variations.push(address.replace('台南市東區', '701台南市東區'));
+    }
+    
+    // 變化5: 完整格式
     if (address.startsWith('台南市')) {
-      variations.push(address.replace('台南市', '台南市台南市'));
+      variations.push(`中華民國${address}`);
     }
     
     return variations.filter(v => v !== address); // 排除原始地址
@@ -108,10 +156,10 @@ export class GeocodingService {
       
       const encodedAddress = encodeURIComponent(address);
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=3&countrycodes=tw&addressdetails=1`,
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=5&countrycodes=tw&addressdetails=1`,
         {
           headers: {
-            'User-Agent': 'YourAppName/1.0 (your-email@example.com)'
+            'User-Agent': 'AttendanceSystem/1.0 (support@company.com)'
           }
         }
       );
@@ -153,13 +201,8 @@ export class GeocodingService {
     }
   }
   
-  // Google Maps API 備用方案
-  static async geocodeAddressWithGoogle(address: string, apiKey?: string): Promise<GeocodeResult | null> {
-    if (!apiKey) {
-      console.warn('⚠️ Google Maps API密鑰未設定');
-      return null;
-    }
-    
+  // Google Maps API 地理編碼
+  static async geocodeAddressWithGoogle(address: string, apiKey: string): Promise<GeocodeResult | null> {
     try {
       console.log('🗺️ 使用Google Maps API進行地理編碼:', address);
       
@@ -194,6 +237,44 @@ export class GeocodingService {
     }
   }
   
+  // 取得地址建議
+  static async getAddressSuggestions(address: string): Promise<AddressSuggestion[]> {
+    const suggestions: AddressSuggestion[] = [];
+    
+    try {
+      // 使用 Nominatim 搜尋多個結果
+      const encodedAddress = encodeURIComponent(address);
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=10&countrycodes=tw&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'AttendanceSystem/1.0 (support@company.com)'
+          }
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        data.forEach((result: any) => {
+          const confidence = parseFloat(result.importance) || 0;
+          if (confidence > 0.01) { // 只顯示有一定可信度的結果
+            suggestions.push({
+              address: result.display_name,
+              source: 'Nominatim',
+              confidence: confidence
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.error('❌ 取得地址建議失敗:', error);
+    }
+    
+    // 依信心度排序
+    return suggestions.sort((a, b) => b.confidence - a.confidence);
+  }
+  
   // 延遲函數
   private static delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -225,7 +306,7 @@ export class GeocodingService {
     }
     
     // 檢查是否包含路名
-    if (!address.includes('路') && !address.includes('街') && !address.includes('巷')) {
+    if (!address.includes('路') && !address.includes('街') && !address.includes('巷') && !address.includes('大道')) {
       errors.push('請包含完整路名（如：長榮路一段）');
     }
     
@@ -240,6 +321,7 @@ export class GeocodingService {
       suggestions.push('範例：台南市東區長榮路一段85號');
       suggestions.push('範例：高雄市前金區中正四路211號');
       suggestions.push('範例：台北市大安區忠孝東路四段169號');
+      suggestions.push('建議加上郵遞區號：701台南市東區長榮路一段85號');
     }
     
     return {
@@ -247,5 +329,21 @@ export class GeocodingService {
       suggestions,
       errors
     };
+  }
+  
+  // 記錄轉換失敗的日誌
+  static logGeocodingFailure(address: string, error: string, strategy?: string) {
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      address: address,
+      error: error,
+      strategy: strategy || 'unknown',
+      userAgent: navigator.userAgent
+    };
+    
+    console.error('🚨 地址轉換失敗日誌:', logEntry);
+    
+    // 可以在這裡添加發送到後台日誌系統的邏輯
+    // 例如發送到 Supabase 或其他日誌服務
   }
 }

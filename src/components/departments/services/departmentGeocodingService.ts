@@ -1,4 +1,3 @@
-
 import { toast } from '@/hooks/use-toast';
 import { GeocodingService } from '@/services/geocodingService';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +9,7 @@ export class DepartmentGeocodingService {
       
       if (!address?.trim()) {
         await this.updateDepartmentGPSStatus(departmentId, 'failed', '地址不能為空');
+        GeocodingService.logGeocodingFailure(address, '地址不能為空', 'validation');
         toast({
           title: "地址轉換失敗",
           description: "地址不能為空",
@@ -23,34 +23,51 @@ export class DepartmentGeocodingService {
       if (!validation.isValid) {
         console.warn('⚠️ 地址格式不正確:', validation.errors);
         await this.updateDepartmentGPSStatus(departmentId, 'failed', validation.errors[0]);
+        GeocodingService.logGeocodingFailure(address, validation.errors[0], 'validation');
+        
         toast({
           title: "地址格式不正確",
-          description: `${validation.errors[0]}。${validation.suggestions[0] || ''}`,
+          description: `${validation.errors[0]}。建議：${validation.suggestions[0] || '請參考標準格式範例'}`,
           variant: "destructive",
         });
         return false;
       }
       
-      // 使用地理編碼服務轉換地址
+      // 使用增強的地理編碼服務轉換地址
       const geocodeResult = await GeocodingService.geocodeAddress(address);
       
       if (!geocodeResult) {
-        await this.updateDepartmentGPSStatus(departmentId, 'failed', '無法找到該地址對應的GPS座標');
+        const errorMessage = '無法找到該地址對應的GPS座標';
+        await this.updateDepartmentGPSStatus(departmentId, 'failed', errorMessage);
+        GeocodingService.logGeocodingFailure(address, errorMessage, 'geocoding-all-failed');
+        
+        // 取得地址建議
+        const suggestions = await GeocodingService.getAddressSuggestions(address);
+        const suggestionText = suggestions.length > 0 
+          ? `建議嘗試：${suggestions[0].address}` 
+          : '請檢查地址格式或參考 Google Maps';
+        
         toast({
           title: "地址轉換失敗",
-          description: "無法找到該地址對應的GPS座標，請檢查地址格式是否正確或改用 Google Maps 建議格式",
+          description: `${errorMessage}。${suggestionText}`,
           variant: "destructive",
         });
         return false;
       }
       
       // 檢查結果的可信度
-      if (geocodeResult.confidence && geocodeResult.confidence < 0.3) {
-        console.warn('⚠️ 地址轉換結果可信度較低:', geocodeResult.confidence);
-        await this.updateDepartmentGPSStatus(departmentId, 'failed', '轉換結果可信度較低');
+      if (geocodeResult.confidence && geocodeResult.confidence < 0.1) {
+        console.warn('⚠️ 地址轉換結果可信度極低:', geocodeResult.confidence);
+        await this.updateDepartmentGPSStatus(departmentId, 'failed', '轉換結果可信度極低');
+        GeocodingService.logGeocodingFailure(
+          address, 
+          `轉換結果可信度極低: ${geocodeResult.confidence}`, 
+          geocodeResult.source || 'unknown'
+        );
+        
         toast({
-          title: "地址轉換警告",
-          description: `找到座標但可信度較低，請確認地址是否正確。來源：${geocodeResult.source}`,
+          title: "地址轉換品質不佳",
+          description: `找到座標但可信度極低（${(geocodeResult.confidence * 100).toFixed(1)}%），請確認地址是否正確並重新嘗試`,
           variant: "destructive",
         });
         return false;
@@ -66,13 +83,17 @@ export class DepartmentGeocodingService {
       );
       
       if (success) {
-        const successMessage = geocodeResult.confidence && geocodeResult.confidence < 0.5 
-          ? `地址已轉換為GPS座標，但建議再次確認地址準確性`
-          : `地址轉換成功！`;
+        const confidenceText = geocodeResult.confidence 
+          ? `（信心度: ${(geocodeResult.confidence * 100).toFixed(1)}%）`
+          : '';
+        
+        const successMessage = geocodeResult.confidence && geocodeResult.confidence < 0.3
+          ? `地址已轉換為GPS座標，建議再次確認地址準確性`
+          : `地址轉換成功！來源：${geocodeResult.source || 'Unknown'}`;
           
         toast({
           title: successMessage,
-          description: `座標：(${geocodeResult.latitude.toFixed(6)}, ${geocodeResult.longitude.toFixed(6)})`,
+          description: `座標：(${geocodeResult.latitude.toFixed(6)}, ${geocodeResult.longitude.toFixed(6)}) ${confidenceText}`,
         });
         
         console.log('✅ 地址轉換成功:', {
@@ -88,7 +109,11 @@ export class DepartmentGeocodingService {
       
     } catch (error) {
       console.error('💥 部門地址GPS轉換失敗:', error);
-      await this.updateDepartmentGPSStatus(departmentId, 'failed', '系統發生錯誤');
+      const errorMessage = error instanceof Error ? error.message : '系統發生錯誤';
+      
+      await this.updateDepartmentGPSStatus(departmentId, 'failed', errorMessage);
+      GeocodingService.logGeocodingFailure(address, errorMessage, 'system-error');
+      
       toast({
         title: "地址轉換失敗",
         description: "系統發生錯誤，請稍後重試。如問題持續，請聯繫系統管理員。",

@@ -1,17 +1,31 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Calendar, Clock } from 'lucide-react';
+
 interface WelcomeSectionProps {
   userName: string;
 }
+
 const WelcomeSection = ({
   userName
 }: WelcomeSectionProps) => {
-  const currentTime = new Date();
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // 每秒更新時間
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   const timeString = currentTime.toLocaleTimeString('zh-TW', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false
   });
+
   const dateString = currentTime.toLocaleDateString('zh-TW', {
     year: 'numeric',
     month: 'long',
@@ -21,6 +35,7 @@ const WelcomeSection = ({
 
   // 確保顯示實際的用戶名稱，改善判斷邏輯
   const displayName = userName && userName !== 'User' && userName !== '訪客' && !userName.includes('-') && !userName.startsWith('User ') && !userName.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i) ? userName : '訪客';
+  
   return <div className="py-6 sm:py-[20px] px-[10px]">
       <div className="space-y-6">
         {/* 問候語 */}
@@ -54,4 +69,5 @@ const WelcomeSection = ({
       </div>
     </div>;
 };
+
 export default WelcomeSection;

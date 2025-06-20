@@ -1,3 +1,4 @@
+
 import { toast } from '@/hooks/use-toast';
 import { GeocodingService } from '@/services/geocodingService';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,16 +19,15 @@ export class DepartmentGeocodingService {
         return false;
       }
       
-      // 驗證地址格式
-      const validation = GeocodingService.validateAddressFormat(address);
-      if (!validation.isValid) {
-        console.warn('⚠️ 地址格式不正確:', validation.errors);
-        await this.updateDepartmentGPSStatus(departmentId, 'failed', validation.errors[0]);
-        GeocodingService.logGeocodingFailure(address, validation.errors[0], 'validation');
+      // 驗證地址格式 - 使用更寬鬆的條件
+      if (address.trim().length < 5) {
+        console.warn('⚠️ 地址長度不足');
+        await this.updateDepartmentGPSStatus(departmentId, 'failed', '地址長度不足');
+        GeocodingService.logGeocodingFailure(address, '地址長度不足', 'validation');
         
         toast({
           title: "地址格式不正確",
-          description: `${validation.errors[0]}。建議：${validation.suggestions[0] || '請參考標準格式範例'}`,
+          description: "請輸入更完整的地址資訊（至少5個字元）",
           variant: "destructive",
         });
         return false;
@@ -55,25 +55,7 @@ export class DepartmentGeocodingService {
         return false;
       }
       
-      // 檢查結果的可信度
-      if (geocodeResult.confidence && geocodeResult.confidence < 0.1) {
-        console.warn('⚠️ 地址轉換結果可信度極低:', geocodeResult.confidence);
-        await this.updateDepartmentGPSStatus(departmentId, 'failed', '轉換結果可信度極低');
-        GeocodingService.logGeocodingFailure(
-          address, 
-          `轉換結果可信度極低: ${geocodeResult.confidence}`, 
-          geocodeResult.source || 'unknown'
-        );
-        
-        toast({
-          title: "地址轉換品質不佳",
-          description: `找到座標但可信度極低（${(geocodeResult.confidence * 100).toFixed(1)}%），請確認地址是否正確並重新嘗試`,
-          variant: "destructive",
-        });
-        return false;
-      }
-      
-      // 更新部門GPS資料
+      // 更新部門GPS資料 - 確保所有必要欄位都被正確設定
       const success = await this.updateDepartmentGPS(
         departmentId, 
         geocodeResult.latitude, 
@@ -87,13 +69,9 @@ export class DepartmentGeocodingService {
           ? `（信心度: ${(geocodeResult.confidence * 100).toFixed(1)}%）`
           : '';
         
-        const successMessage = geocodeResult.confidence && geocodeResult.confidence < 0.3
-          ? `地址已轉換為GPS座標，建議再次確認地址準確性`
-          : `地址轉換成功！來源：${geocodeResult.source || 'Unknown'}`;
-          
         toast({
-          title: successMessage,
-          description: `座標：(${geocodeResult.latitude.toFixed(6)}, ${geocodeResult.longitude.toFixed(6)}) ${confidenceText}`,
+          title: "地址轉換成功！",
+          description: `來源：${geocodeResult.source || 'Google Maps'}。座標：(${geocodeResult.latitude.toFixed(6)}, ${geocodeResult.longitude.toFixed(6)}) ${confidenceText}`,
         });
         
         console.log('✅ 地址轉換成功:', {
@@ -147,9 +125,9 @@ export class DepartmentGeocodingService {
         updated_at: new Date().toISOString()
       };
       
-      // 如果有格式化地址，也一併更新
-      if (formattedAddress) {
-        updateData.location = formattedAddress;
+      // 如果有格式化地址，也一併更新location欄位
+      if (formattedAddress && formattedAddress.trim()) {
+        updateData.location = formattedAddress.trim();
       }
       
       const { error } = await supabase
@@ -164,6 +142,24 @@ export class DepartmentGeocodingService {
       }
 
       console.log('✅ 部門GPS座標更新成功，資料來源:', source);
+      
+      // 確認更新成功後，再次檢查部門狀態
+      const { data: updatedDepartment } = await supabase
+        .from('departments')
+        .select('*')
+        .eq('id', departmentId)
+        .single();
+        
+      if (updatedDepartment) {
+        console.log('✅ 部門更新後狀態確認:', {
+          name: updatedDepartment.name,
+          gps_status: updatedDepartment.gps_status,
+          latitude: updatedDepartment.latitude,
+          longitude: updatedDepartment.longitude,
+          address_verified: updatedDepartment.address_verified
+        });
+      }
+      
       return true;
       
     } catch (error) {

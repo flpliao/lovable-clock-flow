@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Department, NewDepartment, DepartmentManagementContextType } from './types';
 import { useDepartmentDialogs } from './hooks/useDepartmentDialogs';
@@ -115,7 +114,7 @@ export const useDepartmentManagement = (): DepartmentManagementContextType => {
     return syncResult;
   };
 
-  // 新增地址轉GPS功能
+  // 新增地址轉GPS功能 - 增強版本
   const convertAddressToGPS = async (departmentId: string, address: string): Promise<boolean> => {
     if (!isAdmin()) {
       console.warn('⚠️ 非管理員用戶嘗試轉換地址');
@@ -126,8 +125,15 @@ export const useDepartmentManagement = (): DepartmentManagementContextType => {
     const success = await DepartmentGeocodingService.convertDepartmentAddressToGPS(departmentId, address);
     
     if (success) {
-      console.log('✅ 地址轉GPS成功，重新載入部門資料');
+      console.log('✅ 地址轉GPS成功，強制刷新部門資料');
+      // 转換成功後強制重新載入所有部門資料
       await refreshDepartments();
+      
+      // 額外延遲確保資料已同步
+      setTimeout(async () => {
+        await refreshDepartments();
+        console.log('🔄 延遲刷新完成，確保GPS狀態已更新');
+      }, 1000);
     }
     
     return success;
@@ -158,7 +164,7 @@ export const useDepartmentManagement = (): DepartmentManagementContextType => {
     openEditDialog,
     refreshDepartments,
     performFullSync,
-    convertAddressToGPS, // 新增這個屬性到返回物件中
+    convertAddressToGPS, // 增強版的GPS轉換功能
 
     // 權限檢查
     canManage: isAdmin(),

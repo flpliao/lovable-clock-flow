@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,7 +18,8 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
   department
 }) => {
   const {
-    convertAddressToGPS
+    convertAddressToGPS,
+    refreshDepartments
   } = useDepartmentManagementContext();
   
   const [address, setAddress] = useState(department.location || '');
@@ -33,13 +33,12 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
   const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // 即時地址格式驗證 - 放寬驗證條件
+  // 即時地址格式驗證 - 使用寬鬆條件
   const handleAddressChange = (value: string) => {
     setAddress(value);
     if (value.length > 3) {
-      // 放寬驗證，只做基本檢查
       const basicValidation = {
-        isValid: value.trim().length >= 5, // 只要求基本長度
+        isValid: value.trim().length >= 5,
         suggestions: value.trim().length < 5 ? ['請輸入更完整的地址'] : [],
         errors: value.trim().length < 5 ? ['地址長度太短'] : []
       };
@@ -106,11 +105,10 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
       return;
     }
 
-    // 放寬最終驗證 - 只要有基本內容就允許轉換
     if (address.trim().length < 5) {
       toast({
         title: "地址太短",
-        description: "請輸入更完整的地址資訊",
+        description: "請輸入更完整的地址資訊（至少5個字元）",
         variant: "destructive"
       });
       return;
@@ -119,9 +117,12 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
     setLoading(true);
     try {
       const success = await convertAddressToGPS(department.id, address);
-      if (!success) {
-        // 記錄轉換失敗日誌，但不阻止用戶操作
-        console.warn('GPS轉換失敗，但允許用戶繼續操作');
+      if (success) {
+        // 轉換成功後立即刷新部門資料
+        await refreshDepartments();
+        console.log('🔄 GPS轉換成功，已刷新部門資料');
+      } else {
+        console.warn('⚠️ GPS轉換失敗，但允許用戶繼續操作');
       }
     } finally {
       setLoading(false);
@@ -260,17 +261,17 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
         {loading ? (
           <>
             <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-            轉換中...
+            转换中...
           </>
         ) : (
           <>
             <MapPin className="h-3 w-3 mr-1" />
-            {department.gps_status === 'converted' ? '重新轉換GPS座標' : '轉換為GPS座標'}
+            {department.gps_status === 'converted' ? '重新转換GPS座標' : '转換為GPS座標'}
           </>
         )}
       </Button>
 
-      {/* 狀態說明和提示 */}
+      {/* 独態說明和提示 */}
       <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded space-y-2">
         <div className="font-medium">狀態說明：</div>
         <div>{getStatusMessage()}</div>
@@ -279,10 +280,10 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({
           <div className="bg-yellow-50 border border-yellow-200 p-2 rounded mt-2">
             <div className="font-medium text-yellow-800 mb-1">轉換失敗解決建議：</div>
             <ul className="text-yellow-700 space-y-1">
-              <li>• 點擊「取得建議」查看系統找到的相似地址</li>
-              <li>• 點擊「Google Maps」確認地址在地圖上的正確格式</li>
-              <li>• 嘗試添加郵遞區號（如：701台南市東區...）</li>
-              <li>• 使用 Google Maps 上搜尋得到的完整地址格式</li>
+              <li>• 點击「取得建議」查看系統找到的相似地址</li>
+              <li>• 點击「Google Maps」确认地址在地圖上的正确格式</li>
+              <li>• 嘗试添加邮递区号（如：701台南市东区...）</li>
+              <li>• 使用 Google Maps 上搜寻得到的完整地址格式</li>
             </ul>
           </div>
         )}

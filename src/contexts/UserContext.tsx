@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AnnualLeaveBalance } from '@/types';
 
@@ -44,7 +45,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [userError, setUserError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('👤 UserProvider: �廖俊雄最高管理員已登入');
+    console.log('👤 UserProvider: 廖俊雄最高管理員已登入');
     console.log('🆔 管理員ID:', superAdminUser.id);
     console.log('🔐 權限等級: 最高管理員');
     setIsUserLoaded(true);
@@ -66,7 +67,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const isAdmin = () => {
     if (!currentUser) return false;
     
-    // �廖俊雄永遠是最高管理員
+    // 廖俊雄永遠是最高管理員
     const isLiaoJunxiong = currentUser?.name === '廖俊雄' && 
                           currentUser?.id === '550e8400-e29b-41d4-a716-446655440001';
     
@@ -95,7 +96,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // 廖俊雄可以管理所有用戶
     if (currentUser.name === '廖俊雄' && 
         currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
-      console.log('🔐 �廖俊雄最高管理員: 可管理所有用戶');
+      console.log('🔐 廖俊雄最高管理員: 可管理所有用戶');
       return true;
     }
     
@@ -112,10 +113,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const hasPermission = (permission: string): boolean => {
     if (!currentUser) return false;
     
-    // �廖俊雄擁有所有權限
+    // 廖俊雄擁有所有權限
     if (currentUser.name === '廖俊雄' && 
         currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
-      console.log('🔐 �廖俊雄權限檢查:', permission, '✅ 允許');
+      console.log('🔐 廖俊雄權限檢查:', permission, '✅ 允許');
       return true;
     }
     

@@ -105,7 +105,9 @@ const LocationCheckIn = () => {
           actionType={actionType}
           loading={loading}
           onCheckIn={handleCheckIn}
-          disabled={checkInMethod === 'location' && !canUseLocationCheckIn}
+          disabled={checkIn
+
+Method === 'location' && !canUseLocationCheckIn}
         />
 
         <CheckInStatusDisplay

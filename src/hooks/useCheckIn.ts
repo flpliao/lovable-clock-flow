@@ -42,7 +42,7 @@ export const useCheckIn = (userId: string) => {
   }, [loadTodayRecords]);
 
   // 判斷當前應該進行的動作類型
-  const actionType = todayRecords.checkIn && !todayRecords.checkOut ? 'checkout' : 'checkin';
+  const actionType: 'check-in' | 'check-out' = todayRecords.checkIn && !todayRecords.checkOut ? 'check-out' : 'check-in';
 
   // 位置打卡
   const onLocationCheckIn = async () => {
@@ -140,7 +140,7 @@ export const useCheckIn = (userId: string) => {
       
       if (success) {
         toast({
-          title: actionType === 'checkin' ? "上班打卡成功" : "下班打卡成功",
+          title: actionType === 'check-in' ? "上班打卡成功" : "下班打卡成功",
           description: distance !== null 
             ? `位置：${locationName}，距離：${distance}公尺` 
             : `位置：${locationName}`,
@@ -216,7 +216,7 @@ export const useCheckIn = (userId: string) => {
       
       if (success) {
         toast({
-          title: actionType === 'checkin' ? "上班打卡成功" : "下班打卡成功",
+          title: actionType === 'check-in' ? "上班打卡成功" : "下班打卡成功",
           description: `IP位址：${ipData.ip}`,
         });
         

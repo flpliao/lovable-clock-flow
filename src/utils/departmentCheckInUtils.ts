@@ -147,3 +147,82 @@ export const getDepartmentCheckInInfo = (
     allowedDistance: systemDistanceLimit // 使用系統設定的距離限制
   };
 };
+
+/**
+ * 取得部門GPS狀態訊息
+ * @param department 部門資料
+ * @returns GPS狀態訊息
+ */
+export const getDepartmentGPSStatusMessage = (department: Department): string => {
+  if (!department.location) {
+    return '請先設定部門地址';
+  }
+  
+  switch (department.gps_status) {
+    case 'not_converted':
+      return '尚未轉換GPS座標，請點擊轉換按鈕';
+    case 'converting':
+      return '正在轉換GPS座標...';
+    case 'converted':
+      return department.latitude && department.longitude 
+        ? `GPS座標已設定 (${department.latitude.toFixed(6)}, ${department.longitude.toFixed(6)})`
+        : 'GPS座標轉換已完成但座標資料不完整';
+    case 'failed':
+      return 'GPS座標轉換失敗，請檢查地址格式或重試';
+    default:
+      return '未知的GPS狀態';
+  }
+};
+
+/**
+ * 驗證打卡位置是否在允許範圍內（同步版本）
+ * @param userLat 用戶緯度
+ * @param userLng 用戶經度
+ * @param department 部門資料
+ * @returns 驗證結果
+ */
+export const validateCheckInLocationSync = (
+  userLat: number,
+  userLng: number,
+  department: Department
+): {
+  isValid: boolean;
+  distance: number;
+  message: string;
+  gpsStatus: string;
+} => {
+  if (!department.latitude || !department.longitude) {
+    return {
+      isValid: false,
+      distance: 0,
+      message: '部門GPS座標未設定',
+      gpsStatus: 'no_coordinates'
+    };
+  }
+  
+  const distance = calculateDistance(userLat, userLng, department.latitude, department.longitude);
+  const allowedRadius = department.check_in_radius || 500;
+  const isValid = distance <= allowedRadius;
+  
+  return {
+    isValid,
+    distance,
+    message: isValid 
+      ? `位置驗證成功，距離 ${distance} 公尺`
+      : `距離過遠 (${distance} 公尺)，超過允許範圍 ${allowedRadius} 公尺`,
+    gpsStatus: 'valid'
+  };
+};
+
+/**
+ * 取得用於打卡的部門資料
+ * @param departments 部門列表
+ * @param departmentName 部門名稱
+ * @returns 符合的部門資料
+ */
+export const getDepartmentForCheckIn = (
+  departments: Department[],
+  departmentName: string
+): Department | null => {
+  return departments.find(dept => dept.name === departmentName) || null;
+};

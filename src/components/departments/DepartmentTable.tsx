@@ -140,8 +140,7 @@ const DepartmentTable = () => {
                     </div>
                     {canManage && (
                       <DepartmentGPSConverter
-                        departmentId={department.id}
-                        address={department.location || ''}
+                        department={department}
                       />
                     )}
                   </div>

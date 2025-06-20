@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { User, LogOut, Menu, X } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
+import ApolloLogo from '@/components/ApolloLogo';
 
 const Header = () => {
   const { currentUser, resetUserState, isAuthenticated } = useUser();
@@ -34,7 +35,8 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
+            <ApolloLogo />
             <h1 className="text-xl font-bold text-white drop-shadow-md">
               員工考勤系統
             </h1>

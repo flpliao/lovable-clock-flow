@@ -8,7 +8,7 @@ export const defaultSystemRoles: StaffRole[] = [
     id: 'admin',
     name: '系統管理員',
     description: '完整系統管理權限',
-    permissions: availablePermissions, // 系統管理員擁有所有權限，包括新的帳號管理權限
+    permissions: availablePermissions, // 系統管理員擁有所有權限，包括新的假日管理權限
     is_system_role: true
   },
   {
@@ -21,7 +21,8 @@ export const defaultSystemRoles: StaffRole[] = [
       p.code === 'schedule:view' ||
       p.code === 'leave:view' ||
       p.code === 'leave:create' ||
-      p.code === 'announcement:view'
+      p.code === 'announcement:view' ||
+      p.code === 'holiday:view' // 一般使用者可以查看假日設定
     ),
     is_system_role: true
   },
@@ -33,6 +34,7 @@ export const defaultSystemRoles: StaffRole[] = [
       p.category === '人員管理' || 
       p.category === '部門管理' || 
       p.category === '公告管理' ||
+      p.category === '假日管理' || // 人資主管擁有完整假日管理權限
       p.code === 'leave:approve'
     ),
     is_system_role: true
@@ -50,7 +52,9 @@ export const defaultSystemRoles: StaffRole[] = [
       p.code === 'leave:view' ||
       p.code === 'leave:approve' ||
       p.code === 'announcement:view' ||
-      p.code === 'announcement:create'
+      p.code === 'announcement:create' ||
+      p.code === 'holiday:view' || // 部門主管可以查看假日設定
+      p.code === 'holiday:analytics' // 部門主管可以查看工時分析
     ),
     is_system_role: true
   }

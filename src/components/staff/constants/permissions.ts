@@ -146,6 +146,43 @@ export const availablePermissions: Permission[] = [
     category: '請假管理'
   },
   
+  // Holiday management permissions (新增假日管理權限)
+  { 
+    id: 'holiday_view', 
+    name: '查看假日設定', 
+    code: 'holiday:view', 
+    description: '允許查看假日和工作時間設定', 
+    category: '假日管理'
+  },
+  { 
+    id: 'holiday_create', 
+    name: '新增假日', 
+    code: 'holiday:create', 
+    description: '允許新增假日設定', 
+    category: '假日管理'
+  },
+  { 
+    id: 'holiday_edit', 
+    name: '編輯假日', 
+    code: 'holiday:edit', 
+    description: '允許編輯假日設定', 
+    category: '假日管理'
+  },
+  { 
+    id: 'holiday_delete', 
+    name: '刪除假日', 
+    code: 'holiday:delete', 
+    description: '允許刪除假日設定', 
+    category: '假日管理'
+  },
+  { 
+    id: 'holiday_analytics', 
+    name: '查看工時分析', 
+    code: 'holiday:analytics', 
+    description: '允許查看工作時間分析報表', 
+    category: '假日管理'
+  },
+  
   // Announcement management permissions
   { 
     id: 'announcement_view', 

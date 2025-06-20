@@ -12,8 +12,11 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MapPin, Navigation, ExternalLink } from 'lucide-react';
 import { useDepartmentManagementContext } from './DepartmentManagementContext';
 import { toast } from '@/hooks/use-toast';
+import DepartmentGPSStatus from './DepartmentGPSStatus';
+import DepartmentGPSConverter from './DepartmentGPSConverter';
 
 const EditDepartmentDialog = () => {
   const { 
@@ -71,96 +74,159 @@ const EditDepartmentDialog = () => {
     setIsEditDialogOpen(false);
     setCurrentDepartment(null);
   };
+
+  // 開啟 Google Maps 查看位置
+  const handleOpenGoogleMaps = () => {
+    if (currentDepartment.latitude && currentDepartment.longitude) {
+      const googleMapsUrl = `https://www.google.com/maps?q=${currentDepartment.latitude},${currentDepartment.longitude}`;
+      window.open(googleMapsUrl, '_blank');
+    } else if (currentDepartment.location) {
+      const encodedAddress = encodeURIComponent(currentDepartment.location);
+      const googleMapsUrl = `https://www.google.com/maps/search/${encodedAddress}`;
+      window.open(googleMapsUrl, '_blank');
+    }
+  };
   
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-      <DialogContent className="sm:max-w-[320px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-sm">編輯部門</DialogTitle>
-          <DialogDescription className="text-xs">
+          <DialogTitle className="text-lg">編輯部門</DialogTitle>
+          <DialogDescription className="text-sm">
             修改部門資訊
           </DialogDescription>
         </DialogHeader>
         
-        <div className="grid gap-2 py-2">
-          <div className="grid grid-cols-4 items-center gap-2">
-            <Label htmlFor="edit-name" className="text-right text-xs">
+        <div className="grid gap-4 py-4">
+          {/* 基本資訊 */}
+          <div className="grid grid-cols-4 items-center gap-3">
+            <Label htmlFor="edit-name" className="text-right text-sm">
               名稱 <span className="text-red-500">*</span>
             </Label>
             <Input
               id="edit-name"
               value={currentDepartment.name}
               onChange={(e) => setCurrentDepartment({...currentDepartment, name: e.target.value})}
-              className="col-span-3 h-6 text-xs"
+              className="col-span-3 text-sm"
               placeholder="請輸入部門名稱"
               required
             />
           </div>
           
-          <div className="grid grid-cols-4 items-center gap-2">
-            <Label htmlFor="edit-type" className="text-right text-xs">
+          <div className="grid grid-cols-4 items-center gap-3">
+            <Label htmlFor="edit-type" className="text-right text-sm">
               類型 <span className="text-red-500">*</span>
             </Label>
             <Select 
               value={currentDepartment.type} 
               onValueChange={(value: 'headquarters' | 'branch' | 'store') => setCurrentDepartment({...currentDepartment, type: value})}
             >
-              <SelectTrigger className="col-span-3 h-6 text-xs" id="edit-type">
+              <SelectTrigger className="col-span-3 text-sm" id="edit-type">
                 <SelectValue placeholder="選擇類型" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="headquarters" className="text-xs">總部</SelectItem>
-                <SelectItem value="branch" className="text-xs">分部</SelectItem>
-                <SelectItem value="store" className="text-xs">門市</SelectItem>
+                <SelectItem value="headquarters" className="text-sm">總部</SelectItem>
+                <SelectItem value="branch" className="text-sm">分部</SelectItem>
+                <SelectItem value="store" className="text-sm">門市</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
-          <div className="grid grid-cols-4 items-center gap-2">
-            <Label htmlFor="edit-location" className="text-right text-xs">
+          <div className="grid grid-cols-4 items-center gap-3">
+            <Label htmlFor="edit-location" className="text-right text-sm">
               地點
             </Label>
             <Input
               id="edit-location"
               value={currentDepartment.location || ''}
               onChange={(e) => setCurrentDepartment({...currentDepartment, location: e.target.value})}
-              className="col-span-3 h-6 text-xs"
+              className="col-span-3 text-sm"
               placeholder="請輸入地點"
             />
           </div>
           
-          <div className="grid grid-cols-4 items-center gap-2">
-            <Label htmlFor="edit-manager_name" className="text-right text-xs">
+          <div className="grid grid-cols-4 items-center gap-3">
+            <Label htmlFor="edit-manager_name" className="text-right text-sm">
               負責人
             </Label>
             <Input
               id="edit-manager_name"
               value={currentDepartment.manager_name || ''}
               onChange={(e) => setCurrentDepartment({...currentDepartment, manager_name: e.target.value})}
-              className="col-span-3 h-6 text-xs"
+              className="col-span-3 text-sm"
               placeholder="請輸入負責人姓名"
             />
           </div>
           
-          <div className="grid grid-cols-4 items-center gap-2">
-            <Label htmlFor="edit-manager_contact" className="text-right text-xs">
+          <div className="grid grid-cols-4 items-center gap-3">
+            <Label htmlFor="edit-manager_contact" className="text-right text-sm">
               聯絡方式
             </Label>
             <Input
               id="edit-manager_contact"
               value={currentDepartment.manager_contact || ''}
               onChange={(e) => setCurrentDepartment({...currentDepartment, manager_contact: e.target.value})}
-              className="col-span-3 h-6 text-xs"
+              className="col-span-3 text-sm"
               placeholder="請輸入聯絡方式"
             />
+          </div>
+
+          {/* GPS 位置資訊區塊 */}
+          <div className="col-span-4 border-t pt-4 mt-2">
+            <div className="flex items-center gap-2 mb-3">
+              <MapPin className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-medium">GPS 位置資訊</span>
+            </div>
+            
+            {/* GPS 狀態顯示 */}
+            <div className="mb-3">
+              <DepartmentGPSStatus department={currentDepartment} />
+            </div>
+
+            {/* GPS 座標資訊 */}
+            {currentDepartment.latitude && currentDepartment.longitude ? (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-medium text-green-800 mb-1">GPS 座標已設定</div>
+                    <div className="text-xs text-green-700">
+                      緯度: {currentDepartment.latitude.toFixed(6)}
+                    </div>
+                    <div className="text-xs text-green-700">
+                      經度: {currentDepartment.longitude.toFixed(6)}
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleOpenGoogleMaps}
+                    className="text-xs"
+                  >
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    查看地圖
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                <div className="text-sm font-medium text-yellow-800 mb-1">尚未設定 GPS 座標</div>
+                <div className="text-xs text-yellow-700">
+                  員工將無法使用位置打卡功能
+                </div>
+              </div>
+            )}
+
+            {/* GPS 轉換功能 */}
+            <DepartmentGPSConverter department={currentDepartment} />
           </div>
         </div>
         
         <DialogFooter>
-          <Button variant="outline" onClick={handleCancel} className="h-6 text-xs">
+          <Button variant="outline" onClick={handleCancel} className="text-sm">
             取消
           </Button>
-          <Button onClick={handleSave} className="h-6 text-xs">
+          <Button onClick={handleSave} className="text-sm">
             儲存
           </Button>
         </DialogFooter>

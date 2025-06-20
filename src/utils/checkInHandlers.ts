@@ -23,6 +23,8 @@ export const handleLocationCheckIn = async (
     let distance: number;
     let locationName: string;
     let isValidLocation = false;
+    let departmentGPS: { lat: number; lng: number } | null = null;
+    let gpsComparisonResult: any = {};
     
     // 檢查是否為管理員（簡單的開發模式檢查）
     const isAdmin = userId === '550e8400-e29b-41d4-a716-446655440001'; // 廖俊雄的ID
@@ -43,42 +45,75 @@ export const handleLocationCheckIn = async (
       
       const targetDepartment = getDepartmentForCheckIn(departments, employeeDepartment);
       
-      if (targetDepartment && targetDepartment.latitude && targetDepartment.longitude) {
+      if (targetDepartment && targetDepartment.gps_status === 'converted' && targetDepartment.latitude && targetDepartment.longitude) {
         console.log('✅ 找到目標部門GPS座標，進行驗證:', {
           departmentName: targetDepartment.name,
           lat: targetDepartment.latitude,
           lng: targetDepartment.longitude,
-          radius: targetDepartment.check_in_radius
+          radius: targetDepartment.check_in_radius,
+          gpsStatus: targetDepartment.gps_status
         });
         
         const validation = validateCheckInLocation(userLat, userLon, targetDepartment);
         distance = validation.distance;
         locationName = targetDepartment.name;
         isValidLocation = validation.isValid;
+        departmentGPS = { lat: targetDepartment.latitude, lng: targetDepartment.longitude };
         
-        console.log('📍 部門GPS驗證結果:', {
-          department: targetDepartment.name,
-          distance,
+        // 記錄詳細的GPS比對結果
+        gpsComparisonResult = {
+          comparisonType: 'department_gps',
+          departmentName: targetDepartment.name,
+          departmentGPS: departmentGPS,
+          userGPS: { lat: userLat, lng: userLon },
+          distance: distance,
+          allowedRadius: targetDepartment.check_in_radius || 100,
+          gpsStatus: validation.gpsStatus,
           isValid: validation.isValid,
-          message: validation.message
-        });
+          message: validation.message,
+          timestamp: new Date().toISOString()
+        };
+        
+        console.log('📍 部門GPS驗證結果:', gpsComparisonResult);
       } else {
-        console.log('⚠️ 部門GPS座標不存在或未驗證，改用公司總部位置:', {
+        console.log('⚠️ 部門GPS座標不可用，改用公司總部位置:', {
           departmentFound: !!targetDepartment,
+          gpsStatus: targetDepartment?.gps_status,
           hasCoordinates: !!(targetDepartment?.latitude && targetDepartment?.longitude)
         });
         
-        // 降級使用公司總部位置
-        distance = calculateDistance(userLat, userLon, COMPANY_LOCATION.latitude, COMPANY_LOCATION.longitude);
-        locationName = `${COMPANY_LOCATION.name} (部門GPS未設定)`;
-        isValidLocation = distance <= ALLOWED_DISTANCE;
+        // 如果部門GPS不可用，返回錯誤
+        if (targetDepartment) {
+          const errorMessage = targetDepartment.gps_status === 'failed' 
+            ? `部門「${targetDepartment.name}」GPS轉換失敗，請聯繫管理者重新設定`
+            : `部門「${targetDepartment.name}」尚未設定GPS座標，請聯繫管理者設定`;
+          onError(errorMessage);
+          return;
+        } else {
+          onError(`找不到部門「${employeeDepartment}」，請聯繫管理者確認部門設定`);
+          return;
+        }
       }
     } else {
-      console.log('📍 未提供部門資訊，使用公司總部位置進行驗證');
+      console.log('📍 使用公司總部位置進行驗證');
       // 使用原有的公司總部位置驗證
       distance = calculateDistance(userLat, userLon, COMPANY_LOCATION.latitude, COMPANY_LOCATION.longitude);
       locationName = COMPANY_LOCATION.name;
       isValidLocation = distance <= ALLOWED_DISTANCE;
+      
+      // 記錄總公司GPS比對結果
+      gpsComparisonResult = {
+        comparisonType: 'company_hq',
+        departmentName: '總公司',
+        departmentGPS: { lat: COMPANY_LOCATION.latitude, lng: COMPANY_LOCATION.longitude },
+        userGPS: { lat: userLat, lng: userLon },
+        distance: distance,
+        allowedRadius: ALLOWED_DISTANCE,
+        gpsStatus: 'company_default',
+        isValid: isValidLocation,
+        message: isValidLocation ? '總公司打卡成功' : '距離總公司太遠',
+        timestamp: new Date().toISOString()
+      };
     }
     
     if (setDistance) {
@@ -90,12 +125,13 @@ export const handleLocationCheckIn = async (
       distance,
       locationName,
       isValidLocation,
-      isAdmin
+      isAdmin,
+      gpsComparisonResult
     });
     
     // 檢查位置是否有效
     if (!isValidLocation && !isAdmin) {
-      onError(`您距離${locationName} ${Math.round(distance)} 公尺，超過允許範圍`);
+      onError(gpsComparisonResult.message || `您距離${locationName} ${Math.round(distance)} 公尺，超過允許範圍`);
       return;
     }
     
@@ -115,7 +151,11 @@ export const handleLocationCheckIn = async (
         latitude: userLat,
         longitude: userLon,
         distance: Math.round(distance),
-        locationName
+        locationName,
+        departmentLatitude: departmentGPS?.lat,
+        departmentLongitude: departmentGPS?.lng,
+        departmentName: gpsComparisonResult.departmentName,
+        gpsComparisonResult
       }
     };
     

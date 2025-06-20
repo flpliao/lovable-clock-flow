@@ -49,6 +49,11 @@ export class DepartmentFetchService {
         manager_name: item.manager_name || '',
         manager_contact: item.manager_contact || '',
         staff_count: item.staff_count || 0,
+        latitude: item.latitude,
+        longitude: item.longitude,
+        address_verified: item.address_verified || false,
+        check_in_radius: item.check_in_radius || 100,
+        gps_status: item.gps_status || 'not_converted',
         created_at: item.created_at,
         updated_at: item.updated_at
       }));

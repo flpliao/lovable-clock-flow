@@ -33,13 +33,35 @@ export const validateCheckInLocation = (
   isValid: boolean;
   distance: number;
   message: string;
+  gpsStatus: string;
 } => {
+  console.log('📍 開始GPS打卡驗證:', {
+    userPosition: { lat: userLatitude, lng: userLongitude },
+    department: {
+      name: department.name,
+      gpsStatus: department.gps_status,
+      hasCoordinates: !!(department.latitude && department.longitude),
+      coordinates: department.latitude ? { lat: department.latitude, lng: department.longitude } : null
+    }
+  });
+
+  // 檢查部門GPS狀態
+  if (department.gps_status !== 'converted') {
+    return {
+      isValid: false,
+      distance: -1,
+      message: '部門尚未設定GPS座標，請聯繫管理者設定',
+      gpsStatus: department.gps_status || 'not_converted'
+    };
+  }
+  
   // 檢查部門是否有GPS座標
   if (!department.latitude || !department.longitude) {
     return {
       isValid: false,
       distance: -1,
-      message: '部門尚未設定GPS座標，請聯繫管理員'
+      message: '部門GPS座標資料不完整，請聯繫管理者重新設定',
+      gpsStatus: 'incomplete'
     };
   }
   
@@ -55,21 +77,23 @@ export const validateCheckInLocation = (
   const allowedRadius = department.check_in_radius || 100;
   const isValid = distance <= allowedRadius;
   
-  console.log('📍 打卡位置驗證:', {
+  console.log('✅ 打卡位置驗證完成:', {
     userPosition: { lat: userLatitude, lng: userLongitude },
     departmentPosition: { lat: department.latitude, lng: department.longitude },
     distance,
     allowedRadius,
     isValid,
-    departmentName: department.name
+    departmentName: department.name,
+    gpsStatus: 'converted'
   });
   
   return {
     isValid,
     distance,
+    gpsStatus: 'converted',
     message: isValid 
-      ? `打卡成功 (距離部門 ${distance} 公尺)`
-      : `超出打卡範圍 (距離部門 ${distance} 公尺，允許範圍 ${allowedRadius} 公尺)`
+      ? `打卡成功 (距離${department.name} ${distance} 公尺)`
+      : `您距離${department.name}太遠（${distance} 公尺），超過允許範圍 ${allowedRadius} 公尺，無法打卡`
   };
 };
 
@@ -78,9 +102,13 @@ export const getDepartmentForCheckIn = (
   departments: Department[],
   employeeDepartment: string
 ): Department | null => {
-  console.log('🔍 搜尋員工部門:', {
+  console.log('🔍 搜尋員工部門GPS設定:', {
     employeeDepartment,
-    availableDepartments: departments.map(d => d.name)
+    availableDepartments: departments.map(d => ({ 
+      name: d.name, 
+      gpsStatus: d.gps_status,
+      hasGPS: !!(d.latitude && d.longitude)
+    }))
   });
   
   const department = departments.find(dept => dept.name === employeeDepartment);
@@ -92,20 +120,34 @@ export const getDepartmentForCheckIn = (
   
   console.log('📋 找到部門資訊:', {
     name: department.name,
+    gpsStatus: department.gps_status,
     hasGPS: !!(department.latitude && department.longitude),
-    isVerified: department.address_verified,
-    latitude: department.latitude,
-    longitude: department.longitude
+    isReadyForCheckIn: department.gps_status === 'converted' && department.latitude && department.longitude,
+    coordinates: department.latitude ? {
+      latitude: department.latitude,
+      longitude: department.longitude,
+      radius: department.check_in_radius
+    } : null
   });
   
-  if (!department.address_verified || !department.latitude || !department.longitude) {
-    console.warn('⚠️ 部門GPS座標尚未驗證或不存在:', {
-      departmentName: department.name,
-      hasCoordinates: !!(department.latitude && department.longitude),
-      isVerified: department.address_verified
-    });
-    return null;
-  }
-  
   return department;
+};
+
+// 檢查部門是否可用於打卡
+export const isDepartmentReadyForCheckIn = (department: Department): boolean => {
+  return department.gps_status === 'converted' && 
+         !!department.latitude && 
+         !!department.longitude;
+};
+
+// 取得部門GPS狀態說明
+export const getDepartmentGPSStatusMessage = (department: Department): string => {
+  switch (department.gps_status) {
+    case 'converted':
+      return '部門GPS已設定，可正常打卡';
+    case 'failed':
+      return '部門GPS轉換失敗，請聯繫管理者重新設定';
+    default:
+      return '部門尚未設定GPS座標，請聯繫管理者';
+  }
 };

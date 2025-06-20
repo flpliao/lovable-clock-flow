@@ -8,6 +8,7 @@ import { useDepartmentManagementContext } from './DepartmentManagementContext';
 import { Department } from './types';
 import { GeocodingService } from '@/services/geocodingService';
 import { toast } from '@/hooks/use-toast';
+import DepartmentGPSStatus from './DepartmentGPSStatus';
 
 interface DepartmentGPSConverterProps {
   department: Department;
@@ -63,12 +64,26 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({ departm
     }
   };
 
+  const getStatusMessage = () => {
+    switch (department.gps_status) {
+      case 'converted':
+        return '已成功設定GPS座標，員工可正常打卡';
+      case 'failed':
+        return '地址轉換失敗，請檢查地址格式是否正確或改用 Google Maps 建議格式';
+      default:
+        return '尚未轉換GPS座標，員工無法使用位置打卡';
+    }
+  };
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex items-center gap-2">
         <MapPin className="h-4 w-4 text-blue-600" />
         <span className="text-sm font-medium">GPS地址轉換</span>
       </div>
+      
+      {/* GPS 狀態顯示 */}
+      <DepartmentGPSStatus department={department} showDetails={true} />
       
       <div className="space-y-2">
         <Label htmlFor={`address-${department.id}`} className="text-xs">
@@ -82,6 +97,7 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({ departm
           className={`text-sm ${
             validation && !validation.isValid ? 'border-red-300 focus:border-red-500' : ''
           }`}
+          disabled={loading}
         />
         
         {/* 地址格式提示 */}
@@ -128,37 +144,16 @@ const DepartmentGPSConverter: React.FC<DepartmentGPSConverterProps> = ({ departm
         ) : (
           <>
             <MapPin className="h-3 w-3 mr-1" />
-            轉換為GPS座標
+            {department.gps_status === 'converted' ? '重新轉換GPS座標' : '轉換為GPS座標'}
           </>
         )}
       </Button>
 
-      {/* GPS座標顯示 */}
-      {department.latitude && department.longitude && (
-        <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded space-y-1">
-          <div className="font-medium">GPS座標：</div>
-          <div>緯度: {department.latitude.toFixed(6)}</div>
-          <div>經度: {department.longitude.toFixed(6)}</div>
-          <div className="flex items-center justify-between pt-1 border-t border-gray-200">
-            <div className="flex items-center gap-1">
-              {department.address_verified ? (
-                <span className="text-green-600 flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3" />
-                  已驗證
-                </span>
-              ) : (
-                <span className="text-yellow-600 flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  未驗證
-                </span>
-              )}
-            </div>
-            <span className="text-gray-500">
-              半徑: {department.check_in_radius || 100}m
-            </span>
-          </div>
-        </div>
-      )}
+      {/* 狀態說明 */}
+      <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+        <div className="font-medium mb-1">狀態說明：</div>
+        <div>{getStatusMessage()}</div>
+      </div>
     </div>
   );
 };

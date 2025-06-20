@@ -31,8 +31,8 @@ export const useCheckInCreator = () => {
       console.log('處理後的距離:', distance);
       
       const recordData = {
-        user_id: targetUserId, // 使用明確的用戶 ID
-        staff_id: targetUserId, // 同樣使用相同的用戶 ID
+        user_id: targetUserId,
+        staff_id: targetUserId,
         timestamp: record.timestamp,
         type: record.type,
         status: record.status,
@@ -41,7 +41,12 @@ export const useCheckInCreator = () => {
         longitude: record.details.longitude || null,
         distance: distance,
         ip_address: record.details.ip || null,
-        location_name: record.details.locationName || null
+        location_name: record.details.locationName || null,
+        // 新增的GPS比對資料欄位
+        department_latitude: record.details.departmentLatitude || null,
+        department_longitude: record.details.departmentLongitude || null,
+        department_name: record.details.departmentName || null,
+        gps_comparison_result: record.details.gpsComparisonResult || null
       };
       
       console.log('即將插入資料庫的記錄:', recordData);
@@ -63,9 +68,15 @@ export const useCheckInCreator = () => {
 
       console.log('打卡記錄建立成功:', data);
       
+      // 顯示成功訊息，包含GPS比對資訊
+      const successMessage = record.details.gpsComparisonResult?.message || 
+        (record.action === 'check-in' ? "上班打卡成功" : "下班打卡成功");
+      
       toast({
-        title: record.action === 'check-in' ? "上班打卡成功" : "下班打卡成功",
-        description: "打卡記錄已儲存",
+        title: successMessage,
+        description: record.type === 'location' 
+          ? `距離${record.details.departmentName || record.details.locationName}: ${distance}公尺`
+          : "打卡記錄已儲存",
       });
       
       return true;

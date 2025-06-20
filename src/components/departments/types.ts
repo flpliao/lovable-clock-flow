@@ -10,6 +10,7 @@ export interface Department {
   longitude?: number;
   address_verified?: boolean;
   check_in_radius?: number;
+  gps_status?: 'not_converted' | 'converted' | 'failed';
   created_at?: string;
   updated_at?: string;
 }
@@ -24,6 +25,7 @@ export interface NewDepartment {
   longitude?: number;
   address_verified?: boolean;
   check_in_radius?: number;
+  gps_status?: 'not_converted' | 'converted' | 'failed';
 }
 
 export interface DepartmentManagementContextType {

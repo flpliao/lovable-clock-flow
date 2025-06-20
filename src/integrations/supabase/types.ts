@@ -354,7 +354,11 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          department_latitude: number | null
+          department_longitude: number | null
+          department_name: string | null
           distance: number | null
+          gps_comparison_result: Json | null
           id: string
           ip_address: string | null
           latitude: number | null
@@ -370,7 +374,11 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string
+          department_latitude?: number | null
+          department_longitude?: number | null
+          department_name?: string | null
           distance?: number | null
+          gps_comparison_result?: Json | null
           id?: string
           ip_address?: string | null
           latitude?: number | null
@@ -386,7 +394,11 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string
+          department_latitude?: number | null
+          department_longitude?: number | null
+          department_name?: string | null
           distance?: number | null
+          gps_comparison_result?: Json | null
           id?: string
           ip_address?: string | null
           latitude?: number | null
@@ -507,6 +519,7 @@ export type Database = {
           address_verified: boolean | null
           check_in_radius: number | null
           created_at: string
+          gps_status: string | null
           id: string
           latitude: number | null
           location: string | null
@@ -522,6 +535,7 @@ export type Database = {
           address_verified?: boolean | null
           check_in_radius?: number | null
           created_at?: string
+          gps_status?: string | null
           id?: string
           latitude?: number | null
           location?: string | null
@@ -537,6 +551,7 @@ export type Database = {
           address_verified?: boolean | null
           check_in_radius?: number | null
           created_at?: string
+          gps_status?: string | null
           id?: string
           latitude?: number | null
           location?: string | null

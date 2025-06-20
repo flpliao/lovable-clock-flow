@@ -14,20 +14,21 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
   userId,
   onSuccess 
 }) => {
-  const { currentUser, isAdmin, canManageUser, hasPermission } = useUser();
+  const { currentUser, isAdmin, canManageUser } = useUser();
   
   // Determine if this is admin managing someone else or user managing own account
   const managingOwnAccount = !userId || userId === currentUser?.id;
   const targetUserId = userId || currentUser?.id;
   
-  // 檢查帳號管理權限
-  const canManageEmail = hasPermission('account:email:manage');
-  const canManagePassword = hasPermission('account:password:manage');
+  // 系統管理員應該擁有所有帳號管理權限
+  const isSystemAdmin = isAdmin();
+  const canManageEmail = isSystemAdmin || managingOwnAccount;
+  const canManagePassword = isSystemAdmin || managingOwnAccount;
   
-  // Validate permissions
+  // Validate permissions - 系統管理員可以管理所有帳號
   const hasPermissionToManage = targetUserId && (
     managingOwnAccount || 
-    (isAdmin() && canManageUser(targetUserId) && (canManageEmail || canManagePassword))
+    (isSystemAdmin && canManageUser(targetUserId))
   );
   
   const { 
@@ -37,6 +38,17 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
   } = useCredentials({ 
     userId: targetUserId, 
     onSuccess 
+  });
+
+  console.log('🔐 帳號管理權限檢查:', {
+    currentUser: currentUser?.name,
+    currentUserRole: currentUser?.role,
+    isSystemAdmin,
+    managingOwnAccount,
+    targetUserId,
+    canManageEmail,
+    canManagePassword,
+    hasPermissionToManage
   });
 
   if (!targetUserId) {
@@ -51,6 +63,9 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
           <p className="text-red-600 text-sm">
             您沒有權限管理此帳號設定。請聯繫系統管理員。
           </p>
+          <div className="mt-2 text-xs text-red-500">
+            調試資訊: 當前用戶角色 = {currentUser?.role}, 系統管理員 = {isSystemAdmin ? '是' : '否'}
+          </div>
         </div>
       </div>
     );
@@ -68,16 +83,16 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
         </div>
       )}
 
-      {/* 電子郵件管理 */}
-      {(managingOwnAccount || canManageEmail) && (
+      {/* 電子郵件管理 - 系統管理員和用戶本人都可以管理 */}
+      {canManageEmail && (
         <EmailManagementCard 
           currentEmail={currentEmail} 
           onEmailChange={updateEmail} 
         />
       )}
       
-      {/* 密碼管理 */}
-      {(managingOwnAccount || canManagePassword) && (
+      {/* 密碼管理 - 系統管理員和用戶本人都可以管理 */}
+      {canManagePassword && (
         <PasswordManagementCard 
           managingOwnAccount={managingOwnAccount}
           onPasswordChange={updatePassword}
@@ -85,7 +100,7 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
       )}
 
       {/* 如果沒有任何管理權限 */}
-      {!managingOwnAccount && !canManageEmail && !canManagePassword && (
+      {!canManageEmail && !canManagePassword && (
         <div className="text-center p-4">
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <p className="text-gray-600">

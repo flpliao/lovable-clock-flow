@@ -16,15 +16,23 @@ const StaffTable = () => {
     handleDeleteStaff,
     hasPermission
   } = useStaffManagementContext();
-  const { currentUser } = useUser();
+  const { currentUser, isAdmin } = useUser();
   const [selectedStaffForCredentials, setSelectedStaffForCredentials] = useState<Staff | null>(null);
   const [isCredentialDialogOpen, setIsCredentialDialogOpen] = useState(false);
 
-  // 檢查是否有帳號管理權限
+  // 檢查是否有帳號管理權限 - 系統管理員應該擁有權限
   const canManageAccounts = currentUser && (
+    isAdmin() || // 系統管理員直接允許
     hasPermission(currentUser.id, 'account:email:manage') ||
     hasPermission(currentUser.id, 'account:password:manage')
   );
+
+  console.log('👥 人員列表帳號管理權限檢查:', {
+    currentUser: currentUser?.name,
+    role: currentUser?.role,
+    isAdmin: isAdmin(),
+    canManageAccounts
+  });
 
   const handleCredentialManagement = (staff: Staff) => {
     console.log('🔐 開啟帳號設定對話框:', staff.name);

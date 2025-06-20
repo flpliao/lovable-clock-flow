@@ -63,7 +63,7 @@ const Login = () => {
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
         <div className="w-full max-w-sm p-4 sm:p-8 space-y-6 sm:space-y-8 backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-white drop-shadow-md">帳號管理</h1>
+            
             
           </div>
           

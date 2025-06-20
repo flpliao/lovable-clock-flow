@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Department, NewDepartment, DepartmentManagementContextType } from './types';
 import { useDepartmentDialogs } from './hooks/useDepartmentDialogs';
@@ -156,7 +157,8 @@ export const useDepartmentManagement = (): DepartmentManagementContextType => {
     handleDeleteDepartment,
     openEditDialog,
     refreshDepartments,
-    performFullSync, // 新增完整同步功能
+    performFullSync,
+    convertAddressToGPS, // 新增這個屬性到返回物件中
 
     // 權限檢查
     canManage: isAdmin(),

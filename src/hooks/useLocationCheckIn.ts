@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useState } from 'react';
 import { CheckInRecord } from '@/types';
+import { Department } from '@/components/departments/types';
 
 export const useLocationCheckIn = (userId: string, actionType: 'check-in' | 'check-out') => {
   const { createCheckInRecord } = useSupabaseCheckIn();
@@ -26,7 +27,12 @@ export const useLocationCheckIn = (userId: string, actionType: 'check-in' | 'che
         .select('*');
       
       if (error) throw error;
-      return data;
+      
+      // Transform the data to match Department type
+      return (data || []).map(item => ({
+        ...item,
+        type: item.type as 'headquarters' | 'branch' | 'store' | 'department'
+      })) as Department[];
     }
   });
 
@@ -36,11 +42,17 @@ export const useLocationCheckIn = (userId: string, actionType: 'check-in' | 'che
     queryFn: async () => {
       const { data, error } = await supabase
         .from('system_settings')
-        .select('*')
-        .single();
+        .select('*');
       
       if (error) throw error;
-      return data;
+      
+      // Transform settings array to object
+      const settingsObj: Record<string, string> = {};
+      data?.forEach(setting => {
+        settingsObj[setting.setting_key] = setting.setting_value;
+      });
+      
+      return settingsObj;
     }
   });
 
@@ -71,8 +83,10 @@ export const useLocationCheckIn = (userId: string, actionType: 'check-in' | 'che
         return false;
       }
 
-      // 檢查打卡範圍
-      const systemDistanceLimit = systemSettings?.check_in_distance_limit || 500;
+      // 檢查打卡範圍 - 從系統設定中取得距離限制
+      const systemDistanceLimit = systemSettings?.check_in_distance_limit ? 
+        parseInt(systemSettings.check_in_distance_limit) : 500;
+      
       const rangeCheck = isWithinCheckInRange(
         latitude, 
         longitude, 
@@ -103,7 +117,9 @@ export const useLocationCheckIn = (userId: string, actionType: 'check-in' | 'che
           longitude: longitude,
           distance: rangeCheck.distance,
           locationName: department.name,
-          address: department.location || ''
+          departmentLatitude: department.latitude,
+          departmentLongitude: department.longitude,
+          departmentName: department.name
         }
       };
 

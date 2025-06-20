@@ -5,16 +5,19 @@ import {
   MapPin, 
   Wifi, 
   AlertCircle,
-  Clock
+  Clock,
+  Building2
 } from 'lucide-react';
 import { useCheckIn } from '@/hooks/useCheckIn';
 import { useUser } from '@/contexts/UserContext';
+import { useDepartmentManagementContext } from '@/components/departments/DepartmentManagementContext';
 import CheckInCompletedStatus from '@/components/check-in/CheckInCompletedStatus';
 import CheckInStatusInfo from '@/components/check-in/CheckInStatusInfo';
 import CheckInButton from '@/components/check-in/CheckInButton';
 
 const LocationCheckIn = () => {
   const { currentUser } = useUser();
+  const { departments } = useDepartmentManagementContext();
   
   const {
     loading,
@@ -54,6 +57,10 @@ const LocationCheckIn = () => {
       </div>
     );
   }
+
+  // 找出員工所屬部門
+  const employeeDepartment = departments?.find(dept => dept.name === currentUser.department);
+  const hasValidDepartmentGPS = employeeDepartment?.latitude && employeeDepartment?.longitude && employeeDepartment?.address_verified;
 
   const handleCheckIn = checkInMethod === 'location' ? onLocationCheckIn : onIpCheckIn;
 
@@ -100,6 +107,27 @@ const LocationCheckIn = () => {
           </Button>
         </div>
 
+        {/* 部門GPS狀態顯示 */}
+        {checkInMethod === 'location' && currentUser.department && (
+          <div className="bg-white/10 backdrop-blur-xl rounded-lg p-3 border border-white/20">
+            <div className="flex items-center gap-2 text-white/90 text-sm">
+              <Building2 className="h-4 w-4" />
+              <span className="font-medium">打卡對比位置：</span>
+            </div>
+            <div className="text-white/80 text-sm mt-1">
+              {hasValidDepartmentGPS ? (
+                <span className="text-green-200">
+                  {currentUser.department} (部門GPS)
+                </span>
+              ) : (
+                <span className="text-yellow-200">
+                  總公司 (部門GPS未設定)
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         <CheckInButton
           actionType={actionType}
           loading={loading}
@@ -110,7 +138,7 @@ const LocationCheckIn = () => {
         {distance !== null && !error && checkInMethod === 'location' && (
           <div className="text-center text-sm text-white/80 drop-shadow-md">
             <MapPin className="inline h-4 w-4 mr-1" />
-            距離公司: <span className="font-medium">{Math.round(distance)} 公尺</span>
+            距離{hasValidDepartmentGPS ? currentUser.department : '總公司'}: <span className="font-medium">{Math.round(distance)} 公尺</span>
           </div>
         )}
 

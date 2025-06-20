@@ -60,7 +60,8 @@ export const validateCheckInLocation = (
     departmentPosition: { lat: department.latitude, lng: department.longitude },
     distance,
     allowedRadius,
-    isValid
+    isValid,
+    departmentName: department.name
   });
   
   return {
@@ -77,6 +78,11 @@ export const getDepartmentForCheckIn = (
   departments: Department[],
   employeeDepartment: string
 ): Department | null => {
+  console.log('🔍 搜尋員工部門:', {
+    employeeDepartment,
+    availableDepartments: departments.map(d => d.name)
+  });
+  
   const department = departments.find(dept => dept.name === employeeDepartment);
   
   if (!department) {
@@ -84,8 +90,20 @@ export const getDepartmentForCheckIn = (
     return null;
   }
   
+  console.log('📋 找到部門資訊:', {
+    name: department.name,
+    hasGPS: !!(department.latitude && department.longitude),
+    isVerified: department.address_verified,
+    latitude: department.latitude,
+    longitude: department.longitude
+  });
+  
   if (!department.address_verified || !department.latitude || !department.longitude) {
-    console.warn('⚠️ 部門GPS座標尚未驗證:', department.name);
+    console.warn('⚠️ 部門GPS座標尚未驗證或不存在:', {
+      departmentName: department.name,
+      hasCoordinates: !!(department.latitude && department.longitude),
+      isVerified: department.address_verified
+    });
     return null;
   }
   

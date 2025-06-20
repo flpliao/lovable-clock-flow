@@ -27,14 +27,29 @@ export const handleLocationCheckIn = async (
     // 檢查是否為管理員（簡單的開發模式檢查）
     const isAdmin = userId === '550e8400-e29b-41d4-a716-446655440001'; // 廖俊雄的ID
     
-    // 嘗試使用部門GPS驗證
+    console.log('🔍 開始位置打卡驗證:', {
+      userId,
+      employeeDepartment,
+      departments: departments?.length || 0,
+      isAdmin
+    });
+    
+    // 優先使用部門GPS驗證
     if (departments && employeeDepartment) {
-      console.log('🏢 嘗試使用部門GPS驗證:', { employeeDepartment, departmentCount: departments.length });
+      console.log('🏢 嘗試使用部門GPS驗證:', { 
+        employeeDepartment, 
+        departmentCount: departments.length 
+      });
       
       const targetDepartment = getDepartmentForCheckIn(departments, employeeDepartment);
       
-      if (targetDepartment) {
-        console.log('✅ 找到目標部門，進行GPS驗證:', targetDepartment.name);
+      if (targetDepartment && targetDepartment.latitude && targetDepartment.longitude) {
+        console.log('✅ 找到目標部門GPS座標，進行驗證:', {
+          departmentName: targetDepartment.name,
+          lat: targetDepartment.latitude,
+          lng: targetDepartment.longitude,
+          radius: targetDepartment.check_in_radius
+        });
         
         const validation = validateCheckInLocation(userLat, userLon, targetDepartment);
         distance = validation.distance;
@@ -48,14 +63,18 @@ export const handleLocationCheckIn = async (
           message: validation.message
         });
       } else {
-        console.log('⚠️ 無法找到有效的部門GPS資料，改用公司總部位置');
+        console.log('⚠️ 部門GPS座標不存在或未驗證，改用公司總部位置:', {
+          departmentFound: !!targetDepartment,
+          hasCoordinates: !!(targetDepartment?.latitude && targetDepartment?.longitude)
+        });
+        
         // 降級使用公司總部位置
         distance = calculateDistance(userLat, userLon, COMPANY_LOCATION.latitude, COMPANY_LOCATION.longitude);
-        locationName = COMPANY_LOCATION.name;
+        locationName = `${COMPANY_LOCATION.name} (部門GPS未設定)`;
         isValidLocation = distance <= ALLOWED_DISTANCE;
       }
     } else {
-      console.log('📍 使用公司總部位置進行驗證');
+      console.log('📍 未提供部門資訊，使用公司總部位置進行驗證');
       // 使用原有的公司總部位置驗證
       distance = calculateDistance(userLat, userLon, COMPANY_LOCATION.latitude, COMPANY_LOCATION.longitude);
       locationName = COMPANY_LOCATION.name;
@@ -66,7 +85,7 @@ export const handleLocationCheckIn = async (
       setDistance(distance);
     }
     
-    console.log('位置打卡驗證結果:', {
+    console.log('✅ 位置打卡驗證完成:', {
       userPosition: { lat: userLat, lon: userLon },
       distance,
       locationName,
@@ -82,7 +101,7 @@ export const handleLocationCheckIn = async (
     
     // 如果是管理員且超過距離，給予警告但允許打卡
     if (!isValidLocation && isAdmin) {
-      console.warn(`管理員模式：允許遠距離打卡 (${Math.round(distance)} 公尺)`);
+      console.warn(`🔧 管理員模式：允許遠距離打卡 (${Math.round(distance)} 公尺)`);
     }
     
     const record: CheckInRecord = {
@@ -100,10 +119,10 @@ export const handleLocationCheckIn = async (
       }
     };
     
-    console.log('產生的打卡記錄:', record);
+    console.log('📝 產生的打卡記錄:', record);
     onSuccess(record);
   } catch (error) {
-    console.error('位置打卡失敗:', error);
+    console.error('❌ 位置打卡失敗:', error);
     onError(error instanceof Error ? error.message : '位置打卡失敗');
   }
 };

@@ -5,9 +5,8 @@ import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import StaffManagement from '@/components/staff/StaffManagement';
-import DepartmentManagement from '@/components/departments/DepartmentManagement';
 import PositionManagement from '@/components/positions/PositionManagement';
-import { Users, Building, Briefcase, UserCheck, Settings, Database, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { Users, Briefcase, UserCheck, Settings, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 import { DataSyncManager } from '@/utils/dataSync';
 
@@ -107,9 +106,9 @@ const PersonnelManagement = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white drop-shadow-md">
-                  人員與部門管理
+                  人員管理
                 </h1>
-                <p className="text-white/80 text-sm mt-1">管理組織架構、人員資料與職位權限</p>
+                <p className="text-white/80 text-sm mt-1">管理人員資料與職位權限</p>
               </div>
             </div>
           </div>
@@ -129,14 +128,10 @@ const PersonnelManagement = () => {
         {/* 標籤導航 */}
         <div className="w-full px-4 lg:px-8 pb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-white/30 backdrop-blur-xl rounded-xl border border-white/30 p-1 mb-6">
+            <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-xl border border-white/30 p-1 mb-6">
               <TabsTrigger value="staff" className="text-gray-800 data-[state=active]:bg-white/60 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-lg font-medium transition-all duration-200 py-2 px-4 flex items-center gap-2">
                 <UserCheck className="h-4 w-4" />
                 人員組織
-              </TabsTrigger>
-              <TabsTrigger value="departments" className="text-gray-800 data-[state=active]:bg-white/60 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-lg font-medium transition-all duration-200 py-2 px-4 flex items-center gap-2">
-                <Building className="h-4 w-4" />
-                部門門市
               </TabsTrigger>
               <TabsTrigger value="positions" className="text-gray-800 data-[state=active]:bg-white/60 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-lg font-medium transition-all duration-200 py-2 px-4 flex items-center gap-2">
                 <Briefcase className="h-4 w-4" />
@@ -150,10 +145,6 @@ const PersonnelManagement = () => {
                 <StaffManagementProvider>
                   <StaffManagement />
                 </StaffManagementProvider>
-              </TabsContent>
-              
-              <TabsContent value="departments" className="mt-0">
-                <DepartmentManagement />
               </TabsContent>
               
               <TabsContent value="positions" className="mt-0">

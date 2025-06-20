@@ -17,7 +17,7 @@ export const menuItems: MenuItem[] = [
   { path: '/overtime-management', label: '加班管理', icon: Briefcase, public: false },
   { path: '/company-announcements', label: '公司公告', icon: MessageSquare, public: false },
   { path: '/personnel-management', label: '人員管理', icon: Users, public: false, adminOnly: true },
-  { path: '/company-branch-management', label: '分店管理', icon: Building, public: false, adminOnly: true },
+  { path: '/company-branch-management', label: '公司部門管理', icon: Building, public: false, adminOnly: true },
   { path: '/system-settings', label: '系統設定', icon: Settings, public: false, adminOnly: true },
   { path: '/hr-management', label: 'HR管理', icon: Users, public: false, adminOnly: true }
 ];

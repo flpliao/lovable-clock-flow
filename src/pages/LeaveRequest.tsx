@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import LeaveRequestForm from '@/components/LeaveRequestForm';
 import LeaveBalance from '@/components/LeaveBalance';
@@ -9,59 +8,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LeaveRequest as LeaveRequestType } from '@/types';
 import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
 import { Clock, Calendar, Bell, PiggyBank, FileText, History, User } from 'lucide-react';
-
 const LeaveRequest = () => {
   const [activeTab, setActiveTab] = useState<string>('request');
-  const { currentLeaveRequest, isApproverForRequest } = useLeaveManagementContext();
-  
+  const {
+    currentLeaveRequest,
+    isApproverForRequest
+  } = useLeaveManagementContext();
+
   // Function to handle new leave request submission
   const handleNewLeaveRequest = () => {
     setActiveTab('view');
   };
-  
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36">
+  return <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36">
       <div className="w-full px-4 sm:px-6 lg:px-8 pb-6">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Welcome Header */}
-          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-                  <User className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <h1 className="text-3xl font-bold text-white drop-shadow-md mb-2">
-                您好，廖俊雄
-              </h1>
-              <p className="text-white/80 font-medium drop-shadow-sm">
-                歡迎使用員工請假系統
-              </p>
-            </div>
-            
-            {/* Time and Date Cards */}
-            <div className="flex flex-col sm:flex-row gap-4 mt-6 justify-center">
-              <div className="backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-4 flex items-center gap-3">
-                <div className="p-2 bg-blue-500 rounded-lg">
-                  <Clock className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <div className="text-xl font-bold text-white drop-shadow-sm">15:01</div>
-                  <div className="text-white/80 text-sm font-medium drop-shadow-sm">當前時間</div>
-                </div>
-              </div>
-              
-              <div className="backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-4 flex items-center gap-3">
-                <div className="p-2 bg-green-500 rounded-lg">
-                  <Calendar className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <div className="text-lg font-bold text-white drop-shadow-sm">2025年6月10日 星期二</div>
-                  <div className="text-white/80 text-sm font-medium drop-shadow-sm">今天日期</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          
 
           {/* Shift Reminder */}
           <ShiftReminder />
@@ -91,16 +53,10 @@ const LeaveRequest = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="p-4">
                 <TabsList className="grid w-full grid-cols-2 backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-1 h-12">
-                  <TabsTrigger 
-                    value="request" 
-                    className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-4"
-                  >
+                  <TabsTrigger value="request" className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-4">
                     申請請假
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="view" 
-                    className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-4"
-                  >
+                  <TabsTrigger value="view" className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-4">
                     查看請假
                   </TabsTrigger>
                 </TabsList>
@@ -112,13 +68,7 @@ const LeaveRequest = () => {
                 </TabsContent>
                 
                 <TabsContent value="view" className="mt-0">
-                  {currentLeaveRequest ? (
-                    <LeaveRequestDetail 
-                      leaveRequest={currentLeaveRequest} 
-                      isApprover={isApproverForRequest(currentLeaveRequest)}
-                    />
-                  ) : (
-                    <div className="text-center py-12">
+                  {currentLeaveRequest ? <LeaveRequestDetail leaveRequest={currentLeaveRequest} isApprover={isApproverForRequest(currentLeaveRequest)} /> : <div className="text-center py-12">
                       <div className="w-16 h-16 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg className="w-8 h-8 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -126,8 +76,7 @@ const LeaveRequest = () => {
                       </div>
                       <p className="text-white font-medium drop-shadow-sm">尚無進行中的請假申請</p>
                       <p className="text-white/80 mt-1 font-medium drop-shadow-sm">您可以在申請請假頁面提交新的請假申請</p>
-                    </div>
-                  )}
+                    </div>}
                 </TabsContent>
               </div>
             </Tabs>
@@ -145,8 +94,6 @@ const LeaveRequest = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default LeaveRequest;

@@ -1,4 +1,3 @@
-
 export interface Department {
   id: string;
   name: string;
@@ -7,6 +6,10 @@ export interface Department {
   manager_name?: string;
   manager_contact?: string;
   staff_count: number;
+  latitude?: number;
+  longitude?: number;
+  address_verified?: boolean;
+  check_in_radius?: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -17,6 +20,10 @@ export interface NewDepartment {
   location?: string;
   manager_name?: string;
   manager_contact?: string;
+  latitude?: number;
+  longitude?: number;
+  address_verified?: boolean;
+  check_in_radius?: number;
 }
 
 export interface DepartmentManagementContextType {
@@ -41,4 +48,5 @@ export interface DepartmentManagementContextType {
   performFullSync: () => Promise<any>;
   canManage: boolean;
   currentUser: any;
+  convertAddressToGPS: (departmentId: string, address: string) => Promise<boolean>;
 }

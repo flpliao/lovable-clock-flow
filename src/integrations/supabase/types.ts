@@ -504,9 +504,13 @@ export type Database = {
       }
       departments: {
         Row: {
+          address_verified: boolean | null
+          check_in_radius: number | null
           created_at: string
           id: string
+          latitude: number | null
           location: string | null
+          longitude: number | null
           manager_contact: string | null
           manager_name: string | null
           name: string
@@ -515,9 +519,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          address_verified?: boolean | null
+          check_in_radius?: number | null
           created_at?: string
           id?: string
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           manager_contact?: string | null
           manager_name?: string | null
           name: string
@@ -526,9 +534,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          address_verified?: boolean | null
+          check_in_radius?: number | null
           created_at?: string
           id?: string
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           manager_contact?: string | null
           manager_name?: string | null
           name?: string

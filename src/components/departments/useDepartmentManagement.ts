@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { Department, NewDepartment, DepartmentManagementContextType } from './types';
 import { useDepartmentDialogs } from './hooks/useDepartmentDialogs';
 import { useSupabaseDepartmentOperations } from './hooks/useSupabaseDepartmentOperations';
 import { useUser } from '@/contexts/UserContext';
 import { DataSyncManager } from '@/utils/dataSync';
+import { DepartmentGeocodingService } from './services/departmentGeocodingService';
 
 export const useDepartmentManagement = (): DepartmentManagementContextType => {
   const { isAdmin, currentUser } = useUser();
@@ -112,6 +112,24 @@ export const useDepartmentManagement = (): DepartmentManagementContextType => {
     const syncResult = await DataSyncManager.performFullSync();
     await refreshDepartments();
     return syncResult;
+  };
+
+  // 新增地址轉GPS功能
+  const convertAddressToGPS = async (departmentId: string, address: string): Promise<boolean> => {
+    if (!isAdmin()) {
+      console.warn('⚠️ 非管理員用戶嘗試轉換地址');
+      return false;
+    }
+
+    console.log('🗺️ 開始轉換部門地址為GPS:', { departmentId, address });
+    const success = await DepartmentGeocodingService.convertDepartmentAddressToGPS(departmentId, address);
+    
+    if (success) {
+      console.log('✅ 地址轉GPS成功，重新載入部門資料');
+      await refreshDepartments();
+    }
+    
+    return success;
   };
 
   return {

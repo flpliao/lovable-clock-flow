@@ -2,13 +2,13 @@
 import { CheckInRecord } from '@/types';
 import { getCurrentPosition, calculateDistance, COMPANY_LOCATION, ALLOWED_DISTANCE } from './geolocation';
 import { getUserIP } from './networkUtils';
-import { validateCheckInLocation, getDepartmentForCheckIn } from './departmentCheckInUtils';
+import { validateCheckInLocationSync, getDepartmentForCheckIn } from './departmentCheckInUtils';
 import { Department } from '@/components/departments/types';
 
-// 位置打卡的函數 - 支援部門GPS驗證
+// 位置打卡的函數 - 支援部門GPS驗證，使用調整後的距離限制
 export const handleLocationCheckIn = async (
   userId: string,
-  actionType: 'check-in' | 'check-out',
+  actionType: 'check-in' | '開out',
   onSuccess: (record: CheckInRecord) => void,
   onError: (error: string) => void,
   setDistance?: (distance: number) => void,
@@ -54,7 +54,7 @@ export const handleLocationCheckIn = async (
           gpsStatus: targetDepartment.gps_status
         });
         
-        const validation = validateCheckInLocation(userLat, userLon, targetDepartment);
+        const validation = validateCheckInLocationSync(userLat, userLon, targetDepartment);
         distance = validation.distance;
         locationName = targetDepartment.name;
         isValidLocation = validation.isValid;
@@ -67,7 +67,7 @@ export const handleLocationCheckIn = async (
           departmentGPS: departmentGPS,
           userGPS: { lat: userLat, lng: userLon },
           distance: distance,
-          allowedRadius: targetDepartment.check_in_radius || 100,
+          allowedRadius: targetDepartment.check_in_radius || 500, // 使用調整後的預設值
           gpsStatus: validation.gpsStatus,
           isValid: validation.isValid,
           message: validation.message,
@@ -95,11 +95,11 @@ export const handleLocationCheckIn = async (
         }
       }
     } else {
-      console.log('📍 使用公司總部位置進行驗證');
-      // 使用原有的公司總部位置驗證
+      console.log('📍 使用公司總部位置進行驗證 (使用調整後的距離限制)');
+      // 使用原有的公司總部位置驗證，但使用調整後的距離限制
       distance = calculateDistance(userLat, userLon, COMPANY_LOCATION.latitude, COMPANY_LOCATION.longitude);
       locationName = COMPANY_LOCATION.name;
-      isValidLocation = distance <= ALLOWED_DISTANCE;
+      isValidLocation = distance <= ALLOWED_DISTANCE; // 現在是500公尺
       
       // 記錄總公司GPS比對結果
       gpsComparisonResult = {
@@ -111,7 +111,7 @@ export const handleLocationCheckIn = async (
         allowedRadius: ALLOWED_DISTANCE,
         gpsStatus: 'company_default',
         isValid: isValidLocation,
-        message: isValidLocation ? '總公司打卡成功' : '距離總公司太遠',
+        message: isValidLocation ? '總公司打卡成功' : `距離總公司太遠（${Math.round(distance)} 公尺），超過允許範圍 ${ALLOWED_DISTANCE} 公尺`,
         timestamp: new Date().toISOString()
       };
     }

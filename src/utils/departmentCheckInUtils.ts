@@ -1,5 +1,6 @@
 
 import { Department } from '@/components/departments/types';
+import { SystemSettingsService } from '@/services/systemSettingsService';
 
 // 計算兩個GPS座標之間的距離（單位：公尺）
 export const calculateGPSDistance = (
@@ -24,17 +25,17 @@ export const calculateGPSDistance = (
   return Math.round(distance);
 };
 
-// 驗證打卡位置是否在允許範圍內
-export const validateCheckInLocation = (
+// 驗證打卡位置是否在允許範圍內 - 支援動態距離限制
+export const validateCheckInLocation = async (
   userLatitude: number,
   userLongitude: number,
   department: Department
-): {
+): Promise<{
   isValid: boolean;
   distance: number;
   message: string;
   gpsStatus: string;
-} => {
+}> => {
   console.log('📍 開始GPS打卡驗證:', {
     userPosition: { lat: userLatitude, lng: userLongitude },
     department: {
@@ -73,11 +74,86 @@ export const validateCheckInLocation = (
     department.longitude
   );
   
-  // 檢查是否在允許範圍內
-  const allowedRadius = department.check_in_radius || 100;
+  // 取得系統設定的打卡距離限制
+  const systemDistanceLimit = await SystemSettingsService.getCheckInDistanceLimit();
+  const allowedRadius = department.check_in_radius || systemDistanceLimit;
   const isValid = distance <= allowedRadius;
   
   console.log('✅ 打卡位置驗證完成:', {
+    userPosition: { lat: userLatitude, lng: userLongitude },
+    departmentPosition: { lat: department.latitude, lng: department.longitude },
+    distance,
+    allowedRadius,
+    systemDistanceLimit,
+    isValid,
+    departmentName: department.name,
+    gpsStatus: 'converted'
+  });
+  
+  return {
+    isValid,
+    distance,
+    gpsStatus: 'converted',
+    message: isValid 
+      ? `打卡成功 (距離${department.name} ${distance} 公尺)`
+      : `您距離${department.name}太遠（${distance} 公尺），超過允許範圍 ${allowedRadius} 公尺，無法打卡`
+  };
+};
+
+// 同步版本的驗證函數，使用預設值
+export const validateCheckInLocationSync = (
+  userLatitude: number,
+  userLongitude: number,
+  department: Department
+): {
+  isValid: boolean;
+  distance: number;
+  message: string;
+  gpsStatus: string;
+} => {
+  console.log('📍 開始GPS打卡驗證 (同步版本):', {
+    userPosition: { lat: userLatitude, lng: userLongitude },
+    department: {
+      name: department.name,
+      gpsStatus: department.gps_status,
+      hasCoordinates: !!(department.latitude && department.longitude),
+      coordinates: department.latitude ? { lat: department.latitude, lng: department.longitude } : null
+    }
+  });
+
+  // 檢查部門GPS狀態
+  if (department.gps_status !== 'converted') {
+    return {
+      isValid: false,
+      distance: -1,
+      message: '部門尚未設定GPS座標，請聯繫管理者設定',
+      gpsStatus: department.gps_status || 'not_converted'
+    };
+  }
+  
+  // 檢查部門是否有GPS座標
+  if (!department.latitude || !department.longitude) {
+    return {
+      isValid: false,
+      distance: -1,
+      message: '部門GPS座標資料不完整，請聯繫管理者重新設定',
+      gpsStatus: 'incomplete'
+    };
+  }
+  
+  // 計算距離
+  const distance = calculateGPSDistance(
+    userLatitude,
+    userLongitude,
+    department.latitude,
+    department.longitude
+  );
+  
+  // 使用部門設定的半徑，如果沒有則使用500公尺預設值
+  const allowedRadius = department.check_in_radius || 500;
+  const isValid = distance <= allowedRadius;
+  
+  console.log('✅ 打卡位置驗證完成 (同步版本):', {
     userPosition: { lat: userLatitude, lng: userLongitude },
     departmentPosition: { lat: department.latitude, lng: department.longitude },
     distance,
@@ -146,7 +222,7 @@ export const getDepartmentGPSStatusMessage = (department: Department): string =>
     case 'converted':
       return '部門GPS已設定，可正常打卡';
     case 'failed':
-      return '部門GPS轉換失敗，請聯繫管理者重新設定';
+      return 'GPS轉換失敗，請聯繫管理者重新設定';
     default:
       return '部門尚未設定GPS座標，請聯繫管理者';
   }

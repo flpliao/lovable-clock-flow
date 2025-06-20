@@ -6,7 +6,7 @@ export const COMPANY_LOCATION = {
   name: "總公司 - 台南市永康區振興路132號"
 };
 
-// 允許的打卡距離 (公尺) - 擴大到合理範圍
+// 允許的打卡距離 (公尺) - 調整為500公尺以減少GPS誤差問題
 export const ALLOWED_DISTANCE = 500;
 
 // 計算兩點間距離的函數

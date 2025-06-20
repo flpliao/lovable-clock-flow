@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -89,16 +88,14 @@ const FeatureCards = ({ abnormalCount, annualLeaveBalance }: FeatureCardsProps) 
   );
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6 px-4">
+    <div className="space-y-6">
       {/* 主要功能區 */}
       <div>
         <h2 className="text-2xl font-bold text-white mb-6 text-center drop-shadow-lg">主要功能</h2>
-        <div className="flex flex-col items-center justify-center w-full">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg sm:max-w-none place-items-center">
-            {mainFeatures.map((feature, index) => (
-              <FeatureCard key={index} feature={feature} />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {mainFeatures.map((feature, index) => (
+            <FeatureCard key={index} feature={feature} />
+          ))}
         </div>
       </div>
     </div>

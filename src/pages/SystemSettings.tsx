@@ -79,18 +79,18 @@ const SystemSettings = () => {
               <TabsContent value="general" className="mt-0">
                 <div className="space-y-6">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-500/90 rounded-xl shadow-lg border border-purple-400/50">
-                      <Shield className="h-5 w-5 text-white" />
+                    <div className="p-2 bg-green-500/90 rounded-xl shadow-lg border border-green-400/50">
+                      <MapPin className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold text-white drop-shadow-sm">一般設定</h2>
-                      <p className="text-white/80 font-medium drop-shadow-sm text-sm">系統基本配置和安全設定</p>
+                      <h2 className="text-xl font-bold text-white drop-shadow-sm">地圖服務與GPS設定</h2>
+                      <p className="text-white/80 font-medium drop-shadow-sm text-sm">GPS 轉換和地圖服務配置</p>
                     </div>
                   </div>
                   
                   <div className="space-y-6">
+                    <GoogleMapsApiKeySettings />
                     <CheckInDistanceSettings />
-                    <RLSSettingsCard />
                   </div>
                 </div>
               </TabsContent>
@@ -136,7 +136,22 @@ const SystemSettings = () => {
                       <p className="text-white/80 font-medium drop-shadow-sm text-sm">系統狀態檢查和連線測試</p>
                     </div>
                   </div>
-                  <ComprehensiveDiagnostics />
+                  
+                  <div className="space-y-6">
+                    <ComprehensiveDiagnostics />
+                    
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-purple-500/90 rounded-xl shadow-lg border border-purple-400/50">
+                        <Shield className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-white drop-shadow-sm">資料庫安全政策</h3>
+                        <p className="text-white/80 font-medium drop-shadow-sm text-sm">資料庫安全設定和存取控制</p>
+                      </div>
+                    </div>
+                    
+                    <RLSSettingsCard />
+                  </div>
                 </div>
               </TabsContent>
             </div>

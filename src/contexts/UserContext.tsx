@@ -116,6 +116,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       case 'announcement:delete':
       case 'announcement:publish':
         return currentUser.department === 'HR' || currentUser.role === 'admin';
+      // 新增帳號管理權限檢查
+      case 'account:email:manage':
+      case 'account:password:manage':
+        return currentUser.role === 'admin';
       default:
         return false;
     }

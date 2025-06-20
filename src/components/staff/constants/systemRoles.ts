@@ -8,7 +8,7 @@ export const defaultSystemRoles: StaffRole[] = [
     id: 'admin',
     name: '系統管理員',
     description: '完整系統管理權限',
-    permissions: availablePermissions,
+    permissions: availablePermissions, // 系統管理員擁有所有權限，包括新的帳號管理權限
     is_system_role: true
   },
   {

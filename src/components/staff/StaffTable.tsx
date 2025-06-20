@@ -1,145 +1,126 @@
-import React, { useEffect, useState } from 'react';
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
+
+import React, { useState } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, UserCog, Users, RefreshCw } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, Settings, Key } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { Staff } from './types';
 import { useUser } from '@/contexts/UserContext';
 import CredentialManagementDialog from './CredentialManagementDialog';
-import AddStaffDialog from './AddStaffDialog';
-const StaffTable: React.FC = () => {
-  const {
-    staffList,
-    loading,
-    openEditDialog,
-    handleDeleteStaff,
-    getSupervisorName,
-    refreshData,
-    performFullSync
-  } = useStaffManagementContext();
-  const {
-    isAdmin,
-    currentUser
-  } = useUser();
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  useEffect(() => {
-    console.log('📋 員工表格渲染狀態:', {
-      staffCount: staffList.length,
-      currentUser: currentUser?.name,
-      isAdmin: isAdmin(),
-      loading
-    });
-  }, [staffList.length, currentUser, isAdmin, loading]);
-  const handleRefresh = async () => {
-    console.log('🔄 廖俊雄手動重新載入員工資料');
-    setIsRefreshing(true);
-    try {
-      // 先執行完整同步
-      console.log('🔄 執行完整系統同步...');
-      await performFullSync();
 
-      // 再執行本地資料重新載入
-      console.log('🔄 重新載入本地員工資料...');
-      await refreshData();
-      console.log('✅ 員工資料重新載入完成');
-    } catch (error) {
-      console.error('❌ 員工資料重新載入失敗:', error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-  if (loading || isRefreshing) {
-    return <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-xl shadow-lg p-8 text-center">
-        <div className="flex justify-center mb-4">
-          <div className="p-4 bg-blue-100/70 rounded-full">
-            <RefreshCw className="h-8 w-8 text-blue-500 animate-spin" />
-          </div>
-        </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          {isRefreshing ? '正在重新載入員工資料' : '正在載入員工資料'}
-        </h3>
-        <p className="text-gray-700">請稍等，正在從後台載入員工資料...</p>
-      </div>;
-  }
-  if (staffList.length === 0) {
-    return <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-xl shadow-lg p-8 text-center">
-        <div className="flex justify-center mb-4">
-          <div className="p-4 bg-gray-100/70 rounded-full">
-            <Users className="h-8 w-8 text-gray-500" />
-          </div>
-        </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">尚未載入到後台員工資料</h3>
-        <p className="text-gray-700 mb-4">後台有員工資料但前台顯示為空，請點擊重新載入按鈕</p>
-        <div className="flex gap-4 justify-center">
-          <Button onClick={handleRefresh} variant="outline" disabled={isRefreshing} className="bg-white/25 border-white/40 text-gray-700 hover:bg-white/35">
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            {isRefreshing ? '載入中...' : '重新載入後台資料'}
-          </Button>
-          <AddStaffDialog />
-        </div>
-      </div>;
-  }
-  return <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-xl shadow-lg overflow-hidden">
-      <div className="p-4 border-b border-white/20">
-        <div className="flex justify-between items-center">
-          <div className="text-gray-800">
-            <p className="text-sm">後台連線狀態：✅ 已連接</p>
-            <p className="text-sm">載入的員工數量：{staffList.length} 人</p>
-          </div>
-          
+const StaffTable = () => {
+  const { 
+    filteredStaffList, 
+    loading, 
+    openEditDialog, 
+    handleDeleteStaff,
+    hasPermission
+  } = useStaffManagementContext();
+  const { currentUser } = useUser();
+  const [selectedStaffForCredentials, setSelectedStaffForCredentials] = useState<Staff | null>(null);
+
+  // 檢查是否有帳號管理權限
+  const canManageAccounts = currentUser && (
+    hasPermission(currentUser.id, 'account:email:manage') ||
+    hasPermission(currentUser.id, 'account:password:manage')
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">載入中...</p>
         </div>
       </div>
-      
-      <div className="overflow-x-auto">
+    );
+  }
+
+  if (filteredStaffList.length === 0) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-gray-500 mb-4">目前沒有員工資料</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="rounded-lg border bg-white/70 backdrop-blur-xl shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="border-white/40 bg-white/20">
-              <TableHead className="text-gray-900 font-semibold py-4 px-6">姓名</TableHead>
-              <TableHead className="text-gray-900 font-semibold py-4 px-6">職位</TableHead>
-              <TableHead className="text-gray-900 font-semibold py-4 px-6">部門</TableHead>
-              <TableHead className="text-gray-900 font-semibold py-4 px-6">營業處</TableHead>
-              <TableHead className="text-gray-900 font-semibold py-4 px-6">主管</TableHead>
-              <TableHead className="text-gray-900 font-semibold py-4 px-6 text-center">操作</TableHead>
+            <TableRow>
+              <TableHead>姓名</TableHead>
+              <TableHead>職位</TableHead>
+              <TableHead>部門</TableHead>
+              <TableHead>分店/分部</TableHead>
+              <TableHead>聯絡方式</TableHead>
+              <TableHead>角色</TableHead>
+              <TableHead className="text-right">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {staffList.map((staff, index) => <TableRow key={staff.id} className={`border-white/30 hover:bg-white/40 transition-colors ${index % 2 === 0 ? 'bg-white/10' : 'bg-white/5'}`}>
-                <TableCell className="font-medium text-gray-900 py-4 px-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100/70 rounded-lg">
-                      <UserCog className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <span className="font-semibold">{staff.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-gray-800 py-4 px-6 font-medium">{staff.position}</TableCell>
-                <TableCell className="text-gray-800 py-4 px-6 font-medium">{staff.department}</TableCell>
-                <TableCell className="py-4 px-6">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100/70 text-blue-800 border border-blue-200/50">
-                    {staff.branch_name || '未設定'}
+            {filteredStaffList.map((staff) => (
+              <TableRow key={staff.id}>
+                <TableCell className="font-medium">{staff.name}</TableCell>
+                <TableCell>{staff.position}</TableCell>
+                <TableCell>{staff.department}</TableCell>
+                <TableCell>{staff.branch_name}</TableCell>
+                <TableCell>{staff.contact}</TableCell>
+                <TableCell>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    staff.role === 'admin' ? 'bg-red-100 text-red-800' :
+                    staff.role === 'manager' ? 'bg-blue-100 text-blue-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {staff.role === 'admin' ? '管理員' : 
+                     staff.role === 'manager' ? '主管' : '員工'}
                   </span>
                 </TableCell>
-                <TableCell className="text-gray-800 py-4 px-6 font-medium">{getSupervisorName(staff.supervisor_id)}</TableCell>
-                <TableCell className="py-4 px-6">
-                  <div className="flex items-center justify-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => openEditDialog(staff)} className="h-9 w-9 p-0 hover:bg-blue-100/70 text-blue-600 hover:text-blue-700">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    
-                    <CredentialManagementDialog staff={staff}>
-                      <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-green-100/70 text-green-600 hover:text-green-700">
-                        <UserCog className="h-4 w-4" />
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
-                    </CredentialManagementDialog>
-                    
-                    {isAdmin() && <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-red-100/70 text-red-600 hover:text-red-700" onClick={() => handleDeleteStaff(staff.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>}
-                  </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => openEditDialog(staff)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        編輯
+                      </DropdownMenuItem>
+                      {canManageAccounts && (
+                        <DropdownMenuItem onClick={() => setSelectedStaffForCredentials(staff)}>
+                          <Key className="mr-2 h-4 w-4" />
+                          帳號設定
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem 
+                        onClick={() => handleDeleteStaff(staff.id)}
+                        className="text-red-600"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        刪除
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
-              </TableRow>)}
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
-    </div>;
+
+      {/* 帳號設定對話框 */}
+      {selectedStaffForCredentials && (
+        <CredentialManagementDialog
+          staff={selectedStaffForCredentials}
+          children={<></>}
+        />
+      )}
+    </>
+  );
 };
+
 export default StaffTable;

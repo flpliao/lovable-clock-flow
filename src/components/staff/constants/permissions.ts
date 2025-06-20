@@ -183,6 +183,22 @@ export const availablePermissions: Permission[] = [
     category: '公告管理'
   },
   
+  // Account management permissions (新增帳號管理權限)
+  { 
+    id: 'account_email_manage', 
+    name: '修改使用者電子郵件地址', 
+    code: 'account:email:manage', 
+    description: '允許此角色修改他人帳號的登入電子郵件地址', 
+    category: '帳號設定管理'
+  },
+  { 
+    id: 'account_password_manage', 
+    name: '修改使用者登入密碼', 
+    code: 'account:password:manage', 
+    description: '允許此角色重設其他使用者的登入密碼', 
+    category: '帳號設定管理'
+  },
+  
   // Role management permissions (admin only)
   { 
     id: 'role_manage', 

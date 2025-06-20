@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Plus, Building, Settings, MapPin } from 'lucide-react';
+import { Building2, Plus, Building, MapPin } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { useDepartmentManagementContext } from '@/components/departments/DepartmentManagementContext';
@@ -15,7 +15,6 @@ import AddDepartmentDialog from '@/components/departments/AddDepartmentDialog';
 import EditBranchDialog from './EditBranchDialog';
 import EditDepartmentDialog from '@/components/departments/EditDepartmentDialog';
 import EditCompanyDialog from './EditCompanyDialog';
-import { RLSSettingsCard } from './components/RLSSettingsCard';
 import CheckInDistanceSettings from './components/CheckInDistanceSettings';
 
 const CompanyManagementRedesigned = () => {
@@ -48,12 +47,6 @@ const CompanyManagementRedesigned = () => {
       label: '分店部門',
       icon: Building,
       description: '管理分店與部門門市'
-    },
-    {
-      id: 'settings',
-      label: '系統設定',
-      icon: Settings,
-      description: '系統參數設定'
     },
     {
       id: 'checkin',
@@ -125,8 +118,6 @@ const CompanyManagementRedesigned = () => {
             </div>
           </div>
         );
-      case 'settings':
-        return <RLSSettingsCard />;
       case 'checkin':
         return <CheckInDistanceSettings />;
       default:
@@ -141,12 +132,12 @@ const CompanyManagementRedesigned = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-white drop-shadow-md">公司管理</h1>
-            <p className="text-white/80 mt-1">管理公司資訊、分店部門和系統設定</p>
+            <p className="text-white/80 mt-1">管理公司資訊、分店部門和打卡設定</p>
           </div>
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-white/20 backdrop-blur-xl border border-white/30">
+          <TabsList className="grid w-full grid-cols-3 bg-white/20 backdrop-blur-xl border border-white/30">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (

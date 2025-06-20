@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { UserProvider } from '@/contexts/UserContext';
@@ -39,35 +40,37 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <UserProvider>
-        <LeaveManagementProvider>
-          <SchedulingProvider>
-            <Router>
-              <div className="w-full min-h-screen">
-                <Header />
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/leave-request" element={<LeaveRequest />} />
-                  <Route path="/personal-attendance" element={<PersonalAttendance />} />
-                  <Route path="/scheduling" element={<Scheduling />} />
-                  <Route path="/overtime-management" element={<OvertimeManagement />} />
-                  <Route path="/holiday-management" element={<HolidayManagement />} />
-                  <Route path="/company-announcements" element={<CompanyAnnouncements />} />
-                  <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
-                  <Route path="/personnel-management" element={<PersonnelManagement />} />
-                  <Route path="/company-branch-management" element={<CompanyBranchManagement />} />
-                  <Route path="/staff-dashboard" element={<StaffDashboard />} />
-                  <Route path="/leave-approval/:requestId" element={<LeaveApprovalView />} />
-                  <Route path="/system-settings" element={<SystemSettings />} />
-                  <Route path="/hr-management" element={<HRManagement />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-                <Toaster />
-                <Sonner />
-              </div>
-            </Router>
-          </SchedulingProvider>
-        </LeaveManagementProvider>
+        <DepartmentManagementProvider>
+          <LeaveManagementProvider>
+            <SchedulingProvider>
+              <Router>
+                <div className="w-full min-h-screen">
+                  <Header />
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/leave-request" element={<LeaveRequest />} />
+                    <Route path="/personal-attendance" element={<PersonalAttendance />} />
+                    <Route path="/scheduling" element={<Scheduling />} />
+                    <Route path="/overtime-management" element={<OvertimeManagement />} />
+                    <Route path="/holiday-management" element={<HolidayManagement />} />
+                    <Route path="/company-announcements" element={<CompanyAnnouncements />} />
+                    <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
+                    <Route path="/personnel-management" element={<PersonnelManagement />} />
+                    <Route path="/company-branch-management" element={<CompanyBranchManagement />} />
+                    <Route path="/staff-dashboard" element={<StaffDashboard />} />
+                    <Route path="/leave-approval/:requestId" element={<LeaveApprovalView />} />
+                    <Route path="/system-settings" element={<SystemSettings />} />
+                    <Route path="/hr-management" element={<HRManagement />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                  <Toaster />
+                  <Sonner />
+                </div>
+              </Router>
+            </SchedulingProvider>
+          </LeaveManagementProvider>
+        </DepartmentManagementProvider>
       </UserProvider>
     </QueryClientProvider>
   );

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,7 +57,7 @@ const GoogleMapsApiKeySettings = () => {
         setHasApiKey(true);
         toast({
           title: "設定成功",
-          description: "Google Maps API 金鑰已儲存，地址轉換功能將使用此金鑰提升準確性",
+          description: "Google Maps API 金鑰已儲存",
         });
       } else {
         toast({
@@ -89,7 +88,7 @@ const GoogleMapsApiKeySettings = () => {
         setHasApiKey(false);
         toast({
           title: "清除成功",
-          description: "Google Maps API 金鑰已清除，系統將使用預設的地址轉換服務",
+          description: "Google Maps API 金鑰已清除",
         });
       } else {
         toast({
@@ -113,17 +112,9 @@ const GoogleMapsApiKeySettings = () => {
   if (initialLoading) {
     return (
       <Card className="backdrop-blur-xl bg-white/25 border border-white/30 rounded-2xl shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            Google Maps API 設定
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-white" />
-            <span className="ml-2 text-white">載入中...</span>
-          </div>
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-white mr-2" />
+          <span className="text-white">載入中...</span>
         </CardContent>
       </Card>
     );
@@ -131,34 +122,30 @@ const GoogleMapsApiKeySettings = () => {
 
   return (
     <Card className="backdrop-blur-xl bg-white/25 border border-white/30 rounded-2xl shadow-lg">
-      <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-white flex items-center gap-3 text-lg">
           <MapPin className="h-5 w-5" />
           Google Maps API 設定
         </CardTitle>
-        <p className="text-white/80 text-sm">
-          設定 Google Maps API 金鑰以提升地址轉換準確性
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* API 金鑰狀態 */}
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-white/10">
+        <div className="flex items-center gap-2 mt-2">
           {hasApiKey ? (
             <>
               <CheckCircle2 className="h-4 w-4 text-green-400" />
-              <span className="text-green-100 text-sm">已設定 Google Maps API 金鑰</span>
+              <span className="text-green-100 text-sm">已設定 API 金鑰</span>
             </>
           ) : (
             <>
               <AlertCircle className="h-4 w-4 text-yellow-400" />
-              <span className="text-yellow-100 text-sm">未設定 API 金鑰，使用預設服務</span>
+              <span className="text-yellow-100 text-sm">未設定 API 金鑰</span>
             </>
           )}
         </div>
-
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
         {/* API 金鑰輸入 */}
         <div className="space-y-2">
-          <Label htmlFor="google-maps-api-key" className="text-white">
+          <Label htmlFor="google-maps-api-key" className="text-white font-medium">
             Google Maps API 金鑰
           </Label>
           <div className="relative">
@@ -196,10 +183,7 @@ const GoogleMapsApiKeySettings = () => {
                 儲存中...
               </>
             ) : (
-              <>
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                儲存設定
-              </>
+              '儲存設定'
             )}
           </Button>
           
@@ -208,34 +192,24 @@ const GoogleMapsApiKeySettings = () => {
               onClick={handleClear}
               disabled={loading}
               variant="outline"
-              className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+              className="bg-white/20 border-white/30 text-white hover:bg-white/30"
             >
               清除
             </Button>
           )}
         </div>
 
-        {/* 說明資訊 */}
-        <div className="space-y-3 p-4 bg-white/10 rounded-lg border border-white/20">
-          <div className="text-white/90 font-medium text-sm">功能說明：</div>
-          <ul className="text-white/80 text-xs space-y-1">
-            <li>• 設定後將優先使用 Google Maps 進行地址轉換</li>
-            <li>• 大幅提升台灣地址的轉換準確性</li>
-            <li>• 支援中文地址格式辨識</li>
-            <li>• 未設定時使用 Nominatim 作為備用服務</li>
-          </ul>
-          
-          <div className="pt-2 border-t border-white/20">
-            <Button
-              variant="link"
-              size="sm"
-              className="text-white/80 hover:text-white p-0 h-auto"
-              onClick={() => window.open('https://developers.google.com/maps/documentation/geocoding/get-api-key', '_blank')}
-            >
-              <ExternalLink className="h-3 w-3 mr-1" />
-              如何取得 Google Maps API 金鑰
-            </Button>
-          </div>
+        {/* 取得 API 金鑰連結 */}
+        <div className="pt-2 border-t border-white/20">
+          <Button
+            variant="link"
+            size="sm"
+            className="text-white/80 hover:text-white p-0 h-auto text-sm"
+            onClick={() => window.open('https://developers.google.com/maps/documentation/geocoding/get-api-key', '_blank')}
+          >
+            <ExternalLink className="h-3 w-3 mr-1" />
+            如何取得 Google Maps API 金鑰
+          </Button>
         </div>
       </CardContent>
     </Card>

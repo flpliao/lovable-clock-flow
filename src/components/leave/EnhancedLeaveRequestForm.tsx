@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Form } from '@/components/ui/form';
 import { LeaveDateSelector } from '@/components/leave/LeaveDateSelector';
 import { LeaveTypeSelector } from '@/components/leave/LeaveTypeSelector';
@@ -33,21 +33,29 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
   const { loadAnnualLeaveBalance, initializeAnnualLeaveBalance } = useSupabaseLeaveManagement();
   const [balanceData, setBalanceData] = React.useState<any>(null);
   const [balanceLoading, setBalanceLoading] = React.useState(true);
+  const [balanceLoadAttempted, setBalanceLoadAttempted] = React.useState(false);
 
-  // 載入年假餘額資料
+  // Memoize the user ID to prevent unnecessary effect triggers
+  const currentUserId = useMemo(() => currentUser?.id, [currentUser?.id]);
+
+  // Optimized balance loading with proper dependency management
   React.useEffect(() => {
+    if (!currentUserId || balanceLoadAttempted) return;
+    
     const loadBalance = async () => {
-      if (!currentUser) return;
-      
       setBalanceLoading(true);
+      setBalanceLoadAttempted(true);
+      
       try {
-        // 先嘗試載入現有餘額
-        let balanceData = await loadAnnualLeaveBalance(currentUser.id);
+        console.log(`Loading annual leave balance for user: ${currentUserId}`);
         
-        // 如果沒有餘額記錄，先初始化
+        // Try to load existing balance
+        let balanceData = await loadAnnualLeaveBalance(currentUserId);
+        
+        // If no balance record exists, initialize it
         if (!balanceData) {
-          await initializeAnnualLeaveBalance(currentUser.id);
-          balanceData = await loadAnnualLeaveBalance(currentUser.id);
+          await initializeAnnualLeaveBalance(currentUserId);
+          balanceData = await loadAnnualLeaveBalance(currentUserId);
         }
         
         setBalanceData(balanceData);
@@ -59,7 +67,7 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
     };
     
     loadBalance();
-  }, [currentUser, loadAnnualLeaveBalance, initializeAnnualLeaveBalance]);
+  }, [currentUserId, loadAnnualLeaveBalance, initializeAnnualLeaveBalance, balanceLoadAttempted]);
 
   return (
     <div className="space-y-6">
@@ -72,7 +80,7 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
         </p>
       </div>
 
-      {/* 特別休假餘額卡片 */}
+      {/* Annual Leave Balance Card */}
       <AnnualLeaveBalanceCard 
         currentUser={currentUser}
         balanceData={balanceData}
@@ -81,10 +89,10 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          {/* 員工資訊區塊 */}
+          {/* Employee Information Section */}
           <EmployeeInfoSection currentUser={currentUser} />
           
-          {/* 日期選擇區塊 */}
+          {/* Date Selection Section */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
             <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假日期</h3>
             <LeaveDateSelector 
@@ -93,7 +101,7 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
             />
           </div>
           
-          {/* 請假類型選擇 */}
+          {/* Leave Type Selection */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
             <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假類型</h3>
             <LeaveTypeSelector 
@@ -102,7 +110,7 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
             />
           </div>
           
-          {/* 請假詳情 */}
+          {/* Leave Details */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
             <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假詳情</h3>
             <LeaveFormDetails 
@@ -111,19 +119,19 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
             />
           </div>
 
-          {/* 驗證結果顯示 */}
+          {/* Validation Results */}
           <ValidationResultsSection 
             isValidating={isValidating}
             validationResult={validationResult}
           />
           
-          {/* 審核流程 */}
+          {/* Approval Workflow */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
             <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">審核流程</h3>
             <LeaveApprovalWorkflow approvers={approvers} />
           </div>
 
-          {/* 提交按鈕 */}
+          {/* Submit Section */}
           <FormSubmitSection 
             canSubmit={canSubmit}
             isSubmitting={isSubmitting}

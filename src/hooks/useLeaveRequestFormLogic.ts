@@ -17,6 +17,7 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
   const [isValidating, setIsValidating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const validationTimeoutRef = useRef<NodeJS.Timeout>();
+  const lastValidationKeyRef = useRef<string>('');
   
   // Memoize approvers to prevent unnecessary recalculations
   const approvers = useMemo(() => getApprovers(), []);
@@ -30,7 +31,7 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
 
   const watchedValues = form.watch();
   
-  // Memoize mock leave usage data to prevent recreating on every render
+  // Stable mock leave usage data
   const mockLeaveUsage: LeaveUsage = useMemo(() => ({
     annualUsed: 5,
     personalUsed: 2,
@@ -45,7 +46,7 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
     }
   }), []);
 
-  // Calculate hours with useMemo to prevent unnecessary recalculations
+  // Stable calculation with proper dependencies
   const calculatedHours = useMemo(() => {
     if (watchedValues.start_date && watchedValues.end_date) {
       return LeaveValidationService.calculateLeaveHours(
@@ -56,27 +57,27 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
     return 0;
   }, [watchedValues.start_date, watchedValues.end_date]);
 
-  // Memoize validation dependencies to prevent unnecessary re-validation
+  // Create a stable validation key to prevent unnecessary validations
   const validationKey = useMemo(() => {
     if (!currentUser || !watchedValues.start_date || !watchedValues.end_date || !watchedValues.leave_type) {
-      return null;
+      return '';
     }
-    return {
+    return JSON.stringify({
       userId: currentUser.id,
       startDate: watchedValues.start_date.toISOString(),
       endDate: watchedValues.end_date.toISOString(),
       leaveType: watchedValues.leave_type,
       reason: watchedValues.reason
-    };
+    });
   }, [currentUser?.id, watchedValues.start_date, watchedValues.end_date, watchedValues.leave_type, watchedValues.reason]);
 
-  // Stable validation function with useCallback
+  // Optimized validation function
   const validateForm = useCallback(async () => {
-    if (!validationKey) {
-      setValidationResult(null);
+    if (!validationKey || validationKey === lastValidationKeyRef.current) {
       return;
     }
 
+    lastValidationKeyRef.current = validationKey;
     setIsValidating(true);
     
     try {
@@ -95,32 +96,27 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
     }
   }, [validationKey, watchedValues, currentUser, mockLeaveUsage]);
 
-  // Debounced validation with proper cleanup
+  // Optimized debounced validation
   React.useEffect(() => {
+    if (!validationKey) {
+      setValidationResult(null);
+      return;
+    }
+
     // Clear existing timeout
     if (validationTimeoutRef.current) {
       clearTimeout(validationTimeoutRef.current);
     }
 
-    // Set new timeout
-    validationTimeoutRef.current = setTimeout(validateForm, 500);
+    // Set new timeout only if validation key changed
+    validationTimeoutRef.current = setTimeout(validateForm, 800);
 
-    // Cleanup function
     return () => {
       if (validationTimeoutRef.current) {
         clearTimeout(validationTimeoutRef.current);
       }
     };
-  }, [validateForm]);
-
-  // Cleanup timeout on unmount
-  React.useEffect(() => {
-    return () => {
-      if (validationTimeoutRef.current) {
-        clearTimeout(validationTimeoutRef.current);
-      }
-    };
-  }, []);
+  }, [validationKey, validateForm]);
 
   const handleSubmit = useCallback(async (data: LeaveFormValues) => {
     if (!currentUser) return;
@@ -183,6 +179,7 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
         
         form.reset();
         setValidationResult(null);
+        lastValidationKeyRef.current = '';
       }
     } catch (error) {
       console.error('Submit error:', error);

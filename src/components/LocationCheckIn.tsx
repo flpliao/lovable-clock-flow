@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useCheckIn } from '@/hooks/useCheckIn';
 import { useUser } from '@/contexts/UserContext';
@@ -14,11 +13,13 @@ import LocationInfo from '@/components/check-in/LocationInfo';
 import CheckInMethodSelector from '@/components/check-in/CheckInMethodSelector';
 import CheckInWarning from '@/components/check-in/CheckInWarning';
 import CheckInStatusDisplay from '@/components/check-in/CheckInStatusDisplay';
-
 const LocationCheckIn = () => {
-  const { currentUser } = useUser();
-  const { departments } = useDepartmentManagementContext();
-  
+  const {
+    currentUser
+  } = useUser();
+  const {
+    departments
+  } = useDepartmentManagementContext();
   const {
     loading,
     error,
@@ -33,29 +34,24 @@ const LocationCheckIn = () => {
 
   // Early return if no user
   if (!currentUser) {
-    return (
-      <div className="flex justify-center items-center w-full min-h-[250px]">
+    return <div className="flex justify-center items-center w-full min-h-[250px]">
         <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-6 shadow-lg max-w-md w-full mx-4">
           <div className="text-center text-white/80">
             請先登入以使用打卡功能
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
   const safeCheckIn = todayRecords?.checkIn;
   const safeCheckOut = todayRecords?.checkOut;
 
   // 如果已完成今日打卡，顯示完成狀態
   if (safeCheckIn && safeCheckOut) {
-    return (
-      <div className="flex justify-center items-center w-full min-h-[250px]">
+    return <div className="flex justify-center items-center w-full min-h-[250px]">
         <div className="max-w-md w-full mx-4">
           <CheckInCompletedStatus checkIn={safeCheckIn} checkOut={safeCheckOut} />
         </div>
-      </div>
-    );
+      </div>;
   }
 
   // 找出員工所屬部門
@@ -64,7 +60,7 @@ const LocationCheckIn = () => {
 
   // 判斷是否可以進行位置打卡
   const canUseLocationCheckIn = currentUser.department ? isDepartmentGPSReady : true; // 無部門則可使用總公司
-  
+
   const handleCheckIn = checkInMethod === 'location' ? onLocationCheckIn : onIpCheckIn;
 
   // 取得比對位置資訊
@@ -74,50 +70,23 @@ const LocationCheckIn = () => {
     }
     return employeeDepartment?.name || currentUser.department;
   };
-
   const locationName = getLocationName();
-
-  return (
-    <div className="flex justify-center items-center w-full min-h-[250px]">
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-6 shadow-lg space-y-4 max-w-md w-full mx-4">
+  return <div className="flex justify-center items-center w-full min-h-[250px]">
+      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-6 shadow-lg space-y-4 max-w-md w-full mx-4 py-[30px]">
         <LocationCheckInHeader />
 
         <CheckInStatusInfo checkIn={safeCheckIn} checkOut={safeCheckOut} />
 
-        <LocationInfo 
-          currentUser={currentUser} 
-          employeeDepartment={employeeDepartment} 
-        />
+        <LocationInfo currentUser={currentUser} employeeDepartment={employeeDepartment} />
 
-        <CheckInMethodSelector
-          checkInMethod={checkInMethod}
-          setCheckInMethod={setCheckInMethod}
-          canUseLocationCheckIn={canUseLocationCheckIn}
-        />
+        <CheckInMethodSelector checkInMethod={checkInMethod} setCheckInMethod={setCheckInMethod} canUseLocationCheckIn={canUseLocationCheckIn} />
 
-        <CheckInWarning
-          checkInMethod={checkInMethod}
-          canUseLocationCheckIn={canUseLocationCheckIn}
-          employeeDepartment={employeeDepartment}
-        />
+        <CheckInWarning checkInMethod={checkInMethod} canUseLocationCheckIn={canUseLocationCheckIn} employeeDepartment={employeeDepartment} />
 
-        <CheckInButton
-          actionType={actionType}
-          loading={loading}
-          onCheckIn={handleCheckIn}
-          disabled={checkInMethod === 'location' && !canUseLocationCheckIn}
-        />
+        <CheckInButton actionType={actionType} loading={loading} onCheckIn={handleCheckIn} disabled={checkInMethod === 'location' && !canUseLocationCheckIn} />
 
-        <CheckInStatusDisplay
-          checkInMethod={checkInMethod}
-          distance={distance}
-          error={error}
-          loading={loading}
-          locationName={locationName}
-        />
+        <CheckInStatusDisplay checkInMethod={checkInMethod} distance={distance} error={error} loading={loading} locationName={locationName} />
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default LocationCheckIn;

@@ -81,8 +81,8 @@ const FeatureCards = ({
     </div>;
   return <div className="space-y-6">
       {/* 主要功能區 */}
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-6 text-center drop-shadow-lg py-[10px]">主要功能</h2>
+      <div className="px-[20px] py-[40px]">
+        <h2 className="text-2xl font-bold text-white mb-6 text-center drop-shadow-lg py-0">主要功能</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {mainFeatures.map((feature, index) => <FeatureCard key={index} feature={feature} />)}
         </div>

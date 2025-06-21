@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { useScheduleDragDrop } from '../hooks/useScheduleDragDrop';
 import { useScheduleDialogs } from '../hooks/useScheduleDialogs';
+import { useJuneExtendedCalendar } from '../hooks/useJuneExtendedCalendar';
 import MonthlyCalendarGrid from './MonthlyCalendarGrid';
 import EditScheduleDialog from './EditScheduleDialog';
 import DayScheduleDialog from './DayScheduleDialog';
@@ -58,6 +59,8 @@ const MonthlyScheduleView = ({
     closeDayDialog
   } = useScheduleDialogs();
 
+  const { isJuneExtended, extendedEndDate } = useJuneExtendedCalendar(selectedDate);
+
   const handleUpdateSchedule = async (scheduleId: string, updates: any) => {
     await onUpdateSchedule(scheduleId, updates);
   };
@@ -66,16 +69,29 @@ const MonthlyScheduleView = ({
     await onDeleteSchedule(scheduleId);
   };
 
+  const getDisplayTitle = () => {
+    const baseTitle = format(selectedDate, 'yyyy年MM月', { locale: zhTW });
+    if (isJuneExtended) {
+      return `${baseTitle} - ${format(extendedEndDate, 'MM月dd日', { locale: zhTW })}`;
+    }
+    return baseTitle;
+  };
+
   return (
     <>
       <Card>
         <CardHeader>
           <CardTitle className="text-base sm:text-lg">
-            {format(selectedDate, 'yyyy年MM月', { locale: zhTW })} 排班總覽
+            {getDisplayTitle()} 排班總覽
             {selectedStaffId && (
               <span className="ml-2 text-sm sm:text-base text-gray-600">
                 - {getUserName(selectedStaffId)}
               </span>
+            )}
+            {isJuneExtended && (
+              <div className="mt-1 text-sm text-blue-600">
+                ✨ 六月完整週顯示（含七月初）
+              </div>
             )}
           </CardTitle>
         </CardHeader>

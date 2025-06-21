@@ -11,6 +11,7 @@ interface MonthSelectorCardProps {
   onMonthChange: (month: number) => void;
   generateYears: () => number[];
   generateMonths: () => Array<{ value: number; label: string }>;
+  onOverviewDateChange?: (date: Date) => void; // 新增：用於更新排班總覽的日期
 }
 
 const MonthSelectorCard = ({
@@ -19,8 +20,28 @@ const MonthSelectorCard = ({
   onYearChange,
   onMonthChange,
   generateYears,
-  generateMonths
+  generateMonths,
+  onOverviewDateChange
 }: MonthSelectorCardProps) => {
+  
+  const handleYearChange = (year: number) => {
+    onYearChange(year);
+    // 同時更新排班總覽的日期
+    if (onOverviewDateChange) {
+      const newDate = new Date(year, selectedMonth - 1, 1);
+      onOverviewDateChange(newDate);
+    }
+  };
+
+  const handleMonthChange = (month: number) => {
+    onMonthChange(month);
+    // 同時更新排班總覽的日期  
+    if (onOverviewDateChange) {
+      const newDate = new Date(selectedYear, month - 1, 1);
+      onOverviewDateChange(newDate);
+    }
+  };
+
   return (
     <Card className="bg-white/90 backdrop-blur-xl border border-white/30 shadow-xl">
       <CardHeader className="pb-3">
@@ -31,7 +52,7 @@ const MonthSelectorCard = ({
       </CardHeader>
       <CardContent>
         <div className="flex gap-2">
-          <Select value={selectedYear.toString()} onValueChange={(value) => onYearChange(parseInt(value))}>
+          <Select value={selectedYear.toString()} onValueChange={(value) => handleYearChange(parseInt(value))}>
             <SelectTrigger className="flex-1">
               <SelectValue />
             </SelectTrigger>
@@ -44,7 +65,7 @@ const MonthSelectorCard = ({
             </SelectContent>
           </Select>
           
-          <Select value={selectedMonth.toString()} onValueChange={(value) => onMonthChange(parseInt(value))}>
+          <Select value={selectedMonth.toString()} onValueChange={(value) => handleMonthChange(parseInt(value))}>
             <SelectTrigger className="flex-1">
               <SelectValue />
             </SelectTrigger>

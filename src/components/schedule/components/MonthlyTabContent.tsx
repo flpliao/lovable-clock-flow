@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Calendar } from 'lucide-react';
 import MonthlyScheduleView from './MonthlyScheduleView';
@@ -41,6 +41,14 @@ const MonthlyTabContent = ({
   onUpdateSchedule,
   onDeleteSchedule
 }: MonthlyTabContentProps) => {
+  // 新增：排班總覽的獨立日期狀態
+  const [overviewDate, setOverviewDate] = useState<Date>(selectedDate);
+
+  // 當外部 selectedDate 改變時，同步更新 overviewDate
+  useEffect(() => {
+    setOverviewDate(selectedDate);
+  }, [selectedDate]);
+
   const mockTimeSlots = [
     { id: '1', name: '早班', start_time: '08:00', end_time: '16:00' },
     { id: '2', name: '中班', start_time: '16:00', end_time: '24:00' },
@@ -67,12 +75,13 @@ const MonthlyTabContent = ({
         onMonthChange={onMonthChange}
         generateYears={generateYears}
         generateMonths={generateMonths}
+        onOverviewDateChange={setOverviewDate}
       />
 
       {/* 月度排班視圖 */}
       <div className="bg-white/90 backdrop-blur-xl border border-white/30 shadow-xl rounded-3xl overflow-hidden">
         <MonthlyScheduleView
-          selectedDate={selectedDate}
+          selectedDate={overviewDate}
           schedules={schedules}
           getUserName={getUserName}
           selectedStaffId={selectedStaffId}

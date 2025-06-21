@@ -2,21 +2,16 @@
 import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle } from 'lucide-react';
-import { TimeSlotIcon } from '../utils/timeSlotIcons';
+import { GripVertical, AlertTriangle } from 'lucide-react';
 
 interface DraggableScheduleCardProps {
-  schedule: {
-    id: string;
-    userId: string;
-    timeSlot: string;
-    workDate: string;
-  };
+  schedule: any;
   getUserName: (userId: string) => string;
   getUserRelation: (userId: string) => string;
   hasConflict: boolean;
-  isSelected?: boolean;
   onClick: () => void;
+  isSelected?: boolean;
+  isInExtendedMonth?: boolean; // 新增：是否在延伸月份中
 }
 
 const DraggableScheduleCard = ({
@@ -24,8 +19,9 @@ const DraggableScheduleCard = ({
   getUserName,
   getUserRelation,
   hasConflict,
-  isSelected,
-  onClick
+  onClick,
+  isSelected = false,
+  isInExtendedMonth = false
 }: DraggableScheduleCardProps) => {
   const {
     attributes,
@@ -35,63 +31,59 @@ const DraggableScheduleCard = ({
     isDragging,
   } = useDraggable({
     id: schedule.id,
-    data: schedule,
+    data: {
+      type: 'schedule',
+      schedule,
+    },
   });
 
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-    zIndex: isDragging ? 1000 : 'auto',
-    opacity: isDragging ? 0.8 : 1,
   } : undefined;
 
-  const getTimeSlotColor = (timeSlot: string) => {
-    if (timeSlot.includes('早班') || timeSlot.includes('Morning')) return 'bg-yellow-100 border-yellow-300 text-yellow-800';
-    if (timeSlot.includes('中班') || timeSlot.includes('Afternoon')) return 'bg-blue-100 border-blue-300 text-blue-800';
-    if (timeSlot.includes('晚班') || timeSlot.includes('Evening')) return 'bg-purple-100 border-purple-300 text-purple-800';
-    if (timeSlot.includes('夜班') || timeSlot.includes('Night')) return 'bg-gray-100 border-gray-300 text-gray-800';
-    return 'bg-green-100 border-green-300 text-green-800';
+  // 根據不同狀態調整樣式
+  const getCardClasses = () => {
+    let baseClasses = "text-xs p-1 rounded cursor-pointer transition-all duration-200 flex items-center gap-1";
+    
+    if (isInExtendedMonth) {
+      // 延伸月份中的排班使用較淺的顏色
+      return `${baseClasses} bg-gray-200 text-gray-600 border border-gray-300`;
+    }
+    
+    if (hasConflict) {
+      return `${baseClasses} bg-red-100 text-red-800 border border-red-300`;
+    }
+    
+    if (isSelected) {
+      return `${baseClasses} bg-blue-200 text-blue-800 border-2 border-blue-400`;
+    }
+    
+    return `${baseClasses} bg-blue-100 text-blue-800 border border-blue-300 hover:bg-blue-200`;
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      {...listeners}
-      {...attributes}
+      className={`${getCardClasses()} ${isDragging ? 'opacity-50 shadow-lg z-10' : ''}`}
       onClick={onClick}
-      className={`
-        relative cursor-move p-2 rounded-lg border transition-all duration-200
-        ${getTimeSlotColor(schedule.timeSlot)}
-        ${isDragging ? 'shadow-lg scale-105' : 'hover:shadow-md'}
-        ${isSelected ? 'ring-2 ring-blue-500' : ''}
-        touch-manipulation
-      `}
+      {...attributes}
+      {...listeners}
     >
+      <GripVertical className="h-3 w-3 text-gray-400 flex-shrink-0" />
+      
+      <div className="flex-1 min-w-0">
+        <div className="truncate font-medium">
+          {getUserName(schedule.userId)}
+        </div>
+        <div className="truncate text-xs opacity-75">
+          {schedule.timeSlot}
+        </div>
+      </div>
+      
       {hasConflict && (
-        <div className="absolute -top-1 -right-1">
-          <AlertTriangle className="h-4 w-4 text-red-500 fill-red-100" />
-        </div>
+        <AlertTriangle className="h-3 w-3 text-red-500 flex-shrink-0" />
       )}
-      
-      <div className="flex items-center gap-2">
-        <div className="flex-shrink-0">
-          <TimeSlotIcon timeSlotName={schedule.timeSlot} size="sm" />
-        </div>
-        
-        <div className="min-w-0 flex-1">
-          <div className="text-xs font-medium truncate">
-            {getUserName(schedule.userId)}
-          </div>
-          <div className="text-xs opacity-80 truncate sm:hidden">
-            {schedule.timeSlot}
-          </div>
-        </div>
-      </div>
-      
-      {/* 桌面版顯示班別名稱 */}
-      <div className="hidden sm:block text-xs mt-1 opacity-80">
-        {schedule.timeSlot}
-      </div>
     </div>
   );
 };

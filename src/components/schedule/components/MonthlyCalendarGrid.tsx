@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 import { DndContext, DragOverlay, closestCenter } from '@dnd-kit/core';
 import DroppableCalendarCell from './DroppableCalendarCell';
 import DraggableScheduleCard from './DraggableScheduleCard';
+import { useJuneExtendedCalendar } from '../hooks/useJuneExtendedCalendar';
 
 interface MonthlyCalendarGridProps {
   selectedDate: Date;
@@ -32,24 +32,7 @@ const MonthlyCalendarGrid = ({
   handleShowAllSchedules,
   activeSchedule
 }: MonthlyCalendarGridProps) => {
-  const monthStart = startOfMonth(selectedDate);
-  const monthEnd = endOfMonth(selectedDate);
-  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
-
-  // Pad the beginning of the month to align with Sunday as first day
-  const startPadding = getDay(monthStart);
-  const paddingDays = Array(startPadding).fill(null);
-  
-  // Create calendar day data
-  const calendarDays = [
-    ...paddingDays,
-    ...daysInMonth.map(date => ({
-      date,
-      label: format(date, 'd'),
-      lunarDay: '', // Can add lunar calendar logic here
-      isWeekend: getDay(date) === 0 || getDay(date) === 6
-    }))
-  ];
+  const { calendarDays, isJuneExtended } = useJuneExtendedCalendar(selectedDate);
 
   return (
     <DndContext
@@ -83,9 +66,17 @@ const MonthlyCalendarGrid = ({
             onScheduleClick={handleScheduleClick}
             onShowAllSchedules={handleShowAllSchedules}
             selectedScheduleId={selectedSchedule?.id}
+            isExtendedMonth={day?.isExtended} // 傳遞是否為延伸月份的標記
           />
         ))}
       </div>
+
+      {/* 六月延伸提示 */}
+      {isJuneExtended && (
+        <div className="mt-2 text-xs text-gray-500 text-center">
+          * 六月顯示已延伸至完整週，包含七月初部分日期
+        </div>
+      )}
 
       {/* Drag overlay */}
       <DragOverlay>

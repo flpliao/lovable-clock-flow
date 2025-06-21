@@ -1,30 +1,20 @@
 
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { format, getDay } from 'date-fns';
+import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
 import DraggableScheduleCard from './DraggableScheduleCard';
 
 interface DroppableCalendarCellProps {
-  day: {
-    date: Date;
-    label: string;
-    lunarDay?: string;
-    isWeekend: boolean;
-  } | null;
-  schedules: Array<{
-    id: string;
-    userId: string;
-    workDate: string;
-    timeSlot: string;
-    startTime: string;
-    endTime: string;
-  }>;
+  day: any;
+  schedules: any[];
   getUserName: (userId: string) => string;
   getUserRelation: (userId: string) => string;
   getScheduleConflicts: (userId: string, date: string) => boolean;
   onScheduleClick: (schedule: any) => void;
   onShowAllSchedules: (date: Date, schedules: any[]) => void;
   selectedScheduleId?: string;
+  isExtendedMonth?: boolean; // 新增：是否為延伸月份
 }
 
 const DroppableCalendarCell = ({
@@ -35,70 +25,79 @@ const DroppableCalendarCell = ({
   getScheduleConflicts,
   onScheduleClick,
   onShowAllSchedules,
-  selectedScheduleId
+  selectedScheduleId,
+  isExtendedMonth = false
 }: DroppableCalendarCellProps) => {
-  const { setNodeRef, isOver } = useDroppable({
-    id: day ? format(day.date, 'yyyy-MM-dd') : 'empty',
-    data: { date: day?.date },
-    disabled: !day,
-  });
-
   if (!day) {
-    return <div className="h-16 sm:h-24"></div>;
+    return <div className="h-24 border-b border-r border-gray-100"></div>;
   }
 
-  const daySchedules = schedules.filter(s => s.workDate === format(day.date, 'yyyy-MM-dd'));
-  const isWeekend = getDay(day.date) === 0 || getDay(day.date) === 6;
-  const maxDisplay = 3;
-  const displaySchedules = daySchedules.slice(0, maxDisplay);
-  const remainingCount = daySchedules.length - maxDisplay;
+  const dateString = format(day.date, 'yyyy-MM-dd');
+  const daySchedules = schedules.filter(schedule => schedule.workDate === dateString);
+  
+  const { setNodeRef, isOver } = useDroppable({
+    id: dateString,
+    data: {
+      type: 'calendar-cell',
+      date: dateString
+    }
+  });
+
+  const isToday = format(new Date(), 'yyyy-MM-dd') === dateString;
+  const displayCount = 2; // 顯示前兩個排班
+  const remainingCount = daySchedules.length - displayCount;
+
+  // 根據是否為延伸月份調整樣式
+  const cellBaseClasses = "h-24 border-b border-r border-gray-100 p-1 transition-colors relative";
+  const cellClasses = isExtendedMonth 
+    ? `${cellBaseClasses} bg-gray-50` // 延伸月份使用灰色背景
+    : `${cellBaseClasses} ${isOver ? 'bg-blue-50' : 'hover:bg-gray-50'}`;
+
+  const dateClasses = isExtendedMonth
+    ? "text-xs font-medium text-gray-400" // 延伸月份日期使用淺色
+    : `text-xs font-medium ${day.isWeekend ? 'text-red-500' : 'text-gray-700'}`;
 
   return (
-    <div
-      ref={setNodeRef}
-      className={`
-        border-r border-b border-gray-50 last:border-r-0 min-h-16 sm:min-h-24 p-1
-        transition-colors duration-200
-        ${isWeekend ? 'bg-red-50' : 'bg-white'}
-        ${isOver ? 'bg-blue-50 ring-2 ring-blue-300' : ''}
-      `}
-    >
+    <div ref={setNodeRef} className={cellClasses}>
       {/* 日期標題 */}
-      <div className={`text-xs sm:text-sm font-medium mb-1 ${
-        isWeekend ? 'text-red-600' : 'text-gray-900'
-      }`}>
-        {day.label}
+      <div className="flex items-center justify-between mb-1">
+        <span className={dateClasses}>
+          {day.label}
+          {isExtendedMonth && (
+            <span className="text-xs text-gray-400 ml-1">
+              ({format(day.date, 'M')}月)
+            </span>
+          )}
+        </span>
+        {isToday && (
+          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+        )}
       </div>
 
-      {/* 農曆日期 */}
-      {day.lunarDay && (
-        <div className="text-[10px] sm:text-xs text-gray-500 mb-1">
-          {day.lunarDay}
-        </div>
-      )}
-
-      {/* 排班列表 */}
+      {/* 排班卡片 */}
       <div className="space-y-1">
-        {displaySchedules.map((schedule) => (
+        {daySchedules.slice(0, displayCount).map((schedule) => (
           <DraggableScheduleCard
             key={schedule.id}
             schedule={schedule}
             getUserName={getUserName}
             getUserRelation={getUserRelation}
-            hasConflict={getScheduleConflicts(schedule.userId, schedule.workDate)}
-            isSelected={selectedScheduleId === schedule.id}
+            hasConflict={getScheduleConflicts(schedule.userId, dateString)}
             onClick={() => onScheduleClick(schedule)}
+            isSelected={schedule.id === selectedScheduleId}
+            isInExtendedMonth={isExtendedMonth} // 傳遞延伸月份標記
           />
         ))}
         
-        {/* 顯示更多指示器 */}
+        {/* 顯示剩余排班數量 */}
         {remainingCount > 0 && (
-          <div 
-            className="text-xs text-gray-600 bg-gray-100 rounded px-2 py-1 text-center cursor-pointer hover:bg-gray-200 transition-colors"
+          <Badge 
+            variant="secondary" 
+            className="text-xs cursor-pointer hover:bg-gray-200 w-full justify-center"
             onClick={() => onShowAllSchedules(day.date, daySchedules)}
           >
             +{remainingCount} 更多
-          </div>
+          </Badge>
         )}
       </div>
     </div>

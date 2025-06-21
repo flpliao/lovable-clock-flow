@@ -96,6 +96,19 @@ export const SchedulingProvider: React.FC<SchedulingProviderProps> = ({ children
       return;
     }
 
+    // 檢查是否有重複的排班記錄（同一人同一天）
+    const duplicateCheck = newSchedules.some(newSchedule => {
+      return schedules.some(existingSchedule => 
+        existingSchedule.userId === newSchedule.userId && 
+        existingSchedule.workDate === newSchedule.workDate
+      );
+    });
+
+    if (duplicateCheck) {
+      setError('同一員工在同一天已有排班記錄，請檢查後重新安排');
+      throw new Error('同一員工在同一天已有排班記錄，請檢查後重新安排');
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -142,6 +155,20 @@ export const SchedulingProvider: React.FC<SchedulingProviderProps> = ({ children
   };
 
   const updateSchedule = async (id: string, updates: Partial<Omit<Schedule, 'id'>>) => {
+    // 檢查更新是否會造成重複排班
+    if (updates.userId && updates.workDate) {
+      const duplicateCheck = schedules.some(existingSchedule => 
+        existingSchedule.id !== id &&
+        existingSchedule.userId === updates.userId && 
+        existingSchedule.workDate === updates.workDate
+      );
+
+      if (duplicateCheck) {
+        setError('該員工在此日期已有排班記錄，無法更新');
+        throw new Error('該員工在此日期已有排班記錄，無法更新');
+      }
+    }
+
     try {
       setLoading(true);
       setError(null);

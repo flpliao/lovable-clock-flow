@@ -1,16 +1,16 @@
 
 import React from 'react';
 import { TabsContent } from '@/components/ui/tabs';
-import MonthlyTabContent from './MonthlyTabContent';
-import DailyTabContent from './DailyTabContent';
-import { useScheduleOperationsHandlers } from '../hooks/useScheduleOperationsHandlers';
+import CalendarViewSection from './CalendarViewSection';
+import ListViewSection from './ListViewSection';
+import ScheduleListView from './ScheduleListView';
 
 interface ScheduleTabsContentProps {
   viewType: string;
   availableStaff: any[];
-  selectedStaffId?: string;
+  selectedStaffId: string;
   selectedDate: Date;
-  onStaffChange: (staffId: string | undefined) => void;
+  onStaffChange: (staffId: string) => void;
   onDateChange: (date: Date) => void;
   getUserRelation: (userId: string) => string;
   schedules: any[];
@@ -24,57 +24,84 @@ interface ScheduleTabsContentProps {
   onMonthChange: (month: number) => void;
   onDateClick: (day: any) => void;
   generateYears: () => number[];
-  generateMonths: () => Array<{ value: number; label: string }>;
+  generateMonths: () => { value: number; label: string }[];
   shiftsForSelectedDate: any[];
   canDeleteSchedule: (schedule: any) => boolean;
-  onRemoveSchedule: (id: string) => void;
+  onRemoveSchedule: (scheduleId: string) => Promise<void>;
   currentUser: any;
   setSelectedDateNav: (date: Date) => void;
   getScheduleCountForDate: (date: Date) => number;
 }
 
-const ScheduleTabsContent = (props: ScheduleTabsContentProps) => {
-  const { handleUpdateSchedule, handleDeleteSchedule } = useScheduleOperationsHandlers();
-
+const ScheduleTabsContent = ({
+  viewType,
+  availableStaff,
+  selectedStaffId,
+  selectedDate,
+  onStaffChange,
+  onDateChange,
+  getUserRelation,
+  schedules,
+  getUserName,
+  viewableStaffIds,
+  selectedYear,
+  selectedMonth,
+  selectedDateNav,
+  daysInMonth,
+  onYearChange,
+  onMonthChange,
+  onDateClick,
+  generateYears,
+  generateMonths,
+  shiftsForSelectedDate,
+  canDeleteSchedule,
+  onRemoveSchedule,
+  currentUser,
+  setSelectedDateNav,
+  getScheduleCountForDate,
+}: ScheduleTabsContentProps) => {
   return (
     <>
-      <TabsContent value="monthly" className="mt-0">
-        <MonthlyTabContent
-          availableStaff={props.availableStaff}
-          selectedStaffId={props.selectedStaffId}
-          selectedDate={props.selectedDate}
-          onStaffChange={props.onStaffChange}
-          getUserRelation={props.getUserRelation}
-          schedules={props.schedules}
-          getUserName={props.getUserName}
-          selectedYear={props.selectedYear}
-          selectedMonth={props.selectedMonth}
-          onYearChange={props.onYearChange}
-          onMonthChange={props.onMonthChange}
-          generateYears={props.generateYears}
-          generateMonths={props.generateMonths}
-          onUpdateSchedule={handleUpdateSchedule}
-          onDeleteSchedule={handleDeleteSchedule}
+      <TabsContent value="calendar" className="mt-6">
+        <CalendarViewSection
+          selectedYear={selectedYear}
+          selectedMonth={selectedMonth}
+          selectedDate={selectedDateNav}
+          daysInMonth={daysInMonth}
+          onYearChange={onYearChange}
+          onMonthChange={onMonthChange}
+          onDateClick={onDateClick}
+          generateYears={generateYears}
+          generateMonths={generateMonths}
+          shiftsForSelectedDate={shiftsForSelectedDate}
+          canDeleteSchedule={canDeleteSchedule}
+          onRemoveSchedule={onRemoveSchedule}
+          currentUser={currentUser}
+          setSelectedDate={setSelectedDateNav}
+          getScheduleCountForDate={getScheduleCountForDate}
         />
       </TabsContent>
 
-      <TabsContent value="daily" className="mt-0">
-        <DailyTabContent
-          availableStaff={props.availableStaff}
-          selectedStaffId={props.selectedStaffId}
-          selectedDate={props.selectedDate}
-          onStaffChange={props.onStaffChange}
-          onDateChange={props.onDateChange}
-          getUserRelation={props.getUserRelation}
-          schedules={props.schedules}
-          getUserName={props.getUserName}
-          viewableStaffIds={props.viewableStaffIds}
-          selectedYear={props.selectedYear}
-          selectedMonth={props.selectedMonth}
-          onYearChange={props.onYearChange}
-          onMonthChange={props.onMonthChange}
-          generateYears={props.generateYears}
-          generateMonths={props.generateMonths}
+      <TabsContent value="list" className="mt-6">
+        <ScheduleListView
+          schedules={schedules}
+          getUserName={getUserName}
+          canDeleteSchedule={canDeleteSchedule}
+          onRemoveSchedule={onRemoveSchedule}
+        />
+      </TabsContent>
+
+      <TabsContent value="monthly" className="mt-6">
+        <ListViewSection
+          availableStaff={availableStaff}
+          selectedStaffId={selectedStaffId}
+          selectedDate={selectedDate}
+          onStaffChange={onStaffChange}
+          onDateChange={onDateChange}
+          getUserRelation={getUserRelation}
+          schedules={schedules}
+          getUserName={getUserName}
+          viewableStaffIds={viewableStaffIds}
         />
       </TabsContent>
     </>

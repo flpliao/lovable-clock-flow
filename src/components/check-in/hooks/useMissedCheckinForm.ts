@@ -112,11 +112,20 @@ export const useMissedCheckinForm = (onSuccess: () => void) => {
         return;
       }
 
+      const getMissedTypeText = (type: string) => {
+        switch (type) {
+          case 'check_in': return '忘記上班打卡';
+          case 'check_out': return '忘記下班打卡';
+          case 'both': return '忘記上下班打卡';
+          default: return type;
+        }
+      };
+
       // 為每個主管創建通知
       for (const manager of managers) {
         await NotificationDatabaseOperations.addNotification(manager.id, {
-          title: '忘記打卡申請',
-          message: `${currentUser?.name} 申請忘記打卡審核 (${formData.request_date})`,
+          title: '有新的忘記打卡申請待審核',
+          message: `${currentUser?.name} 申請${getMissedTypeText(formData.missed_type)}審核 (${formData.request_date})`,
           type: 'missed_checkin_approval',
           data: {
             missedCheckinRequestId: requestData.id,

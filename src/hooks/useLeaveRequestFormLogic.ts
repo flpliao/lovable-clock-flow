@@ -44,9 +44,15 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
     annualUsed: 5,
     personalUsed: 2,
     sickUsed: 3,
+    menstrualUsed: 2, // 新增生理假使用記錄
     marriageUsed: false,
     paternalUsed: 0,
-    bereavementUsed: {}
+    bereavementUsed: {},
+    monthlyMenstrualUsage: {
+      '2024-01': 1,
+      '2024-02': 1,
+      // 當前月份還沒有使用記錄
+    }
   }), []);
 
   // Debounced validation with useCallback

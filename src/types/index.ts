@@ -5,6 +5,7 @@ export interface User {
   department: string;
   onboard_date: string;
   role?: 'user' | 'admin' | 'manager';
+  gender?: 'male' | 'female'; // 新增性別欄位用於生理假驗證
 }
 
 export interface AnnualLeaveBalance {
@@ -30,7 +31,7 @@ export interface LeaveRequest {
   user_id: string;
   start_date: string;
   end_date: string;
-  leave_type: 'annual' | 'sick' | 'personal' | 'marriage' | 'bereavement' | 'maternity' | 'paternity' | 'parental' | 'occupational' | 'other';
+  leave_type: 'annual' | 'sick' | 'personal' | 'marriage' | 'bereavement' | 'maternity' | 'paternity' | 'parental' | 'occupational' | 'menstrual' | 'other';
   status: 'pending' | 'approved' | 'rejected';
   hours: number;
   reason: string;

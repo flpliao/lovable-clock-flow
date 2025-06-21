@@ -1,7 +1,6 @@
-
 import { LeaveFormValues, getLeaveTypeById, getBereavementDays } from '@/utils/leaveTypes';
 import { LeaveRequest, User } from '@/types';
-import { differenceInYears, format } from 'date-fns';
+import { differenceInYears, format, startOfMonth, endOfMonth, isSameMonth } from 'date-fns';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -13,9 +12,12 @@ export interface LeaveUsage {
   annualUsed: number;
   personalUsed: number;
   sickUsed: number;
+  menstrualUsed: number;
   marriageUsed: boolean;
   paternalUsed: number;
   bereavementUsed: { [relationship: string]: number };
+  // 月度使用記錄
+  monthlyMenstrualUsage: { [monthKey: string]: number };
 }
 
 export class LeaveValidationService {
@@ -91,7 +93,11 @@ export class LeaveValidationService {
         break;
       
       case 'sick':
-        this.validateSickLeave(leaveUsage, requestDays, leaveType, errors, warnings);
+        this.validateSickLeave(formData, currentUser, leaveUsage, requestDays, leaveType, errors, warnings);
+        break;
+      
+      case 'menstrual':
+        this.validateMenstrualLeave(formData, currentUser, leaveUsage, requestDays, errors, warnings);
         break;
       
       case 'marriage':
@@ -171,22 +177,81 @@ export class LeaveValidationService {
     }
   }
 
-  // 病假驗證
+  // 病假驗證 - 更新邏輯
   static validateSickLeave(
+    formData: LeaveFormValues,
+    currentUser: User,
     leaveUsage: LeaveUsage,
     requestDays: number,
     leaveType: any,
     errors: string[],
     warnings: string[]
   ) {
-    const totalDays = leaveUsage.sickUsed + requestDays;
+    // 計算病假和生理假的合併使用天數
+    const combinedUsage = leaveUsage.sickUsed + leaveUsage.menstrualUsed;
+    const totalDays = combinedUsage + requestDays;
     
     if (totalDays > 30) {
-      warnings.push('病假已達30日，依法可不給薪');
+      errors.push(`病假/生理假已達上限30日，已使用 ${combinedUsage} 日，申請 ${requestDays} 日`);
+    }
+    
+    if (combinedUsage >= 30) {
+      errors.push('病假/生理假已達上限30日，無法再申請');
+    }
+    
+    if (totalDays > 25) {
+      warnings.push(`病假/生理假使用量接近上限，已使用 ${combinedUsage} 日`);
     }
     
     if (totalDays > 20) {
-      warnings.push(`病假使用量較高，已使用 ${leaveUsage.sickUsed} 天`);
+      warnings.push('病假使用量較高，請注意健康狀況');
+    }
+  }
+
+  // 生理假驗證 - 新增
+  static validateMenstrualLeave(
+    formData: LeaveFormValues,
+    currentUser: User,
+    leaveUsage: LeaveUsage,
+    requestDays: number,
+    errors: string[],
+    warnings: string[]
+  ) {
+    // 檢查性別限制
+    // 注意：這裡假設 User 類型中有 gender 欄位，如果沒有可能需要其他方式判斷
+    // if (currentUser.gender && currentUser.gender !== 'female') {
+    //   errors.push('僅限女性員工可請生理假');
+    //   return;
+    // }
+
+    // 檢查是否超過每月1日限制
+    const requestMonth = format(formData.start_date, 'yyyy-MM');
+    const monthlyUsage = leaveUsage.monthlyMenstrualUsage?.[requestMonth] || 0;
+    
+    if (monthlyUsage + requestDays > 1) {
+      errors.push(`生理假每月限請1日，本月已請 ${monthlyUsage} 日`);
+    }
+
+    // 檢查跨月申請
+    if (!isSameMonth(formData.start_date, formData.end_date)) {
+      errors.push('生理假不得跨月申請');
+    }
+
+    // 檢查與病假合併上限
+    const combinedUsage = leaveUsage.sickUsed + leaveUsage.menstrualUsed;
+    const totalDays = combinedUsage + requestDays;
+    
+    if (totalDays > 30) {
+      errors.push(`病假/生理假已達上限30日，已使用 ${combinedUsage} 日，申請 ${requestDays} 日`);
+    }
+    
+    if (combinedUsage >= 30) {
+      errors.push('病假/生理假已達上限30日，無法再申請');
+    }
+
+    // 提醒生理假計入病假統計
+    if (requestDays > 0) {
+      warnings.push('生理假將計入病假日數統計，與病假合計上限30日');
     }
   }
 

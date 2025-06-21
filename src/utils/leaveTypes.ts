@@ -17,6 +17,8 @@ export interface LeaveType {
     relationshipRequired?: boolean;
     ageRestriction?: { maxChildAge: number };
     maxYearsPerChild?: number;
+    monthlyLimit?: number;
+    combinedWith?: string[]; // For combined limits with other leave types
   };
 }
 
@@ -49,7 +51,25 @@ export const LEAVE_TYPES: LeaveType[] = [
     annualReset: true,
     maxDaysPerYear: 30,
     requiresAttachment: true,
-    description: "每年最多30天，30天內依法給半薪，超過後可視為留職停薪"
+    description: "每年最多30天，30天內依法給半薪，超過後可視為留職停薪，與生理假合併計算",
+    validationRules: {
+      combinedWith: ['menstrual']
+    }
+  },
+  {
+    id: "menstrual",
+    name: "生理假（女性員工適用）",
+    name_en: "menstrual",
+    isPaid: true, // 半薪
+    annualReset: true,
+    maxDaysPerYear: 12, // 每月1日
+    requiresAttachment: false,
+    description: "每月可請1日，僅限女性員工，與病假天數併計，總和以30日為限",
+    validationRules: {
+      genderRestriction: 'female',
+      monthlyLimit: 1,
+      combinedWith: ['sick']
+    }
   },
   {
     id: "marriage",

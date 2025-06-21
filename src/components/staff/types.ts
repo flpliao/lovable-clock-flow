@@ -1,4 +1,3 @@
-
 export interface Staff {
   id: string;
   name: string;
@@ -12,6 +11,7 @@ export interface Staff {
   supervisor_id?: string;
   username?: string;
   email?: string;
+  hire_date?: string; // 新增入職日期
   permissions?: string[]; // 直接權限列表
 }
 
@@ -27,6 +27,7 @@ export interface NewStaff {
   supervisor_id?: string;
   username?: string;
   email?: string;
+  hire_date?: string; // 新增入職日期
 }
 
 export interface StaffRole {

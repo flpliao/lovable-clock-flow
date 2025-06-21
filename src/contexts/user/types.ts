@@ -7,6 +7,7 @@ export interface User {
   position: string;
   department: string;
   onboard_date: string;
+  hire_date?: string; // 新增入職日期欄位
   role: 'admin' | 'manager' | 'user';
 }
 

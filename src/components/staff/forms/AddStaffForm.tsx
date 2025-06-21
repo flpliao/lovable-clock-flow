@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NewStaff } from '../types';
-import StaffBasicFields from './StaffBasicFields';
+import { StaffBasicFields } from './StaffBasicFields';
 import StaffDepartmentFields from './StaffDepartmentFields';
 import StaffBranchFields from './StaffBranchFields';
 import StaffSupervisorFields from './StaffSupervisorFields';

@@ -3,6 +3,7 @@ import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import DraggableScheduleCard from './DraggableScheduleCard';
 
 interface DroppableCalendarCellProps {
@@ -44,8 +45,8 @@ const DroppableCalendarCell = ({
   });
 
   const isToday = format(new Date(), 'yyyy-MM-dd') === dateString;
-  const displayCount = 2; // 顯示前兩個排班
-  const remainingCount = daySchedules.length - displayCount;
+  const maxVisibleSchedules = 3;
+  const hasMoreThanMaxSchedules = daySchedules.length > maxVisibleSchedules;
 
   // 根據是否為延伸月份調整樣式
   const cellBaseClasses = "h-24 border-b border-r border-gray-100 p-1 transition-colors relative";
@@ -74,30 +75,42 @@ const DroppableCalendarCell = ({
         )}
       </div>
 
-      {/* 排班卡片 */}
-      <div className="space-y-1">
-        {daySchedules.slice(0, displayCount).map((schedule) => (
-          <DraggableScheduleCard
-            key={schedule.id}
-            schedule={schedule}
-            getUserName={getUserName}
-            getUserRelation={getUserRelation}
-            hasConflict={getScheduleConflicts(schedule.userId, dateString)}
-            onClick={() => onScheduleClick(schedule)}
-            isSelected={schedule.id === selectedScheduleId}
-            isInExtendedMonth={isExtendedMonth} // 傳遞延伸月份標記
-          />
-        ))}
-        
-        {/* 顯示剩余排班數量 */}
-        {remainingCount > 0 && (
-          <Badge 
-            variant="secondary" 
-            className="text-xs cursor-pointer hover:bg-gray-200 w-full justify-center"
-            onClick={() => onShowAllSchedules(day.date, daySchedules)}
-          >
-            +{remainingCount} 更多
-          </Badge>
+      {/* 排班卡片區域 */}
+      <div className="flex-1 relative">
+        {hasMoreThanMaxSchedules ? (
+          // 當排班超過3個時使用滑動區域
+          <ScrollArea className="h-16">
+            <div className="space-y-1 pr-2">
+              {daySchedules.map((schedule) => (
+                <DraggableScheduleCard
+                  key={schedule.id}
+                  schedule={schedule}
+                  getUserName={getUserName}
+                  getUserRelation={getUserRelation}
+                  hasConflict={getScheduleConflicts(schedule.userId, dateString)}
+                  onClick={() => onScheduleClick(schedule)}
+                  isSelected={schedule.id === selectedScheduleId}
+                  isInExtendedMonth={isExtendedMonth}
+                />
+              ))}
+            </div>
+          </ScrollArea>
+        ) : (
+          // 當排班不超過3個時使用原來的布局
+          <div className="space-y-1">
+            {daySchedules.map((schedule) => (
+              <DraggableScheduleCard
+                key={schedule.id}
+                schedule={schedule}
+                getUserName={getUserName}
+                getUserRelation={getUserRelation}
+                hasConflict={getScheduleConflicts(schedule.userId, dateString)}
+                onClick={() => onScheduleClick(schedule)}
+                isSelected={schedule.id === selectedScheduleId}
+                isInExtendedMonth={isExtendedMonth}
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>

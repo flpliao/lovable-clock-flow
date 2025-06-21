@@ -45,8 +45,6 @@ const DroppableCalendarCell = ({
   });
 
   const isToday = format(new Date(), 'yyyy-MM-dd') === dateString;
-  const maxVisibleSchedules = 3;
-  const hasMoreThanMaxSchedules = daySchedules.length > maxVisibleSchedules;
 
   // 根據是否為延伸月份調整樣式
   const cellBaseClasses = "h-24 border-b border-r border-gray-100 p-1 transition-colors relative";
@@ -77,8 +75,7 @@ const DroppableCalendarCell = ({
 
       {/* 排班卡片區域 */}
       <div className="flex-1 relative">
-        {hasMoreThanMaxSchedules ? (
-          // 當排班超過3個時使用滑動區域
+        {daySchedules.length > 0 && (
           <ScrollArea className="h-16">
             <div className="space-y-1 pr-2">
               {daySchedules.map((schedule) => (
@@ -95,22 +92,6 @@ const DroppableCalendarCell = ({
               ))}
             </div>
           </ScrollArea>
-        ) : (
-          // 當排班不超過3個時使用原來的布局
-          <div className="space-y-1">
-            {daySchedules.map((schedule) => (
-              <DraggableScheduleCard
-                key={schedule.id}
-                schedule={schedule}
-                getUserName={getUserName}
-                getUserRelation={getUserRelation}
-                hasConflict={getScheduleConflicts(schedule.userId, dateString)}
-                onClick={() => onScheduleClick(schedule)}
-                isSelected={schedule.id === selectedScheduleId}
-                isInExtendedMonth={isExtendedMonth}
-              />
-            ))}
-          </div>
         )}
       </div>
     </div>

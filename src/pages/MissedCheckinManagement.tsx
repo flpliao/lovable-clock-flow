@@ -161,8 +161,7 @@ const MissedCheckinManagement = () => {
           actionRequired: false,
           applicantName: staffInfo?.name,
           requestDate: requestData.request_date,
-          missedType: requestData.missed_type,
-          approvalResult: action
+          missedType: requestData.missed_type
         }
       });
 
@@ -265,7 +264,7 @@ const MissedCheckinManagement = () => {
                           <h3 className="font-semibold text-gray-800 text-lg">{request.staff?.name || '未知員工'}</h3>
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Building2 className="h-4 w-4" />
-                            <span>{request.staff?.branch_name || '未知分店'} - {request.staff?.department || '未知部門'}</span>
+                            <span>{request.staff?.department || '未知部門'}</span>
                           </div>
                         </div>
                       </div>

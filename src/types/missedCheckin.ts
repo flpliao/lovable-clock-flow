@@ -17,5 +17,6 @@ export interface MissedCheckinRequest {
     name: string;
     department: string;
     position: string;
+    branch_name?: string;
   };
 }

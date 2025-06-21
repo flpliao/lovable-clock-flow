@@ -35,10 +35,9 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
   const [balanceLoading, setBalanceLoading] = React.useState(true);
   const [balanceLoadAttempted, setBalanceLoadAttempted] = React.useState(false);
 
-  // Memoize the user ID to prevent unnecessary effect triggers
+  // 優化餘額載入邏輯
   const currentUserId = useMemo(() => currentUser?.id, [currentUser?.id]);
 
-  // Optimized balance loading with proper dependency management
   React.useEffect(() => {
     if (!currentUserId || balanceLoadAttempted) return;
     
@@ -49,10 +48,10 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
       try {
         console.log(`Loading annual leave balance for user: ${currentUserId}`);
         
-        // Try to load existing balance
+        // 嘗試載入現有餘額
         let balanceData = await loadAnnualLeaveBalance(currentUserId);
         
-        // If no balance record exists, initialize it
+        // 如果沒有餘額記錄，先初始化
         if (!balanceData) {
           await initializeAnnualLeaveBalance(currentUserId);
           balanceData = await loadAnnualLeaveBalance(currentUserId);
@@ -80,7 +79,7 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
         </p>
       </div>
 
-      {/* Annual Leave Balance Card */}
+      {/* 特別休假餘額卡片 */}
       <AnnualLeaveBalanceCard 
         currentUser={currentUser}
         balanceData={balanceData}
@@ -89,10 +88,10 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          {/* Employee Information Section */}
+          {/* 員工資訊區塊 */}
           <EmployeeInfoSection currentUser={currentUser} />
           
-          {/* Date Selection Section */}
+          {/* 日期選擇區塊 */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
             <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假日期</h3>
             <LeaveDateSelector 
@@ -101,7 +100,7 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
             />
           </div>
           
-          {/* Leave Type Selection */}
+          {/* 請假類型選擇 */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
             <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假類型</h3>
             <LeaveTypeSelector 
@@ -110,7 +109,7 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
             />
           </div>
           
-          {/* Leave Details */}
+          {/* 請假詳情 */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
             <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假詳情</h3>
             <LeaveFormDetails 
@@ -119,19 +118,19 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
             />
           </div>
 
-          {/* Validation Results */}
+          {/* 驗證結果 */}
           <ValidationResultsSection 
             isValidating={isValidating}
             validationResult={validationResult}
           />
           
-          {/* Approval Workflow */}
+          {/* 審核流程 */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
             <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">審核流程</h3>
             <LeaveApprovalWorkflow approvers={approvers} />
           </div>
 
-          {/* Submit Section */}
+          {/* 提交按鈕 */}
           <FormSubmitSection 
             canSubmit={canSubmit}
             isSubmitting={isSubmitting}

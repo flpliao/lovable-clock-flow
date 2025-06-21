@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,15 +12,10 @@ import { Calendar, Clock, User, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
+
 const MissedCheckinManagement = () => {
-  const {
-    currentUser,
-    isAdmin,
-    isManager
-  } = useUser();
-  const {
-    toast
-  } = useToast();
+  const { currentUser, isAdmin, isManager } = useUser();
+  const { toast } = useToast();
   const [requests, setRequests] = useState<MissedCheckinRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<MissedCheckinRequest | null>(null);
@@ -28,60 +24,100 @@ const MissedCheckinManagement = () => {
 
   // 載入待審核的忘記打卡申請
   const loadRequests = async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      console.log('沒有當前用戶，跳過載入');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('missed_checkin_requests').select(`
+      console.log('開始載入忘記打卡申請，用戶:', currentUser.name);
+      
+      const { data, error } = await supabase
+        .from('missed_checkin_requests')
+        .select(`
           *,
           staff:staff_id (
             name,
             department,
             position
           )
-        `).eq('status', 'pending').order('created_at', {
-        ascending: false
-      });
-      if (error) throw error;
+        `)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      console.log('Supabase 查詢結果:', { data, error });
+
+      if (error) {
+        console.error('載入申請失敗:', error);
+        toast({
+          title: "載入失敗",
+          description: `無法載入忘記打卡申請: ${error.message}`,
+          variant: "destructive"
+        });
+        setRequests([]);
+        return;
+      }
+
       const formattedData = (data || []).map(item => ({
         ...item,
         missed_type: item.missed_type as 'check_in' | 'check_out' | 'both',
         status: item.status as 'pending' | 'approved' | 'rejected',
         staff: Array.isArray(item.staff) ? item.staff[0] : item.staff
       }));
+
+      console.log('格式化後的資料:', formattedData);
       setRequests(formattedData);
+      
+      toast({
+        title: "載入成功",
+        description: `載入了 ${formattedData.length} 筆待審核申請`
+      });
     } catch (error) {
-      console.error('載入申請失敗:', error);
+      console.error('載入申請時發生錯誤:', error);
       toast({
         title: "載入失敗",
-        description: "無法載入忘記打卡申請",
+        description: "載入忘記打卡申請時發生錯誤",
         variant: "destructive"
       });
+      setRequests([]);
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
-    if (currentUser && (isAdmin || isManager)) {
+    console.log('MissedCheckinManagement useEffect:', {
+      currentUser: currentUser?.name,
+      isAdmin: isAdmin(),
+      isManager: isManager()
+    });
+    
+    if (currentUser && (isAdmin() || isManager())) {
       loadRequests();
+    } else {
+      setLoading(false);
     }
   }, [currentUser, isAdmin, isManager]);
 
   // 處理審核
   const handleApproval = async (requestId: string, action: 'approved' | 'rejected') => {
     if (!currentUser) return;
+    
     setActionLoading(true);
     try {
-      const {
-        error
-      } = await supabase.from('missed_checkin_requests').update({
-        status: action,
-        approved_by: currentUser.id,
-        approval_comment: approvalComment,
-        approval_date: new Date().toISOString()
-      }).eq('id', requestId);
+      const { error } = await supabase
+        .from('missed_checkin_requests')
+        .update({
+          status: action,
+          approved_by: currentUser.id,
+          approval_comment: approvalComment,
+          approval_date: new Date().toISOString()
+        })
+        .eq('id', requestId);
+
       if (error) throw error;
+
       toast({
         title: action === 'approved' ? "申請已核准" : "申請已拒絕",
         description: `忘記打卡申請已${action === 'approved' ? '核准' : '拒絕'}`
@@ -102,6 +138,7 @@ const MissedCheckinManagement = () => {
       setActionLoading(false);
     }
   };
+
   const getMissedTypeText = (type: string) => {
     switch (type) {
       case 'check_in':
@@ -114,22 +151,39 @@ const MissedCheckinManagement = () => {
         return '';
     }
   };
+
   const formatTime = (timeString?: string) => {
     if (!timeString) return '-';
-    return format(new Date(timeString), 'HH:mm', {
-      locale: zhTW
-    });
+    return format(new Date(timeString), 'HH:mm', { locale: zhTW });
   };
-  if (!currentUser || !isAdmin && !isManager) {
-    return <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
+
+  // 權限檢查
+  if (!currentUser) {
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardContent className="text-center p-6">
+            <p className="text-gray-600">請先登入以查看此頁面</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isAdmin() && !isManager()) {
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
         <Card className="max-w-md w-full mx-4">
           <CardContent className="text-center p-6">
             <p className="text-gray-600">您沒有權限查看此頁面</p>
           </CardContent>
         </Card>
-      </div>;
+      </div>
+    );
   }
-  return <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden">
+
+  return (
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden">
       {/* 背景層 */}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
       
@@ -144,29 +198,37 @@ const MissedCheckinManagement = () => {
             </CardHeader>
             
             <CardContent>
-              {loading ? <div className="text-center py-8">載入中...</div> : requests.length === 0 ? <div className="text-center py-8 text-gray-500">
+              {loading ? (
+                <div className="text-center py-8">載入中...</div>
+              ) : requests.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
                   目前沒有待審核的忘記打卡申請
-                </div> : <div className="space-y-4">
-                  {requests.map(request => <Card key={request.id} className="border border-gray-200">
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {requests.map((request) => (
+                    <Card key={request.id} className="border border-gray-200">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <User className="h-4 w-4" />
-                              <span className="font-medium">{request.staff?.name}</span>
-                              <Badge variant="outline">{request.staff?.department}</Badge>
+                              <span className="font-medium">{request.staff?.name || '未知員工'}</span>
+                              <Badge variant="outline">{request.staff?.department || '未知部門'}</Badge>
                               <Badge variant="secondary">{getMissedTypeText(request.missed_type)}</Badge>
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-600 mb-2">
                               <div>
                                 <Calendar className="h-4 w-4 inline mr-1" />
-                                申請日期: {format(new Date(request.request_date), 'yyyy/MM/dd', {
-                            locale: zhTW
-                          })}
+                                申請日期: {format(new Date(request.request_date), 'yyyy/MM/dd', { locale: zhTW })}
                               </div>
-                              {request.requested_check_in_time && <div>上班時間: {formatTime(request.requested_check_in_time)}</div>}
-                              {request.requested_check_out_time && <div>下班時間: {formatTime(request.requested_check_out_time)}</div>}
+                              {request.requested_check_in_time && (
+                                <div>上班時間: {formatTime(request.requested_check_in_time)}</div>
+                              )}
+                              {request.requested_check_out_time && (
+                                <div>下班時間: {formatTime(request.requested_check_out_time)}</div>
+                              )}
                             </div>
                             
                             <p className="text-sm text-gray-700 mb-2">
@@ -174,16 +236,17 @@ const MissedCheckinManagement = () => {
                             </p>
                             
                             <p className="text-xs text-gray-500">
-                              申請時間: {format(new Date(request.created_at), 'yyyy/MM/dd HH:mm', {
-                          locale: zhTW
-                        })}
+                              申請時間: {format(new Date(request.created_at), 'yyyy/MM/dd HH:mm', { locale: zhTW })}
                             </p>
                           </div>
                           
                           <div className="flex gap-2 ml-4">
                             <Dialog>
                               <DialogTrigger asChild>
-                                <Button size="sm" onClick={() => setSelectedRequest(request)}>
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => setSelectedRequest(request)}
+                                >
                                   審核
                                 </Button>
                               </DialogTrigger>
@@ -192,46 +255,64 @@ const MissedCheckinManagement = () => {
                                   <DialogTitle>審核忘記打卡申請</DialogTitle>
                                 </DialogHeader>
                                 
-                                {selectedRequest && <div className="space-y-4">
+                                {selectedRequest && (
+                                  <div className="space-y-4">
                                     <div className="bg-gray-50 p-4 rounded-lg">
                                       <h4 className="font-medium mb-2">申請詳情</h4>
                                       <div className="text-sm space-y-1">
                                         <p><strong>員工：</strong>{selectedRequest.staff?.name}</p>
                                         <p><strong>類型：</strong>{getMissedTypeText(selectedRequest.missed_type)}</p>
-                                        <p><strong>日期：</strong>{format(new Date(selectedRequest.request_date), 'yyyy/MM/dd', {
-                                    locale: zhTW
-                                  })}</p>
+                                        <p><strong>日期：</strong>{format(new Date(selectedRequest.request_date), 'yyyy/MM/dd', { locale: zhTW })}</p>
                                         <p><strong>原因：</strong>{selectedRequest.reason}</p>
                                       </div>
                                     </div>
                                     
                                     <div className="space-y-2">
                                       <label className="text-sm font-medium">審核意見</label>
-                                      <Textarea placeholder="請輸入審核意見（選填)..." value={approvalComment} onChange={e => setApprovalComment(e.target.value)} rows={3} />
+                                      <Textarea
+                                        placeholder="請輸入審核意見（選填）..."
+                                        value={approvalComment}
+                                        onChange={(e) => setApprovalComment(e.target.value)}
+                                        rows={3}
+                                      />
                                     </div>
                                     
                                     <div className="flex justify-end gap-2 pt-4">
-                                      <Button variant="outline" onClick={() => handleApproval(selectedRequest.id, 'rejected')} disabled={actionLoading} className="text-red-600 hover:text-red-700">
+                                      <Button
+                                        variant="outline"
+                                        onClick={() => handleApproval(selectedRequest.id, 'rejected')}
+                                        disabled={actionLoading}
+                                        className="text-red-600 hover:text-red-700"
+                                      >
                                         <XCircle className="h-4 w-4 mr-1" />
                                         拒絕
                                       </Button>
-                                      <Button onClick={() => handleApproval(selectedRequest.id, 'approved')} disabled={actionLoading} className="text-green-600 hover:text-green-700">
+                                      <Button
+                                        onClick={() => handleApproval(selectedRequest.id, 'approved')}
+                                        disabled={actionLoading}
+                                        className="text-green-600 hover:text-green-700"
+                                      >
                                         <CheckCircle className="h-4 w-4 mr-1" />
                                         核准
                                       </Button>
                                     </div>
-                                  </div>}
+                                  </div>
+                                )}
                               </DialogContent>
                             </Dialog>
                           </div>
                         </div>
                       </CardContent>
-                    </Card>)}
-                </div>}
+                    </Card>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default MissedCheckinManagement;

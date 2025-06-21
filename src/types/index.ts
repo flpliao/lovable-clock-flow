@@ -4,7 +4,7 @@ export interface User {
   position: string;
   department: string;
   onboard_date: string;
-  role?: 'user' | 'admin';
+  role?: 'user' | 'admin' | 'manager';
 }
 
 export interface AnnualLeaveBalance {

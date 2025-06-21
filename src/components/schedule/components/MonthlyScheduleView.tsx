@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -168,7 +167,6 @@ const MonthlyScheduleView = ({
         isOpen={isEditDialogOpen}
         onClose={closeEditDialog}
         schedule={selectedSchedule}
-        timeSlots={timeSlots}
         getUserName={getUserName}
         onUpdate={handleUpdateSchedule}
         onDelete={handleDeleteSchedule}

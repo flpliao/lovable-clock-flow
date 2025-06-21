@@ -1,4 +1,3 @@
-
 import { StaffRole } from '../../types';
 import { 
   STAFF_PERMISSIONS, 
@@ -6,7 +5,7 @@ import {
   ANNOUNCEMENT_PERMISSIONS,
   HOLIDAY_PERMISSIONS,
   SCHEDULE_PERMISSIONS
-} from '../permissions';
+} from '../permissions/index';
 
 export const ADMIN_ROLE: StaffRole = {
   id: 'admin',

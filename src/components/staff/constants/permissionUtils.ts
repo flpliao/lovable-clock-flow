@@ -1,6 +1,6 @@
 
 import { Permission } from '../types';
-import { ALL_PERMISSIONS } from './permissions';
+import { ALL_PERMISSIONS } from './permissions/index';
 
 // Get permission categories for grouping in the UI
 export const getPermissionCategories = (): string[] => {

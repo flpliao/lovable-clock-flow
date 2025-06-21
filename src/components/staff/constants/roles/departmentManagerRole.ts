@@ -1,10 +1,9 @@
-
 import { StaffRole } from '../../types';
 import { 
   STAFF_PERMISSIONS, 
   LEAVE_PERMISSIONS, 
   SCHEDULE_PERMISSIONS
-} from '../permissions';
+} from '../permissions/index';
 
 export const DEPARTMENT_MANAGER_ROLE: StaffRole = {
   id: 'department_manager',

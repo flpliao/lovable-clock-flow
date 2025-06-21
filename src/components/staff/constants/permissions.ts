@@ -1,3 +1,3 @@
 
 // Re-export everything from the permissions index
-export * from './permissions';
+export * from './permissions/index';

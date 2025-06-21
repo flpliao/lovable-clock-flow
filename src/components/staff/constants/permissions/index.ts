@@ -7,6 +7,14 @@ export { HOLIDAY_PERMISSIONS, HOLIDAY_PERMISSION_DEFINITIONS } from './holidayPe
 export { DEPARTMENT_PERMISSIONS, DEPARTMENT_PERMISSION_DEFINITIONS } from './departmentPermissions';
 export { SCHEDULE_PERMISSIONS, SCHEDULE_PERMISSION_DEFINITIONS } from './schedulePermissions';
 
+// Import the permission definitions to create the combined array
+import { STAFF_PERMISSION_DEFINITIONS } from './staffPermissions';
+import { LEAVE_PERMISSION_DEFINITIONS } from './leavePermissions';
+import { ANNOUNCEMENT_PERMISSION_DEFINITIONS } from './announcementPermissions';
+import { HOLIDAY_PERMISSION_DEFINITIONS } from './holidayPermissions';
+import { DEPARTMENT_PERMISSION_DEFINITIONS } from './departmentPermissions';
+import { SCHEDULE_PERMISSION_DEFINITIONS } from './schedulePermissions';
+
 // Combine all permission definitions
 export const ALL_PERMISSIONS = [
   ...STAFF_PERMISSION_DEFINITIONS,

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useSupabaseLeaveManagement } from '@/hooks/useSupabaseLeaveManagement';
+import { calculateAnnualLeaveDays, formatYearsOfService } from '@/utils/annualLeaveCalculator';
 
 const LeaveBalance: React.FC = () => {
   const { currentUser } = useUser();
@@ -38,13 +39,24 @@ const LeaveBalance: React.FC = () => {
   if (loading) {
     return (
       <div className="text-center py-4">
-        <div className="text-gray-600">載入中...</div>
+        <div className="animate-pulse">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gray-200 rounded-xl h-20"></div>
+            <div className="bg-gray-200 rounded-xl h-20"></div>
+            <div className="bg-gray-200 rounded-xl h-20"></div>
+          </div>
+        </div>
       </div>
     );
   }
+
+  // 計算年資和應有天數（用於比對）
+  const hireDate = currentUser?.hire_date ? new Date(currentUser.hire_date) : null;
+  const calculatedEntitlement = hireDate ? calculateAnnualLeaveDays(hireDate) : 0;
+  const formattedYears = hireDate ? formatYearsOfService(hireDate) : '未設定';
   
-  // Calculate remaining hours and percentage
-  const totalDays = balance?.total_days || 0;
+  // 使用資料庫資料或計算值
+  const totalDays = balance?.total_days || calculatedEntitlement;
   const usedDays = balance?.used_days || 0;
   const remainingDays = balance?.remaining_days || (totalDays - usedDays);
   
@@ -57,6 +69,19 @@ const LeaveBalance: React.FC = () => {
   
   return (
     <div className="space-y-4">
+      {/* 年資資訊 */}
+      {hireDate && (
+        <div className="bg-blue-50 rounded-xl border p-4 mb-4">
+          <div className="text-center">
+            <div className="text-sm text-gray-600 mb-1">服務年資</div>
+            <div className="text-lg font-bold text-blue-600">{formattedYears}</div>
+            <div className="text-xs text-gray-500">
+              入職日期：{hireDate.toLocaleDateString('zh-TW')}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gray-50 rounded-xl border p-4">
           <div className="text-center">
@@ -95,7 +120,21 @@ const LeaveBalance: React.FC = () => {
             style={{ width: `${usagePercentage}%` }}
           ></div>
         </div>
+        <div className="flex justify-between mt-2 text-xs text-gray-500">
+          <span>0 天</span>
+          <span>{totalDays} 天</span>
+        </div>
       </div>
+
+      {/* 提醒訊息 */}
+      {remainingDays <= 2 && remainingDays > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3">
+          <div className="flex items-center gap-2 text-yellow-800">
+            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium">特休餘額即將用完，請合理安排休假時間</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

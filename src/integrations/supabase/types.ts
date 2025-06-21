@@ -1454,6 +1454,7 @@ export type Database = {
           created_at: string
           department: string
           email: string | null
+          hire_date: string | null
           id: string
           name: string
           password: string | null
@@ -1471,6 +1472,7 @@ export type Database = {
           created_at?: string
           department: string
           email?: string | null
+          hire_date?: string | null
           id?: string
           name: string
           password?: string | null
@@ -1488,6 +1490,7 @@ export type Database = {
           created_at?: string
           department?: string
           email?: string | null
+          hire_date?: string | null
           id?: string
           name?: string
           password?: string | null
@@ -1614,7 +1617,7 @@ export type Database = {
     }
     Functions: {
       calculate_annual_leave_days: {
-        Args: { hire_date: string; target_year: number }
+        Args: { hire_date: string } | { hire_date: string; target_year: number }
         Returns: number
       }
       create_notification: {
@@ -1656,6 +1659,10 @@ export type Database = {
       }
       initialize_annual_leave_balance: {
         Args: { staff_uuid: string; target_year: number }
+        Returns: undefined
+      }
+      initialize_or_update_annual_leave_balance: {
+        Args: { staff_uuid: string; target_year?: number }
         Returns: undefined
       }
       is_admin_user: {

@@ -1,68 +1,106 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { NewStaff } from '../types';
-import { usePositions } from '../hooks/usePositions';
+import { UseFormReturn } from 'react-hook-form';
+import { CalendarIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface StaffBasicFieldsProps {
-  newStaff: NewStaff;
-  setNewStaff: (staff: NewStaff) => void;
+  form: UseFormReturn<any>;
 }
 
-const StaffBasicFields: React.FC<StaffBasicFieldsProps> = ({ newStaff, setNewStaff }) => {
-  const { getPositionNames } = usePositions();
-  const positions = getPositionNames();
-
+export function StaffBasicFields({ form }: StaffBasicFieldsProps) {
   return (
-    <>
-      <div className="grid grid-cols-4 items-center gap-3">
-        <Label htmlFor="name" className="text-right text-xs">
-          姓名
-        </Label>
-        <Input
-          id="name"
-          value={newStaff.name}
-          onChange={(e) => setNewStaff({...newStaff, name: e.target.value})}
-          className="col-span-3 h-8 text-xs"
-        />
-      </div>
-      
-      <div className="grid grid-cols-4 items-center gap-3">
-        <Label htmlFor="position" className="text-right text-xs">
-          職位
-        </Label>
-        <Select 
-          value={newStaff.position} 
-          onValueChange={(value) => setNewStaff({...newStaff, position: value})}
-        >
-          <SelectTrigger className="col-span-3 h-8 text-xs" id="position">
-            <SelectValue placeholder="選擇職位" />
-          </SelectTrigger>
-          <SelectContent>
-            {positions.map((position) => (
-              <SelectItem key={position} value={position} className="text-xs">
-                {position}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      
-      <div className="grid grid-cols-4 items-center gap-3">
-        <Label htmlFor="contact" className="text-right text-xs">
-          電話
-        </Label>
-        <Input
-          id="contact"
-          value={newStaff.contact}
-          onChange={(e) => setNewStaff({...newStaff, contact: e.target.value})}
-          className="col-span-3 h-8 text-xs"
-        />
-      </div>
-    </>
-  );
-};
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <FormField
+        control={form.control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>員工姓名 *</FormLabel>
+            <FormControl>
+              <Input placeholder="請輸入員工姓名" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-export default StaffBasicFields;
+      <FormField
+        control={form.control}
+        name="position"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>職位 *</FormLabel>
+            <FormControl>
+              <Input placeholder="請輸入職位" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="contact"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>聯絡電話 *</FormLabel>
+            <FormControl>
+              <Input placeholder="請輸入聯絡電話" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* 新增入職日期欄位 */}
+      <FormField
+        control={form.control}
+        name="hire_date"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>入職日期</FormLabel>
+            <Popover>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full pl-3 text-left font-normal",
+                      !field.value && "text-muted-foreground"
+                    )}
+                  >
+                    {field.value ? (
+                      format(field.value, "yyyy年MM月dd日")
+                    ) : (
+                      <span>請選擇入職日期</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={field.value}
+                  onSelect={field.onChange}
+                  disabled={(date) =>
+                    date > new Date() || date < new Date("1900-01-01")
+                  }
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
+  );
+}

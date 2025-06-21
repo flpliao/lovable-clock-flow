@@ -4,8 +4,12 @@ export interface User {
   position: string;
   department: string;
   onboard_date: string;
+  hire_date?: string; // 新增入職日期欄位
   role?: 'user' | 'admin' | 'manager';
   gender?: 'male' | 'female'; // 新增性別欄位用於生理假驗證
+  // 年資相關欄位（前端計算顯示用）
+  years_of_service?: number;
+  annual_leave_entitlement?: number; // 特休總天數
 }
 
 export interface AnnualLeaveBalance {

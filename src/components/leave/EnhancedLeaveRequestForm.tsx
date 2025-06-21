@@ -8,7 +8,9 @@ import { LeaveApprovalWorkflow } from '@/components/leave/LeaveApprovalWorkflow'
 import { EmployeeInfoSection } from '@/components/leave/EmployeeInfoSection';
 import { ValidationResultsSection } from '@/components/leave/ValidationResultsSection';
 import { FormSubmitSection } from '@/components/leave/FormSubmitSection';
+import { AnnualLeaveBalanceCard } from '@/components/leave/AnnualLeaveBalanceCard';
 import { useLeaveRequestFormLogic } from '@/hooks/useLeaveRequestFormLogic';
+import { useSupabaseLeaveManagement } from '@/hooks/useSupabaseLeaveManagement';
 
 interface EnhancedLeaveRequestFormProps {
   onSubmit?: () => void;
@@ -28,6 +30,37 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
     handleSubmit
   } = useLeaveRequestFormLogic(onSubmit);
 
+  const { loadAnnualLeaveBalance, initializeAnnualLeaveBalance } = useSupabaseLeaveManagement();
+  const [balanceData, setBalanceData] = React.useState<any>(null);
+  const [balanceLoading, setBalanceLoading] = React.useState(true);
+
+  // 載入年假餘額資料
+  React.useEffect(() => {
+    const loadBalance = async () => {
+      if (!currentUser) return;
+      
+      setBalanceLoading(true);
+      try {
+        // 先嘗試載入現有餘額
+        let balanceData = await loadAnnualLeaveBalance(currentUser.id);
+        
+        // 如果沒有餘額記錄，先初始化
+        if (!balanceData) {
+          await initializeAnnualLeaveBalance(currentUser.id);
+          balanceData = await loadAnnualLeaveBalance(currentUser.id);
+        }
+        
+        setBalanceData(balanceData);
+      } catch (error) {
+        console.error('載入年假餘額失敗:', error);
+      } finally {
+        setBalanceLoading(false);
+      }
+    };
+    
+    loadBalance();
+  }, [currentUser, loadAnnualLeaveBalance, initializeAnnualLeaveBalance]);
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
@@ -38,6 +71,13 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
           請填寫以下資訊提交您的請假申請
         </p>
       </div>
+
+      {/* 特別休假餘額卡片 */}
+      <AnnualLeaveBalanceCard 
+        currentUser={currentUser}
+        balanceData={balanceData}
+        loading={balanceLoading}
+      />
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">

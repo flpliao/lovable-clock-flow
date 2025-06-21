@@ -1,6 +1,7 @@
 import { LeaveFormValues, getLeaveTypeById, getBereavementDays } from '@/utils/leaveTypes';
 import { LeaveRequest, User } from '@/types';
 import { differenceInYears, format, startOfMonth, endOfMonth, isSameMonth } from 'date-fns';
+import { calculateAnnualLeaveDays } from '@/utils/annualLeaveCalculator';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -22,15 +23,9 @@ export interface LeaveUsage {
 
 export class LeaveValidationService {
   
-  // 計算年資對應的特休天數
+  // 計算年資對應的特休天數 - 更新為使用新的計算函數
   static calculateAnnualLeaveDays(startDate: Date): number {
-    const years = differenceInYears(new Date(), startDate);
-    if (years < 1) return 3;
-    if (years < 2) return 7;
-    if (years < 3) return 10;
-    if (years < 5) return 14;
-    if (years < 10) return 15;
-    return Math.min(30, 15 + Math.floor((years - 10) / 1) * 1);
+    return calculateAnnualLeaveDays(startDate);
   }
 
   // 計算工作日數（排除週末）
@@ -137,7 +132,7 @@ export class LeaveValidationService {
     };
   }
 
-  // 特別休假驗證
+  // 特別休假驗證 - 增強版本
   static async validateAnnualLeave(
     formData: LeaveFormValues,
     currentUser: User,
@@ -146,16 +141,30 @@ export class LeaveValidationService {
     errors: string[],
     warnings: string[]
   ) {
-    const startDate = new Date(currentUser.onboard_date);
-    const availableDays = this.calculateAnnualLeaveDays(startDate);
+    // 檢查是否有入職日期
+    if (!currentUser.hire_date && !currentUser.onboard_date) {
+      errors.push('無法計算特休天數，請聯繫人事部門設定入職日期');
+      return;
+    }
+
+    const hireDate = new Date(currentUser.hire_date || currentUser.onboard_date);
+    const availableDays = this.calculateAnnualLeaveDays(hireDate);
     const remainingDays = availableDays - leaveUsage.annualUsed;
     
+    // 檢查餘額是否足夠
     if (requestDays > remainingDays) {
-      errors.push(`特休不足，剩餘 ${remainingDays} 天，申請 ${requestDays} 天`);
+      errors.push(`特休餘額不足，剩餘 ${remainingDays} 天，申請 ${requestDays} 天`);
     }
     
-    if (remainingDays <= 5) {
+    // 餘額不足警告
+    if (remainingDays <= 5 && remainingDays > 0) {
       warnings.push(`特休即將用完，剩餘 ${remainingDays} 天`);
+    }
+
+    // 年底前提醒使用特休
+    const currentMonth = new Date().getMonth();
+    if (currentMonth >= 10 && remainingDays > 10) { // 11月和12月
+      warnings.push(`年底將至，建議提前安排剩餘 ${remainingDays} 天特休`);
     }
   }
 

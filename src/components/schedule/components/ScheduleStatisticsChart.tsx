@@ -44,7 +44,8 @@ const ScheduleStatisticsChart = () => {
       // 計算各種統計
       const workDays = staffSchedules.length;
       const leaveRequests = Math.floor(Math.random() * 5); // 模擬請假天數
-      const overtimeHours = Math.floor(Math.random() * 20) + (Math.random() * 10) / 10; // 模擬加班時數
+      // 限制加班時數到小數點後一位
+      const overtimeHours = Math.round((Math.floor(Math.random() * 20) + (Math.random() * 10)) * 10) / 10;
       const businessTrips = Math.floor(Math.random() * 3); // 模擬公出天數
       const scheduledRestDays = 8; // 固定排休天數
       const balance = Math.floor(Math.random() * 10); // 模擬剩餘天數
@@ -143,7 +144,7 @@ const ScheduleStatisticsChart = () => {
                     <td className="text-center p-3">{(staff.workDays * 8 + staff.overtimeHours).toFixed(1)}</td>
                     <td className="text-center p-3">{staff.workDays}</td>
                     <td className="text-center p-3">{staff.leaveRequests}</td>
-                    <td className="text-center p-3">{staff.overtimeHours}</td>
+                    <td className="text-center p-3">{staff.overtimeHours.toFixed(1)}</td>
                     <td className="text-center p-3">{staff.businessTrips}</td>
                     <td className="text-center p-3 bg-yellow-50">{staff.scheduledRestDays}</td>
                     <td className="text-center p-3 bg-yellow-50">{staff.scheduledRestDays}</td>

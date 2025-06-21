@@ -23,5 +23,7 @@ export const calculateOvertimeHours = (startTime: string, endTime: string): numb
   const start = new Date(startTime);
   const end = new Date(endTime);
   const diff = end.getTime() - start.getTime();
-  return Math.round((diff / (1000 * 60 * 60)) * 100) / 100;
+  const hours = diff / (1000 * 60 * 60);
+  // 限制到小數點後一位
+  return Math.round(hours * 10) / 10;
 };

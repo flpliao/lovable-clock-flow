@@ -35,10 +35,6 @@ const NotificationCenter: React.FC = () => {
       console.log(`NotificationCenter 狀態更新 - 用戶: ${currentUser.name} (${currentUser.role}), 通知數量: ${notifications.length}, 未讀: ${unreadCount}`);
     }
   }, [notifications.length, unreadCount, currentUser?.name]); // 減少依賴
-
-  // 移除大部分事件監聽器 - 依賴 useNotifications 處理
-  // 移除定期自動刷新 - 不需要
-  // 移除路由變更刷新 - 不需要
   
   const handleNotificationClick = (notification: Notification) => {
     console.log(`通知點擊 by ${currentUser?.name} (${currentUser?.role}):`, notification);
@@ -50,6 +46,8 @@ const NotificationCenter: React.FC = () => {
       navigate(`/leave-approval/${notification.data.leaveRequestId}`);
     } else if (notification.type === 'leave_status' && notification.data?.leaveRequestId) {
       navigate('/leave-request');
+    } else if (notification.type === 'missed_checkin_approval' && notification.data?.missedCheckinRequestId) {
+      navigate('/missed-checkin-management');
     } else if (notification.type === 'announcement' || notification.type === 'system') {
       console.log(`公告通知點擊 by ${currentUser?.name} (${currentUser?.role})，觸發刷新`);
       

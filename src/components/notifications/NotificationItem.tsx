@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Clock, FileText } from 'lucide-react';
+import { Calendar, Clock, FileText, AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -9,14 +9,18 @@ export interface Notification {
   id: string;
   title: string;
   message: string;
-  type: 'leave_approval' | 'leave_status' | 'system' | 'announcement';
+  type: 'leave_approval' | 'leave_status' | 'system' | 'announcement' | 'missed_checkin_approval';
   createdAt: string;
   isRead: boolean;
   data?: {
     leaveRequestId?: string;
+    missedCheckinRequestId?: string;
     userId?: string;
     actionRequired?: boolean;
     announcementId?: string;
+    applicantName?: string;
+    requestDate?: string;
+    missedType?: string;
   };
 }
 
@@ -39,6 +43,8 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onCli
         return <Clock className="h-5 w-5 text-green-500" />;
       case 'announcement':
         return <FileText className="h-5 w-5 text-purple-500" />;
+      case 'missed_checkin_approval':
+        return <AlertCircle className="h-5 w-5 text-orange-500" />;
       default:
         return <Clock className="h-5 w-5 text-gray-500" />;
     }

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { NotificationDatabaseOperations } from '@/services/notifications';
 
 interface MissedCheckinFormData {
   request_date: string;
@@ -63,11 +64,16 @@ export const useMissedCheckinForm = (onSuccess: () => void) => {
         }
       }
 
-      const { error } = await supabase
+      const { data: insertedData, error } = await supabase
         .from('missed_checkin_requests')
-        .insert(submitData);
+        .insert(submitData)
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // 創建通知給主管
+      await createManagerNotification(insertedData);
 
       toast({
         title: "申請已提交",
@@ -85,6 +91,46 @@ export const useMissedCheckinForm = (onSuccess: () => void) => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createManagerNotification = async (requestData: any) => {
+    try {
+      // 查詢所有主管和管理員
+      const { data: managers, error } = await supabase
+        .from('staff')
+        .select('id, name, role')
+        .or('role.eq.admin,role.eq.manager,role.eq.hr_manager');
+
+      if (error) {
+        console.error('查詢主管失敗:', error);
+        return;
+      }
+
+      if (!managers || managers.length === 0) {
+        console.log('沒有找到主管');
+        return;
+      }
+
+      // 為每個主管創建通知
+      for (const manager of managers) {
+        await NotificationDatabaseOperations.addNotification(manager.id, {
+          title: '忘記打卡申請',
+          message: `${currentUser?.name} 申請忘記打卡審核 (${formData.request_date})`,
+          type: 'missed_checkin_approval',
+          data: {
+            missedCheckinRequestId: requestData.id,
+            actionRequired: true,
+            applicantName: currentUser?.name,
+            requestDate: formData.request_date,
+            missedType: formData.missed_type
+          }
+        });
+      }
+
+      console.log(`已發送忘記打卡申請通知給 ${managers.length} 位主管`);
+    } catch (error) {
+      console.error('創建主管通知失敗:', error);
     }
   };
 

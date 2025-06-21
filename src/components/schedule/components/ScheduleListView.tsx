@@ -10,7 +10,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { useScheduling } from '@/contexts/SchedulingContext';
-import { useScheduleOperationsHandlers } from '../hooks/useScheduleOperationsHandlers';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -30,7 +29,6 @@ const ScheduleListView: React.FC<ScheduleListViewProps> = ({
   onRemoveSchedule
 }) => {
   const { currentUser, isAdmin, hasPermission } = useUser();
-  const { handleUpdateSchedule, handleDeleteSchedule } = useScheduleOperationsHandlers();
   const [refreshing, setRefreshing] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -94,7 +92,7 @@ const ScheduleListView: React.FC<ScheduleListViewProps> = ({
     }
   };
 
-  const handleDeleteSchedule = async (scheduleId: string) => {
+  const handleScheduleDelete = async (scheduleId: string) => {
     if (!isAdmin()) {
       toast({
         title: "權限不足",
@@ -367,7 +365,7 @@ const ScheduleListView: React.FC<ScheduleListViewProps> = ({
                                       <AlertDialogFooter>
                                         <AlertDialogCancel>取消</AlertDialogCancel>
                                         <AlertDialogAction 
-                                          onClick={() => handleDeleteSchedule(schedule.id)}
+                                          onClick={() => handleScheduleDelete(schedule.id)}
                                           className="bg-red-500 hover:bg-red-600"
                                         >
                                           確認刪除

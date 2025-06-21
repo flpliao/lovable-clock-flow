@@ -64,6 +64,11 @@ const ScheduleCalendar = () => {
     }
   };
 
+  // 包裝 handleRemoveSchedule 確保它返回 Promise
+  const wrappedHandleRemoveSchedule = async (scheduleId: string): Promise<void> => {
+    await handleRemoveSchedule(scheduleId);
+  };
+
   const daysInMonth = generateDaysInMonth(getScheduleCountForDate);
   const availableStaff = getAvailableStaff();
 
@@ -102,7 +107,7 @@ const ScheduleCalendar = () => {
           generateMonths={generateMonths}
           shiftsForSelectedDate={shiftsForSelectedDate}
           canDeleteSchedule={canDeleteSchedule}
-          onRemoveSchedule={handleRemoveSchedule}
+          onRemoveSchedule={wrappedHandleRemoveSchedule}
           currentUser={currentUser}
           setSelectedDateNav={setDateNavSelectedDate}
           getScheduleCountForDate={getScheduleCountForDate}

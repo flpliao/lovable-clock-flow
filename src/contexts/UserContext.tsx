@@ -97,7 +97,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const isManager = () => {
-    return currentUser?.role === 'manager' || currentUser?.role === 'admin';
+    if (!currentUser) return false;
+    return currentUser.role === 'manager' || isAdmin();
   };
 
   const canManageUser = (userId: string): boolean => {
@@ -111,7 +112,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
     
     // 系統管理員可以管理所有用戶
-    if (currentUser.role === 'admin') {
+    if (isAdmin()) {
       console.log('🔐 系統管理員: 可管理所有用戶', currentUser.name);
       return true;
     }
@@ -126,12 +127,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // 廖俊雄擁有所有權限
     if (currentUser.name === '廖俊雄' && 
         currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
-      console.log('🔐 廖俊雄權限檢查:', permission, '✅ 允許');
+      console.log('🔐 �廖俊雄權限檢查:', permission, '✅ 允許');
       return true;
     }
     
     // 系統管理員擁有所有權限
-    if (currentUser.role === 'admin') {
+    if (isAdmin()) {
       console.log('🔐 系統管理員權限檢查:', currentUser.name, permission, '✅ 允許');
       return true;
     }
@@ -163,7 +164,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       case 'schedule:edit':
       case 'schedule:delete':
       case 'schedule:manage':
-        return currentUser.role === 'admin';
+        return isAdmin();
       case 'schedule:view_own':
         return true; // 所有登入用戶都能查看自己的排班
       default:

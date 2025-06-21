@@ -19,14 +19,14 @@ export const useScheduleFormLogic = () => {
   const { toast } = useToast();
   const { addSchedules, loading, error } = useScheduling();
   const { staffList, getSubordinates } = useStaffManagementContext();
-  const { currentUser } = useUser();
+  const { currentUser, hasPermission } = useUser();
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
   const [selectedMonth, setSelectedMonth] = useState(currentMonth.toString());
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
-  const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]); // 移除預設選擇
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -34,7 +34,7 @@ export const useScheduleFormLogic = () => {
       selectedYear: currentYear.toString(),
       selectedMonth: currentMonth.toString(),
       selectedDates: [],
-      selectedTimeSlots: [], // 移除預設選擇
+      selectedTimeSlots: [],
     },
   });
 
@@ -46,30 +46,29 @@ export const useScheduleFormLogic = () => {
     );
   };
 
-  // 修改時間段選擇邏輯，確保一天只能選擇一個班次
   const handleTimeSlotToggle = (timeSlot: string) => {
     setSelectedTimeSlots(prev => {
       if (prev.includes(timeSlot)) {
-        // 如果已選中，則取消選擇
         return prev.filter(t => t !== timeSlot);
       } else {
-        // 如果未選中，則只選擇這一個時間段（替換之前的選擇）
         return [timeSlot];
       }
     });
   };
 
   const getUserName = (userId: string) => {
-    const availableStaff = [];
+    // 根據權限獲取可用員工列表
+    let availableStaff = [];
     
-    const selfStaff = staffList.find(staff => staff.id === currentUser?.id);
-    if (selfStaff) {
-      availableStaff.push(selfStaff);
-    }
-    
-    if (currentUser?.role === 'admin' || currentUser?.role === 'manager') {
-      const subordinates = getSubordinates(currentUser.id);
-      availableStaff.push(...subordinates);
+    if (hasPermission('schedule:create')) {
+      // 有創建權限可以選擇所有員工
+      availableStaff = staffList;
+    } else {
+      // 否則只能選擇自己（雖然一般用戶不應該看到創建表單）
+      const selfStaff = staffList.find(staff => staff.id === currentUser?.id);
+      if (selfStaff) {
+        availableStaff.push(selfStaff);
+      }
     }
     
     const user = availableStaff.find(u => u.id === userId);
@@ -77,6 +76,16 @@ export const useScheduleFormLogic = () => {
   };
 
   const onSubmit = async (data: FormValues) => {
+    // 檢查創建權限
+    if (!hasPermission('schedule:create')) {
+      toast({
+        title: "權限不足",
+        description: "您沒有權限創建排班",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const scheduleData = selectedDates.flatMap(date => 
         selectedTimeSlots.map(timeSlot => {
@@ -104,7 +113,7 @@ export const useScheduleFormLogic = () => {
       });
       
       setSelectedDates([]);
-      setSelectedTimeSlots([]); // 清空時間段選擇
+      setSelectedTimeSlots([]);
       form.reset();
     } catch (err) {
       console.error('排班提交失敗:', err);

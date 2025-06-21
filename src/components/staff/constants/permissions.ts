@@ -1,247 +1,240 @@
+export const STAFF_PERMISSIONS = {
+  VIEW: 'staff:view',
+  CREATE: 'staff:create',
+  EDIT: 'staff:edit',
+  DELETE: 'staff:delete',
+  MANAGE: 'staff:manage'
+} as const;
 
-import { Permission } from '../types';
+export const LEAVE_PERMISSIONS = {
+  REQUEST: 'leave:request',
+  APPROVE: 'leave:approve',
+  VIEW: 'leave:view',
+  MANAGE: 'leave:manage'
+} as const;
 
-// Define all available permissions in the system
-export const availablePermissions: Permission[] = [
-  // Staff management permissions
-  { 
-    id: 'staff_view',
-    name: '查看人員資料',
-    code: 'staff:view',
-    description: '允許查看所有人員資料',
-    category: '人員管理'
+export const ANNOUNCEMENT_PERMISSIONS = {
+  VIEW: 'announcement:view',
+  CREATE: 'announcement:create',
+  EDIT: 'announcement:edit',
+  DELETE: 'announcement:delete',
+  PUBLISH: 'announcement:publish',
+  MANAGE: 'announcement:manage'
+} as const;
+
+export const HOLIDAY_PERMISSIONS = {
+  VIEW: 'holiday:view',
+  CREATE: 'holiday:create',
+  EDIT: 'holiday:edit',
+  DELETE: 'holiday:delete',
+  MANAGE: 'holiday:manage'
+} as const;
+
+export const DEPARTMENT_PERMISSIONS = {
+    VIEW_DEPARTMENTS: 'department:view',
+    CREATE_DEPARTMENT: 'department:create',
+    EDIT_DEPARTMENT: 'department:edit',
+    DELETE_DEPARTMENT: 'department:delete',
+    MANAGE_DEPARTMENTS: 'department:manage'
+} as const;
+
+// 排班管理權限
+export const SCHEDULE_PERMISSIONS = {
+  VIEW_ALL_SCHEDULES: 'schedule:view_all',
+  VIEW_OWN_SCHEDULE: 'schedule:view_own',
+  CREATE_SCHEDULE: 'schedule:create',
+  EDIT_SCHEDULE: 'schedule:edit',
+  DELETE_SCHEDULE: 'schedule:delete',
+  MANAGE_SCHEDULE: 'schedule:manage'
+} as const;
+
+export const ALL_PERMISSIONS = [
+  {
+    id: STAFF_PERMISSIONS.VIEW,
+    name: '查看員工',
+    category: 'staff',
+    description: '可以查看員工列表和詳細信息'
   },
-  { 
-    id: 'staff_create', 
-    name: '新增人員', 
-    code: 'staff:create', 
-    description: '允許新增人員到系統', 
-    category: '人員管理'
+  {
+    id: STAFF_PERMISSIONS.CREATE,
+    name: '新增員工',
+    category: 'staff',
+    description: '可以新增員工'
   },
-  { 
-    id: 'staff_edit', 
-    name: '編輯人員', 
-    code: 'staff:edit', 
-    description: '允許編輯人員資料', 
-    category: '人員管理'
+  {
+    id: STAFF_PERMISSIONS.EDIT,
+    name: '編輯員工',
+    category: 'staff',
+    description: '可以編輯員工信息'
   },
-  { 
-    id: 'staff_delete', 
-    name: '刪除人員', 
-    code: 'staff:delete', 
-    description: '允許刪除人員', 
-    category: '人員管理'
+  {
+    id: STAFF_PERMISSIONS.DELETE,
+    name: '刪除員工',
+    category: 'staff',
+    description: '可以刪除員工'
   },
-  
-  // Department management permissions
-  { 
-    id: 'dept_view', 
-    name: '查看部門資料', 
-    code: 'department:view', 
-    description: '允許查看所有部門資料', 
-    category: '部門管理'
+  {
+    id: STAFF_PERMISSIONS.MANAGE,
+    name: '完整員工管理',
+    category: 'staff',
+    description: '具備完整的員工管理權限'
   },
-  { 
-    id: 'dept_create', 
-    name: '新增部門', 
-    code: 'department:create', 
-    description: '允許新增部門到系統', 
-    category: '部門管理'
+  {
+    id: LEAVE_PERMISSIONS.REQUEST,
+    name: '請假申請',
+    category: 'leave',
+    description: '可以提交請假申請'
   },
-  { 
-    id: 'dept_edit', 
-    name: '編輯部門', 
-    code: 'department:edit', 
-    description: '允許編輯部門資料', 
-    category: '部門管理'
+  {
+    id: LEAVE_PERMISSIONS.APPROVE,
+    name: '請假審核',
+    category: 'leave',
+    description: '可以審核請假申請'
   },
-  { 
-    id: 'dept_delete', 
-    name: '刪除部門', 
-    code: 'department:delete', 
-    description: '允許刪除部門', 
-    category: '部門管理'
+  {
+    id: LEAVE_PERMISSIONS.VIEW,
+    name: '查看請假',
+    category: 'leave',
+    description: '可以查看請假記錄'
   },
-  
-  // Position management permissions
-  { 
-    id: 'position_view', 
-    name: '查看職位資料', 
-    code: 'position:view', 
-    description: '允許查看所有職位資料', 
-    category: '職位管理'
+  {
+    id: LEAVE_PERMISSIONS.MANAGE,
+    name: '完整請假管理',
+    category: 'leave',
+    description: '具備完整的請假管理權限'
   },
-  { 
-    id: 'position_create', 
-    name: '新增職位', 
-    code: 'position:create', 
-    description: '允許新增職位到系統', 
-    category: '職位管理'
+  {
+    id: ANNOUNCEMENT_PERMISSIONS.VIEW,
+    name: '查看公告',
+    category: 'announcement',
+    description: '可以查看公司公告'
   },
-  { 
-    id: 'position_edit', 
-    name: '編輯職位', 
-    code: 'position:edit', 
-    description: '允許編輯職位資料', 
-    category: '職位管理'
+  {
+    id: ANNOUNCEMENT_PERMISSIONS.CREATE,
+    name: '新增公告',
+    category: 'announcement',
+    description: '可以新增公司公告'
   },
-  { 
-    id: 'position_delete', 
-    name: '刪除職位', 
-    code: 'position:delete', 
-    description: '允許刪除職位', 
-    category: '職位管理'
+  {
+    id: ANNOUNCEMENT_PERMISSIONS.EDIT,
+    name: '編輯公告',
+    category: 'announcement',
+    description: '可以編輯公司公告'
   },
-  
-  // Schedule management permissions
-  { 
-    id: 'schedule_view', 
-    name: '查看排班', 
-    code: 'schedule:view', 
-    description: '允許查看排班資料', 
-    category: '排班管理'
+  {
+    id: ANNOUNCEMENT_PERMISSIONS.DELETE,
+    name: '刪除公告',
+    category: 'announcement',
+    description: '可以刪除公司公告'
   },
-  { 
-    id: 'schedule_create', 
-    name: '建立排班', 
-    code: 'schedule:create', 
-    description: '允許建立新排班', 
-    category: '排班管理'
+  {
+    id: ANNOUNCEMENT_PERMISSIONS.PUBLISH,
+    name: '發布公告',
+    category: 'announcement',
+    description: '可以發布公司公告'
   },
-  { 
-    id: 'schedule_edit', 
-    name: '編輯排班', 
-    code: 'schedule:edit', 
-    description: '允許編輯排班資料', 
-    category: '排班管理'
+  {
+    id: ANNOUNCEMENT_PERMISSIONS.MANAGE,
+    name: '完整公告管理',
+    category: 'announcement',
+    description: '具備完整的公告管理權限'
   },
-  { 
-    id: 'schedule_delete', 
-    name: '刪除排班', 
-    code: 'schedule:delete', 
-    description: '允許刪除排班', 
-    category: '排班管理'
+  {
+    id: HOLIDAY_PERMISSIONS.VIEW,
+    name: '查看節假日',
+    category: 'holiday',
+    description: '可以查看公司節假日'
   },
-  
-  // Leave request permissions
-  { 
-    id: 'leave_view', 
-    name: '查看請假申請', 
-    code: 'leave:view', 
-    description: '允許查看請假申請資料', 
-    category: '請假管理'
+  {
+    id: HOLIDAY_PERMISSIONS.CREATE,
+    name: '新增節假日',
+    category: 'holiday',
+    description: '可以新增公司節假日'
   },
-  { 
-    id: 'leave_create', 
-    name: '提交請假申請', 
-    code: 'leave:create', 
-    description: '允許提交請假申請', 
-    category: '請假管理'
+  {
+    id: HOLIDAY_PERMISSIONS.EDIT,
+    name: '編輯節假日',
+    category: 'holiday',
+    description: '可以編輯公司節假日'
   },
-  { 
-    id: 'leave_approve', 
-    name: '審批請假申請', 
-    code: 'leave:approve', 
-    description: '允許審批請假申請', 
-    category: '請假管理'
+  {
+    id: HOLIDAY_PERMISSIONS.DELETE,
+    name: '刪除節假日',
+    category: 'holiday',
+    description: '可以刪除公司節假日'
   },
-  
-  // Holiday management permissions (新增假日管理權限)
-  { 
-    id: 'holiday_view', 
-    name: '查看假日設定', 
-    code: 'holiday:view', 
-    description: '允許查看假日和工作時間設定', 
-    category: '假日管理'
+  {
+    id: HOLIDAY_PERMISSIONS.MANAGE,
+    name: '完整節假日管理',
+    category: 'holiday',
+    description: '具備完整的節假日管理權限'
   },
-  { 
-    id: 'holiday_create', 
-    name: '新增假日', 
-    code: 'holiday:create', 
-    description: '允許新增假日設定', 
-    category: '假日管理'
+  {
+    id: DEPARTMENT_PERMISSIONS.VIEW_DEPARTMENTS,
+    name: '查看部門',
+    category: 'department',
+    description: '可以查看部門列表'
   },
-  { 
-    id: 'holiday_edit', 
-    name: '編輯假日', 
-    code: 'holiday:edit', 
-    description: '允許編輯假日設定', 
-    category: '假日管理'
+  {
+    id: DEPARTMENT_PERMISSIONS.CREATE_DEPARTMENT,
+    name: '新增部門',
+    category: 'department',
+    description: '可以新增部門'
   },
-  { 
-    id: 'holiday_delete', 
-    name: '刪除假日', 
-    code: 'holiday:delete', 
-    description: '允許刪除假日設定', 
-    category: '假日管理'
+  {
+    id: DEPARTMENT_PERMISSIONS.EDIT_DEPARTMENT,
+    name: '編輯部門',
+    category: 'department',
+    description: '可以編輯部門信息'
   },
-  { 
-    id: 'holiday_analytics', 
-    name: '查看工時分析', 
-    code: 'holiday:analytics', 
-    description: '允許查看工作時間分析報表', 
-    category: '假日管理'
+  {
+    id: DEPARTMENT_PERMISSIONS.DELETE_DEPARTMENT,
+    name: '刪除部門',
+    category: 'department',
+    description: '可以刪除部門'
   },
-  
-  // Announcement management permissions
-  { 
-    id: 'announcement_view', 
-    name: '查看公告', 
-    code: 'announcement:view', 
-    description: '允許查看所有公告', 
-    category: '公告管理'
-  },
-  { 
-    id: 'announcement_create', 
-    name: '新增公告', 
-    code: 'announcement:create', 
-    description: '允許建立新公告', 
-    category: '公告管理'
-  },
-  { 
-    id: 'announcement_edit', 
-    name: '編輯公告', 
-    code: 'announcement:edit', 
-    description: '允許編輯現有公告', 
-    category: '公告管理'
-  },
-  { 
-    id: 'announcement_delete', 
-    name: '刪除公告', 
-    code: 'announcement:delete', 
-    description: '允許刪除公告', 
-    category: '公告管理'
-  },
-  { 
-    id: 'announcement_publish', 
-    name: '發布公告', 
-    code: 'announcement:publish', 
-    description: '允許發布公告給所有員工', 
-    category: '公告管理'
+  {
+    id: DEPARTMENT_PERMISSIONS.MANAGE_DEPARTMENTS,
+    name: '完整部門管理',
+    category: 'department',
+    description: '具備完整的部門管理權限'
   },
   
-  // Account management permissions (新增帳號管理權限)
-  { 
-    id: 'account_email_manage', 
-    name: '修改使用者電子郵件地址', 
-    code: 'account:email:manage', 
-    description: '允許此角色修改他人帳號的登入電子郵件地址', 
-    category: '帳號設定管理'
+  // 排班管理權限
+  {
+    id: SCHEDULE_PERMISSIONS.VIEW_ALL_SCHEDULES,
+    name: '查看所有排班',
+    category: 'schedule',
+    description: '可以查看所有員工的排班記錄'
   },
-  { 
-    id: 'account_password_manage', 
-    name: '修改使用者登入密碼', 
-    code: 'account:password:manage', 
-    description: '允許此角色重設其他使用者的登入密碼', 
-    category: '帳號設定管理'
+  {
+    id: SCHEDULE_PERMISSIONS.VIEW_OWN_SCHEDULE,
+    name: '查看自己排班',
+    category: 'schedule',
+    description: '可以查看自己的排班記錄'
   },
-  
-  // Role management permissions (admin only)
-  { 
-    id: 'role_manage', 
-    name: '管理角色', 
-    code: 'role:manage', 
-    description: '允許管理系統角色和權限', 
-    category: '系統管理'
+  {
+    id: SCHEDULE_PERMISSIONS.CREATE_SCHEDULE,
+    name: '創建排班',
+    category: 'schedule',
+    description: '可以為員工創建新的排班'
   },
-];
+  {
+    id: SCHEDULE_PERMISSIONS.EDIT_SCHEDULE,
+    name: '編輯排班',
+    category: 'schedule',
+    description: '可以編輯排班記錄'
+  },
+  {
+    id: SCHEDULE_PERMISSIONS.DELETE_SCHEDULE,
+    name: '刪除排班',
+    category: 'schedule',
+    description: '可以刪除排班記錄'
+  },
+  {
+    id: SCHEDULE_PERMISSIONS.MANAGE_SCHEDULE,
+    name: '完整排班管理',
+    category: 'schedule',
+    description: '具備完整的排班管理權限'
+  }
+] as const;

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AnnualLeaveBalance } from '@/types';
 
@@ -158,6 +157,15 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       case 'account:email:manage':
       case 'account:password:manage':
         return false; // 只有 admin 角色才有這些權限，上面已經處理
+      // 排班管理權限檢查
+      case 'schedule:view_all':
+      case 'schedule:create':
+      case 'schedule:edit':
+      case 'schedule:delete':
+      case 'schedule:manage':
+        return currentUser.role === 'admin';
+      case 'schedule:view_own':
+        return true; // 所有登入用戶都能查看自己的排班
       default:
         return false;
     }

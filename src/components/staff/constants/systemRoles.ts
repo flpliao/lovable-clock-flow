@@ -1,61 +1,213 @@
-
 import { StaffRole } from '../types';
-import { availablePermissions } from './permissions';
+import { 
+  STAFF_PERMISSIONS, 
+  LEAVE_PERMISSIONS, 
+  ANNOUNCEMENT_PERMISSIONS,
+  HOLIDAY_PERMISSIONS,
+  SCHEDULE_PERMISSIONS
+} from './permissions';
 
-// Define default system roles
-export const defaultSystemRoles: StaffRole[] = [
+export const SYSTEM_ROLES: StaffRole[] = [
   {
     id: 'admin',
     name: '系統管理員',
-    description: '完整系統管理權限',
-    permissions: availablePermissions, // 系統管理員擁有所有權限，包括新的假日管理權限
-    is_system_role: true
-  },
-  {
-    id: 'user',
-    name: '一般使用者',
-    description: '基本使用權限',
-    permissions: availablePermissions.filter(p => 
-      p.code === 'staff:view' || 
-      p.code === 'department:view' || 
-      p.code === 'schedule:view' ||
-      p.code === 'leave:view' ||
-      p.code === 'leave:create' ||
-      p.code === 'announcement:view' ||
-      p.code === 'holiday:view' // 一般使用者可以查看假日設定
-    ),
-    is_system_role: true
+    description: '擁有系統完整管理權限',
+    permissions: [
+      {
+        id: STAFF_PERMISSIONS.VIEW_STAFF,
+        name: '查看員工',
+        code: STAFF_PERMISSIONS.VIEW_STAFF
+      },
+      {
+        id: STAFF_PERMISSIONS.CREATE_STAFF,
+        name: '新增員工',
+        code: STAFF_PERMISSIONS.CREATE_STAFF
+      },
+      {
+        id: STAFF_PERMISSIONS.EDIT_STAFF,
+        name: '編輯員工',
+        code: STAFF_PERMISSIONS.EDIT_STAFF
+      },
+      {
+        id: STAFF_PERMISSIONS.DELETE_STAFF,
+        name: '刪除員工',
+        code: STAFF_PERMISSIONS.DELETE_STAFF
+      },
+      {
+        id: STAFF_PERMISSIONS.MANAGE_ROLES,
+        name: '管理角色',
+        code: STAFF_PERMISSIONS.MANAGE_ROLES
+      },
+      {
+        id: LEAVE_PERMISSIONS.APPROVE_LEAVE,
+        name: '審核請假',
+        code: LEAVE_PERMISSIONS.APPROVE_LEAVE
+      },
+      {
+        id: LEAVE_PERMISSIONS.VIEW_LEAVE_REQUESTS,
+        name: '查看請假申請',
+        code: LEAVE_PERMISSIONS.VIEW_LEAVE_REQUESTS
+      },
+      {
+        id: ANNOUNCEMENT_PERMISSIONS.CREATE_ANNOUNCEMENT,
+        name: '建立公告',
+        code: ANNOUNCEMENT_PERMISSIONS.CREATE_ANNOUNCEMENT
+      },
+      {
+        id: ANNOUNCEMENT_PERMISSIONS.EDIT_ANNOUNCEMENT,
+        name: '編輯公告',
+        code: ANNOUNCEMENT_PERMISSIONS.EDIT_ANNOUNCEMENT
+      },
+      {
+        id: ANNOUNCEMENT_PERMISSIONS.DELETE_ANNOUNCEMENT,
+        name: '刪除公告',
+        code: ANNOUNCEMENT_PERMISSIONS.DELETE_ANNOUNCEMENT
+      },
+      {
+        id: ANNOUNCEMENT_PERMISSIONS.PUBLISH_ANNOUNCEMENT,
+        name: '發布公告',
+        code: ANNOUNCEMENT_PERMISSIONS.PUBLISH_ANNOUNCEMENT
+      },
+      {
+        id: HOLIDAY_PERMISSIONS.MANAGE_HOLIDAYS,
+        name: '管理國定假日',
+        code: HOLIDAY_PERMISSIONS.MANAGE_HOLIDAYS
+      },
+      
+      {
+        id: SCHEDULE_PERMISSIONS.VIEW_ALL_SCHEDULES,
+        name: '查看所有排班',
+        code: SCHEDULE_PERMISSIONS.VIEW_ALL_SCHEDULES
+      },
+      {
+        id: SCHEDULE_PERMISSIONS.CREATE_SCHEDULE,
+        name: '創建排班',
+        code: SCHEDULE_PERMISSIONS.CREATE_SCHEDULE
+      },
+      {
+        id: SCHEDULE_PERMISSIONS.EDIT_SCHEDULE,
+        name: '編輯排班',
+        code: SCHEDULE_PERMISSIONS.EDIT_SCHEDULE
+      },
+      {
+        id: SCHEDULE_PERMISSIONS.DELETE_SCHEDULE,
+        name: '刪除排班',
+        code: SCHEDULE_PERMISSIONS.DELETE_SCHEDULE
+      },
+      {
+        id: SCHEDULE_PERMISSIONS.MANAGE_SCHEDULE,
+        name: '完整排班管理',
+        code: SCHEDULE_PERMISSIONS.MANAGE_SCHEDULE
+      }
+    ]
   },
   {
     id: 'hr_manager',
-    name: '人資主管',
-    description: '人資部門主管權限',
-    permissions: availablePermissions.filter(p => 
-      p.category === '人員管理' || 
-      p.category === '部門管理' || 
-      p.category === '公告管理' ||
-      p.category === '假日管理' || // 人資主管擁有完整假日管理權限
-      p.code === 'leave:approve'
-    ),
-    is_system_role: true
+    name: 'HR主管',
+    description: 'HR部門主管權限',
+    permissions: [
+      {
+        id: STAFF_PERMISSIONS.VIEW_STAFF,
+        name: '查看員工',
+        code: STAFF_PERMISSIONS.VIEW_STAFF
+      },
+      {
+        id: LEAVE_PERMISSIONS.APPROVE_LEAVE,
+        name: '審核請假',
+        code: LEAVE_PERMISSIONS.APPROVE_LEAVE
+      },
+      {
+        id: LEAVE_PERMISSIONS.VIEW_LEAVE_REQUESTS,
+        name: '查看請假申請',
+        code: LEAVE_PERMISSIONS.VIEW_LEAVE_REQUESTS
+      },
+      {
+        id: ANNOUNCEMENT_PERMISSIONS.CREATE_ANNOUNCEMENT,
+        name: '建立公告',
+        code: ANNOUNCEMENT_PERMISSIONS.CREATE_ANNOUNCEMENT
+      },
+      {
+        id: ANNOUNCEMENT_PERMISSIONS.EDIT_ANNOUNCEMENT,
+        name: '編輯公告',
+        code: ANNOUNCEMENT_PERMISSIONS.EDIT_ANNOUNCEMENT
+      },
+      {
+        id: ANNOUNCEMENT_PERMISSIONS.DELETE_ANNOUNCEMENT,
+        name: '刪除公告',
+        code: ANNOUNCEMENT_PERMISSIONS.DELETE_ANNOUNCEMENT
+      },
+      {
+        id: ANNOUNCEMENT_PERMISSIONS.PUBLISH_ANNOUNCEMENT,
+        name: '發布公告',
+        code: ANNOUNCEMENT_PERMISSIONS.PUBLISH_ANNOUNCEMENT
+      },
+      
+      {
+        id: SCHEDULE_PERMISSIONS.VIEW_ALL_SCHEDULES,
+        name: '查看所有排班',
+        code: SCHEDULE_PERMISSIONS.VIEW_ALL_SCHEDULES
+      },
+      {
+        id: SCHEDULE_PERMISSIONS.CREATE_SCHEDULE,
+        name: '創建排班',
+        code: SCHEDULE_PERMISSIONS.CREATE_SCHEDULE
+      },
+      {
+        id: SCHEDULE_PERMISSIONS.EDIT_SCHEDULE,
+        name: '編輯排班',
+        code: SCHEDULE_PERMISSIONS.EDIT_SCHEDULE
+      },
+      {
+        id: SCHEDULE_PERMISSIONS.DELETE_SCHEDULE,
+        name: '刪除排班',
+        code: SCHEDULE_PERMISSIONS.DELETE_SCHEDULE
+      }
+    ]
   },
   {
     id: 'department_manager',
     name: '部門主管',
     description: '部門主管權限',
-    permissions: availablePermissions.filter(p => 
-      p.code === 'staff:view' || 
-      p.code === 'department:view' || 
-      p.code === 'schedule:view' ||
-      p.code === 'schedule:create' ||
-      p.code === 'schedule:edit' ||
-      p.code === 'leave:view' ||
-      p.code === 'leave:approve' ||
-      p.code === 'announcement:view' ||
-      p.code === 'announcement:create' ||
-      p.code === 'holiday:view' || // 部門主管可以查看假日設定
-      p.code === 'holiday:analytics' // 部門主管可以查看工時分析
-    ),
-    is_system_role: true
+    permissions: [
+      {
+        id: STAFF_PERMISSIONS.VIEW_STAFF,
+        name: '查看員工',
+        code: STAFF_PERMISSIONS.VIEW_STAFF
+      },
+      {
+        id: LEAVE_PERMISSIONS.APPROVE_LEAVE,
+        name: '審核請假',
+        code: LEAVE_PERMISSIONS.APPROVE_LEAVE
+      },
+      {
+        id: LEAVE_PERMISSIONS.VIEW_LEAVE_REQUESTS,
+        name: '查看請假申請',
+        code: LEAVE_PERMISSIONS.VIEW_LEAVE_REQUESTS
+      },
+      
+      {
+        id: SCHEDULE_PERMISSIONS.VIEW_OWN_SCHEDULE,
+        name: '查看自己排班',
+        code: SCHEDULE_PERMISSIONS.VIEW_OWN_SCHEDULE
+      }
+    ]
+  },
+  {
+    id: 'user',
+    name: '一般員工',
+    description: '基本員工權限',
+    permissions: [
+      {
+        id: LEAVE_PERMISSIONS.VIEW_LEAVE_REQUESTS,
+        name: '查看請假申請',
+        code: LEAVE_PERMISSIONS.VIEW_LEAVE_REQUESTS
+      },
+      
+      {
+        id: SCHEDULE_PERMISSIONS.VIEW_OWN_SCHEDULE,
+        name: '查看自己排班',
+        code: SCHEDULE_PERMISSIONS.VIEW_OWN_SCHEDULE
+      }
+    ]
   }
 ];

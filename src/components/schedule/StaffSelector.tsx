@@ -4,6 +4,7 @@ import { FormControl, FormField, FormItem, FormMessage } from '@/components/ui/f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Control } from 'react-hook-form';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useUser } from '@/contexts/UserContext';
 
 interface StaffSelectorProps {
   control: Control<any>;
@@ -11,6 +12,22 @@ interface StaffSelectorProps {
 
 const StaffSelector = ({ control }: StaffSelectorProps) => {
   const { staffList } = useStaffManagementContext();
+  const { currentUser, hasPermission } = useUser();
+
+  // 根據權限過濾可選員工
+  const getSelectableStaff = () => {
+    if (!currentUser) return [];
+    
+    // 有創建排班權限的用戶可以選擇所有員工
+    if (hasPermission('schedule:create')) {
+      return staffList;
+    }
+    
+    // 一般用戶只能選擇自己（雖然他們不應該看到這個表單）
+    return staffList.filter(staff => staff.id === currentUser.id);
+  };
+
+  const selectableStaff = getSelectableStaff();
 
   return (
     <FormField
@@ -25,7 +42,7 @@ const StaffSelector = ({ control }: StaffSelectorProps) => {
                 <SelectValue placeholder="請選擇要排班的員工" />
               </SelectTrigger>
               <SelectContent className="bg-white border border-gray-300 rounded-2xl shadow-xl z-50">
-                {staffList.map((staffMember) => (
+                {selectableStaff.map((staffMember) => (
                   <SelectItem 
                     key={staffMember.id} 
                     value={staffMember.id}
@@ -33,7 +50,10 @@ const StaffSelector = ({ control }: StaffSelectorProps) => {
                   >
                     <div className="flex flex-col">
                       <span className="font-semibold text-black">{staffMember.name}</span>
-                      <span className="text-sm text-gray-500">{staffMember.position}</span>
+                      <span className="text-sm text-gray-500">
+                        {staffMember.position} - {staffMember.department}
+                        {staffMember.id === currentUser?.id ? ' (自己)' : ''}
+                      </span>
                     </div>
                   </SelectItem>
                 ))}

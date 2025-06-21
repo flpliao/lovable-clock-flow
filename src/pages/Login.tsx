@@ -1,16 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, KeyRound } from 'lucide-react';
+import { User } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
-import CredentialManagement from '@/components/staff/CredentialManagement';
 import LoginForm from '@/components/auth/LoginForm';
-import ManageAccountPrompt from '@/components/auth/ManageAccountPrompt';
 import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Login = () => {
-  const [activeTab, setActiveTab] = useState('login');
   const { currentUser, isAuthenticated, isUserLoaded } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -22,14 +18,6 @@ const Login = () => {
       navigate('/', { replace: true });
     }
   }, [isUserLoaded, isAuthenticated, currentUser, navigate]);
-
-  const handleCredentialUpdateSuccess = () => {
-    toast({
-      title: "帳號設定已更新",
-      description: "請使用新的帳號設定登錄"
-    });
-    setActiveTab('login');
-  };
 
   // 載入中狀態
   if (!isUserLoaded) {
@@ -82,32 +70,7 @@ const Login = () => {
             <p className="text-white/80 mt-2">請登入您的帳號</p>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 bg-white/20 backdrop-blur-xl border border-white/30">
-              <TabsTrigger value="login" className="text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/30">
-                <User className="w-4 h-4 mr-2" />
-                登入
-              </TabsTrigger>
-              <TabsTrigger value="manage" className="text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/30">
-                <KeyRound className="w-4 h-4 mr-2" />
-                設定
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login">
-              <LoginForm />
-            </TabsContent>
-            
-            <TabsContent value="manage">
-              {currentUser ? (
-                <div className="mt-4">
-                  <CredentialManagement userId={currentUser.id} onSuccess={handleCredentialUpdateSuccess} />
-                </div>
-              ) : (
-                <ManageAccountPrompt onSwitchTab={() => setActiveTab('login')} />
-              )}
-            </TabsContent>
-          </Tabs>
+          <LoginForm />
         </div>
       </div>
     </div>

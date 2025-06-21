@@ -1,5 +1,5 @@
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useUser } from '@/contexts/UserContext';
@@ -16,7 +16,9 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const validationTimeoutRef = useRef<NodeJS.Timeout>();
   
+  // Memoize approvers to prevent unnecessary recalculations
   const approvers = useMemo(() => getApprovers(), []);
   
   const form = useForm<LeaveFormValues>({
@@ -28,6 +30,21 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
 
   const watchedValues = form.watch();
   
+  // Memoize mock leave usage data to prevent recreating on every render
+  const mockLeaveUsage: LeaveUsage = useMemo(() => ({
+    annualUsed: 5,
+    personalUsed: 2,
+    sickUsed: 3,
+    menstrualUsed: 2,
+    marriageUsed: false,
+    paternalUsed: 0,
+    bereavementUsed: {},
+    monthlyMenstrualUsage: {
+      '2024-01': 1,
+      '2024-02': 1,
+    }
+  }), []);
+
   // Calculate hours with useMemo to prevent unnecessary recalculations
   const calculatedHours = useMemo(() => {
     if (watchedValues.start_date && watchedValues.end_date) {
@@ -39,25 +56,23 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
     return 0;
   }, [watchedValues.start_date, watchedValues.end_date]);
 
-  // Mock leave usage data - in real app this would come from API
-  const mockLeaveUsage: LeaveUsage = useMemo(() => ({
-    annualUsed: 5,
-    personalUsed: 2,
-    sickUsed: 3,
-    menstrualUsed: 2, // 新增生理假使用記錄
-    marriageUsed: false,
-    paternalUsed: 0,
-    bereavementUsed: {},
-    monthlyMenstrualUsage: {
-      '2024-01': 1,
-      '2024-02': 1,
-      // 當前月份還沒有使用記錄
-    }
-  }), []);
-
-  // Debounced validation with useCallback
-  const validateForm = useCallback(async () => {
+  // Memoize validation dependencies to prevent unnecessary re-validation
+  const validationKey = useMemo(() => {
     if (!currentUser || !watchedValues.start_date || !watchedValues.end_date || !watchedValues.leave_type) {
+      return null;
+    }
+    return {
+      userId: currentUser.id,
+      startDate: watchedValues.start_date.toISOString(),
+      endDate: watchedValues.end_date.toISOString(),
+      leaveType: watchedValues.leave_type,
+      reason: watchedValues.reason
+    };
+  }, [currentUser?.id, watchedValues.start_date, watchedValues.end_date, watchedValues.leave_type, watchedValues.reason]);
+
+  // Stable validation function with useCallback
+  const validateForm = useCallback(async () => {
+    if (!validationKey) {
       setValidationResult(null);
       return;
     }
@@ -67,7 +82,7 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
     try {
       const result = await LeaveValidationService.validateLeaveRequest(
         watchedValues,
-        currentUser,
+        currentUser!,
         mockLeaveUsage,
         []
       );
@@ -78,13 +93,34 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
     } finally {
       setIsValidating(false);
     }
-  }, [watchedValues, currentUser, mockLeaveUsage]);
+  }, [validationKey, watchedValues, currentUser, mockLeaveUsage]);
 
-  // Use setTimeout for debouncing validation
+  // Debounced validation with proper cleanup
   React.useEffect(() => {
-    const timeoutId = setTimeout(validateForm, 500);
-    return () => clearTimeout(timeoutId);
+    // Clear existing timeout
+    if (validationTimeoutRef.current) {
+      clearTimeout(validationTimeoutRef.current);
+    }
+
+    // Set new timeout
+    validationTimeoutRef.current = setTimeout(validateForm, 500);
+
+    // Cleanup function
+    return () => {
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+    };
   }, [validateForm]);
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = useCallback(async (data: LeaveFormValues) => {
     if (!currentUser) return;
@@ -160,7 +196,9 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
     }
   }, [currentUser, calculatedHours, mockLeaveUsage, approvers, createLeaveRequest, onSubmit, form]);
 
-  const canSubmit = validationResult?.isValid && !isValidating && !isSubmitting;
+  const canSubmit = useMemo(() => {
+    return validationResult?.isValid && !isValidating && !isSubmitting;
+  }, [validationResult?.isValid, isValidating, isSubmitting]);
 
   return {
     form,

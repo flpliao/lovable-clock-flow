@@ -785,6 +785,54 @@ export type Database = {
         }
         Relationships: []
       }
+      missed_checkin_requests: {
+        Row: {
+          approval_comment: string | null
+          approval_date: string | null
+          approved_by: string | null
+          created_at: string
+          id: string
+          missed_type: string
+          reason: string
+          request_date: string
+          requested_check_in_time: string | null
+          requested_check_out_time: string | null
+          staff_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approval_comment?: string | null
+          approval_date?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          missed_type: string
+          reason: string
+          request_date: string
+          requested_check_in_time?: string | null
+          requested_check_out_time?: string | null
+          staff_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approval_comment?: string | null
+          approval_date?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          missed_type?: string
+          reason?: string
+          request_date?: string
+          requested_check_in_time?: string | null
+          requested_check_out_time?: string | null
+          staff_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           action_required: boolean

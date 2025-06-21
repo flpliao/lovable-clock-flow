@@ -14,6 +14,7 @@ import LocationInfo from '@/components/check-in/LocationInfo';
 import CheckInMethodSelector from '@/components/check-in/CheckInMethodSelector';
 import CheckInWarning from '@/components/check-in/CheckInWarning';
 import CheckInStatusDisplay from '@/components/check-in/CheckInStatusDisplay';
+import MissedCheckinDialog from '@/components/check-in/MissedCheckinDialog';
 
 const LocationCheckIn = () => {
   const {
@@ -82,6 +83,11 @@ const LocationCheckIn = () => {
     return employeeDepartment?.name || currentUser.department;
   };
   const locationName = getLocationName();
+
+  const handleMissedCheckinSuccess = () => {
+    // 可以在這裡添加重新載入邏輯或顯示成功訊息
+    console.log('忘記打卡申請已提交');
+  };
   
   return <div className="flex justify-center items-center w-full min-h-[250px]">
       <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-6 shadow-lg space-y-4 max-w-md w-full mx-4 py-[30px]">
@@ -96,6 +102,11 @@ const LocationCheckIn = () => {
         <CheckInWarning checkInMethod={checkInMethod} canUseLocationCheckIn={canUseLocationCheckIn} employeeDepartment={employeeDepartment} />
 
         <CheckInButton actionType={actionType} loading={loading} onCheckIn={handleCheckIn} disabled={checkInMethod === 'location' && !canUseLocationCheckIn} />
+
+        {/* 忘記打卡按鈕區域 */}
+        <div className="flex justify-center">
+          <MissedCheckinDialog onSuccess={handleMissedCheckinSuccess} />
+        </div>
 
         <CheckInStatusDisplay checkInMethod={checkInMethod} distance={distance} error={error} loading={loading} locationName={locationName} />
       </div>

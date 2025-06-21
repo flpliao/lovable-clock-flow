@@ -23,6 +23,7 @@ import CompanyBranchManagement from './pages/CompanyBranchManagement';
 import HRManagement from './pages/HRManagement';
 import OvertimeManagement from './pages/OvertimeManagement';
 import HolidayManagement from './pages/HolidayManagement';
+import MissedCheckinManagement from './pages/MissedCheckinManagement';
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ function App() {
               <Route path="/hr-management" element={<HRManagement />} />
               <Route path="/overtime-management" element={<OvertimeManagement />} />
               <Route path="/holiday-management" element={<HolidayManagement />} />
+              <Route path="/missed-checkin-management" element={<MissedCheckinManagement />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </UserProvider>

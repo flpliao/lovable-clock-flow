@@ -37,6 +37,13 @@ export const EditStaffBranchField: React.FC<EditStaffBranchFieldProps> = ({
           <SelectValue placeholder="選擇分店" />
         </SelectTrigger>
         <SelectContent>
+          {/* 如果當前員工的分店不在標準列表中，先顯示當前分店 */}
+          {currentStaff.branch_name && currentStaff.branch_id && 
+           !branches.find(b => b.value === currentStaff.branch_id) && (
+            <SelectItem value={currentStaff.branch_id}>
+              {currentStaff.branch_name} (當前設定)
+            </SelectItem>
+          )}
           {branches.map((branch) => (
             <SelectItem key={branch.value} value={branch.value}>
               {branch.label}

@@ -30,6 +30,12 @@ export const EditStaffDepartmentField: React.FC<EditStaffDepartmentFieldProps> =
           <SelectValue placeholder="選擇部門" />
         </SelectTrigger>
         <SelectContent>
+          {/* 如果當前員工的部門不在標準列表中，先顯示當前部門 */}
+          {currentStaff.department && !departments.includes(currentStaff.department) && (
+            <SelectItem value={currentStaff.department}>
+              {currentStaff.department} (當前設定)
+            </SelectItem>
+          )}
           {departments.map((department) => (
             <SelectItem key={department} value={department}>
               {department}

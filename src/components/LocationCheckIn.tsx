@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useCheckIn } from '@/hooks/useCheckIn';
 import { useUser } from '@/contexts/UserContext';
@@ -13,13 +14,22 @@ import LocationInfo from '@/components/check-in/LocationInfo';
 import CheckInMethodSelector from '@/components/check-in/CheckInMethodSelector';
 import CheckInWarning from '@/components/check-in/CheckInWarning';
 import CheckInStatusDisplay from '@/components/check-in/CheckInStatusDisplay';
+
 const LocationCheckIn = () => {
   const {
     currentUser
   } = useUser();
-  const {
-    departments
-  } = useDepartmentManagementContext();
+  
+  // Use defensive context access with fallback
+  let departments = [];
+  try {
+    const context = useDepartmentManagementContext();
+    departments = context.departments || [];
+  } catch (error) {
+    console.warn('DepartmentManagementContext not available, using empty departments array');
+    departments = [];
+  }
+
   const {
     loading,
     error,
@@ -42,6 +52,7 @@ const LocationCheckIn = () => {
         </div>
       </div>;
   }
+  
   const safeCheckIn = todayRecords?.checkIn;
   const safeCheckOut = todayRecords?.checkOut;
 
@@ -71,6 +82,7 @@ const LocationCheckIn = () => {
     return employeeDepartment?.name || currentUser.department;
   };
   const locationName = getLocationName();
+  
   return <div className="flex justify-center items-center w-full min-h-[250px]">
       <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-6 shadow-lg space-y-4 max-w-md w-full mx-4 py-[30px]">
         <LocationCheckInHeader />
@@ -89,4 +101,5 @@ const LocationCheckIn = () => {
       </div>
     </div>;
 };
+
 export default LocationCheckIn;

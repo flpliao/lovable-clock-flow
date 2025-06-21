@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import EnhancedLeaveRequestForm from '@/components/leave/EnhancedLeaveRequestForm';
+import { NewLeaveRequestForm } from '@/components/leave/NewLeaveRequestForm';
 import LeaveBalance from '@/components/LeaveBalance';
 import LeaveHistory from '@/components/LeaveHistory';
 import ShiftReminder from '@/components/ShiftReminder';
@@ -27,17 +27,6 @@ const LeaveRequest = () => {
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Shift Reminder */}
           <ShiftReminder />
-          
-          {/* Leave Balance */}
-          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                <PiggyBank className="h-4 w-4 text-white" />
-              </div>
-              <h2 className="text-lg font-semibold text-white drop-shadow-md">特休假餘額</h2>
-            </div>
-            <LeaveBalance />
-          </div>
 
           {/* Main Content */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl overflow-hidden">
@@ -64,7 +53,7 @@ const LeaveRequest = () => {
               
               <div className="px-4 pb-4">
                 <TabsContent value="request" className="mt-0">
-                  <EnhancedLeaveRequestForm onSubmit={handleNewLeaveRequest} />
+                  <NewLeaveRequestForm onSubmit={handleNewLeaveRequest} />
                 </TabsContent>
                 
                 <TabsContent value="view" className="mt-0">

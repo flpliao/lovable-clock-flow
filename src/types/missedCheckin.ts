@@ -13,4 +13,9 @@ export interface MissedCheckinRequest {
   approval_date?: string;
   created_at: string;
   updated_at: string;
+  staff?: {
+    name: string;
+    department: string;
+    position: string;
+  };
 }

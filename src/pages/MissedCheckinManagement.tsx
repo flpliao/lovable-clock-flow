@@ -42,7 +42,14 @@ const MissedCheckinManagement = () => {
 
       if (error) throw error;
 
-      setRequests(data || []);
+      const formattedData = (data || []).map(item => ({
+        ...item,
+        missed_type: item.missed_type as 'check_in' | 'check_out' | 'both',
+        status: item.status as 'pending' | 'approved' | 'rejected',
+        staff: Array.isArray(item.staff) ? item.staff[0] : item.staff
+      }));
+
+      setRequests(formattedData);
     } catch (error) {
       console.error('載入申請失敗:', error);
       toast({
@@ -150,7 +157,7 @@ const MissedCheckinManagement = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {requests.map((request: any) => (
+                  {requests.map((request) => (
                     <Card key={request.id} className="border border-gray-200">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between">

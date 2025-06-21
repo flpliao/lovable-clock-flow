@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addDays, getDaysInMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addDays, subDays, getDaysInMonth } from 'date-fns';
 
 export const useExtendedCalendar = (selectedDate: Date) => {
   return useMemo(() => {
@@ -9,46 +9,60 @@ export const useExtendedCalendar = (selectedDate: Date) => {
     const year = selectedDate.getFullYear();
     const month = selectedDate.getMonth() + 1; // JavaScript month is 0-indexed
     
-    let actualEndDate = monthEnd;
+    // 處理月初：如果第一天不是星期日，則添加上個月的最後幾天
+    let actualStartDate = monthStart;
+    const firstDayOfWeek = getDay(monthStart); // 0=Sunday, 1=Monday, ..., 6=Saturday
+    let hasStartExtension = false;
     
-    // 通用邏輯：如果任何月份的最後一天不是星期六，則延伸到下週六
+    if (firstDayOfWeek !== 0) {
+      // 如果第一天不是星期日，則往前延伸到上個星期日
+      actualStartDate = subDays(monthStart, firstDayOfWeek);
+      hasStartExtension = true;
+    }
+    
+    // 處理月末：如果最後一天不是星期六，則延伸到下週六
+    let actualEndDate = monthEnd;
     const daysInMonth = getDaysInMonth(selectedDate);
     const lastDayOfMonth = new Date(year, month - 1, daysInMonth);
     const lastDayOfWeek = getDay(lastDayOfMonth); // 0=Sunday, 1=Monday, ..., 6=Saturday
     
-    // 如果月份的最後一天不是星期六，則延伸到下週六
-    let isExtended = false;
+    let hasEndExtension = false;
     if (lastDayOfWeek !== 6) {
       const daysToAdd = 6 - lastDayOfWeek;
       actualEndDate = addDays(lastDayOfMonth, daysToAdd);
-      isExtended = true;
+      hasEndExtension = true;
     }
     
-    const daysInCalendar = eachDayOfInterval({ start: monthStart, end: actualEndDate });
-
-    // 計算開始的填充天數（對齊星期日為每週第一天）
-    const startPadding = getDay(monthStart);
-    const paddingDays = Array(startPadding).fill(null);
+    const daysInCalendar = eachDayOfInterval({ start: actualStartDate, end: actualEndDate });
     
     // 創建日曆天數據
-    const calendarDays = [
-      ...paddingDays,
-      ...daysInCalendar.map(date => {
-        const isCurrentMonth = date.getMonth() === selectedDate.getMonth();
-        return {
-          date,
-          label: format(date, 'd'),
-          lunarDay: '', // 可以添加農曆邏輯
-          isWeekend: getDay(date) === 0 || getDay(date) === 6,
-          isCurrentMonth, // 標記是否為當前月份
-          isExtended: isExtended && !isCurrentMonth // 標記是否為延伸的日期
-        };
-      })
-    ];
+    const calendarDays = daysInCalendar.map(date => {
+      const isCurrentMonth = date.getMonth() === selectedDate.getMonth();
+      const isPreviousMonth = date.getMonth() < selectedDate.getMonth() || 
+                             (date.getMonth() === 11 && selectedDate.getMonth() === 0);
+      const isNextMonth = date.getMonth() > selectedDate.getMonth() || 
+                         (date.getMonth() === 0 && selectedDate.getMonth() === 11);
+      
+      return {
+        date,
+        label: format(date, 'd'),
+        lunarDay: '', // 可以添加農曆邏輯
+        isWeekend: getDay(date) === 0 || getDay(date) === 6,
+        isCurrentMonth,
+        isExtended: !isCurrentMonth, // 標記是否為延伸的日期（包含前後月份）
+        isPreviousMonth,
+        isNextMonth
+      };
+    });
+
+    const isExtended = hasStartExtension || hasEndExtension;
 
     return {
       calendarDays,
       isExtended,
+      hasStartExtension,
+      hasEndExtension,
+      extendedStartDate: actualStartDate,
       extendedEndDate: actualEndDate
     };
   }, [selectedDate]);

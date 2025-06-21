@@ -32,7 +32,7 @@ const MonthlyCalendarGrid = ({
   handleShowAllSchedules,
   activeSchedule
 }: MonthlyCalendarGridProps) => {
-  const { calendarDays, isExtended } = useExtendedCalendar(selectedDate);
+  const { calendarDays } = useExtendedCalendar(selectedDate);
 
   return (
     <DndContext
@@ -66,17 +66,10 @@ const MonthlyCalendarGrid = ({
             onScheduleClick={handleScheduleClick}
             onShowAllSchedules={handleShowAllSchedules}
             selectedScheduleId={selectedSchedule?.id}
-            isExtendedMonth={day?.isExtended} // 傳遞是否為延伸月份的標記
+            isExtendedMonth={day?.isExtended}
           />
         ))}
       </div>
-
-      {/* 延伸提示 */}
-      {isExtended && (
-        <div className="mt-2 text-xs text-gray-500 text-center">
-          * 顯示已延伸至完整週，包含下個月初部分日期
-        </div>
-      )}
 
       {/* Drag overlay */}
       <DragOverlay>

@@ -15,7 +15,7 @@ interface DroppableCalendarCellProps {
   onScheduleClick: (schedule: any) => void;
   onShowAllSchedules: (date: Date, schedules: any[]) => void;
   selectedScheduleId?: string;
-  isExtendedMonth?: boolean; // 新增：是否為延伸月份
+  isExtendedMonth?: boolean;
 }
 
 const DroppableCalendarCell = ({
@@ -46,14 +46,14 @@ const DroppableCalendarCell = ({
 
   const isToday = format(new Date(), 'yyyy-MM-dd') === dateString;
 
-  // 根據是否為延伸月份調整樣式
+  // 根據是否為當前月份調整樣式
   const cellBaseClasses = "h-24 border-b border-r border-gray-100 p-1 transition-colors relative";
-  const cellClasses = isExtendedMonth 
-    ? `${cellBaseClasses} bg-gray-50` // 延伸月份使用灰色背景
+  const cellClasses = !day.isCurrentMonth 
+    ? `${cellBaseClasses} bg-gray-50` // 非當前月份使用灰色背景
     : `${cellBaseClasses} ${isOver ? 'bg-blue-50' : 'hover:bg-gray-50'}`;
 
-  const dateClasses = isExtendedMonth
-    ? "text-xs font-medium text-gray-400" // 延伸月份日期使用淺色
+  const dateClasses = !day.isCurrentMonth
+    ? "text-xs font-medium text-gray-400" // 非當前月份日期使用淺色
     : `text-xs font-medium ${day.isWeekend ? 'text-red-500' : 'text-gray-700'}`;
 
   return (
@@ -62,7 +62,7 @@ const DroppableCalendarCell = ({
       <div className="flex items-center justify-between mb-1">
         <span className={dateClasses}>
           {day.label}
-          {isExtendedMonth && (
+          {!day.isCurrentMonth && (
             <span className="text-xs text-gray-400 ml-1">
               ({format(day.date, 'M')}月)
             </span>
@@ -87,7 +87,7 @@ const DroppableCalendarCell = ({
                   hasConflict={getScheduleConflicts(schedule.userId, dateString)}
                   onClick={() => onScheduleClick(schedule)}
                   isSelected={schedule.id === selectedScheduleId}
-                  isInExtendedMonth={isExtendedMonth}
+                  isInExtendedMonth={!day.isCurrentMonth}
                 />
               ))}
             </div>

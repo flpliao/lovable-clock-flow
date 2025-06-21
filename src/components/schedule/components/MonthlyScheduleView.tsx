@@ -59,7 +59,13 @@ const MonthlyScheduleView = ({
     closeDayDialog
   } = useScheduleDialogs();
 
-  const { isExtended, extendedEndDate } = useExtendedCalendar(selectedDate);
+  const { 
+    isExtended, 
+    hasStartExtension, 
+    hasEndExtension, 
+    extendedStartDate, 
+    extendedEndDate 
+  } = useExtendedCalendar(selectedDate);
 
   const handleUpdateSchedule = async (scheduleId: string, updates: any) => {
     await onUpdateSchedule(scheduleId, updates);
@@ -71,10 +77,36 @@ const MonthlyScheduleView = ({
 
   const getDisplayTitle = () => {
     const baseTitle = format(selectedDate, 'yyyy年MM月', { locale: zhTW });
+    
     if (isExtended) {
-      return `${baseTitle} - ${format(extendedEndDate, 'MM月dd日', { locale: zhTW })}`;
+      let extendedInfo = '';
+      
+      if (hasStartExtension && hasEndExtension) {
+        extendedInfo = ` (${format(extendedStartDate, 'MM月dd日', { locale: zhTW })} - ${format(extendedEndDate, 'MM月dd日', { locale: zhTW })})`;
+      } else if (hasStartExtension) {
+        extendedInfo = ` (自 ${format(extendedStartDate, 'MM月dd日', { locale: zhTW })})`;
+      } else if (hasEndExtension) {
+        extendedInfo = ` (至 ${format(extendedEndDate, 'MM月dd日', { locale: zhTW })})`;
+      }
+      
+      return `${baseTitle}${extendedInfo}`;
     }
+    
     return baseTitle;
+  };
+
+  const getExtendedDescription = () => {
+    if (!isExtended) return null;
+    
+    if (hasStartExtension && hasEndExtension) {
+      return '✨ 完整週顯示（含上個月末及下個月初）';
+    } else if (hasStartExtension) {
+      return '✨ 完整週顯示（含上個月末）';
+    } else if (hasEndExtension) {
+      return '✨ 完整週顯示（含下個月初）';
+    }
+    
+    return null;
   };
 
   return (
@@ -88,9 +120,9 @@ const MonthlyScheduleView = ({
                 - {getUserName(selectedStaffId)}
               </span>
             )}
-            {isExtended && (
+            {getExtendedDescription() && (
               <div className="mt-1 text-sm text-blue-600">
-                ✨ 完整週顯示（含下個月初）
+                {getExtendedDescription()}
               </div>
             )}
           </CardTitle>

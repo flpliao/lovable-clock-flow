@@ -1,97 +1,56 @@
 
 import React from 'react';
-import { Calendar, Users, Grid } from 'lucide-react';
-import CalendarGrid from './CalendarGrid';
-import ScheduleTable from './ScheduleTable';
-import YearMonthSelectorCard from './YearMonthSelectorCard';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface CalendarViewSectionProps {
-  selectedYear: string;
-  selectedMonth: string;
-  selectedDateNav: Date;
-  daysInMonth: any[];
-  onYearChange: (year: string) => void;
-  onMonthChange: (month: string) => void;
-  onDateClick: (day: any) => void;
+  selectedDate: Date;
+  onDateChange: (date: Date) => void;
+  selectedYear: number;
+  selectedMonth: number;
+  onYearChange: (year: number) => void;
+  onMonthChange: (month: number) => void;
   generateYears: () => number[];
-  generateMonths: () => { value: string; label: string; }[];
-  shiftsForSelectedDate: any[];
-  getUserName: (userId: string) => string;
-  getUserRelation: (userId: string) => string;
-  canDeleteSchedule: (schedule: any) => boolean;
-  onRemoveSchedule: (id: string) => void;
-  getScheduleCountForDate: (date: Date) => number;
+  generateMonths: () => Array<{ value: number; label: string }>;
 }
 
 const CalendarViewSection = ({
+  selectedDate,
+  onDateChange,
   selectedYear,
   selectedMonth,
-  selectedDateNav,
-  daysInMonth,
   onYearChange,
   onMonthChange,
-  onDateClick,
   generateYears,
   generateMonths,
-  shiftsForSelectedDate,
-  getUserName,
-  getUserRelation,
-  canDeleteSchedule,
-  onRemoveSchedule,
-  getScheduleCountForDate,
 }: CalendarViewSectionProps) => {
   return (
-    <div className="space-y-8">
-      {/* 年月選擇器 */}
-      <div>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-white/20 rounded-2xl">
-            <Calendar className="h-7 w-7 text-white" />
-          </div>
-          <h3 className="text-2xl font-bold text-white drop-shadow-lg">選擇年月</h3>
-        </div>
-        <YearMonthSelectorCard
-          selectedYear={selectedYear}
-          selectedMonth={selectedMonth}
-          onYearChange={onYearChange}
-          onMonthChange={onMonthChange}
-          generateYears={generateYears}
-          generateMonths={generateMonths}
-        />
-      </div>
-
-      {/* 日曆網格 */}
-      <div>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-white/20 rounded-2xl">
-            <Grid className="h-7 w-7 text-white" />
-          </div>
-          <h3 className="text-2xl font-bold text-white drop-shadow-lg">日曆檢視</h3>
-        </div>
-        <CalendarGrid
-          daysInMonth={daysInMonth}
-          onDateClick={onDateClick}
-          getScheduleCountForDate={getScheduleCountForDate}
-        />
-      </div>
-
-      {/* 排班詳情 */}
-      <div>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-white/20 rounded-2xl">
-            <Users className="h-7 w-7 text-white" />
-          </div>
-          <h3 className="text-2xl font-bold text-white drop-shadow-lg">排班詳情</h3>
-        </div>
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <Select value={selectedYear.toString()} onValueChange={(value) => onYearChange(parseInt(value))}>
+          <SelectTrigger className="flex-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {generateYears().map((year) => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}年
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         
-        <ScheduleTable
-          shiftsForSelectedDate={shiftsForSelectedDate}
-          getUserName={getUserName}
-          getUserRelation={getUserRelation}
-          canDeleteSchedule={canDeleteSchedule}
-          onRemoveSchedule={onRemoveSchedule}
-          selectedDateNav={selectedDateNav}
-        />
+        <Select value={selectedMonth.toString()} onValueChange={(value) => onMonthChange(parseInt(value))}>
+          <SelectTrigger className="flex-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {generateMonths().map((month) => (
+              <SelectItem key={month.value} value={month.value.toString()}>
+                {month.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

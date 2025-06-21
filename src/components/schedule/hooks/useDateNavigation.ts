@@ -7,8 +7,8 @@ export const useDateNavigation = () => {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   
-  const [selectedYear, setSelectedYear] = useState(currentYear.toString());
-  const [selectedMonth, setSelectedMonth] = useState(currentMonth.toString());
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   // 獲取農曆日期
@@ -23,8 +23,8 @@ export const useDateNavigation = () => {
 
   // 生成該月份的日期
   const generateDaysInMonth = (getScheduleCountForDate: (date: Date) => number) => {
-    const year = parseInt(selectedYear);
-    const month = parseInt(selectedMonth);
+    const year = selectedYear;
+    const month = selectedMonth;
     const daysCount = getDaysInMonth(new Date(year, month - 1));
     const firstDay = startOfMonth(new Date(year, month - 1));
     const firstDayOfWeek = firstDay.getDay();
@@ -61,7 +61,7 @@ export const useDateNavigation = () => {
   const generateYears = () => {
     const years = [];
     for (let i = currentYear - 1; i <= currentYear + 2; i++) {
-      years.push(i.toString());
+      years.push(i);
     }
     return years;
   };
@@ -69,7 +69,7 @@ export const useDateNavigation = () => {
   // 生成月份選項
   const generateMonths = () => {
     return Array.from({ length: 12 }, (_, i) => ({
-      value: (i + 1).toString(),
+      value: i + 1,
       label: `${i + 1}月`,
     }));
   };

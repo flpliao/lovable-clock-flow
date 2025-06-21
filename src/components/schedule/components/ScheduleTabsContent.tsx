@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -228,15 +229,15 @@ const ScheduleTabsContent = (props: ScheduleTabsContentProps) => {
             </CardHeader>
             <CardContent>
               <ListViewSection
+                availableStaff={props.availableStaff}
+                selectedStaffId={props.selectedStaffId || 'all'}
                 selectedDate={props.selectedDate}
-                selectedStaffId={props.selectedStaffId}
+                onStaffChange={(staffId) => props.onStaffChange(staffId === 'all' ? undefined : staffId)}
+                onDateChange={props.onDateChange}
+                getUserRelation={props.getUserRelation}
                 schedules={props.schedules}
                 getUserName={props.getUserName}
-                getUserRelation={props.getUserRelation}
-                shiftsForSelectedDate={props.shiftsForSelectedDate}
-                canDeleteSchedule={props.canDeleteSchedule}
-                onRemoveSchedule={props.onRemoveSchedule}
-                currentUser={props.currentUser}
+                viewableStaffIds={props.viewableStaffIds}
               />
             </CardContent>
           </Card>

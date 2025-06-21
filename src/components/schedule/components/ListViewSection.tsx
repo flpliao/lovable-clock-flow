@@ -27,6 +27,22 @@ const ListViewSection = ({
   getUserName,
   viewableStaffIds,
 }: ListViewSectionProps) => {
+  // Mock time slots for the monthly view
+  const mockTimeSlots = [
+    { id: '1', name: '早班', start_time: '08:00', end_time: '16:00' },
+    { id: '2', name: '中班', start_time: '16:00', end_time: '24:00' },
+    { id: '3', name: '晚班', start_time: '00:00', end_time: '08:00' },
+  ];
+
+  // Mock update and delete handlers
+  const handleUpdateSchedule = async (id: string, updates: any) => {
+    console.log('Update schedule:', id, updates);
+  };
+
+  const handleDeleteSchedule = async (id: string) => {
+    console.log('Delete schedule:', id);
+  };
+
   return (
     <div className="space-y-8">
       {/* 員工月份選擇器 */}
@@ -62,6 +78,9 @@ const ListViewSection = ({
           schedules={schedules.filter(schedule => viewableStaffIds.includes(schedule.userId))}
           getUserName={getUserName}
           selectedStaffId={selectedStaffId === 'all' ? undefined : selectedStaffId}
+          onUpdateSchedule={handleUpdateSchedule}
+          onDeleteSchedule={handleDeleteSchedule}
+          timeSlots={mockTimeSlots}
         />
       </div>
     </div>

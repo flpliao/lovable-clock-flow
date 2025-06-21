@@ -3,7 +3,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Staff } from '../types';
-import { useCompanyManagementContext } from '@/components/company/CompanyManagementContext';
+import { useBranches } from '../hooks/useBranches';
 
 interface EditStaffBranchFieldProps {
   currentStaff: Staff;
@@ -14,32 +14,32 @@ export const EditStaffBranchField: React.FC<EditStaffBranchFieldProps> = ({
   currentStaff,
   setCurrentStaff
 }) => {
-  const { branches } = useCompanyManagementContext();
+  const { getBranchOptions } = useBranches();
+  const branches = getBranchOptions();
 
   return (
     <div className="grid grid-cols-4 items-center gap-4">
       <Label htmlFor="branch" className="text-right">
-        所屬營業處 <span className="text-red-500">*</span>
+        分店 <span className="text-red-500">*</span>
       </Label>
       <Select 
         value={currentStaff.branch_id || ''} 
         onValueChange={(value) => {
-          const selectedBranch = branches.find(b => b.id === value);
+          const selectedBranch = branches.find(b => b.value === value);
           setCurrentStaff({
             ...currentStaff, 
             branch_id: value,
-            branch_name: selectedBranch?.name || '',
-            supervisor_id: undefined // 清除主管設定，因為可能跨營業處
+            branch_name: selectedBranch?.label || ''
           });
         }}
       >
         <SelectTrigger className="col-span-3" id="branch">
-          <SelectValue placeholder="選擇營業處" />
+          <SelectValue placeholder="選擇分店" />
         </SelectTrigger>
         <SelectContent>
           {branches.map((branch) => (
-            <SelectItem key={branch.id} value={branch.id}>
-              {branch.name} ({branch.type === 'headquarters' ? '總公司' : branch.type === 'branch' ? '分公司' : '門市'})
+            <SelectItem key={branch.value} value={branch.value}>
+              {branch.label}
             </SelectItem>
           ))}
         </SelectContent>

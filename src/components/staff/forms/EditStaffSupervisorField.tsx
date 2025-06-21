@@ -18,20 +18,23 @@ export const EditStaffSupervisorField: React.FC<EditStaffSupervisorFieldProps> =
   return (
     <div className="grid grid-cols-4 items-center gap-4">
       <Label htmlFor="supervisor" className="text-right">
-        上級主管
+        直屬主管
       </Label>
       <Select 
-        value={currentStaff.supervisor_id || ''} 
-        onValueChange={(value) => setCurrentStaff({...currentStaff, supervisor_id: value || undefined})}
+        value={currentStaff.supervisor_id || 'none'} 
+        onValueChange={(value) => setCurrentStaff({
+          ...currentStaff, 
+          supervisor_id: value === 'none' ? undefined : value
+        })}
       >
         <SelectTrigger className="col-span-3" id="supervisor">
-          <SelectValue placeholder="選擇上級主管" />
+          <SelectValue placeholder="選擇直屬主管" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">無上級主管</SelectItem>
-          {potentialSupervisors.map((staff) => (
-            <SelectItem key={staff.id} value={staff.id}>
-              {staff.name} ({staff.position}) - {staff.branch_name}
+          <SelectItem value="none">無直屬主管</SelectItem>
+          {potentialSupervisors.map((supervisor) => (
+            <SelectItem key={supervisor.id} value={supervisor.id}>
+              {supervisor.name} - {supervisor.position}
             </SelectItem>
           ))}
         </SelectContent>

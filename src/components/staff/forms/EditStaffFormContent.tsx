@@ -12,19 +12,22 @@ interface EditStaffFormContentProps {
   setCurrentStaff: (staff: Staff) => void;
   potentialSupervisors: Staff[];
   roles: StaffRole[];
+  onHireDateChange?: (hasHireDate: boolean, entitledDays?: number) => void;
 }
 
 export const EditStaffFormContent: React.FC<EditStaffFormContentProps> = ({
   currentStaff,
   setCurrentStaff,
   potentialSupervisors,
-  roles
+  roles,
+  onHireDateChange
 }) => {
   return (
     <div className="grid gap-4 py-4">
       <EditStaffBasicFields 
         currentStaff={currentStaff}
         setCurrentStaff={setCurrentStaff}
+        onHireDateChange={onHireDateChange}
       />
       
       <EditStaffDepartmentField 

@@ -27,12 +27,17 @@ export function useLeaveRequestForm() {
   const { currentUser } = useUser();
   const { createLeaveRequest } = useLeaveManagementContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [annualLeaveBalance, setAnnualLeaveBalance] = useState<{
-    totalDays: number;
-    usedDays: number;
-    remainingDays: number;
+  const [userStaffData, setUserStaffData] = useState<{
+    name: string;
+    department: string;
+    position: string;
+    hire_date: string | null;
     yearsOfService: string;
+    totalAnnualLeaveDays: number;
+    usedAnnualLeaveDays: number;
+    remainingAnnualLeaveDays: number;
   } | null>(null);
+  const [isLoadingUserData, setIsLoadingUserData] = useState(true);
 
   const form = useForm<LeaveRequestFormData>({
     resolver: zodResolver(leaveRequestSchema),
@@ -52,52 +57,74 @@ export function useLeaveRequestForm() {
     return 0;
   }, [watchedValues.start_date, watchedValues.end_date]);
 
-  // 載入年假餘額資料 - 從資料庫直接查詢使用者資料
+  // 載入使用者人員資料與特休資訊
   useEffect(() => {
-    const loadUserDataAndBalance = async () => {
+    const loadUserStaffData = async () => {
       if (!currentUser?.id) {
-        console.log('No current user, skipping balance load');
-        setAnnualLeaveBalance(null);
+        console.log('No current user, skipping staff data load');
+        setUserStaffData(null);
+        setIsLoadingUserData(false);
         return;
       }
 
       try {
-        console.log('Loading user data and balance for:', currentUser.id);
+        setIsLoadingUserData(true);
+        console.log('Loading staff data for user:', currentUser.id);
         
-        // 從資料庫查詢使用者的完整資料，包含入職日期
-        const { data: userData, error: userError } = await supabase
+        // 從 staff 表查詢使用者的完整人員資料
+        const { data: staffData, error: staffError } = await supabase
           .from('staff')
-          .select('hire_date, name, department, position')
+          .select('name, department, position, hire_date')
           .eq('id', currentUser.id)
           .maybeSingle();
 
-        if (userError) {
-          console.error('查詢使用者資料失敗:', userError);
-          setAnnualLeaveBalance(null);
+        if (staffError) {
+          console.error('查詢人員資料失敗:', staffError);
+          setUserStaffData(null);
+          setIsLoadingUserData(false);
           return;
         }
 
-        if (!userData || !userData.hire_date) {
-          console.log('使用者未設定入職日期');
-          setAnnualLeaveBalance(null);
+        if (!staffData) {
+          console.log('找不到使用者的人員資料');
+          setUserStaffData(null);
+          setIsLoadingUserData(false);
           return;
         }
 
-        console.log('使用者資料:', userData);
+        console.log('人員資料:', staffData);
 
-        const hireDate = new Date(userData.hire_date);
+        // 如果沒有入職日期，設定基本資料但不計算特休
+        if (!staffData.hire_date) {
+          setUserStaffData({
+            name: staffData.name,
+            department: staffData.department,
+            position: staffData.position,
+            hire_date: null,
+            yearsOfService: '未設定',
+            totalAnnualLeaveDays: 0,
+            usedAnnualLeaveDays: 0,
+            remainingAnnualLeaveDays: 0,
+          });
+          setIsLoadingUserData(false);
+          return;
+        }
+
+        // 計算年資和特休天數
+        const hireDate = new Date(staffData.hire_date);
         const totalDays = calculateAnnualLeaveDays(hireDate);
         const yearsOfService = formatYearsOfService(hireDate);
         
-        // 從已核准的請假記錄計算已使用天數
+        // 計算已使用的特休天數（從已核准的特別休假記錄統計）
+        const currentYear = new Date().getFullYear();
         const { data: leaveData, error: leaveError } = await supabase
           .from('leave_requests')
           .select('hours')
           .eq('user_id', currentUser.id)
           .eq('leave_type', 'annual')
           .eq('status', 'approved')
-          .gte('start_date', `${new Date().getFullYear()}-01-01`)
-          .lte('start_date', `${new Date().getFullYear()}-12-31`);
+          .gte('start_date', `${currentYear}-01-01`)
+          .lte('start_date', `${currentYear}-12-31`);
 
         if (leaveError) {
           console.error('查詢請假記錄失敗:', leaveError);
@@ -105,37 +132,48 @@ export function useLeaveRequestForm() {
 
         const usedHours = (leaveData || []).reduce((total, record) => total + Number(record.hours), 0);
         const usedDays = usedHours / 8;
-        const remainingDays = totalDays - usedDays;
+        const remainingDays = Math.max(0, totalDays - usedDays);
 
-        setAnnualLeaveBalance({
-          totalDays,
-          usedDays,
-          remainingDays,
+        setUserStaffData({
+          name: staffData.name,
+          department: staffData.department,
+          position: staffData.position,
+          hire_date: staffData.hire_date,
           yearsOfService,
+          totalAnnualLeaveDays: totalDays,
+          usedAnnualLeaveDays: usedDays,
+          remainingAnnualLeaveDays: remainingDays,
         });
 
-        console.log('年假餘額計算完成:', {
+        console.log('特休資訊計算完成:', {
+          yearsOfService,
           totalDays,
           usedDays,
-          remainingDays,
-          yearsOfService
+          remainingDays
         });
 
       } catch (error) {
-        console.error('載入年假餘額失敗:', error);
-        setAnnualLeaveBalance(null);
+        console.error('載入人員資料失敗:', error);
+        setUserStaffData(null);
+      } finally {
+        setIsLoadingUserData(false);
       }
     };
 
-    loadUserDataAndBalance();
+    loadUserStaffData();
   }, [currentUser?.id]);
 
   // 驗證特休餘額
   const validateAnnualLeave = () => {
-    if (watchedValues.leave_type === 'annual' && annualLeaveBalance) {
+    if (watchedValues.leave_type === 'annual' && userStaffData) {
+      // 檢查是否已設定入職日期
+      if (!userStaffData.hire_date) {
+        return '尚未設定入職日期，無法申請特別休假。請至人員資料設定入職日期。';
+      }
+      
       const requestedDays = calculatedHours / 8;
-      if (requestedDays > annualLeaveBalance.remainingDays) {
-        return `特休餘額不足，您剩餘 ${annualLeaveBalance.remainingDays} 天，請重新調整請假時數`;
+      if (requestedDays > userStaffData.remainingAnnualLeaveDays) {
+        return `特休餘額不足，您剩餘 ${userStaffData.remainingAnnualLeaveDays} 天，請重新調整請假時段`;
       }
     }
     return null;
@@ -205,7 +243,8 @@ export function useLeaveRequestForm() {
   return {
     form,
     currentUser,
-    annualLeaveBalance,
+    userStaffData,
+    isLoadingUserData,
     calculatedHours,
     isSubmitting,
     validationError: validateAnnualLeave(),

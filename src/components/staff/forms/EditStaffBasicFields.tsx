@@ -103,7 +103,7 @@ export const EditStaffBasicFields: React.FC<EditStaffBasicFieldsProps> = ({
         />
       </div>
 
-      {/* 新增入職日期欄位 */}
+      {/* 優化的入職日期欄位 */}
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="hire_date" className="text-right text-sm">
           📅 入職日期
@@ -138,6 +138,9 @@ export const EditStaffBasicFields: React.FC<EditStaffBasicFieldsProps> = ({
                 }
                 initialFocus
                 className="pointer-events-auto"
+                captionLayout="dropdown-buttons"
+                fromYear={1990}
+                toYear={new Date().getFullYear()}
               />
             </PopoverContent>
           </Popover>

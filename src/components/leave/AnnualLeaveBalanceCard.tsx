@@ -52,6 +52,29 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
     );
   }
 
+  // 檢查是否未設定入職日期
+  if (!calculatedData.hireDate) {
+    return (
+      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center">
+            <CalendarDays className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-white drop-shadow-md">特別休假設定</h3>
+            <p className="text-sm text-white/80 font-medium drop-shadow-sm">Annual Leave Setup</p>
+          </div>
+        </div>
+        <div className="bg-yellow-500/20 border border-yellow-300/30 rounded-xl p-4">
+          <div className="text-yellow-100 text-center">
+            <div className="text-lg font-semibold mb-2">⚠️ 尚未設定入職日期</div>
+            <p className="text-sm">請至人員資料設定入職日期以啟用特休制度</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // 使用計算的資料或從資料庫取得的資料
   const totalDays = balanceData?.total_days ?? calculatedData.entitledDays;
   const usedDays = balanceData?.used_days ?? 0;

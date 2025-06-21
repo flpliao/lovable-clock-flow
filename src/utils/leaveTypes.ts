@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 // Define the leave type structure
@@ -10,9 +11,16 @@ export interface LeaveType {
   maxDaysPerYear?: number;
   requiresAttachment: boolean;
   description: string;
+  validationRules?: {
+    genderRestriction?: 'male' | 'female';
+    onceOnly?: boolean;
+    relationshipRequired?: boolean;
+    ageRestriction?: { maxChildAge: number };
+    maxYearsPerChild?: number;
+  };
 }
 
-// Taiwan Labor Law leave types
+// Taiwan Labor Law leave types - 符合勞基法規定
 export const LEAVE_TYPES: LeaveType[] = [
   {
     id: "annual",
@@ -21,37 +29,40 @@ export const LEAVE_TYPES: LeaveType[] = [
     isPaid: true,
     annualReset: true,
     requiresAttachment: false,
-    description: "根據年資分配天數"
+    description: "視年資自動計算剩餘天數（每年3～30日）"
   },
   {
     id: "personal",
-    name: "事假",
+    name: "事假（無薪）",
     name_en: "personal",
     isPaid: false,
     annualReset: true,
     maxDaysPerYear: 14,
     requiresAttachment: false,
-    description: "每年最多14天"
+    description: "每年最多14天，超過部分無薪"
   },
   {
     id: "sick",
-    name: "病假",
+    name: "病假（依勞基法規定）",
     name_en: "sick",
-    isPaid: false, // 前30天半薪
+    isPaid: true, // 前30天半薪
     annualReset: true,
     maxDaysPerYear: 30,
     requiresAttachment: true,
-    description: "最多30天，前30日半薪"
+    description: "每年最多30天，30天內依法給半薪，超過後可視為留職停薪"
   },
   {
     id: "marriage",
     name: "婚假",
     name_en: "marriage",
     isPaid: true,
-    annualReset: true,
+    annualReset: false,
     maxDaysPerYear: 8,
     requiresAttachment: true,
-    description: "須於結婚後1年內請完"
+    description: "僅限一次，8日內，須於結婚後1年內請完",
+    validationRules: {
+      onceOnly: true
+    }
   },
   {
     id: "bereavement",
@@ -60,7 +71,10 @@ export const LEAVE_TYPES: LeaveType[] = [
     isPaid: true,
     annualReset: true,
     requiresAttachment: true,
-    description: "3～8天，依親等"
+    description: "根據親屬關係：父母/配偶8日、祖父母/兄弟姊妹6日、其他3日",
+    validationRules: {
+      relationshipRequired: true
+    }
   },
   {
     id: "maternity",
@@ -70,7 +84,10 @@ export const LEAVE_TYPES: LeaveType[] = [
     annualReset: true,
     maxDaysPerYear: 56, // 8週
     requiresAttachment: true,
-    description: "8週，須附診斷證明"
+    description: "固定8週（56天），女性員工限定",
+    validationRules: {
+      genderRestriction: 'female'
+    }
   },
   {
     id: "paternity",
@@ -80,16 +97,23 @@ export const LEAVE_TYPES: LeaveType[] = [
     annualReset: true,
     maxDaysPerYear: 7,
     requiresAttachment: false,
-    description: "7天，於配偶分娩前後使用"
+    description: "固定7天，全薪，男性員工限定，配偶懷孕期間申請",
+    validationRules: {
+      genderRestriction: 'male'
+    }
   },
   {
     id: "parental",
-    name: "育嬰留停",
+    name: "育嬰留停（無薪）",
     name_en: "parental",
     isPaid: false,
     annualReset: false,
     requiresAttachment: true,
-    description: "最長2年，需符合子女未滿三歲"
+    description: "每名子女最長2年，需於子女滿3歲前結束",
+    validationRules: {
+      maxYearsPerChild: 2,
+      ageRestriction: { maxChildAge: 3 }
+    }
   },
   {
     id: "occupational",
@@ -98,16 +122,16 @@ export const LEAVE_TYPES: LeaveType[] = [
     isPaid: true,
     annualReset: false,
     requiresAttachment: true,
-    description: "因公受傷、工殤"
+    description: "不限制天數，需檢附職災證明，不併入病假計算"
   },
   {
     id: "other",
-    name: "其他",
+    name: "其他（無薪）",
     name_en: "other",
     isPaid: false,
     annualReset: true,
     requiresAttachment: false,
-    description: "其他請假"
+    description: "自訂請假類型，需填寫詳細原因，由主管人工審核"
   }
 ];
 
@@ -116,7 +140,7 @@ export const getLeaveTypeById = (id: string): LeaveType | undefined => {
   return LEAVE_TYPES.find(type => type.id === id);
 };
 
-// Define schema for leave form
+// Define schema for leave form with enhanced validation
 export const leaveFormSchema = z.object({
   start_date: z.date({
     required_error: "請選擇請假開始日期",
@@ -133,6 +157,11 @@ export const leaveFormSchema = z.object({
     message: "請輸入請假事由",
   }),
   attachment: z.any().optional(),
+  relationship: z.string().optional(), // For bereavement leave
+  child_info: z.object({
+    name: z.string().optional(),
+    birth_date: z.date().optional(),
+  }).optional(), // For parental leave
 }).refine((data) => data.end_date >= data.start_date, {
   message: "結束日期不能早於開始日期",
   path: ["end_date"],
@@ -140,8 +169,24 @@ export const leaveFormSchema = z.object({
 
 export type LeaveFormValues = z.infer<typeof leaveFormSchema>;
 
-// Update the leave type texts in utils
+// Enhanced leave type text helper
 export const getLeaveTypeText = (type: string): string => {
   const leaveType = getLeaveTypeById(type);
   return leaveType?.name || '其他';
+};
+
+// Get relationship options for bereavement leave
+export const BEREAVEMENT_RELATIONSHIPS = [
+  { value: 'parent', label: '父母', days: 8 },
+  { value: 'spouse', label: '配偶', days: 8 },
+  { value: 'grandparent', label: '祖父母', days: 6 },
+  { value: 'sibling', label: '兄弟姊妹', days: 6 },
+  { value: 'child', label: '子女', days: 8 },
+  { value: 'other', label: '其他親屬', days: 3 }
+];
+
+// Calculate bereavement days based on relationship
+export const getBereavementDays = (relationship: string): number => {
+  const rel = BEREAVEMENT_RELATIONSHIPS.find(r => r.value === relationship);
+  return rel?.days || 3;
 };

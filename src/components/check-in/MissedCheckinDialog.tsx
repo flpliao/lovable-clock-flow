@@ -148,26 +148,34 @@ const MissedCheckinDialog: React.FC<MissedCheckinDialogProps> = ({ onSuccess }) 
           {(formData.missed_type === 'check_in' || formData.missed_type === 'both') && (
             <div className="space-y-2">
               <Label htmlFor="check_in_time">預計上班時間</Label>
-              <Input
-                id="check_in_time"
-                type="time"
-                value={formData.requested_check_in_time}
-                onChange={(e) => setFormData({ ...formData, requested_check_in_time: e.target.value })}
-                required={formData.missed_type === 'check_in' || formData.missed_type === 'both'}
-              />
+              <div className="relative">
+                <Input
+                  id="check_in_time"
+                  type="time"
+                  value={formData.requested_check_in_time}
+                  onChange={(e) => setFormData({ ...formData, requested_check_in_time: e.target.value })}
+                  required={formData.missed_type === 'check_in' || formData.missed_type === 'both'}
+                  className="pl-10"
+                />
+                <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
             </div>
           )}
 
           {(formData.missed_type === 'check_out' || formData.missed_type === 'both') && (
             <div className="space-y-2">
               <Label htmlFor="check_out_time">預計下班時間</Label>
-              <Input
-                id="check_out_time"
-                type="time"
-                value={formData.requested_check_out_time}
-                onChange={(e) => setFormData({ ...formData, requested_check_out_time: e.target.value })}
-                required={formData.missed_type === 'check_out' || formData.missed_type === 'both'}
-              />
+              <div className="relative">
+                <Input
+                  id="check_out_time"
+                  type="time"
+                  value={formData.requested_check_out_time}
+                  onChange={(e) => setFormData({ ...formData, requested_check_out_time: e.target.value })}
+                  required={formData.missed_type === 'check_out' || formData.missed_type === 'both'}
+                  className="pl-10"
+                />
+                <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
             </div>
           )}
 

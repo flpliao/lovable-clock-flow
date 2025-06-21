@@ -10,14 +10,30 @@ const Login = () => {
   const { currentUser, isAuthenticated, isUserLoaded } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // 檢查已登入用戶並重定向
   useEffect(() => {
-    if (isUserLoaded && isAuthenticated && currentUser) {
+    if (isUserLoaded && isAuthenticated && currentUser && !isRedirecting) {
       console.log('🔐 用戶已登入，重定向到主頁面:', currentUser.name);
-      navigate('/', { replace: true });
+      setIsRedirecting(true);
+      setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 100);
     }
-  }, [isUserLoaded, isAuthenticated, currentUser, navigate]);
+  }, [isUserLoaded, isAuthenticated, currentUser, navigate, isRedirecting]);
+
+  // 已登入用戶顯示跳轉中
+  if (isRedirecting || (isAuthenticated && currentUser)) {
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+          <p>正在跳轉...</p>
+        </div>
+      </div>
+    );
+  }
 
   // 載入中狀態
   if (!isUserLoaded) {
@@ -26,18 +42,6 @@ const Login = () => {
         <div className="text-white text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
           <p>載入中...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // 已登入用戶顯示跳轉中
-  if (isAuthenticated && currentUser) {
-    return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-          <p>正在跳轉...</p>
         </div>
       </div>
     );

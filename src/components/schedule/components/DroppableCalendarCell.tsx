@@ -40,24 +40,29 @@ const DroppableCalendarCell = ({
     id: dateString,
     data: {
       type: 'calendar-cell',
-      date: dateString
+      date: day.date // 直接傳遞 Date 對象
     }
   });
 
   const isToday = format(new Date(), 'yyyy-MM-dd') === dateString;
 
-  // 根據是否為當前月份調整樣式
-  const cellBaseClasses = "h-24 border-b border-r border-gray-100 p-1 transition-colors relative";
+  // 所有日期格子都可以接受drop，增強視覺反饋
+  const cellBaseClasses = "h-24 border-b border-r border-gray-100 p-1 transition-all duration-200 relative";
   const cellClasses = !day.isCurrentMonth 
-    ? `${cellBaseClasses} bg-gray-50` // 非當前月份使用灰色背景
-    : `${cellBaseClasses} ${isOver ? 'bg-blue-50' : 'hover:bg-gray-50'}`;
+    ? `${cellBaseClasses} bg-gray-50 ${isOver ? 'bg-blue-100 border-blue-300' : ''}` 
+    : `${cellBaseClasses} ${isOver ? 'bg-blue-50 border-blue-300 shadow-inner' : 'hover:bg-gray-50'}`;
 
   const dateClasses = !day.isCurrentMonth
-    ? "text-xs font-medium text-gray-400" // 非當前月份日期使用淺色
+    ? "text-xs font-medium text-gray-400" 
     : `text-xs font-medium ${day.isWeekend ? 'text-red-500' : 'text-gray-700'}`;
 
   return (
     <div ref={setNodeRef} className={cellClasses}>
+      {/* 拖拽懸停時的視覺指示 */}
+      {isOver && (
+        <div className="absolute inset-0 bg-blue-200/30 border-2 border-blue-400 border-dashed rounded pointer-events-none z-10"></div>
+      )}
+      
       {/* 日期標題 */}
       <div className="flex items-center justify-between mb-1">
         <span className={dateClasses}>
@@ -84,7 +89,7 @@ const DroppableCalendarCell = ({
                   schedule={schedule}
                   getUserName={getUserName}
                   getUserRelation={getUserRelation}
-                  hasConflict={getScheduleConflicts(schedule.userId, dateString)}
+                  hasConflict={false} // 移除衝突檢查
                   onClick={() => onScheduleClick(schedule)}
                   isSelected={schedule.id === selectedScheduleId}
                   isInExtendedMonth={!day.isCurrentMonth}

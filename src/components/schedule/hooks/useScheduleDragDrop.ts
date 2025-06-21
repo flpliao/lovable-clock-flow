@@ -20,11 +20,11 @@ export const useScheduleDragDrop = ({
   const { toast } = useToast();
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Configure drag sensors
+  // Configure drag sensors - 降低激活距離，使拖拽更敏感
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 3, // 減少到3像素
       },
     })
   );
@@ -47,14 +47,11 @@ export const useScheduleDragDrop = ({
     [filteredSchedules]
   );
 
-  // Get conflict users
-  const conflictUsers = useMemo(() => 
-    getScheduleConflicts(dragSchedules), 
-    [dragSchedules]
-  );
+  // 移除衝突檢查
+  const conflictUsers = [];
 
   const hasScheduleConflict = (userId: string, date: string) => {
-    return conflictUsers.includes(userId);
+    return false; // 不再檢查衝突
   };
 
   const handleDragStart = ({ active }: any) => {
@@ -67,21 +64,18 @@ export const useScheduleDragDrop = ({
     if (!over) return;
 
     const draggedSchedule = dragSchedules.find(s => s.id === active.id);
-    const targetDate = over.data.current?.date;
+    let targetDate = over.data.current?.date;
 
-    if (!draggedSchedule || !targetDate) return;
+    if (!draggedSchedule) return;
 
-    const validation = validateDragOperation(draggedSchedule, targetDate, dragSchedules);
-    
-    if (!validation.isValid) {
-      toast({
-        title: "無法移動排班",
-        description: validation.message,
-        variant: "destructive",
-      });
-      return;
+    // 如果 targetDate 是字符串，轉換為 Date 對象
+    if (typeof targetDate === 'string') {
+      targetDate = new Date(targetDate);
     }
+    
+    if (!targetDate) return;
 
+    // 移除驗證，直接允許拖動
     const newWorkDate = format(targetDate, 'yyyy-MM-dd');
     
     if (newWorkDate !== draggedSchedule.workDate) {

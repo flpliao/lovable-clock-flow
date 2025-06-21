@@ -1,14 +1,13 @@
 
 import React, { useState } from 'react';
-import LeaveRequestForm from '@/components/LeaveRequestForm';
+import EnhancedLeaveRequestForm from '@/components/leave/EnhancedLeaveRequestForm';
 import LeaveBalance from '@/components/LeaveBalance';
 import LeaveHistory from '@/components/LeaveHistory';
 import ShiftReminder from '@/components/ShiftReminder';
 import LeaveRequestDetail from '@/components/LeaveRequestDetail';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LeaveRequest as LeaveRequestType } from '@/types';
 import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
-import { Clock, Calendar, Bell, PiggyBank, FileText, History, User } from 'lucide-react';
+import { PiggyBank, FileText, History } from 'lucide-react';
 
 const LeaveRequest = () => {
   const [activeTab, setActiveTab] = useState<string>('request');
@@ -26,9 +25,6 @@ const LeaveRequest = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36">
       <div className="w-full px-4 sm:px-6 lg:px-8 pb-6">
         <div className="max-w-7xl mx-auto space-y-6">
-          {/* Welcome Header */}
-          
-
           {/* Shift Reminder */}
           <ShiftReminder />
           
@@ -68,7 +64,7 @@ const LeaveRequest = () => {
               
               <div className="px-4 pb-4">
                 <TabsContent value="request" className="mt-0">
-                  <LeaveRequestForm onSubmit={handleNewLeaveRequest} />
+                  <EnhancedLeaveRequestForm onSubmit={handleNewLeaveRequest} />
                 </TabsContent>
                 
                 <TabsContent value="view" className="mt-0">

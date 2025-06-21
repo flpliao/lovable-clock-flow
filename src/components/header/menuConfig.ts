@@ -16,6 +16,7 @@ export const menuItems: MenuItem[] = [
   { path: '/scheduling', label: '排班管理', icon: Calendar, public: false },
   { path: '/overtime-management', label: '加班管理', icon: Briefcase, public: false },
   { path: '/holiday-management', label: '假日管理', icon: CalendarDays, public: false, adminOnly: true },
+  { path: '/missed-checkin-management', label: '忘記打卡管理', icon: Clock, public: false, adminOnly: true },
   { path: '/hr-management', label: 'HR管理', icon: Users, public: false, adminOnly: true },
   { path: '/company-announcements', label: '公司公告', icon: MessageSquare, public: false },
   { path: '/announcement-management', label: '公告管理', icon: Megaphone, public: false, adminOnly: true },

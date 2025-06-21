@@ -49,7 +49,7 @@ function App() {
               <Route path="/company-announcements" element={<CompanyAnnouncements />} />
               <Route path="/leave-approval" element={<LeaveApprovalView />} />
               <Route path="/staff-dashboard" element={<StaffDashboard />} />
-              <Route path="/company-management" element={<CompanyBranchManagement />} />
+              <Route path="/company-branch-management" element={<CompanyBranchManagement />} />
               <Route path="/hr-management" element={<HRManagement />} />
               <Route path="/overtime-management" element={<OvertimeManagement />} />
               <Route path="/holiday-management" element={<HolidayManagement />} />

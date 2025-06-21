@@ -8,7 +8,9 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertTriangle, Clock, Trash2, User } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { AlertTriangle, Clock, Trash2, User, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface EditScheduleDialogProps {
@@ -29,7 +31,7 @@ interface EditScheduleDialogProps {
     end_time: string;
   }>;
   getUserName: (userId: string) => string;
-  onUpdate: (scheduleId: string, updates: { timeSlot: string; startTime: string; endTime: string }) => void;
+  onUpdate: (scheduleId: string, updates: { timeSlot?: string; startTime?: string; endTime?: string; workDate?: string }) => void;
   onDelete: (scheduleId: string) => void;
 }
 
@@ -43,19 +45,34 @@ const EditScheduleDialog = ({
   onDelete
 }: EditScheduleDialogProps) => {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(schedule?.timeSlot || '');
+  const [selectedDate, setSelectedDate] = useState(schedule?.workDate || '');
   const { toast } = useToast();
 
+  React.useEffect(() => {
+    if (schedule) {
+      setSelectedTimeSlot(schedule.timeSlot);
+      setSelectedDate(schedule.workDate);
+    }
+  }, [schedule]);
+
   const handleUpdate = () => {
-    if (!schedule || !selectedTimeSlot) return;
+    if (!schedule || !selectedTimeSlot || !selectedDate) return;
     
     const timeSlot = timeSlots.find(ts => ts.name === selectedTimeSlot);
     if (!timeSlot) return;
 
-    onUpdate(schedule.id, {
+    const updates: any = {
       timeSlot: timeSlot.name,
       startTime: timeSlot.start_time,
       endTime: timeSlot.end_time
-    });
+    };
+
+    // 如果日期有變更，也更新日期
+    if (selectedDate !== schedule.workDate) {
+      updates.workDate = selectedDate;
+    }
+
+    onUpdate(schedule.id, updates);
     
     toast({
       title: "更新成功",
@@ -93,16 +110,24 @@ const EditScheduleDialog = ({
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <User className="h-4 w-4" />
             <span>{getUserName(schedule.userId)}</span>
-            <span>•</span>
-            <span>{new Date(schedule.workDate).toLocaleDateString('zh-TW', { 
-              month: 'long', 
-              day: 'numeric',
-              weekday: 'short'
-            })}</span>
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">班別類型</label>
+            <Label htmlFor="date" className="text-sm font-medium flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              日期
+            </Label>
+            <Input
+              id="date"
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">班別類型</Label>
             <Select value={selectedTimeSlot} onValueChange={setSelectedTimeSlot}>
               <SelectTrigger>
                 <SelectValue placeholder="選擇班別" />

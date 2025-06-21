@@ -3,11 +3,20 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
-import { DndContext, DragOverlay, closestCenter, DragEndEvent } from '@dnd-kit/core';
+import { 
+  DndContext, 
+  DragOverlay, 
+  closestCenter, 
+  DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors 
+} from '@dnd-kit/core';
 import { useToast } from '@/hooks/use-toast';
 import DroppableCalendarCell from './DroppableCalendarCell';
 import DraggableScheduleCard from './DraggableScheduleCard';
 import EditScheduleDialog from './EditScheduleDialog';
+import DayScheduleDialog from './DayScheduleDialog';
 import { validateDragOperation, getScheduleConflicts, DragScheduleItem } from '../utils/dragUtils';
 
 interface MonthlyScheduleViewProps {
@@ -38,6 +47,18 @@ const MonthlyScheduleView = ({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
+  const [selectedDaySchedules, setSelectedDaySchedules] = useState<any[]>([]);
+  const [selectedDayDate, setSelectedDayDate] = useState<Date | null>(null);
+
+  // 配置拖拽感應器
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   const monthStart = startOfMonth(selectedDate);
   const monthEnd = endOfMonth(selectedDate);
@@ -139,6 +160,12 @@ const MonthlyScheduleView = ({
     setIsEditDialogOpen(true);
   };
 
+  const handleShowAllSchedules = (date: Date, daySchedules: any[]) => {
+    setSelectedDayDate(date);
+    setSelectedDaySchedules(daySchedules);
+    setIsDayDialogOpen(true);
+  };
+
   const handleUpdateSchedule = async (scheduleId: string, updates: any) => {
     await onUpdateSchedule(scheduleId, updates);
   };
@@ -164,7 +191,7 @@ const MonthlyScheduleView = ({
         </CardHeader>
         <CardContent>
           <DndContext
-            sensors={[]}
+            sensors={sensors}
             collisionDetection={closestCenter}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
@@ -192,6 +219,7 @@ const MonthlyScheduleView = ({
                   getUserRelation={(userId) => selectedStaffId ? '' : ''}
                   getScheduleConflicts={hasScheduleConflict}
                   onScheduleClick={handleScheduleClick}
+                  onShowAllSchedules={handleShowAllSchedules}
                   selectedScheduleId={selectedSchedule?.id}
                 />
               ))}
@@ -225,6 +253,20 @@ const MonthlyScheduleView = ({
         getUserName={getUserName}
         onUpdate={handleUpdateSchedule}
         onDelete={handleDeleteSchedule}
+      />
+
+      {/* 當天排班詳情對話框 */}
+      <DayScheduleDialog
+        isOpen={isDayDialogOpen}
+        onClose={() => {
+          setIsDayDialogOpen(false);
+          setSelectedDayDate(null);
+          setSelectedDaySchedules([]);
+        }}
+        date={selectedDayDate}
+        schedules={selectedDaySchedules}
+        getUserName={getUserName}
+        onScheduleClick={handleScheduleClick}
       />
     </>
   );

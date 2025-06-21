@@ -16,11 +16,14 @@ interface DroppableCalendarCellProps {
     userId: string;
     workDate: string;
     timeSlot: string;
+    startTime: string;
+    endTime: string;
   }>;
   getUserName: (userId: string) => string;
   getUserRelation: (userId: string) => string;
   getScheduleConflicts: (userId: string, date: string) => boolean;
   onScheduleClick: (schedule: any) => void;
+  onShowAllSchedules: (date: Date, schedules: any[]) => void;
   selectedScheduleId?: string;
 }
 
@@ -31,6 +34,7 @@ const DroppableCalendarCell = ({
   getUserRelation,
   getScheduleConflicts,
   onScheduleClick,
+  onShowAllSchedules,
   selectedScheduleId
 }: DroppableCalendarCellProps) => {
   const { setNodeRef, isOver } = useDroppable({
@@ -45,6 +49,9 @@ const DroppableCalendarCell = ({
 
   const daySchedules = schedules.filter(s => s.workDate === format(day.date, 'yyyy-MM-dd'));
   const isWeekend = getDay(day.date) === 0 || getDay(day.date) === 6;
+  const maxDisplay = 3;
+  const displaySchedules = daySchedules.slice(0, maxDisplay);
+  const remainingCount = daySchedules.length - maxDisplay;
 
   return (
     <div
@@ -72,7 +79,7 @@ const DroppableCalendarCell = ({
 
       {/* 排班列表 */}
       <div className="space-y-1">
-        {daySchedules.slice(0, 3).map((schedule) => (
+        {displaySchedules.map((schedule) => (
           <DraggableScheduleCard
             key={schedule.id}
             schedule={schedule}
@@ -85,9 +92,12 @@ const DroppableCalendarCell = ({
         ))}
         
         {/* 顯示更多指示器 */}
-        {daySchedules.length > 3 && (
-          <div className="text-xs text-gray-500 bg-gray-100 rounded px-2 py-1 text-center">
-            +{daySchedules.length - 3} 更多
+        {remainingCount > 0 && (
+          <div 
+            className="text-xs text-gray-600 bg-gray-100 rounded px-2 py-1 text-center cursor-pointer hover:bg-gray-200 transition-colors"
+            onClick={() => onShowAllSchedules(day.date, daySchedules)}
+          >
+            +{remainingCount} 更多
           </div>
         )}
       </div>

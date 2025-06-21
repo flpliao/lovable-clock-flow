@@ -7,6 +7,7 @@ import { useUser } from '@/contexts/UserContext';
 import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
 import { calculateAnnualLeaveDays, formatYearsOfService, calculateWorkDays } from '@/utils/annualLeaveCalculator';
 import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 // 請假表單驗證 schema
 const leaveRequestSchema = z.object({
@@ -51,29 +52,83 @@ export function useLeaveRequestForm() {
     return 0;
   }, [watchedValues.start_date, watchedValues.end_date]);
 
-  // 載入年假餘額資料
+  // 載入年假餘額資料 - 從資料庫直接查詢使用者資料
   useEffect(() => {
-    if (!currentUser || !currentUser.hire_date) {
-      setAnnualLeaveBalance(null);
-      return;
-    }
+    const loadUserDataAndBalance = async () => {
+      if (!currentUser?.id) {
+        console.log('No current user, skipping balance load');
+        setAnnualLeaveBalance(null);
+        return;
+      }
 
-    const hireDate = new Date(currentUser.hire_date);
-    const totalDays = calculateAnnualLeaveDays(hireDate);
-    const yearsOfService = formatYearsOfService(hireDate);
-    
-    // TODO: 從請假記錄計算已使用天數
-    // 這裡暫時設為0，實際應從已核准的特休請假記錄統計
-    const usedDays = 0;
-    const remainingDays = totalDays - usedDays;
+      try {
+        console.log('Loading user data and balance for:', currentUser.id);
+        
+        // 從資料庫查詢使用者的完整資料，包含入職日期
+        const { data: userData, error: userError } = await supabase
+          .from('staff')
+          .select('hire_date, name, department, position')
+          .eq('id', currentUser.id)
+          .maybeSingle();
 
-    setAnnualLeaveBalance({
-      totalDays,
-      usedDays,
-      remainingDays,
-      yearsOfService,
-    });
-  }, [currentUser]);
+        if (userError) {
+          console.error('查詢使用者資料失敗:', userError);
+          setAnnualLeaveBalance(null);
+          return;
+        }
+
+        if (!userData || !userData.hire_date) {
+          console.log('使用者未設定入職日期');
+          setAnnualLeaveBalance(null);
+          return;
+        }
+
+        console.log('使用者資料:', userData);
+
+        const hireDate = new Date(userData.hire_date);
+        const totalDays = calculateAnnualLeaveDays(hireDate);
+        const yearsOfService = formatYearsOfService(hireDate);
+        
+        // 從已核准的請假記錄計算已使用天數
+        const { data: leaveData, error: leaveError } = await supabase
+          .from('leave_requests')
+          .select('hours')
+          .eq('user_id', currentUser.id)
+          .eq('leave_type', 'annual')
+          .eq('status', 'approved')
+          .gte('start_date', `${new Date().getFullYear()}-01-01`)
+          .lte('start_date', `${new Date().getFullYear()}-12-31`);
+
+        if (leaveError) {
+          console.error('查詢請假記錄失敗:', leaveError);
+        }
+
+        const usedHours = (leaveData || []).reduce((total, record) => total + Number(record.hours), 0);
+        const usedDays = usedHours / 8;
+        const remainingDays = totalDays - usedDays;
+
+        setAnnualLeaveBalance({
+          totalDays,
+          usedDays,
+          remainingDays,
+          yearsOfService,
+        });
+
+        console.log('年假餘額計算完成:', {
+          totalDays,
+          usedDays,
+          remainingDays,
+          yearsOfService
+        });
+
+      } catch (error) {
+        console.error('載入年假餘額失敗:', error);
+        setAnnualLeaveBalance(null);
+      }
+    };
+
+    loadUserDataAndBalance();
+  }, [currentUser?.id]);
 
   // 驗證特休餘額
   const validateAnnualLeave = () => {

@@ -56,7 +56,8 @@ export const useStaffUpdateOperation = (
         role_id: updatedStaff.role_id || 'user',
         supervisor_id: updatedStaff.supervisor_id || null,
         username: updatedStaff.username || null,
-        email: updatedStaff.email || null
+        email: updatedStaff.email || null,
+        hire_date: updatedStaff.hire_date || null // 新增入職日期欄位
       };
 
       console.log('準備更新的資料:', updateData);

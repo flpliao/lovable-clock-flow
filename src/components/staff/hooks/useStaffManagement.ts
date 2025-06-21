@@ -94,9 +94,9 @@ export const useStaffManagement = () => {
       const success = await updateStaff(currentStaff);
       if (success) {
         setIsEditDialogOpen(false);
-        // 更新成功後重新同步資料
+        // 更新成功後重新同步資料並強制重新載入
         console.log('📊 員工更新成功，重新同步後台資料');
-        await refreshData();
+        await forceReload(); // 使用強制重新載入確保最新資料
       }
       return success;
     }

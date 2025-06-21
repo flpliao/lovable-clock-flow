@@ -74,6 +74,7 @@ export const useStaffDataLoader = () => {
         supervisor_id: item.supervisor_id,
         username: item.username,
         email: item.email,
+        hire_date: item.hire_date, // 確保入職日期正確載入
         permissions: []
       }));
 

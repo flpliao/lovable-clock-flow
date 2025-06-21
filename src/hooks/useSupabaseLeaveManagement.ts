@@ -11,7 +11,7 @@ export const useSupabaseLeaveManagement = () => {
   const { toast } = useToast();
   const { currentUser } = useUser();
 
-  // 載入年假餘額
+  // 載入年假餘額 - 修正使用者ID查詢邏輯
   const loadAnnualLeaveBalance = async (userId: string) => {
     try {
       console.log('Loading annual leave balance for user:', userId);
@@ -21,6 +21,25 @@ export const useSupabaseLeaveManagement = () => {
         console.error('Invalid user ID format:', userId);
         return null;
       }
+
+      // 首先嘗試從員工資料表獲取入職日期
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('hire_date, name, department, position')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (staffError) {
+        console.error('載入員工資料失敗:', staffError);
+        return null;
+      }
+
+      if (!staffData || !staffData.hire_date) {
+        console.log('員工未設定入職日期，無法計算年假餘額');
+        return null;
+      }
+
+      console.log('員工資料:', staffData);
 
       const currentYear = new Date().getFullYear();
       const { data, error } = await supabase

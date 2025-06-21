@@ -3,7 +3,7 @@ import React from 'react';
 import { DndContext, DragOverlay, closestCenter } from '@dnd-kit/core';
 import DroppableCalendarCell from './DroppableCalendarCell';
 import DraggableScheduleCard from './DraggableScheduleCard';
-import { useJuneExtendedCalendar } from '../hooks/useJuneExtendedCalendar';
+import { useExtendedCalendar } from '../hooks/useExtendedCalendar';
 
 interface MonthlyCalendarGridProps {
   selectedDate: Date;
@@ -32,7 +32,7 @@ const MonthlyCalendarGrid = ({
   handleShowAllSchedules,
   activeSchedule
 }: MonthlyCalendarGridProps) => {
-  const { calendarDays, isJuneExtended } = useJuneExtendedCalendar(selectedDate);
+  const { calendarDays, isExtended } = useExtendedCalendar(selectedDate);
 
   return (
     <DndContext
@@ -71,10 +71,10 @@ const MonthlyCalendarGrid = ({
         ))}
       </div>
 
-      {/* 六月延伸提示 */}
-      {isJuneExtended && (
+      {/* 延伸提示 */}
+      {isExtended && (
         <div className="mt-2 text-xs text-gray-500 text-center">
-          * 六月顯示已延伸至完整週，包含七月初部分日期
+          * 顯示已延伸至完整週，包含下個月初部分日期
         </div>
       )}
 

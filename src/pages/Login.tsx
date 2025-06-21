@@ -77,7 +77,7 @@ const Login = () => {
               <User className="h-8 w-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-white drop-shadow-md">
-              員工考勤系統
+              考勤系統
             </h2>
             <p className="text-white/80 mt-2">請登入您的帳號</p>
           </div>

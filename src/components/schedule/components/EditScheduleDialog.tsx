@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertTriangle, Clock, Trash2, User, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTimeSlotOperations } from '@/components/timeslot/hooks/useTimeSlotOperations';
 
 interface EditScheduleDialogProps {
   isOpen: boolean;
@@ -24,12 +25,6 @@ interface EditScheduleDialogProps {
     startTime: string;
     endTime: string;
   } | null;
-  timeSlots: Array<{
-    id: string;
-    name: string;
-    start_time: string;
-    end_time: string;
-  }>;
   getUserName: (userId: string) => string;
   onUpdate: (scheduleId: string, updates: { timeSlot?: string; startTime?: string; endTime?: string; workDate?: string }) => void;
   onDelete: (scheduleId: string) => void;
@@ -39,7 +34,6 @@ const EditScheduleDialog = ({
   isOpen,
   onClose,
   schedule,
-  timeSlots,
   getUserName,
   onUpdate,
   onDelete
@@ -47,6 +41,7 @@ const EditScheduleDialog = ({
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(schedule?.timeSlot || '');
   const [selectedDate, setSelectedDate] = useState(schedule?.workDate || '');
   const { toast } = useToast();
+  const { timeSlots } = useTimeSlotOperations();
 
   React.useEffect(() => {
     if (schedule) {

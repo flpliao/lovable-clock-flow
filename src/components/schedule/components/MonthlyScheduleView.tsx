@@ -1,8 +1,11 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
+import { BarChart3 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useScheduleDragDrop } from '../hooks/useScheduleDragDrop';
 import { useScheduleDialogs } from '../hooks/useScheduleDialogs';
 import { useExtendedCalendar } from '../hooks/useExtendedCalendar';
@@ -34,6 +37,8 @@ const MonthlyScheduleView = ({
   onDeleteSchedule,
   timeSlots = []
 }: MonthlyScheduleViewProps) => {
+  const navigate = useNavigate();
+  
   const {
     sensors,
     dragSchedules,
@@ -113,19 +118,33 @@ const MonthlyScheduleView = ({
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="text-base sm:text-lg">
-            {getDisplayTitle()} 排班總覽
-            {selectedStaffId && (
-              <span className="ml-2 text-sm sm:text-base text-gray-600">
-                - {getUserName(selectedStaffId)}
-              </span>
-            )}
-            {getExtendedDescription() && (
-              <div className="mt-1 text-sm text-blue-600">
-                {getExtendedDescription()}
-              </div>
-            )}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <CardTitle className="text-base sm:text-lg">
+                {getDisplayTitle()} 排班總覽
+                {selectedStaffId && (
+                  <span className="ml-2 text-sm sm:text-base text-gray-600">
+                    - {getUserName(selectedStaffId)}
+                  </span>
+                )}
+                {getExtendedDescription() && (
+                  <div className="mt-1 text-sm text-blue-600">
+                    {getExtendedDescription()}
+                  </div>
+                )}
+              </CardTitle>
+            </div>
+            <Button
+              onClick={() => navigate('/schedule-statistics')}
+              variant="outline"
+              size="sm"
+              className="ml-4 flex items-center gap-2"
+            >
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">統計資訊</span>
+              <span className="sm:hidden">統計</span>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <MonthlyCalendarGrid

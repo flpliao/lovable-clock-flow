@@ -2,6 +2,7 @@
 import { differenceInDays } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { UserStaffData } from './staffDataService';
+import { sendLeaveApprovalNotification } from './leaveNotificationService';
 
 export interface LeaveSubmissionData {
   start_date: Date;
@@ -177,7 +178,7 @@ export const submitLeaveRequest = async (
         .from('approval_records')
         .insert({
           leave_request_id: insertedRequest.id,
-          approver_id: userId, // 使用申請人自己的ID
+          approver_id: userId,
           approver_name: userStaffData.name,
           status: 'approved',
           level: 1,
@@ -187,7 +188,6 @@ export const submitLeaveRequest = async (
 
       if (approvalError) {
         console.warn('⚠️ 建立自動核准審核記錄失敗:', approvalError);
-        // 不拋出錯誤，因為主要流程已完成
       }
 
       console.log('✅ 自動核准流程完成');
@@ -209,7 +209,7 @@ export const submitLeaveRequest = async (
       hours: calculatedHours,
       reason: submissionData.reason,
       approval_level: 1,
-      current_approver: supervisorHierarchy[0].id // 設置第一層主管為當前審核者
+      current_approver: supervisorHierarchy[0].id
     };
 
     console.log('📝 準備建立的請假申請:', pendingRequest);
@@ -231,11 +231,25 @@ export const submitLeaveRequest = async (
     // 建立審核記錄
     await createApprovalRecords(insertedRequest.id, supervisorHierarchy);
 
+    // 發送通知給第一層主管
+    const firstApprover = supervisorHierarchy[0];
+    await sendLeaveApprovalNotification({
+      applicantId: userId,
+      applicantName: userStaffData.name,
+      leaveRequestId: insertedRequest.id,
+      leaveType: submissionData.leave_type,
+      startDate: submissionData.start_date.toISOString().split('T')[0],
+      endDate: submissionData.end_date.toISOString().split('T')[0],
+      reason: submissionData.reason,
+      approverId: firstApprover.id
+    });
+
+    console.log('✅ 通知已發送給主管:', firstApprover.name);
+
     return {
       autoApproved: false,
       leaveRequest: {
         ...pendingRequest,
-        // 確保返回正確的資料格式
         approval_level: 1,
         current_approver: supervisorHierarchy[0].id
       }

@@ -1,108 +1,123 @@
 
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
-import { useSupabaseLeaveManagement } from '@/hooks/useSupabaseLeaveManagement';
 import { LeaveRequest } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, XCircle, Clock, User, Calendar, FileText } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, User, Calendar, FileText, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { getLeaveTypeText } from '@/utils/leaveUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { sendLeaveStatusNotification } from '@/services/leaveNotificationService';
 
 const ApprovalCenter = () => {
   const { currentUser } = useUser();
   const { toast } = useToast();
   const [pendingRequests, setPendingRequests] = useState<LeaveRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   // 載入需要當前用戶審核的請假申請
-  useEffect(() => {
-    const loadPendingRequests = async () => {
-      if (!currentUser?.id) {
-        setIsLoading(false);
+  const loadPendingRequests = async () => {
+    if (!currentUser?.id) {
+      setIsLoading(false);
+      return;
+    }
+
+    console.log('🔍 載入待審核請假申請，當前用戶:', currentUser.id, currentUser.name);
+
+    try {
+      setRefreshing(true);
+      
+      // 查詢需要當前用戶審核的請假申請
+      const { data: requests, error } = await supabase
+        .from('leave_requests')
+        .select(`
+          *,
+          approval_records (*)
+        `)
+        .eq('status', 'pending')
+        .eq('current_approver', currentUser.id);
+
+      if (error) {
+        console.error('❌ 載入待審核請假申請失敗:', error);
+        toast({
+          title: "載入失敗",
+          description: "無法載入待審核的請假申請",
+          variant: "destructive"
+        });
         return;
       }
 
-      console.log('🔍 載入待審核請假申請，當前用戶:', currentUser.id);
-
-      try {
-        // 查詢需要當前用戶審核的請假申請
-        const { data: requests, error } = await supabase
-          .from('leave_requests')
-          .select(`
-            *,
-            approval_records (*)
-          `)
-          .eq('status', 'pending')
-          .eq('current_approver', currentUser.id);
-
-        if (error) {
-          console.error('❌ 載入待審核請假申請失敗:', error);
-          toast({
-            title: "載入失敗",
-            description: "無法載入待審核的請假申請",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        console.log('✅ 成功載入待審核請假申請:', requests?.length || 0, '筆');
-        
-        const formattedRequests: LeaveRequest[] = (requests || []).map((request: any) => ({
-          id: request.id,
-          user_id: request.user_id || request.staff_id,
-          start_date: request.start_date,
-          end_date: request.end_date,
-          leave_type: request.leave_type,
-          status: request.status,
-          hours: Number(request.hours),
-          reason: request.reason,
-          approval_level: request.approval_level,
-          current_approver: request.current_approver,
-          created_at: request.created_at,
-          updated_at: request.updated_at,
-          approvals: (request.approval_records || []).map((approval: any) => ({
-            id: approval.id,
-            leave_request_id: approval.leave_request_id,
-            approver_id: approval.approver_id,
-            approver_name: approval.approver_name,
-            status: approval.status,
-            level: approval.level,
-            approval_date: approval.approval_date,
-            comment: approval.comment
-          }))
-        }));
-
-        setPendingRequests(formattedRequests);
-      } catch (error) {
-        console.error('❌ 載入待審核請假申請時發生錯誤:', error);
-        toast({
-          title: "載入失敗",
-          description: "載入待審核請假申請時發生錯誤",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadPendingRequests();
-  }, [currentUser?.id, toast]);
-
-  const handleApprove = async (requestId: string) => {
-    try {
-      console.log('🚀 開始核准請假申請:', requestId);
+      console.log('✅ 成功載入待審核請假申請:', requests?.length || 0, '筆');
+      console.log('📋 請假申請詳細資料:', requests);
       
+      const formattedRequests: LeaveRequest[] = (requests || []).map((request: any) => ({
+        id: request.id,
+        user_id: request.user_id || request.staff_id,
+        start_date: request.start_date,
+        end_date: request.end_date,
+        leave_type: request.leave_type,
+        status: request.status,
+        hours: Number(request.hours),
+        reason: request.reason,
+        approval_level: request.approval_level,
+        current_approver: request.current_approver,
+        created_at: request.created_at,
+        updated_at: request.updated_at,
+        approvals: (request.approval_records || []).map((approval: any) => ({
+          id: approval.id,
+          leave_request_id: approval.leave_request_id,
+          approver_id: approval.approver_id,
+          approver_name: approval.approver_name,
+          status: approval.status,
+          level: approval.level,
+          approval_date: approval.approval_date,
+          comment: approval.comment
+        }))
+      }));
+
+      setPendingRequests(formattedRequests);
+    } catch (error) {
+      console.error('❌ 載入待審核請假申請時發生錯誤:', error);
+      toast({
+        title: "載入失敗",
+        description: "載入待審核請假申請時發生錯誤",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPendingRequests();
+  }, [currentUser?.id]);
+
+  const handleApprove = async (request: LeaveRequest) => {
+    try {
+      console.log('🚀 開始核准請假申請:', request.id);
+      
+      // 獲取申請人資訊
+      const { data: applicantData, error: applicantError } = await supabase
+        .from('staff')
+        .select('name')
+        .eq('id', request.user_id)
+        .maybeSingle();
+
+      if (applicantError) {
+        console.error('❌ 獲取申請人資訊失敗:', applicantError);
+      }
+
       const { error } = await supabase
         .from('leave_requests')
         .update({
           status: 'approved',
           updated_at: new Date().toISOString()
         })
-        .eq('id', requestId);
+        .eq('id', request.id);
 
       if (error) {
         console.error('❌ 核准請假申請失敗:', error);
@@ -114,6 +129,33 @@ const ApprovalCenter = () => {
         return;
       }
 
+      // 更新審核記錄
+      const { error: approvalError } = await supabase
+        .from('approval_records')
+        .update({
+          status: 'approved',
+          approval_date: new Date().toISOString(),
+          comment: '主管核准'
+        })
+        .eq('leave_request_id', request.id)
+        .eq('approver_id', currentUser.id);
+
+      if (approvalError) {
+        console.warn('⚠️ 更新審核記錄失敗:', approvalError);
+      }
+
+      // 發送通知給申請人
+      if (applicantData) {
+        await sendLeaveStatusNotification(
+          request.user_id,
+          applicantData.name,
+          request.id,
+          'approved',
+          currentUser.name || '主管',
+          '主管核准'
+        );
+      }
+
       console.log('✅ 請假申請核准成功');
       toast({
         title: "核准成功",
@@ -121,7 +163,7 @@ const ApprovalCenter = () => {
       });
 
       // 重新載入待審核列表
-      setPendingRequests(prev => prev.filter(req => req.id !== requestId));
+      setPendingRequests(prev => prev.filter(req => req.id !== request.id));
     } catch (error) {
       console.error('❌ 核准請假申請時發生錯誤:', error);
       toast({
@@ -132,10 +174,21 @@ const ApprovalCenter = () => {
     }
   };
 
-  const handleReject = async (requestId: string) => {
+  const handleReject = async (request: LeaveRequest) => {
     try {
-      console.log('🚀 開始拒絕請假申請:', requestId);
+      console.log('🚀 開始拒絕請假申請:', request.id);
       
+      // 獲取申請人資訊
+      const { data: applicantData, error: applicantError } = await supabase
+        .from('staff')
+        .select('name')
+        .eq('id', request.user_id)
+        .maybeSingle();
+
+      if (applicantError) {
+        console.error('❌ 獲取申請人資訊失敗:', applicantError);
+      }
+
       const { error } = await supabase
         .from('leave_requests')
         .update({
@@ -143,7 +196,7 @@ const ApprovalCenter = () => {
           rejection_reason: '主管拒絕',
           updated_at: new Date().toISOString()
         })
-        .eq('id', requestId);
+        .eq('id', request.id);
 
       if (error) {
         console.error('❌ 拒絕請假申請失敗:', error);
@@ -155,6 +208,33 @@ const ApprovalCenter = () => {
         return;
       }
 
+      // 更新審核記錄
+      const { error: approvalError } = await supabase
+        .from('approval_records')
+        .update({
+          status: 'rejected',
+          approval_date: new Date().toISOString(),
+          comment: '主管拒絕'
+        })
+        .eq('leave_request_id', request.id)
+        .eq('approver_id', currentUser.id);
+
+      if (approvalError) {
+        console.warn('⚠️ 更新審核記錄失敗:', approvalError);
+      }
+
+      // 發送通知給申請人
+      if (applicantData) {
+        await sendLeaveStatusNotification(
+          request.user_id,
+          applicantData.name,
+          request.id,
+          'rejected',
+          currentUser.name || '主管',
+          '主管拒絕'
+        );
+      }
+
       console.log('✅ 請假申請拒絕成功');
       toast({
         title: "拒絕成功",
@@ -163,7 +243,7 @@ const ApprovalCenter = () => {
       });
 
       // 重新載入待審核列表
-      setPendingRequests(prev => prev.filter(req => req.id !== requestId));
+      setPendingRequests(prev => prev.filter(req => req.id !== request.id));
     } catch (error) {
       console.error('❌ 拒絕請假申請時發生錯誤:', error);
       toast({
@@ -195,14 +275,24 @@ const ApprovalCenter = () => {
         <div className="max-w-6xl mx-auto space-y-6">
           {/* 頁面標題 */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <Clock className="h-5 w-5 text-white" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white drop-shadow-md">核准中心</h1>
+                  <p className="text-white/80 font-medium drop-shadow-sm">Approval Center - 待審核請假申請</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white drop-shadow-md">核准中心</h1>
-                <p className="text-white/80 font-medium drop-shadow-sm">Approval Center - 待審核請假申請</p>
-              </div>
+              <Button
+                onClick={loadPendingRequests}
+                disabled={refreshing}
+                className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                重新整理
+              </Button>
             </div>
           </div>
 
@@ -286,7 +376,7 @@ const ApprovalCenter = () => {
 
                       <div className="flex flex-col gap-2 lg:ml-6">
                         <Button
-                          onClick={() => handleApprove(request.id)}
+                          onClick={() => handleApprove(request)}
                           className="bg-green-500 hover:bg-green-600 text-white border-0"
                           size="sm"
                         >
@@ -294,7 +384,7 @@ const ApprovalCenter = () => {
                           核准
                         </Button>
                         <Button
-                          onClick={() => handleReject(request.id)}
+                          onClick={() => handleReject(request)}
                           variant="destructive"
                           size="sm"
                         >

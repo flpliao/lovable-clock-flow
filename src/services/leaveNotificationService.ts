@@ -87,7 +87,6 @@ export const sendLeaveStatusNotification = async (
       type: 'leave_status',
       data: {
         leaveRequestId,
-        status,
         approverName
       }
     });

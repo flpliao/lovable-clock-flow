@@ -22,13 +22,6 @@ export interface LeaveType {
   };
 }
 
-// 從資料庫載入請假類型
-export const loadLeaveTypesFromDatabase = async () => {
-  // 這個函數會被其他服務調用來獲取最新的請假類型
-  const { LeaveTypeService } = await import('@/services/payroll/leaveTypeService');
-  return await LeaveTypeService.getLeaveTypes();
-};
-
 // Taiwan Labor Law leave types - 符合勞基法規定
 export const LEAVE_TYPES: LeaveType[] = [
   {
@@ -162,15 +155,9 @@ export const LEAVE_TYPES: LeaveType[] = [
   }
 ];
 
-// Helper to get leave type by id - 現在從資料庫獲取
-export const getLeaveTypeById = async (id: string) => {
-  const leaveTypes = await loadLeaveTypesFromDatabase();
-  return leaveTypes?.find(type => type.code === id);
-};
-
-// 同步版本，用於已載入的資料
-export const getLeaveTypeByIdSync = (id: string, leaveTypes: any[]) => {
-  return leaveTypes?.find(type => type.code === id);
+// Helper to get leave type by id
+export const getLeaveTypeById = (id: string): LeaveType | undefined => {
+  return LEAVE_TYPES.find(type => type.id === id);
 };
 
 // Define schema for leave form with enhanced validation
@@ -202,15 +189,9 @@ export const leaveFormSchema = z.object({
 
 export type LeaveFormValues = z.infer<typeof leaveFormSchema>;
 
-// Enhanced leave type text helper - 現在從資料庫資料獲取
-export const getLeaveTypeText = (type: string, leaveTypes?: any[]): string => {
-  if (leaveTypes) {
-    const leaveType = leaveTypes.find(t => t.code === type);
-    return leaveType?.name_zh || '其他';
-  }
-  
-  // 回退到靜態資料
-  const leaveType = LEAVE_TYPES.find(t => t.id === type);
+// Enhanced leave type text helper
+export const getLeaveTypeText = (type: string): string => {
+  const leaveType = getLeaveTypeById(type);
   return leaveType?.name || '其他';
 };
 

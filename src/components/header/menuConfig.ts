@@ -16,22 +16,27 @@ import {
 
 export interface MenuItem {
   name: string;
+  label: string; // Add missing label property
   path: string;
   icon: any;
   requiresAuth: boolean;
   adminOnly: boolean;
+  public?: boolean; // Add missing public property
 }
 
 export const menuItems: MenuItem[] = [
   {
     name: "首頁",
+    label: "首頁", // Add label
     path: "/",
     icon: Home,
     requiresAuth: false,
-    adminOnly: false
+    adminOnly: false,
+    public: true // Add public property
   },
   {
     name: "打卡簽到",
+    label: "打卡簽到",
     path: "/check-in",
     icon: MapPin,
     requiresAuth: true,
@@ -39,6 +44,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     name: "出勤記錄",
+    label: "出勤記錄",
     path: "/attendance",
     icon: Calendar,
     requiresAuth: true,
@@ -46,6 +52,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     name: "請假申請",
+    label: "請假申請",
     path: "/leave-request",
     icon: FileText,
     requiresAuth: true,
@@ -53,6 +60,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     name: "加班申請",
+    label: "加班申請",
     path: "/overtime",
     icon: Clock,
     requiresAuth: true,
@@ -60,6 +68,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     name: "班表管理",
+    label: "班表管理",
     path: "/schedule",
     icon: Calendar,
     requiresAuth: true,
@@ -67,6 +76,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     name: "核准中心",
+    label: "核准中心",
     path: "/approval-center",
     icon: CheckCircle,
     requiresAuth: true,
@@ -74,6 +84,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     name: "員工管理",
+    label: "員工管理",
     path: "/staff",
     icon: Users,
     requiresAuth: true,
@@ -81,6 +92,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     name: "薪資管理",
+    label: "薪資管理",
     path: "/payroll",
     icon: DollarSign,
     requiresAuth: true,
@@ -88,6 +100,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     name: "請假假別管理",
+    label: "請假假別管理",
     path: "/leave-type-management",
     icon: Settings,
     requiresAuth: true,
@@ -95,6 +108,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     name: "部門管理",
+    label: "部門管理",
     path: "/departments",
     icon: Building,
     requiresAuth: true,
@@ -102,6 +116,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     name: "公司管理",
+    label: "公司管理",
     path: "/company",
     icon: Building2,
     requiresAuth: true,
@@ -109,6 +124,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     name: "公告管理",
+    label: "公告管理",
     path: "/announcements",
     icon: Megaphone,
     requiresAuth: true,
@@ -116,6 +132,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     name: "假日管理",
+    label: "假日管理",
     path: "/holiday-settings",
     icon: Calendar,
     requiresAuth: true,
@@ -123,6 +140,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     name: "系統設定",
+    label: "系統設定",
     path: "/system-settings",
     icon: Settings,
     requiresAuth: true,

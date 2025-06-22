@@ -22,7 +22,7 @@ export function LeaveTypeSelector({ form, selectedLeaveType }: LeaveTypeSelector
     const loadLeaveTypes = async () => {
       try {
         const data = await LeaveTypeService.getLeaveTypes();
-        setLeaveTypes(data || []);
+        setLeaveTypes(data as LeaveType[] || []);
       } catch (error) {
         console.error('載入請假類型失敗:', error);
       } finally {

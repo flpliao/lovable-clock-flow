@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { NotificationDatabaseOperations } from '@/services/notifications';
 
@@ -86,8 +85,7 @@ export const sendLeaveStatusNotification = async (
       message,
       type: 'leave_status',
       data: {
-        leaveRequestId,
-        approverName
+        leaveRequestId
       }
     });
 

@@ -42,7 +42,7 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
       user_id: currentUser.id,
       start_date: data.start_date.toISOString().split('T')[0],
       end_date: data.end_date.toISOString().split('T')[0],
-      leave_type: data.leave_type as any,
+      leave_type: data.leave_type, // Keep as string, not LeaveType object
       status: 'pending' as const,
       hours: calculatedHours,
       reason: data.reason,

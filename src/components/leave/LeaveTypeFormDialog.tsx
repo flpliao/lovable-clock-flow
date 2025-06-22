@@ -121,6 +121,8 @@ export function LeaveTypeFormDialog({
       const leaveTypeData: LeaveType = {
         id: leaveType?.id || '',
         ...data,
+        requires_approval: true, // Add missing required property with default value
+        sort_order: leaveType?.sort_order || 0, // Add missing required property with default value
         created_at: leaveType?.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };

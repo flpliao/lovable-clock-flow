@@ -114,7 +114,7 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
             <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假詳情</h3>
             <LeaveFormDetails 
               form={form}
-              selectedLeaveType={watchedValues.leave_type}
+              selectedLeaveType={watchedValues.leave_type} // Pass string, not object
             />
           </div>
 

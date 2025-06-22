@@ -212,6 +212,8 @@ export const useLeaveRequestForm = () => {
       const hasSupervisor = userStaffData?.supervisor_id && userStaffData.supervisor_id.trim() !== '';
       const shouldAutoApprove = !hasSupervisor;
 
+      const leaveRequestStatus: 'approved' | 'pending' = shouldAutoApprove ? 'approved' : 'pending';
+
       const leaveRequest = {
         id: '',
         user_id: currentUser.id,
@@ -219,7 +221,7 @@ export const useLeaveRequestForm = () => {
         start_date: format(data.start_date, 'yyyy-MM-dd'),
         end_date: format(data.end_date, 'yyyy-MM-dd'),
         leave_type: data.leave_type as any,
-        status: (shouldAutoApprove ? 'approved' : 'pending') as const,
+        status: leaveRequestStatus,
         hours: calculatedHours,
         reason: data.reason,
         approval_level: shouldAutoApprove ? 0 : 1,

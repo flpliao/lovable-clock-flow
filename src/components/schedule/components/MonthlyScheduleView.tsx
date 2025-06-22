@@ -11,7 +11,6 @@ import { useExtendedCalendar } from '../hooks/useExtendedCalendar';
 import MonthlyCalendarGrid from './MonthlyCalendarGrid';
 import EditScheduleDialog from './EditScheduleDialog';
 import DayScheduleDialog from './DayScheduleDialog';
-
 interface MonthlyScheduleViewProps {
   selectedDate: Date;
   schedules: any[];
@@ -26,18 +25,16 @@ interface MonthlyScheduleViewProps {
     end_time: string;
   }>;
 }
-
-const MonthlyScheduleView = ({ 
-  selectedDate, 
-  schedules, 
-  getUserName, 
+const MonthlyScheduleView = ({
+  selectedDate,
+  schedules,
+  getUserName,
   selectedStaffId,
   onUpdateSchedule,
   onDeleteSchedule,
   timeSlots = []
 }: MonthlyScheduleViewProps) => {
   const navigate = useNavigate();
-  
   const {
     sensors,
     dragSchedules,
@@ -50,7 +47,6 @@ const MonthlyScheduleView = ({
     selectedStaffId,
     onUpdateSchedule
   });
-
   const {
     selectedSchedule,
     isEditDialogOpen,
@@ -62,46 +58,46 @@ const MonthlyScheduleView = ({
     closeEditDialog,
     closeDayDialog
   } = useScheduleDialogs();
-
-  const { 
-    isExtended, 
-    hasStartExtension, 
-    hasEndExtension, 
-    extendedStartDate, 
-    extendedEndDate 
+  const {
+    isExtended,
+    hasStartExtension,
+    hasEndExtension,
+    extendedStartDate,
+    extendedEndDate
   } = useExtendedCalendar(selectedDate);
-
   const handleUpdateSchedule = async (scheduleId: string, updates: any) => {
     await onUpdateSchedule(scheduleId, updates);
   };
-
   const handleDeleteSchedule = async (scheduleId: string) => {
     await onDeleteSchedule(scheduleId);
   };
-
   const getDisplayTitle = () => {
-    const baseTitle = format(selectedDate, 'yyyy年MM月', { locale: zhTW });
-    
+    const baseTitle = format(selectedDate, 'yyyy年MM月', {
+      locale: zhTW
+    });
     if (isExtended) {
       let extendedInfo = '';
-      
       if (hasStartExtension && hasEndExtension) {
-        extendedInfo = ` (${format(extendedStartDate, 'MM月dd日', { locale: zhTW })} - ${format(extendedEndDate, 'MM月dd日', { locale: zhTW })})`;
+        extendedInfo = ` (${format(extendedStartDate, 'MM月dd日', {
+          locale: zhTW
+        })} - ${format(extendedEndDate, 'MM月dd日', {
+          locale: zhTW
+        })})`;
       } else if (hasStartExtension) {
-        extendedInfo = ` (自 ${format(extendedStartDate, 'MM月dd日', { locale: zhTW })})`;
+        extendedInfo = ` (自 ${format(extendedStartDate, 'MM月dd日', {
+          locale: zhTW
+        })})`;
       } else if (hasEndExtension) {
-        extendedInfo = ` (至 ${format(extendedEndDate, 'MM月dd日', { locale: zhTW })})`;
+        extendedInfo = ` (至 ${format(extendedEndDate, 'MM月dd日', {
+          locale: zhTW
+        })})`;
       }
-      
       return `${baseTitle}${extendedInfo}`;
     }
-    
     return baseTitle;
   };
-
   const getExtendedDescription = () => {
     if (!isExtended) return null;
-    
     if (hasStartExtension && hasEndExtension) {
       return '✨ 完整週顯示（含上個月末及下個月初）';
     } else if (hasStartExtension) {
@@ -109,36 +105,24 @@ const MonthlyScheduleView = ({
     } else if (hasEndExtension) {
       return '✨ 完整週顯示（含下個月初）';
     }
-    
     return null;
   };
-
-  return (
-    <>
-      <Card>
+  return <>
+      <Card className="bg-blue-400">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <CardTitle className="text-base sm:text-lg">
                 {getDisplayTitle()} 排班總覽
-                {selectedStaffId && (
-                  <span className="ml-2 text-sm sm:text-base text-gray-600">
+                {selectedStaffId && <span className="ml-2 text-sm sm:text-base text-gray-600">
                     - {getUserName(selectedStaffId)}
-                  </span>
-                )}
-                {getExtendedDescription() && (
-                  <div className="mt-1 text-sm text-blue-600">
+                  </span>}
+                {getExtendedDescription() && <div className="mt-1 text-sm text-blue-600">
                     {getExtendedDescription()}
-                  </div>
-                )}
+                  </div>}
               </CardTitle>
             </div>
-            <Button
-              onClick={() => navigate('/schedule-statistics')}
-              variant="outline"
-              size="sm"
-              className="ml-4 flex items-center gap-2"
-            >
+            <Button onClick={() => navigate('/schedule-statistics')} variant="outline" size="sm" className="ml-4 flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">統計資訊</span>
               <span className="sm:hidden">統計</span>
@@ -146,43 +130,15 @@ const MonthlyScheduleView = ({
           </div>
         </CardHeader>
         <CardContent>
-          <MonthlyCalendarGrid
-            selectedDate={selectedDate}
-            sensors={sensors}
-            dragSchedules={dragSchedules}
-            hasScheduleConflict={hasScheduleConflict}
-            getUserName={getUserName}
-            selectedSchedule={selectedSchedule}
-            handleDragStart={handleDragStart}
-            handleDragEnd={handleDragEnd}
-            handleScheduleClick={handleScheduleClick}
-            handleShowAllSchedules={handleShowAllSchedules}
-            activeSchedule={activeSchedule}
-          />
+          <MonthlyCalendarGrid selectedDate={selectedDate} sensors={sensors} dragSchedules={dragSchedules} hasScheduleConflict={hasScheduleConflict} getUserName={getUserName} selectedSchedule={selectedSchedule} handleDragStart={handleDragStart} handleDragEnd={handleDragEnd} handleScheduleClick={handleScheduleClick} handleShowAllSchedules={handleShowAllSchedules} activeSchedule={activeSchedule} />
         </CardContent>
       </Card>
 
       {/* Edit Dialog */}
-      <EditScheduleDialog
-        isOpen={isEditDialogOpen}
-        onClose={closeEditDialog}
-        schedule={selectedSchedule}
-        getUserName={getUserName}
-        onUpdate={handleUpdateSchedule}
-        onDelete={handleDeleteSchedule}
-      />
+      <EditScheduleDialog isOpen={isEditDialogOpen} onClose={closeEditDialog} schedule={selectedSchedule} getUserName={getUserName} onUpdate={handleUpdateSchedule} onDelete={handleDeleteSchedule} />
 
       {/* Day Schedule Dialog */}
-      <DayScheduleDialog
-        isOpen={isDayDialogOpen}
-        onClose={closeDayDialog}
-        date={selectedDayDate}
-        schedules={selectedDaySchedules}
-        getUserName={getUserName}
-        onScheduleClick={handleScheduleClick}
-      />
-    </>
-  );
+      <DayScheduleDialog isOpen={isDayDialogOpen} onClose={closeDayDialog} date={selectedDayDate} schedules={selectedDaySchedules} getUserName={getUserName} onScheduleClick={handleScheduleClick} />
+    </>;
 };
-
 export default MonthlyScheduleView;

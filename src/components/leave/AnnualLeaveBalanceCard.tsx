@@ -19,14 +19,35 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
   balanceData, 
   loading = false 
 }: AnnualLeaveBalanceCardProps) {
+  console.log('🎯 AnnualLeaveBalanceCard currentUser:', currentUser);
+  console.log('🎯 AnnualLeaveBalanceCard balanceData:', balanceData);
+
   // 計算年資和特休天數
   const calculatedData = React.useMemo(() => {
-    if (!currentUser) return null;
+    if (!currentUser) {
+      console.log('❌ No currentUser available');
+      return null;
+    }
+
+    console.log('👤 Current user data:', {
+      id: currentUser.id,
+      name: currentUser.name,
+      department: currentUser.department,
+      position: currentUser.position,
+      hire_date: currentUser.hire_date
+    });
 
     const hireDate = currentUser.hire_date ? new Date(currentUser.hire_date) : null;
     const yearsOfService = hireDate ? calculateYearsOfService(hireDate) : 0;
     const entitledDays = hireDate ? calculateAnnualLeaveDays(hireDate) : 0;
     const formattedYears = hireDate ? formatYearsOfService(hireDate) : '未設定';
+
+    console.log('📊 Calculated data:', {
+      hireDate: hireDate?.toISOString(),
+      yearsOfService,
+      entitledDays,
+      formattedYears
+    });
 
     return {
       hireDate,
@@ -89,11 +110,11 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center md:text-left">
             <div>
               <p className="text-sm text-white/70 font-medium mb-1">員工姓名</p>
-              <p className="text-white font-semibold text-lg">{currentUser.name}</p>
+              <p className="text-white font-semibold text-lg">{currentUser.name || '未設定'}</p>
             </div>
             <div>
               <p className="text-sm text-white/70 font-medium mb-1">部門職位</p>
-              <p className="text-white font-semibold">{currentUser.department} / {currentUser.position}</p>
+              <p className="text-white font-semibold">{currentUser.department || '未設定'} / {currentUser.position || '未設定'}</p>
             </div>
           </div>
         </div>
@@ -116,6 +137,13 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
   // 計算使用百分比
   const usagePercentage = totalDays > 0 ? Math.round((usedDays / totalDays) * 100) : 0;
 
+  console.log('📈 Final display data:', {
+    totalDays,
+    usedDays,
+    remainingDays,
+    usagePercentage
+  });
+
   return (
     <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
       {/* 卡片標題 */}
@@ -134,11 +162,11 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center md:text-left">
           <div>
             <p className="text-sm text-white/70 font-medium mb-1">員工姓名</p>
-            <p className="text-white font-semibold text-lg">{currentUser.name}</p>
+            <p className="text-white font-semibold text-lg">{currentUser.name || '未設定'}</p>
           </div>
           <div>
             <p className="text-sm text-white/70 font-medium mb-1">部門職位</p>
-            <p className="text-white font-semibold">{currentUser.department} / {currentUser.position}</p>
+            <p className="text-white font-semibold">{currentUser.department || '未設定'} / {currentUser.position || '未設定'}</p>
           </div>
           <div>
             <p className="text-sm text-white/70 font-medium mb-1">年資</p>

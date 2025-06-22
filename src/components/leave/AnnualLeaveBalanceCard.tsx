@@ -80,7 +80,7 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
   const usedDays = balanceData?.used_days ?? 0;
   const remainingDays = balanceData?.remaining_days ?? (totalDays - usedDays);
 
-  // 計算使用百分比
+  // 計算使用百分比 - 修正進度條邏輯
   const usagePercentage = totalDays > 0 ? Math.round((usedDays / totalDays) * 100) : 0;
 
   if (loading) {
@@ -159,7 +159,7 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
         </div>
       </div>
 
-      {/* 進度條 */}
+      {/* 進度條 - 修正顯示邏輯 */}
       <div className="bg-white/10 rounded-2xl p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -176,8 +176,9 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
           />
         </div>
         
+        {/* 修正進度條標籤顯示 */}
         <div className="flex justify-between mt-2 text-xs text-white/70">
-          <span>0 天</span>
+          <span>{usedDays} 天</span>
           <span>{totalDays} 天</span>
         </div>
       </div>

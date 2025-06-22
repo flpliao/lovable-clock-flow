@@ -34,7 +34,25 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
       entitledDays,
       formattedYears
     };
-  }, [currentUser?.hire_date, currentUser?.id, currentUser?.name, currentUser?.department, currentUser?.position]);
+  }, [currentUser]);
+
+  if (loading) {
+    return (
+      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+        <div className="animate-pulse">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-white/30 rounded-lg"></div>
+            <div className="h-6 bg-white/30 rounded w-32"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="h-20 bg-white/20 rounded-xl"></div>
+            <div className="h-20 bg-white/20 rounded-xl"></div>
+            <div className="h-20 bg-white/20 rounded-xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return (
@@ -65,6 +83,21 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
             <p className="text-sm text-white/80 font-medium drop-shadow-sm">Annual Leave Setup</p>
           </div>
         </div>
+        
+        {/* 顯示員工基本資訊即使沒有入職日期 */}
+        <div className="bg-white/10 rounded-2xl p-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center md:text-left">
+            <div>
+              <p className="text-sm text-white/70 font-medium mb-1">員工姓名</p>
+              <p className="text-white font-semibold text-lg">{currentUser.name}</p>
+            </div>
+            <div>
+              <p className="text-sm text-white/70 font-medium mb-1">部門職位</p>
+              <p className="text-white font-semibold">{currentUser.department} / {currentUser.position}</p>
+            </div>
+          </div>
+        </div>
+        
         <div className="bg-yellow-500/20 border border-yellow-300/30 rounded-xl p-4">
           <div className="text-yellow-100 text-center">
             <div className="text-lg font-semibold mb-2">⚠️ 尚未設定入職日期</div>
@@ -80,26 +113,8 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
   const usedDays = balanceData?.used_days ?? 0;
   const remainingDays = balanceData?.remaining_days ?? (totalDays - usedDays);
 
-  // 計算使用百分比 - 修正進度條邏輯
+  // 計算使用百分比
   const usagePercentage = totalDays > 0 ? Math.round((usedDays / totalDays) * 100) : 0;
-
-  if (loading) {
-    return (
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-        <div className="animate-pulse">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-white/30 rounded-lg"></div>
-            <div className="h-6 bg-white/30 rounded w-32"></div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="h-20 bg-white/20 rounded-xl"></div>
-            <div className="h-20 bg-white/20 rounded-xl"></div>
-            <div className="h-20 bg-white/20 rounded-xl"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
@@ -159,7 +174,7 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
         </div>
       </div>
 
-      {/* 進度條 - 修正顯示邏輯 */}
+      {/* 進度條 */}
       <div className="bg-white/10 rounded-2xl p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -176,7 +191,7 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
           />
         </div>
         
-        {/* 修正進度條標籤顯示 */}
+        {/* 進度條標籤 */}
         <div className="flex justify-between mt-2 text-xs text-white/70">
           <span>{usedDays} 天</span>
           <span>{totalDays} 天</span>

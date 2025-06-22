@@ -12,13 +12,68 @@ import { useToast } from '@/hooks/use-toast';
 import { sendLeaveStatusNotification } from '@/services/leaveNotificationService';
 import LeaveApprovalDetail from '@/components/leave/LeaveApprovalDetail';
 
+interface ApprovalStats {
+  todayApproved: number;
+  todayRejected: number;
+}
+
+interface LeaveRequestWithApplicant extends LeaveRequest {
+  applicant_name?: string;
+}
+
 const ApprovalCenter = () => {
   const { currentUser } = useUser();
   const { toast } = useToast();
-  const [pendingRequests, setPendingRequests] = useState<LeaveRequest[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<LeaveRequestWithApplicant[]>([]);
+  const [approvalStats, setApprovalStats] = useState<ApprovalStats>({ todayApproved: 0, todayRejected: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<LeaveRequestWithApplicant | null>(null);
+
+  // 載入今日審核統計
+  const loadApprovalStats = async () => {
+    if (!currentUser?.id) return;
+
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // 查詢今日已核准的申請
+      const { data: approvedData, error: approvedError } = await supabase
+        .from('leave_requests')
+        .select('id')
+        .eq('status', 'approved')
+        .gte('updated_at', `${today}T00:00:00`)
+        .lt('updated_at', `${today}T23:59:59`);
+
+      if (approvedError) {
+        console.error('❌ 查詢今日已核准申請失敗:', approvedError);
+      }
+
+      // 查詢今日已拒絕的申請
+      const { data: rejectedData, error: rejectedError } = await supabase
+        .from('leave_requests')
+        .select('id')
+        .eq('status', 'rejected')
+        .gte('updated_at', `${today}T00:00:00`)
+        .lt('updated_at', `${today}T23:59:59`);
+
+      if (rejectedError) {
+        console.error('❌ 查詢今日已拒絕申請失敗:', rejectedError);
+      }
+
+      setApprovalStats({
+        todayApproved: approvedData?.length || 0,
+        todayRejected: rejectedData?.length || 0
+      });
+
+      console.log('✅ 成功載入今日審核統計:', {
+        approved: approvedData?.length || 0,
+        rejected: rejectedData?.length || 0
+      });
+    } catch (error) {
+      console.error('❌ 載入今日審核統計時發生錯誤:', error);
+    }
+  };
 
   // 載入需要當前用戶審核的請假申請
   const loadPendingRequests = async () => {
@@ -37,7 +92,8 @@ const ApprovalCenter = () => {
         .from('leave_requests')
         .select(`
           *,
-          approval_records (*)
+          approval_records (*),
+          staff!leave_requests_user_id_fkey(name)
         `)
         .eq('status', 'pending')
         .eq('current_approver', currentUser.id);
@@ -53,7 +109,8 @@ const ApprovalCenter = () => {
           leave_request_id,
           leave_requests!inner(
             *,
-            approval_records (*)
+            approval_records (*),
+            staff!leave_requests_user_id_fkey(name)
           )
         `)
         .eq('approver_id', currentUser.id)
@@ -108,7 +165,7 @@ const ApprovalCenter = () => {
       console.log('✅ 成功載入待審核請假申請:', allRequests.length, '筆');
       console.log('📋 請假申請詳細資料:', allRequests);
       
-      const formattedRequests: LeaveRequest[] = allRequests.map((request: any) => ({
+      const formattedRequests: LeaveRequestWithApplicant[] = allRequests.map((request: any) => ({
         id: request.id,
         user_id: request.user_id || request.staff_id,
         start_date: request.start_date,
@@ -121,6 +178,7 @@ const ApprovalCenter = () => {
         current_approver: request.current_approver,
         created_at: request.created_at,
         updated_at: request.updated_at,
+        applicant_name: request.staff?.name || '未知申請人',
         approvals: (request.approval_records || []).map((approval: any) => ({
           id: approval.id,
           leave_request_id: approval.leave_request_id,
@@ -148,23 +206,15 @@ const ApprovalCenter = () => {
   };
 
   useEffect(() => {
-    loadPendingRequests();
+    if (currentUser?.id) {
+      loadPendingRequests();
+      loadApprovalStats();
+    }
   }, [currentUser?.id]);
 
-  const handleApprove = async (request: LeaveRequest) => {
+  const handleApprove = async (request: LeaveRequestWithApplicant) => {
     try {
       console.log('🚀 開始核准請假申請:', request.id);
-      
-      // 獲取申請人資訊
-      const { data: applicantData, error: applicantError } = await supabase
-        .from('staff')
-        .select('name')
-        .eq('id', request.user_id)
-        .maybeSingle();
-
-      if (applicantError) {
-        console.error('❌ 獲取申請人資訊失敗:', applicantError);
-      }
 
       const { error } = await supabase
         .from('leave_requests')
@@ -200,10 +250,10 @@ const ApprovalCenter = () => {
       }
 
       // 發送通知給申請人
-      if (applicantData) {
+      if (request.applicant_name) {
         await sendLeaveStatusNotification(
           request.user_id,
-          applicantData.name,
+          request.applicant_name,
           request.id,
           'approved',
           currentUser.name || '主管',
@@ -217,8 +267,9 @@ const ApprovalCenter = () => {
         description: "請假申請已核准",
       });
 
-      // 重新載入待審核列表
+      // 重新載入待審核列表和統計
       setPendingRequests(prev => prev.filter(req => req.id !== request.id));
+      loadApprovalStats();
     } catch (error) {
       console.error('❌ 核准請假申請時發生錯誤:', error);
       toast({
@@ -229,20 +280,9 @@ const ApprovalCenter = () => {
     }
   };
 
-  const handleReject = async (request: LeaveRequest) => {
+  const handleReject = async (request: LeaveRequestWithApplicant) => {
     try {
       console.log('🚀 開始拒絕請假申請:', request.id);
-      
-      // 獲取申請人資訊
-      const { data: applicantData, error: applicantError } = await supabase
-        .from('staff')
-        .select('name')
-        .eq('id', request.user_id)
-        .maybeSingle();
-
-      if (applicantError) {
-        console.error('❌ 獲取申請人資訊失敗:', applicantError);
-      }
 
       const { error } = await supabase
         .from('leave_requests')
@@ -279,10 +319,10 @@ const ApprovalCenter = () => {
       }
 
       // 發送通知給申請人
-      if (applicantData) {
+      if (request.applicant_name) {
         await sendLeaveStatusNotification(
           request.user_id,
-          applicantData.name,
+          request.applicant_name,
           request.id,
           'rejected',
           currentUser.name || '主管',
@@ -297,8 +337,9 @@ const ApprovalCenter = () => {
         variant: "destructive"
       });
 
-      // 重新載入待審核列表
+      // 重新載入待審核列表和統計
       setPendingRequests(prev => prev.filter(req => req.id !== request.id));
+      loadApprovalStats();
     } catch (error) {
       console.error('❌ 拒絕請假申請時發生錯誤:', error);
       toast({
@@ -309,7 +350,7 @@ const ApprovalCenter = () => {
     }
   };
 
-  const handleViewDetail = (request: LeaveRequest) => {
+  const handleViewDetail = (request: LeaveRequestWithApplicant) => {
     setSelectedRequest(request);
   };
 
@@ -320,6 +361,12 @@ const ApprovalCenter = () => {
   const handleApprovalComplete = () => {
     setSelectedRequest(null);
     loadPendingRequests();
+    loadApprovalStats();
+  };
+
+  const refreshData = () => {
+    loadPendingRequests();
+    loadApprovalStats();
   };
 
   // 如果正在查看詳細頁面，顯示詳細審核頁面
@@ -365,7 +412,7 @@ const ApprovalCenter = () => {
                 </div>
               </div>
               <Button
-                onClick={loadPendingRequests}
+                onClick={refreshData}
                 disabled={refreshing}
                 className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
               >
@@ -382,11 +429,11 @@ const ApprovalCenter = () => {
               <div className="text-white/80 text-sm font-medium">待審核申請</div>
             </div>
             <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 text-center">
-              <div className="text-3xl font-bold text-green-300 mb-2">0</div>
+              <div className="text-3xl font-bold text-green-300 mb-2">{approvalStats.todayApproved}</div>
               <div className="text-white/80 text-sm font-medium">今日已核准</div>
             </div>
             <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 text-center">
-              <div className="text-3xl font-bold text-red-300 mb-2">0</div>
+              <div className="text-3xl font-bold text-red-300 mb-2">{approvalStats.todayRejected}</div>
               <div className="text-white/80 text-sm font-medium">今日已拒絕</div>
             </div>
           </div>
@@ -416,7 +463,7 @@ const ApprovalCenter = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
                           <User className="h-5 w-5 text-white/80" />
-                          <h3 className="text-lg font-semibold text-white">申請人員資訊</h3>
+                          <h3 className="text-lg font-semibold text-white">申請人員：{request.applicant_name}</h3>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">

@@ -1,12 +1,11 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { UserProvider } from '@/contexts/UserContext';
+import { CheckInProvider } from '@/contexts/CheckInContext';
 import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
 import Header from '@/components/Header';
-import Home from '@/pages/Index';
+import Home from '@/pages/Home';
 import CheckIn from '@/pages/CheckIn';
 import Attendance from '@/pages/Attendance';
 import LeaveRequest from '@/pages/LeaveRequest';
@@ -22,21 +21,11 @@ import AnnouncementManagement from '@/pages/AnnouncementManagement';
 import HolidaySettings from '@/pages/HolidaySettings';
 import SystemSettings from '@/pages/SystemSettings';
 
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
-});
-
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <UserProvider>
+    <Router>
+      <UserProvider>
+        <CheckInProvider>
           <LeaveManagementProvider>
             <div className="min-h-screen bg-gray-50">
               <Header />
@@ -60,9 +49,9 @@ function App() {
               </Routes>
             </div>
           </LeaveManagementProvider>
-        </UserProvider>
-      </Router>
-    </QueryClientProvider>
+        </CheckInProvider>
+      </UserProvider>
+    </Router>
   );
 }
 

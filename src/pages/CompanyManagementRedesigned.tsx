@@ -1,29 +1,15 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2 } from 'lucide-react';
 
 const CompanyManagementRedesigned = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36">
-      <div className="w-full px-4 sm:px-6 lg:px-8 pb-6">
-        <div className="max-w-4xl mx-auto">
-          <Card className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl">
-            <CardHeader className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4">
-                <Building2 className="h-6 w-6 text-white" />
-              </div>
-              <CardTitle className="text-2xl font-bold text-white drop-shadow-md">
-                公司管理
-              </CardTitle>
-              <CardDescription className="text-white/80 font-medium drop-shadow-sm">
-                管理公司基本資料與設定
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center text-white">
-              <p>公司管理功能開發中...</p>
-            </CardContent>
-          </Card>
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center py-12">
+            <h1 className="text-4xl font-bold text-white mb-4">公司管理</h1>
+            <p className="text-white/80 text-lg">公司管理功能開發中</p>
+          </div>
         </div>
       </div>
     </div>

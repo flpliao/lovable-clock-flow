@@ -1,29 +1,12 @@
 
-import { LeaveType } from '@/types/hr';
+import { getLeaveTypeByIdSync } from '@/utils/leaveTypes';
 
 // Helper to get leave type in Chinese
-export const getLeaveTypeText = (type: string, leaveTypes?: LeaveType[]): string => {
-  if (leaveTypes) {
-    const leaveType = leaveTypes.find(t => t.code === type);
-    return leaveType?.name_zh || '其他';
-  }
+export const getLeaveTypeText = (type: string, leaveTypes?: any[]): string => {
+  if (!leaveTypes) return '其他';
   
-  // 回退到靜態資料
-  const staticTypes: Record<string, string> = {
-    'annual': '特別休假',
-    'personal': '事假',
-    'sick': '病假',
-    'marriage': '婚假',
-    'bereavement': '喪假',
-    'maternity': '產假',
-    'paternity': '陪產假',
-    'menstrual': '生理假',
-    'occupational': '公傷病假',
-    'parental': '育嬰留停',
-    'other': '其他'
-  };
-  
-  return staticTypes[type] || '其他';
+  const leaveType = getLeaveTypeByIdSync(type, leaveTypes);
+  return leaveType?.name_zh || '其他';
 };
 
 // Helper to get status badge color

@@ -1,3 +1,4 @@
+
 export interface LeaveType {
   id: string;
   code: string;
@@ -11,7 +12,7 @@ export interface LeaveType {
   requires_approval: boolean;
   gender_restriction?: 'male' | 'female' | null;
   description?: string;
-  special_rules?: Record<string, any>;
+  special_rules?: any;
   is_active: boolean;
   is_system_default: boolean;
   sort_order: number;

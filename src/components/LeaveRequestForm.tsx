@@ -13,7 +13,6 @@ import { LeaveTypeSelector } from '@/components/leave/LeaveTypeSelector';
 import { LeaveFormDetails } from '@/components/leave/LeaveFormDetails';
 import { LeaveApprovalWorkflow } from '@/components/leave/LeaveApprovalWorkflow';
 import { getApprovers } from '@/services/leaveRequestService';
-import { LeaveTypeService } from '@/services/payroll/leaveTypeService';
 import { Send } from 'lucide-react';
 
 interface LeaveRequestFormProps {
@@ -24,7 +23,6 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
   const { currentUser } = useUser();
   const { createLeaveRequest } = useLeaveManagementContext();
   const approvers = getApprovers();
-  const [leaveTypes, setLeaveTypes] = React.useState<any[]>([]);
   
   const form = useForm<LeaveFormValues>({
     resolver: zodResolver(leaveFormSchema),
@@ -33,23 +31,7 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
     },
   });
 
-  // Load leave types
-  React.useEffect(() => {
-    const loadLeaveTypes = async () => {
-      try {
-        const data = await LeaveTypeService.getLeaveTypes();
-        setLeaveTypes(data || []);
-      } catch (error) {
-        console.error('Failed to load leave types:', error);
-      }
-    };
-    loadLeaveTypes();
-  }, []);
-
   const { calculatedHours, selectedLeaveType } = useLeaveFormCalculations(form.watch);
-
-  // Get the actual LeaveType object
-  const selectedLeaveTypeObject = leaveTypes.find(type => type.code === selectedLeaveType);
 
   async function handleSubmit(data: LeaveFormValues) {
     if (!currentUser) return;
@@ -60,7 +42,7 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
       user_id: currentUser.id,
       start_date: data.start_date.toISOString().split('T')[0],
       end_date: data.end_date.toISOString().split('T')[0],
-      leave_type: data.leave_type as 'annual' | 'sick' | 'personal' | 'marriage' | 'bereavement' | 'maternity' | 'paternity' | 'parental' | 'occupational' | 'menstrual' | 'other',
+      leave_type: data.leave_type as any,
       status: 'pending' as const,
       hours: calculatedHours,
       reason: data.reason,
@@ -127,7 +109,7 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
             <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假詳情</h3>
             <LeaveFormDetails 
               form={form}
-              selectedLeaveType={selectedLeaveTypeObject}
+              selectedLeaveType={selectedLeaveType}
             />
           </div>
           

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,8 @@ const StaffTable = () => {
     loading, 
     openEditDialog, 
     handleDeleteStaff,
-    hasPermission
+    hasPermission,
+    getSupervisorName
   } = useStaffManagementContext();
   const { currentUser, isAdmin } = useUser();
   const [selectedStaffForCredentials, setSelectedStaffForCredentials] = useState<Staff | null>(null);
@@ -75,6 +77,7 @@ const StaffTable = () => {
               <TableHead>職位</TableHead>
               <TableHead>部門</TableHead>
               <TableHead>分店/分部</TableHead>
+              <TableHead>直屬主管</TableHead>
               <TableHead>聯絡方式</TableHead>
               <TableHead>角色</TableHead>
               <TableHead className="text-right">操作</TableHead>
@@ -87,6 +90,13 @@ const StaffTable = () => {
                 <TableCell>{staff.position}</TableCell>
                 <TableCell>{staff.department}</TableCell>
                 <TableCell>{staff.branch_name}</TableCell>
+                <TableCell>
+                  <span className={`text-sm ${
+                    staff.supervisor_id ? 'text-gray-900' : 'text-gray-500 italic'
+                  }`}>
+                    {getSupervisorName(staff.supervisor_id)}
+                  </span>
+                </TableCell>
                 <TableCell>{staff.contact}</TableCell>
                 <TableCell>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${

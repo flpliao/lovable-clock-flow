@@ -43,21 +43,21 @@ export function LeaveRequestFormFields({
   return (
     <>
       {/* 請假類型選擇 */}
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-        <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假類型</h3>
+      <div className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">請假類型</h3>
         <FormField
           control={form.control}
           name="leave_type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white font-medium">假別</FormLabel>
+              <FormLabel className="text-gray-700 font-medium">假別</FormLabel>
               <Select 
                 onValueChange={field.onChange} 
                 defaultValue={field.value}
                 disabled={!hasHireDate && field.value === 'annual'}
               >
                 <FormControl>
-                  <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60">
+                  <SelectTrigger className="bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500">
                     <SelectValue placeholder="請選擇請假類型" />
                   </SelectTrigger>
                 </FormControl>
@@ -70,7 +70,7 @@ export function LeaveRequestFormFields({
                     >
                       {type.label}
                       {!hasHireDate && type.value === 'annual' && (
-                        <span className="text-orange-500 ml-2">（需設定入職日期）</span>
+                        <span className="text-orange-600 ml-2">（需設定入職日期）</span>
                       )}
                     </SelectItem>
                   ))}
@@ -80,8 +80,8 @@ export function LeaveRequestFormFields({
               
               {/* 特別休假選擇但未設定入職日期的警告 */}
               {watchedLeaveType === 'annual' && !hasHireDate && (
-                <div className="mt-2 p-3 bg-orange-500/20 border border-orange-300/30 rounded-lg">
-                  <div className="flex items-center gap-2 text-orange-100">
+                <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <div className="flex items-center gap-2 text-orange-800">
                     <AlertTriangle className="h-4 w-4" />
                     <span className="text-sm font-medium">
                       尚未設定入職日期，無法申請特別休假。請至人員資料設定入職日期。
@@ -95,23 +95,23 @@ export function LeaveRequestFormFields({
       </div>
 
       {/* 請假日期 */}
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-        <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假日期</h3>
+      <div className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">請假日期</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="start_date"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel className="text-white font-medium">開始日期</FormLabel>
+                <FormLabel className="text-gray-700 font-medium">開始日期</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full pl-3 text-left font-normal bg-white/20 border-white/30 text-white hover:bg-white/30",
-                          !field.value && "text-white/60"
+                          "w-full pl-3 text-left font-normal bg-white border-gray-300 text-gray-900 hover:bg-gray-50 focus:border-blue-500 focus:ring-blue-500",
+                          !field.value && "text-gray-500"
                         )}
                       >
                         {field.value ? (
@@ -145,15 +145,15 @@ export function LeaveRequestFormFields({
             name="end_date"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel className="text-white font-medium">結束日期</FormLabel>
+                <FormLabel className="text-gray-700 font-medium">結束日期</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full pl-3 text-left font-normal bg-white/20 border-white/30 text-white hover:bg-white/30",
-                          !field.value && "text-white/60"
+                          "w-full pl-3 text-left font-normal bg-white border-gray-300 text-gray-900 hover:bg-gray-50 focus:border-blue-500 focus:ring-blue-500",
+                          !field.value && "text-gray-500"
                         )}
                       >
                         {field.value ? (
@@ -185,8 +185,8 @@ export function LeaveRequestFormFields({
         
         {/* 計算時數顯示 */}
         {calculatedHours > 0 && (
-          <div className="mt-4 p-4 bg-white/10 rounded-2xl">
-            <div className="flex items-center gap-2 text-white">
+          <div className="mt-4 p-4 bg-blue-50/80 border border-blue-200 rounded-xl">
+            <div className="flex items-center gap-2 text-blue-800">
               <Clock className="h-4 w-4" />
               <span className="font-medium">
                 請假時數：{calculatedHours} 小時 ({calculatedHours / 8} 天)
@@ -197,18 +197,18 @@ export function LeaveRequestFormFields({
       </div>
 
       {/* 請假原因 */}
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-        <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假原因</h3>
+      <div className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">請假原因</h3>
         <FormField
           control={form.control}
           name="reason"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white font-medium">事由說明</FormLabel>
+              <FormLabel className="text-gray-700 font-medium">事由說明</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="請輸入請假事由..."
-                  className="bg-white/20 border-white/30 text-white placeholder:text-white/60 resize-none"
+                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 resize-none focus:border-blue-500 focus:ring-blue-500"
                   rows={4}
                   {...field}
                 />
@@ -221,12 +221,12 @@ export function LeaveRequestFormFields({
 
       {/* 驗證錯誤顯示 */}
       {validationError && (
-        <div className="backdrop-blur-xl bg-red-500/20 border border-red-300/30 rounded-3xl shadow-xl p-6">
+        <div className="bg-red-50/90 backdrop-blur-sm border border-red-200/50 rounded-2xl shadow-sm p-6">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="h-5 w-5 text-red-300" />
+            <AlertTriangle className="h-5 w-5 text-red-600" />
             <div>
-              <h4 className="text-red-100 font-semibold">申請驗證失敗</h4>
-              <p className="text-red-200 text-sm mt-1">{validationError}</p>
+              <h4 className="text-red-800 font-semibold">申請驗證失敗</h4>
+              <p className="text-red-700 text-sm mt-1">{validationError}</p>
             </div>
           </div>
         </div>

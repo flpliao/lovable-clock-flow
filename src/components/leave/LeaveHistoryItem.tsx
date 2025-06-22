@@ -1,17 +1,17 @@
-
 import React from 'react';
 import { LeaveRequest } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { getStatusBadgeVariant, getStatusText, getLeaveTypeText } from '@/utils/leaveUtils';
 import { Calendar, Clock, User, FileText, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
-
 interface LeaveHistoryItemProps {
   leave: LeaveRequest;
   onClick?: (leave: LeaveRequest) => void;
 }
-
-export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({ leave, onClick }) => {
+export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({
+  leave,
+  onClick
+}) => {
   const handleClick = () => {
     if (onClick) {
       onClick(leave);
@@ -29,7 +29,7 @@ export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({ leave, onCli
           description: '因無直屬主管，系統自動核准'
         };
       }
-      
+
       // 一般核准情況
       if (leave.approvals && leave.approvals.length > 0) {
         const approvedRecords = leave.approvals.filter(approval => approval.status === 'approved');
@@ -47,7 +47,6 @@ export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({ leave, onCli
           };
         }
       }
-      
       return {
         icon: <CheckCircle className="h-4 w-4 text-green-500" />,
         text: '✅ 已核准',
@@ -83,28 +82,19 @@ export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({ leave, onCli
         };
       }
     }
-
     return {
       icon: <AlertCircle className="h-4 w-4 text-gray-500" />,
       text: '狀態未知',
       description: ''
     };
   };
-
   const statusInfo = getApprovalStatusInfo();
-  
+
   // 計算天數顯示
   const days = Math.floor(leave.hours / 8);
   const remainingHours = leave.hours % 8;
-  const timeDisplay = days > 0 
-    ? (remainingHours > 0 ? `${days}天${remainingHours}小時` : `${days}天`)
-    : `${leave.hours}小時`;
-
-  return (
-    <div 
-      className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 hover:bg-white/30 transition-all duration-200 cursor-pointer"
-      onClick={handleClick}
-    >
+  const timeDisplay = days > 0 ? remainingHours > 0 ? `${days}天${remainingHours}小時` : `${days}天` : `${leave.hours}小時`;
+  return <div onClick={handleClick} className="backdrop-blur-xl border border-white/30 rounded-2xl p-4 transition-all duration-200 cursor-pointer bg-indigo-500">
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-white/80" />
@@ -135,18 +125,13 @@ export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({ leave, onCli
           {statusInfo.icon}
           <div>
             <div className="text-white font-medium text-xs">{statusInfo.text}</div>
-            {statusInfo.description && (
-              <div className="text-white/70 text-xs mt-1">{statusInfo.description}</div>
-            )}
+            {statusInfo.description && <div className="text-white/70 text-xs mt-1">{statusInfo.description}</div>}
           </div>
         </div>
         
-        {leave.reason && (
-          <div className="mt-2 p-2 bg-white/10 rounded-lg">
+        {leave.reason && <div className="mt-2 p-2 bg-white/10 rounded-lg">
             <p className="text-xs text-white/80">原因：{leave.reason}</p>
-          </div>
-        )}
+          </div>}
       </div>
-    </div>
-  );
+    </div>;
 };

@@ -2,12 +2,7 @@
 import React from 'react';
 import { User } from '@/types';
 import { calculateYearsOfService, calculateAnnualLeaveDays, formatYearsOfService } from '@/utils/annualLeaveCalculator';
-import { AnnualLeaveBalanceHeader } from './AnnualLeaveBalanceHeader';
-import { AnnualLeaveEmployeeInfo } from './AnnualLeaveEmployeeInfo';
-import { AnnualLeaveStats } from './AnnualLeaveStats';
-import { AnnualLeaveProgressBar } from './AnnualLeaveProgressBar';
-import { AnnualLeaveWarnings } from './AnnualLeaveWarnings';
-import { AnnualLeaveLoadingState } from './AnnualLeaveLoadingState';
+import { CalendarDays, Clock, TrendingUp } from 'lucide-react';
 
 interface AnnualLeaveBalanceCardProps {
   currentUser: User | null;
@@ -24,52 +19,14 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
   balanceData, 
   loading = false 
 }: AnnualLeaveBalanceCardProps) {
-  console.log('🎯 AnnualLeaveBalanceCard currentUser:', currentUser);
-  console.log('🎯 AnnualLeaveBalanceCard balanceData:', balanceData);
-
   // 計算年資和特休天數
   const calculatedData = React.useMemo(() => {
-    if (!currentUser) {
-      console.log('❌ No currentUser available');
-      return null;
-    }
+    if (!currentUser) return null;
 
-    console.log('👤 Current user data:', {
-      id: currentUser.id,
-      name: currentUser.name,
-      department: currentUser.department,
-      position: currentUser.position,
-      hire_date: currentUser.hire_date,
-      onboard_date: currentUser.onboard_date
-    });
-
-    // 廖俊雄的特殊處理 - 使用正確的入職日期
-    let hireDateStr = currentUser.hire_date || currentUser.onboard_date;
-    
-    // 如果是廖俊雄，確保使用正確的入職日期
-    if (currentUser.name === '廖俊雄' || currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
-      hireDateStr = '2004-02-07';
-      console.log('🎯 廖俊雄特殊處理，使用正確入職日期:', hireDateStr);
-    }
-    
-    const hireDate = hireDateStr ? new Date(hireDateStr) : null;
-    
-    if (!hireDate) {
-      console.log('❌ No hire date available');
-      return null;
-    }
-
-    const yearsOfService = calculateYearsOfService(hireDate);
-    const entitledDays = calculateAnnualLeaveDays(hireDate);
-    const formattedYears = formatYearsOfService(hireDate);
-
-    console.log('📊 Calculated data:', {
-      hireDateStr,
-      hireDate: hireDate?.toISOString(),
-      yearsOfService,
-      entitledDays,
-      formattedYears
-    });
+    const hireDate = currentUser.hire_date ? new Date(currentUser.hire_date) : null;
+    const yearsOfService = hireDate ? calculateYearsOfService(hireDate) : 0;
+    const entitledDays = hireDate ? calculateAnnualLeaveDays(hireDate) : 0;
+    const formattedYears = hireDate ? formatYearsOfService(hireDate) : '未設定';
 
     return {
       hireDate,
@@ -77,11 +34,7 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
       entitledDays,
       formattedYears
     };
-  }, [currentUser]);
-
-  if (loading) {
-    return <AnnualLeaveLoadingState />;
-  }
+  }, [currentUser?.hire_date, currentUser?.id, currentUser?.name, currentUser?.department, currentUser?.position]);
 
   if (!currentUser) {
     return (
@@ -103,26 +56,15 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
   if (!calculatedData.hireDate) {
     return (
       <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-        <AnnualLeaveBalanceHeader 
-          title="特別休假設定"
-          subtitle="Annual Leave Setup"
-          variant="warning"
-        />
-        
-        {/* 顯示員工基本資訊即使沒有入職日期 */}
-        <div className="bg-white/10 rounded-2xl p-4 mb-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center md:text-left">
-            <div>
-              <p className="text-sm text-white/70 font-medium mb-1">員工姓名</p>
-              <p className="text-white font-semibold text-lg">{currentUser.name || '未設定'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-white/70 font-medium mb-1">部門職位</p>
-              <p className="text-white font-semibold">{currentUser.department || '未設定'} / {currentUser.position || '未設定'}</p>
-            </div>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center">
+            <CalendarDays className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-white drop-shadow-md">特別休假設定</h3>
+            <p className="text-sm text-white/80 font-medium drop-shadow-sm">Annual Leave Setup</p>
           </div>
         </div>
-        
         <div className="bg-yellow-500/20 border border-yellow-300/30 rounded-xl p-4">
           <div className="text-yellow-100 text-center">
             <div className="text-lg font-semibold mb-2">⚠️ 尚未設定入職日期</div>
@@ -141,38 +83,123 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
   // 計算使用百分比
   const usagePercentage = totalDays > 0 ? Math.round((usedDays / totalDays) * 100) : 0;
 
-  console.log('📈 Final display data:', {
-    totalDays,
-    usedDays,
-    remainingDays,
-    usagePercentage
-  });
+  if (loading) {
+    return (
+      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+        <div className="animate-pulse">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-white/30 rounded-lg"></div>
+            <div className="h-6 bg-white/30 rounded w-32"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="h-20 bg-white/20 rounded-xl"></div>
+            <div className="h-20 bg-white/20 rounded-xl"></div>
+            <div className="h-20 bg-white/20 rounded-xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-      <AnnualLeaveBalanceHeader 
-        title="特別休假餘額"
-        subtitle="Annual Leave Balance"
-      />
+      {/* 卡片標題 */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+          <CalendarDays className="h-5 w-5 text-white" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-white drop-shadow-md">特別休假餘額</h3>
+          <p className="text-sm text-white/80 font-medium drop-shadow-sm">Annual Leave Balance</p>
+        </div>
+      </div>
 
-      <AnnualLeaveEmployeeInfo 
-        currentUser={currentUser}
-        formattedYears={calculatedData.formattedYears}
-      />
+      {/* 員工基本資訊 */}
+      <div className="bg-white/10 rounded-2xl p-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center md:text-left">
+          <div>
+            <p className="text-sm text-white/70 font-medium mb-1">員工姓名</p>
+            <p className="text-white font-semibold text-lg">{currentUser.name}</p>
+          </div>
+          <div>
+            <p className="text-sm text-white/70 font-medium mb-1">部門職位</p>
+            <p className="text-white font-semibold">{currentUser.department} / {currentUser.position}</p>
+          </div>
+          <div>
+            <p className="text-sm text-white/70 font-medium mb-1">年資</p>
+            <p className="text-white font-semibold flex items-center justify-center md:justify-start gap-1">
+              <TrendingUp className="h-4 w-4" />
+              {calculatedData.formattedYears}
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <AnnualLeaveStats 
-        totalDays={totalDays}
-        usedDays={usedDays}
-        remainingDays={remainingDays}
-      />
+      {/* 特休統計卡片 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* 總天數 */}
+        <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm border border-blue-300/30 rounded-2xl p-4 text-center">
+          <div className="text-3xl font-bold text-white mb-1">{totalDays}</div>
+          <div className="text-blue-100 text-sm font-medium">年度總額（天）</div>
+          <div className="text-blue-200/80 text-xs mt-1">{totalDays * 8} 小時</div>
+        </div>
 
-      <AnnualLeaveProgressBar 
-        usedDays={usedDays}
-        totalDays={totalDays}
-        usagePercentage={usagePercentage}
-      />
+        {/* 已使用天數 */}
+        <div className="bg-gradient-to-br from-orange-500/20 to-red-500/20 backdrop-blur-sm border border-orange-300/30 rounded-2xl p-4 text-center">
+          <div className="text-3xl font-bold text-white mb-1">{usedDays}</div>
+          <div className="text-orange-100 text-sm font-medium">已使用（天）</div>
+          <div className="text-orange-200/80 text-xs mt-1">{usedDays * 8} 小時</div>
+        </div>
 
-      <AnnualLeaveWarnings remainingDays={remainingDays} />
+        {/* 剩餘天數 */}
+        <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-sm border border-green-300/30 rounded-2xl p-4 text-center">
+          <div className="text-3xl font-bold text-white mb-1">{remainingDays}</div>
+          <div className="text-green-100 text-sm font-medium">剩餘可用（天）</div>
+          <div className="text-green-200/80 text-xs mt-1">{remainingDays * 8} 小時</div>
+        </div>
+      </div>
+
+      {/* 進度條 */}
+      <div className="bg-white/10 rounded-2xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-white/80" />
+            <span className="text-white font-medium">使用進度</span>
+          </div>
+          <span className="text-white font-bold text-lg">{usagePercentage}%</span>
+        </div>
+        
+        <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+          <div 
+            className="bg-gradient-to-r from-blue-500 to-purple-600 h-full rounded-full transition-all duration-700 ease-out shadow-lg" 
+            style={{ width: `${Math.min(usagePercentage, 100)}%` }}
+          />
+        </div>
+        
+        <div className="flex justify-between mt-2 text-xs text-white/70">
+          <span>0 天</span>
+          <span>{totalDays} 天</span>
+        </div>
+      </div>
+
+      {/* 警告訊息 */}
+      {remainingDays <= 2 && remainingDays > 0 && (
+        <div className="mt-4 bg-yellow-500/20 border border-yellow-300/30 rounded-xl p-3">
+          <div className="flex items-center gap-2 text-yellow-100">
+            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium">特休餘額即將用完，請合理安排休假時間</span>
+          </div>
+        </div>
+      )}
+
+      {remainingDays <= 0 && (
+        <div className="mt-4 bg-red-500/20 border border-red-300/30 rounded-xl p-3">
+          <div className="flex items-center gap-2 text-red-100">
+            <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+            <span className="text-sm font-medium">特休已用完，無法申請更多特別休假</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 });

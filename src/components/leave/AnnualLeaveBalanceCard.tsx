@@ -34,15 +34,19 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
       name: currentUser.name,
       department: currentUser.department,
       position: currentUser.position,
-      hire_date: currentUser.hire_date
+      hire_date: currentUser.hire_date,
+      onboard_date: currentUser.onboard_date
     });
 
-    const hireDate = currentUser.hire_date ? new Date(currentUser.hire_date) : null;
+    // 使用 onboard_date 或 hire_date，優先使用 onboard_date
+    const hireDateStr = currentUser.onboard_date || currentUser.hire_date;
+    const hireDate = hireDateStr ? new Date(hireDateStr) : null;
     const yearsOfService = hireDate ? calculateYearsOfService(hireDate) : 0;
     const entitledDays = hireDate ? calculateAnnualLeaveDays(hireDate) : 0;
     const formattedYears = hireDate ? formatYearsOfService(hireDate) : '未設定';
 
     console.log('📊 Calculated data:', {
+      hireDateStr,
       hireDate: hireDate?.toISOString(),
       yearsOfService,
       entitledDays,

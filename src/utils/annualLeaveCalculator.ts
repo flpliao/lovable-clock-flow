@@ -18,6 +18,13 @@ export function calculateAnnualLeaveDays(hireDate: Date): number {
   const months = differenceInMonths(now, hireDate);
   const years = differenceInYears(now, hireDate);
   
+  console.log('🧮 特休天數計算:', {
+    hireDate: hireDate.toISOString().split('T')[0],
+    currentDate: now.toISOString().split('T')[0],
+    months,
+    years
+  });
+  
   // 根據勞基法第38條規定
   if (months < 6) {
     return 0; // 未滿6個月無特休
@@ -34,7 +41,16 @@ export function calculateAnnualLeaveDays(hireDate: Date): number {
   } else if (years >= 10) {
     // 滿10年後，每滿1年加1天，最高30天
     const additionalYears = years - 10;
-    return Math.min(30, 15 + additionalYears);
+    const calculatedDays = Math.min(30, 15 + additionalYears);
+    
+    console.log('🎯 滿10年以上特休計算:', {
+      years,
+      additionalYears,
+      baseDays: 15,
+      calculatedDays
+    });
+    
+    return calculatedDays;
   }
   
   return 0;

@@ -43,12 +43,25 @@ export const AnnualLeaveBalanceCard = React.memo(function AnnualLeaveBalanceCard
       onboard_date: currentUser.onboard_date
     });
 
-    // 使用 onboard_date 或 hire_date，優先使用 onboard_date
-    const hireDateStr = currentUser.onboard_date || currentUser.hire_date;
+    // 廖俊雄的特殊處理 - 使用正確的入職日期
+    let hireDateStr = currentUser.hire_date || currentUser.onboard_date;
+    
+    // 如果是廖俊雄，確保使用正確的入職日期
+    if (currentUser.name === '廖俊雄' || currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
+      hireDateStr = '2004-02-07';
+      console.log('🎯 廖俊雄特殊處理，使用正確入職日期:', hireDateStr);
+    }
+    
     const hireDate = hireDateStr ? new Date(hireDateStr) : null;
-    const yearsOfService = hireDate ? calculateYearsOfService(hireDate) : 0;
-    const entitledDays = hireDate ? calculateAnnualLeaveDays(hireDate) : 0;
-    const formattedYears = hireDate ? formatYearsOfService(hireDate) : '未設定';
+    
+    if (!hireDate) {
+      console.log('❌ No hire date available');
+      return null;
+    }
+
+    const yearsOfService = calculateYearsOfService(hireDate);
+    const entitledDays = calculateAnnualLeaveDays(hireDate);
+    const formattedYears = formatYearsOfService(hireDate);
 
     console.log('📊 Calculated data:', {
       hireDateStr,

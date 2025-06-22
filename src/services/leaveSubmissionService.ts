@@ -16,6 +16,15 @@ export const submitLeaveRequest = async (
   calculatedHours: number,
   userStaffData: UserStaffData | null
 ) => {
+  console.log('🔄 開始提交請假申請:', {
+    userId,
+    calculatedHours,
+    userStaffData: userStaffData ? {
+      name: userStaffData.name,
+      supervisor_id: userStaffData.supervisor_id
+    } : null
+  });
+
   // 檢查是否有直屬主管 - 更嚴格的檢查
   const hasSupervisor = userStaffData?.supervisor_id && 
                        userStaffData.supervisor_id.trim() !== '' && 
@@ -29,67 +38,80 @@ export const submitLeaveRequest = async (
 
   const shouldAutoApprove = !hasSupervisor;
 
-  if (shouldAutoApprove) {
-    // 無直屬主管，直接自動核准
-    const { data: insertedData, error: insertError } = await supabase
-      .from('leave_requests')
-      .insert({
+  try {
+    if (shouldAutoApprove) {
+      // 無直屬主管，直接自動核准
+      console.log('🤖 執行自動核准流程');
+      
+      const { data: insertedData, error: insertError } = await supabase
+        .from('leave_requests')
+        .insert({
+          user_id: userId,
+          staff_id: userId,
+          start_date: format(data.start_date, 'yyyy-MM-dd'),
+          end_date: format(data.end_date, 'yyyy-MM-dd'),
+          leave_type: data.leave_type as any,
+          status: 'approved',
+          hours: calculatedHours,
+          reason: data.reason,
+          approval_level: 0,
+          current_approver: null,
+          approved_at: new Date().toISOString(),
+          approved_by: 'system'
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('❌ 自動核准失敗:', insertError);
+        throw insertError;
+      }
+
+      // 為自動核准創建審核記錄
+      const { error: approvalError } = await supabase
+        .from('approval_records')
+        .insert({
+          leave_request_id: insertedData.id,
+          approver_id: 'system',
+          approver_name: '系統',
+          status: 'approved',
+          level: 0,
+          approval_date: new Date().toISOString(),
+          comment: '無直屬主管，系統自動核准'
+        });
+
+      if (approvalError) {
+        console.warn('⚠️ 建立審核記錄失敗，但主要申請已成功:', approvalError);
+      }
+
+      console.log('✅ 自動核准成功:', insertedData);
+      return { success: true, autoApproved: true };
+    } else {
+      // 有直屬主管，需要審核流程
+      console.log('👨‍💼 執行主管審核流程');
+      
+      const leaveRequest = {
+        id: '',
         user_id: userId,
         staff_id: userId,
         start_date: format(data.start_date, 'yyyy-MM-dd'),
         end_date: format(data.end_date, 'yyyy-MM-dd'),
         leave_type: data.leave_type as any,
-        status: 'approved',
+        status: 'pending' as const,
         hours: calculatedHours,
         reason: data.reason,
-        approval_level: 0,
-        current_approver: null,
-        approved_at: new Date().toISOString(),
-        approved_by: 'system'
-      })
-      .select()
-      .single();
+        approval_level: 1,
+        current_approver: userStaffData?.supervisor_id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
 
-    if (insertError) {
-      console.error('自動核准失敗:', insertError);
-      throw insertError;
+      console.log('需要審核，建立請假申請:', leaveRequest);
+      return { success: false, autoApproved: false, leaveRequest };
     }
-
-    // 為自動核准創建審核記錄
-    await supabase
-      .from('approval_records')
-      .insert({
-        leave_request_id: insertedData.id,
-        approver_id: 'system',
-        approver_name: '系統',
-        status: 'approved',
-        level: 0,
-        approval_date: new Date().toISOString(),
-        comment: '無直屬主管，系統自動核准'
-      });
-
-    console.log('自動核准成功:', insertedData);
-    return { success: true, autoApproved: true };
-  } else {
-    // 有直屬主管，需要審核流程
-    const leaveRequest = {
-      id: '',
-      user_id: userId,
-      staff_id: userId,
-      start_date: format(data.start_date, 'yyyy-MM-dd'),
-      end_date: format(data.end_date, 'yyyy-MM-dd'),
-      leave_type: data.leave_type as any,
-      status: 'pending' as const,
-      hours: calculatedHours,
-      reason: data.reason,
-      approval_level: 1,
-      current_approver: userStaffData?.supervisor_id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    console.log('需要審核，建立請假申請:', leaveRequest);
-    return { success: false, autoApproved: false, leaveRequest };
+  } catch (error) {
+    console.error('❌ 提交請假申請時發生錯誤:', error);
+    throw error;
   }
 };
 

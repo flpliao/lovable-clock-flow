@@ -64,8 +64,9 @@ export const useLeaveRequestForm = () => {
       try {
         const data = await loadUserStaffData(currentUser.id);
         setUserStaffData(data);
+        console.log('✅ 成功載入用戶資料:', data);
       } catch (error) {
-        console.error('載入員工資料時發生錯誤:', error);
+        console.error('❌ 載入員工資料時發生錯誤:', error);
         setUserStaffData(null);
       } finally {
         setIsLoadingUserData(false);
@@ -101,6 +102,7 @@ export const useLeaveRequestForm = () => {
     }
 
     setIsSubmitting(true);
+    console.log('🚀 開始提交請假申請流程');
 
     try {
       const submissionData: LeaveSubmissionData = {
@@ -110,9 +112,11 @@ export const useLeaveRequestForm = () => {
         reason: data.reason,
       };
 
+      console.log('📋 準備提交的申請資料:', submissionData);
       const result = await submitLeaveRequest(submissionData, currentUser.id, calculatedHours, userStaffData);
 
       if (result.autoApproved) {
+        console.log('✅ 自動核准流程完成');
         form.reset();
         await refreshData();
         
@@ -121,6 +125,7 @@ export const useLeaveRequestForm = () => {
           description: "✅ 您的請假申請已自動核准（目前無設定直屬主管）",
         });
       } else if (result.leaveRequest) {
+        console.log('👨‍💼 進入主管審核流程');
         const success = await createLeaveRequest(result.leaveRequest);
         
         if (success) {
@@ -141,12 +146,23 @@ export const useLeaveRequestForm = () => {
         }
       }
     } catch (error) {
-      console.error('提交請假申請失敗:', error);
-      toast({
-        title: "申請失敗",
-        description: "無法提交請假申請，請稍後再試",
-        variant: "destructive"
-      });
+      console.error('❌ 提交請假申請失敗:', error);
+      
+      // 檢查是否為 RLS 相關錯誤
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('row-level security') || errorMessage.includes('RLS')) {
+        toast({
+          title: "權限錯誤",
+          description: "無法提交請假申請，請檢查您的權限設定或聯繫系統管理員",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "申請失敗",
+          description: "無法提交請假申請，請稍後再試",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

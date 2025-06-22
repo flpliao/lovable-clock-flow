@@ -1,378 +1,302 @@
 
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { LeaveTypeService } from '@/services/payroll/leaveTypeService';
 import { LeaveType } from '@/types/hr';
-
-const leaveTypeSchema = z.object({
-  code: z.string().min(1, '請假代碼不能為空'),
-  name_zh: z.string().min(1, '中文名稱不能為空'),
-  name_en: z.string().min(1, '英文名稱不能為空'),
-  description: z.string().optional(),
-  is_paid: z.boolean(),
-  is_active: z.boolean(),
-  requires_attachment: z.boolean(),
-  max_days_per_year: z.number().min(0).optional(),
-  max_days_per_month: z.number().min(0).optional(),
-  gender_restriction: z.enum(['male', 'female']).optional(),
-  annual_reset: z.boolean(),
-  is_system_default: z.boolean(),
-});
-
-type LeaveTypeFormData = z.infer<typeof leaveTypeSchema>;
 
 interface LeaveTypeFormDialogProps {
   open: boolean;
   onClose: () => void;
-  onSave: (leaveType: LeaveType) => Promise<void>;
   leaveType?: LeaveType | null;
+  isEditing: boolean;
 }
 
-export function LeaveTypeFormDialog({
-  open,
-  onClose,
-  onSave,
-  leaveType,
-}: LeaveTypeFormDialogProps) {
+export function LeaveTypeFormDialog({ open, onClose, leaveType, isEditing }: LeaveTypeFormDialogProps) {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-
-  const form = useForm<LeaveTypeFormData>({
-    resolver: zodResolver(leaveTypeSchema),
-    defaultValues: {
-      code: '',
-      name_zh: '',
-      name_en: '',
-      description: '',
-      is_paid: true,
-      is_active: true,
-      requires_attachment: false,
-      max_days_per_year: 0,
-      max_days_per_month: 0,
-      annual_reset: false,
-      is_system_default: false,
-    },
+  const [formData, setFormData] = useState({
+    code: '',
+    name_zh: '',
+    name_en: '',
+    is_paid: false,
+    annual_reset: true,
+    max_days_per_year: '',
+    max_days_per_month: '',
+    requires_attachment: false,
+    requires_approval: true,
+    gender_restriction: '',
+    description: '',
+    is_active: true,
+    sort_order: '0'
   });
 
   useEffect(() => {
-    if (leaveType) {
-      form.reset({
+    if (isEditing && leaveType) {
+      setFormData({
         code: leaveType.code,
         name_zh: leaveType.name_zh,
         name_en: leaveType.name_en,
-        description: leaveType.description || '',
         is_paid: leaveType.is_paid,
-        is_active: leaveType.is_active,
-        requires_attachment: leaveType.requires_attachment,
-        max_days_per_year: leaveType.max_days_per_year || 0,
-        max_days_per_month: leaveType.max_days_per_month || 0,
-        gender_restriction: leaveType.gender_restriction || undefined,
         annual_reset: leaveType.annual_reset,
-        is_system_default: leaveType.is_system_default,
+        max_days_per_year: leaveType.max_days_per_year?.toString() || '',
+        max_days_per_month: leaveType.max_days_per_month?.toString() || '',
+        requires_attachment: leaveType.requires_attachment,
+        requires_approval: leaveType.requires_approval,
+        gender_restriction: leaveType.gender_restriction || '',
+        description: leaveType.description || '',
+        is_active: leaveType.is_active,
+        sort_order: leaveType.sort_order.toString()
       });
     } else {
-      form.reset({
+      // 重置表單
+      setFormData({
         code: '',
         name_zh: '',
         name_en: '',
-        description: '',
-        is_paid: true,
-        is_active: true,
+        is_paid: false,
+        annual_reset: true,
+        max_days_per_year: '',
+        max_days_per_month: '',
         requires_attachment: false,
-        max_days_per_year: 0,
-        max_days_per_month: 0,
-        annual_reset: false,
-        is_system_default: false,
+        requires_approval: true,
+        gender_restriction: '',
+        description: '',
+        is_active: true,
+        sort_order: '0'
       });
     }
-  }, [leaveType, form]);
+  }, [isEditing, leaveType, open]);
 
-  const handleSubmit = async (data: LeaveTypeFormData) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
+
     try {
-      const leaveTypeData: LeaveType = {
-        id: leaveType?.id || '',
-        code: data.code,
-        name_zh: data.name_zh,
-        name_en: data.name_en,
-        description: data.description,
-        is_paid: data.is_paid,
-        is_active: data.is_active,
-        requires_attachment: data.requires_attachment,
-        max_days_per_year: data.max_days_per_year,
-        max_days_per_month: data.max_days_per_month,
-        gender_restriction: data.gender_restriction || null,
-        annual_reset: data.annual_reset,
-        is_system_default: data.is_system_default,
-        requires_approval: true, // Add missing required property with default value
-        sort_order: leaveType?.sort_order || 0, // Add missing required property with default value
-        created_at: leaveType?.created_at || new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+      const submitData = {
+        ...formData,
+        max_days_per_year: formData.max_days_per_year ? parseInt(formData.max_days_per_year) : null,
+        max_days_per_month: formData.max_days_per_month ? parseInt(formData.max_days_per_month) : null,
+        gender_restriction: formData.gender_restriction || null,
+        sort_order: parseInt(formData.sort_order)
       };
-      
-      await onSave(leaveTypeData);
+
+      if (isEditing && leaveType) {
+        await LeaveTypeService.updateLeaveType(leaveType.id, submitData);
+        toast({
+          title: "更新成功",
+          description: `假別「${formData.name_zh}」已更新`,
+        });
+      } else {
+        await LeaveTypeService.createLeaveType(submitData);
+        toast({
+          title: "新增成功",
+          description: `假別「${formData.name_zh}」已新增`,
+        });
+      }
+
       onClose();
     } catch (error) {
-      console.error('Failed to save leave type:', error);
+      console.error('操作失敗:', error);
+      toast({
+        title: "操作失敗",
+        description: "無法儲存假別設定",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
   };
 
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {leaveType ? '編輯請假類型' : '新增請假類型'}
+            {isEditing ? '編輯假別' : '新增假別'}
           </DialogTitle>
           <DialogDescription>
-            設定請假類型的基本資訊和規則
+            {isEditing ? '修改假別設定和規則' : '建立新的假別類型'}
           </DialogDescription>
         </DialogHeader>
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="code"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>請假代碼</FormLabel>
-                  <FormControl>
-                    <Input placeholder="例如: annual" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    用於系統識別的唯一代碼
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="name_zh"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>中文名稱</FormLabel>
-                    <FormControl>
-                      <Input placeholder="例如: 特別休假" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="name_en"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>英文名稱</FormLabel>
-                    <FormControl>
-                      <Input placeholder="例如: Annual Leave" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="code">假別代碼</Label>
+              <Input
+                id="code"
+                value={formData.code}
+                onChange={(e) => handleInputChange('code', e.target.value)}
+                placeholder="例如：sick, annual"
+                required
+                disabled={isEditing && leaveType?.is_system_default}
               />
             </div>
-            
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>描述</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="請假類型的詳細說明"
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="is_paid"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">有薪假</FormLabel>
-                      <FormDescription>
-                        是否為帶薪休假
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="is_active"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">啟用</FormLabel>
-                      <FormDescription>
-                        是否可供使用
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
+            <div className="space-y-2">
+              <Label htmlFor="sort_order">排序</Label>
+              <Input
+                id="sort_order"
+                type="number"
+                value={formData.sort_order}
+                onChange={(e) => handleInputChange('sort_order', e.target.value)}
+                min="0"
               />
             </div>
-            
-            <FormField
-              control={form.control}
-              name="requires_attachment"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">需要附件</FormLabel>
-                    <FormDescription>
-                      申請時是否需要上傳證明文件
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="gender_restriction"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>性別限制</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="選擇性別限制" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="">無限制</SelectItem>
-                      <SelectItem value="male">限男性</SelectItem>
-                      <SelectItem value="female">限女性</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    特定性別才能申請的假別
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="max_days_per_year"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>年度上限天數</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="0"
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      0表示無限制
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="max_days_per_month"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>月度上限天數</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="0"
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      0表示無限制
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name_zh">中文名稱</Label>
+              <Input
+                id="name_zh"
+                value={formData.name_zh}
+                onChange={(e) => handleInputChange('name_zh', e.target.value)}
+                placeholder="例如：病假"
+                required
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="name_en">英文名稱</Label>
+              <Input
+                id="name_en"
+                value={formData.name_en}
+                onChange={(e) => handleInputChange('name_en', e.target.value)}
+                placeholder="例如：Sick Leave"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">說明</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              placeholder="假別說明和注意事項"
+              rows={3}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="max_days_per_year">年度上限天數</Label>
+              <Input
+                id="max_days_per_year"
+                type="number"
+                value={formData.max_days_per_year}
+                onChange={(e) => handleInputChange('max_days_per_year', e.target.value)}
+                placeholder="不限制請留空"
+                min="0"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="max_days_per_month">每月上限天數</Label>
+              <Input
+                id="max_days_per_month"
+                type="number"
+                value={formData.max_days_per_month}
+                onChange={(e) => handleInputChange('max_days_per_month', e.target.value)}
+                placeholder="不限制請留空"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="gender_restriction">性別限制</Label>
+            <Select
+              value={formData.gender_restriction}
+              onValueChange={(value) => handleInputChange('gender_restriction', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="選擇性別限制（無限制請留空）" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">無限制</SelectItem>
+                <SelectItem value="male">限男性</SelectItem>
+                <SelectItem value="female">限女性</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="is_paid"
+                checked={formData.is_paid}
+                onCheckedChange={(checked) => handleInputChange('is_paid', checked)}
+              />
+              <Label htmlFor="is_paid">有薪假</Label>
+            </div>
             
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
-                取消
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? '儲存中...' : '儲存'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="annual_reset"
+                checked={formData.annual_reset}
+                onCheckedChange={(checked) => handleInputChange('annual_reset', checked)}
+              />
+              <Label htmlFor="annual_reset">年度重置</Label>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="requires_approval"
+                checked={formData.requires_approval}
+                onCheckedChange={(checked) => handleInputChange('requires_approval', checked)}
+              />
+              <Label htmlFor="requires_approval">需要核准</Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="requires_attachment"
+                checked={formData.requires_attachment}
+                onCheckedChange={(checked) => handleInputChange('requires_attachment', checked)}
+              />
+              <Label htmlFor="requires_attachment">需要附件</Label>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="is_active"
+              checked={formData.is_active}
+              onCheckedChange={(checked) => handleInputChange('is_active', checked)}
+            />
+            <Label htmlFor="is_active">啟用</Label>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-6">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={loading}
+            >
+              取消
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? '處理中...' : (isEditing ? '更新' : '新增')}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

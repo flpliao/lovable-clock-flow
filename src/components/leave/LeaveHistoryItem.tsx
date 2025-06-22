@@ -22,7 +22,7 @@ export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({ leave, onCli
   const getApprovalStatusInfo = () => {
     if (leave.status === 'approved') {
       // 檢查是否為系統自動核准
-      if (leave.approved_by === 'system' || leave.approved_by === '自動核准') {
+      if (leave.approved_by === 'system') {
         return {
           icon: <CheckCircle className="h-4 w-4 text-green-500" />,
           text: '✅ 無需核准（系統自動核准）',

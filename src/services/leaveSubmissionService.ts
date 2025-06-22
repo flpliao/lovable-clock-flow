@@ -16,34 +16,34 @@ export const submitLeaveRequest = async (
   calculatedHours: number,
   userStaffData: UserStaffData | null
 ) => {
-  // 檢查是否有直屬主管
-  const hasSupervisor = userStaffData?.supervisor_id && userStaffData.supervisor_id.trim() !== '';
+  // 檢查是否有直屬主管 - 更嚴格的檢查
+  const hasSupervisor = userStaffData?.supervisor_id && 
+                       userStaffData.supervisor_id.trim() !== '' && 
+                       userStaffData.supervisor_id !== null;
+  
+  console.log('檢查主管狀態:', {
+    supervisor_id: userStaffData?.supervisor_id,
+    hasSupervisor,
+    userStaffData
+  });
+
   const shouldAutoApprove = !hasSupervisor;
 
-  const leaveRequestStatus: 'approved' | 'pending' = shouldAutoApprove ? 'approved' : 'pending';
-
-  const leaveRequest = {
-    id: '',
-    user_id: userId,
-    staff_id: userId,
-    start_date: format(data.start_date, 'yyyy-MM-dd'),
-    end_date: format(data.end_date, 'yyyy-MM-dd'),
-    leave_type: data.leave_type as any,
-    status: leaveRequestStatus,
-    hours: calculatedHours,
-    reason: data.reason,
-    approval_level: shouldAutoApprove ? 0 : 1,
-    current_approver: shouldAutoApprove ? null : userStaffData?.supervisor_id,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-
-  // 如果自動核准，需要額外處理核准資訊
   if (shouldAutoApprove) {
+    // 無直屬主管，直接自動核准
     const { data: insertedData, error: insertError } = await supabase
       .from('leave_requests')
       .insert({
-        ...leaveRequest,
+        user_id: userId,
+        staff_id: userId,
+        start_date: format(data.start_date, 'yyyy-MM-dd'),
+        end_date: format(data.end_date, 'yyyy-MM-dd'),
+        leave_type: data.leave_type as any,
+        status: 'approved',
+        hours: calculatedHours,
+        reason: data.reason,
+        approval_level: 0,
+        current_approver: null,
         approved_at: new Date().toISOString(),
         approved_by: 'system'
       })
@@ -51,6 +51,7 @@ export const submitLeaveRequest = async (
       .single();
 
     if (insertError) {
+      console.error('自動核准失敗:', insertError);
       throw insertError;
     }
 
@@ -67,8 +68,27 @@ export const submitLeaveRequest = async (
         comment: '無直屬主管，系統自動核准'
       });
 
+    console.log('自動核准成功:', insertedData);
     return { success: true, autoApproved: true };
   } else {
+    // 有直屬主管，需要審核流程
+    const leaveRequest = {
+      id: '',
+      user_id: userId,
+      staff_id: userId,
+      start_date: format(data.start_date, 'yyyy-MM-dd'),
+      end_date: format(data.end_date, 'yyyy-MM-dd'),
+      leave_type: data.leave_type as any,
+      status: 'pending' as const,
+      hours: calculatedHours,
+      reason: data.reason,
+      approval_level: 1,
+      current_approver: userStaffData?.supervisor_id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    console.log('需要審核，建立請假申請:', leaveRequest);
     return { success: false, autoApproved: false, leaveRequest };
   }
 };

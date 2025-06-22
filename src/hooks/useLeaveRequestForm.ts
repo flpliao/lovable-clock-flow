@@ -36,6 +36,7 @@ export const useLeaveRequestForm = () => {
   
   const [userStaffData, setUserStaffData] = useState<UserStaffData | null>(null);
   const [isLoadingUserData, setIsLoadingUserData] = useState(true);
+  const [userDataError, setUserDataError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -57,30 +58,51 @@ export const useLeaveRequestForm = () => {
   useEffect(() => {
     const loadData = async () => {
       if (!currentUser?.id) {
+        console.log('⚠️ 無當前用戶，跳過資料載入');
         setIsLoadingUserData(false);
+        setUserDataError('請先登入系統');
         return;
       }
+
+      console.log('🚀 開始載入用戶資料，用戶ID:', currentUser.id);
+      setIsLoadingUserData(true);
+      setUserDataError(null);
 
       try {
         const data = await loadUserStaffData(currentUser.id);
         setUserStaffData(data);
-        console.log('✅ 成功載入用戶資料:', data);
+        setUserDataError(null);
+        console.log('✅ 用戶資料載入成功');
       } catch (error) {
         console.error('❌ 載入員工資料時發生錯誤:', error);
+        const errorMessage = error instanceof Error ? error.message : '載入員工資料失敗';
+        setUserDataError(errorMessage);
         setUserStaffData(null);
+        
+        // 顯示錯誤提示
+        toast({
+          title: "資料載入失敗",
+          description: errorMessage,
+          variant: "destructive"
+        });
       } finally {
         setIsLoadingUserData(false);
       }
     };
 
     loadData();
-  }, [currentUser?.id]);
+  }, [currentUser?.id, toast]);
 
   // 驗證特休申請
   useEffect(() => {
+    if (userDataError) {
+      setValidationError('人員資料載入失敗，無法驗證請假申請');
+      return;
+    }
+
     const error = validateAnnualLeave(watchedValues.leave_type, calculatedHours, userStaffData);
     setValidationError(error);
-  }, [watchedValues.leave_type, calculatedHours, userStaffData]);
+  }, [watchedValues.leave_type, calculatedHours, userStaffData, userDataError]);
 
   const handleSubmit = async (data: LeaveFormValues) => {
     if (!currentUser?.id) {
@@ -92,10 +114,28 @@ export const useLeaveRequestForm = () => {
       return;
     }
 
+    if (userDataError) {
+      toast({
+        title: "資料錯誤",
+        description: userDataError,
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (validationError) {
       toast({
         title: "驗證失敗",
         description: validationError,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!userStaffData) {
+      toast({
+        title: "資料未載入",
+        description: "員工資料尚未載入完成，請稍後再試",
         variant: "destructive"
       });
       return;
@@ -179,6 +219,7 @@ export const useLeaveRequestForm = () => {
     currentUser,
     userStaffData,
     isLoadingUserData,
+    userDataError,
     calculatedHours,
     isSubmitting,
     validationError,

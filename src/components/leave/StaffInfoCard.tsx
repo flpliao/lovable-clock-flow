@@ -1,5 +1,7 @@
+
 import React from 'react';
-import { User, CalendarDays, Building, Briefcase } from 'lucide-react';
+import { User, CalendarDays, Building, Briefcase, AlertCircle } from 'lucide-react';
+
 interface StaffInfoCardProps {
   staffData: {
     name: string;
@@ -12,13 +14,17 @@ interface StaffInfoCardProps {
     remainingAnnualLeaveDays: number;
   } | null;
   isLoading: boolean;
+  error?: string | null;
 }
+
 export const StaffInfoCard = React.memo(function StaffInfoCard({
   staffData,
-  isLoading
+  isLoading,
+  error
 }: StaffInfoCardProps) {
   if (isLoading) {
-    return <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+    return (
+      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
         <div className="animate-pulse">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 bg-white/30 rounded-lg"></div>
@@ -29,14 +35,42 @@ export const StaffInfoCard = React.memo(function StaffInfoCard({
             <div className="h-16 bg-white/20 rounded-xl"></div>
           </div>
         </div>
-      </div>;
+      </div>
+    );
   }
+
+  if (error) {
+    return (
+      <div className="backdrop-blur-xl bg-red-500/20 border border-red-300/30 rounded-3xl shadow-xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
+            <AlertCircle className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-white drop-shadow-md">載入人員資料失敗</h3>
+            <p className="text-sm text-white/80 font-medium drop-shadow-sm">Failed to Load Staff Data</p>
+          </div>
+        </div>
+        <div className="bg-red-500/20 border border-red-300/30 rounded-xl p-4">
+          <div className="text-white text-center">
+            <div className="text-base font-semibold mb-2">❌ {error}</div>
+            <p className="text-sm text-white/90">請檢查網路連線或聯繫系統管理員</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!staffData) {
-    return <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+    return (
+      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
         <div className="text-center text-white/70">無法載入人員資料</div>
-      </div>;
+      </div>
+    );
   }
-  return <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+
+  return (
+    <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
       {/* 卡片標題 */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
@@ -82,5 +116,6 @@ export const StaffInfoCard = React.memo(function StaffInfoCard({
           <p className="text-white font-semibold">{staffData.yearsOfService}</p>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 });

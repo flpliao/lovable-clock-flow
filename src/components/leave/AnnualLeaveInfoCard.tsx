@@ -1,5 +1,7 @@
+
 import React from 'react';
-import { Calendar, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Calendar, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
+
 interface AnnualLeaveInfoCardProps {
   staffData: {
     name: string;
@@ -12,13 +14,17 @@ interface AnnualLeaveInfoCardProps {
     remainingAnnualLeaveDays: number;
   } | null;
   isLoading: boolean;
+  error?: string | null;
 }
+
 export const AnnualLeaveInfoCard = React.memo(function AnnualLeaveInfoCard({
   staffData,
-  isLoading
+  isLoading,
+  error
 }: AnnualLeaveInfoCardProps) {
   if (isLoading) {
-    return <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+    return (
+      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
         <div className="animate-pulse">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 bg-white/30 rounded-lg"></div>
@@ -30,17 +36,44 @@ export const AnnualLeaveInfoCard = React.memo(function AnnualLeaveInfoCard({
             <div className="h-20 bg-white/20 rounded-xl"></div>
           </div>
         </div>
-      </div>;
+      </div>
+    );
   }
+
+  if (error) {
+    return (
+      <div className="backdrop-blur-xl bg-red-500/20 border border-red-300/30 rounded-3xl shadow-xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
+            <AlertCircle className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-white drop-shadow-md">載入特休資訊失敗</h3>
+            <p className="text-sm text-white/80 font-medium drop-shadow-sm">Failed to Load Annual Leave Data</p>
+          </div>
+        </div>
+        <div className="bg-red-500/20 border border-red-300/30 rounded-xl p-4">
+          <div className="text-white text-center">
+            <div className="text-base font-semibold mb-2">❌ {error}</div>
+            <p className="text-sm text-white/90">請檢查網路連線或聯繫系統管理員</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!staffData) {
-    return <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+    return (
+      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
         <div className="text-center text-white/70">無法載入特休資訊</div>
-      </div>;
+      </div>
+    );
   }
 
   // 檢查是否未設定入職日期
   if (!staffData.hire_date) {
-    return <div className="backdrop-blur-xl bg-orange-500/20 border border-orange-300/30 rounded-3xl shadow-xl p-6">
+    return (
+      <div className="backdrop-blur-xl bg-orange-500/20 border border-orange-300/30 rounded-3xl shadow-xl p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
             <AlertTriangle className="h-5 w-5 text-white" />
@@ -56,10 +89,16 @@ export const AnnualLeaveInfoCard = React.memo(function AnnualLeaveInfoCard({
             <p className="text-sm text-white/90">設定入職日期後，系統將自動計算您的特別休假天數</p>
           </div>
         </div>
-      </div>;
+      </div>
+    );
   }
-  const usagePercentage = staffData.totalAnnualLeaveDays > 0 ? Math.round(staffData.usedAnnualLeaveDays / staffData.totalAnnualLeaveDays * 100) : 0;
-  return <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+
+  const usagePercentage = staffData.totalAnnualLeaveDays > 0 
+    ? Math.round((staffData.usedAnnualLeaveDays / staffData.totalAnnualLeaveDays) * 100) 
+    : 0;
+
+  return (
+    <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
       {/* 卡片標題 */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-600 rounded-xl flex items-center justify-center">
@@ -118,9 +157,10 @@ export const AnnualLeaveInfoCard = React.memo(function AnnualLeaveInfoCard({
         </div>
         
         <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
-          <div className="bg-gradient-to-r from-green-500 to-blue-600 h-full rounded-full transition-all duration-700 ease-out shadow-lg" style={{
-          width: `${Math.min(usagePercentage, 100)}%`
-        }} />
+          <div 
+            className="bg-gradient-to-r from-green-500 to-blue-600 h-full rounded-full transition-all duration-700 ease-out shadow-lg" 
+            style={{ width: `${Math.min(usagePercentage, 100)}%` }}
+          />
         </div>
         
         <div className="flex justify-between mt-2 text-xs text-white/70">
@@ -130,18 +170,23 @@ export const AnnualLeaveInfoCard = React.memo(function AnnualLeaveInfoCard({
       </div>
 
       {/* 警告訊息 */}
-      {staffData.remainingAnnualLeaveDays <= 2 && staffData.remainingAnnualLeaveDays > 0 && <div className="mt-4 bg-yellow-500/20 border border-yellow-300/30 rounded-xl p-3">
+      {staffData.remainingAnnualLeaveDays <= 2 && staffData.remainingAnnualLeaveDays > 0 && (
+        <div className="mt-4 bg-yellow-500/20 border border-yellow-300/30 rounded-xl p-3">
           <div className="flex items-center gap-2 text-yellow-100">
             <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
             <span className="text-sm font-medium">特休餘額即將用完，請合理安排休假時間</span>
           </div>
-        </div>}
+        </div>
+      )}
 
-      {staffData.remainingAnnualLeaveDays <= 0 && <div className="mt-4 bg-red-500/20 border border-red-300/30 rounded-xl p-3">
+      {staffData.remainingAnnualLeaveDays <= 0 && (
+        <div className="mt-4 bg-red-500/20 border border-red-300/30 rounded-xl p-3">
           <div className="flex items-center gap-2 text-red-100">
             <div className="w-2 h-2 bg-red-400 rounded-full"></div>
             <span className="text-sm font-medium">特休已用完，無法申請更多特別休假</span>
           </div>
-        </div>}
-    </div>;
+        </div>
+      )}
+    </div>
+  );
 });

@@ -15,7 +15,7 @@ export interface UserStaffData {
 
 export const loadUserStaffData = async (userId: string): Promise<UserStaffData | null> => {
   try {
-    console.log('Loading staff data for user:', userId);
+    console.log('🔍 正在載入員工資料，用戶ID:', userId);
     
     // 從 staff 表獲取員工資料（包含 supervisor_id）
     const { data: staffData, error: staffError } = await supabase
@@ -25,14 +25,22 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData |
       .maybeSingle();
 
     if (staffError) {
-      console.error('載入員工資料失敗:', staffError);
-      return null;
+      console.error('❌ 載入員工資料失敗:', staffError);
+      throw new Error(`載入員工資料失敗: ${staffError.message}`);
     }
 
     if (!staffData) {
-      console.log('找不到員工資料');
-      return null;
+      console.log('⚠️ 找不到員工資料，用戶ID:', userId);
+      throw new Error('找不到員工資料，請確認您的帳戶設定');
     }
+
+    console.log('✅ 成功載入員工基本資料:', {
+      name: staffData.name,
+      department: staffData.department,
+      position: staffData.position,
+      hire_date: staffData.hire_date,
+      has_supervisor: !!staffData.supervisor_id
+    });
 
     // 計算年資
     let yearsOfService = '0年';
@@ -66,10 +74,20 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData |
       } else if (diffDays >= 180) {
         totalAnnualLeaveDays = 3;
       }
+
+      console.log('📊 年資計算結果:', {
+        yearsOfService,
+        totalAnnualLeaveDays,
+        diffDays
+      });
+    } else {
+      console.log('⚠️ 未設定入職日期，無法計算特休天數');
     }
 
     // 計算已使用的特休天數
     const currentYear = new Date().getFullYear();
+    console.log('🔍 查詢已使用特休天數，年度:', currentYear);
+    
     const { data: leaveRecords, error: leaveError } = await supabase
       .from('leave_requests')
       .select('hours')
@@ -80,15 +98,22 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData |
       .lte('start_date', `${currentYear}-12-31`);
 
     let usedAnnualLeaveDays = 0;
-    if (!leaveError && leaveRecords) {
+    if (leaveError) {
+      console.warn('⚠️ 查詢特休使用記錄時發生錯誤:', leaveError);
+    } else if (leaveRecords) {
       usedAnnualLeaveDays = leaveRecords.reduce((total, record) => {
         return total + (Number(record.hours) / 8);
       }, 0);
+      console.log('📊 已使用特休統計:', {
+        recordCount: leaveRecords.length,
+        totalHours: leaveRecords.reduce((total, record) => total + Number(record.hours), 0),
+        usedDays: usedAnnualLeaveDays
+      });
     }
 
     const remainingAnnualLeaveDays = Math.max(0, totalAnnualLeaveDays - usedAnnualLeaveDays);
 
-    return {
+    const result = {
       name: staffData.name,
       department: staffData.department,
       position: staffData.position,
@@ -100,8 +125,11 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData |
       remainingAnnualLeaveDays,
     };
 
+    console.log('✅ 員工資料載入完成:', result);
+    return result;
+
   } catch (error) {
-    console.error('載入員工資料時發生錯誤:', error);
-    return null;
+    console.error('❌ 載入員工資料時發生錯誤:', error);
+    throw error;
   }
 };

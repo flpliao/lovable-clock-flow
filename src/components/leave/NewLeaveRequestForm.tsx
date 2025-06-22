@@ -18,6 +18,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     currentUser,
     userStaffData,
     isLoadingUserData,
+    userDataError,
     calculatedHours,
     isSubmitting,
     validationError,
@@ -46,12 +47,14 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       <StaffInfoCard 
         staffData={userStaffData}
         isLoading={isLoadingUserData}
+        error={userDataError}
       />
 
       {/* 特別休假資訊卡片 */}
       <AnnualLeaveInfoCard 
         staffData={userStaffData}
         isLoading={isLoadingUserData}
+        error={userDataError}
       />
 
       <Form {...form}>
@@ -67,7 +70,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           <div className="flex justify-center pt-6">
             <Button 
               type="submit" 
-              disabled={isSubmitting || !!validationError}
+              disabled={isSubmitting || !!validationError || !!userDataError}
               className="w-full sm:w-auto px-8 py-3 backdrop-blur-xl bg-white/30 border border-white/40 text-white font-semibold shadow-lg hover:bg-white/50 transition-all duration-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send className="h-4 w-4 mr-2" />

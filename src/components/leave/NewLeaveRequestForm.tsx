@@ -33,11 +33,11 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-bold text-white drop-shadow-md mb-2">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">
           請假申請
         </h2>
-        <p className="text-white/80 font-medium drop-shadow-sm">
+        <p className="text-gray-600">
           請填寫以下資訊提交您的請假申請
         </p>
       </div>
@@ -64,11 +64,11 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           />
 
           {/* 提交按鈕 */}
-          <div className="flex justify-center pt-6">
+          <div className="flex justify-center pt-4">
             <Button 
               type="submit" 
               disabled={isSubmitting || !!validationError}
-              className="w-full sm:w-auto px-8 py-3 backdrop-blur-xl bg-white/30 border border-white/40 text-white font-semibold shadow-lg hover:bg-white/50 transition-all duration-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
               <Send className="h-4 w-4 mr-2" />
               {isSubmitting ? '提交中...' : '提交請假申請'}

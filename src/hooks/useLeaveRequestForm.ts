@@ -219,7 +219,7 @@ export const useLeaveRequestForm = () => {
         start_date: format(data.start_date, 'yyyy-MM-dd'),
         end_date: format(data.end_date, 'yyyy-MM-dd'),
         leave_type: data.leave_type as any,
-        status: shouldAutoApprove ? 'approved' : 'pending' as const,
+        status: (shouldAutoApprove ? 'approved' : 'pending') as const,
         hours: calculatedHours,
         reason: data.reason,
         approval_level: shouldAutoApprove ? 0 : 1,

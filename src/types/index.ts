@@ -45,6 +45,8 @@ export interface LeaveRequest {
   current_approver?: string;
   approval_level?: number;
   rejection_reason?: string;
+  approved_by?: string; // 新增核准人欄位
+  approved_at?: string; // 新增核准時間欄位
   created_at?: string;
   updated_at?: string;
 }

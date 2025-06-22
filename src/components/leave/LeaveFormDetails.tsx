@@ -4,18 +4,15 @@ import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessa
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { UseFormReturn } from 'react-hook-form';
-import { LeaveFormValues, getLeaveTypeByIdSync } from '@/utils/leaveTypes';
-import { LeaveType } from '@/types/hr';
+import { LeaveFormValues, getLeaveTypeById } from '@/utils/leaveTypes';
 
 interface LeaveFormDetailsProps {
   form: UseFormReturn<LeaveFormValues>;
   selectedLeaveType: string | null;
-  leaveTypes?: LeaveType[];
 }
 
-export function LeaveFormDetails({ form, selectedLeaveType, leaveTypes = [] }: LeaveFormDetailsProps) {
-  const currentLeaveType = selectedLeaveType ? 
-    getLeaveTypeByIdSync(selectedLeaveType, leaveTypes) : null;
+export function LeaveFormDetails({ form, selectedLeaveType }: LeaveFormDetailsProps) {
+  const currentLeaveType = selectedLeaveType ? getLeaveTypeById(selectedLeaveType) : null;
   
   return (
     <div className="space-y-4">
@@ -39,7 +36,7 @@ export function LeaveFormDetails({ form, selectedLeaveType, leaveTypes = [] }: L
       />
 
       {/* Attachment field for leave types that require it */}
-      {currentLeaveType?.requires_attachment && (
+      {currentLeaveType?.requiresAttachment && (
         <FormField
           control={form.control}
           name="attachment"

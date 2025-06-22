@@ -1,4 +1,3 @@
-
 import {
   Home,
   Calendar,
@@ -14,15 +13,7 @@ import {
   MapPin,
 } from "lucide-react";
 
-export interface MenuItem {
-  name: string;
-  path: string;
-  icon: any;
-  requiresAuth: boolean;
-  adminOnly: boolean;
-}
-
-export const menuItems: MenuItem[] = [
+export const menuItems = [
   {
     name: "首頁",
     path: "/",

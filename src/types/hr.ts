@@ -7,14 +7,9 @@ export interface LeaveType {
   is_paid: boolean;
   annual_reset: boolean;
   max_days_per_year?: number;
-  max_days_per_month?: number;
   requires_attachment: boolean;
-  requires_approval: boolean;
-  gender_restriction?: 'male' | 'female' | null;
   description?: string;
-  special_rules?: any;
   is_active: boolean;
-  is_system_default: boolean;
   sort_order: number;
   created_at: string;
   updated_at: string;

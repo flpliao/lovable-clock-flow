@@ -1,12 +1,10 @@
 
-import { getLeaveTypeByIdSync } from '@/utils/leaveTypes';
+import { LEAVE_TYPES, getLeaveTypeById } from '@/utils/leaveTypes';
 
 // Helper to get leave type in Chinese
-export const getLeaveTypeText = (type: string, leaveTypes?: any[]): string => {
-  if (!leaveTypes) return '其他';
-  
-  const leaveType = getLeaveTypeByIdSync(type, leaveTypes);
-  return leaveType?.name_zh || '其他';
+export const getLeaveTypeText = (type: string): string => {
+  const leaveType = getLeaveTypeById(type);
+  return leaveType?.name || '其他';
 };
 
 // Helper to get status badge color

@@ -109,6 +109,7 @@ export const useSupabaseLeaveManagement = () => {
       setLoading(true);
       console.log('Loading leave requests for user:', currentUser.id);
 
+      // 修正查詢條件，確保能查到所有相關的請假記錄
       const { data, error } = await supabase
         .from('leave_requests')
         .select(`
@@ -137,6 +138,7 @@ export const useSupabaseLeaveManagement = () => {
         current_approver: request.current_approver,
         created_at: request.created_at,
         updated_at: request.updated_at,
+        approved_by: request.approved_by, // 新增核准人欄位
         approvals: (request.approval_records || []).map((approval: any) => ({
           id: approval.id,
           leave_request_id: approval.leave_request_id,
@@ -151,6 +153,7 @@ export const useSupabaseLeaveManagement = () => {
 
       setLeaveRequests(formattedRequests);
       console.log('Successfully loaded leave requests:', formattedRequests.length);
+      console.log('Leave requests data:', formattedRequests);
     } catch (error) {
       console.error('載入請假記錄失敗:', error);
       setLeaveRequests([]);

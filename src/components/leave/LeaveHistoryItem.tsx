@@ -65,8 +65,8 @@ export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({ leave, onCli
       if (leave.approval_level === 1) {
         return {
           icon: <AlertCircle className="h-4 w-4 text-yellow-500" />,
-          text: '⏳ 直屬主管審核中',
-          description: '等待第一層主管審核'
+          text: '⏳ 審核中',
+          description: '等待主管審核'
         };
       } else if (leave.approval_level && leave.approval_level > 1) {
         const approvedCount = leave.approvals?.filter(a => a.status === 'approved').length || 0;
@@ -92,6 +92,13 @@ export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({ leave, onCli
   };
 
   const statusInfo = getApprovalStatusInfo();
+  
+  // 計算天數顯示
+  const days = Math.floor(leave.hours / 8);
+  const remainingHours = leave.hours % 8;
+  const timeDisplay = days > 0 
+    ? (remainingHours > 0 ? `${days}天${remainingHours}小時` : `${days}天`)
+    : `${leave.hours}小時`;
 
   return (
     <div 
@@ -120,7 +127,7 @@ export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({ leave, onCli
         
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4" />
-          <span>{leave.hours} 小時</span>
+          <span>{timeDisplay} ({leave.hours} 小時)</span>
         </div>
 
         {/* 審核狀態詳細資訊 */}

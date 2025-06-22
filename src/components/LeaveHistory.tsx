@@ -12,9 +12,9 @@ const LeaveHistory: React.FC<LeaveHistoryProps> = ({ onClick }) => {
   const { getLeaveHistory } = useLeaveManagementContext();
   const allLeaveHistory = getLeaveHistory();
   
-  // 只顯示已核准或已退回的記錄
-  const completedLeaveHistory = allLeaveHistory.filter(
-    leave => leave.status === 'approved' || leave.status === 'rejected'
+  // 顯示所有請假記錄（包含待審核、已核准、已退回）
+  const leaveHistoryToShow = allLeaveHistory.sort((a, b) => 
+    new Date(b.created_at || b.start_date).getTime() - new Date(a.created_at || a.start_date).getTime()
   );
   
   const handleClick = (leave: LeaveRequest) => {
@@ -25,7 +25,7 @@ const LeaveHistory: React.FC<LeaveHistoryProps> = ({ onClick }) => {
   
   return (
     <div className="space-y-3">
-      {completedLeaveHistory.length === 0 ? (
+      {leaveHistoryToShow.length === 0 ? (
         <div className="text-center py-8">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,7 +36,7 @@ const LeaveHistory: React.FC<LeaveHistoryProps> = ({ onClick }) => {
           <p className="text-gray-500 mt-1">您的請假記錄將會顯示在這裡</p>
         </div>
       ) : (
-        completedLeaveHistory.map((leave) => (
+        leaveHistoryToShow.map((leave) => (
           <LeaveHistoryItem 
             key={leave.id} 
             leave={leave}

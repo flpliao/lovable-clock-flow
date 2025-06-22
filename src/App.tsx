@@ -1,3 +1,4 @@
+
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -17,6 +18,7 @@ import PersonalAttendance from './pages/PersonalAttendance';
 import AnnouncementManagementPage from './pages/AnnouncementManagementPage';
 import CompanyAnnouncements from './pages/CompanyAnnouncements';
 import LeaveApprovalView from './pages/LeaveApprovalView';
+import ApprovalCenter from './pages/ApprovalCenter';
 import NotFound from './pages/NotFound';
 import StaffDashboard from './pages/StaffDashboard';
 import CompanyBranchManagement from './pages/CompanyBranchManagement';
@@ -49,6 +51,7 @@ function App() {
                 <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
                 <Route path="/company-announcements" element={<CompanyAnnouncements />} />
                 <Route path="/leave-approval" element={<LeaveApprovalView />} />
+                <Route path="/approval-center" element={<ApprovalCenter />} />
                 <Route path="/staff-dashboard" element={<StaffDashboard />} />
                 <Route path="/company-branch-management" element={<CompanyBranchManagement />} />
                 <Route path="/hr-management" element={<HRManagement />} />

@@ -1,5 +1,5 @@
 
-import { Home, Calendar, FileText, Users, Building, Settings, Clock, Briefcase, MessageSquare, Megaphone, CalendarDays } from 'lucide-react';
+import { Home, Calendar, FileText, Users, Building, Settings, Clock, Briefcase, MessageSquare, Megaphone, CalendarDays, CheckCircle } from 'lucide-react';
 
 export interface MenuItem {
   path: string;
@@ -13,6 +13,7 @@ export const menuItems: MenuItem[] = [
   { path: '/', label: '首頁', icon: Home, public: false },
   { path: '/personal-attendance', label: '個人出勤', icon: Clock, public: false },
   { path: '/leave-request', label: '請假申請', icon: FileText, public: false },
+  { path: '/approval-center', label: '核准中心', icon: CheckCircle, public: false },
   { path: '/scheduling', label: '排班管理', icon: Calendar, public: false },
   { path: '/overtime-management', label: '加班管理', icon: Briefcase, public: false },
   { path: '/holiday-management', label: '假日管理', icon: CalendarDays, public: false, adminOnly: true },

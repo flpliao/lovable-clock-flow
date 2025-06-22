@@ -266,6 +266,11 @@ export const useSupabaseLeaveManagement = () => {
     }
   };
 
+  // 新增 getLeaveHistory 方法
+  const getLeaveHistory = () => {
+    return leaveRequests.filter(request => request.user_id === currentUser?.id);
+  };
+
   const manualLoadLeaveRequests = async () => {
     if (currentUser?.id) {
       console.log('Manual load leave requests triggered');
@@ -301,6 +306,7 @@ export const useSupabaseLeaveManagement = () => {
     initializeAnnualLeaveBalance,
     createLeaveRequest,
     updateLeaveRequestStatus,
+    getLeaveHistory, // 新增這個方法
     refreshData: manualLoadLeaveRequests,
     clearAllData
   };

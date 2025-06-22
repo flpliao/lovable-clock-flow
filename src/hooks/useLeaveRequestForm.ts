@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -172,7 +171,7 @@ export const useLeaveRequestForm = () => {
           form.reset();
           
           // 根據主管層級顯示不同的提示訊息
-          const supervisorHierarchy = await (await import('@/services/leaveSubmissionService')).getSupervisorHierarchy(currentUser.id);
+          const supervisorHierarchy = await getSupervisorHierarchy(currentUser.id);
           const hasMultipleLevels = supervisorHierarchy.length > 1;
           
           const description = hasMultipleLevels 
@@ -190,7 +189,10 @@ export const useLeaveRequestForm = () => {
       
       // 檢查是否為 RLS 相關錯誤
       const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage.includes('row-level security') || errorMessage.includes('RLS') || errorMessage.includes('permission denied')) {
+      
+      if (errorMessage.includes('row-level security') || 
+          errorMessage.includes('RLS') || 
+          errorMessage.includes('permission denied')) {
         toast({
           title: "權限錯誤",
           description: "提交申請時發生權限問題，請聯繫系統管理員",

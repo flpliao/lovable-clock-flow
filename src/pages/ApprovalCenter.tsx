@@ -9,39 +9,169 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, Clock, User, Calendar, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { getLeaveTypeText } from '@/utils/leaveUtils';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const ApprovalCenter = () => {
   const { currentUser } = useUser();
-  const { getLeaveHistory } = useSupabaseLeaveManagement();
+  const { toast } = useToast();
   const [pendingRequests, setPendingRequests] = useState<LeaveRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // 載入需要當前用戶審核的請假申請
   useEffect(() => {
-    const loadPendingRequests = () => {
-      if (!currentUser) return;
+    const loadPendingRequests = async () => {
+      if (!currentUser?.id) {
+        setIsLoading(false);
+        return;
+      }
 
-      // 獲取需要當前用戶審核的請假申請
-      const allRequests = getLeaveHistory();
-      const myPendingRequests = allRequests.filter(request => 
-        request.status === 'pending' && 
-        request.current_approver === currentUser.id
-      );
+      console.log('🔍 載入待審核請假申請，當前用戶:', currentUser.id);
 
-      setPendingRequests(myPendingRequests);
-      setIsLoading(false);
+      try {
+        // 查詢需要當前用戶審核的請假申請
+        const { data: requests, error } = await supabase
+          .from('leave_requests')
+          .select(`
+            *,
+            approval_records (*)
+          `)
+          .eq('status', 'pending')
+          .eq('current_approver', currentUser.id);
+
+        if (error) {
+          console.error('❌ 載入待審核請假申請失敗:', error);
+          toast({
+            title: "載入失敗",
+            description: "無法載入待審核的請假申請",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        console.log('✅ 成功載入待審核請假申請:', requests?.length || 0, '筆');
+        
+        const formattedRequests: LeaveRequest[] = (requests || []).map((request: any) => ({
+          id: request.id,
+          user_id: request.user_id || request.staff_id,
+          start_date: request.start_date,
+          end_date: request.end_date,
+          leave_type: request.leave_type,
+          status: request.status,
+          hours: Number(request.hours),
+          reason: request.reason,
+          approval_level: request.approval_level,
+          current_approver: request.current_approver,
+          created_at: request.created_at,
+          updated_at: request.updated_at,
+          approvals: (request.approval_records || []).map((approval: any) => ({
+            id: approval.id,
+            leave_request_id: approval.leave_request_id,
+            approver_id: approval.approver_id,
+            approver_name: approval.approver_name,
+            status: approval.status,
+            level: approval.level,
+            approval_date: approval.approval_date,
+            comment: approval.comment
+          }))
+        }));
+
+        setPendingRequests(formattedRequests);
+      } catch (error) {
+        console.error('❌ 載入待審核請假申請時發生錯誤:', error);
+        toast({
+          title: "載入失敗",
+          description: "載入待審核請假申請時發生錯誤",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadPendingRequests();
-  }, [currentUser, getLeaveHistory]);
+  }, [currentUser?.id, toast]);
 
   const handleApprove = async (requestId: string) => {
-    // 這裡可以整合實際的審核邏輯
-    console.log('核准請假申請:', requestId);
+    try {
+      console.log('🚀 開始核准請假申請:', requestId);
+      
+      const { error } = await supabase
+        .from('leave_requests')
+        .update({
+          status: 'approved',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', requestId);
+
+      if (error) {
+        console.error('❌ 核准請假申請失敗:', error);
+        toast({
+          title: "核准失敗",
+          description: "無法核准請假申請",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('✅ 請假申請核准成功');
+      toast({
+        title: "核准成功",
+        description: "請假申請已核准",
+      });
+
+      // 重新載入待審核列表
+      setPendingRequests(prev => prev.filter(req => req.id !== requestId));
+    } catch (error) {
+      console.error('❌ 核准請假申請時發生錯誤:', error);
+      toast({
+        title: "核准失敗",
+        description: "核准請假申請時發生錯誤",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleReject = async (requestId: string) => {
-    // 這裡可以整合實際的拒絕邏輯
-    console.log('拒絕請假申請:', requestId);
+    try {
+      console.log('🚀 開始拒絕請假申請:', requestId);
+      
+      const { error } = await supabase
+        .from('leave_requests')
+        .update({
+          status: 'rejected',
+          rejection_reason: '主管拒絕',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', requestId);
+
+      if (error) {
+        console.error('❌ 拒絕請假申請失敗:', error);
+        toast({
+          title: "拒絕失敗",
+          description: "無法拒絕請假申請",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('✅ 請假申請拒絕成功');
+      toast({
+        title: "拒絕成功",
+        description: "請假申請已拒絕",
+        variant: "destructive"
+      });
+
+      // 重新載入待審核列表
+      setPendingRequests(prev => prev.filter(req => req.id !== requestId));
+    } catch (error) {
+      console.error('❌ 拒絕請假申請時發生錯誤:', error);
+      toast({
+        title: "拒絕失敗",
+        description: "拒絕請假申請時發生錯誤",
+        variant: "destructive"
+      });
+    }
   };
 
   if (!currentUser) {

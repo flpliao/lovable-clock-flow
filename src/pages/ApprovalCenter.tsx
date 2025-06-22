@@ -1,15 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { LeaveRequest } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, Clock, User, Calendar, FileText, RefreshCw } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, User, Calendar, FileText, RefreshCw, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { getLeaveTypeText } from '@/utils/leaveUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { sendLeaveStatusNotification } from '@/services/leaveNotificationService';
+import LeaveApprovalDetail from '@/components/leave/LeaveApprovalDetail';
 
 const ApprovalCenter = () => {
   const { currentUser } = useUser();
@@ -17,6 +17,7 @@ const ApprovalCenter = () => {
   const [pendingRequests, setPendingRequests] = useState<LeaveRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
 
   // 載入需要當前用戶審核的請假申請
   const loadPendingRequests = async () => {
@@ -30,8 +31,8 @@ const ApprovalCenter = () => {
     try {
       setRefreshing(true);
       
-      // 查詢需要當前用戶審核的請假申請
-      const { data: requests, error } = await supabase
+      // 查詢方式1: 查詢 current_approver 等於當前用戶的申請
+      const { data: directRequests, error: directError } = await supabase
         .from('leave_requests')
         .select(`
           *,
@@ -40,20 +41,73 @@ const ApprovalCenter = () => {
         .eq('status', 'pending')
         .eq('current_approver', currentUser.id);
 
-      if (error) {
-        console.error('❌ 載入待審核請假申請失敗:', error);
-        toast({
-          title: "載入失敗",
-          description: "無法載入待審核的請假申請",
-          variant: "destructive"
-        });
-        return;
+      if (directError) {
+        console.error('❌ 查詢直接指派的申請失敗:', directError);
       }
 
-      console.log('✅ 成功載入待審核請假申請:', requests?.length || 0, '筆');
-      console.log('📋 請假申請詳細資料:', requests);
+      // 查詢方式2: 查詢審核記錄中需要當前用戶審核的申請
+      const { data: approvalRequests, error: approvalError } = await supabase
+        .from('approval_records')
+        .select(`
+          leave_request_id,
+          leave_requests!inner(
+            *,
+            approval_records (*)
+          )
+        `)
+        .eq('approver_id', currentUser.id)
+        .eq('status', 'pending');
+
+      if (approvalError) {
+        console.error('❌ 查詢審核記錄申請失敗:', approvalError);
+      }
+
+      // 查詢方式3: 通過主管關係查詢下屬的待審核申請
+      const { data: subordinateRequests, error: subordinateError } = await supabase
+        .from('leave_requests')
+        .select(`
+          *,
+          approval_records (*),
+          staff!leave_requests_user_id_fkey(name, supervisor_id)
+        `)
+        .eq('status', 'pending');
+
+      if (subordinateError) {
+        console.error('❌ 查詢下屬申請失敗:', subordinateError);
+      }
+
+      // 合併所有結果並去重
+      const allRequests = [];
       
-      const formattedRequests: LeaveRequest[] = (requests || []).map((request: any) => ({
+      // 添加直接指派的申請
+      if (directRequests) {
+        allRequests.push(...directRequests);
+      }
+
+      // 添加審核記錄中的申請
+      if (approvalRequests) {
+        approvalRequests.forEach(record => {
+          if (record.leave_requests && !allRequests.some(req => req.id === record.leave_requests.id)) {
+            allRequests.push(record.leave_requests);
+          }
+        });
+      }
+
+      // 添加下屬的申請（如果當前用戶是其主管）
+      if (subordinateRequests) {
+        subordinateRequests.forEach(request => {
+          if (request.staff && request.staff.supervisor_id === currentUser.id) {
+            if (!allRequests.some(req => req.id === request.id)) {
+              allRequests.push(request);
+            }
+          }
+        });
+      }
+
+      console.log('✅ 成功載入待審核請假申請:', allRequests.length, '筆');
+      console.log('📋 請假申請詳細資料:', allRequests);
+      
+      const formattedRequests: LeaveRequest[] = allRequests.map((request: any) => ({
         id: request.id,
         user_id: request.user_id || request.staff_id,
         start_date: request.start_date,
@@ -254,6 +308,30 @@ const ApprovalCenter = () => {
     }
   };
 
+  const handleViewDetail = (request: LeaveRequest) => {
+    setSelectedRequest(request);
+  };
+
+  const handleBackToList = () => {
+    setSelectedRequest(null);
+  };
+
+  const handleApprovalComplete = () => {
+    setSelectedRequest(null);
+    loadPendingRequests();
+  };
+
+  // 如果正在查看詳細頁面，顯示詳細審核頁面
+  if (selectedRequest) {
+    return (
+      <LeaveApprovalDetail
+        request={selectedRequest}
+        onBack={handleBackToList}
+        onApprovalComplete={handleApprovalComplete}
+      />
+    );
+  }
+
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36">
@@ -376,12 +454,20 @@ const ApprovalCenter = () => {
 
                       <div className="flex flex-col gap-2 lg:ml-6">
                         <Button
+                          onClick={() => handleViewDetail(request)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+                          size="sm"
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          詳細審核
+                        </Button>
+                        <Button
                           onClick={() => handleApprove(request)}
                           className="bg-green-500 hover:bg-green-600 text-white border-0"
                           size="sm"
                         >
                           <CheckCircle className="h-4 w-4 mr-2" />
-                          核准
+                          快速核准
                         </Button>
                         <Button
                           onClick={() => handleReject(request)}
@@ -389,7 +475,7 @@ const ApprovalCenter = () => {
                           size="sm"
                         >
                           <XCircle className="h-4 w-4 mr-2" />
-                          拒絕
+                          快速拒絕
                         </Button>
                       </div>
                     </div>

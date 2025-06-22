@@ -125,9 +125,17 @@ export const useLeaveRequestForm = () => {
         
         if (success) {
           form.reset();
+          
+          // 根據主管層級顯示不同的提示訊息
+          const hasMultipleLevels = userStaffData?.supervisor_id && (await import('@/services/leaveSubmissionService')).getSupervisorHierarchy(currentUser.id).then(h => h.length > 1);
+          
+          const description = hasMultipleLevels 
+            ? "✅ 已提交，將依序交由各層主管審核" 
+            : "✅ 已提交，等待直屬主管審核中";
+            
           toast({
             title: "申請成功",
-            description: "✅ 已提交，等待主管審核中",
+            description,
           });
         }
       }

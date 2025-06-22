@@ -36,6 +36,12 @@ const LeaveHistory: React.FC<LeaveHistoryProps> = ({ onClick, showAll = false })
       結束日期: leave.end_date
     }))
   });
+
+  // 計算狀態分布
+  const statusDistribution = displayLeaveHistory.reduce((acc, leave) => {
+    acc[leave.status] = (acc[leave.status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
   
   return (
     <div className="space-y-3">
@@ -76,13 +82,15 @@ const LeaveHistory: React.FC<LeaveHistoryProps> = ({ onClick, showAll = false })
             <p className="font-semibold text-blue-800 mb-1">Debug 資訊：</p>
             <p className="text-blue-600">成功載入 {displayLeaveHistory.length} 筆請假記錄</p>
             {displayLeaveHistory.length > 0 && (
-              <p className="text-blue-600">
+              <div className="text-blue-600">
                 狀態分布：
-                {displayLeaveHistory.reduce((acc, leave) => {
-                  acc[leave.status] = (acc[leave.status] || 0) + 1;
-                  return acc;
-                }, {} as Record<string, number>)} 
-              </p>
+                {Object.entries(statusDistribution).map(([status, count], index) => (
+                  <span key={status}>
+                    {index > 0 && ', '}
+                    {status}: {count}筆
+                  </span>
+                ))}
+              </div>
             )}
           </div>
         </>

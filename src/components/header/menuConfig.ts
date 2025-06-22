@@ -1,27 +1,122 @@
+import {
+  Home,
+  Calendar,
+  FileText,
+  Clock,
+  CheckCircle,
+  Users,
+  DollarSign,
+  Settings,
+  Building,
+  Building2,
+  Megaphone,
+  MapPin,
+} from "lucide-react";
 
-import { Home, Calendar, FileText, Users, Building, Settings, Clock, Briefcase, MessageSquare, Megaphone, CalendarDays, CheckCircle } from 'lucide-react';
-
-export interface MenuItem {
-  path: string;
-  label: string;
-  icon: any;
-  public: boolean;
-  adminOnly?: boolean;
-}
-
-export const menuItems: MenuItem[] = [
-  { path: '/', label: '首頁', icon: Home, public: false },
-  { path: '/personal-attendance', label: '個人出勤', icon: Clock, public: false },
-  { path: '/leave-request', label: '請假申請', icon: FileText, public: false },
-  { path: '/approval-center', label: '核准中心', icon: CheckCircle, public: false },
-  { path: '/scheduling', label: '排班管理', icon: Calendar, public: false },
-  { path: '/overtime-management', label: '加班管理', icon: Briefcase, public: false },
-  { path: '/holiday-management', label: '假日管理', icon: CalendarDays, public: false, adminOnly: true },
-  { path: '/missed-checkin-management', label: '忘記打卡管理', icon: Clock, public: false, adminOnly: true },
-  { path: '/hr-management', label: 'HR管理', icon: Users, public: false, adminOnly: true },
-  { path: '/company-announcements', label: '公司公告', icon: MessageSquare, public: false },
-  { path: '/announcement-management', label: '公告管理', icon: Megaphone, public: false, adminOnly: true },
-  { path: '/personnel-management', label: '人員管理', icon: Users, public: false, adminOnly: true },
-  { path: '/company-branch-management', label: '公司部門管理', icon: Building, public: false, adminOnly: true },
-  { path: '/system-settings', label: '系統設定', icon: Settings, public: false, adminOnly: true }
+export const menuItems = [
+  {
+    name: "首頁",
+    path: "/",
+    icon: Home,
+    requiresAuth: false,
+    adminOnly: false
+  },
+  {
+    name: "打卡簽到",
+    path: "/check-in",
+    icon: MapPin,
+    requiresAuth: true,
+    adminOnly: false
+  },
+  {
+    name: "出勤記錄",
+    path: "/attendance",
+    icon: Calendar,
+    requiresAuth: true,
+    adminOnly: false
+  },
+  {
+    name: "請假申請",
+    path: "/leave-request",
+    icon: FileText,
+    requiresAuth: true,
+    adminOnly: false
+  },
+  {
+    name: "加班申請",
+    path: "/overtime",
+    icon: Clock,
+    requiresAuth: true,
+    adminOnly: false
+  },
+  {
+    name: "班表管理",
+    path: "/schedule",
+    icon: Calendar,
+    requiresAuth: true,
+    adminOnly: true
+  },
+  {
+    name: "核准中心",
+    path: "/approval-center",
+    icon: CheckCircle,
+    requiresAuth: true,
+    adminOnly: true
+  },
+  {
+    name: "員工管理",
+    path: "/staff",
+    icon: Users,
+    requiresAuth: true,
+    adminOnly: true
+  },
+  {
+    name: "薪資管理",
+    path: "/payroll",
+    icon: DollarSign,
+    requiresAuth: true,
+    adminOnly: true
+  },
+  {
+    name: "請假假別管理",
+    path: "/leave-type-management",
+    icon: Settings,
+    requiresAuth: true,
+    adminOnly: true
+  },
+  {
+    name: "部門管理",
+    path: "/departments",
+    icon: Building,
+    requiresAuth: true,
+    adminOnly: true
+  },
+  {
+    name: "公司管理",
+    path: "/company",
+    icon: Building2,
+    requiresAuth: true,
+    adminOnly: true
+  },
+  {
+    name: "公告管理",
+    path: "/announcements",
+    icon: Megaphone,
+    requiresAuth: true,
+    adminOnly: true
+  },
+  {
+    name: "假日管理",
+    path: "/holiday-settings",
+    icon: Calendar,
+    requiresAuth: true,
+    adminOnly: true
+  },
+  {
+    name: "系統設定",
+    path: "/system-settings",
+    icon: Settings,
+    requiresAuth: true,
+    adminOnly: true
+  }
 ];

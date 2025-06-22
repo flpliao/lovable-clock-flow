@@ -1,70 +1,57 @@
-
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
-import { Toaster as Sonner } from '@/components/ui/sonner';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { UserProvider } from '@/contexts/UserContext';
+import { CheckInProvider } from '@/contexts/CheckInContext';
 import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
 import Header from '@/components/Header';
-import Index from './pages/Index';
-import Login from './pages/Login';
-import PersonnelManagement from './pages/PersonnelManagement';
-import Scheduling from './pages/Scheduling';
-import ScheduleStatistics from './pages/ScheduleStatistics';
-import SystemSettings from './pages/SystemSettings';
-import LeaveRequest from './pages/LeaveRequest';
-import PersonalAttendance from './pages/PersonalAttendance';
-import AnnouncementManagementPage from './pages/AnnouncementManagementPage';
-import CompanyAnnouncements from './pages/CompanyAnnouncements';
-import LeaveApprovalView from './pages/LeaveApprovalView';
-import ApprovalCenter from './pages/ApprovalCenter';
-import NotFound from './pages/NotFound';
-import StaffDashboard from './pages/StaffDashboard';
-import CompanyBranchManagement from './pages/CompanyBranchManagement';
-import HRManagement from './pages/HRManagement';
-import OvertimeManagement from './pages/OvertimeManagement';
-import HolidayManagement from './pages/HolidayManagement';
-import MissedCheckinManagement from './pages/MissedCheckinManagement';
-
-const queryClient = new QueryClient();
+import Home from '@/pages/Home';
+import CheckIn from '@/pages/CheckIn';
+import Attendance from '@/pages/Attendance';
+import LeaveRequest from '@/pages/LeaveRequest';
+import Overtime from '@/pages/Overtime';
+import Schedule from '@/pages/Schedule';
+import ApprovalCenter from '@/pages/ApprovalCenter';
+import StaffManagement from '@/pages/StaffManagement';
+import PayrollManagement from '@/pages/PayrollManagement';
+import LeaveTypeManagement from '@/pages/LeaveTypeManagement';
+import DepartmentManagement from '@/pages/DepartmentManagement';
+import CompanyManagementRedesigned from '@/pages/CompanyManagementRedesigned';
+import AnnouncementManagement from '@/pages/AnnouncementManagement';
+import HolidaySettings from '@/pages/HolidaySettings';
+import SystemSettings from '@/pages/SystemSettings';
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <UserProvider>
-            <LeaveManagementProvider>
+    <Router>
+      <UserProvider>
+        <CheckInProvider>
+          <LeaveManagementProvider>
+            <div className="min-h-screen bg-gray-50">
               <Header />
+              <Toaster />
               <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/personnel-management" element={<PersonnelManagement />} />
-                <Route path="/scheduling" element={<Scheduling />} />
-                <Route path="/schedule-statistics" element={<ScheduleStatistics />} />
-                <Route path="/system-settings" element={<SystemSettings />} />
+                <Route path="/" element={<Home />} />
+                <Route path="/check-in" element={<CheckIn />} />
+                <Route path="/attendance" element={<Attendance />} />
                 <Route path="/leave-request" element={<LeaveRequest />} />
-                <Route path="/personal-attendance" element={<PersonalAttendance />} />
-                <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
-                <Route path="/company-announcements" element={<CompanyAnnouncements />} />
-                <Route path="/leave-approval" element={<LeaveApprovalView />} />
+                <Route path="/overtime" element={<Overtime />} />
+                <Route path="/schedule" element={<Schedule />} />
                 <Route path="/approval-center" element={<ApprovalCenter />} />
-                <Route path="/staff-dashboard" element={<StaffDashboard />} />
-                <Route path="/company-branch-management" element={<CompanyBranchManagement />} />
-                <Route path="/hr-management" element={<HRManagement />} />
-                <Route path="/overtime-management" element={<OvertimeManagement />} />
-                <Route path="/holiday-management" element={<HolidayManagement />} />
-                <Route path="/missed-checkin-management" element={<MissedCheckinManagement />} />
-                <Route path="*" element={<NotFound />} />
+                <Route path="/staff" element={<StaffManagement />} />
+                <Route path="/payroll" element={<PayrollManagement />} />
+                <Route path="/leave-type-management" element={<LeaveTypeManagement />} />
+                <Route path="/departments" element={<DepartmentManagement />} />
+                <Route path="/company" element={<CompanyManagementRedesigned />} />
+                <Route path="/announcements" element={<AnnouncementManagement />} />
+                <Route path="/holiday-settings" element={<HolidaySettings />} />
+                <Route path="/system-settings" element={<SystemSettings />} />
               </Routes>
-            </LeaveManagementProvider>
-          </UserProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+            </div>
+          </LeaveManagementProvider>
+        </CheckInProvider>
+      </UserProvider>
+    </Router>
   );
 }
 

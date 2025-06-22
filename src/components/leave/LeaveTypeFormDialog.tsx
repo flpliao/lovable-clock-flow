@@ -120,7 +120,18 @@ export function LeaveTypeFormDialog({
     try {
       const leaveTypeData: LeaveType = {
         id: leaveType?.id || '',
-        ...data,
+        code: data.code,
+        name_zh: data.name_zh,
+        name_en: data.name_en,
+        description: data.description,
+        is_paid: data.is_paid,
+        is_active: data.is_active,
+        requires_attachment: data.requires_attachment,
+        max_days_per_year: data.max_days_per_year,
+        max_days_per_month: data.max_days_per_month,
+        gender_restriction: data.gender_restriction || null,
+        annual_reset: data.annual_reset,
+        is_system_default: data.is_system_default,
         requires_approval: true, // Add missing required property with default value
         sort_order: leaveType?.sort_order || 0, // Add missing required property with default value
         created_at: leaveType?.created_at || new Date().toISOString(),

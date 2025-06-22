@@ -11,6 +11,7 @@ import { FormSubmitSection } from '@/components/leave/FormSubmitSection';
 import { AnnualLeaveBalanceCard } from '@/components/leave/AnnualLeaveBalanceCard';
 import { useLeaveRequestFormLogic } from '@/hooks/useLeaveRequestFormLogic';
 import { useSupabaseLeaveManagement } from '@/hooks/useSupabaseLeaveManagement';
+import { LeaveTypeService } from '@/services/payroll/leaveTypeService';
 
 interface EnhancedLeaveRequestFormProps {
   onSubmit?: () => void;
@@ -34,6 +35,23 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
   const [balanceData, setBalanceData] = React.useState<any>(null);
   const [balanceLoading, setBalanceLoading] = React.useState(true);
   const [balanceLoadAttempted, setBalanceLoadAttempted] = React.useState(false);
+  const [leaveTypes, setLeaveTypes] = React.useState<any[]>([]);
+
+  // Load leave types
+  React.useEffect(() => {
+    const loadLeaveTypes = async () => {
+      try {
+        const data = await LeaveTypeService.getLeaveTypes();
+        setLeaveTypes(data || []);
+      } catch (error) {
+        console.error('Failed to load leave types:', error);
+      }
+    };
+    loadLeaveTypes();
+  }, []);
+
+  // Get the actual LeaveType object
+  const selectedLeaveTypeObject = leaveTypes.find(type => type.code === watchedValues.leave_type);
 
   // 優化餘額載入邏輯
   const currentUserId = useMemo(() => currentUser?.id, [currentUser?.id]);
@@ -114,7 +132,7 @@ export function EnhancedLeaveRequestForm({ onSubmit }: EnhancedLeaveRequestFormP
             <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假詳情</h3>
             <LeaveFormDetails 
               form={form}
-              selectedLeaveType={watchedValues.leave_type} // Pass string, not object
+              selectedLeaveType={selectedLeaveTypeObject}
             />
           </div>
 

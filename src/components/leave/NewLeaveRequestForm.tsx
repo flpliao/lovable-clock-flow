@@ -68,7 +68,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
             <Button 
               type="submit" 
               disabled={isSubmitting || !!validationError}
-              className="w-full sm:w-auto px-8 py-3 bg-blue-600/90 hover:bg-blue-700/90 backdrop-blur-sm text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-blue-500/30"
+              className="w-full sm:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
               <Send className="h-4 w-4 mr-2" />
               {isSubmitting ? '提交中...' : '提交請假申請'}

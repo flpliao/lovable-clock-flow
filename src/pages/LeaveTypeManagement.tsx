@@ -188,9 +188,6 @@ const LeaveTypeManagement = () => {
                       <Button variant="outline" size="icon" onClick={() => handleEditLeaveType(leaveType)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      {/* <Button variant="destructive" size="icon" onClick={() => handleDeleteLeaveType(leaveType.id)}>
-                        <Trash className="h-4 w-4" />
-                      </Button> */}
                     </div>
                   </div>
                 ))}
@@ -201,7 +198,7 @@ const LeaveTypeManagement = () => {
       </div>
       <LeaveTypeFormDialog
         open={showDialog}
-        onOpenChange={handleCloseDialog}
+        onClose={handleCloseDialog}
         onSave={handleSaveLeaveType}
         leaveType={editingLeaveType}
       />

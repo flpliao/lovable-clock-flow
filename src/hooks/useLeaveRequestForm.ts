@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +9,7 @@ import { useSupabaseLeaveManagement } from '@/hooks/useSupabaseLeaveManagement';
 import { useToast } from '@/hooks/use-toast';
 import { loadUserStaffData, UserStaffData } from '@/services/staffDataService';
 import { validateAnnualLeave } from '@/services/leaveValidationService';
-import { submitLeaveRequest, LeaveSubmissionData } from '@/services/leaveSubmissionService';
+import { submitLeaveRequest, LeaveSubmissionData, getSupervisorHierarchy } from '@/services/leaveSubmissionService';
 
 const leaveFormSchema = z.object({
   leave_type: z.string().min(1, '請選擇請假類型'),
@@ -165,7 +166,21 @@ export const useLeaveRequestForm = () => {
         });
       } else if (result.leaveRequest) {
         console.log('👨‍💼 進入主管審核流程');
-        const success = await createLeaveRequest(result.leaveRequest);
+        
+        // Convert LeaveRequestData to the format expected by createLeaveRequest
+        const leaveRequestForCreation = {
+          user_id: result.leaveRequest.user_id,
+          start_date: result.leaveRequest.start_date,
+          end_date: result.leaveRequest.end_date,
+          leave_type: result.leaveRequest.leave_type as 'annual' | 'sick' | 'personal' | 'marriage' | 'bereavement' | 'maternity' | 'paternity' | 'parental' | 'occupational' | 'menstrual' | 'other',
+          status: result.leaveRequest.status as 'pending' | 'approved' | 'rejected',
+          hours: result.leaveRequest.hours,
+          reason: result.leaveRequest.reason,
+          approval_level: result.leaveRequest.approval_level,
+          current_approver: result.leaveRequest.current_approver,
+        };
+        
+        const success = await createLeaveRequest(leaveRequestForCreation);
         
         if (success) {
           form.reset();

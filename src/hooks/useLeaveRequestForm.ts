@@ -150,16 +150,22 @@ export const useLeaveRequestForm = () => {
       
       // 檢查是否為 RLS 相關錯誤
       const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage.includes('row-level security') || errorMessage.includes('RLS')) {
+      if (errorMessage.includes('row-level security') || errorMessage.includes('RLS') || errorMessage.includes('permission denied')) {
         toast({
           title: "權限錯誤",
-          description: "無法提交請假申請，請檢查您的權限設定或聯繫系統管理員",
+          description: "提交申請時發生權限問題，請聯繫系統管理員",
+          variant: "destructive"
+        });
+      } else if (errorMessage.includes('violates')) {
+        toast({
+          title: "資料驗證錯誤",
+          description: "請檢查申請資料是否正確填寫",
           variant: "destructive"
         });
       } else {
         toast({
           title: "申請失敗",
-          description: "無法提交請假申請，請稍後再試",
+          description: "提交請假申請時發生錯誤，請稍後再試",
           variant: "destructive"
         });
       }

@@ -55,9 +55,7 @@ export const submitLeaveRequest = async (
           hours: calculatedHours,
           reason: data.reason,
           approval_level: 0,
-          current_approver: null,
-          approved_at: new Date().toISOString(),
-          approved_by: 'system'
+          current_approver: null
         })
         .select()
         .single();
@@ -67,13 +65,13 @@ export const submitLeaveRequest = async (
         throw insertError;
       }
 
-      // 為自動核准創建審核記錄
+      // 為自動核准創建審核記錄 - 使用當前用戶 ID 而不是 'system'
       const { error: approvalError } = await supabase
         .from('approval_records')
         .insert({
           leave_request_id: insertedData.id,
-          approver_id: 'system',
-          approver_name: '系統',
+          approver_id: userId, // 使用員工自己的 ID
+          approver_name: '系統自動核准',
           status: 'approved',
           level: 0,
           approval_date: new Date().toISOString(),
@@ -211,8 +209,6 @@ export const processLeaveApproval = async (
         .from('leave_requests')
         .update({
           status: 'approved',
-          approved_by: approverId,
-          approved_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
         .eq('id', leaveRequestId);

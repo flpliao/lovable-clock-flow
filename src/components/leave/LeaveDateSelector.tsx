@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { UseFormReturn } from 'react-hook-form';
 import { LeaveFormValues } from '@/utils/leaveTypes';
+import { formatDisplayDate } from '@/utils/dateUtils';
 
 interface LeaveDateSelectorProps {
   form: UseFormReturn<LeaveFormValues>;
@@ -17,14 +17,6 @@ interface LeaveDateSelectorProps {
 
 export function LeaveDateSelector({ form, calculatedHours }: LeaveDateSelectorProps) {
   const calculatedDays = calculatedHours / 8;
-  
-  // 格式化日期顯示，確保使用本地時區
-  const formatDisplayDate = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}/${month}/${day}`;
-  };
   
   return (
     <div className="space-y-4">
@@ -120,7 +112,7 @@ export function LeaveDateSelector({ form, calculatedHours }: LeaveDateSelectorPr
           </p>
           {form.watch('leave_type') === 'annual' && calculatedHours > 0 && (
             <p className="text-white/80 mt-1 text-sm drop-shadow-sm">
-              * 以工作日計算，每個工作天 8 小時，不含週末
+              * 以工作日計算，每個工作天 8 小時，不含週末（時區：Asia/Taipei +08:00）
             </p>
           )}
         </div>

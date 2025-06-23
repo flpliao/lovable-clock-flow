@@ -91,7 +91,7 @@ export function LeaveTypeSelector({ form, selectedLeaveType, calculatedDays = 0 
                           </span>
                         )}
                         {type.requires_attachment && (
-                          <FileText className="h-3 w-3 text-blue-600" title="需要附件" />
+                          <FileText className="h-3 w-3 text-blue-600" />
                         )}
                       </div>
                     </div>

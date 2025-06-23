@@ -31,8 +31,14 @@ export const useScheduleFiltering = (viewMode: 'self' | 'subordinates' | 'all') 
           break;
       }
     } else {
-      // 一般用戶只能查看自己的排班
+      // 一般用戶可以查看自己的排班
       viewableIds.push(currentUser.id);
+      
+      // 如果是主管，也可以查看下屬的排班
+      const subordinates = getSubordinates(currentUser.id);
+      if (subordinates.length > 0) {
+        viewableIds.push(...subordinates.map(s => s.id));
+      }
     }
     
     return viewableIds;

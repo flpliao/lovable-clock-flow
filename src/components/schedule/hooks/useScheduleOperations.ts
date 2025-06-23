@@ -21,11 +21,15 @@ export const useScheduleOperations = () => {
       return staffList;
     }
     
-    // 否則只返回自己
+    // 否則返回自己和下屬
     const selfStaff = staffList.find(staff => staff.id === currentUser.id);
     if (selfStaff) {
       availableStaff.push(selfStaff);
     }
+    
+    // 加入下屬員工
+    const subordinates = getSubordinates(currentUser.id);
+    availableStaff.push(...subordinates);
     
     return availableStaff;
   };
@@ -40,9 +44,16 @@ export const useScheduleOperations = () => {
   const getUserRelation = (userId: string) => {
     if (!currentUser) return '';
     if (userId === currentUser.id) return '（自己）';
-    if (hasPermission('schedule:view_all') && getSubordinates(currentUser.id).some(s => s.id === userId)) {
+    
+    const subordinates = getSubordinates(currentUser.id);
+    if (subordinates.some(s => s.id === userId)) {
       return '（下屬）';
     }
+    
+    if (hasPermission('schedule:view_all')) {
+      return '';
+    }
+    
     return '';
   };
 
@@ -74,15 +85,25 @@ export const useScheduleOperations = () => {
       return true;
     }
     
-    // 一般用戶無法刪除排班
+    // 主管可以刪除下屬的排班
+    const subordinates = getSubordinates(currentUser.id);
+    if (subordinates.some(s => s.id === schedule.userId)) {
+      return true;
+    }
+    
+    // 可以刪除自己的排班（如果有相應權限）
+    if (schedule.userId === currentUser.id) {
+      return true;
+    }
+    
     return false;
   };
 
   // 檢查權限
-  const canCreateSchedule = hasPermission('schedule:create');
-  const canEditSchedule = hasPermission('schedule:edit');
+  const canCreateSchedule = hasPermission('schedule:create') || getSubordinates(currentUser?.id || '').length > 0;
+  const canEditSchedule = hasPermission('schedule:edit') || getSubordinates(currentUser?.id || '').length > 0;
   const canViewAllSchedules = hasPermission('schedule:view_all');
-  const hasSubordinates = canViewAllSchedules && getSubordinates(currentUser?.id || '').length > 0;
+  const hasSubordinates = getSubordinates(currentUser?.id || '').length > 0;
 
   return {
     schedules,
@@ -92,7 +113,7 @@ export const useScheduleOperations = () => {
     getUserRelation,
     handleRemoveSchedule,
     canDeleteSchedule,
-    hasSubordinates,
+    hasSubordinates: hasSubordinates || canViewAllSchedules,
     canCreateSchedule,
     canEditSchedule,
     canViewAllSchedules,

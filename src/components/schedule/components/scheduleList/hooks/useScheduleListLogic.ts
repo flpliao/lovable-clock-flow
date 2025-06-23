@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 
 type ScheduleViewType = 'my' | 'subordinates' | 'all';
 
@@ -14,6 +15,7 @@ interface UseScheduleListLogicProps {
 
 export const useScheduleListLogic = ({ schedules, onRemoveSchedule }: UseScheduleListLogicProps) => {
   const { currentUser, isAdmin } = useUser();
+  const { getSubordinates } = useStaffManagementContext();
   const { toast } = useToast();
   const [refreshing, setRefreshing] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -29,15 +31,27 @@ export const useScheduleListLogic = ({ schedules, onRemoveSchedule }: UseSchedul
   const filterSchedulesByView = (view: ScheduleViewType) => {
     if (!currentUser?.id) return [];
     
+    const subordinates = getSubordinates(currentUser.id);
+    const subordinateIds = subordinates.map(s => s.id);
+    
     switch (view) {
       case 'my':
         return schedules.filter(schedule => schedule.userId === currentUser.id);
       case 'subordinates':
-        return [];
+        return schedules.filter(schedule => subordinateIds.includes(schedule.userId));
       case 'all':
-        return isAdmin() ? schedules : schedules.filter(schedule => schedule.userId === currentUser.id);
+        if (isAdmin()) {
+          return schedules;
+        } else {
+          // 非管理員可以看到自己和下屬的排班
+          return schedules.filter(schedule => 
+            schedule.userId === currentUser.id || subordinateIds.includes(schedule.userId)
+          );
+        }
       default:
-        return schedules.filter(schedule => schedule.userId === currentUser.id);
+        return schedules.filter(schedule => 
+          schedule.userId === currentUser.id || subordinateIds.includes(schedule.userId)
+        );
     }
   };
 
@@ -72,10 +86,18 @@ export const useScheduleListLogic = ({ schedules, onRemoveSchedule }: UseSchedul
   };
 
   const handleScheduleDelete = async (scheduleId: string) => {
-    if (!isAdmin()) {
+    const schedule = schedules.find(s => s.id === scheduleId);
+    if (!schedule) return;
+    
+    const subordinates = getSubordinates(currentUser?.id || '');
+    const canDelete = isAdmin() || 
+                     schedule.userId === currentUser?.id || 
+                     subordinates.some(s => s.id === schedule.userId);
+    
+    if (!canDelete) {
       toast({
         title: "權限不足",
-        description: "只有系統管理員可以刪除排班記錄",
+        description: "您只能刪除自己或下屬的排班記錄",
         variant: "destructive"
       });
       return;

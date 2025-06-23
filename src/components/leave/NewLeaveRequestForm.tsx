@@ -13,8 +13,10 @@ import { LeaveTypeDetailCard } from './LeaveTypeDetailCard';
 import { calculateWorkingHours } from '@/utils/workingHoursCalculator';
 import { validateLeaveRequest } from '@/utils/leaveValidation';
 import { datePickerToDatabase } from '@/utils/dateUtils';
+import { calculateAnnualLeaveDays, formatYearsOfService } from '@/utils/annualLeaveCalculator';
 import { differenceInDays, format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface NewLeaveRequestFormProps {
   onSubmit?: () => void;
@@ -27,6 +29,11 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [calculatedHours, setCalculatedHours] = useState<number>(0);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [annualLeaveData, setAnnualLeaveData] = useState<{
+    totalDays: number;
+    usedDays: number;
+    remainingDays: number;
+  } | null>(null);
 
   const form = useForm<LeaveFormValues>({
     resolver: zodResolver(leaveFormSchema),
@@ -41,6 +48,58 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
   const watchedStartDate = form.watch('start_date');
   const watchedEndDate = form.watch('end_date');
   const watchedLeaveType = form.watch('leave_type');
+
+  // 載入特休資料
+  useEffect(() => {
+    const loadAnnualLeaveData = async () => {
+      if (!currentUser?.id || !currentUser?.hire_date) {
+        console.log('No user or hire date available');
+        return;
+      }
+
+      try {
+        const hireDate = new Date(currentUser.hire_date);
+        const totalDays = calculateAnnualLeaveDays(hireDate);
+        
+        // 計算已使用的特休天數
+        const currentYear = new Date().getFullYear();
+        const { data: leaveRecords, error } = await supabase
+          .from('leave_requests')
+          .select('hours')
+          .or(`user_id.eq.${currentUser.id},staff_id.eq.${currentUser.id}`)
+          .eq('leave_type', 'annual')
+          .eq('status', 'approved')
+          .gte('start_date', `${currentYear}-01-01`)
+          .lte('start_date', `${currentYear}-12-31`);
+
+        let usedDays = 0;
+        if (!error && leaveRecords) {
+          usedDays = leaveRecords.reduce((total, record) => {
+            return total + (Number(record.hours) / 8);
+          }, 0);
+        }
+
+        const remainingDays = Math.max(0, totalDays - usedDays);
+        
+        setAnnualLeaveData({
+          totalDays,
+          usedDays,
+          remainingDays
+        });
+
+        console.log('Annual leave data loaded:', {
+          totalDays,
+          usedDays,
+          remainingDays,
+          hireDate: currentUser.hire_date
+        });
+      } catch (error) {
+        console.error('Error loading annual leave data:', error);
+      }
+    };
+
+    loadAnnualLeaveData();
+  }, [currentUser?.id, currentUser?.hire_date]);
 
   // 計算請假時數
   useEffect(() => {
@@ -99,10 +158,17 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     }
   }, [watchedStartDate, watchedEndDate, watchedLeaveType, calculatedHours, currentUser]);
 
-  // 模擬剩餘假期天數和已使用天數 (實際應該從後端獲取)
+  // 根據請假類型獲取假期資料
   const getLeaveData = (leaveType: string) => {
+    if (leaveType === 'annual' && annualLeaveData) {
+      return {
+        remainingDays: annualLeaveData.remainingDays,
+        usedDays: annualLeaveData.usedDays
+      };
+    }
+
+    // 其他假期類型的模擬資料
     const mockData: Record<string, { remainingDays?: number; usedDays: number }> = {
-      'annual': { remainingDays: 10, usedDays: 5 },
       'sick': { remainingDays: 27, usedDays: 3 },
       'personal': { remainingDays: 12, usedDays: 2 },
       'marriage': { remainingDays: 8, usedDays: 0 },

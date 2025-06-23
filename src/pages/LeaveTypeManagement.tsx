@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { Plus, Edit, Trash2, FileText, AlertCircle, TrendingUp, CheckCircle } fr
 import { LeaveTypeService } from '@/services/payroll/leaveTypeService';
 import { LeaveTypeDialog } from '@/components/leave/LeaveTypeDialog';
 import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
+
 interface LeaveType {
   id: string;
   code: string;
@@ -22,6 +24,7 @@ interface LeaveType {
   sort_order: number;
   description?: string;
 }
+
 export default function LeaveTypeManagement() {
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,9 +32,7 @@ export default function LeaveTypeManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedLeaveType, setSelectedLeaveType] = useState<LeaveType | null>(null);
   const [deleteLeaveType, setDeleteLeaveType] = useState<LeaveType | null>(null);
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
 
   // 統計數據
   const stats = {
@@ -40,9 +41,11 @@ export default function LeaveTypeManagement() {
     paid: leaveTypes.filter(type => type.is_paid && type.is_active).length,
     systemDefault: leaveTypes.filter(type => type.is_system_default).length
   };
+
   useEffect(() => {
     loadLeaveTypes();
   }, []);
+
   const loadLeaveTypes = async () => {
     try {
       const data = await LeaveTypeService.getLeaveTypes();
@@ -58,14 +61,17 @@ export default function LeaveTypeManagement() {
       setLoading(false);
     }
   };
+
   const handleAdd = () => {
     setSelectedLeaveType(null);
     setDialogOpen(true);
   };
+
   const handleEdit = (leaveType: LeaveType) => {
     setSelectedLeaveType(leaveType);
     setDialogOpen(true);
   };
+
   const handleDelete = (leaveType: LeaveType) => {
     if (leaveType.is_system_default) {
       toast({
@@ -78,6 +84,7 @@ export default function LeaveTypeManagement() {
     setDeleteLeaveType(leaveType);
     setDeleteDialogOpen(true);
   };
+
   const confirmDelete = async () => {
     if (!deleteLeaveType) return;
     try {
@@ -99,6 +106,7 @@ export default function LeaveTypeManagement() {
       setDeleteLeaveType(null);
     }
   };
+
   const handleSave = async (data: any) => {
     try {
       if (selectedLeaveType) {
@@ -125,136 +133,193 @@ export default function LeaveTypeManagement() {
       });
     }
   };
+
   if (loading) {
-    return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-300/30 via-blue-200/20 to-blue-100/15 p-4">
         <div className="container mx-auto">
-          <div className="text-center py-8">載入中...</div>
+          <div className="text-center py-8">
+            <div className="text-gray-700 text-lg">載入中...</div>
+          </div>
         </div>
-      </div>;
+      </div>
+    );
   }
-  return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 bg-violet-400">
-      <div className="container mx-auto space-y-6 py-[80px]">
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-300/30 via-blue-200/20 to-blue-100/15 p-4">
+      <div className="container mx-auto space-y-6 py-8">
         {/* 頁面標題 */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">請假假別管理</h1>
-          <p className="text-gray-600">管理系統中的請假類型設定</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-3 drop-shadow-sm">請假假別管理</h1>
+          <p className="text-gray-700 text-lg font-medium">管理系統中的請假類型設定</p>
         </div>
 
         {/* 統計卡片 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="backdrop-blur-2xl bg-gradient-to-br from-white/80 to-white/60 border border-white/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">總假別數</CardTitle>
-              <FileText className="h-4 w-4 text-blue-500" />
+              <CardTitle className="text-sm font-medium text-gray-700">總假別數</CardTitle>
+              <div className="p-3 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
+                <FileText className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+              <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
             </CardContent>
           </Card>
           
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="backdrop-blur-2xl bg-gradient-to-br from-white/80 to-white/60 border border-white/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">已啟用</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CardTitle className="text-sm font-medium text-gray-700">已啟用</CardTitle>
+              <div className="p-3 bg-green-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-green-400/50 text-white">
+                <CheckCircle className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.active}</div>
+              <div className="text-3xl font-bold text-green-700">{stats.active}</div>
             </CardContent>
           </Card>
           
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="backdrop-blur-2xl bg-gradient-to-br from-white/80 to-white/60 border border-white/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">有薪假別</CardTitle>
-              <TrendingUp className="h-4 w-4 text-blue-500" />
+              <CardTitle className="text-sm font-medium text-gray-700">有薪假別</CardTitle>
+              <div className="p-3 bg-teal-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-teal-400/50 text-white">
+                <TrendingUp className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.paid}</div>
+              <div className="text-3xl font-bold text-teal-700">{stats.paid}</div>
             </CardContent>
           </Card>
           
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="backdrop-blur-2xl bg-gradient-to-br from-white/80 to-white/60 border border-white/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">系統預設</CardTitle>
-              <AlertCircle className="h-4 w-4 text-purple-500" />
+              <CardTitle className="text-sm font-medium text-gray-700">系統預設</CardTitle>
+              <div className="p-3 bg-purple-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-purple-400/50 text-white">
+                <AlertCircle className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-600">{stats.systemDefault}</div>
+              <div className="text-3xl font-bold text-purple-700">{stats.systemDefault}</div>
             </CardContent>
           </Card>
         </div>
 
         {/* 操作按鈕 */}
-        <div className="flex justify-end mb-4">
-          <Button onClick={handleAdd} className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg">
-            <Plus className="h-4 w-4 mr-2" />
+        <div className="flex justify-end mb-6">
+          <Button 
+            onClick={handleAdd} 
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-6 py-3"
+          >
+            <Plus className="h-5 w-5 mr-2" />
             新增假別
           </Button>
         </div>
 
         {/* 假別列表 */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-gray-900">假別列表</CardTitle>
-            <CardDescription className="text-gray-600">管理系統中的所有請假類型</CardDescription>
+        <Card className="backdrop-blur-2xl bg-gradient-to-br from-white/80 to-white/60 border border-white/50 rounded-2xl shadow-lg">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-gray-900 text-xl font-bold">假別列表</CardTitle>
+            <CardDescription className="text-gray-700 font-medium">管理系統中的所有請假類型</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-200">
-                    <TableHead className="text-gray-700 font-medium">假別代碼</TableHead>
-                    <TableHead className="text-gray-700 font-medium">中文名稱</TableHead>
-                    <TableHead className="text-gray-700 font-medium">英文名稱</TableHead>
-                    <TableHead className="text-gray-700 font-medium">薪資</TableHead>
-                    <TableHead className="text-gray-700 font-medium">年度重置</TableHead>
-                    <TableHead className="text-gray-700 font-medium">最大天數</TableHead>
-                    <TableHead className="text-gray-700 font-medium">狀態</TableHead>
-                    <TableHead className="text-gray-700 font-medium">操作</TableHead>
+                  <TableRow className="border-gray-300/50 hover:bg-white/30">
+                    <TableHead className="text-gray-800 font-semibold text-sm">假別代碼</TableHead>
+                    <TableHead className="text-gray-800 font-semibold text-sm">中文名稱</TableHead>
+                    <TableHead className="text-gray-800 font-semibold text-sm">英文名稱</TableHead>
+                    <TableHead className="text-gray-800 font-semibold text-sm">薪資</TableHead>
+                    <TableHead className="text-gray-800 font-semibold text-sm">年度重置</TableHead>
+                    <TableHead className="text-gray-800 font-semibold text-sm">最大天數</TableHead>
+                    <TableHead className="text-gray-800 font-semibold text-sm">狀態</TableHead>
+                    <TableHead className="text-gray-800 font-semibold text-sm">操作</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {leaveTypes.map(leaveType => <TableRow key={leaveType.id} className="border-gray-100 hover:bg-blue-50/50">
+                  {leaveTypes.map((leaveType) => (
+                    <TableRow 
+                      key={leaveType.id} 
+                      className="border-gray-300/30 hover:bg-blue-50/60 transition-colors duration-200"
+                    >
                       <TableCell>
-                        <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">
+                        <code className="bg-gray-200/80 px-3 py-1 rounded-lg text-sm font-mono text-gray-800 border border-gray-300/50">
                           {leaveType.code}
                         </code>
                       </TableCell>
-                      <TableCell className="font-medium text-gray-900">{leaveType.name_zh}</TableCell>
-                      <TableCell className="text-gray-600">{leaveType.name_en}</TableCell>
+                      <TableCell className="font-semibold text-gray-900">{leaveType.name_zh}</TableCell>
+                      <TableCell className="text-gray-700 font-medium">{leaveType.name_en}</TableCell>
                       <TableCell>
-                        <Badge variant={leaveType.is_paid ? "default" : "secondary"} className={leaveType.is_paid ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}>
+                        <Badge 
+                          variant={leaveType.is_paid ? "default" : "secondary"} 
+                          className={leaveType.is_paid 
+                            ? "bg-green-200/80 text-green-800 border border-green-300/50 font-medium" 
+                            : "bg-gray-200/80 text-gray-700 border border-gray-300/50 font-medium"
+                          }
+                        >
                           {leaveType.is_paid ? "有薪" : "無薪"}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={leaveType.annual_reset ? "border-blue-300 text-blue-700" : "border-gray-300 text-gray-600"}>
+                        <Badge 
+                          variant="outline" 
+                          className={leaveType.annual_reset 
+                            ? "border-blue-400/60 text-blue-800 bg-blue-50/60 font-medium" 
+                            : "border-gray-400/60 text-gray-700 bg-gray-50/60 font-medium"
+                          }
+                        >
                           {leaveType.annual_reset ? "是" : "否"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-gray-700">
+                      <TableCell className="text-gray-800 font-medium">
                         {leaveType.max_days_per_year ? `${leaveType.max_days_per_year}天` : "無限制"}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Badge variant={leaveType.is_active ? "default" : "secondary"} className={leaveType.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}>
+                          <Badge 
+                            variant={leaveType.is_active ? "default" : "secondary"} 
+                            className={leaveType.is_active 
+                              ? "bg-green-200/80 text-green-800 border border-green-300/50 font-medium" 
+                              : "bg-gray-200/80 text-gray-700 border border-gray-300/50 font-medium"
+                            }
+                          >
                             {leaveType.is_active ? "啟用" : "停用"}
                           </Badge>
-                          {leaveType.is_system_default && <Badge variant="outline" className="text-purple-600 border-purple-300 bg-purple-50">
+                          {leaveType.is_system_default && (
+                            <Badge 
+                              variant="outline" 
+                              className="text-purple-800 border-purple-400/60 bg-purple-50/60 font-medium"
+                            >
                               系統預設
-                            </Badge>}
+                            </Badge>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(leaveType)} className="hover:bg-blue-100 text-blue-600">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleEdit(leaveType)} 
+                            className="hover:bg-blue-100/80 text-blue-700 hover:text-blue-800 rounded-lg border border-transparent hover:border-blue-200/50"
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(leaveType)} disabled={leaveType.is_system_default} className="hover:bg-red-100 text-red-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleDelete(leaveType)} 
+                            disabled={leaveType.is_system_default} 
+                            className="hover:bg-red-100/80 text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg border border-transparent hover:border-red-200/50"
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
-                    </TableRow>)}
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
@@ -262,9 +327,21 @@ export default function LeaveTypeManagement() {
         </Card>
 
         {/* 對話框 */}
-        <LeaveTypeDialog open={dialogOpen} onOpenChange={setDialogOpen} leaveType={selectedLeaveType} onSave={handleSave} />
+        <LeaveTypeDialog 
+          open={dialogOpen} 
+          onOpenChange={setDialogOpen} 
+          leaveType={selectedLeaveType} 
+          onSave={handleSave} 
+        />
 
-        <DeleteConfirmDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} onConfirm={confirmDelete} title="確認刪除假別" description={`確定要刪除「${deleteLeaveType?.name_zh}」嗎？此操作無法復原。`} />
+        <DeleteConfirmDialog 
+          open={deleteDialogOpen} 
+          onOpenChange={setDeleteDialogOpen} 
+          onConfirm={confirmDelete} 
+          title="確認刪除假別" 
+          description={`確定要刪除「${deleteLeaveType?.name_zh}」嗎？此操作無法復原。`} 
+        />
       </div>
-    </div>;
+    </div>
+  );
 }

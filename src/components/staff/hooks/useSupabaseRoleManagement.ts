@@ -1,6 +1,7 @@
 
 import { useSupabaseRoleOperations } from './useSupabaseRoleOperations';
 import { useSupabasePermissionUtils } from './useSupabasePermissionUtils';
+import { supabase } from '@/integrations/supabase/client';
 import { StaffRole, Permission } from '../types';
 
 export const useSupabaseRoleManagement = () => {

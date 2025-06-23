@@ -27,8 +27,15 @@ export const StaffManagementProvider: React.FC<{ children: ReactNode }> = ({ chi
     deleteRole: roleManagement.deleteRole,
     getRole: roleManagement.getRole,
     hasPermission: (staffId: string, permissionCode: string) => {
-      // 這裡可以整合 Supabase 的權限檢查
-      return roleManagement.hasPermission(staffId, permissionCode);
+      // 簡化版本的權限檢查 - 管理員擁有所有權限
+      const staff = staffManagement.staffList.find(s => s.id === staffId);
+      if (!staff) return false;
+      
+      // 系統管理員擁有所有權限
+      if (staff.role === 'admin') return true;
+      
+      // 可以根據需要擴展更複雜的權限檢查邏輯
+      return false;
     },
     assignRoleToStaff: roleManagement.assignRoleToStaff
   };

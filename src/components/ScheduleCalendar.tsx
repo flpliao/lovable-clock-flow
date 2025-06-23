@@ -86,10 +86,31 @@ const ScheduleCalendar = () => {
 
         {/* 主要內容 */}
         <ScheduleTabsContent
+          viewType={viewType}
+          availableStaff={availableStaff}
+          selectedStaffId={selectedStaffId}
+          selectedDate={selectedDate}
+          onStaffChange={setSelectedStaffId}
+          onDateChange={setSelectedDate}
+          getUserRelation={getUserRelation}
           schedules={schedules}
           getUserName={getUserName}
+          viewableStaffIds={viewableStaffIds}
+          selectedYear={selectedYear}
+          selectedMonth={selectedMonth}
+          selectedDateNav={dateNavSelectedDate}
+          daysInMonth={daysInMonth}
+          onYearChange={setSelectedYear}
+          onMonthChange={setSelectedMonth}
+          onDateClick={handleDateClick}
+          generateYears={generateYears}
+          generateMonths={generateMonths}
+          shiftsForSelectedDate={shiftsForSelectedDate}
           canDeleteSchedule={canDeleteSchedule}
           onRemoveSchedule={wrappedHandleRemoveSchedule}
+          currentUser={currentUser}
+          setSelectedDateNav={setDateNavSelectedDate}
+          getScheduleCountForDate={getScheduleCountForDate}
         />
       </Tabs>
     </div>

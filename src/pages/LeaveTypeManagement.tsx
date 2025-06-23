@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { Plus, Edit, Trash2, FileText, AlertCircle, TrendingUp, CheckCircle } fr
 import { LeaveTypeService } from '@/services/payroll/leaveTypeService';
 import { LeaveTypeDialog } from '@/components/leave/LeaveTypeDialog';
 import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
+
 interface LeaveType {
   id: string;
   code: string;
@@ -22,6 +24,7 @@ interface LeaveType {
   sort_order: number;
   description?: string;
 }
+
 export default function LeaveTypeManagement() {
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,9 +32,7 @@ export default function LeaveTypeManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedLeaveType, setSelectedLeaveType] = useState<LeaveType | null>(null);
   const [deleteLeaveType, setDeleteLeaveType] = useState<LeaveType | null>(null);
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
 
   // 統計數據
   const stats = {
@@ -40,9 +41,11 @@ export default function LeaveTypeManagement() {
     paid: leaveTypes.filter(type => type.is_paid && type.is_active).length,
     systemDefault: leaveTypes.filter(type => type.is_system_default).length
   };
+
   useEffect(() => {
     loadLeaveTypes();
   }, []);
+
   const loadLeaveTypes = async () => {
     try {
       const data = await LeaveTypeService.getLeaveTypes();
@@ -58,14 +61,17 @@ export default function LeaveTypeManagement() {
       setLoading(false);
     }
   };
+
   const handleAdd = () => {
     setSelectedLeaveType(null);
     setDialogOpen(true);
   };
+
   const handleEdit = (leaveType: LeaveType) => {
     setSelectedLeaveType(leaveType);
     setDialogOpen(true);
   };
+
   const handleDelete = (leaveType: LeaveType) => {
     if (leaveType.is_system_default) {
       toast({
@@ -78,6 +84,7 @@ export default function LeaveTypeManagement() {
     setDeleteLeaveType(leaveType);
     setDeleteDialogOpen(true);
   };
+
   const confirmDelete = async () => {
     if (!deleteLeaveType) return;
     try {
@@ -99,6 +106,7 @@ export default function LeaveTypeManagement() {
       setDeleteLeaveType(null);
     }
   };
+
   const handleSave = async (data: any) => {
     try {
       if (selectedLeaveType) {
@@ -125,15 +133,20 @@ export default function LeaveTypeManagement() {
       });
     }
   };
+
   if (loading) {
-    return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <div className="container mx-auto">
           <div className="text-center py-8">載入中...</div>
         </div>
-      </div>;
+      </div>
+    );
   }
-  return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="container mx-auto space-y-6 py-[80px] bg-violet-400">
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="container mx-auto space-y-6 py-[80px]">
         {/* 頁面標題 */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">請假假別管理</h1>
@@ -185,7 +198,10 @@ export default function LeaveTypeManagement() {
 
         {/* 操作按鈕 */}
         <div className="flex justify-end mb-4">
-          <Button onClick={handleAdd} className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg">
+          <Button 
+            onClick={handleAdd} 
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg"
+          >
             <Plus className="h-4 w-4 mr-2" />
             新增假別
           </Button>
@@ -213,7 +229,8 @@ export default function LeaveTypeManagement() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {leaveTypes.map(leaveType => <TableRow key={leaveType.id} className="border-gray-100 hover:bg-blue-50/50">
+                  {leaveTypes.map((leaveType) => (
+                    <TableRow key={leaveType.id} className="border-gray-100 hover:bg-blue-50/50">
                       <TableCell>
                         <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">
                           {leaveType.code}
@@ -222,12 +239,18 @@ export default function LeaveTypeManagement() {
                       <TableCell className="font-medium text-gray-900">{leaveType.name_zh}</TableCell>
                       <TableCell className="text-gray-600">{leaveType.name_en}</TableCell>
                       <TableCell>
-                        <Badge variant={leaveType.is_paid ? "default" : "secondary"} className={leaveType.is_paid ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}>
+                        <Badge 
+                          variant={leaveType.is_paid ? "default" : "secondary"}
+                          className={leaveType.is_paid ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}
+                        >
                           {leaveType.is_paid ? "有薪" : "無薪"}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={leaveType.annual_reset ? "border-blue-300 text-blue-700" : "border-gray-300 text-gray-600"}>
+                        <Badge 
+                          variant="outline"
+                          className={leaveType.annual_reset ? "border-blue-300 text-blue-700" : "border-gray-300 text-gray-600"}
+                        >
                           {leaveType.annual_reset ? "是" : "否"}
                         </Badge>
                       </TableCell>
@@ -236,25 +259,42 @@ export default function LeaveTypeManagement() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Badge variant={leaveType.is_active ? "default" : "secondary"} className={leaveType.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}>
+                          <Badge 
+                            variant={leaveType.is_active ? "default" : "secondary"}
+                            className={leaveType.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}
+                          >
                             {leaveType.is_active ? "啟用" : "停用"}
                           </Badge>
-                          {leaveType.is_system_default && <Badge variant="outline" className="text-purple-600 border-purple-300 bg-purple-50">
+                          {leaveType.is_system_default && (
+                            <Badge variant="outline" className="text-purple-600 border-purple-300 bg-purple-50">
                               系統預設
-                            </Badge>}
+                            </Badge>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(leaveType)} className="hover:bg-blue-100 text-blue-600">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleEdit(leaveType)}
+                            className="hover:bg-blue-100 text-blue-600"
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(leaveType)} disabled={leaveType.is_system_default} className="hover:bg-red-100 text-red-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleDelete(leaveType)} 
+                            disabled={leaveType.is_system_default}
+                            className="hover:bg-red-100 text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
-                    </TableRow>)}
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
@@ -262,9 +302,21 @@ export default function LeaveTypeManagement() {
         </Card>
 
         {/* 對話框 */}
-        <LeaveTypeDialog open={dialogOpen} onOpenChange={setDialogOpen} leaveType={selectedLeaveType} onSave={handleSave} />
+        <LeaveTypeDialog 
+          open={dialogOpen} 
+          onOpenChange={setDialogOpen} 
+          leaveType={selectedLeaveType} 
+          onSave={handleSave} 
+        />
 
-        <DeleteConfirmDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} onConfirm={confirmDelete} title="確認刪除假別" description={`確定要刪除「${deleteLeaveType?.name_zh}」嗎？此操作無法復原。`} />
+        <DeleteConfirmDialog 
+          open={deleteDialogOpen} 
+          onOpenChange={setDeleteDialogOpen} 
+          onConfirm={confirmDelete} 
+          title="確認刪除假別" 
+          description={`確定要刪除「${deleteLeaveType?.name_zh}」嗎？此操作無法復原。`} 
+        />
       </div>
-    </div>;
+    </div>
+  );
 }

@@ -2,7 +2,6 @@
 import React from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import CalendarViewSection from './CalendarViewSection';
-import ListViewSection from './ListViewSection';
 import ScheduleListView from './ScheduleListView';
 
 interface ScheduleTabsContentProps {
@@ -88,20 +87,6 @@ const ScheduleTabsContent = ({
           getUserName={getUserName}
           canDeleteSchedule={canDeleteSchedule}
           onRemoveSchedule={onRemoveSchedule}
-        />
-      </TabsContent>
-
-      <TabsContent value="monthly" className="mt-6">
-        <ListViewSection
-          availableStaff={availableStaff}
-          selectedStaffId={selectedStaffId}
-          selectedDate={selectedDate}
-          onStaffChange={onStaffChange}
-          onDateChange={onDateChange}
-          getUserRelation={getUserRelation}
-          schedules={schedules}
-          getUserName={getUserName}
-          viewableStaffIds={viewableStaffIds}
         />
       </TabsContent>
     </>

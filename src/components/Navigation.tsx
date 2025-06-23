@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { useUser } from '@/contexts/UserContext';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -29,44 +30,20 @@ import {
 } from "lucide-react";
 
 const Navigation = () => {
-  const { currentUser, logout } = useUser();
-  const router = useRouter();
+  const { currentUser, resetUserState } = useUser();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout();
-    router.push('/login');
+    resetUserState();
+    navigate('/login');
   };
 
   const adminMenuItems = [
     {
       title: '首頁',
       icon: Home,
-      path: '/dashboard',
+      path: '/',
       description: '回到控制面板'
-    },
-    {
-      title: '公司管理',
-      icon: Building2,
-      path: '/company-management',
-      description: '管理公司資訊'
-    },
-    {
-      title: '員工管理',
-      icon: Users,
-      path: '/staff-management',
-      description: '管理員工資訊'
-    },
-    {
-      title: '公告管理',
-      icon: FileText,
-      path: '/announcements-management',
-      description: '發布和管理公司公告'
-    },
-    {
-      title: '班表管理',
-      icon: Calendar,
-      path: '/schedules-management',
-      description: '管理員工班表'
     },
     {
       title: '核准中心',
@@ -75,34 +52,10 @@ const Navigation = () => {
       description: '審核請假申請與忘記打卡申請'
     },
     {
-      title: '出勤管理',
-      icon: Clock,
-      path: '/attendance-management',
-      description: '管理員工出勤記錄'
-    },
-    {
-      title: '打卡異常處理',
-      icon: AlertTriangle,
-      path: '/attendance-exception-management',
-      description: '處理員工打卡異常申請'
-    },
-    {
-      title: '薪資管理',
-      icon: Briefcase,
-      path: '/payroll-management',
-      description: '管理員工薪資'
-    },
-    {
       title: '系統設定',
       icon: Settings,
       path: '/system-settings',
       description: '設定系統參數'
-    },
-    {
-      title: '出勤報表',
-      icon: ListChecks,
-      path: '/attendance-reports',
-      description: '查看出勤報表'
     }
   ];
 
@@ -110,32 +63,14 @@ const Navigation = () => {
     {
       title: '首頁',
       icon: Home,
-      path: '/dashboard',
+      path: '/',
       description: '回到控制面板'
-    },
-    {
-      title: '打卡',
-      icon: Clock,
-      path: '/check-in',
-      description: '進行每日打卡'
     },
     {
       title: '請假申請',
       icon: Calendar,
       path: '/leave-request',
       description: '提交請假申請'
-    },
-    {
-      title: '請假紀錄',
-      icon: FileText,
-      path: '/leave-history',
-      description: '查看請假紀錄'
-    },
-    {
-      title: '通知中心',
-      icon: Bell,
-      path: '/notifications',
-      description: '查看個人通知'
     }
   ];
 
@@ -144,18 +79,14 @@ const Navigation = () => {
   return (
     <div className="border-b bg-secondary">
       <div className="flex h-16 items-center px-4">
-        <a href="/dashboard" className="ml-auto font-semibold">
+        <a href="/" className="ml-auto font-semibold">
           首頁
         </a>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="ml-auto flex items-center space-x-2 rounded-full border bg-muted p-2 pl-3">
               <Avatar className="h-8 w-8">
-                {currentUser?.imageUrl ? (
-                  <AvatarImage src={currentUser.imageUrl} alt={currentUser?.name} />
-                ) : (
-                  <AvatarFallback>{currentUser?.name?.charAt(0)}</AvatarFallback>
-                )}
+                <AvatarFallback>{currentUser?.name?.charAt(0)}</AvatarFallback>
               </Avatar>
               <span className="hidden font-medium md:block">{currentUser?.name}</span>
             </button>
@@ -165,13 +96,13 @@ const Navigation = () => {
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{currentUser?.name}</p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  {currentUser?.email}
+                  {currentUser?.role === 'admin' ? '管理員' : '員工'}
                 </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             {menuItems.map((item) => (
-              <DropdownMenuItem key={item.title} onClick={() => router.push(item.path)}>
+              <DropdownMenuItem key={item.title} onClick={() => navigate(item.path)}>
                 {item.title}
               </DropdownMenuItem>
             ))}

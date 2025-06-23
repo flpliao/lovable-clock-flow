@@ -13,7 +13,6 @@ import { Label } from '@/components/ui/label';
 import { AlertTriangle, Clock, Trash2, User, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTimeSlotOperations } from '@/components/timeslot/hooks/useTimeSlotOperations';
-import { useScheduleOperationsHandlers } from '../hooks/useScheduleOperationsHandlers';
 
 interface EditScheduleDialogProps {
   isOpen: boolean;
@@ -44,7 +43,6 @@ const EditScheduleDialog = ({
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
   const { timeSlots } = useTimeSlotOperations();
-  const { canManageUserSchedule } = useScheduleOperationsHandlers();
 
   React.useEffect(() => {
     if (schedule) {
@@ -53,11 +51,8 @@ const EditScheduleDialog = ({
     }
   }, [schedule]);
 
-  // 檢查是否可以編輯此排班
-  const canEdit = schedule ? canManageUserSchedule(schedule.userId) : false;
-
   const handleUpdate = async () => {
-    if (!schedule || !selectedTimeSlot || !selectedDate || !canEdit) return;
+    if (!schedule || !selectedTimeSlot || !selectedDate) return;
     
     const timeSlot = timeSlots.find(ts => ts.name === selectedTimeSlot);
     if (!timeSlot) {
@@ -108,7 +103,7 @@ const EditScheduleDialog = ({
   };
 
   const handleDelete = async () => {
-    if (!schedule || !canEdit) return;
+    if (!schedule) return;
     
     if (confirm('確定要刪除這個排班嗎？')) {
       try {
@@ -130,57 +125,6 @@ const EditScheduleDialog = ({
   };
 
   if (!schedule) return null;
-
-  // 如果沒有權限，顯示只讀模式
-  if (!canEdit) {
-    return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              查看排班
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <User className="h-4 w-4" />
-              <span>{getUserName(schedule.userId)}</span>
-            </div>
-            
-            <div className="space-y-2">
-              <Label className="text-sm font-medium flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                日期
-              </Label>
-              <div className="p-2 bg-gray-50 rounded-md text-sm">
-                {schedule.workDate}
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">班別類型</Label>
-              <div className="p-2 bg-gray-50 rounded-md text-sm">
-                {schedule.timeSlot} ({schedule.startTime} - {schedule.endTime})
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 p-3 bg-yellow-50 rounded-lg">
-              <AlertTriangle className="h-4 w-4 text-yellow-600" />
-              <span className="text-sm text-yellow-700">您沒有權限編輯此排班</span>
-            </div>
-            
-            <div className="flex justify-end pt-4">
-              <Button onClick={onClose} variant="outline">
-                關閉
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

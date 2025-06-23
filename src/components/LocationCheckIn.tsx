@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCheckIn } from '@/hooks/useCheckIn';
 import { useUser } from '@/contexts/UserContext';
 import { useDepartmentManagementContext } from '@/components/departments/DepartmentManagementContext';
@@ -29,6 +29,28 @@ const LocationCheckIn = () => {
     console.warn('DepartmentManagementContext not available, using empty departments array');
     departments = [];
   }
+
+  // 根據當前用戶的部門設定預設打卡位置
+  useEffect(() => {
+    if (currentUser && departments.length > 0) {
+      console.log('🔍 設定預設打卡位置 - 用戶部門:', currentUser.department);
+      
+      if (currentUser.department) {
+        // 查找用戶部門對應的部門ID
+        const userDepartment = departments.find(dept => dept.name === currentUser.department);
+        if (userDepartment && isDepartmentReadyForCheckIn(userDepartment)) {
+          console.log('✅ 找到用戶部門，設定為預設打卡位置:', userDepartment.name);
+          setSelectedDepartmentId(userDepartment.id);
+        } else {
+          console.log('⚠️ 用戶部門GPS未設定完成，預設為總公司');
+          setSelectedDepartmentId(null); // 總公司
+        }
+      } else {
+        console.log('📍 用戶沒有部門，預設為總公司');
+        setSelectedDepartmentId(null); // 總公司
+      }
+    }
+  }, [currentUser, departments]);
 
   const {
     loading,

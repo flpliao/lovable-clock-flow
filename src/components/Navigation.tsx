@@ -156,7 +156,7 @@ const Navigation = () => {
               </Avatar>
               <span className="hidden font-medium md:block">{currentUser?.name}</span>
             </button>
-          </Dropdown>
+          </DropdownMenuTrigger>
           <DropdownMenuContent align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">

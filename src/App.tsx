@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { UserProvider } from '@/contexts/UserContext';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
@@ -21,29 +23,30 @@ import MissedCheckin from './pages/MissedCheckin';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/check-in" element={<CheckIn />} />
-        <Route path="/leave-request" element={<LeaveRequest />} />
-        <Route path="/leave-history" element={<LeaveHistory />} />
-        <Route path="/company-management" element={<CompanyManagement />} />
-        <Route path="/staff-management" element={<StaffManagement />} />
-        <Route path="/announcements-management" element={<AnnouncementsManagement />} />
-        <Route path="/schedules-management" element={<SchedulesManagement />} />
-        <Route path="/approval-center" element={<ApprovalCenter />} />
-        <Route path="/notifications" element={<NotificationCenter />} />
-        <Route path="/attendance-management" element={<AttendanceManagement />} />
-        <Route path="/attendance-exception-management" element={<AttendanceExceptionManagement />} />
-        <Route path="/payroll-management" element={<PayrollManagement />} />
-        <Route path="/system-settings" element={<SystemSettings />} />
-        <Route path="/attendance-reports" element={<AttendanceReports />} />
-        <Route path="/missed-checkin" element={<MissedCheckin />} />
-        {/* 移除 /missed-checkin-management 路由，功能已整合到核准中心 */}
-      </Routes>
-    </Router>
+    <UserProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/check-in" element={<CheckIn />} />
+          <Route path="/leave-request" element={<LeaveRequest />} />
+          <Route path="/leave-history" element={<LeaveHistory />} />
+          <Route path="/company-management" element={<CompanyManagement />} />
+          <Route path="/staff-management" element={<StaffManagement />} />
+          <Route path="/announcements-management" element={<AnnouncementsManagement />} />
+          <Route path="/schedules-management" element={<SchedulesManagement />} />
+          <Route path="/approval-center" element={<ApprovalCenter />} />
+          <Route path="/notifications" element={<NotificationCenter />} />
+          <Route path="/attendance-management" element={<AttendanceManagement />} />
+          <Route path="/attendance-exception-management" element={<AttendanceExceptionManagement />} />
+          <Route path="/payroll-management" element={<PayrollManagement />} />
+          <Route path="/system-settings" element={<SystemSettings />} />
+          <Route path="/attendance-reports" element={<AttendanceReports />} />
+          <Route path="/missed-checkin" element={<MissedCheckin />} />
+        </Routes>
+      </Router>
+    </UserProvider>
   );
 }
 

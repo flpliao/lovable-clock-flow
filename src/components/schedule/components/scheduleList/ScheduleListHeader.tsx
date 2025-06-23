@@ -3,9 +3,9 @@ import React from 'react';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Users, Globe, Eye } from 'lucide-react';
+import { Users, Globe, Eye } from 'lucide-react';
 
-type ScheduleViewType = 'my' | 'subordinates' | 'all';
+type ScheduleViewType = 'subordinates' | 'all';
 
 interface ScheduleListHeaderProps {
   activeView: ScheduleViewType;
@@ -24,10 +24,9 @@ const ScheduleListHeader: React.FC<ScheduleListHeaderProps> = ({
 }) => {
   const getViewIcon = (view: ScheduleViewType) => {
     switch (view) {
-      case 'my': return <User className="h-4 w-4" />;
       case 'subordinates': return <Users className="h-4 w-4" />;
       case 'all': return <Globe className="h-4 w-4" />;
-      default: return <User className="h-4 w-4" />;
+      default: return <Users className="h-4 w-4" />;
     }
   };
 
@@ -36,8 +35,8 @@ const ScheduleListHeader: React.FC<ScheduleListHeaderProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <h4 className="text-white font-medium drop-shadow-md flex items-center gap-2">
-            <User className="h-4 w-4" />
-            我的排班記錄
+            <Users className="h-4 w-4" />
+            下屬排班記錄（快速查看）
           </h4>
         </div>
         <Button 
@@ -57,10 +56,6 @@ const ScheduleListHeader: React.FC<ScheduleListHeaderProps> = ({
   return (
     <div className="flex items-center justify-between mb-4">
       <TabsList className="bg-white/20 backdrop-blur-xl border-white/30">
-        <TabsTrigger value="my" className="flex items-center gap-2">
-          {getViewIcon('my')}
-          我的排班
-        </TabsTrigger>
         <TabsTrigger value="subordinates" className="flex items-center gap-2">
           {getViewIcon('subordinates')}
           <Eye className="h-4 w-4" />

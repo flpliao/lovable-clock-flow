@@ -74,7 +74,7 @@ export default function LeaveTypeManagement() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-100 flex items-center justify-center">
         <div className="backdrop-blur-xl bg-white/30 rounded-3xl p-8 shadow-2xl border border-white/20">
           <div className="text-slate-700 text-lg font-medium">載入中...</div>
         </div>
@@ -83,30 +83,32 @@ export default function LeaveTypeManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-100 relative">
       <LeaveTypeBackground />
 
-      <div className="container mx-auto space-y-8 py-8 px-4 relative z-10">
-        <LeaveTypePageHeader />
+      <div className="container mx-auto py-6 px-4 relative z-10">
+        <div className="space-y-6">
+          <LeaveTypePageHeader />
 
-        <LeaveTypeStatsCards stats={stats} />
+          <LeaveTypeStatsCards stats={stats} />
 
-        {/* 操作按鈕 */}
-        <div className="flex justify-end mb-8">
-          <Button 
-            onClick={handleAdd} 
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl px-8 py-3 font-semibold"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            新增假別
-          </Button>
+          {/* 操作按鈕區域 */}
+          <div className="flex justify-end">
+            <Button 
+              onClick={handleAdd} 
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-6 py-2.5 font-semibold"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              新增假別
+            </Button>
+          </div>
+
+          <LeaveTypeTable 
+            leaveTypes={leaveTypes} 
+            onEdit={handleEdit} 
+            onDelete={handleDeleteClick} 
+          />
         </div>
-
-        <LeaveTypeTable 
-          leaveTypes={leaveTypes} 
-          onEdit={handleEdit} 
-          onDelete={handleDeleteClick} 
-        />
 
         {/* 對話框 */}
         <LeaveTypeDialog 

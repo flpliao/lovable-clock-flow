@@ -243,19 +243,14 @@ const ApprovalCenter = () => {
     }
   };
 
-  // 載入忘記打卡申請 - 修正權限邏輯
+  // 載入忘記打卡申請
   const loadMissedCheckinRequests = async () => {
     if (!currentUser?.id) return;
 
     try {
-      console.log('🔍 載入待審核忘記打卡申請，當前用戶:', currentUser.id, currentUser.name, '角色:', currentUser.role);
+      console.log('🔍 載入待審核忘記打卡申請，當前用戶:', currentUser.id, currentUser.name);
       
-      // 檢查用戶是否為系統管理員
-      const isSystemAdmin = currentUser.role === 'admin' || 
-                           (currentUser.name === '廖俊雄' && 
-                            currentUser.id === '550e8400-e29b-41d4-a716-446655440001');
-      
-      let query = supabase
+      const { data, error } = await supabase
         .from('missed_checkin_requests')
         .select(`
           *,
@@ -263,49 +258,25 @@ const ApprovalCenter = () => {
             name,
             department,
             position,
-            branch_name,
-            supervisor_id
+            branch_name
           )
         `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
-
-      const { data, error } = await query;
 
       if (error) {
         console.error('❌ 載入忘記打卡申請失敗:', error);
         return;
       }
 
-      // 過濾申請：只顯示當前用戶為直屬主管或系統管理員的申請
-      const filteredData = (data || []).filter(item => {
-        const staff = Array.isArray(item.staff) ? item.staff[0] : item.staff;
-        
-        // 系統管理員可以看到所有申請
-        if (isSystemAdmin) {
-          console.log('🔐 系統管理員可查看申請:', item.id, '申請人:', staff?.name);
-          return true;
-        }
-        
-        // 一般主管只能看到直屬下屬的申請
-        if (staff && staff.supervisor_id === currentUser.id) {
-          console.log('🔐 直屬主管可查看申請:', item.id, '申請人:', staff.name, '主管:', currentUser.name);
-          return true;
-        }
-        
-        console.log('🔐 無權限查看申請:', item.id, '申請人:', staff?.name, '主管ID:', staff?.supervisor_id, '當前用戶ID:', currentUser.id);
-        return false;
-      });
-
-      const formattedData = filteredData.map(item => ({
+      const formattedData = (data || []).map(item => ({
         ...item,
         missed_type: item.missed_type as 'check_in' | 'check_out' | 'both',
         status: item.status as 'pending' | 'approved' | 'rejected',
         staff: Array.isArray(item.staff) ? item.staff[0] : item.staff
       }));
 
-      console.log('✅ 成功載入待審核忘記打卡申請:', formattedData.length, '筆（過濾後）');
-      console.log('📋 忘記打卡申請詳細資料:', formattedData);
+      console.log('✅ 成功載入待審核忘記打卡申請:', formattedData.length, '筆');
       setMissedCheckinRequests(formattedData);
     } catch (error) {
       console.error('❌ 載入忘記打卡申請時發生錯誤:', error);
@@ -458,67 +429,11 @@ const ApprovalCenter = () => {
     }
   };
 
-  // 處理忘記打卡申請的審核 - 添加權限檢查和通知功能
+  // 處理忘記打卡申請的審核
   const handleMissedCheckinApproval = async (requestId: string, action: 'approved' | 'rejected') => {
     if (!currentUser) return;
     
     try {
-      // 先查找該申請以驗證權限
-      const { data: requestData, error: fetchError } = await supabase
-        .from('missed_checkin_requests')
-        .select(`
-          *,
-          staff:staff_id (
-            name,
-            supervisor_id
-          )
-        `)
-        .eq('id', requestId)
-        .single();
-
-      if (fetchError) {
-        console.error('❌ 查找忘記打卡申請失敗:', fetchError);
-        toast({
-          title: "操作失敗",
-          description: "無法找到該申請記錄",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const staff = Array.isArray(requestData.staff) ? requestData.staff[0] : requestData.staff;
-      
-      // 檢查權限：系統管理員或直屬主管
-      const isSystemAdmin = currentUser.role === 'admin' || 
-                           (currentUser.name === '廖俊雄' && 
-                            currentUser.id === '550e8400-e29b-41d4-a716-446655440001');
-      const isDirectSupervisor = staff && staff.supervisor_id === currentUser.id;
-
-      if (!isSystemAdmin && !isDirectSupervisor) {
-        console.error('❌ 無權限審核此申請:', {
-          requestId,
-          applicantName: staff?.name,
-          supervisorId: staff?.supervisor_id,
-          currentUserId: currentUser.id,
-          currentUserRole: currentUser.role
-        });
-        toast({
-          title: "權限不足",
-          description: "您無權限審核此忘記打卡申請",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      console.log('🔐 權限驗證通過:', {
-        requestId,
-        action,
-        isSystemAdmin,
-        isDirectSupervisor,
-        applicantName: staff?.name,
-        approverName: currentUser.name
-      });
-
       const { error } = await supabase
         .from('missed_checkin_requests')
         .update({
@@ -531,32 +446,16 @@ const ApprovalCenter = () => {
 
       if (error) throw error;
 
-      // 發送通知給申請人
-      if (staff) {
-        const { error: notificationError } = await supabase.rpc('create_notification', {
-          p_user_id: requestData.staff_id,
-          p_title: `忘記打卡申請${action === 'approved' ? '已核准' : '被拒絕'}`,
-          p_message: `您於 ${format(new Date(requestData.request_date), 'yyyy/MM/dd')} 的忘記打卡申請已${action === 'approved' ? '核准' : '被拒絕'}。審核人：${currentUser.name}`,
-          p_type: 'missed_checkin'
-        });
-
-        if (notificationError) {
-          console.error('❌ 發送通知失敗:', notificationError);
-        } else {
-          console.log('✅ 通知已發送給申請人:', staff.name);
-        }
-      }
-
       toast({
         title: action === 'approved' ? "申請已核准" : "申請已拒絕",
-        description: `忘記打卡申請已${action === 'approved' ? '核准' : '拒絕'}，已通知申請人`
+        description: `忘記打卡申請已${action === 'approved' ? '核准' : '拒絕'}`
       });
 
       // 重新載入申請列表和統計
       setMissedCheckinRequests(prev => prev.filter(req => req.id !== requestId));
       loadApprovalStats();
     } catch (error) {
-      console.error('❌ 審核失敗:', error);
+      console.error('審核失敗:', error);
       toast({
         title: "審核失敗",
         description: "無法處理申請，請稍後重試",

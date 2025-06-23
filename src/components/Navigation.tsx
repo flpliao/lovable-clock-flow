@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { useUser } from '@/contexts/UserContext';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -30,12 +29,12 @@ import {
 } from "lucide-react";
 
 const Navigation = () => {
-  const { currentUser, resetUserState } = useUser();
-  const navigate = useNavigate();
+  const { currentUser, logout } = useUser();
+  const router = useRouter();
 
   const handleLogout = async () => {
-    resetUserState();
-    navigate('/login');
+    await logout();
+    router.push('/login');
   };
 
   const adminMenuItems = [
@@ -152,7 +151,11 @@ const Navigation = () => {
           <DropdownMenuTrigger asChild>
             <button className="ml-auto flex items-center space-x-2 rounded-full border bg-muted p-2 pl-3">
               <Avatar className="h-8 w-8">
-                <AvatarFallback>{currentUser?.name?.charAt(0)}</AvatarFallback>
+                {currentUser?.imageUrl ? (
+                  <AvatarImage src={currentUser.imageUrl} alt={currentUser?.name} />
+                ) : (
+                  <AvatarFallback>{currentUser?.name?.charAt(0)}</AvatarFallback>
+                )}
               </Avatar>
               <span className="hidden font-medium md:block">{currentUser?.name}</span>
             </button>
@@ -162,13 +165,13 @@ const Navigation = () => {
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{currentUser?.name}</p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  {currentUser?.role}
+                  {currentUser?.email}
                 </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             {menuItems.map((item) => (
-              <DropdownMenuItem key={item.title} onClick={() => navigate(item.path)}>
+              <DropdownMenuItem key={item.title} onClick={() => router.push(item.path)}>
                 {item.title}
               </DropdownMenuItem>
             ))}

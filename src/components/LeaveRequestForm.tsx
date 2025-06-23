@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -14,6 +13,8 @@ import { LeaveFormDetails } from '@/components/leave/LeaveFormDetails';
 import { LeaveApprovalWorkflow } from '@/components/leave/LeaveApprovalWorkflow';
 import { getApprovers } from '@/services/leaveRequestService';
 import { Send } from 'lucide-react';
+import { useLeaveFormValidation } from '@/hooks/useLeaveFormValidation';
+import { ValidationResultsSection } from '@/components/leave/ValidationResultsSection';
 
 interface LeaveRequestFormProps {
   onSubmit?: () => void;
@@ -32,6 +33,14 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
   });
 
   const { calculatedHours, selectedLeaveType } = useLeaveFormCalculations(form.watch);
+  
+  // 新增驗證邏輯
+  const validationResult = useLeaveFormValidation({
+    leave_type: selectedLeaveType || '',
+    start_date: form.watch('start_date'),
+    end_date: form.watch('end_date'),
+    hours: calculatedHours
+  });
 
   async function handleSubmit(data: LeaveFormValues) {
     if (!currentUser) return;
@@ -103,6 +112,14 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
               selectedLeaveType={selectedLeaveType}
             />
           </div>
+
+          {/* 驗證結果顯示 */}
+          {(validationResult.warnings.length > 0 || validationResult.errors.length > 0) && (
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+              <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">驗證結果</h3>
+              <ValidationResultsSection validationResult={validationResult} />
+            </div>
+          )}
           
           {/* 請假詳情 */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
@@ -123,7 +140,8 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
           <div className="flex justify-center pt-6">
             <Button 
               type="submit" 
-              className="w-full sm:w-auto px-8 py-3 backdrop-blur-xl bg-white/30 border border-white/40 text-white font-semibold shadow-lg hover:bg-white/50 transition-all duration-300 rounded-xl"
+              disabled={!validationResult.isValid}
+              className="w-full sm:w-auto px-8 py-3 backdrop-blur-xl bg-white/30 border border-white/40 text-white font-semibold shadow-lg hover:bg-white/50 transition-all duration-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send className="h-4 w-4 mr-2" />
               提交請假申請

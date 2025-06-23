@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Send } from 'lucide-react';
 import { Form } from '@/components/ui/form';
@@ -28,12 +27,18 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
   const selectedLeaveType = form.watch('leave_type');
 
-  // 模擬剩餘病假天數 (實際應該從後端獲取)
-  const getRemainingDays = (leaveType: string) => {
+  // 模擬剩餘病假天數和已使用天數 (實際應該從後端獲取)
+  const getLeaveData = (leaveType: string) => {
     if (leaveType === 'sick') {
-      return 27; // 假設還剩27天病假
+      return {
+        remainingDays: 27, // 假設還剩27天病假
+        usedDays: 3 // 假設已使用3天
+      };
     }
-    return undefined;
+    return {
+      remainingDays: undefined,
+      usedDays: 0
+    };
   };
 
   const onFormSubmit = async (data: any) => {
@@ -81,7 +86,8 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           {selectedLeaveType && (
             <LeaveTypeDetailCard 
               leaveType={selectedLeaveType}
-              remainingDays={getRemainingDays(selectedLeaveType)}
+              remainingDays={getLeaveData(selectedLeaveType).remainingDays}
+              usedDays={getLeaveData(selectedLeaveType).usedDays}
             />
           )}
 

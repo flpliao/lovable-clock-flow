@@ -8,9 +8,10 @@ import { AlertCircle, FileText, Calendar, DollarSign } from 'lucide-react';
 interface LeaveTypeDetailCardProps {
   leaveType: string;
   remainingDays?: number;
+  usedDays?: number; // 新增已使用天數參數
 }
 
-export function LeaveTypeDetailCard({ leaveType, remainingDays }: LeaveTypeDetailCardProps) {
+export function LeaveTypeDetailCard({ leaveType, remainingDays, usedDays = 0 }: LeaveTypeDetailCardProps) {
   const typeInfo = getLeaveTypeById(leaveType);
   
   if (!typeInfo) {
@@ -27,6 +28,17 @@ export function LeaveTypeDetailCard({ leaveType, remainingDays }: LeaveTypeDetai
   };
 
   const salaryInfo = getSalaryStatus();
+
+  // 計算剩餘次數邏輯：年度上限減去已使用次數
+  const calculateRemainingDays = () => {
+    if (typeInfo.maxDaysPerYear) {
+      const remaining = typeInfo.maxDaysPerYear - usedDays;
+      return Math.max(0, remaining); // 確保不會顯示負數
+    }
+    return remainingDays;
+  };
+
+  const calculatedRemainingDays = calculateRemainingDays();
 
   return (
     <Card className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg">
@@ -71,21 +83,19 @@ export function LeaveTypeDetailCard({ leaveType, remainingDays }: LeaveTypeDetai
           </Badge>
         </div>
 
-        {/* 剩餘次數/天數 */}
-        {(remainingDays !== undefined || typeInfo.maxDaysPerYear) && (
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-white/80" />
-            <span className="text-white/80 text-sm">剩餘次數：</span>
-            <Badge className="bg-blue-500/20 text-blue-700 border-0">
-              {remainingDays !== undefined 
-                ? `${remainingDays} 天` 
-                : typeInfo.maxDaysPerYear 
-                  ? `年度上限 ${typeInfo.maxDaysPerYear} 天`
-                  : '無限制'
-              }
-            </Badge>
-          </div>
-        )}
+        {/* 剩餘次數/天數 - 更新計算邏輯 */}
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-white/80" />
+          <span className="text-white/80 text-sm">剩餘次數：</span>
+          <Badge className="bg-blue-500/20 text-blue-700 border-0">
+            {typeInfo.maxDaysPerYear 
+              ? `${calculatedRemainingDays} 天 (年度上限 ${typeInfo.maxDaysPerYear} 天)`
+              : calculatedRemainingDays !== undefined 
+                ? `${calculatedRemainingDays} 天` 
+                : '無限制'
+            }
+          </Badge>
+        </div>
 
         {/* 特殊提醒 */}
         {leaveType === 'sick' && (

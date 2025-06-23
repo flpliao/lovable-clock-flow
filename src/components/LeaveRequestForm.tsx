@@ -47,12 +47,18 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
     hours: calculatedHours
   });
 
-  // 模擬剩餘病假天數 (實際應該從後端獲取)
-  const getRemainingDays = (leaveType: string) => {
+  // 模擬剩餘病假天數和已使用天數 (實際應該從後端獲取)
+  const getLeaveData = (leaveType: string) => {
     if (leaveType === 'sick') {
-      return 27; // 假設還剩27天病假
+      return {
+        remainingDays: 27, // 假設還剩27天病假
+        usedDays: 3 // 假設已使用3天
+      };
     }
-    return undefined;
+    return {
+      remainingDays: undefined,
+      usedDays: 0
+    };
   };
 
   async function handleSubmit(data: LeaveFormValues) {
@@ -156,7 +162,8 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
           {selectedLeaveType && (
             <LeaveTypeDetailCard 
               leaveType={selectedLeaveType}
-              remainingDays={getRemainingDays(selectedLeaveType)}
+              remainingDays={getLeaveData(selectedLeaveType).remainingDays}
+              usedDays={getLeaveData(selectedLeaveType).usedDays}
             />
           )}
 

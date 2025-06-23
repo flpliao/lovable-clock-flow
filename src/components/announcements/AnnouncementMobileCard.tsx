@@ -1,118 +1,131 @@
 
-import React from 'react';
-import { Calendar, User, Eye, FileText, Pin, Edit } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import React, { useState } from 'react';
+import { Eye, Calendar, User, Pin, FileText, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { CompanyAnnouncement } from '@/types/announcement';
 import { formatAnnouncementDate } from '@/utils/announcementUtils';
+import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
+import { visionProStyles } from '@/utils/visionProStyles';
 
 interface AnnouncementMobileCardProps {
   announcement: CompanyAnnouncement;
   onView: (announcement: CompanyAnnouncement) => void;
   onEdit: (announcement: CompanyAnnouncement) => void;
+  onDelete?: (announcementId: string) => void;
 }
 
 const AnnouncementMobileCard: React.FC<AnnouncementMobileCardProps> = ({
   announcement,
   onView,
-  onEdit
+  onEdit,
+  onDelete
 }) => {
-  const getCategoryColor = (category?: string) => {
-    switch (category) {
-      case 'HR':
-        return 'bg-blue-500/20 text-blue-700 border-blue-300/30';
-      case 'Administration':
-        return 'bg-orange-500/20 text-orange-700 border-orange-300/30';
-      case 'Meeting':
-        return 'bg-green-500/20 text-green-700 border-green-300/30';
-      case 'Official':
-        return 'bg-red-500/20 text-red-700 border-red-300/30';
-      default:
-        return 'bg-gray-500/20 text-gray-700 border-gray-300/30';
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (onDelete) {
+      onDelete(announcement.id);
+      setDeleteDialogOpen(false);
     }
   };
 
   return (
-    <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6 space-y-4">
-      {/* Header with badges */}
-      <div className="flex flex-wrap items-center gap-2">
-        {announcement.is_pinned && (
-          <Badge className="text-xs flex items-center gap-1 font-medium bg-yellow-500/20 text-yellow-700 border-yellow-300/30 backdrop-blur-xl">
-            <Pin className="h-3 w-3" />
-            置頂
-          </Badge>
-        )}
-        
-        {announcement.category && (
-          <Badge className={`text-xs font-medium backdrop-blur-xl ${getCategoryColor(announcement.category)}`}>
-            {announcement.category}
-          </Badge>
-        )}
-        
-        {announcement.file && (
-          <Badge className="text-xs flex items-center gap-1 bg-purple-500/20 text-purple-700 border-purple-300/30 backdrop-blur-xl font-medium">
-            <FileText className="h-3 w-3" />
-            附件
-          </Badge>
-        )}
-        
-        {announcement.is_active ? (
-          <Badge className="text-xs font-medium bg-green-500/20 text-green-700 border-green-300/30 backdrop-blur-xl">
-            啟用
-          </Badge>
-        ) : (
-          <Badge className="text-xs font-medium bg-gray-500/20 text-gray-700 border-gray-300/30 backdrop-blur-xl">
-            停用
-          </Badge>
-        )}
-      </div>
-
-      {/* Title */}
-      <h3 className="font-bold text-white text-lg line-clamp-2 drop-shadow-md">
-        {announcement.title}
-      </h3>
-
-      {/* Content preview */}
-      <p className="text-white/80 text-sm leading-relaxed font-medium line-clamp-2 drop-shadow-sm">
-        {announcement.content}
-      </p>
-
-      {/* Meta info */}
-      <div className="flex flex-col gap-2 text-sm text-white/80 font-medium">
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-white/40 rounded-lg backdrop-blur-xl">
-            <User className="h-4 w-4" />
+    <>
+      <div className={`${visionProStyles.glassBackground} rounded-2xl p-4 border border-white/30 shadow-xl backdrop-blur-3xl`}>
+        <div className="space-y-3">
+          {/* 標題和置頂標記 */}
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-semibold text-white drop-shadow-md text-base line-clamp-2 flex-1">
+              {announcement.title}
+            </h3>
+            {announcement.is_pinned && (
+              <Badge className="bg-yellow-500/80 text-white border-yellow-400/50 font-medium flex-shrink-0">
+                <Pin className="h-3 w-3 mr-1" />
+                置頂
+              </Badge>
+            )}
           </div>
-          <span>{announcement.created_by.name}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-white/40 rounded-lg backdrop-blur-xl">
-            <Calendar className="h-4 w-4" />
+
+          {/* 分類和狀態 */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {announcement.category && (
+              <Badge className={`${visionProStyles.glassButton} border-white/40 text-white font-medium text-xs`}>
+                {announcement.category}
+              </Badge>
+            )}
+            <Badge className={
+              announcement.is_active 
+                ? "bg-green-500/80 text-white border-green-400/50 font-medium text-xs"
+                : `${visionProStyles.glassButton} border-white/40 text-white/60 font-medium text-xs`
+            }>
+              {announcement.is_active ? '啟用' : '停用'}
+            </Badge>
+            {announcement.file && (
+              <Badge className={`${visionProStyles.glassButton} border-white/40 text-white font-medium text-xs`}>
+                <FileText className="h-3 w-3 mr-1" />
+                有附件
+              </Badge>
+            )}
           </div>
-          <span>{formatAnnouncementDate(announcement.created_at)}</span>
+
+          {/* 發布資訊 */}
+          <div className="space-y-2 text-sm text-white/70">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 flex-shrink-0" />
+              <span>{formatAnnouncementDate(announcement.created_at)}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 flex-shrink-0" />
+              <span>{announcement.created_by.name}</span>
+            </div>
+          </div>
+
+          {/* 操作按鈕 */}
+          <div className="flex gap-2 pt-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onView(announcement)}
+              className={`flex-1 ${visionProStyles.glassButton} border-white/40 text-white hover:bg-white/20 transition-colors duration-200`}
+            >
+              <Eye className="h-4 w-4 mr-1" />
+              查看
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onEdit(announcement)}
+              className={`flex-1 ${visionProStyles.glassButton} border-white/40 text-white hover:bg-white/20 transition-colors duration-200`}
+            >
+              編輯
+            </Button>
+            {onDelete && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleDeleteClick}
+                className={`${visionProStyles.glassButton} border-red-400/40 text-red-300 hover:bg-red-500/20 transition-colors duration-200`}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex gap-2 pt-2">
-        <Button 
-          size="sm" 
-          className="flex-1 h-10 text-sm bg-white/40 text-gray-800 border-white/30 backdrop-blur-xl font-semibold hover:bg-white/60 transition-all duration-300 shadow-lg rounded-xl"
-          onClick={() => onView(announcement)}
-        >
-          <Eye className="h-4 w-4 mr-2" />
-          查看
-        </Button>
-        <Button 
-          size="sm" 
-          className="flex-1 h-10 text-sm bg-white/40 text-gray-800 border-white/30 backdrop-blur-xl font-semibold hover:bg-white/60 transition-all duration-300 shadow-lg rounded-xl"
-          onClick={() => onEdit(announcement)}
-        >
-          <Edit className="h-4 w-4 mr-2" />
-          編輯
-        </Button>
-      </div>
-    </div>
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        title="確認刪除公告"
+        description={`確定要刪除公告「${announcement.title}」嗎？此操作無法復原。`}
+      />
+    </>
   );
 };
 

@@ -90,6 +90,31 @@ const AnnouncementManagement: React.FC = () => {
     setIsFormOpen(true);
   };
 
+  const handleDeleteAnnouncement = async (announcementId: string) => {
+    try {
+      const success = await deleteAnnouncement(announcementId);
+      if (success) {
+        toast({
+          title: "刪除成功",
+          description: "公告已成功刪除",
+        });
+      } else {
+        toast({
+          title: "刪除失敗",
+          description: "無法刪除公告，請重試",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting announcement:', error);
+      toast({
+        title: "刪除失敗",
+        description: "刪除公告時發生錯誤",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (!hasAdminAccess) {
     return (
       <div className="text-center py-12">
@@ -140,6 +165,7 @@ const AnnouncementManagement: React.FC = () => {
         announcements={filteredAnnouncements}
         onView={handleViewAnnouncement}
         onEdit={handleEditAnnouncement}
+        onDelete={handleDeleteAnnouncement}
       />
 
       {/* Create/Edit Form */}

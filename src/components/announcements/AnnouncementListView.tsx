@@ -10,12 +10,14 @@ interface AnnouncementListViewProps {
   announcements: CompanyAnnouncement[];
   onView: (announcement: CompanyAnnouncement) => void;
   onEdit: (announcement: CompanyAnnouncement) => void;
+  onDelete?: (announcementId: string) => void;
 }
 
 const AnnouncementListView: React.FC<AnnouncementListViewProps> = ({
   announcements,
   onView,
-  onEdit
+  onEdit,
+  onDelete
 }) => {
   const isMobile = useIsMobile();
 
@@ -36,6 +38,7 @@ const AnnouncementListView: React.FC<AnnouncementListViewProps> = ({
             announcement={announcement}
             onView={onView}
             onEdit={onEdit}
+            onDelete={onDelete}
           />
         ))}
       </div>
@@ -47,6 +50,7 @@ const AnnouncementListView: React.FC<AnnouncementListViewProps> = ({
       announcements={announcements}
       onView={onView}
       onEdit={onEdit}
+      onDelete={onDelete}
     />
   );
 };

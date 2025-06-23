@@ -17,7 +17,6 @@ import LeaveRequest from './pages/LeaveRequest';
 import PersonalAttendance from './pages/PersonalAttendance';
 import AnnouncementManagementPage from './pages/AnnouncementManagementPage';
 import CompanyAnnouncements from './pages/CompanyAnnouncements';
-import LeaveApprovalView from './pages/LeaveApprovalView';
 import ApprovalCenter from './pages/ApprovalCenter';
 import NotFound from './pages/NotFound';
 import StaffDashboard from './pages/StaffDashboard';
@@ -50,7 +49,6 @@ function App() {
                 <Route path="/personal-attendance" element={<PersonalAttendance />} />
                 <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
                 <Route path="/company-announcements" element={<CompanyAnnouncements />} />
-                <Route path="/leave-approval" element={<LeaveApprovalView />} />
                 <Route path="/approval-center" element={<ApprovalCenter />} />
                 <Route path="/staff-dashboard" element={<StaffDashboard />} />
                 <Route path="/company-branch-management" element={<CompanyBranchManagement />} />

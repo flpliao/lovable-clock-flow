@@ -743,14 +743,19 @@ export type Database = {
           code: string
           created_at: string
           description: string | null
+          gender_restriction: string | null
           id: string
           is_active: boolean
           is_paid: boolean
+          is_system_default: boolean
+          max_days_per_month: number | null
           max_days_per_year: number | null
           name_en: string
           name_zh: string
+          requires_approval: boolean
           requires_attachment: boolean
           sort_order: number
+          special_rules: Json | null
           updated_at: string
         }
         Insert: {
@@ -758,14 +763,19 @@ export type Database = {
           code: string
           created_at?: string
           description?: string | null
+          gender_restriction?: string | null
           id?: string
           is_active?: boolean
           is_paid?: boolean
+          is_system_default?: boolean
+          max_days_per_month?: number | null
           max_days_per_year?: number | null
           name_en: string
           name_zh: string
+          requires_approval?: boolean
           requires_attachment?: boolean
           sort_order?: number
+          special_rules?: Json | null
           updated_at?: string
         }
         Update: {
@@ -773,14 +783,19 @@ export type Database = {
           code?: string
           created_at?: string
           description?: string | null
+          gender_restriction?: string | null
           id?: string
           is_active?: boolean
           is_paid?: boolean
+          is_system_default?: boolean
+          max_days_per_month?: number | null
           max_days_per_year?: number | null
           name_en?: string
           name_zh?: string
+          requires_approval?: boolean
           requires_attachment?: boolean
           sort_order?: number
+          special_rules?: Json | null
           updated_at?: string
         }
         Relationships: []

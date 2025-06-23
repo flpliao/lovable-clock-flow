@@ -112,7 +112,7 @@ export function LeaveDateSelector({ form, calculatedHours }: LeaveDateSelectorPr
           </p>
           {form.watch('leave_type') === 'annual' && calculatedHours > 0 && (
             <p className="text-white/80 mt-1 text-sm drop-shadow-sm">
-              * 以工作日計算，每個工作天 8 小時，不含週末（時區：Asia/Taipei +08:00）
+              * 以工作日計算，每個工作天 8 小時，不含週末（使用本地時間）
             </p>
           )}
         </div>

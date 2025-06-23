@@ -1,27 +1,107 @@
+import {
+  Home,
+  Calendar,
+  FileText,
+  Settings,
+  Users,
+  Building2,
+  BadgeCheck,
+  Megaphone,
+  MapPin,
+  Clock
+} from 'lucide-react';
 
-import { Home, Calendar, FileText, Users, Building, Settings, Clock, Briefcase, MessageSquare, Megaphone, CalendarDays, CheckCircle } from 'lucide-react';
-
-export interface MenuItem {
-  path: string;
+interface MenuItem {
   label: string;
+  href: string;
   icon: any;
-  public: boolean;
-  adminOnly?: boolean;
+  permission: string;
 }
 
-export const menuItems: MenuItem[] = [
-  { path: '/', label: '首頁', icon: Home, public: false },
-  { path: '/personal-attendance', label: '個人出勤', icon: Clock, public: false },
-  { path: '/leave-request', label: '請假申請', icon: FileText, public: false },
-  { path: '/approval-center', label: '核准中心', icon: CheckCircle, public: false },
-  { path: '/scheduling', label: '排班管理', icon: Calendar, public: false },
-  { path: '/overtime-management', label: '加班管理', icon: Briefcase, public: false },
-  { path: '/holiday-management', label: '假日管理', icon: CalendarDays, public: false, adminOnly: true },
-  { path: '/leave-type-management', label: '請假假別管理', icon: FileText, public: false, adminOnly: true },
-  { path: '/hr-management', label: 'HR管理', icon: Users, public: false, adminOnly: true },
-  { path: '/company-announcements', label: '公司公告', icon: MessageSquare, public: false },
-  { path: '/announcement-management', label: '公告管理', icon: Megaphone, public: false, adminOnly: true },
-  { path: '/personnel-management', label: '人員管理', icon: Users, public: false, adminOnly: true },
-  { path: '/company-branch-management', label: '公司部門管理', icon: Building, public: false, adminOnly: true },
-  { path: '/system-settings', label: '系統設定', icon: Settings, public: false, adminOnly: true }
-];
+export const getMenuItems = (userRole: string) => {
+  const baseMenuItems: MenuItem[] = [
+    {
+      label: '首頁',
+      href: '/',
+      icon: Home,
+      permission: 'view_dashboard'
+    },
+    {
+      label: '打卡',
+      href: '/check-in',
+      icon: MapPin,
+      permission: 'checkin'
+    },
+    {
+      label: '個人出勤',
+      href: '/personal-attendance',
+      icon: Calendar,
+      permission: 'view_personal_attendance'
+    },
+    {
+      label: '忘記打卡管理',
+      href: '/missed-checkin-management',
+      icon: Clock,
+      permission: 'view_personal_attendance'
+    },
+    {
+      label: '請假申請',
+      href: '/leave-request',
+      icon: FileText,
+      permission: 'submit_leave_request'
+    },
+    {
+      label: '公司公告',
+      href: '/company-announcements',
+      icon: Megaphone,
+      permission: 'view_announcements'
+    }
+  ];
+
+  const managementMenuItems: MenuItem[] = [
+    {
+      label: '員工管理',
+      href: '/staff-management',
+      icon: Users,
+      permission: 'manage_staff'
+    },
+    {
+      label: '部門管理',
+      href: '/department-management',
+      icon: Building2,
+      permission: 'manage_departments'
+    },
+    {
+      label: '排班管理',
+      href: '/schedule-management',
+      icon: Calendar,
+      permission: 'manage_schedules'
+    },
+    {
+      label: '核准中心',
+      href: '/approval-center',
+      icon: BadgeCheck,
+      permission: 'approve_requests'
+    },
+    {
+      label: '薪資管理',
+      href: '/payroll-management',
+      icon: 'LucideMoney',
+      permission: 'manage_payroll'
+    },
+    {
+      label: '系統設定',
+      href: '/system-settings',
+      icon: Settings,
+      permission: 'manage_system_settings'
+    }
+  ];
+
+  let allowedItems = baseMenuItems;
+
+  if (userRole === 'admin' || userRole === 'manager') {
+    allowedItems = [...allowedItems, ...managementMenuItems];
+  }
+
+  return allowedItems.sort((a, b) => a.label.localeCompare(b.label));
+};

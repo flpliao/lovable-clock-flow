@@ -458,7 +458,7 @@ const ApprovalCenter = () => {
     }
   };
 
-  // 處理忘記打卡申請的審核 - 添加權限檢查
+  // 處理忘記打卡申請的審核 - 添加權限檢查和通知功能
   const handleMissedCheckinApproval = async (requestId: string, action: 'approved' | 'rejected') => {
     if (!currentUser) return;
     
@@ -531,9 +531,25 @@ const ApprovalCenter = () => {
 
       if (error) throw error;
 
+      // 發送通知給申請人
+      if (staff) {
+        const { error: notificationError } = await supabase.rpc('create_notification', {
+          p_user_id: requestData.staff_id,
+          p_title: `忘記打卡申請${action === 'approved' ? '已核准' : '被拒絕'}`,
+          p_message: `您於 ${format(new Date(requestData.request_date), 'yyyy/MM/dd')} 的忘記打卡申請已${action === 'approved' ? '核准' : '被拒絕'}。審核人：${currentUser.name}`,
+          p_type: 'missed_checkin'
+        });
+
+        if (notificationError) {
+          console.error('❌ 發送通知失敗:', notificationError);
+        } else {
+          console.log('✅ 通知已發送給申請人:', staff.name);
+        }
+      }
+
       toast({
         title: action === 'approved' ? "申請已核准" : "申請已拒絕",
-        description: `忘記打卡申請已${action === 'approved' ? '核准' : '拒絕'}`
+        description: `忘記打卡申請已${action === 'approved' ? '核准' : '拒絕'}，已通知申請人`
       });
 
       // 重新載入申請列表和統計

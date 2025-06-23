@@ -1,37 +1,34 @@
 
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
-import { supabase } from '@/integrations/supabase/client';
 import { MissedCheckinRequest } from '@/types/missedCheckin';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Calendar, Clock, User, CheckCircle, XCircle, Building2, AlertCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, XCircle, Clock, User, Calendar, FileText, RefreshCw, Plus } from 'lucide-react';
 import { format } from 'date-fns';
-import { zhTW } from 'date-fns/locale';
-import { NotificationDatabaseOperations } from '@/services/notifications';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { MissedCheckinDialog } from '@/components/check-in/MissedCheckinDialog';
 
 const MissedCheckinManagement = () => {
-  const { currentUser, isAdmin, isManager } = useUser();
+  const { currentUser } = useUser();
   const { toast } = useToast();
   const [requests, setRequests] = useState<MissedCheckinRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState<MissedCheckinRequest | null>(null);
-  const [approvalComment, setApprovalComment] = useState('');
-  const [actionLoading, setActionLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
 
+  // 載入使用者的忘記打卡申請記錄
   const loadRequests = async () => {
-    if (!currentUser) {
-      console.log('沒有當前用戶，跳過載入');
-      setLoading(false);
+    if (!currentUser?.id) {
+      setIsLoading(false);
       return;
     }
 
+    console.log('🔍 載入忘記打卡申請記錄，當前用戶:', currentUser.id, currentUser.name);
+
     try {
-      console.log('開始載入忘記打卡申請，用戶:', currentUser.name);
+      setRefreshing(true);
       
       const { data, error } = await supabase
         .from('missed_checkin_requests')
@@ -44,18 +41,16 @@ const MissedCheckinManagement = () => {
             branch_name
           )
         `)
+        .eq('staff_id', currentUser.id)
         .order('created_at', { ascending: false });
 
-      console.log('Supabase 查詢結果:', { data, error });
-
       if (error) {
-        console.error('載入申請失敗:', error);
+        console.error('❌ 載入忘記打卡申請失敗:', error);
         toast({
           title: "載入失敗",
-          description: `無法載入忘記打卡申請: ${error.message}`,
+          description: "無法載入忘記打卡申請記錄",
           variant: "destructive"
         });
-        setRequests([]);
         return;
       }
 
@@ -66,110 +61,26 @@ const MissedCheckinManagement = () => {
         staff: Array.isArray(item.staff) ? item.staff[0] : item.staff
       }));
 
-      console.log('格式化後的資料:', formattedData);
+      console.log('✅ 成功載入忘記打卡申請記錄:', formattedData.length, '筆');
       setRequests(formattedData);
-      
     } catch (error) {
-      console.error('載入申請時發生錯誤:', error);
+      console.error('❌ 載入忘記打卡申請時發生錯誤:', error);
       toast({
         title: "載入失敗",
         description: "載入忘記打卡申請時發生錯誤",
         variant: "destructive"
       });
-      setRequests([]);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    console.log('MissedCheckinManagement useEffect:', {
-      currentUser: currentUser?.name,
-      isAdmin: isAdmin(),
-      isManager: isManager()
-    });
-    
-    if (currentUser) {
+    if (currentUser?.id) {
       loadRequests();
-    } else {
-      setLoading(false);
     }
-  }, [currentUser]);
-
-  const handleApproval = async (requestId: string, action: 'approved' | 'rejected') => {
-    if (!currentUser) return;
-    
-    setActionLoading(true);
-    try {
-      const { data: updatedRequest, error } = await supabase
-        .from('missed_checkin_requests')
-        .update({
-          status: action,
-          approved_by: currentUser.id,
-          approval_comment: approvalComment,
-          approval_date: new Date().toISOString()
-        })
-        .eq('id', requestId)
-        .select(`
-          *,
-          staff:staff_id (
-            name,
-            department,
-            position,
-            branch_name
-          )
-        `)
-        .single();
-
-      if (error) throw error;
-
-      // 發送通知給申請人
-      await createApplicantNotification(updatedRequest, action);
-
-      toast({
-        title: action === 'approved' ? "申請已核准" : "申請已拒絕",
-        description: `忘記打卡申請已${action === 'approved' ? '核准' : '拒絕'}`
-      });
-
-      // 重新載入申請列表
-      loadRequests();
-      setSelectedRequest(null);
-      setApprovalComment('');
-    } catch (error) {
-      console.error('審核失敗:', error);
-      toast({
-        title: "審核失敗",
-        description: "無法處理申請，請稍後重試",
-        variant: "destructive"
-      });
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const createApplicantNotification = async (requestData: any, action: 'approved' | 'rejected') => {
-    try {
-      const staffInfo = Array.isArray(requestData.staff) ? requestData.staff[0] : requestData.staff;
-      const actionText = action === 'approved' ? '已核准' : '已被退回';
-      
-      await NotificationDatabaseOperations.addNotification(requestData.staff_id, {
-        title: '忘記打卡申請結果',
-        message: `您的忘記打卡申請${actionText} (${requestData.request_date})`,
-        type: 'missed_checkin_approval',
-        data: {
-          missedCheckinRequestId: requestData.id,
-          actionRequired: false,
-          applicantName: staffInfo?.name,
-          requestDate: requestData.request_date,
-          missedType: requestData.missed_type
-        }
-      });
-
-      console.log(`已發送忘記打卡申請結果通知給 ${staffInfo?.name}`);
-    } catch (error) {
-      console.error('創建申請人通知失敗:', error);
-    }
-  };
+  }, [currentUser?.id]);
 
   const getMissedTypeText = (type: string) => {
     switch (type) {
@@ -184,247 +95,232 @@ const MissedCheckinManagement = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">待審核</Badge>;
       case 'approved':
-        return <Badge className="bg-green-50 text-green-700 border-green-200">已核准</Badge>;
+        return 'bg-green-500';
       case 'rejected':
-        return <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-200">已退回</Badge>;
+        return 'bg-red-500';
+      case 'pending':
+        return 'bg-yellow-500';
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return 'bg-gray-500';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return '已核准';
+      case 'rejected':
+        return '已拒絕';
+      case 'pending':
+        return '待審核';
+      default:
+        return status;
     }
   };
 
   const formatTime = (timeString?: string) => {
     if (!timeString) return '-';
-    return format(new Date(timeString), 'HH:mm', { locale: zhTW });
+    return format(new Date(timeString), 'HH:mm');
   };
 
-  // 權限檢查
+  const refreshData = () => {
+    loadRequests();
+  };
+
+  const handleAddSuccess = () => {
+    setShowAddDialog(false);
+    loadRequests();
+  };
+
   if (!currentUser) {
     return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardContent className="text-center p-6">
-            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">請先登入以查看此頁面</p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-8">
+              <h1 className="text-2xl font-bold text-white mb-4">請先登入</h1>
+              <p className="text-white/80">您需要登入系統才能查看忘記打卡申請記錄</p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden">
-      {/* 背景層 */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
-      
-      <div className="relative z-10 w-full min-h-screen pt-20 pb-6">
-        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto py-6">
-          {/* 標題區域 */}
-          <div className="mb-6 text-center">
-            <div className="bg-white/90 backdrop-blur-xl border border-white/30 shadow-xl rounded-2xl p-6">
-              <div className="flex items-center justify-center gap-3 mb-2">
-                <Clock className="h-8 w-8 text-blue-600" />
-                <h1 className="text-2xl font-bold text-gray-800">忘記打卡申請管理</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pb-6">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* 頁面標題 */}
+          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white drop-shadow-md">忘記打卡管理</h1>
+                  <p className="text-white/80 font-medium drop-shadow-sm">Missed Check-in Management - 查看申請記錄與狀態</p>
+                </div>
               </div>
-              <p className="text-gray-600">管理員工忘記打卡申請</p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowAddDialog(true)}
+                  className="bg-green-500 hover:bg-green-600 text-white border-0"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  新增申請
+                </Button>
+                <Button
+                  onClick={refreshData}
+                  disabled={refreshing}
+                  className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                  重新整理
+                </Button>
+              </div>
             </div>
           </div>
 
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="bg-white/90 backdrop-blur-xl border border-white/30 shadow-xl rounded-2xl p-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">載入申請中...</p>
-              </div>
+          {/* 統計資訊 */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 text-center">
+              <div className="text-3xl font-bold text-white mb-2">{requests.length}</div>
+              <div className="text-white/80 text-sm font-medium">總申請數</div>
             </div>
-          ) : requests.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="bg-white/90 backdrop-blur-xl border border-white/30 shadow-xl rounded-2xl p-8">
-                <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-700 mb-2">目前沒有申請記錄</h3>
-                <p className="text-gray-500">還沒有員工提交忘記打卡申請</p>
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 text-center">
+              <div className="text-3xl font-bold text-yellow-300 mb-2">
+                {requests.filter(req => req.status === 'pending').length}
               </div>
+              <div className="text-white/80 text-sm font-medium">待審核</div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {requests.map((request) => (
-                <Card key={request.id} className="bg-white/95 backdrop-blur-xl border border-white/30 shadow-xl rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300">
-                  <CardContent className="p-6">
-                    {/* 申請狀態和員工信息 */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                          <User className="h-6 w-6 text-blue-600" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-800 text-lg">{request.staff?.name || '未知員工'}</h3>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Building2 className="h-4 w-4" />
-                            <span>{request.staff?.department || '未知部門'}</span>
-                          </div>
-                        </div>
-                      </div>
-                      {getStatusBadge(request.status)}
-                    </div>
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 text-center">
+              <div className="text-3xl font-bold text-green-300 mb-2">
+                {requests.filter(req => req.status === 'approved').length}
+              </div>
+              <div className="text-white/80 text-sm font-medium">已核准</div>
+            </div>
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 text-center">
+              <div className="text-3xl font-bold text-red-300 mb-2">
+                {requests.filter(req => req.status === 'rejected').length}
+              </div>
+              <div className="text-white/80 text-sm font-medium">已拒絕</div>
+            </div>
+          </div>
 
-                    {/* 申請詳情 */}
-                    <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                      <div className="grid grid-cols-1 gap-3">
-                        <div className="flex items-center gap-2">
-                          <AlertCircle className="h-4 w-4 text-orange-500" />
-                          <span className="font-medium text-gray-700">申請類型：</span>
-                          <Badge variant="outline" className="bg-orange-50 text-orange-700">
-                            {getMissedTypeText(request.missed_type)}
+          {/* 申請記錄列表 */}
+          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+            <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">我的忘記打卡申請記錄</h2>
+            
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+                <p className="text-white/80">載入中...</p>
+              </div>
+            ) : requests.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FileText className="w-8 h-8 text-white/60" />
+                </div>
+                <p className="text-white font-medium drop-shadow-sm">目前沒有忘記打卡申請記錄</p>
+                <p className="text-white/80 mt-1 font-medium drop-shadow-sm">點擊「新增申請」來建立您的第一筆申請</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {requests.map((request) => (
+                  <div key={request.id} className="bg-white/10 rounded-2xl p-6 border border-white/20">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3">
+                          <Badge className={`${getStatusColor(request.status)} text-white`}>
+                            {getStatusText(request.status)}
                           </Badge>
+                          <h3 className="text-lg font-semibold text-white">
+                            {getMissedTypeText(request.missed_type)}
+                          </h3>
                         </div>
                         
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-blue-500" />
-                          <span className="font-medium text-gray-700">申請日期：</span>
-                          <span className="text-gray-600">
-                            {format(new Date(request.request_date), 'yyyy年MM月dd日', { locale: zhTW })}
-                          </span>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                          <div>
+                            <span className="text-white/70">申請日期</span>
+                            <div className="text-white font-medium">
+                              {format(new Date(request.request_date), 'yyyy/MM/dd')}
+                            </div>
+                          </div>
+                          {request.requested_check_in_time && (
+                            <div>
+                              <span className="text-white/70">上班時間</span>
+                              <div className="text-white font-medium">{formatTime(request.requested_check_in_time)}</div>
+                            </div>
+                          )}
+                          {request.requested_check_out_time && (
+                            <div>
+                              <span className="text-white/70">下班時間</span>
+                              <div className="text-white font-medium">{formatTime(request.requested_check_out_time)}</div>
+                            </div>
+                          )}
+                          <div>
+                            <span className="text-white/70">申請時間</span>
+                            <div className="text-white font-medium">
+                              {format(new Date(request.created_at), 'MM/dd HH:mm')}
+                            </div>
+                          </div>
                         </div>
 
-                        {request.requested_check_in_time && (
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-green-500" />
-                            <span className="font-medium text-gray-700">上班時間：</span>
-                            <span className="text-gray-600">{formatTime(request.requested_check_in_time)}</span>
+                        <div className="mt-3 p-3 bg-white/10 rounded-lg">
+                          <div className="flex items-center gap-2 mb-1">
+                            <FileText className="h-4 w-4 text-white/80" />
+                            <span className="text-white/70 text-sm">申請原因</span>
+                          </div>
+                          <p className="text-white text-sm">{request.reason}</p>
+                        </div>
+
+                        {request.status !== 'pending' && (
+                          <div className="mt-3 p-3 bg-white/10 rounded-lg">
+                            <div className="flex items-center gap-2 mb-1">
+                              <User className="h-4 w-4 text-white/80" />
+                              <span className="text-white/70 text-sm">審核結果</span>
+                            </div>
+                            <div className="text-white text-sm">
+                              <div>審核時間：{request.approval_date ? format(new Date(request.approval_date), 'yyyy/MM/dd HH:mm') : '-'}</div>
+                              {request.approval_comment && (
+                                <div className="mt-1">審核備註：{request.approval_comment}</div>
+                              )}
+                            </div>
                           </div>
                         )}
+                      </div>
 
-                        {request.requested_check_out_time && (
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-red-500" />
-                            <span className="font-medium text-gray-700">下班時間：</span>
-                            <span className="text-gray-600">{formatTime(request.requested_check_out_time)}</span>
-                          </div>
+                      <div className="flex items-center gap-2 lg:ml-6">
+                        {request.status === 'approved' && (
+                          <CheckCircle className="h-8 w-8 text-green-400" />
+                        )}
+                        {request.status === 'rejected' && (
+                          <XCircle className="h-8 w-8 text-red-400" />
+                        )}
+                        {request.status === 'pending' && (
+                          <Clock className="h-8 w-8 text-yellow-400" />
                         )}
                       </div>
                     </div>
-
-                    {/* 申請原因 */}
-                    <div className="mb-4">
-                      <p className="font-medium text-gray-700 mb-2">申請原因：</p>
-                      <div className="bg-blue-50 rounded-lg p-3">
-                        <p className="text-gray-700">{request.reason}</p>
-                      </div>
-                    </div>
-
-                    {/* 申請時間 */}
-                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                      <Clock className="h-4 w-4" />
-                      <span>申請時間：{format(new Date(request.created_at), 'yyyy/MM/dd HH:mm', { locale: zhTW })}</span>
-                    </div>
-
-                    {/* 審核按鈕 */}
-                    {request.status === 'pending' && (isAdmin() || isManager()) && (
-                      <div className="flex gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button 
-                              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl shadow-lg"
-                              onClick={() => setSelectedRequest(request)}
-                            >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              審核申請
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-md mx-4">
-                            <DialogHeader>
-                              <DialogTitle className="flex items-center gap-2">
-                                <AlertCircle className="h-5 w-5 text-orange-500" />
-                                審核忘記打卡申請
-                              </DialogTitle>
-                            </DialogHeader>
-                            
-                            {selectedRequest && (
-                              <div className="space-y-4">
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                  <h4 className="font-medium mb-3 text-gray-800">申請詳情</h4>
-                                  <div className="text-sm space-y-2">
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">員工：</span>
-                                      <span className="font-medium">{selectedRequest.staff?.name}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">類型：</span>
-                                      <span className="font-medium">{getMissedTypeText(selectedRequest.missed_type)}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">日期：</span>
-                                      <span className="font-medium">
-                                        {format(new Date(selectedRequest.request_date), 'yyyy/MM/dd', { locale: zhTW })}
-                                      </span>
-                                    </div>
-                                    <div className="pt-2 border-t">
-                                      <span className="text-gray-600">原因：</span>
-                                      <p className="mt-1 text-gray-800">{selectedRequest.reason}</p>
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                <div className="space-y-2">
-                                  <label className="text-sm font-medium text-gray-700">審核意見（選填）</label>
-                                  <Textarea
-                                    placeholder="請輸入審核意見..."
-                                    value={approvalComment}
-                                    onChange={(e) => setApprovalComment(e.target.value)}
-                                    rows={3}
-                                    className="resize-none"
-                                  />
-                                </div>
-                                
-                                <div className="flex gap-2 pt-4">
-                                  <Button
-                                    variant="outline"
-                                    onClick={() => handleApproval(selectedRequest.id, 'rejected')}
-                                    disabled={actionLoading}
-                                    className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg"
-                                  >
-                                    <XCircle className="h-4 w-4 mr-2" />
-                                    {actionLoading ? '處理中...' : '退回'}
-                                  </Button>
-                                  <Button
-                                    onClick={() => handleApproval(selectedRequest.id, 'approved')}
-                                    disabled={actionLoading}
-                                    className="flex-1 bg-green-600 hover:bg-green-700 text-white rounded-lg"
-                                  >
-                                    <CheckCircle className="h-4 w-4 mr-2" />
-                                    {actionLoading ? '處理中...' : '核准'}
-                                  </Button>
-                                </div>
-                              </div>
-                            )}
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    )}
-
-                    {/* 已審核顯示結果 */}
-                    {request.status !== 'pending' && request.approval_comment && (
-                      <div className="mt-4 p-3 bg-gray-100 rounded-lg">
-                        <p className="text-sm font-medium text-gray-700 mb-1">審核意見：</p>
-                        <p className="text-sm text-gray-600">{request.approval_comment}</p>
-                        {request.approval_date && (
-                          <p className="text-xs text-gray-500 mt-2">
-                            審核時間：{format(new Date(request.approval_date), 'yyyy/MM/dd HH:mm', { locale: zhTW })}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* 新增申請對話框 */}
+      <MissedCheckinDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        onSuccess={handleAddSuccess}
+      />
     </div>
   );
 };

@@ -3,7 +3,7 @@ import React from 'react';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Users, Globe } from 'lucide-react';
+import { User, Users, Globe, Eye } from 'lucide-react';
 
 type ScheduleViewType = 'my' | 'subordinates' | 'all';
 
@@ -63,7 +63,8 @@ const ScheduleListHeader: React.FC<ScheduleListHeaderProps> = ({
         </TabsTrigger>
         <TabsTrigger value="subordinates" className="flex items-center gap-2">
           {getViewIcon('subordinates')}
-          下屬排班
+          <Eye className="h-4 w-4" />
+          下屬排班（快速查看）
         </TabsTrigger>
         <TabsTrigger value="all" className="flex items-center gap-2">
           {getViewIcon('all')}

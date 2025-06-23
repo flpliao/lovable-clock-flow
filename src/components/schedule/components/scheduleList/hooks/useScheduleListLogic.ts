@@ -134,7 +134,7 @@ export const useScheduleListLogic = ({ schedules, onRemoveSchedule }: UseSchedul
   const getViewTitle = (view: ScheduleViewType) => {
     switch (view) {
       case 'my': return '我的排班記錄';
-      case 'subordinates': return '下屬排班記錄';
+      case 'subordinates': return '下屬排班記錄（快速查看）';
       case 'all': return '全部排班記錄';
       default: return '排班記錄';
     }

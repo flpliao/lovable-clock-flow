@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UserProvider } from '@/contexts/UserContext';
 import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
+import Layout from './components/Layout';
 import Index from './pages/Index';
 import Login from './pages/Login';
 import LeaveRequest from './pages/LeaveRequest';
@@ -20,11 +21,11 @@ function App() {
         <LeaveManagementProvider>
           <Router>
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<Layout><Index /></Layout>} />
               <Route path="/login" element={<Login />} />
-              <Route path="/leave-request" element={<LeaveRequest />} />
-              <Route path="/approval-center" element={<ApprovalCenter />} />
-              <Route path="/system-settings" element={<SystemSettings />} />
+              <Route path="/leave-request" element={<Layout><LeaveRequest /></Layout>} />
+              <Route path="/approval-center" element={<Layout><ApprovalCenter /></Layout>} />
+              <Route path="/system-settings" element={<Layout><SystemSettings /></Layout>} />
             </Routes>
           </Router>
         </LeaveManagementProvider>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -34,7 +35,10 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
 
   const { calculatedHours, selectedLeaveType } = useLeaveFormCalculations(form.watch);
   
-  // 新增驗證邏輯
+  // 計算天數用於驗證
+  const calculatedDays = calculatedHours / 8;
+  
+  // 使用驗證邏輯
   const validationResult = useLeaveFormValidation({
     leave_type: selectedLeaveType || '',
     start_date: form.watch('start_date'),
@@ -44,6 +48,11 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
 
   async function handleSubmit(data: LeaveFormValues) {
     if (!currentUser) return;
+
+    // 檢查驗證結果
+    if (!validationResult.isValid) {
+      return;
+    }
 
     // Create the leave request
     const leaveRequest = {
@@ -110,16 +119,12 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
             <LeaveTypeSelector 
               form={form}
               selectedLeaveType={selectedLeaveType}
+              calculatedDays={calculatedDays}
             />
           </div>
 
           {/* 驗證結果顯示 */}
-          {(validationResult.warnings.length > 0 || validationResult.errors.length > 0) && (
-            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-              <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">驗證結果</h3>
-              <ValidationResultsSection validationResult={validationResult} />
-            </div>
-          )}
+          <ValidationResultsSection validationResult={validationResult} />
           
           {/* 請假詳情 */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">

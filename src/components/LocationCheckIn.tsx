@@ -66,14 +66,21 @@ const LocationCheckIn = () => {
       </div>;
   }
 
-  // 根據員工部門找到對應的部門資料
+  console.log('🔍 LocationCheckIn - 員工部門:', currentUser.department);
+  console.log('📋 LocationCheckIn - 所有部門:', departments.map(d => ({ id: d.id, name: d.name })));
+
+  // 根據員工部門找到對應的部門資料 - 使用完全匹配
   const employeeDepartment = currentUser.department ? 
-    departments?.find(dept => dept.name === currentUser.department) : null;
+    departments?.find(dept => {
+      console.log('🔍 比較部門:', dept.name, '與員工部門:', currentUser.department);
+      return dept.name === currentUser.department;
+    }) : null;
   
   console.log('📍 員工部門匹配結果:', {
     employeeName: currentUser.name,
     employeeDepartment: currentUser.department,
     foundDepartment: employeeDepartment?.name,
+    foundDepartmentId: employeeDepartment?.id,
     departmentGPSStatus: employeeDepartment?.gps_status,
     departmentCoordinates: employeeDepartment ? {
       lat: employeeDepartment.latitude,

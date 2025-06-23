@@ -88,13 +88,18 @@ export const useLocationCheckIn = (userId: string, actionType: 'check-in' | 'che
       let targetDepartment: Department | null = null;
       let locationName = '總公司';
 
+      console.log('🔍 所有部門資料:', departments.map(d => ({ id: d.id, name: d.name })));
+      console.log('👀 尋找部門:', currentUser.department);
+
       // 如果員工有部門，尋找對應的部門資料
       if (currentUser.department) {
-        targetDepartment = getDepartmentForCheckIn(departments, currentUser.department);
+        // 使用完全匹配來找部門
+        targetDepartment = departments.find(dept => dept.name === currentUser.department);
         
         console.log('🏢 部門查詢結果:', {
           searchDepartment: currentUser.department,
           foundDepartment: targetDepartment?.name,
+          foundDepartmentId: targetDepartment?.id,
           gpsStatus: targetDepartment?.gps_status,
           coordinates: targetDepartment ? {
             lat: targetDepartment.latitude,
@@ -103,9 +108,10 @@ export const useLocationCheckIn = (userId: string, actionType: 'check-in' | 'che
         });
 
         if (!targetDepartment) {
+          console.error('❌ 找不到部門，所有可用部門名稱:', departments.map(d => d.name));
           toast({
             title: "打卡失敗",
-            description: `找不到部門「${currentUser.department}」的設定資料`,
+            description: `找不到部門「${currentUser.department}」的設定資料，請聯繫管理者檢查部門設定`,
             variant: "destructive",
           });
           return false;

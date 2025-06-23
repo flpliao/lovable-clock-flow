@@ -4,12 +4,12 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useSupabaseRoleManagement } from './hooks/useSupabaseRoleManagement';
 import { StaffRole } from './types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditRoleDialogHeader } from './dialogs/EditRoleDialogHeader';
 import { EditRoleBasicInfoTab } from './dialogs/EditRoleBasicInfoTab';
-import { EditRolePermissionsTab } from './dialogs/EditRolePermissionsTab';
+import { EditRolePermissionsTabSupabase } from './dialogs/EditRolePermissionsTabSupabase';
 import { EditRoleDialogFooter } from './dialogs/EditRoleDialogFooter';
 
 interface EditRoleDialogProps {
@@ -19,7 +19,7 @@ interface EditRoleDialogProps {
 }
 
 const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
-  const { updateRole } = useStaffManagementContext();
+  const { updateRole } = useSupabaseRoleManagement();
   const [activeTab, setActiveTab] = useState<string>('基本資料');
   const [editedRole, setEditedRole] = useState<StaffRole>({...role});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,7 +92,7 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
           </TabsContent>
           
           <TabsContent value="權限設定">
-            <EditRolePermissionsTab
+            <EditRolePermissionsTabSupabase
               editedRole={editedRole}
               setEditedRole={setEditedRole}
               isSubmitting={isSubmitting}

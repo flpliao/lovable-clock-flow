@@ -2,6 +2,7 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { StaffManagementContextType } from '@/components/staff/types';
 import { useStaffManagement } from '@/components/staff/hooks/useStaffManagement';
+import { useSupabaseRoleManagement } from '@/components/staff/hooks/useSupabaseRoleManagement';
 
 const StaffManagementContext = createContext<StaffManagementContextType | undefined>(undefined);
 
@@ -9,14 +10,31 @@ export const StaffManagementProvider: React.FC<{ children: ReactNode }> = ({ chi
   console.log('🔄 StaffManagementProvider rendering...');
   
   const staffManagement = useStaffManagement();
+  const roleManagement = useSupabaseRoleManagement();
   
   console.log('📊 StaffManagement context data:', {
     staffListLength: staffManagement.staffList?.length || 0,
-    loading: staffManagement.loading
+    rolesLength: roleManagement.roles?.length || 0,
+    loading: staffManagement.loading || roleManagement.loading
   });
 
+  // 合併員工管理和角色管理功能
+  const combinedContext: StaffManagementContextType = {
+    ...staffManagement,
+    roles: roleManagement.roles,
+    addRole: roleManagement.addRole,
+    updateRole: roleManagement.updateRole,
+    deleteRole: roleManagement.deleteRole,
+    getRole: roleManagement.getRole,
+    hasPermission: (staffId: string, permissionCode: string) => {
+      // 這裡可以整合 Supabase 的權限檢查
+      return roleManagement.hasPermission(staffId, permissionCode);
+    },
+    assignRoleToStaff: roleManagement.assignRoleToStaff
+  };
+
   return (
-    <StaffManagementContext.Provider value={staffManagement}>
+    <StaffManagementContext.Provider value={combinedContext}>
       {children}
     </StaffManagementContext.Provider>
   );

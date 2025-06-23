@@ -4,7 +4,7 @@ import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 
-type ScheduleViewType = 'subordinates' | 'all';
+type ScheduleViewType = 'my' | 'subordinates' | 'all';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -20,7 +20,7 @@ export const useScheduleListLogic = ({ schedules, onRemoveSchedule }: UseSchedul
   const [refreshing, setRefreshing] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeView, setActiveView] = useState<ScheduleViewType>('subordinates');
+  const [activeView, setActiveView] = useState<ScheduleViewType>('my');
   const [viewSchedules, setViewSchedules] = useState<any[]>([]);
 
   useEffect(() => {
@@ -35,6 +35,8 @@ export const useScheduleListLogic = ({ schedules, onRemoveSchedule }: UseSchedul
     const subordinateIds = subordinates.map(s => s.id);
     
     switch (view) {
+      case 'my':
+        return schedules.filter(schedule => schedule.userId === currentUser.id);
       case 'subordinates':
         return schedules.filter(schedule => subordinateIds.includes(schedule.userId));
       case 'all':
@@ -131,6 +133,7 @@ export const useScheduleListLogic = ({ schedules, onRemoveSchedule }: UseSchedul
 
   const getViewTitle = (view: ScheduleViewType) => {
     switch (view) {
+      case 'my': return '我的排班記錄';
       case 'subordinates': return '下屬排班記錄（快速查看）';
       case 'all': return '全部排班記錄';
       default: return '排班記錄';

@@ -1,6 +1,8 @@
 
 import React from 'react';
-import { Users, Calendar, Eye } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { User, Users, Globe } from 'lucide-react';
+import { visionProStyles } from '@/utils/visionProStyles';
 
 interface ViewModeSelectorProps {
   viewMode: 'self' | 'subordinates' | 'all';
@@ -9,57 +11,56 @@ interface ViewModeSelectorProps {
 }
 
 const ViewModeSelector = ({ viewMode, onViewModeChange, hasSubordinates }: ViewModeSelectorProps) => {
+  const modes = [
+    { 
+      value: 'self' as const, 
+      label: '我的排班', 
+      icon: User,
+      color: 'green'
+    },
+    { 
+      value: 'subordinates' as const, 
+      label: '下屬排班', 
+      icon: Users,
+      color: 'blue',
+      disabled: !hasSubordinates
+    },
+    { 
+      value: 'all' as const, 
+      label: '全部排班', 
+      icon: Globe,
+      color: 'purple'
+    }
+  ];
+
   return (
-    <div className="grid grid-cols-1 gap-4">
-      {/* 移除我的排班選項，只保留下屬排班和全部排班 */}
-      {hasSubordinates && (
-        <div 
-          onClick={() => onViewModeChange('subordinates')}
-          className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 backdrop-blur-xl ${
-            viewMode === 'subordinates'
-              ? 'bg-white/40 border-white/60 shadow-2xl' 
-              : 'bg-white/20 border-white/30 hover:bg-white/30'
-          }`}
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {modes.map(({ value, label, icon: Icon, color, disabled }) => (
+        <Button
+          key={value}
+          variant={viewMode === value ? "default" : "outline"}
+          onClick={() => onViewModeChange(value)}
+          disabled={disabled}
+          className={`h-16 p-4 rounded-2xl border-2 transition-all duration-300 ${
+            viewMode === value
+              ? `bg-gradient-to-br from-${color}-500 to-${color}-600 text-white border-white/30 shadow-lg`
+              : 'bg-white/70 text-gray-700 border-white/60 hover:bg-white/80 hover:border-white/80'
+          } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-xl ${
-                viewMode === 'subordinates' ? 'bg-white/30' : 'bg-white/20'
-              }`}>
-                <Users className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-1">下屬排班（快速查看）</h4>
-                <p className="text-white/80 text-sm">查看下屬的排班記錄</p>
-              </div>
-            </div>
-            <Eye className="h-5 w-5 text-white/70" />
-          </div>
-        </div>
-      )}
-      
-      <div 
-        onClick={() => onViewModeChange('all')}
-        className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 backdrop-blur-xl ${
-          viewMode === 'all'
-            ? 'bg-white/40 border-white/60 shadow-2xl' 
-            : 'bg-white/20 border-white/30 hover:bg-white/30'
-        }`}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-xl ${
-              viewMode === 'all' ? 'bg-white/30' : 'bg-white/20'
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-xl ${
+              viewMode === value 
+                ? 'bg-white/20' 
+                : 'bg-gray-100'
             }`}>
-              <Calendar className="h-6 w-6 text-white" />
+              <Icon className={`h-5 w-5 ${
+                viewMode === value ? 'text-white' : 'text-gray-600'
+              }`} />
             </div>
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-1">全部排班</h4>
-              <p className="text-white/80 text-sm">查看所有排班記錄</p>
-            </div>
+            <span className="font-semibold text-base">{label}</span>
           </div>
-        </div>
-      </div>
+        </Button>
+      ))}
     </div>
   );
 };

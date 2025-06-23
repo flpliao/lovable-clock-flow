@@ -62,7 +62,7 @@ export function LeaveRequestFormFields({
         <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假類型</h3>
         <FormField control={form.control} name="leave_type" render={({
         field
-      }) => <FormItem className="bg-indigo-400">
+      }) => <FormItem className="bg-sky-400">
               <FormLabel className="text-white font-medium">假別</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!hasHireDate && field.value === 'annual'}>
                 <FormControl>

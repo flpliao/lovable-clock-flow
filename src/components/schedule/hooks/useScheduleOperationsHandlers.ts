@@ -1,10 +1,36 @@
 
 import { useScheduling } from '@/contexts/SchedulingContext';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/contexts/UserContext';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 
 export const useScheduleOperationsHandlers = () => {
   const { updateSchedule, removeSchedule } = useScheduling();
   const { toast } = useToast();
+  const { currentUser, hasPermission } = useUser();
+  const { getSubordinates } = useStaffManagementContext();
+
+  // 檢查是否可以操作指定用戶的排班
+  const canManageUserSchedule = (userId: string) => {
+    if (!currentUser) return false;
+    
+    // 系統管理員可以管理所有排班
+    if (hasPermission('schedule:manage') || hasPermission('schedule:edit')) {
+      return true;
+    }
+    
+    // 檢查是否為下屬
+    const subordinates = getSubordinates(currentUser.id);
+    const isSubordinate = subordinates.some(subordinate => subordinate.id === userId);
+    
+    // 管理員可以管理下屬的排班
+    if (isSubordinate) {
+      return true;
+    }
+    
+    // 用戶只能管理自己的排班
+    return userId === currentUser.id;
+  };
 
   const handleUpdateSchedule = async (id: string, updates: any) => {
     try {
@@ -43,6 +69,7 @@ export const useScheduleOperationsHandlers = () => {
 
   return {
     handleUpdateSchedule,
-    handleDeleteSchedule
+    handleDeleteSchedule,
+    canManageUserSchedule
   };
 };

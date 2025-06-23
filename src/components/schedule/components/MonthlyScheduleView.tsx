@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,7 +38,7 @@ const MonthlyScheduleView = ({
   timeSlots = []
 }: MonthlyScheduleViewProps) => {
   const navigate = useNavigate();
-  const { handleUpdateSchedule, handleDeleteSchedule } = useScheduleOperationsHandlers();
+  const { handleUpdateSchedule, handleDeleteSchedule, canManageUserSchedule } = useScheduleOperationsHandlers();
   
   const {
     sensors,
@@ -100,6 +99,16 @@ const MonthlyScheduleView = ({
     } catch (error) {
       console.error('MonthlyScheduleView - Schedule delete failed:', error);
       throw error;
+    }
+  };
+
+  // 修改排班點擊處理，只有有權限的才能編輯
+  const handleScheduleClickWithPermission = (schedule: any) => {
+    if (canManageUserSchedule(schedule.userId)) {
+      handleScheduleClick(schedule);
+    } else {
+      // 仍然可以查看，但會顯示只讀模式
+      handleScheduleClick(schedule);
     }
   };
 
@@ -186,7 +195,7 @@ const MonthlyScheduleView = ({
             selectedSchedule={selectedSchedule}
             handleDragStart={handleDragStart}
             handleDragEnd={handleDragEnd}
-            handleScheduleClick={handleScheduleClick}
+            handleScheduleClick={handleScheduleClickWithPermission}
             handleShowAllSchedules={handleShowAllSchedules}
             activeSchedule={activeSchedule}
           />
@@ -210,7 +219,7 @@ const MonthlyScheduleView = ({
         date={selectedDayDate}
         schedules={selectedDaySchedules}
         getUserName={getUserName}
-        onScheduleClick={handleScheduleClick}
+        onScheduleClick={handleScheduleClickWithPermission}
       />
     </>
   );

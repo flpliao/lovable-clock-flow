@@ -48,11 +48,14 @@ export const useCheckInRecords = () => {
 
       if (error) {
         console.error('Error loading check-in records:', error);
-        toast({
-          title: "載入失敗",
-          description: `無法載入打卡記錄: ${error.message}`,
-          variant: "destructive"
-        });
+        // 只在網路或嚴重錯誤時顯示 toast，避免重複提示
+        if (error.code === 'PGRST301' || error.message.includes('network')) {
+          toast({
+            title: "載入失敗",
+            description: `無法載入打卡記錄: ${error.message}`,
+            variant: "destructive"
+          });
+        }
         setCheckInRecords([]);
         return;
       }
@@ -82,15 +85,19 @@ export const useCheckInRecords = () => {
       console.log('格式化後的記錄:', formattedRecords);
       setCheckInRecords(formattedRecords);
       
-      // 移除自動彈出的成功通知，避免重複通知
       console.log(`載入了 ${formattedRecords.length} 筆打卡記錄`);
     } catch (error) {
       console.error('載入打卡記錄失敗:', error);
-      toast({
-        title: "載入失敗",
-        description: "載入打卡記錄時發生錯誤",
-        variant: "destructive"
-      });
+      // 只在關鍵錯誤時顯示提示
+      if (error instanceof Error && error.message.includes('Load failed')) {
+        console.error('檢測到 Load failed 錯誤，不顯示 toast 避免重複提示');
+      } else {
+        toast({
+          title: "載入失敗",
+          description: "載入打卡記錄時發生錯誤",
+          variant: "destructive"
+        });
+      }
       setCheckInRecords([]);
     } finally {
       setLoading(false);

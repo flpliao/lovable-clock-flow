@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -55,17 +55,50 @@ export function LeaveTypeDialog({
   const form = useForm<LeaveTypeFormData>({
     resolver: zodResolver(leaveTypeSchema),
     defaultValues: {
-      code: leaveType?.code || '',
-      name_zh: leaveType?.name_zh || '',
-      name_en: leaveType?.name_en || '',
-      is_paid: leaveType?.is_paid || false,
-      annual_reset: leaveType?.annual_reset || true,
-      max_days_per_year: leaveType?.max_days_per_year || undefined,
-      requires_attachment: leaveType?.requires_attachment || false,
-      is_active: leaveType?.is_active !== undefined ? leaveType.is_active : true,
-      description: leaveType?.description || '',
+      code: '',
+      name_zh: '',
+      name_en: '',
+      is_paid: false,
+      annual_reset: true,
+      max_days_per_year: undefined,
+      requires_attachment: false,
+      is_active: true,
+      description: '',
     },
   });
+
+  // 當 leaveType 或 open 狀態改變時重新設定表單值
+  useEffect(() => {
+    if (open) {
+      if (leaveType) {
+        // 編輯模式：填入現有資料
+        form.reset({
+          code: leaveType.code || '',
+          name_zh: leaveType.name_zh || '',
+          name_en: leaveType.name_en || '',
+          is_paid: leaveType.is_paid || false,
+          annual_reset: leaveType.annual_reset !== undefined ? leaveType.annual_reset : true,
+          max_days_per_year: leaveType.max_days_per_year || undefined,
+          requires_attachment: leaveType.requires_attachment || false,
+          is_active: leaveType.is_active !== undefined ? leaveType.is_active : true,
+          description: leaveType.description || '',
+        });
+      } else {
+        // 新增模式：重置為預設值
+        form.reset({
+          code: '',
+          name_zh: '',
+          name_en: '',
+          is_paid: false,
+          annual_reset: true,
+          max_days_per_year: undefined,
+          requires_attachment: false,
+          is_active: true,
+          description: '',
+        });
+      }
+    }
+  }, [leaveType, open, form]);
 
   const handleSubmit = (data: LeaveTypeFormData) => {
     // 處理空值轉換
@@ -78,7 +111,6 @@ export function LeaveTypeDialog({
   };
 
   const handleClose = () => {
-    form.reset();
     onOpenChange(false);
   };
 

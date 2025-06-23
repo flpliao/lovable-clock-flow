@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Eye } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar, Grid, Users, Eye } from 'lucide-react';
 import ViewModeSelector from './ViewModeSelector';
 
 interface ScheduleHeaderProps {
@@ -33,6 +34,26 @@ const ScheduleHeader = ({
           onViewModeChange={onViewModeChange}
           hasSubordinates={hasSubordinates}
         />
+      </div>
+
+      {/* 視圖類型切換 - 移除日曆視圖按鈕 */}
+      <div>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 bg-white/20 rounded-2xl">
+            <Grid className="h-7 w-7 text-white" />
+          </div>
+          <h3 className="text-2xl font-bold text-white drop-shadow-lg">視圖模式</h3>
+        </div>
+        
+        <TabsList className="grid w-full grid-cols-1 bg-white/20 backdrop-blur-xl rounded-2xl p-2 h-16 border border-white/30">
+          <TabsTrigger 
+            value="list"
+            className="text-white/90 data-[state=active]:bg-white/30 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl font-semibold flex items-center gap-2 h-12"
+          >
+            <Calendar className="h-5 w-5" />
+            列表視圖
+          </TabsTrigger>
+        </TabsList>
       </div>
     </div>
   );

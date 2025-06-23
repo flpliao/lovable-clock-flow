@@ -8,7 +8,7 @@ import { CheckCircle, XCircle, Clock, User, Calendar, FileText, RefreshCw, Plus 
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { MissedCheckinDialog } from '@/components/check-in/MissedCheckinDialog';
+import MissedCheckinDialog from '@/components/check-in/MissedCheckinDialog';
 
 const MissedCheckinManagement = () => {
   const { currentUser } = useUser();
@@ -317,8 +317,6 @@ const MissedCheckinManagement = () => {
 
       {/* 新增申請對話框 */}
       <MissedCheckinDialog
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
         onSuccess={handleAddSuccess}
       />
     </div>

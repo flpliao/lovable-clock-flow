@@ -115,7 +115,7 @@ export function LeaveRequestFormFields({
                         )}
                       >
                         {field.value ? (
-                          format(field.value, "yyyy-MM-dd")
+                          format(field.value, "yyyy/MM/dd")
                         ) : (
                           <span>選擇開始日期</span>
                         )}
@@ -132,6 +132,7 @@ export function LeaveRequestFormFields({
                         date < new Date(new Date().setHours(0, 0, 0, 0))
                       }
                       initialFocus
+                      className={cn("p-3 pointer-events-auto")}
                     />
                   </PopoverContent>
                 </Popover>
@@ -157,7 +158,7 @@ export function LeaveRequestFormFields({
                         )}
                       >
                         {field.value ? (
-                          format(field.value, "yyyy-MM-dd")
+                          format(field.value, "yyyy/MM/dd")
                         ) : (
                           <span>選擇結束日期</span>
                         )}
@@ -174,6 +175,7 @@ export function LeaveRequestFormFields({
                         date < new Date(new Date().setHours(0, 0, 0, 0))
                       }
                       initialFocus
+                      className={cn("p-3 pointer-events-auto")}
                     />
                   </PopoverContent>
                 </Popover>

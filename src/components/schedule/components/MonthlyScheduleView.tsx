@@ -146,52 +146,49 @@ const MonthlyScheduleView = ({
 
   return (
     <>
-      <Card className="bg-blue-400">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-base sm:text-lg">
-                {getDisplayTitle()} 排班總覽
-                {selectedStaffId && (
-                  <span className="ml-2 text-sm sm:text-base text-gray-600">
-                    - {getUserName(selectedStaffId)}
-                  </span>
-                )}
-                {getExtendedDescription() && (
-                  <div className="mt-1 text-sm text-blue-600">
-                    {getExtendedDescription()}
-                  </div>
-                )}
-              </CardTitle>
-            </div>
-            <Button
-              onClick={() => navigate('/schedule-statistics')}
-              variant="outline"
-              size="sm"
-              className="ml-4 flex items-center gap-2"
-            >
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">統計資訊</span>
-              <span className="sm:hidden">統計</span>
-            </Button>
+      <div className="bg-white/20 backdrop-blur-xl rounded-xl border border-white/30 shadow-lg p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-white/90 mb-2">
+              {getDisplayTitle()} 排班總覽
+              {selectedStaffId && (
+                <span className="ml-2 text-lg text-white/80">
+                  - {getUserName(selectedStaffId)}
+                </span>
+              )}
+            </h2>
+            {getExtendedDescription() && (
+              <div className="text-sm text-white/70">
+                {getExtendedDescription()}
+              </div>
+            )}
           </div>
-        </CardHeader>
-        <CardContent>
-          <MonthlyCalendarGrid
-            selectedDate={selectedDate}
-            sensors={sensors}
-            dragSchedules={dragSchedules}
-            hasScheduleConflict={hasScheduleConflict}
-            getUserName={getUserName}
-            selectedSchedule={selectedSchedule}
-            handleDragStart={handleDragStart}
-            handleDragEnd={handleDragEnd}
-            handleScheduleClick={handleScheduleClick}
-            handleShowAllSchedules={handleShowAllSchedules}
-            activeSchedule={activeSchedule}
-          />
-        </CardContent>
-      </Card>
+          <Button
+            onClick={() => navigate('/schedule-statistics')}
+            variant="outline"
+            size="sm"
+            className="ml-4 flex items-center gap-2 bg-white/20 border-white/30 text-white hover:bg-white/30"
+          >
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">統計資訊</span>
+            <span className="sm:hidden">統計</span>
+          </Button>
+        </div>
+        
+        <MonthlyCalendarGrid
+          selectedDate={selectedDate}
+          sensors={sensors}
+          dragSchedules={dragSchedules}
+          hasScheduleConflict={hasScheduleConflict}
+          getUserName={getUserName}
+          selectedSchedule={selectedSchedule}
+          handleDragStart={handleDragStart}
+          handleDragEnd={handleDragEnd}
+          handleScheduleClick={handleScheduleClick}
+          handleShowAllSchedules={handleShowAllSchedules}
+          activeSchedule={activeSchedule}
+        />
+      </div>
 
       {/* Edit Dialog */}
       <EditScheduleDialog

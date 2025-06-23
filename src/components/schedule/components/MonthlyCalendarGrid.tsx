@@ -41,34 +41,38 @@ const MonthlyCalendarGrid = ({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid grid-cols-7 gap-0 border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-white/10 backdrop-blur-xl rounded-xl border border-white/20 shadow-lg overflow-hidden">
         {/* Week day headers */}
-        {['日', '一', '二', '三', '四', '五', '六'].map((day, index) => (
-          <div 
-            key={day} 
-            className={`text-center text-xs sm:text-sm font-medium py-2 border-b border-gray-100 ${
-              index === 0 || index === 6 ? 'text-red-500 bg-red-50' : 'text-gray-700 bg-gray-50'
-            }`}
-          >
-            {day}
-          </div>
-        ))}
+        <div className="grid grid-cols-7 border-b border-white/20">
+          {['日', '一', '二', '三', '四', '五', '六'].map((day, index) => (
+            <div 
+              key={day} 
+              className={`text-center text-sm font-medium py-3 text-white/90 ${
+                index === 0 || index === 6 ? 'text-red-300' : ''
+              }`}
+            >
+              {day}
+            </div>
+          ))}
+        </div>
         
         {/* Calendar cells */}
-        {calendarDays.map((day, index) => (
-          <DroppableCalendarCell
-            key={index}
-            day={day}
-            schedules={dragSchedules}
-            getUserName={getUserName}
-            getUserRelation={() => ''}
-            getScheduleConflicts={hasScheduleConflict}
-            onScheduleClick={handleScheduleClick}
-            onShowAllSchedules={handleShowAllSchedules}
-            selectedScheduleId={selectedSchedule?.id}
-            isExtendedMonth={day?.isExtended}
-          />
-        ))}
+        <div className="grid grid-cols-7">
+          {calendarDays.map((day, index) => (
+            <DroppableCalendarCell
+              key={index}
+              day={day}
+              schedules={dragSchedules}
+              getUserName={getUserName}
+              getUserRelation={() => ''}
+              getScheduleConflicts={hasScheduleConflict}
+              onScheduleClick={handleScheduleClick}
+              onShowAllSchedules={handleShowAllSchedules}
+              selectedScheduleId={selectedSchedule?.id}
+              isExtendedMonth={day?.isExtended}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Drag overlay */}

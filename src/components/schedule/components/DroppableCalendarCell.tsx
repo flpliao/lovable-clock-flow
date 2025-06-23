@@ -1,9 +1,7 @@
 
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { format } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { format, isSameDay } from 'date-fns';
 import DraggableScheduleCard from './DraggableScheduleCard';
 
 interface DroppableCalendarCellProps {
@@ -30,74 +28,74 @@ const DroppableCalendarCell = ({
   isExtendedMonth = false
 }: DroppableCalendarCellProps) => {
   if (!day) {
-    return <div className="h-24 border-b border-r border-gray-100"></div>;
+    return <div className="min-h-[100px] border-r border-b border-white/10 last:border-r-0"></div>;
   }
 
-  const dateString = format(day.date, 'yyyy-MM-dd');
-  const daySchedules = schedules.filter(schedule => schedule.workDate === dateString);
-  
-  const { setNodeRef, isOver } = useDroppable({
-    id: dateString,
-    data: {
-      type: 'calendar-cell',
-      date: day.date // 直接傳遞 Date 對象
-    }
+  const dateStr = format(day.date, 'yyyy-MM-dd');
+  const { setNodeRef } = useDroppable({
+    id: dateStr,
   });
 
-  const isToday = format(new Date(), 'yyyy-MM-dd') === dateString;
+  // 篩選當天的排班
+  const daySchedules = schedules.filter(schedule => {
+    const scheduleDate = new Date(schedule.workDate);
+    return isSameDay(scheduleDate, day.date);
+  });
 
-  // 所有日期格子都可以接受drop，增強視覺反饋
-  const cellBaseClasses = "h-24 border-b border-r border-gray-100 p-1 transition-all duration-200 relative";
-  const cellClasses = !day.isCurrentMonth 
-    ? `${cellBaseClasses} bg-gray-50 ${isOver ? 'bg-blue-100 border-blue-300' : ''}` 
-    : `${cellBaseClasses} ${isOver ? 'bg-blue-50 border-blue-300 shadow-inner' : 'hover:bg-gray-50'}`;
+  const isToday = isSameDay(day.date, new Date());
+  const isCurrentMonth = day.isCurrentMonth;
 
-  const dateClasses = !day.isCurrentMonth
-    ? "text-xs font-medium text-gray-400" 
-    : `text-xs font-medium ${day.isWeekend ? 'text-red-500' : 'text-gray-700'}`;
+  const handleCellClick = () => {
+    if (daySchedules.length > 3) {
+      onShowAllSchedules(day.date, daySchedules);
+    }
+  };
 
   return (
-    <div ref={setNodeRef} className={cellClasses}>
-      {/* 拖拽懸停時的視覺指示 */}
-      {isOver && (
-        <div className="absolute inset-0 bg-blue-200/30 border-2 border-blue-400 border-dashed rounded pointer-events-none z-10"></div>
-      )}
-      
-      {/* 日期標題 */}
-      <div className="flex items-center justify-between mb-1">
-        <span className={dateClasses}>
+    <div
+      ref={setNodeRef}
+      onClick={handleCellClick}
+      className={`min-h-[100px] p-2 border-r border-b border-white/10 last:border-r-0 cursor-pointer transition-all hover:bg-white/10 ${
+        isExtendedMonth ? 'bg-white/5' : ''
+      } ${isToday ? 'bg-white/20' : ''}`}
+    >
+      <div className="flex flex-col h-full">
+        {/* 日期標題 */}
+        <div className={`text-sm mb-1 ${
+          isCurrentMonth ? (day.isWeekend ? 'text-red-300' : 'text-white/90') : 'text-white/50'
+        } ${isToday ? 'font-bold text-white' : ''}`}>
           {day.label}
-          {!day.isCurrentMonth && (
-            <span className="text-xs text-gray-400 ml-1">
-              ({format(day.date, 'M')}月)
-            </span>
-          )}
-        </span>
-        {isToday && (
-          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+        </div>
+        
+        {/* 農曆日期 */}
+        {day.lunarDay && (
+          <div className={`text-xs mb-2 ${
+            isCurrentMonth ? 'text-white/60' : 'text-white/30'
+          }`}>
+            {day.lunarDay}
+          </div>
         )}
-      </div>
 
-      {/* 排班卡片區域 */}
-      <div className="flex-1 relative">
-        {daySchedules.length > 0 && (
-          <ScrollArea className="h-16">
-            <div className="space-y-1 pr-2">
-              {daySchedules.map((schedule) => (
-                <DraggableScheduleCard
-                  key={schedule.id}
-                  schedule={schedule}
-                  getUserName={getUserName}
-                  getUserRelation={getUserRelation}
-                  hasConflict={false} // 移除衝突檢查
-                  onClick={() => onScheduleClick(schedule)}
-                  isSelected={schedule.id === selectedScheduleId}
-                  isInExtendedMonth={!day.isCurrentMonth}
-                />
-              ))}
+        {/* 排班列表 */}
+        <div className="flex-1 space-y-1">
+          {daySchedules.slice(0, 3).map((schedule) => (
+            <DraggableScheduleCard
+              key={schedule.id}
+              schedule={schedule}
+              getUserName={getUserName}
+              getUserRelation={getUserRelation}
+              hasConflict={getScheduleConflicts(schedule.userId, dateStr)}
+              onClick={() => onScheduleClick(schedule)}
+            />
+          ))}
+          
+          {/* 顯示更多排班提示 */}
+          {daySchedules.length > 3 && (
+            <div className="text-xs text-white/70 bg-white/20 px-2 py-1 rounded text-center cursor-pointer hover:bg-white/30">
+              還有 {daySchedules.length - 3} 個排班...
             </div>
-          </ScrollArea>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import { useUser } from '@/contexts/UserContext';
 import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
 import { LeaveFormValues, leaveFormSchema } from '@/utils/leaveTypes';
 import { LeaveRequestFormFields } from './LeaveRequestFormFields';
+import { LeaveTypeDetailCard } from './LeaveTypeDetailCard';
 import { calculateWorkingHours } from '@/utils/workingHoursCalculator';
 import { validateLeaveRequest } from '@/utils/leaveValidation';
 import { datePickerToDatabase } from '@/utils/dateUtils';
@@ -97,6 +98,25 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       validateRequest();
     }
   }, [watchedStartDate, watchedEndDate, watchedLeaveType, calculatedHours, currentUser]);
+
+  // 模擬剩餘假期天數和已使用天數 (實際應該從後端獲取)
+  const getLeaveData = (leaveType: string) => {
+    const mockData: Record<string, { remainingDays?: number; usedDays: number }> = {
+      'annual': { remainingDays: 10, usedDays: 5 },
+      'sick': { remainingDays: 27, usedDays: 3 },
+      'personal': { remainingDays: 12, usedDays: 2 },
+      'marriage': { remainingDays: 8, usedDays: 0 },
+      'bereavement': { remainingDays: 8, usedDays: 0 },
+      'maternity': { remainingDays: 56, usedDays: 0 },
+      'paternity': { remainingDays: 7, usedDays: 0 },
+      'menstrual': { remainingDays: 10, usedDays: 2 },
+      'occupational': { usedDays: 0 },
+      'parental': { usedDays: 0 },
+      'other': { usedDays: 0 }
+    };
+    
+    return mockData[leaveType] || { usedDays: 0 };
+  };
 
   const handleSubmit = async (data: LeaveFormValues) => {
     if (!currentUser) {
@@ -204,6 +224,15 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
             validationError={validationError}
             hasHireDate={hasHireDate}
           />
+          
+          {/* 請假類型詳細資訊卡片 - 當選擇了請假類型時顯示 */}
+          {watchedLeaveType && (
+            <LeaveTypeDetailCard 
+              leaveType={watchedLeaveType}
+              remainingDays={getLeaveData(watchedLeaveType).remainingDays}
+              usedDays={getLeaveData(watchedLeaveType).usedDays}
+            />
+          )}
           
           <div className="flex justify-end pt-4">
             <Button

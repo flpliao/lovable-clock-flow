@@ -69,11 +69,11 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
       return;
     }
 
-    // 使用新的日期處理函數，確保本地日期正確轉換
+    // 使用台灣時區的日期處理函數
     const localStartDate = datePickerToDatabase(data.start_date);
     const localEndDate = datePickerToDatabase(data.end_date);
 
-    console.log('請假申請提交 - 完整日期處理日誌:', {
+    console.log('請假申請提交 - 台灣時區 (UTC+8) 日期處理日誌:', {
       form_start_date: data.start_date,
       form_end_date: data.end_date,
       form_start_date_string: data.start_date.toString(),
@@ -82,8 +82,9 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
       form_end_date_iso: data.end_date.toISOString(),
       converted_start_date: localStartDate,
       converted_end_date: localEndDate,
-      user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      taiwan_timezone: 'Asia/Taipei (UTC+8)',
       current_time: new Date().toString(),
+      taiwan_current_time: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
       date_picker_timezone_offset: data.start_date.getTimezoneOffset()
     });
 

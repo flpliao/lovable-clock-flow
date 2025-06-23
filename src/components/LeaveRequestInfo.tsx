@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { format } from 'date-fns';
 import { LeaveRequest } from '@/types';
 import { getLeaveTypeText } from '@/utils/leaveUtils';
+import { formatLeaveRecordDate } from '@/utils/dateUtils';
 
 interface LeaveRequestInfoProps {
   leaveRequest: LeaveRequest;
@@ -22,11 +22,11 @@ const LeaveRequestInfo: React.FC<LeaveRequestInfoProps> = ({ leaveRequest }) => 
         </div>
         <div>
           <p className="text-sm text-muted-foreground">開始日期</p>
-          <p className="font-medium">{format(new Date(leaveRequest.start_date), 'yyyy/MM/dd')}</p>
+          <p className="font-medium">{formatLeaveRecordDate(leaveRequest.start_date)}</p>
         </div>
         <div>
           <p className="text-sm text-muted-foreground">結束日期</p>
-          <p className="font-medium">{format(new Date(leaveRequest.end_date), 'yyyy/MM/dd')}</p>
+          <p className="font-medium">{formatLeaveRecordDate(leaveRequest.end_date)}</p>
         </div>
       </div>
       

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { LeaveRequest } from '@/types';
 import { Badge } from '@/components/ui/badge';
@@ -125,16 +124,17 @@ export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({
   };
   const statusInfo = getApprovalStatusInfo();
 
-  // 使用專門的請假記錄日期格式化函數
+  // 使用台灣時區格式化請假記錄日期
   const startDateDisplay = formatLeaveRecordDate(leave.start_date);
   const endDateDisplay = formatLeaveRecordDate(leave.end_date);
 
-  console.log('LeaveHistoryItem - 日期顯示:', {
+  console.log('LeaveHistoryItem - 台灣時區日期顯示:', {
     leaveId: leave.id,
     rawStartDate: leave.start_date,
     rawEndDate: leave.end_date,
     displayStartDate: startDateDisplay,
-    displayEndDate: endDateDisplay
+    displayEndDate: endDateDisplay,
+    timezone: 'Asia/Taipei (UTC+8)'
   });
 
   // 計算天數顯示

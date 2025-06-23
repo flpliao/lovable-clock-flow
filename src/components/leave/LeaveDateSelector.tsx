@@ -38,7 +38,15 @@ export function LeaveDateSelector({ form, calculatedHours }: LeaveDateSelectorPr
                       )}
                     >
                       {field.value ? (
-                        formatDisplayDate(field.value)
+                        (() => {
+                          const displayDate = formatDisplayDate(field.value);
+                          console.log('開始日期顯示:', {
+                            fieldValue: field.value,
+                            fieldValueString: field.value.toString(),
+                            displayDate: displayDate
+                          });
+                          return displayDate;
+                        })()
                       ) : (
                         <span>選擇開始日期</span>
                       )}
@@ -50,7 +58,14 @@ export function LeaveDateSelector({ form, calculatedHours }: LeaveDateSelectorPr
                   <Calendar
                     mode="single"
                     selected={field.value}
-                    onSelect={field.onChange}
+                    onSelect={(date) => {
+                      console.log('日期選擇器選擇開始日期:', {
+                        selectedDate: date,
+                        selectedDateString: date?.toString(),
+                        selectedDateISO: date?.toISOString()
+                      });
+                      field.onChange(date);
+                    }}
                     initialFocus
                     className="p-3"
                   />
@@ -78,7 +93,15 @@ export function LeaveDateSelector({ form, calculatedHours }: LeaveDateSelectorPr
                       )}
                     >
                       {field.value ? (
-                        formatDisplayDate(field.value)
+                        (() => {
+                          const displayDate = formatDisplayDate(field.value);
+                          console.log('結束日期顯示:', {
+                            fieldValue: field.value,
+                            fieldValueString: field.value.toString(),
+                            displayDate: displayDate
+                          });
+                          return displayDate;
+                        })()
                       ) : (
                         <span>選擇結束日期</span>
                       )}
@@ -90,7 +113,14 @@ export function LeaveDateSelector({ form, calculatedHours }: LeaveDateSelectorPr
                   <Calendar
                     mode="single"
                     selected={field.value}
-                    onSelect={field.onChange}
+                    onSelect={(date) => {
+                      console.log('日期選擇器選擇結束日期:', {
+                        selectedDate: date,
+                        selectedDateString: date?.toString(),
+                        selectedDateISO: date?.toISOString()
+                      });
+                      field.onChange(date);
+                    }}
                     initialFocus
                     className="p-3"
                   />

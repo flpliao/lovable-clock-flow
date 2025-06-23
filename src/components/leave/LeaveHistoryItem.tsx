@@ -3,11 +3,13 @@ import { LeaveRequest } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { getStatusBadgeVariant, getStatusText, getLeaveTypeText } from '@/utils/leaveUtils';
 import { Calendar, Clock, User, FileText, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatLeaveRecordDate } from '@/utils/dateUtils';
+
 interface LeaveHistoryItemProps {
   leave: LeaveRequest;
   onClick?: (leave: LeaveRequest) => void;
 }
+
 export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({
   leave,
   onClick
@@ -90,6 +92,18 @@ export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({
   };
   const statusInfo = getApprovalStatusInfo();
 
+  // 使用專門的請假記錄日期格式化函數
+  const startDateDisplay = formatLeaveRecordDate(leave.start_date);
+  const endDateDisplay = formatLeaveRecordDate(leave.end_date);
+
+  console.log('LeaveHistoryItem - 日期顯示:', {
+    leaveId: leave.id,
+    rawStartDate: leave.start_date,
+    rawEndDate: leave.end_date,
+    displayStartDate: startDateDisplay,
+    displayEndDate: endDateDisplay
+  });
+
   // 計算天數顯示
   const days = Math.floor(leave.hours / 8);
   const remainingHours = leave.hours % 8;
@@ -111,7 +125,7 @@ export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4" />
           <span>
-            {format(new Date(leave.start_date), 'yyyy/MM/dd')} - {format(new Date(leave.end_date), 'yyyy/MM/dd')}
+            {startDateDisplay} - {endDateDisplay}
           </span>
         </div>
         

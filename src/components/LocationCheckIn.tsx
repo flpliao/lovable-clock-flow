@@ -66,8 +66,21 @@ const LocationCheckIn = () => {
       </div>;
   }
 
-  // 找出員工所屬部門
-  const employeeDepartment = departments?.find(dept => dept.name === currentUser.department);
+  // 根據員工部門找到對應的部門資料
+  const employeeDepartment = currentUser.department ? 
+    departments?.find(dept => dept.name === currentUser.department) : null;
+  
+  console.log('📍 員工部門匹配結果:', {
+    employeeName: currentUser.name,
+    employeeDepartment: currentUser.department,
+    foundDepartment: employeeDepartment?.name,
+    departmentGPSStatus: employeeDepartment?.gps_status,
+    departmentCoordinates: employeeDepartment ? {
+      lat: employeeDepartment.latitude,
+      lng: employeeDepartment.longitude
+    } : null
+  });
+
   const isDepartmentGPSReady = employeeDepartment ? isDepartmentReadyForCheckIn(employeeDepartment) : false;
 
   // 判斷是否可以進行位置打卡

@@ -67,39 +67,95 @@ export const useLocationCheckIn = (userId: string, actionType: 'check-in' | 'che
     }
 
     try {
+      console.log('🚀 開始位置打卡流程:', {
+        userId,
+        userName: currentUser.name,
+        userDepartment: currentUser.department
+      });
+
       // 取得位置
       const position = await getCurrentPosition();
       const { latitude, longitude } = position.coords;
       
-      // 取得部門資料
-      const department = getDepartmentForCheckIn(departments, currentUser.department);
-      
-      if (!department) {
-        toast({
-          title: "打卡失敗",
-          description: "找不到部門資料",
-          variant: "destructive",
-        });
-        return false;
-      }
+      console.log('📍 用戶位置:', { latitude, longitude });
 
-      // 檢查打卡範圍 - 從系統設定中取得距離限制
+      // 系統距離限制設定
       const systemDistanceLimit = systemSettings?.check_in_distance_limit ? 
         parseInt(systemSettings.check_in_distance_limit) : 500;
-      
+
+      console.log('⚙️ 系統設定:', { systemDistanceLimit });
+
+      let targetDepartment: Department | null = null;
+      let locationName = '總公司';
+
+      // 如果員工有部門，尋找對應的部門資料
+      if (currentUser.department) {
+        targetDepartment = getDepartmentForCheckIn(departments, currentUser.department);
+        
+        console.log('🏢 部門查詢結果:', {
+          searchDepartment: currentUser.department,
+          foundDepartment: targetDepartment?.name,
+          gpsStatus: targetDepartment?.gps_status,
+          coordinates: targetDepartment ? {
+            lat: targetDepartment.latitude,
+            lng: targetDepartment.longitude
+          } : null
+        });
+
+        if (!targetDepartment) {
+          toast({
+            title: "打卡失敗",
+            description: `找不到部門「${currentUser.department}」的設定資料`,
+            variant: "destructive",
+          });
+          return false;
+        }
+
+        // 檢查部門GPS是否設定完成
+        if (targetDepartment.gps_status !== 'converted' || !targetDepartment.latitude || !targetDepartment.longitude) {
+          toast({
+            title: "打卡失敗",
+            description: `部門「${targetDepartment.name}」的GPS座標尚未設定完成，請聯繫管理者`,
+            variant: "destructive",
+          });
+          return false;
+        }
+
+        locationName = targetDepartment.name;
+      }
+
+      // 如果沒有部門或部門GPS未設定，使用總公司位置（從geolocation.ts）
+      if (!targetDepartment) {
+        // 導入總公司座標
+        const { COMPANY_LOCATION } = await import('@/utils/geolocation');
+        targetDepartment = {
+          id: 'headquarters',
+          name: '總公司',
+          latitude: COMPANY_LOCATION.latitude,
+          longitude: COMPANY_LOCATION.longitude,
+          gps_status: 'converted',
+          address_verified: true
+        } as Department;
+        
+        console.log('🏢 使用總公司位置:', COMPANY_LOCATION);
+      }
+
+      // 檢查打卡範圍
       const rangeCheck = isWithinCheckInRange(
         latitude, 
         longitude, 
-        department, 
+        targetDepartment, 
         systemDistanceLimit
       );
       
       setDistance(rangeCheck.distance);
 
+      console.log('📐 距離檢查結果:', rangeCheck);
+
       if (!rangeCheck.isWithinRange) {
         toast({
           title: "打卡失敗",
-          description: `距離過遠 (${rangeCheck.distance}公尺)，超過允許範圍 ${rangeCheck.allowedDistance}公尺`,
+          description: `距離${locationName}過遠 (${rangeCheck.distance}公尺)，超過允許範圍 ${rangeCheck.allowedDistance}公尺`,
           variant: "destructive",
         });
         return false;
@@ -116,23 +172,25 @@ export const useLocationCheckIn = (userId: string, actionType: 'check-in' | 'che
           latitude: latitude,
           longitude: longitude,
           distance: rangeCheck.distance,
-          locationName: department.name,
-          departmentLatitude: department.latitude,
-          departmentLongitude: department.longitude,
-          departmentName: department.name
+          locationName: locationName,
+          departmentLatitude: targetDepartment.latitude,
+          departmentLongitude: targetDepartment.longitude,
+          departmentName: targetDepartment.name
         }
       };
+
+      console.log('📝 準備建立打卡記錄:', checkInData);
 
       const success = await createCheckInRecord(checkInData);
       
       if (success) {
-        // 移除成功提醒，保持簡潔的使用者體驗
+        console.log('✅ 打卡成功');
         return true;
       }
 
       return false;
     } catch (error) {
-      console.error('位置打卡失敗:', error);
+      console.error('❌ 位置打卡失敗:', error);
       
       if (error instanceof GeolocationPositionError) {
         let errorMessage = '無法取得位置資訊';

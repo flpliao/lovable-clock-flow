@@ -14,6 +14,7 @@ const LocationInfo: React.FC<LocationInfoProps> = ({
   employeeDepartment
 }) => {
   const getComparisonLocationInfo = () => {
+    // 如果員工沒有設定部門，使用總公司
     if (!currentUser.department) {
       return {
         name: '總公司',
@@ -23,6 +24,7 @@ const LocationInfo: React.FC<LocationInfoProps> = ({
       };
     }
 
+    // 如果員工有部門但找不到部門資料
     if (!employeeDepartment) {
       return {
         name: currentUser.department,
@@ -32,6 +34,7 @@ const LocationInfo: React.FC<LocationInfoProps> = ({
       };
     }
 
+    // 檢查部門GPS是否準備就緒
     const isReady = isDepartmentReadyForCheckIn(employeeDepartment);
     return {
       name: employeeDepartment.name,

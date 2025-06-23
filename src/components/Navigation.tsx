@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { useUser } from '@/contexts/UserContext';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -29,12 +30,12 @@ import {
 } from "lucide-react";
 
 const Navigation = () => {
-  const { currentUser, logout } = useUser();
-  const router = useRouter();
+  const { currentUser, resetUserState } = useUser();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout();
-    router.push('/login');
+    resetUserState();
+    navigate('/login');
   };
 
   const adminMenuItems = [
@@ -151,27 +152,23 @@ const Navigation = () => {
           <DropdownMenuTrigger asChild>
             <button className="ml-auto flex items-center space-x-2 rounded-full border bg-muted p-2 pl-3">
               <Avatar className="h-8 w-8">
-                {currentUser?.imageUrl ? (
-                  <AvatarImage src={currentUser.imageUrl} alt={currentUser?.name} />
-                ) : (
-                  <AvatarFallback>{currentUser?.name?.charAt(0)}</AvatarFallback>
-                )}
+                <AvatarFallback>{currentUser?.name?.charAt(0)}</AvatarFallback>
               </Avatar>
               <span className="hidden font-medium md:block">{currentUser?.name}</span>
             </button>
-          </DropdownMenuTrigger>
+          </Dropdown>
           <DropdownMenuContent align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{currentUser?.name}</p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  {currentUser?.email}
+                  {currentUser?.role}
                 </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             {menuItems.map((item) => (
-              <DropdownMenuItem key={item.title} onClick={() => router.push(item.path)}>
+              <DropdownMenuItem key={item.title} onClick={() => navigate(item.path)}>
                 {item.title}
               </DropdownMenuItem>
             ))}

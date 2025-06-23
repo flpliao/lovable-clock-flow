@@ -77,7 +77,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
             hasHireDate={userStaffData?.hire_date !== null}
           />
 
-          {/* 請假類型詳細資訊 - 新增的功能 */}
+          {/* 請假類型詳細資訊 - 移到請假類型選擇下面 */}
           {selectedLeaveType && (
             <LeaveTypeDetailCard 
               leaveType={selectedLeaveType}

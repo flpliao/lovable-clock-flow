@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -153,7 +152,7 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
             />
           </div>
 
-          {/* 請假類型詳細資訊 - 新增的功能 */}
+          {/* 請假類型詳細資訊 - 移到請假類型選擇下面 */}
           {selectedLeaveType && (
             <LeaveTypeDetailCard 
               leaveType={selectedLeaveType}

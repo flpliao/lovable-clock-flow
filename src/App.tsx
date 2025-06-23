@@ -2,19 +2,19 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Header from './components/Header';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/Index';
 import CheckIn from './pages/CheckIn';
 import PersonalAttendance from './pages/PersonalAttendance';
 import LeaveRequest from './pages/LeaveRequest';
 import CompanyAnnouncements from './pages/CompanyAnnouncements';
-import ManagementDashboard from './pages/ManagementDashboard';
-import StaffManagement from './pages/StaffManagement';
-import ScheduleManagement from './pages/ScheduleManagement';
+import ManagementDashboard from './pages/StaffDashboard';
+import StaffManagement from './pages/PersonnelManagement';
+import ScheduleManagement from './pages/Scheduling';
 import ApprovalCenter from './pages/ApprovalCenter';
-import PayrollManagement from './pages/PayrollManagement';
+import PayrollManagement from './pages/HRManagement';
 import { Toaster } from '@/components/ui/toaster';
-import AnnouncementManagement from './pages/AnnouncementManagement';
-import LeaveManagement from './pages/LeaveManagement';
+import AnnouncementManagement from './pages/AnnouncementManagementPage';
+import LeaveManagement from './pages/LeaveTypeManagement';
 import MissedCheckinManagement from './pages/MissedCheckinManagement';
 
 function App() {

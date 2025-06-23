@@ -23,14 +23,14 @@ const DesktopNavigation: React.FC<DesktopNavigationProps> = ({
       {/* 主要選單項目 - 顯示前4個 */}
       {visibleMenuItems.slice(0, 4).map((item) => (
         <Button
-          key={item.path}
-          onClick={() => onNavigation(item.path)}
+          key={item.href}
+          onClick={() => onNavigation(item.href)}
           variant="ghost"
           className={`
             text-white/80 hover:text-white hover:bg-white/10 
             transition-all duration-200 px-4 py-2 rounded-lg
             font-medium text-sm
-            ${location.pathname === item.path ? 'bg-white/15 text-white' : ''}
+            ${location.pathname === item.href ? 'bg-white/15 text-white' : ''}
           `}
         >
           <item.icon className="h-4 w-4 mr-2" />
@@ -54,8 +54,8 @@ const DesktopNavigation: React.FC<DesktopNavigationProps> = ({
             <div className="py-2">
               {visibleMenuItems.slice(4).map((item) => (
                 <Button
-                  key={item.path}
-                  onClick={() => onNavigation(item.path)}
+                  key={item.href}
+                  onClick={() => onNavigation(item.href)}
                   variant="ghost"
                   className="w-full justify-start text-gray-700 hover:bg-gray-100/80 hover:text-gray-900 px-4 py-3 rounded-none font-medium text-sm transition-colors"
                 >

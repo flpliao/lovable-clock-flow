@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { StaffInfoCard } from './StaffInfoCard';
 import { AnnualLeaveInfoCard } from './AnnualLeaveInfoCard';
 import { LeaveRequestFormFields } from './LeaveRequestFormFields';
+import { LeaveTypeDetailCard } from './LeaveTypeDetailCard';
 import { useLeaveRequestForm } from '@/hooks/useLeaveRequestForm';
 
 interface NewLeaveRequestFormProps {
@@ -24,6 +25,16 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     validationError,
     handleSubmit
   } = useLeaveRequestForm();
+
+  const selectedLeaveType = form.watch('leave_type');
+
+  // 模擬剩餘病假天數 (實際應該從後端獲取)
+  const getRemainingDays = (leaveType: string) => {
+    if (leaveType === 'sick') {
+      return 27; // 假設還剩27天病假
+    }
+    return undefined;
+  };
 
   const onFormSubmit = async (data: any) => {
     await handleSubmit(data);
@@ -65,6 +76,14 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
             validationError={validationError}
             hasHireDate={userStaffData?.hire_date !== null}
           />
+
+          {/* 請假類型詳細資訊 - 新增的功能 */}
+          {selectedLeaveType && (
+            <LeaveTypeDetailCard 
+              leaveType={selectedLeaveType}
+              remainingDays={getRemainingDays(selectedLeaveType)}
+            />
+          )}
 
           {/* 提交按鈕 */}
           <div className="flex justify-center pt-6">

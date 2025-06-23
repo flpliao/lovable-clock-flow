@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -11,6 +12,7 @@ import { LeaveDateSelector } from '@/components/leave/LeaveDateSelector';
 import { LeaveTypeSelector } from '@/components/leave/LeaveTypeSelector';
 import { LeaveFormDetails } from '@/components/leave/LeaveFormDetails';
 import { LeaveApprovalWorkflow } from '@/components/leave/LeaveApprovalWorkflow';
+import { LeaveTypeDetailCard } from '@/components/leave/LeaveTypeDetailCard';
 import { getApprovers } from '@/services/leaveRequestService';
 import { Send } from 'lucide-react';
 import { useLeaveFormValidation } from '@/hooks/useLeaveFormValidation';
@@ -45,6 +47,14 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
     end_date: form.watch('end_date'),
     hours: calculatedHours
   });
+
+  // 模擬剩餘病假天數 (實際應該從後端獲取)
+  const getRemainingDays = (leaveType: string) => {
+    if (leaveType === 'sick') {
+      return 27; // 假設還剩27天病假
+    }
+    return undefined;
+  };
 
   async function handleSubmit(data: LeaveFormValues) {
     if (!currentUser) return;
@@ -142,6 +152,14 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
               calculatedDays={calculatedDays}
             />
           </div>
+
+          {/* 請假類型詳細資訊 - 新增的功能 */}
+          {selectedLeaveType && (
+            <LeaveTypeDetailCard 
+              leaveType={selectedLeaveType}
+              remainingDays={getRemainingDays(selectedLeaveType)}
+            />
+          )}
 
           {/* 驗證結果顯示 */}
           <ValidationResultsSection validationResult={validationResult} />

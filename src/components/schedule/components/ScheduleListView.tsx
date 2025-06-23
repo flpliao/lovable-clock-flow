@@ -3,6 +3,7 @@ import React from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useScheduleListLogic } from './scheduleList/hooks/useScheduleListLogic';
+import { useScheduleOperationsHandlers } from '../hooks/useScheduleOperationsHandlers';
 import ScheduleListHeader from './scheduleList/ScheduleListHeader';
 import ScheduleListPagination from './scheduleList/ScheduleListPagination';
 import ScheduleListTable from './scheduleList/ScheduleListTable';
@@ -22,6 +23,8 @@ const ScheduleListView: React.FC<ScheduleListViewProps> = ({
   canDeleteSchedule,
   onRemoveSchedule
 }) => {
+  const { handleUpdateSchedule } = useScheduleOperationsHandlers();
+  
   const {
     mounted,
     refreshing,
@@ -95,6 +98,7 @@ const ScheduleListView: React.FC<ScheduleListViewProps> = ({
           activeView={activeView}
           getUserName={getUserName}
           onDeleteSchedule={handleScheduleDelete}
+          onUpdateSchedule={handleUpdateSchedule}
           isAdmin={isAdmin}
         />
       </div>

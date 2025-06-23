@@ -8,33 +8,36 @@ export const useScheduleOperationsHandlers = () => {
 
   const handleUpdateSchedule = async (id: string, updates: any) => {
     try {
-      await updateSchedule(id, updates);
-      toast({
-        title: "更新成功",
-        description: "排班已更新",
-      });
+      console.log('useScheduleOperationsHandlers - Updating schedule:', { id, updates });
+      
+      // 確保更新包含所有必要的欄位
+      const updateData: any = {};
+      
+      if (updates.timeSlot) updateData.timeSlot = updates.timeSlot;
+      if (updates.startTime) updateData.startTime = updates.startTime;
+      if (updates.endTime) updateData.endTime = updates.endTime;
+      if (updates.workDate) updateData.workDate = updates.workDate;
+      if (updates.userId) updateData.userId = updates.userId;
+
+      console.log('useScheduleOperationsHandlers - Final update data:', updateData);
+      
+      await updateSchedule(id, updateData);
+      
+      console.log('useScheduleOperationsHandlers - Schedule updated successfully');
     } catch (error) {
-      toast({
-        title: "更新失敗",
-        description: "無法更新排班，請稍後再試",
-        variant: "destructive",
-      });
+      console.error('useScheduleOperationsHandlers - Update failed:', error);
+      throw error;
     }
   };
 
   const handleDeleteSchedule = async (id: string) => {
     try {
+      console.log('useScheduleOperationsHandlers - Deleting schedule:', id);
       await removeSchedule(id);
-      toast({
-        title: "刪除成功",
-        description: "排班已刪除",
-      });
+      console.log('useScheduleOperationsHandlers - Schedule deleted successfully');
     } catch (error) {
-      toast({
-        title: "刪除失敗",
-        description: "無法刪除排班，請稍後再試",
-        variant: "destructive",
-      });
+      console.error('useScheduleOperationsHandlers - Delete failed:', error);
+      throw error;
     }
   };
 

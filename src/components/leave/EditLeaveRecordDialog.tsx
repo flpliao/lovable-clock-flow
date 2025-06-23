@@ -30,7 +30,7 @@ export const EditLeaveRecordDialog: React.FC<EditLeaveRecordDialogProps> = ({
   const [formData, setFormData] = useState({
     start_date: '',
     end_date: '',
-    leave_type: '',
+    leave_type: '' as LeaveRequest['leave_type'],
     hours: 0,
     reason: '',
     status: 'pending' as 'pending' | 'approved' | 'rejected'
@@ -153,7 +153,7 @@ export const EditLeaveRecordDialog: React.FC<EditLeaveRecordDialogProps> = ({
 
           <div className="space-y-2">
             <Label>請假類型</Label>
-            <Select value={formData.leave_type} onValueChange={(value) => setFormData(prev => ({ ...prev, leave_type: value }))}>
+            <Select value={formData.leave_type} onValueChange={(value: LeaveRequest['leave_type']) => setFormData(prev => ({ ...prev, leave_type: value }))}>
               <SelectTrigger>
                 <SelectValue placeholder="選擇請假類型" />
               </SelectTrigger>

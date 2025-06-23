@@ -36,7 +36,7 @@ const ScheduleHeader = ({
         />
       </div>
 
-      {/* 視圖類型切換 - 移除日曆視圖按鈕 */}
+      {/* 視圖類型切換 - 僅顯示列表視圖 */}
       <div>
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-white/20 rounded-2xl">

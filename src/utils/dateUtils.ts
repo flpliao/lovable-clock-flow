@@ -34,14 +34,14 @@ export const formatDateTime = (dateString: string): string => {
   });
 };
 
-// 將日期轉換為 YYYY-MM-DD 格式 - 使用台灣時區
+// 將日期轉換為 YYYY-MM-DD 格式 - 確保使用台灣時區
 export const formatDateForDatabase = (date: Date): string => {
-  // 轉換為台灣時區的日期
-  const taipeiDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+  // 建立一個新的 Date 物件，確保使用台灣時區
+  const taipeiDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000) + (8 * 3600000));
   
-  const year = taipeiDate.getFullYear();
-  const month = String(taipeiDate.getMonth() + 1).padStart(2, '0');
-  const day = String(taipeiDate.getDate()).padStart(2, '0');
+  const year = taipeiDate.getUTCFullYear();
+  const month = String(taipeiDate.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(taipeiDate.getUTCDate()).padStart(2, '0');
   
   const result = `${year}-${month}-${day}`;
   
@@ -60,15 +60,14 @@ export const formatDateForDatabase = (date: Date): string => {
   return result;
 };
 
-// 從資料庫日期字串建立台灣時區日期物件
+// 從資料庫日期字串建立正確的日期物件 - 考慮台灣時區
 export const parseDateFromDatabase = (dateString: string): Date => {
+  // 直接解析 YYYY-MM-DD 格式，避免時區轉換問題
   const [year, month, day] = dateString.split('-').map(Number);
-  // 建立台灣時區的日期物件
-  const date = new Date();
-  date.setFullYear(year, month - 1, day);
-  date.setHours(12, 0, 0, 0); // 設定為中午避免時區問題
+  // 建立本地時區的日期物件，避免 UTC 轉換
+  const date = new Date(year, month - 1, day);
   
-  console.log('parseDateFromDatabase - 資料庫日期解析 (台灣時區):', {
+  console.log('parseDateFromDatabase - 資料庫日期解析:', {
     inputString: dateString,
     parsedYear: year,
     parsedMonth: month,
@@ -91,30 +90,35 @@ export const formatDisplayDate = (date: Date): string => {
   }).replace(/\//g, '/');
 };
 
-// 專門用於請假記錄顯示的日期格式化 - 確保使用台灣時區
+// 專門用於請假記錄顯示的日期格式化 - 修正時區問題
 export const formatLeaveRecordDate = (dateString: string): string => {
-  // 解析資料庫的日期字串並轉換為台灣時區顯示
-  const [year, month, day] = dateString.split('-').map(Number);
-  const date = new Date(year, month - 1, day);
+  // 如果是 YYYY-MM-DD 格式，直接解析為本地日期
+  if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    
+    const formattedDate = `${year}/${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}`;
+    
+    console.log('formatLeaveRecordDate - 請假記錄日期格式化:', {
+      inputString: dateString,
+      parsedYear: year,
+      parsedMonth: month,
+      parsedDay: day,
+      createdDate: date,
+      formattedResult: formattedDate
+    });
+    
+    return formattedDate;
+  }
   
-  // 使用台灣時區格式化
-  const formattedDate = date.toLocaleDateString('zh-TW', {
+  // 如果是其他格式，使用原來的邏輯但確保台灣時區
+  const date = new Date(dateString);
+  return date.toLocaleDateString('zh-TW', {
     year: 'numeric',
     month: '2-digit', 
     day: '2-digit',
     timeZone: 'Asia/Taipei'
   }).replace(/\//g, '/');
-  
-  console.log('formatLeaveRecordDate - 請假記錄日期格式化 (台灣時區):', {
-    inputString: dateString,
-    parsedYear: year,
-    parsedMonth: month,
-    parsedDay: day,
-    createdDate: date,
-    formattedResult: formattedDate
-  });
-  
-  return formattedDate;
 };
 
 // 獲取當前台灣時區的日期
@@ -151,22 +155,19 @@ export const ensureLocalDate = (date: Date): Date => {
   return taipeiDate;
 };
 
-// 從日期選擇器獲取的日期轉換為資料庫格式（台灣時區）
+// 從日期選擇器獲取的日期轉換為資料庫格式（台灣時區）- 修正版本
 export const datePickerToDatabase = (pickerDate: Date): string => {
-  // 確保使用台灣時區的日期組件
-  const taipeiDate = new Date(pickerDate.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
-  
-  const year = taipeiDate.getFullYear();
-  const month = String(taipeiDate.getMonth() + 1).padStart(2, '0');
-  const day = String(taipeiDate.getDate()).padStart(2, '0');
+  // 直接使用本地日期組件，避免時區轉換
+  const year = pickerDate.getFullYear();
+  const month = String(pickerDate.getMonth() + 1).padStart(2, '0');
+  const day = String(pickerDate.getDate()).padStart(2, '0');
   
   const result = `${year}-${month}-${day}`;
   
-  console.log('datePickerToDatabase - 日期選擇器轉資料庫 (台灣時區):', {
+  console.log('datePickerToDatabase - 日期選擇器轉資料庫:', {
     pickerDate: pickerDate,
     pickerDateString: pickerDate.toString(),
     pickerDateISO: pickerDate.toISOString(),
-    taipeiDate: taipeiDate,
     extractedYear: year,
     extractedMonth: month,
     extractedDay: day,

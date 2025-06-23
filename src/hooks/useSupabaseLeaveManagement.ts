@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
@@ -125,31 +124,45 @@ export const useSupabaseLeaveManagement = () => {
         return;
       }
 
-      const formattedRequests: LeaveRequest[] = (data || []).map((request: any) => ({
-        id: request.id,
-        user_id: request.user_id || request.staff_id,
-        start_date: request.start_date,
-        end_date: request.end_date,
-        leave_type: request.leave_type,
-        status: request.status,
-        hours: Number(request.hours),
-        reason: request.reason,
-        approval_level: request.approval_level,
-        current_approver: request.current_approver,
-        created_at: request.created_at,
-        updated_at: request.updated_at,
-        approved_by: request.approved_by, // 新增核准人欄位
-        approvals: (request.approval_records || []).map((approval: any) => ({
-          id: approval.id,
-          leave_request_id: approval.leave_request_id,
-          approver_id: approval.approver_id,
-          approver_name: approval.approver_name,
-          status: approval.status,
-          level: approval.level,
-          approval_date: approval.approval_date,
-          comment: approval.comment
-        }))
-      }));
+      const formattedRequests: LeaveRequest[] = (data || []).map((request: any) => {
+        // 確保日期格式正確，避免時區問題
+        const startDate = request.start_date;
+        const endDate = request.end_date;
+        
+        console.log('處理請假記錄日期:', {
+          id: request.id,
+          originalStartDate: startDate,
+          originalEndDate: endDate,
+          startDateType: typeof startDate,
+          endDateType: typeof endDate
+        });
+
+        return {
+          id: request.id,
+          user_id: request.user_id || request.staff_id,
+          start_date: startDate, // 保持原始格式，讓前端處理
+          end_date: endDate, // 保持原始格式，讓前端處理
+          leave_type: request.leave_type,
+          status: request.status,
+          hours: Number(request.hours),
+          reason: request.reason,
+          approval_level: request.approval_level,
+          current_approver: request.current_approver,
+          created_at: request.created_at,
+          updated_at: request.updated_at,
+          approved_by: request.approved_by,
+          approvals: (request.approval_records || []).map((approval: any) => ({
+            id: approval.id,
+            leave_request_id: approval.leave_request_id,
+            approver_id: approval.approver_id,
+            approver_name: approval.approver_name,
+            status: approval.status,
+            level: approval.level,
+            approval_date: approval.approval_date,
+            comment: approval.comment
+          }))
+        };
+      });
 
       setLeaveRequests(formattedRequests);
       console.log('Successfully loaded leave requests:', formattedRequests.length);
@@ -176,14 +189,14 @@ export const useSupabaseLeaveManagement = () => {
     try {
       console.log('Creating leave request:', request);
 
-      // 建立請假申請，確保 user_id 和 staff_id 都有值
+      // 建立請假申請，確保日期格式正確
       const { data: leaveData, error: leaveError } = await supabase
         .from('leave_requests')
         .insert({
           user_id: currentUser.id,
-          staff_id: currentUser.id, // 確保 staff_id 也有值
-          start_date: request.start_date,
-          end_date: request.end_date,
+          staff_id: currentUser.id,
+          start_date: request.start_date, // 直接使用 YYYY-MM-DD 格式
+          end_date: request.end_date, // 直接使用 YYYY-MM-DD 格式
           leave_type: request.leave_type,
           status: request.status,
           hours: request.hours,
@@ -221,7 +234,6 @@ export const useSupabaseLeaveManagement = () => {
     }
   };
 
-  // 更新請假申請狀態
   const updateLeaveRequestStatus = async (
     requestId: string, 
     status: 'approved' | 'rejected',
@@ -269,7 +281,6 @@ export const useSupabaseLeaveManagement = () => {
     }
   };
 
-  // 新增 getLeaveHistory 方法
   const getLeaveHistory = () => {
     return leaveRequests.filter(request => request.user_id === currentUser?.id);
   };
@@ -309,7 +320,7 @@ export const useSupabaseLeaveManagement = () => {
     initializeAnnualLeaveBalance,
     createLeaveRequest,
     updateLeaveRequestStatus,
-    getLeaveHistory, // 新增這個方法
+    getLeaveHistory,
     refreshData: manualLoadLeaveRequests,
     clearAllData
   };

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -49,16 +48,28 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
   const watchedEndDate = form.watch('end_date');
   const watchedLeaveType = form.watch('leave_type');
 
-  // 載入特休資料
+  // 載入特休資料 - 從 staff 表取得 hire_date
   useEffect(() => {
     const loadAnnualLeaveData = async () => {
-      if (!currentUser?.id || !currentUser?.hire_date) {
-        console.log('No user or hire date available');
+      if (!currentUser?.id) {
+        console.log('No user available');
         return;
       }
 
       try {
-        const hireDate = new Date(currentUser.hire_date);
+        // 從 staff 表取得員工的入職日期
+        const { data: staffData, error: staffError } = await supabase
+          .from('staff')
+          .select('hire_date')
+          .eq('id', currentUser.id)
+          .single();
+
+        if (staffError || !staffData?.hire_date) {
+          console.log('No hire date found in staff table');
+          return;
+        }
+
+        const hireDate = new Date(staffData.hire_date);
         const totalDays = calculateAnnualLeaveDays(hireDate);
         
         // 計算已使用的特休天數
@@ -87,11 +98,11 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           remainingDays
         });
 
-        console.log('Annual leave data loaded:', {
+        console.log('Annual leave data loaded from staff table:', {
           totalDays,
           usedDays,
           remainingDays,
-          hireDate: currentUser.hire_date
+          hireDate: staffData.hire_date
         });
       } catch (error) {
         console.error('Error loading annual leave data:', error);
@@ -99,7 +110,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     };
 
     loadAnnualLeaveData();
-  }, [currentUser?.id, currentUser?.hire_date]);
+  }, [currentUser?.id]);
 
   // 計算請假時數
   useEffect(() => {
@@ -277,8 +288,8 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     }
   };
 
-  // 檢查是否有入職日期
-  const hasHireDate = Boolean(currentUser?.hire_date);
+  // 檢查是否有入職日期 - 改為檢查 staff 表
+  const hasHireDate = Boolean(annualLeaveData);
 
   return (
     <div className="space-y-6">

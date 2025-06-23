@@ -9,9 +9,9 @@ import {
   TableRow
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Edit2, Trash2, Shield } from 'lucide-react';
+import { Edit2, Trash2, Shield, Lock } from 'lucide-react';
 import { StaffRole } from './types';
-import { useSupabaseRoleManagement } from './hooks/useSupabaseRoleManagement';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { Badge } from '@/components/ui/badge';
 
 interface RoleTableProps {
@@ -20,48 +20,48 @@ interface RoleTableProps {
 }
 
 const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
-  const { deleteRole } = useSupabaseRoleManagement();
+  const { deleteRole } = useStaffManagementContext();
   
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="text-white/90">角色名稱</TableHead>
-          <TableHead className="text-white/90">描述</TableHead>
-          <TableHead className="text-white/90">權限數量</TableHead>
-          <TableHead className="text-white/90">類型</TableHead>
-          <TableHead className="text-right text-white/90">操作</TableHead>
+          <TableHead>角色名稱</TableHead>
+          <TableHead>描述</TableHead>
+          <TableHead>權限數量</TableHead>
+          <TableHead>類型</TableHead>
+          <TableHead className="text-right">操作</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {roles.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={5} className="h-24 text-center text-white/80">
+            <TableCell colSpan={5} className="h-24 text-center">
               尚未設定任何角色
             </TableCell>
           </TableRow>
         ) : (
           roles.map((role) => (
             <TableRow key={role.id}>
-              <TableCell className="font-medium text-white/90">
+              <TableCell className="font-medium">
                 <div className="flex items-center">
-                  {role.is_system_role && <Shield className="h-3.5 w-3.5 mr-2 text-blue-400" />}
+                  {role.is_system_role && <Shield className="h-3.5 w-3.5 mr-2 text-blue-500" />}
                   {role.name}
                 </div>
               </TableCell>
-              <TableCell className="text-white/80">{role.description}</TableCell>
+              <TableCell>{role.description}</TableCell>
               <TableCell>
-                <Badge variant="secondary" className="bg-white/20 text-white/90">
+                <Badge variant="secondary">
                   {role.permissions.length} 個權限
                 </Badge>
               </TableCell>
               <TableCell>
                 {role.is_system_role ? (
-                  <Badge variant="outline" className="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30">
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-50">
                     系統預設
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="bg-green-500/20 text-green-300 hover:bg-green-500/30">
+                  <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50">
                     自訂角色
                   </Badge>
                 )}
@@ -71,7 +71,6 @@ const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
                   variant="ghost"
                   size="icon"
                   onClick={() => onEdit(role)}
-                  className="text-white/80 hover:text-white hover:bg-white/20"
                 >
                   <Edit2 className="h-4 w-4" />
                 </Button>
@@ -80,7 +79,6 @@ const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
                   size="icon"
                   onClick={() => deleteRole(role.id)}
                   disabled={role.is_system_role}
-                  className="text-white/80 hover:text-white hover:bg-white/20 disabled:opacity-50"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

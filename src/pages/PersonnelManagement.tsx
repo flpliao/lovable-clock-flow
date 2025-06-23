@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import StaffManagement from '@/components/staff/StaffManagement';
 import PositionManagement from '@/components/positions/PositionManagement';
 import { Users, Briefcase, UserCheck, Settings, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 import { DataSyncManager } from '@/utils/dataSync';
 
 const PersonnelManagement = () => {
@@ -141,7 +142,9 @@ const PersonnelManagement = () => {
             {/* 內容區域 */}
             <div>
               <TabsContent value="staff" className="mt-0">
-                <StaffManagement />
+                <StaffManagementProvider>
+                  <StaffManagement />
+                </StaffManagementProvider>
               </TabsContent>
               
               <TabsContent value="positions" className="mt-0">

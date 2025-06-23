@@ -1,35 +1,20 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Header from './components/Header';
-import Dashboard from './pages/Index';
+import Header from './components/header/Header';
+import Dashboard from './pages/Dashboard';
+import CheckIn from './pages/CheckIn';
 import PersonalAttendance from './pages/PersonalAttendance';
 import LeaveRequest from './pages/LeaveRequest';
 import CompanyAnnouncements from './pages/CompanyAnnouncements';
-import ManagementDashboard from './pages/StaffDashboard';
-import StaffManagement from './pages/PersonnelManagement';
-import ScheduleManagement from './pages/Scheduling';
+import ManagementDashboard from './pages/ManagementDashboard';
+import StaffManagement from './pages/StaffManagement';
+import ScheduleManagement from './pages/ScheduleManagement';
 import ApprovalCenter from './pages/ApprovalCenter';
-import PayrollManagement from './pages/HRManagement';
+import PayrollManagement from './pages/PayrollManagement';
 import { Toaster } from '@/components/ui/toaster';
-import AnnouncementManagement from './pages/AnnouncementManagementPage';
-import LeaveManagement from './pages/LeaveTypeManagement';
+import AnnouncementManagement from './pages/AnnouncementManagement';
+import LeaveManagement from './pages/LeaveManagement';
 import MissedCheckinManagement from './pages/MissedCheckinManagement';
-// Import LocationCheckIn component for the check-in page
-import LocationCheckIn from './components/LocationCheckIn';
-
-// Create a simple CheckIn page component
-const CheckIn = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36">
-      <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <LocationCheckIn />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 function App() {
   return (

@@ -7,21 +7,11 @@ import MissedCheckinFormFields from './components/MissedCheckinFormFields';
 import { useMissedCheckinForm } from './hooks/useMissedCheckinForm';
 
 interface MissedCheckinDialogProps {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
   onSuccess: () => void;
 }
 
-const MissedCheckinDialog: React.FC<MissedCheckinDialogProps> = ({ 
-  open: controlledOpen, 
-  onOpenChange: controlledOnOpenChange, 
-  onSuccess 
-}) => {
-  const [internalOpen, setInternalOpen] = useState(false);
-  
-  const isControlled = controlledOpen !== undefined;
-  const open = isControlled ? controlledOpen : internalOpen;
-  const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen;
+const MissedCheckinDialog: React.FC<MissedCheckinDialogProps> = ({ onSuccess }) => {
+  const [open, setOpen] = useState(false);
   
   const {
     formData,
@@ -44,38 +34,7 @@ const MissedCheckinDialog: React.FC<MissedCheckinDialogProps> = ({
     resetForm();
   };
 
-  const DialogComponent = isControlled ? (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            忘記打卡申請
-          </DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <MissedCheckinFormFields
-            formData={formData}
-            onFormDataChange={updateFormData}
-          />
-
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={loading}
-            >
-              取消
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? '提交中...' : '提交申請'}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-  ) : (
+  return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button 
@@ -117,8 +76,6 @@ const MissedCheckinDialog: React.FC<MissedCheckinDialogProps> = ({
       </DialogContent>
     </Dialog>
   );
-
-  return DialogComponent;
 };
 
 export default MissedCheckinDialog;

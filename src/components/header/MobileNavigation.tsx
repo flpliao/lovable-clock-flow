@@ -60,13 +60,13 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
             <div className="space-y-1 max-h-[40vh] overflow-y-auto">
               {visibleMenuItems.map((item) => (
                 <Button
-                  key={item.href}
-                  onClick={() => onNavigation(item.href)}
+                  key={item.path}
+                  onClick={() => onNavigation(item.path)}
                   variant="ghost"
                   className={`
                     w-full justify-start text-gray-800 hover:text-gray-900 hover:bg-gray-100 
                     transition-all duration-200 p-4 rounded-lg text-base font-semibold
-                    ${location.pathname === item.href ? 'bg-gray-200 text-gray-900 shadow-sm' : ''}
+                    ${location.pathname === item.path ? 'bg-gray-200 text-gray-900 shadow-sm' : ''}
                   `}
                 >
                   <item.icon className="h-5 w-5 mr-3 text-gray-700" />

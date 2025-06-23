@@ -1,4 +1,3 @@
-
 import {
   Home,
   Calendar,
@@ -12,7 +11,7 @@ import {
   Clock
 } from 'lucide-react';
 
-export interface MenuItem {
+interface MenuItem {
   label: string;
   href: string;
   icon: any;

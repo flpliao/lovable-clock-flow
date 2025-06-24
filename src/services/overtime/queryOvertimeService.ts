@@ -12,7 +12,16 @@ export const queryOvertimeService = {
         staff!staff_id (
           name
         ),
-        overtime_approval_records (*)
+        overtime_approval_records (
+          id,
+          approver_id,
+          approver_name,
+          level,
+          status,
+          approval_date,
+          comment,
+          created_at
+        )
       `)
       .eq('staff_id', staffId)
       .order('created_at', { ascending: false });
@@ -39,7 +48,16 @@ export const queryOvertimeService = {
           position,
           supervisor_id
         ),
-        overtime_approval_records (*)
+        overtime_approval_records (
+          id,
+          approver_id,
+          approver_name,
+          level,
+          status,
+          approval_date,
+          comment,
+          created_at
+        )
       `)
       .eq('status', 'pending')
       .order('created_at', { ascending: false });

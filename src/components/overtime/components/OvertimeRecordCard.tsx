@@ -1,9 +1,20 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Calendar, DollarSign, FileText, Timer, CheckCircle, User } from 'lucide-react';
+import { Clock, Calendar, DollarSign, FileText, Timer, CheckCircle, User, UserCheck } from 'lucide-react';
 import { getOvertimeTypeText, getCompensationTypeText } from '@/utils/overtimeUtils';
 import { getExceptionStatusText, getExceptionStatusColor } from '@/utils/attendanceExceptionUtils';
+
+interface OvertimeApprovalRecord {
+  id: string;
+  approver_id: string | null;
+  approver_name: string;
+  level: number;
+  status: string;
+  approval_date: string | null;
+  comment: string | null;
+  created_at: string;
+}
 
 interface OvertimeRecord {
   id: string;
@@ -25,6 +36,7 @@ interface OvertimeRecord {
   staff?: {
     name: string;
   };
+  overtime_approval_records?: OvertimeApprovalRecord[];
 }
 
 interface OvertimeRecordCardProps {
@@ -63,7 +75,7 @@ const OvertimeRecordCard: React.FC<OvertimeRecordCardProps> = ({ overtime }) => 
         </div>
       </div>
       
-      {/* 時間資訊區域 - 簡化設計 */}
+      {/* 時間資訊區域 */}
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-3">
           <Calendar className="h-4 w-4 text-white/90" />
@@ -100,7 +112,7 @@ const OvertimeRecordCard: React.FC<OvertimeRecordCardProps> = ({ overtime }) => 
         </div>
       </div>
       
-      {/* 補償方式區域 - 簡化設計 */}
+      {/* 補償方式區域 */}
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-3">
           <DollarSign className="h-4 w-4 text-white/90" />
@@ -116,8 +128,8 @@ const OvertimeRecordCard: React.FC<OvertimeRecordCardProps> = ({ overtime }) => 
         </div>
       </div>
       
-      {/* 原因說明區域 - 簡化設計 */}
-      <div>
+      {/* 原因說明區域 */}
+      <div className="mb-4">
         <div className="flex items-center gap-2 mb-3">
           <FileText className="h-4 w-4 text-white/90" />
           <h4 className="text-base font-medium text-white">原因說明</h4>
@@ -131,6 +143,52 @@ const OvertimeRecordCard: React.FC<OvertimeRecordCardProps> = ({ overtime }) => 
           </div>
         </div>
       </div>
+
+      {/* 審核記錄區域 */}
+      {overtime.overtime_approval_records && overtime.overtime_approval_records.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <UserCheck className="h-4 w-4 text-white/90" />
+            <h4 className="text-base font-medium text-white">審核記錄</h4>
+          </div>
+          
+          <div className="space-y-2">
+            {overtime.overtime_approval_records.map((record) => (
+              <div key={record.id} className="bg-white/10 rounded-lg p-3 border border-white/20">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <UserCheck className="h-4 w-4 text-white/80" />
+                    <span className="text-white font-medium text-sm">{record.approver_name}</span>
+                    <Badge 
+                      className={`text-xs px-2 py-1 rounded-full ${
+                        record.status === 'approved' 
+                          ? 'bg-green-500/80 text-white' 
+                          : record.status === 'rejected'
+                          ? 'bg-red-500/80 text-white'
+                          : 'bg-yellow-500/80 text-white'
+                      }`}
+                    >
+                      {record.status === 'approved' ? '已核准' : record.status === 'rejected' ? '已拒絕' : '待審核'}
+                    </Badge>
+                  </div>
+                  {record.approval_date && (
+                    <span className="text-white/70 text-xs">
+                      {new Date(record.approval_date).toLocaleString('zh-TW')}
+                    </span>
+                  )}
+                </div>
+                
+                {record.comment && (
+                  <div className="text-sm">
+                    <span className="text-white/70">審核意見:</span>
+                    <p className="text-white mt-1">{record.comment}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

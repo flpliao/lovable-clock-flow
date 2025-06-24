@@ -10,6 +10,18 @@ export interface OvertimeRequest {
   hours: number;
 }
 
+export interface OvertimeApprovalRecord {
+  id: string;
+  overtime_id: string;
+  approver_id: string | null;
+  approver_name: string;
+  level: number;
+  status: 'pending' | 'approved' | 'rejected';
+  approval_date?: string;
+  comment?: string;
+  created_at: string;
+}
+
 export interface OvertimeRecord {
   id: string;
   staff_id: string;
@@ -34,16 +46,5 @@ export interface OvertimeRecord {
   staff?: {
     name: string;
   };
-  approvals?: OvertimeApprovalRecord[];
-}
-
-export interface OvertimeApprovalRecord {
-  id: string;
-  overtime_id: string;
-  approver_id: string;
-  approver_name: string;
-  level: number;
-  status: 'pending' | 'approved' | 'rejected';
-  approval_date?: string;
-  comment?: string;
+  overtime_approval_records?: OvertimeApprovalRecord[];
 }

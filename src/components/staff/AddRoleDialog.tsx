@@ -18,6 +18,7 @@ import { NewStaffRole, Permission } from './types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getPermissionCategories, getPermissionsByCategory } from './RoleConstants';
+import { useToast } from '@/hooks/use-toast';
 
 interface AddRoleDialogProps {
   open: boolean;
@@ -26,7 +27,9 @@ interface AddRoleDialogProps {
 
 const AddRoleDialog = ({ open, onOpenChange }: AddRoleDialogProps) => {
   const { addRole } = useStaffManagementContext();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<string>('基本資料');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [newRole, setNewRole] = useState<NewStaffRole>({
     name: '',
@@ -37,33 +40,110 @@ const AddRoleDialog = ({ open, onOpenChange }: AddRoleDialogProps) => {
   const permissionCategories = getPermissionCategories();
   const permissionsByCategory = getPermissionsByCategory();
   
-  const handleSubmit = async () => {
-    const success = await addRole(newRole);
-    if (success) {
-      onOpenChange(false);
-      // Reset form
-      setNewRole({
-        name: '',
-        description: '',
-        permissions: []
+  const handleSubmit = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    console.log('🔄 開始建立新角色:', newRole.name, '權限數量:', newRole.permissions.length);
+    console.log('📋 選擇的權限:', newRole.permissions.map(p => ({ id: p.id, name: p.name })));
+    
+    // 驗證必填欄位
+    if (!newRole.name.trim()) {
+      toast({
+        title: "建立失敗",
+        description: "請輸入角色名稱",
+        variant: "destructive"
       });
-      setActiveTab('基本資料');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // 確保權限資料格式正確
+      const roleToCreate = {
+        ...newRole,
+        name: newRole.name.trim(),
+        description: newRole.description.trim(),
+        permissions: newRole.permissions.map(permission => ({
+          id: permission.id,
+          name: permission.name,
+          code: permission.code || permission.id,
+          description: permission.description || '',
+          category: permission.category || 'general'
+        }))
+      };
+      
+      console.log('💾 準備建立的角色資料:', roleToCreate);
+      
+      const success = await addRole(roleToCreate);
+      console.log('💾 角色建立結果:', success);
+      
+      if (success) {
+        console.log('✅ 角色建立成功，關閉對話框');
+        toast({
+          title: "建立成功",
+          description: `已成功建立角色「${newRole.name}」`
+        });
+        
+        // 重置表單
+        setNewRole({
+          name: '',
+          description: '',
+          permissions: []
+        });
+        setActiveTab('基本資料');
+        onOpenChange(false);
+      } else {
+        console.error('❌ 角色建立失敗');
+        toast({
+          title: "建立失敗",
+          description: "角色建立過程中發生錯誤，請重試",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('❌ 建立角色時發生錯誤:', error);
+      let errorMessage = "角色建立過程中發生系統錯誤";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('foreign key constraint')) {
+          errorMessage = "權限設定錯誤：部分權限不存在於系統中";
+        } else if (error.message.includes('violates')) {
+          errorMessage = "資料驗證錯誤：請檢查輸入的資料格式";
+        }
+      }
+      
+      toast({
+        title: "建立失敗",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
   const togglePermission = (permission: Permission) => {
+    console.log('🔄 切換權限選擇:', permission.name);
     setNewRole(prev => {
       const hasPermission = prev.permissions.some(p => p.id === permission.id);
       
       if (hasPermission) {
+        const newPermissions = prev.permissions.filter(p => p.id !== permission.id);
+        console.log('➖ 移除權限:', permission.name, '剩餘權限數量:', newPermissions.length);
         return {
           ...prev,
-          permissions: prev.permissions.filter(p => p.id !== permission.id)
+          permissions: newPermissions
         };
       } else {
+        const newPermissions = [...prev.permissions, permission];
+        console.log('➕ 新增權限:', permission.name, '總權限數量:', newPermissions.length);
         return {
           ...prev,
-          permissions: [...prev.permissions, permission]
+          permissions: newPermissions
         };
       }
     });
@@ -71,6 +151,17 @@ const AddRoleDialog = ({ open, onOpenChange }: AddRoleDialogProps) => {
   
   const isPermissionSelected = (permissionId: string) => {
     return newRole.permissions.some(p => p.id === permissionId);
+  };
+  
+  const handleCancel = () => {
+    console.log('❌ 取消建立角色，重置表單');
+    setNewRole({
+      name: '',
+      description: '',
+      permissions: []
+    });
+    setActiveTab('基本資料');
+    onOpenChange(false);
   };
   
   return (
@@ -100,6 +191,7 @@ const AddRoleDialog = ({ open, onOpenChange }: AddRoleDialogProps) => {
                 onChange={(e) => setNewRole({...newRole, name: e.target.value})}
                 className="col-span-3"
                 placeholder="例如：門市經理、行銷人員"
+                disabled={isSubmitting}
               />
             </div>
             
@@ -114,23 +206,36 @@ const AddRoleDialog = ({ open, onOpenChange }: AddRoleDialogProps) => {
                 className="col-span-3"
                 placeholder="描述此角色的權限範圍與用途"
                 rows={3}
+                disabled={isSubmitting}
               />
             </div>
             
             <div className="flex justify-end space-x-2 pt-4">
               <Button 
                 variant="outline" 
-                onClick={() => onOpenChange(false)}
+                onClick={handleCancel}
+                disabled={isSubmitting}
+                type="button"
               >
                 取消
               </Button>
-              <Button onClick={() => setActiveTab('權限設定')}>
+              <Button 
+                onClick={() => setActiveTab('權限設定')}
+                disabled={isSubmitting}
+                type="button"
+              >
                 下一步：設定權限
               </Button>
             </div>
           </TabsContent>
           
           <TabsContent value="權限設定" className="py-4 flex-1 flex flex-col">
+            <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-700">
+                目前已選擇 <span className="font-bold">{newRole.permissions.length}</span> 個權限
+              </p>
+            </div>
+            
             <ScrollArea className="h-[400px] w-full rounded-md border p-4 flex-1">
               <div className="space-y-6">
                 {permissionCategories.map(category => (
@@ -140,13 +245,14 @@ const AddRoleDialog = ({ open, onOpenChange }: AddRoleDialogProps) => {
                       {permissionsByCategory[category].map(permission => (
                         <div key={permission.id} className="flex items-start space-x-2 p-2 rounded hover:bg-gray-50">
                           <Checkbox 
-                            id={permission.id} 
+                            id={`add-${permission.id}`} 
                             checked={isPermissionSelected(permission.id)}
                             onCheckedChange={() => togglePermission(permission)}
+                            disabled={isSubmitting}
                           />
                           <div className="flex-1">
                             <Label 
-                              htmlFor={permission.id} 
+                              htmlFor={`add-${permission.id}`} 
                               className="font-medium cursor-pointer"
                             >
                               {permission.name}
@@ -165,11 +271,17 @@ const AddRoleDialog = ({ open, onOpenChange }: AddRoleDialogProps) => {
               <Button 
                 variant="outline" 
                 onClick={() => setActiveTab('基本資料')}
+                disabled={isSubmitting}
+                type="button"
               >
                 上一步
               </Button>
-              <Button onClick={handleSubmit}>
-                建立角色
+              <Button 
+                onClick={handleSubmit}
+                disabled={isSubmitting || !newRole.name.trim()}
+                type="button"
+              >
+                {isSubmitting ? '建立中...' : '建立角色'}
               </Button>
             </DialogFooter>
           </TabsContent>

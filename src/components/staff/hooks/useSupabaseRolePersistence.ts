@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { StaffRole } from '../types';
 import { RoleApiService } from '../services/roleApiService';
@@ -46,8 +45,27 @@ export const useSupabaseRolePersistence = () => {
     try {
       setLoading(true);
       console.log('🔄 新增角色:', newRole.name, '權限數量:', newRole.permissions.length);
+      console.log('📋 新增角色權限詳細:', newRole.permissions.map(p => ({ id: p.id, name: p.name })));
       
-      const createdRole = await RoleApiService.createRole(newRole);
+      // 驗證權限資料
+      if (!newRole.name || newRole.name.trim() === '') {
+        console.error('❌ 角色名稱不能為空');
+        return false;
+      }
+      
+      // 確保權限資料格式正確
+      const validatedPermissions = newRole.permissions.filter(permission => 
+        permission && permission.id && permission.name
+      );
+      
+      console.log('🔍 有效權限數量:', validatedPermissions.length);
+      
+      const roleToAdd = {
+        ...newRole,
+        permissions: validatedPermissions
+      };
+      
+      const createdRole = await RoleApiService.createRole(roleToAdd);
       
       // 更新本地狀態
       setRoles(prev => [...prev, createdRole]);

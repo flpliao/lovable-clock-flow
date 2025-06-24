@@ -22,6 +22,9 @@ interface OvertimeRecord {
   approval_comment: string | null;
   compensation_hours: number | null;
   updated_at: string;
+  staff?: {
+    name: string;
+  };
 }
 
 interface OvertimeRecordCardProps {
@@ -39,6 +42,11 @@ const OvertimeRecordCard: React.FC<OvertimeRecordCardProps> = ({ overtime }) => 
           </div>
           <div>
             <div className="flex items-center gap-3 mb-1">
+              {overtime.staff?.name && (
+                <span className="text-white font-medium text-sm bg-white/20 px-2 py-1 rounded-lg">
+                  {overtime.staff.name}
+                </span>
+              )}
               <Badge className={`${getExceptionStatusColor(overtime.status)} text-sm px-2 py-1 rounded-full font-medium`}>
                 {getExceptionStatusText(overtime.status)}
               </Badge>

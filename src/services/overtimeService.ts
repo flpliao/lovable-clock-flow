@@ -46,7 +46,12 @@ export const overtimeService = {
     
     const { data, error } = await supabase
       .from('overtimes')
-      .select('*')
+      .select(`
+        *,
+        staff:staff_id (
+          name
+        )
+      `)
       .eq('staff_id', staffId)
       .order('created_at', { ascending: false });
 

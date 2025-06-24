@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { overtimeService } from '@/services/overtimeService';
@@ -24,6 +23,9 @@ interface OvertimeRecord {
   approval_comment: string | null;
   compensation_hours: number | null;
   updated_at: string;
+  staff?: {
+    name: string;
+  };
 }
 
 const OvertimeHistory: React.FC = () => {

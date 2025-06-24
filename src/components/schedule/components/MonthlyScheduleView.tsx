@@ -130,21 +130,50 @@ const MonthlyScheduleView = ({
     return null;
   };
 
+  // 使用統一的處理器來確保更新正確傳遞
+  const handleScheduleUpdate = async (scheduleId: string, updates: any) => {
+    console.log('MonthlyScheduleView - Schedule update requested:', { scheduleId, updates });
+    try {
+      await handleUpdateSchedule(scheduleId, updates);
+      // 強制重新整理排班資料（如果需要的話）
+      if (onUpdateSchedule) {
+        await onUpdateSchedule(scheduleId, updates);
+      }
+    } catch (error) {
+      console.error('MonthlyScheduleView - Schedule update failed:', error);
+      throw error;
+    }
+  };
+
+  const handleScheduleDelete = async (scheduleId: string) => {
+    console.log('MonthlyScheduleView - Schedule delete requested:', scheduleId);
+    try {
+      await handleDeleteSchedule(scheduleId);
+      // 強制重新整理排班資料（如果需要的話）
+      if (onDeleteSchedule) {
+        await onDeleteSchedule(scheduleId);
+      }
+    } catch (error) {
+      console.error('MonthlyScheduleView - Schedule delete failed:', error);
+      throw error;
+    }
+  };
+
   return (
     <>
-      <div className="backdrop-blur-2xl bg-white/8 border border-white/20 rounded-3xl shadow-2xl p-6">
+      <div className="backdrop-blur-xl bg-white/10 border border-white/25 rounded-2xl shadow-xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-gray-900 mb-2 drop-shadow-sm">
+            <h2 className="text-xl font-bold text-gray-800 mb-2">
               {getDisplayTitle()} 排班總覽
               {selectedStaffId && (
-                <span className="ml-2 text-lg text-gray-800">
+                <span className="ml-2 text-lg text-gray-700">
                   - {getUserName(selectedStaffId)}
                 </span>
               )}
             </h2>
             {getExtendedDescription() && (
-              <div className="text-sm text-gray-700">
+              <div className="text-sm text-gray-600">
                 {getExtendedDescription()}
               </div>
             )}
@@ -153,7 +182,7 @@ const MonthlyScheduleView = ({
             onClick={() => navigate('/schedule-statistics')}
             variant="outline"
             size="sm"
-            className="ml-4 flex items-center gap-2 bg-cyan-100/40 border-cyan-200/50 text-gray-800 hover:bg-cyan-100/60 hover:text-gray-900 backdrop-blur-xl shadow-md"
+            className="ml-4 flex items-center gap-2 bg-white/60 backdrop-blur-md border-white/50 text-gray-700 hover:bg-white/70 hover:text-gray-800 shadow-lg"
           >
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">統計資訊</span>

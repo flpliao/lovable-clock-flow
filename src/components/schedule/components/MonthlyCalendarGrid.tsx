@@ -51,14 +51,14 @@ const MonthlyCalendarGrid = ({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="backdrop-blur-2xl bg-white/8 border border-white/20 rounded-3xl shadow-2xl overflow-hidden">
+      <div className="backdrop-blur-xl bg-white/8 border border-white/20 rounded-2xl shadow-xl overflow-hidden">
         {/* Week day headers */}
         <div className="grid grid-cols-7 border-b border-white/15 bg-white/5">
           {['日', '一', '二', '三', '四', '五', '六'].map((day, index) => (
             <div 
               key={day} 
-              className={`text-center text-sm font-semibold py-4 drop-shadow-sm ${
-                index === 0 || index === 6 ? 'text-red-500' : 'text-gray-800'
+              className={`text-center text-sm font-semibold py-4 ${
+                index === 0 || index === 6 ? 'text-red-400' : 'text-gray-700'
               }`}
             >
               {day}
@@ -88,7 +88,7 @@ const MonthlyCalendarGrid = ({
       {/* Drag overlay for better visual feedback */}
       <DragOverlay>
         {activeSchedule ? (
-          <div className="bg-cyan-100/95 shadow-2xl rounded-lg border border-cyan-200/60 transform rotate-3 scale-105 backdrop-blur-xl">
+          <div className="bg-white/95 backdrop-blur-md shadow-2xl rounded-xl border border-white/40 transform rotate-2 scale-105">
             <DragScheduleCard
               schedule={activeSchedule}
               getUserName={getUserName}

@@ -54,32 +54,33 @@ const DragScheduleCard = ({
         onClick();
       }}
       className={`
-        text-xs p-2 rounded-lg mb-1 cursor-grab active:cursor-grabbing transition-all duration-200 border shadow-sm backdrop-blur-sm
+        bg-white/90 backdrop-blur-md rounded-xl p-3 mb-2 cursor-grab active:cursor-grabbing 
+        transition-all duration-300 border border-white/30 shadow-lg hover:shadow-xl
         ${hasConflict 
-          ? 'bg-red-100/80 border-red-200/60 text-red-800' 
-          : 'bg-cyan-100/70 border-cyan-200/50 text-gray-800 hover:bg-cyan-100/80 hover:shadow-md hover:border-cyan-200/70'
+          ? 'bg-red-50/90 border-red-200/60 text-red-800' 
+          : 'hover:bg-white/95 hover:border-white/50'
         }
-        ${isDragging ? 'opacity-50 shadow-2xl scale-105' : 'hover:scale-102'}
+        ${isDragging ? 'opacity-50 shadow-2xl scale-105' : 'hover:scale-[1.02]'}
       `}
     >
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center space-x-1 min-w-0 flex-1">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center space-x-2 min-w-0 flex-1">
           <TimeSlotIcon 
             timeSlotName={schedule.timeSlot} 
             size="sm" 
           />
-          <span className="font-medium truncate text-xs">
+          <span className="font-medium truncate text-sm text-gray-800">
             {getUserName(schedule.userId)}
           </span>
         </div>
       </div>
       
-      <div className="text-xs text-gray-700 mb-1 truncate">
+      <div className="text-xs font-medium text-gray-600 mb-1">
         {displayTime}
       </div>
       
       {getUserRelation(schedule.userId) && (
-        <div className="text-xs text-cyan-700">
+        <div className="text-xs text-gray-500">
           {getUserRelation(schedule.userId)}
         </div>
       )}

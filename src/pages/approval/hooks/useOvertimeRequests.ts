@@ -5,6 +5,18 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { overtimeService } from '@/services/overtimeService';
 
+interface OvertimeApprovalRecord {
+  id: string;
+  approver_id: string | null;
+  approver_name: string;
+  level: number;
+  status: string;
+  approval_date: string | null;
+  comment: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 interface OvertimeRequestWithApplicant {
   id: string;
   staff_id: string;
@@ -27,17 +39,7 @@ interface OvertimeRequestWithApplicant {
     position: string;
     supervisor_id?: string;
   };
-  overtime_approval_records?: Array<{
-    id: string;
-    approver_id: string | null;
-    approver_name: string;
-    level: number;
-    status: string;
-    approval_date: string | null;
-    comment: string | null;
-    created_at: string;
-    updated_at: string;
-  }>;
+  overtime_approval_records?: OvertimeApprovalRecord[];
 }
 
 export const useOvertimeRequests = () => {
@@ -116,7 +118,10 @@ export const useOvertimeRequests = () => {
         })
         .map(item => ({
           ...item,
-          staff: Array.isArray(item.staff) ? item.staff[0] : item.staff
+          staff: Array.isArray(item.staff) ? item.staff[0] : item.staff,
+          overtime_approval_records: Array.isArray(item.overtime_approval_records) 
+            ? item.overtime_approval_records 
+            : []
         }));
 
       console.log('✅ 成功載入待審核加班申請:', formattedData.length, '筆');

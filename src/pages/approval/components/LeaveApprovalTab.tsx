@@ -4,20 +4,9 @@ import { CheckCircle, XCircle, User, FileText, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { getLeaveTypeText } from '@/utils/leaveUtils';
+import { LeaveRequest } from '@/types';
 
-interface LeaveRequestWithApplicant {
-  id: string;
-  user_id: string;
-  start_date: string;
-  end_date: string;
-  leave_type: string;
-  status: string;
-  hours: number;
-  reason: string;
-  approval_level?: number;
-  current_approver?: string;
-  created_at: string;
-  updated_at: string;
+interface LeaveRequestWithApplicant extends LeaveRequest {
   applicant_name?: string;
   approvals?: any[];
 }
@@ -26,8 +15,8 @@ interface LeaveApprovalTabProps {
   pendingRequests: LeaveRequestWithApplicant[];
   isLoading: boolean;
   onViewDetail: (request: LeaveRequestWithApplicant) => void;
-  onApprove: (request: LeaveRequestWithApplicant) => void;
-  onReject: (request: LeaveRequestWithApplicant) => void;
+  onApprove: (request: LeaveRequestWithApplicant) => Promise<void>;
+  onReject: (request: LeaveRequestWithApplicant) => Promise<void>;
 }
 
 const LeaveApprovalTab: React.FC<LeaveApprovalTabProps> = ({
@@ -87,7 +76,7 @@ const LeaveApprovalTab: React.FC<LeaveApprovalTabProps> = ({
                 <div>
                   <span className="text-white/70">申請時間</span>
                   <div className="text-white font-medium">
-                    {format(new Date(request.created_at), 'MM/dd HH:mm')}
+                    {request.created_at ? format(new Date(request.created_at), 'MM/dd HH:mm') : '-'}
                   </div>
                 </div>
               </div>

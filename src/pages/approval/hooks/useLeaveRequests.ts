@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
@@ -8,6 +7,7 @@ import { LeaveRequest } from '@/types';
 
 interface LeaveRequestWithApplicant extends LeaveRequest {
   applicant_name?: string;
+  approvals?: any[];
 }
 
 export const useLeaveRequests = () => {
@@ -92,8 +92,8 @@ export const useLeaveRequests = () => {
         user_id: request.user_id || request.staff_id,
         start_date: request.start_date,
         end_date: request.end_date,
-        leave_type: request.leave_type,
-        status: request.status,
+        leave_type: request.leave_type as LeaveRequest['leave_type'],
+        status: request.status as LeaveRequest['status'],
         hours: Number(request.hours),
         reason: request.reason,
         approval_level: request.approval_level,

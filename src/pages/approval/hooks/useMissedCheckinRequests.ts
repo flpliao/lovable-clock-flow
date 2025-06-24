@@ -14,31 +14,49 @@ export const useMissedCheckinRequests = () => {
     if (!currentUser?.id) return;
     try {
       console.log('🔍 載入待審核忘記打卡申請，當前用戶:', currentUser.id, currentUser.name);
-      const { data, error } = await supabase.from('missed_checkin_requests').select(`
+      
+      // 查詢需要當前用戶審核的申請（只包含直屬下屬的申請）
+      const { data, error } = await supabase
+        .from('missed_checkin_requests')
+        .select(`
           *,
           staff:staff_id (
             name,
             department,
             position,
-            branch_name
+            branch_name,
+            supervisor_id
           )
-        `).eq('status', 'pending').order('created_at', {
-        ascending: false
-      });
+        `)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('❌ 載入忘記打卡申請失敗:', error);
         return;
       }
       
-      const formattedData = (data || []).map(item => ({
+      // 過濾出只有當前用戶作為直屬主管的申請
+      const filteredData = (data || []).filter(item => {
+        const staff = Array.isArray(item.staff) ? item.staff[0] : item.staff;
+        
+        // 申請人不能審核自己的申請
+        if (item.staff_id === currentUser.id) {
+          return false;
+        }
+        
+        // 只有直屬主管才能審核（supervisor_id 等於當前用戶 ID）
+        return staff?.supervisor_id === currentUser.id;
+      });
+      
+      const formattedData = filteredData.map(item => ({
         ...item,
         missed_type: item.missed_type as 'check_in' | 'check_out' | 'both',
         status: item.status as 'pending' | 'approved' | 'rejected',
         staff: Array.isArray(item.staff) ? item.staff[0] : item.staff
       }));
       
-      console.log('✅ 成功載入待審核忘記打卡申請:', formattedData.length, '筆');
+      console.log('✅ 成功載入待審核忘記打卡申請:', formattedData.length, '筆（僅直屬下屬）');
       setMissedCheckinRequests(formattedData);
     } catch (error) {
       console.error('❌ 載入忘記打卡申請時發生錯誤:', error);

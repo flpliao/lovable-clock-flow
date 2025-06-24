@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,7 +40,8 @@ const MissedCheckinManagement = () => {
             name,
             department,
             position,
-            branch_name
+            branch_name,
+            supervisor_id
           )
         `)
         .order('created_at', { ascending: false });
@@ -59,7 +59,29 @@ const MissedCheckinManagement = () => {
         return;
       }
 
-      const formattedData = (data || []).map(item => ({
+      // 過濾權限：只顯示當前用戶可以處理的申請
+      const filteredData = (data || []).filter(item => {
+        const staff = Array.isArray(item.staff) ? item.staff[0] : item.staff;
+        
+        // 管理員可以看到所有申請
+        if (isAdmin()) {
+          return true;
+        }
+        
+        // 申請人可以看到自己的申請（但不能審核）
+        if (item.staff_id === currentUser.id) {
+          return true;
+        }
+        
+        // 直屬主管可以看到下屬的申請
+        if (staff?.supervisor_id === currentUser.id) {
+          return true;
+        }
+        
+        return false;
+      });
+
+      const formattedData = filteredData.map(item => ({
         ...item,
         missed_type: item.missed_type as 'check_in' | 'check_out' | 'both',
         status: item.status as 'pending' | 'approved' | 'rejected',
@@ -95,6 +117,22 @@ const MissedCheckinManagement = () => {
       setLoading(false);
     }
   }, [currentUser]);
+
+  const canApproveRequest = (request: MissedCheckinRequest) => {
+    // 申請人不能審核自己的申請
+    if (request.staff_id === currentUser?.id) {
+      return false;
+    }
+    
+    // 管理員可以審核所有申請
+    if (isAdmin()) {
+      return true;
+    }
+    
+    // 直屬主管可以審核下屬的申請
+    const staff = Array.isArray(request.staff) ? request.staff[0] : request.staff;
+    return staff?.supervisor_id === currentUser?.id;
+  };
 
   const handleApproval = async (requestId: string, action: 'approved' | 'rejected') => {
     if (!currentUser) return;
@@ -261,161 +299,98 @@ const MissedCheckinManagement = () => {
                           <User className="h-6 w-6 text-blue-600" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-gray-800 text-lg">{request.staff?.name || '未知員工'}</h3>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Building2 className="h-4 w-4" />
-                            <span>{request.staff?.department || '未知部門'}</span>
-                          </div>
+                          <h3 className="font-semibold text-gray-800">
+                            {request.staff?.name || '未知申請人'}
+                            {request.staff_id === currentUser?.id && (
+                              <span className="ml-2 text-sm text-blue-600">(您的申請)</span>
+                            )}
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            {request.staff?.department} - {request.staff?.position}
+                          </p>
                         </div>
                       </div>
-                      {getStatusBadge(request.status)}
+                      <div className="flex flex-col items-end gap-2">
+                        {getStatusBadge(request.status)}
+                        <span className="text-xs text-gray-500">
+                          {format(new Date(request.created_at), 'yyyy/MM/dd HH:mm', { locale: zhTW })}
+                        </span>
+                      </div>
                     </div>
 
                     {/* 申請詳情 */}
-                    <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                      <div className="grid grid-cols-1 gap-3">
-                        <div className="flex items-center gap-2">
-                          <AlertCircle className="h-4 w-4 text-orange-500" />
-                          <span className="font-medium text-gray-700">申請類型：</span>
-                          <Badge variant="outline" className="bg-orange-50 text-orange-700">
-                            {getMissedTypeText(request.missed_type)}
-                          </Badge>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-blue-500" />
-                          <span className="font-medium text-gray-700">申請日期：</span>
-                          <span className="text-gray-600">
-                            {format(new Date(request.request_date), 'yyyy年MM月dd日', { locale: zhTW })}
-                          </span>
-                        </div>
-
-                        {request.requested_check_in_time && (
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-green-500" />
-                            <span className="font-medium text-gray-700">上班時間：</span>
-                            <span className="text-gray-600">{formatTime(request.requested_check_in_time)}</span>
-                          </div>
-                        )}
-
-                        {request.requested_check_out_time && (
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-red-500" />
-                            <span className="font-medium text-gray-700">下班時間：</span>
-                            <span className="text-gray-600">{formatTime(request.requested_check_out_time)}</span>
-                          </div>
-                        )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                      <div>
+                        <span className="text-sm text-gray-500">申請類型</span>
+                        <p className="font-medium">{getMissedTypeText(request.missed_type)}</p>
                       </div>
+                      <div>
+                        <span className="text-sm text-gray-500">申請日期</span>
+                        <p className="font-medium">
+                          {format(new Date(request.request_date), 'yyyy/MM/dd', { locale: zhTW })}
+                        </p>
+                      </div>
+                      {request.requested_check_in_time && (
+                        <div>
+                          <span className="text-sm text-gray-500">上班時間</span>
+                          <p className="font-medium">{formatTime(request.requested_check_in_time)}</p>
+                        </div>
+                      )}
+                      {request.requested_check_out_time && (
+                        <div>
+                          <span className="text-sm text-gray-500">下班時間</span>
+                          <p className="font-medium">{formatTime(request.requested_check_out_time)}</p>
+                        </div>
+                      )}
                     </div>
 
                     {/* 申請原因 */}
-                    <div className="mb-4">
-                      <p className="font-medium text-gray-700 mb-2">申請原因：</p>
-                      <div className="bg-blue-50 rounded-lg p-3">
-                        <p className="text-gray-700">{request.reason}</p>
-                      </div>
-                    </div>
-
-                    {/* 申請時間 */}
-                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                      <Clock className="h-4 w-4" />
-                      <span>申請時間：{format(new Date(request.created_at), 'yyyy/MM/dd HH:mm', { locale: zhTW })}</span>
-                    </div>
-
-                    {/* 審核按鈕 */}
-                    {request.status === 'pending' && (isAdmin() || isManager()) && (
-                      <div className="flex gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button 
-                              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl shadow-lg"
-                              onClick={() => setSelectedRequest(request)}
-                            >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              審核申請
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-md mx-4">
-                            <DialogHeader>
-                              <DialogTitle className="flex items-center gap-2">
-                                <AlertCircle className="h-5 w-5 text-orange-500" />
-                                審核忘記打卡申請
-                              </DialogTitle>
-                            </DialogHeader>
-                            
-                            {selectedRequest && (
-                              <div className="space-y-4">
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                  <h4 className="font-medium mb-3 text-gray-800">申請詳情</h4>
-                                  <div className="text-sm space-y-2">
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">員工：</span>
-                                      <span className="font-medium">{selectedRequest.staff?.name}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">類型：</span>
-                                      <span className="font-medium">{getMissedTypeText(selectedRequest.missed_type)}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">日期：</span>
-                                      <span className="font-medium">
-                                        {format(new Date(selectedRequest.request_date), 'yyyy/MM/dd', { locale: zhTW })}
-                                      </span>
-                                    </div>
-                                    <div className="pt-2 border-t">
-                                      <span className="text-gray-600">原因：</span>
-                                      <p className="mt-1 text-gray-800">{selectedRequest.reason}</p>
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                <div className="space-y-2">
-                                  <label className="text-sm font-medium text-gray-700">審核意見（選填）</label>
-                                  <Textarea
-                                    placeholder="請輸入審核意見..."
-                                    value={approvalComment}
-                                    onChange={(e) => setApprovalComment(e.target.value)}
-                                    rows={3}
-                                    className="resize-none"
-                                  />
-                                </div>
-                                
-                                <div className="flex gap-2 pt-4">
-                                  <Button
-                                    variant="outline"
-                                    onClick={() => handleApproval(selectedRequest.id, 'rejected')}
-                                    disabled={actionLoading}
-                                    className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg"
-                                  >
-                                    <XCircle className="h-4 w-4 mr-2" />
-                                    {actionLoading ? '處理中...' : '退回'}
-                                  </Button>
-                                  <Button
-                                    onClick={() => handleApproval(selectedRequest.id, 'approved')}
-                                    disabled={actionLoading}
-                                    className="flex-1 bg-green-600 hover:bg-green-700 text-white rounded-lg"
-                                  >
-                                    <CheckCircle className="h-4 w-4 mr-2" />
-                                    {actionLoading ? '處理中...' : '核准'}
-                                  </Button>
-                                </div>
-                              </div>
-                            )}
-                          </DialogContent>
-                        </Dialog>
+                    {request.reason && (
+                      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                        <span className="text-sm text-gray-500">申請原因</span>
+                        <p className="text-sm mt-1">{request.reason}</p>
                       </div>
                     )}
 
-                    {/* 已審核顯示結果 */}
-                    {request.status !== 'pending' && request.approval_comment && (
-                      <div className="mt-4 p-3 bg-gray-100 rounded-lg">
-                        <p className="text-sm font-medium text-gray-700 mb-1">審核意見：</p>
-                        <p className="text-sm text-gray-600">{request.approval_comment}</p>
-                        {request.approval_date && (
-                          <p className="text-xs text-gray-500 mt-2">
-                            審核時間：{format(new Date(request.approval_date), 'yyyy/MM/dd HH:mm', { locale: zhTW })}
-                          </p>
-                        )}
+                    {/* 審核按鈕 - 只有有權限的用戶且狀態為待審核時才顯示 */}
+                    {request.status === 'pending' && canApproveRequest(request) && (
+                      <div className="flex justify-end space-x-2 pt-4 border-t">
+                        <Button
+                          onClick={() => handleApproval(request.id, 'approved')}
+                          disabled={actionLoading}
+                          className="bg-green-500 hover:bg-green-600 text-white"
+                          size="sm"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          核准
+                        </Button>
+                        <Button
+                          onClick={() => handleApproval(request.id, 'rejected')}
+                          disabled={actionLoading}
+                          variant="destructive"
+                          size="sm"
+                        >
+                          <XCircle className="h-4 w-4 mr-1" />
+                          拒絕
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* 無權限提示 */}
+                    {request.status === 'pending' && !canApproveRequest(request) && request.staff_id !== currentUser?.id && (
+                      <div className="pt-4 border-t">
+                        <p className="text-sm text-gray-500 text-center">
+                          您沒有權限審核此申請（需要直屬主管審核）
+                        </p>
+                      </div>
+                    )}
+
+                    {/* 自己的申請提示 */}
+                    {request.staff_id === currentUser?.id && request.status === 'pending' && (
+                      <div className="pt-4 border-t">
+                        <p className="text-sm text-blue-600 text-center">
+                          您的申請正在等待直屬主管審核
+                        </p>
                       </div>
                     )}
                   </CardContent>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
@@ -39,9 +40,9 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-blue-600/50 via-blue-700/50 to-blue-800/50 shadow-lg border-b border-blue-500/20">
+    <header className="sticky top-0 z-50 backdrop-blur-xl bg-gradient-to-r from-white/80 via-white/70 to-white/80 border-b border-white/30 shadow-lg shadow-blue-500/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-16 lg:h-18">
           {/* Logo */}
           <HeaderLogo />
           
@@ -68,7 +69,7 @@ const Header: React.FC = () => {
               <Button
                 onClick={toggleMobileMenu}
                 variant="ghost"
-                className="lg:hidden text-white/80 hover:text-white hover:bg-white/10 p-2"
+                className="lg:hidden text-gray-700 hover:text-gray-900 hover:bg-white/50 transition-all duration-200 p-2 rounded-lg backdrop-blur-sm"
               >
                 <Menu className="h-6 w-6" />
               </Button>

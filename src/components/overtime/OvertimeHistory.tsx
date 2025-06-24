@@ -13,11 +13,17 @@ interface OvertimeRecord {
   start_time: string;
   end_time: string;
   hours: number;
-  overtime_type: 'weekday' | 'weekend' | 'holiday';
-  compensation_type: 'pay' | 'time_off' | 'both';
+  overtime_type: string;
+  compensation_type: string;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: string;
   created_at: string;
+  staff_id: string;
+  approved_by: string | null;
+  approval_date: string | null;
+  approval_comment: string | null;
+  compensation_hours: number | null;
+  updated_at: string;
 }
 
 const OvertimeHistory: React.FC = () => {

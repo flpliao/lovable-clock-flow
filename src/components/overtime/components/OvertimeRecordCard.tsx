@@ -11,11 +11,17 @@ interface OvertimeRecord {
   start_time: string;
   end_time: string;
   hours: number;
-  overtime_type: 'weekday' | 'weekend' | 'holiday';
-  compensation_type: 'pay' | 'time_off' | 'both';
+  overtime_type: string;
+  compensation_type: string;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: string;
   created_at: string;
+  staff_id: string;
+  approved_by: string | null;
+  approval_date: string | null;
+  approval_comment: string | null;
+  compensation_hours: number | null;
+  updated_at: string;
 }
 
 interface OvertimeRecordCardProps {
@@ -38,7 +44,7 @@ const OvertimeRecordCard: React.FC<OvertimeRecordCardProps> = ({ overtime }) => 
               </Badge>
               <span className="text-white/90 text-sm font-medium flex items-center gap-1">
                 <User className="h-3 w-3" />
-                {getOvertimeTypeText(overtime.overtime_type)}
+                {getOvertimeTypeText(overtime.overtime_type as 'weekday' | 'weekend' | 'holiday')}
               </span>
             </div>
             <p className="text-white/70 text-xs flex items-center gap-1">
@@ -97,7 +103,7 @@ const OvertimeRecordCard: React.FC<OvertimeRecordCardProps> = ({ overtime }) => 
           <DollarSign className="h-4 w-4 text-white/80" />
           <div>
             <span className="text-white/70">補償類型:</span>
-            <p className="font-medium text-white">{getCompensationTypeText(overtime.compensation_type)}</p>
+            <p className="font-medium text-white">{getCompensationTypeText(overtime.compensation_type as 'pay' | 'time_off' | 'both')}</p>
           </div>
         </div>
       </div>

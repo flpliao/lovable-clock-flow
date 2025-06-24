@@ -55,7 +55,7 @@ const Header: React.FC = () => {
             />
           </div>
           
-          {/* User Info */}
+          {/* User Info - 只在桌面版顯示 */}
           <UserInfo
             currentUser={currentUser}
             isAuthenticated={isAuthenticated}
@@ -65,32 +65,12 @@ const Header: React.FC = () => {
           />
         </div>
 
-        {/* 手機版佈局 */}
+        {/* 平板和手機版佈局 */}
         <div className="lg:hidden">
-          {/* 單一行：Logo、用戶資訊、選單按鈕 */}
+          {/* 單一行：Logo 和選單按鈕 */}
           <div className="flex items-center justify-between h-14 py-2">
             <div className="flex-shrink-0">
               <HeaderLogo />
-            </div>
-            
-            {/* 中間用戶資訊區域 */}
-            <div className="flex-1 flex items-center justify-end space-x-3 mr-3">
-              {isAuthenticated && currentUser && (
-                <div className="flex items-center space-x-2 min-w-0">
-                  <div className="bg-white/20 rounded-full p-1.5 flex-shrink-0">
-                    <div className="h-3 w-3 bg-white rounded-full"></div>
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-white text-sm font-medium truncate">
-                      {currentUser.name}
-                    </div>
-                    <div className="text-white/70 text-xs">
-                      {currentUser.role === 'admin' ? '管理員' : 
-                       currentUser.role === 'manager' ? '主管' : '員工'}
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
             
             {/* 選單按鈕 */}

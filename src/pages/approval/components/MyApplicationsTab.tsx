@@ -83,22 +83,49 @@ const MyApplicationsTab: React.FC<MyApplicationsTabProps> = ({
   const renderApplicationDetails = (application: MyApplication) => {
     const { type, details } = application;
     
+    console.log('🎨 渲染申請詳情:', { type, details });
+    
     switch (type) {
       case 'overtime':
+        // 確保加班申請的所有欄位都正確顯示
+        const overtimeDate = details.overtime_date || '未知日期';
+        const overtimeHours = details.hours || 0;
+        const compensationType = details.compensation_type || 'unknown';
+        const overtimeType = details.overtime_type || 'unknown';
+        
         return (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
               <span className="text-white/70">加班日期</span>
-              <div className="text-white font-medium">{details.overtime_date}</div>
+              <div className="text-white font-medium">{overtimeDate}</div>
             </div>
             <div>
               <span className="text-white/70">加班時數</span>
-              <div className="text-white font-medium">{details.hours} 小時</div>
+              <div className="text-white font-medium">{overtimeHours} 小時</div>
             </div>
             <div>
               <span className="text-white/70">補償方式</span>
               <div className="text-white font-medium">
-                {details.compensation_type === 'overtime_pay' ? '加班費' : '補休'}
+                {compensationType === 'overtime_pay' ? '加班費' : 
+                 compensationType === 'pay' ? '加班費' :
+                 compensationType === 'time_off' ? '補休' : 
+                 compensationType === 'both' ? '加班費+補休' : '未指定'}
+              </div>
+            </div>
+            {details.start_time && details.end_time && (
+              <div className="md:col-span-3">
+                <span className="text-white/70">加班時間</span>
+                <div className="text-white font-medium">
+                  {details.start_time} ~ {details.end_time}
+                </div>
+              </div>
+            )}
+            <div className="md:col-span-3">
+              <span className="text-white/70">加班類型</span>
+              <div className="text-white font-medium">
+                {overtimeType === 'weekday' ? '平日加班' :
+                 overtimeType === 'weekend' ? '假日加班' :
+                 overtimeType === 'holiday' ? '國定假日加班' : overtimeType}
               </div>
             </div>
           </div>
@@ -166,44 +193,87 @@ const MyApplicationsTab: React.FC<MyApplicationsTabProps> = ({
     );
   }
 
+  // 統計資訊
+  const stats = {
+    overtime: applications.filter(a => a.type === 'overtime').length,
+    missedCheckin: applications.filter(a => a.type === 'missed_checkin').length,
+    leave: applications.filter(a => a.type === 'leave').length,
+    pending: applications.filter(a => a.status === 'pending').length,
+    approved: applications.filter(a => a.status === 'approved').length,
+    rejected: applications.filter(a => a.status === 'rejected').length
+  };
+
+  console.log('📊 申請統計:', stats);
+
   return (
-    <div className="space-y-4">
-      {applications.map(application => (
-        <div key={`${application.type}-${application.id}`} className="bg-white/10 rounded-2xl p-6 border border-white/20">
-          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-3">
-                {getTypeIcon(application.type)}
-                <h3 className="text-lg font-semibold text-white">{application.title}</h3>
-                <div className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadgeClass(application.status)}`}>
-                  {getStatusText(application.status)}
-                </div>
-              </div>
-              
-              {renderApplicationDetails(application)}
-
-              {application.details.reason && (
-                <div className="mt-3 p-3 bg-white/10 rounded-lg">
-                  <div className="flex items-center gap-2 mb-1">
-                    <FileText className="h-4 w-4 text-white/80" />
-                    <span className="text-white/70 text-sm">申請原因</span>
-                  </div>
-                  <p className="text-white text-sm">{application.details.reason}</p>
-                </div>
-              )}
-
-              <div className="mt-3 text-xs text-white/60">
-                申請時間: {format(new Date(application.created_at), 'yyyy/MM/dd HH:mm')}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {getStatusIcon(application.status)}
-              <span className="text-white font-medium">{getStatusText(application.status)}</span>
-            </div>
+    <div className="space-y-6">
+      {/* 統計卡片 */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-blue-500/20 border border-blue-500/30 rounded-xl p-3 backdrop-blur-xl">
+          <div className="text-center">
+            <div className="text-lg font-bold text-blue-300">{stats.overtime}</div>
+            <div className="text-blue-200 text-xs">加班申請</div>
           </div>
         </div>
-      ))}
+        <div className="bg-purple-500/20 border border-purple-500/30 rounded-xl p-3 backdrop-blur-xl">
+          <div className="text-center">
+            <div className="text-lg font-bold text-purple-300">{stats.missedCheckin}</div>
+            <div className="text-purple-200 text-xs">忘記打卡</div>
+          </div>
+        </div>
+        <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-3 backdrop-blur-xl">
+          <div className="text-center">
+            <div className="text-lg font-bold text-green-300">{stats.leave}</div>
+            <div className="text-green-200 text-xs">請假申請</div>
+          </div>
+        </div>
+        <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-xl p-3 backdrop-blur-xl">
+          <div className="text-center">
+            <div className="text-lg font-bold text-yellow-300">{stats.pending}</div>
+            <div className="text-yellow-200 text-xs">審核中</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 申請記錄列表 */}
+      <div className="space-y-4">
+        {applications.map(application => (
+          <div key={`${application.type}-${application.id}`} className="bg-white/10 rounded-2xl p-6 border border-white/20">
+            <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  {getTypeIcon(application.type)}
+                  <h3 className="text-lg font-semibold text-white">{application.title}</h3>
+                  <div className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadgeClass(application.status)}`}>
+                    {getStatusText(application.status)}
+                  </div>
+                </div>
+                
+                {renderApplicationDetails(application)}
+
+                {application.details.reason && (
+                  <div className="mt-4 p-3 bg-white/10 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <FileText className="h-4 w-4 text-white/80" />
+                      <span className="text-white/70 text-sm">申請原因</span>
+                    </div>
+                    <p className="text-white text-sm">{application.details.reason}</p>
+                  </div>
+                )}
+
+                <div className="mt-3 text-xs text-white/60">
+                  申請時間: {format(new Date(application.created_at), 'yyyy/MM/dd HH:mm')}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {getStatusIcon(application.status)}
+                <span className="text-white font-medium">{getStatusText(application.status)}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

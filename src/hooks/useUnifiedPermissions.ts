@@ -97,7 +97,7 @@ export const useUnifiedPermissions = () => {
     return permissions.every(permission => hasPermission(permission));
   }, [hasPermission]);
 
-  // 角色檢查（基於動態 role_id 權限）
+  // 角色檢查（嚴格基於 currentUser.role）
   const isAdmin = useCallback((): boolean => {
     if (!currentUser) return false;
     
@@ -107,51 +107,43 @@ export const useUnifiedPermissions = () => {
       return true;
     }
     
-    // 基於 role_id 動態設定的權限檢查
-    const result = currentUser.role === 'admin' || hasPermission('system:manage') || hasPermission('system:settings_edit');
+    // 嚴格檢查 currentUser.role 是否為 admin
+    const result = currentUser.role === 'admin';
     
     console.log('🔐 統一權限系統 - Admin 檢查:', {
       user: currentUser.name,
       role: currentUser.role,
-      hasSystemManage: hasPermission('system:manage'),
       result
     });
     
     return result;
-  }, [currentUser, hasPermission]);
+  }, [currentUser]);
 
   const isManager = useCallback((): boolean => {
     if (!currentUser) return false;
     
-    // 基於 role_id 動態設定的權限檢查
-    const result = currentUser.role === 'manager' || 
-                   hasPermission('staff:manage') || 
-                   hasPermission('attendance:manage') || 
-                   isAdmin();
+    // 嚴格基於 currentUser.role 進行權限檢查
+    const result = currentUser.role === 'manager' || isAdmin();
     
     console.log('🔐 統一權限系統 - Manager 檢查:', {
       user: currentUser.name,
       role: currentUser.role,
-      hasStaffManage: hasPermission('staff:manage'),
       result
     });
     
     return result;
-  }, [currentUser, hasPermission, isAdmin]);
+  }, [currentUser, isAdmin]);
 
-  // 清除權限快取
   const clearPermissionCache = useCallback(() => {
     permissionService.clearCache();
   }, [permissionService]);
 
-  // 清除當前用戶權限快取
   const clearCurrentUserCache = useCallback(() => {
     if (currentUser?.id) {
       permissionService.clearUserCache(currentUser.id);
     }
   }, [currentUser, permissionService]);
 
-  // 重新載入後台角色資料
   const reloadBackendRoles = useCallback(async () => {
     try {
       console.log('🔄 重新載入後台角色資料...');
@@ -167,15 +159,13 @@ export const useUnifiedPermissions = () => {
     }
   }, [permissionService]);
 
-  // 監聽權限更新事件
   useEffect(() => {
     const removeListener = permissionService.addPermissionUpdateListener(() => {
       console.log('🔔 權限更新，觸發重新檢查');
       clearPermissionCache();
-      reloadBackendRoles(); // 重新載入後台角色資料
+      reloadBackendRoles();
     });
 
-    // 監聽強制重新載入事件
     const handleForceReload = () => {
       console.log('🔄 收到強制重新載入事件');
       clearPermissionCache();
@@ -202,6 +192,6 @@ export const useUnifiedPermissions = () => {
     currentStaffData,
     permissionContext,
     backendRoles,
-    rolesLoading // 新增載入狀態
+    rolesLoading
   };
 };

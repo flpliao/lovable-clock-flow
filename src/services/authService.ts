@@ -50,46 +50,49 @@ export class AuthService {
         old_role: staffData.role 
       });
 
-      // 根據 role_id 查詢角色資訊並決定權限等級
+      // 根據 role_id 決定用戶權限等級
       let userRole: 'admin' | 'manager' | 'user' = 'user';
       
       // 廖俊雄永遠是最高管理員
       if (staffData.name === '廖俊雄' && staffData.id === '550e8400-e29b-41d4-a716-446655440001') {
         userRole = 'admin';
         console.log('🔐 廖俊雄最高管理員權限');
-      } else if (staffData.role_id) {
-        // 根據 role_id 查詢角色詳細資訊
-        const { data: roleInfo, error: roleError } = await supabase
-          .from('staff_roles')
-          .select('*')
-          .eq('id', staffData.role_id)
-          .single();
+      } else {
+        // 對於其他用戶，嚴格基於 role_id 查詢角色權限
+        if (staffData.role_id && staffData.role_id !== 'user') {
+          // 查詢 staff_roles 表格
+          const { data: roleInfo, error: roleError } = await supabase
+            .from('staff_roles')
+            .select('*')
+            .eq('id', staffData.role_id)
+            .single();
 
-        if (!roleError && roleInfo) {
-          console.log('🔍 角色詳細資訊:', roleInfo);
-          
-          // 檢查是否為系統管理員角色
-          if (roleInfo.name === '系統管理員' || roleInfo.is_system_role === true) {
-            userRole = 'admin';
-            console.log('🔐 系統管理員權限:', roleInfo.name);
-          } 
-          // 檢查是否為管理相關角色
-          else if (roleInfo.name.includes('管理') || roleInfo.name.includes('主管') || roleInfo.name.includes('經理')) {
-            userRole = 'manager';
-            console.log('🔐 管理者權限:', roleInfo.name);
-          } 
-          // 其他角色為一般用戶
-          else {
+          if (!roleError && roleInfo) {
+            console.log('🔍 角色詳細資訊:', roleInfo);
+            
+            // 檢查是否為系統管理員角色
+            if (roleInfo.name === '系統管理員' || roleInfo.is_system_role === true) {
+              userRole = 'admin';
+              console.log('🔐 系統管理員權限:', roleInfo.name);
+            } 
+            // 檢查是否為管理相關角色
+            else if (roleInfo.name.includes('管理') || roleInfo.name.includes('主管') || roleInfo.name.includes('經理')) {
+              userRole = 'manager';
+              console.log('🔐 管理者權限:', roleInfo.name);
+            } 
+            // 其他角色都為一般用戶
+            else {
+              userRole = 'user';
+              console.log('🔐 一般用戶權限:', roleInfo.name);
+            }
+          } else {
+            console.log('⚠️ 無法載入角色資訊，使用預設權限 user');
             userRole = 'user';
-            console.log('🔐 一般用戶權限:', roleInfo.name);
           }
         } else {
-          console.log('⚠️ 無法載入角色資訊，使用預設權限');
+          console.log('⚠️ 員工 role_id 為 user 或未設定，使用預設權限 user');
           userRole = 'user';
         }
-      } else {
-        console.log('⚠️ 員工無 role_id，使用預設權限');
-        userRole = 'user';
       }
 
       // 構建用戶資料
@@ -145,39 +148,42 @@ export class AuthService {
       if (staffData.name === '廖俊雄' && staffData.id === '550e8400-e29b-41d4-a716-446655440001') {
         userRole = 'admin';
         console.log('🔐 廖俊雄最高管理員權限');
-      } else if (staffData.role_id) {
-        // 根據 role_id 查詢角色詳細資訊
-        const { data: roleInfo, error: roleError } = await supabase
-          .from('staff_roles')
-          .select('*')
-          .eq('id', staffData.role_id)
-          .single();
+      } else {
+        // 對於其他用戶，嚴格基於 role_id 查詢角色權限
+        if (staffData.role_id && staffData.role_id !== 'user') {
+          // 查詢 staff_roles 表格
+          const { data: roleInfo, error: roleError } = await supabase
+            .from('staff_roles')
+            .select('*')
+            .eq('id', staffData.role_id)
+            .single();
 
-        if (!roleError && roleInfo) {
-          console.log('🔍 角色詳細資訊:', roleInfo);
-          
-          // 檢查是否為系統管理員角色
-          if (roleInfo.name === '系統管理員' || roleInfo.is_system_role === true) {
-            userRole = 'admin';
-            console.log('🔐 系統管理員權限:', roleInfo.name);
-          } 
-          // 檢查是否為管理相關角色
-          else if (roleInfo.name.includes('管理') || roleInfo.name.includes('主管') || roleInfo.name.includes('經理')) {
-            userRole = 'manager';
-            console.log('🔐 管理者權限:', roleInfo.name);
-          } 
-          // 其他角色為一般用戶
-          else {
+          if (!roleError && roleInfo) {
+            console.log('🔍 角色詳細資訊:', roleInfo);
+            
+            // 檢查是否為系統管理員角色
+            if (roleInfo.name === '系統管理員' || roleInfo.is_system_role === true) {
+              userRole = 'admin';
+              console.log('🔐 系統管理員權限:', roleInfo.name);
+            } 
+            // 檢查是否為管理相關角色
+            else if (roleInfo.name.includes('管理') || roleInfo.name.includes('主管') || roleInfo.name.includes('經理')) {
+              userRole = 'manager';
+              console.log('🔐 管理者權限:', roleInfo.name);
+            } 
+            // 其他角色都為一般用戶
+            else {
+              userRole = 'user';
+              console.log('🔐 一般用戶權限:', roleInfo.name);
+            }
+          } else {
+            console.log('⚠️ 無法載入角色資訊，使用預設權限 user');
             userRole = 'user';
-            console.log('🔐 一般用戶權限:', roleInfo.name);
           }
         } else {
-          console.log('⚠️ 無法載入角色資訊，使用預設權限');
+          console.log('⚠️ 員工 role_id 為 user 或未設定，使用預設權限 user');
           userRole = 'user';
         }
-      } else {
-        console.log('⚠️ 員工無 role_id，使用預設權限');
-        userRole = 'user';
       }
 
       return {

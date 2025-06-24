@@ -19,10 +19,12 @@ interface OvertimeRequestWithApplicant {
   created_at: string;
   approval_level?: number;
   current_approver?: string;
+  approver_id?: string;
   staff?: {
     name: string;
     department: string;
     position: string;
+    supervisor_id?: string;
   };
 }
 
@@ -55,11 +57,34 @@ export const useOvertimeRequests = () => {
         return;
       }
 
-      // Filter requests that current user can approve
+      // 根據三種審核權限條件篩選申請
       const formattedData = (data || [])
         .filter(request => {
-          // Check if it's a subordinate's request
-          return request.staff && request.staff.supervisor_id === currentUser.id;
+          const staffData = Array.isArray(request.staff) ? request.staff[0] : request.staff;
+          
+          // 條件1：我是申請人的 supervisor_id
+          const isDirectSupervisor = staffData && staffData.supervisor_id === currentUser.id;
+          
+          // 條件2：我是 overtime.current_approver
+          const isCurrentApprover = request.current_approver === currentUser.id;
+          
+          // 條件3：我是 overtime.approver_id (如果有這個欄位)
+          const isAssignedApprover = request.approver_id === currentUser.id;
+          
+          console.log('🔍 檢查審核權限:', {
+            requestId: request.id,
+            applicantName: staffData?.name,
+            isDirectSupervisor,
+            isCurrentApprover,
+            isAssignedApprover,
+            staffSupervisorId: staffData?.supervisor_id,
+            currentApprover: request.current_approver,
+            approverId: request.approver_id,
+            currentUserId: currentUser.id
+          });
+          
+          // 符合任一條件即可顯示
+          return isDirectSupervisor || isCurrentApprover || isAssignedApprover;
         })
         .map(item => ({
           ...item,
@@ -67,6 +92,13 @@ export const useOvertimeRequests = () => {
         }));
 
       console.log('✅ 成功載入待審核加班申請:', formattedData.length, '筆');
+      console.log('📋 篩選後的申請列表:', formattedData.map(req => ({
+        id: req.id,
+        applicant: req.staff?.name,
+        date: req.overtime_date,
+        status: req.status
+      })));
+      
       setOvertimeRequests(formattedData);
     } catch (error) {
       console.error('❌ 載入加班申請時發生錯誤:', error);

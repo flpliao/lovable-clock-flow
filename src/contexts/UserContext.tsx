@@ -5,6 +5,7 @@ import { User, UserContextType } from './user/types';
 import { createRoleChecker } from './user/roleUtils';
 import { createPermissionChecker } from './user/permissionUtils';
 import { getUserFromStorage, saveUserToStorage, clearUserStorage } from './user/userStorageUtils';
+import { UnifiedPermissionService } from '@/services/unifiedPermissionService';
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -29,6 +30,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // 檢查本地存儲是否有用戶 session
     const storedUser = getUserFromStorage();
     if (storedUser) {
+      console.log('📦 載入儲存的用戶資料:', storedUser);
       setCurrentUser(storedUser);
     }
     
@@ -50,6 +52,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // 將用戶資料存儲到本地存儲
       saveUserToStorage(currentUser);
       setUserError(null);
+      
+      // 清除權限快取，確保使用最新權限
+      const permissionService = UnifiedPermissionService.getInstance();
+      permissionService.clearCache();
+      
+      console.log('🔄 已清除權限快取，確保使用最新權限設定');
     }
   }, [currentUser]);
 
@@ -64,6 +72,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserError(null);
     setIsUserLoaded(true);
     clearUserStorage();
+    
+    // 清除權限快取
+    const permissionService = UnifiedPermissionService.getInstance();
+    permissionService.clearCache();
   };
 
   return (

@@ -1,5 +1,7 @@
+
 import { User } from '@/contexts/user/types';
 import { Staff, StaffRole } from '@/components/staff/types';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface UnifiedPermissionContext {
   currentUser: User | null;
@@ -11,7 +13,10 @@ export class UnifiedPermissionService {
   private static instance: UnifiedPermissionService;
   private permissionCache = new Map<string, boolean>();
   private cacheExpiry = new Map<string, number>();
+  private rolesCache: StaffRole[] = [];
+  private rolesCacheExpiry = 0;
   private readonly CACHE_DURATION = 5 * 60 * 1000; // 5分鐘快取
+  private readonly ROLES_CACHE_DURATION = 10 * 60 * 1000; // 角色快取10分鐘
   private eventListeners: Set<() => void> = new Set();
 
   static getInstance(): UnifiedPermissionService {
@@ -47,6 +52,7 @@ export class UnifiedPermissionService {
     
     // 清除相關快取
     this.clearCache();
+    this.clearRolesCache();
     
     // 通知所有監聽器
     this.eventListeners.forEach(listener => {
@@ -56,6 +62,51 @@ export class UnifiedPermissionService {
         console.error('權限更新監聽器錯誤:', error);
       }
     });
+  }
+
+  /**
+   * 從後台載入角色資料
+   */
+  private async loadRolesFromBackend(): Promise<StaffRole[]> {
+    try {
+      // 檢查快取是否有效
+      if (this.rolesCache.length > 0 && Date.now() < this.rolesCacheExpiry) {
+        console.log('🎯 使用角色快取資料');
+        return this.rolesCache;
+      }
+      
+      console.log('🔄 從後台載入角色資料...');
+      
+      const { data, error } = await supabase
+        .from('staff_roles')
+        .select('*')
+        .order('created_at', { ascending: true });
+      
+      if (error) {
+        console.error('❌ 載入角色資料失敗:', error);
+        return this.rolesCache; // 返回快取的角色資料
+      }
+      
+      // 轉換資料格式
+      const roles: StaffRole[] = (data || []).map(role => ({
+        id: role.id,
+        name: role.name,
+        description: role.description || '',
+        permissions: [], // 權限將通過其他方式載入
+        is_system_role: role.is_system_role || false
+      }));
+      
+      // 更新快取
+      this.rolesCache = roles;
+      this.rolesCacheExpiry = Date.now() + this.ROLES_CACHE_DURATION;
+      
+      console.log('✅ 角色資料載入成功:', roles.length, '個角色');
+      return roles;
+      
+    } catch (error) {
+      console.error('❌ 載入角色資料系統錯誤:', error);
+      return this.rolesCache; // 返回快取的角色資料
+    }
   }
 
   /**
@@ -245,6 +296,15 @@ export class UnifiedPermissionService {
   }
 
   /**
+   * 清除角色快取
+   */
+  clearRolesCache(): void {
+    console.log('🔄 清除角色快取');
+    this.rolesCache = [];
+    this.rolesCacheExpiry = 0;
+  }
+
+  /**
    * 清除特定用戶的快取
    */
   clearUserCache(userId: string): void {
@@ -263,6 +323,14 @@ export class UnifiedPermissionService {
   forceReload(): void {
     console.log('🔄 強制重新載入權限');
     this.clearCache();
+    this.clearRolesCache();
     window.dispatchEvent(new CustomEvent('permissionForceReload'));
+  }
+
+  /**
+   * 取得最新角色資料
+   */
+  async getCurrentRoles(): Promise<StaffRole[]> {
+    return await this.loadRolesFromBackend();
   }
 }

@@ -2,9 +2,9 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { format } from 'date-fns';
+import { format, addMonths, subMonths } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useScheduleDragDrop } from '../hooks/useScheduleDragDrop';
 import { useScheduleDialogs } from '../hooks/useScheduleDialogs';
@@ -21,6 +21,7 @@ interface MonthlyScheduleViewProps {
   selectedStaffId?: string;
   onUpdateSchedule: (id: string, updates: any) => Promise<void>;
   onDeleteSchedule: (id: string) => Promise<void>;
+  onDateChange?: (date: Date) => void;
   timeSlots: Array<{
     id: string;
     name: string;
@@ -36,6 +37,7 @@ const MonthlyScheduleView = ({
   selectedStaffId,
   onUpdateSchedule,
   onDeleteSchedule,
+  onDateChange,
   timeSlots = []
 }: MonthlyScheduleViewProps) => {
   const navigate = useNavigate();
@@ -73,6 +75,17 @@ const MonthlyScheduleView = ({
     extendedStartDate,
     extendedEndDate
   } = useExtendedCalendar(selectedDate);
+
+  // 處理月份切換
+  const handlePreviousMonth = () => {
+    const previousMonth = subMonths(selectedDate, 1);
+    onDateChange?.(previousMonth);
+  };
+
+  const handleNextMonth = () => {
+    const nextMonth = addMonths(selectedDate, 1);
+    onDateChange?.(nextMonth);
+  };
 
   // 使用統一的處理器來確保更新正確傳遞
   const handleScheduleUpdate = async (scheduleId: string, updates: any) => {
@@ -148,21 +161,44 @@ const MonthlyScheduleView = ({
     <>
       <div className="bg-white/20 backdrop-blur-xl rounded-xl border border-white/30 shadow-lg p-6">
         <div className="flex items-center justify-between mb-6">
-          <div className="flex-1">
-            <h2 className="text-xl font-bold text-white/90 mb-2">
-              {getDisplayTitle()} 排班總覽
-              {selectedStaffId && (
-                <span className="ml-2 text-lg text-white/80">
-                  - {getUserName(selectedStaffId)}
-                </span>
+          <div className="flex items-center gap-4">
+            {/* 月份導航按鈕 */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handlePreviousMonth}
+                className="p-2 bg-white/20 hover:bg-white/30 border border-white/30 rounded-xl text-white"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleNextMonth}
+                className="p-2 bg-white/20 hover:bg-white/30 border border-white/30 rounded-xl text-white"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-white/90 mb-2">
+                {getDisplayTitle()} 排班總覽
+                {selectedStaffId && (
+                  <span className="ml-2 text-lg text-white/80">
+                    - {getUserName(selectedStaffId)}
+                  </span>
+                )}
+              </h2>
+              {getExtendedDescription() && (
+                <div className="text-sm text-white/70">
+                  {getExtendedDescription()}
+                </div>
               )}
-            </h2>
-            {getExtendedDescription() && (
-              <div className="text-sm text-white/70">
-                {getExtendedDescription()}
-              </div>
-            )}
+            </div>
           </div>
+          
           <Button
             onClick={() => navigate('/schedule-statistics')}
             variant="outline"

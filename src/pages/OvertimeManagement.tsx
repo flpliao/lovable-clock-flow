@@ -7,22 +7,57 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Plus, History, Timer, Calendar, FileText } from 'lucide-react';
 import OvertimeRequestForm from '@/components/overtime/OvertimeRequestForm';
 import OvertimeHistory from '@/components/overtime/OvertimeHistory';
+import OvertimeManagementComponent from '@/components/hr/OvertimeManagement';
 
 const OvertimeManagement = () => {
   const { currentUser } = useUser();
-  const { hasPermission } = useUnifiedPermissions();
+  const { hasPermission, rolesLoading } = useUnifiedPermissions();
+
+  console.log('🔍 加班管理頁面載入中...', {
+    currentUser: currentUser?.name,
+    rolesLoading
+  });
 
   if (!currentUser) {
+    console.log('❌ 用戶未登入，重定向到登入頁面');
     return <Navigate to="/login" />;
+  }
+
+  // 等待權限載入完成
+  if (rolesLoading) {
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
+        <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
+        <div className="relative z-10 w-full flex items-center justify-center min-h-screen">
+          <div className="text-white text-xl">載入權限中...</div>
+        </div>
+      </div>
+    );
   }
 
   // 權限檢查
   const canRequestOvertime = hasPermission('overtime:request');
   const canViewOvertime = hasPermission('overtime:view');
+  const canManageOvertime = hasPermission('overtime:manage') || hasPermission('hr:overtime_manage');
+
+  console.log('🔐 權限檢查結果:', {
+    canRequestOvertime,
+    canViewOvertime,
+    canManageOvertime,
+    userRole: currentUser.role,
+    userName: currentUser.name
+  });
 
   // 如果用戶沒有任何加班相關權限，重定向到首頁
-  if (!canRequestOvertime && !canViewOvertime) {
+  if (!canRequestOvertime && !canViewOvertime && !canManageOvertime) {
+    console.log('❌ 用戶沒有加班相關權限，重定向到首頁');
     return <Navigate to="/" />;
+  }
+
+  // 如果是 HR 管理者，顯示管理介面
+  if (canManageOvertime) {
+    console.log('✅ 顯示 HR 加班管理介面');
+    return <OvertimeManagementComponent />;
   }
 
   return (

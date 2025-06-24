@@ -1,5 +1,6 @@
 
 import { useToast } from '@/components/ui/use-toast';
+import { useUser } from '@/contexts/UserContext';
 import { StaffRole, NewStaffRole, Staff } from '../types';
 
 export const useRoleOperations = (
@@ -8,6 +9,7 @@ export const useRoleOperations = (
   staffList: Staff[]
 ) => {
   const { toast } = useToast();
+  const { isAdmin } = useUser();
   
   // Add a new role
   const addRole = async (newRole: NewStaffRole): Promise<boolean> => {
@@ -50,7 +52,6 @@ export const useRoleOperations = (
   
   // Update an existing role
   const updateRole = async (updatedRole: StaffRole): Promise<boolean> => {
-    // For system roles, only allow updating permissions
     const existingRole = roles.find(role => role.id === updatedRole.id);
     if (!existingRole) {
       toast({
@@ -63,15 +64,15 @@ export const useRoleOperations = (
     
     let roleToUpdate = { ...updatedRole };
     
-    // For system roles, preserve the original name and description
-    if (existingRole.is_system_role) {
+    // For system roles, only allow updating permissions unless user is admin
+    if (existingRole.is_system_role && !isAdmin()) {
       roleToUpdate = {
         ...roleToUpdate,
         name: existingRole.name,
         description: existingRole.description,
         is_system_role: true
       };
-    } else {
+    } else if (!existingRole.is_system_role) {
       // For custom roles, check if name already exists (excluding the current role)
       if (roles.some(role => role.name === updatedRole.name && role.id !== updatedRole.id)) {
         toast({
@@ -89,7 +90,7 @@ export const useRoleOperations = (
     
     toast({
       title: "編輯成功",
-      description: `已成功更新 ${roleToUpdate.name} 角色權限`
+      description: `已成功更新 ${roleToUpdate.name} 角色${existingRole.is_system_role && !isAdmin() ? '權限' : ''}`
     });
     
     return true;
@@ -97,7 +98,6 @@ export const useRoleOperations = (
   
   // Delete a role
   const deleteRole = async (roleId: string): Promise<boolean> => {
-    // Check if trying to delete system role
     const roleToDelete = roles.find(role => role.id === roleId);
     if (!roleToDelete) {
       toast({
@@ -108,10 +108,11 @@ export const useRoleOperations = (
       return false;
     }
     
-    if (roleToDelete.is_system_role) {
+    // Only admin can delete system roles
+    if (roleToDelete.is_system_role && !isAdmin()) {
       toast({
-        title: "無法刪除",
-        description: "系統預設角色無法刪除",
+        title: "權限不足",
+        description: "只有系統管理員可以刪除系統預設角色",
         variant: "destructive"
       });
       return false;
@@ -132,7 +133,7 @@ export const useRoleOperations = (
     
     toast({
       title: "刪除成功",
-      description: "已成功刪除角色"
+      description: `已成功刪除 ${roleToDelete.name} 角色`
     });
     
     return true;

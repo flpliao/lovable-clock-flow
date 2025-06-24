@@ -5,6 +5,7 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useUser } from '@/contexts/UserContext';
 import { StaffRole } from './types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditRoleDialogHeader } from './dialogs/EditRoleDialogHeader';
@@ -20,6 +21,7 @@ interface EditRoleDialogProps {
 
 const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
   const { updateRole } = useStaffManagementContext();
+  const { isAdmin } = useUser();
   const [activeTab, setActiveTab] = useState<string>('基本資料');
   const [editedRole, setEditedRole] = useState<StaffRole>({...role});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,13 +68,16 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
     setActiveTab('基本資料');
   };
   
-  // Disable editing of name/description for system roles, but allow permission editing
-  const isSystemRole = editedRole.is_system_role;
+  // System roles can only be fully edited by admins
+  const canEditBasicInfo = !editedRole.is_system_role || isAdmin();
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
-        <EditRoleDialogHeader isSystemRole={isSystemRole} />
+        <EditRoleDialogHeader 
+          isSystemRole={editedRole.is_system_role} 
+          canEditBasicInfo={canEditBasicInfo}
+        />
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
@@ -84,7 +89,8 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
             <EditRoleBasicInfoTab
               editedRole={editedRole}
               setEditedRole={setEditedRole}
-              isSystemRole={isSystemRole}
+              isSystemRole={editedRole.is_system_role}
+              canEditBasicInfo={canEditBasicInfo}
               isSubmitting={isSubmitting}
               onCancel={handleCancel}
               onNext={handleNext}

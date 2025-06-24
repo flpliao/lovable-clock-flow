@@ -10,6 +10,7 @@ interface EditRoleBasicInfoTabProps {
   editedRole: StaffRole;
   setEditedRole: (role: StaffRole | ((prev: StaffRole) => StaffRole)) => void;
   isSystemRole: boolean;
+  canEditBasicInfo?: boolean;
   isSubmitting: boolean;
   onCancel: () => void;
   onNext: () => void;
@@ -19,6 +20,7 @@ export const EditRoleBasicInfoTab: React.FC<EditRoleBasicInfoTabProps> = ({
   editedRole,
   setEditedRole,
   isSystemRole,
+  canEditBasicInfo = true,
   isSubmitting,
   onCancel,
   onNext
@@ -34,7 +36,7 @@ export const EditRoleBasicInfoTab: React.FC<EditRoleBasicInfoTabProps> = ({
           value={editedRole.name}
           onChange={(e) => setEditedRole({...editedRole, name: e.target.value})}
           className="col-span-3"
-          disabled={isSystemRole}
+          disabled={isSystemRole && !canEditBasicInfo}
         />
       </div>
       
@@ -48,9 +50,15 @@ export const EditRoleBasicInfoTab: React.FC<EditRoleBasicInfoTabProps> = ({
           onChange={(e) => setEditedRole({...editedRole, description: e.target.value})}
           className="col-span-3"
           rows={3}
-          disabled={isSystemRole}
+          disabled={isSystemRole && !canEditBasicInfo}
         />
       </div>
+      
+      {isSystemRole && !canEditBasicInfo && (
+        <div className="text-sm text-gray-500 text-center p-4 bg-gray-50 rounded-lg">
+          系統預設角色的基本資訊受到保護，只有系統管理員可以修改
+        </div>
+      )}
       
       <div className="flex justify-end space-x-2 pt-4">
         <Button 

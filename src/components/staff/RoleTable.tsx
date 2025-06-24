@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Edit2, Trash2, Shield, Lock } from 'lucide-react';
 import { StaffRole } from './types';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useUser } from '@/contexts/UserContext';
 import { Badge } from '@/components/ui/badge';
 
 interface RoleTableProps {
@@ -21,6 +22,7 @@ interface RoleTableProps {
 
 const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
   const { deleteRole } = useStaffManagementContext();
+  const { isAdmin } = useUser();
   
   return (
     <Table>
@@ -71,6 +73,7 @@ const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
                   variant="ghost"
                   size="icon"
                   onClick={() => onEdit(role)}
+                  title={role.is_system_role ? "編輯系統角色權限" : "編輯角色"}
                 >
                   <Edit2 className="h-4 w-4" />
                 </Button>
@@ -78,7 +81,8 @@ const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
                   variant="ghost"
                   size="icon"
                   onClick={() => deleteRole(role.id)}
-                  disabled={role.is_system_role}
+                  disabled={role.is_system_role && !isAdmin()}
+                  title={role.is_system_role ? "系統管理員可刪除系統角色" : "刪除角色"}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

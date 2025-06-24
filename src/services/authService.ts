@@ -59,6 +59,7 @@ export class AuthService {
         console.log('🔐 廖俊雄最高管理員權限');
       } else {
         // 對於其他用戶，嚴格基於 role_id 查詢後台角色權限
+        // 只有當 role_id 不是 'user' 時才進行權限查詢
         if (staffData.role_id && staffData.role_id !== 'user') {
           try {
             // 查詢 staff_roles 表格及其權限
@@ -80,7 +81,7 @@ export class AuthService {
               .eq('id', staffData.role_id)
               .single();
 
-            if (!roleError && roleInfo) {
+            if (!roleError && roleInfo && roleInfo.role_permissions && roleInfo.role_permissions.length > 0) {
               console.log('🔍 角色詳細資訊:', roleInfo);
               console.log('📋 角色權限:', roleInfo.role_permissions?.map((rp: any) => rp.permissions?.code));
               
@@ -97,7 +98,7 @@ export class AuthService {
               if (hasSystemManage || roleInfo.is_system_role === true) {
                 userRole = 'admin';
                 console.log('🔐 系統管理員權限:', roleInfo.name);
-              } else if (hasStaffManage || roleInfo.name.includes('管理') || roleInfo.name.includes('主管')) {
+              } else if (hasStaffManage) {
                 userRole = 'manager';
                 console.log('🔐 管理者權限:', roleInfo.name);
               } else {
@@ -105,7 +106,7 @@ export class AuthService {
                 console.log('🔐 一般用戶權限:', roleInfo.name);
               }
             } else {
-              console.log('⚠️ 無法載入角色資訊，使用預設權限 user');
+              console.log('⚠️ 無法載入角色資訊或角色無權限，使用預設權限 user');
               userRole = 'user';
             }
           } catch (error) {
@@ -173,6 +174,7 @@ export class AuthService {
         console.log('🔐 廖俊雄最高管理員權限');
       } else {
         // 對於其他用戶，嚴格基於 role_id 查詢後台角色權限
+        // 只有當 role_id 不是 'user' 時才進行權限查詢
         if (staffData.role_id && staffData.role_id !== 'user') {
           try {
             // 查詢 staff_roles 表格及其權限
@@ -194,7 +196,7 @@ export class AuthService {
               .eq('id', staffData.role_id)
               .single();
 
-            if (!roleError && roleInfo) {
+            if (!roleError && roleInfo && roleInfo.role_permissions && roleInfo.role_permissions.length > 0) {
               console.log('🔍 角色詳細資訊:', roleInfo);
               console.log('📋 角色權限:', roleInfo.role_permissions?.map((rp: any) => rp.permissions?.code));
               
@@ -211,7 +213,7 @@ export class AuthService {
               if (hasSystemManage || roleInfo.is_system_role === true) {
                 userRole = 'admin';
                 console.log('🔐 系統管理員權限:', roleInfo.name);
-              } else if (hasStaffManage || roleInfo.name.includes('管理') || roleInfo.name.includes('主管')) {
+              } else if (hasStaffManage) {
                 userRole = 'manager';
                 console.log('🔐 管理者權限:', roleInfo.name);
               } else {
@@ -219,7 +221,7 @@ export class AuthService {
                 console.log('🔐 一般用戶權限:', roleInfo.name);
               }
             } else {
-              console.log('⚠️ 無法載入角色資訊，使用預設權限 user');
+              console.log('⚠️ 無法載入角色資訊或角色無權限，使用預設權限 user');
               userRole = 'user';
             }
           } catch (error) {

@@ -4,7 +4,7 @@ import { useUser } from '@/contexts/UserContext';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { useUnifiedPermissions } from '@/hooks/useUnifiedPermissions';
 import { useToast } from '@/hooks/use-toast';
-import { OvertimeService, OvertimeRequest } from '@/services/overtimeService';
+import { OvertimeService, OvertimeRecord } from '@/services/overtimeService';
 import OvertimeHistoryHeader from './components/OvertimeHistoryHeader';
 import OvertimeSearchFilters from './components/OvertimeSearchFilters';
 import OvertimeRecordCard from './components/OvertimeRecordCard';
@@ -14,7 +14,7 @@ const OvertimeHistory: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
-  const [overtimes, setOvertimes] = useState<OvertimeRequest[]>([]);
+  const [overtimes, setOvertimes] = useState<OvertimeRecord[]>([]);
   const [loading, setLoading] = useState(true);
   
   const { currentUser } = useUser();

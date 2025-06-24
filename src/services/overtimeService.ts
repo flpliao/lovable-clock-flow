@@ -17,6 +17,24 @@ export interface OvertimeRequest {
   approval_comment?: string;
   created_at?: string;
   updated_at?: string;
+  // 新增 staff 關聯資料
+  staff?: {
+    name: string;
+  };
+}
+
+export interface OvertimeRecord {
+  id: string;
+  staff_name: string;
+  overtime_date: string;
+  start_time: string;
+  end_time: string;
+  hours: number;
+  overtime_type: 'weekday' | 'weekend' | 'holiday';
+  compensation_type: 'pay' | 'time_off' | 'both';
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
 }
 
 export class OvertimeService {
@@ -52,13 +70,18 @@ export class OvertimeService {
   /**
    * 獲取用戶的加班記錄
    */
-  static async getUserOvertimeHistory(staffId: string): Promise<OvertimeRequest[]> {
+  static async getUserOvertimeHistory(staffId: string): Promise<OvertimeRecord[]> {
     console.log('🔄 載入用戶加班記錄:', staffId);
     
     try {
       const { data, error } = await supabase
         .from('overtimes')
-        .select('*')
+        .select(`
+          *,
+          staff:staff_id (
+            name
+          )
+        `)
         .eq('staff_id', staffId)
         .order('created_at', { ascending: false });
 
@@ -67,8 +90,24 @@ export class OvertimeService {
         throw new Error(`載入加班記錄失敗: ${error.message}`);
       }
 
-      console.log('✅ 加班記錄载入成功:', data?.length, '筆記錄');
-      return data as OvertimeRequest[];
+      console.log('✅ 加班記錄載入成功:', data?.length, '筆記錄');
+      
+      // 轉換為 OvertimeRecord 格式
+      const records: OvertimeRecord[] = (data || []).map(item => ({
+        id: item.id,
+        staff_name: item.staff?.name || '未知員工',
+        overtime_date: item.overtime_date,
+        start_time: item.start_time,
+        end_time: item.end_time,
+        hours: item.hours,
+        overtime_type: item.overtime_type,
+        compensation_type: item.compensation_type,
+        reason: item.reason,
+        status: item.status,
+        created_at: item.created_at
+      }));
+
+      return records;
     } catch (error) {
       console.error('❌ 加班記錄服務錯誤:', error);
       throw error;
@@ -78,7 +117,7 @@ export class OvertimeService {
   /**
    * 獲取所有加班記錄（HR管理用）
    */
-  static async getAllOvertimeRequests(): Promise<OvertimeRequest[]> {
+  static async getAllOvertimeRequests(): Promise<OvertimeRecord[]> {
     console.log('🔄 載入所有加班記錄');
     
     try {
@@ -98,7 +137,23 @@ export class OvertimeService {
       }
 
       console.log('✅ 所有加班記錄載入成功:', data?.length, '筆記錄');
-      return data as OvertimeRequest[];
+      
+      // 轉換為 OvertimeRecord 格式
+      const records: OvertimeRecord[] = (data || []).map(item => ({
+        id: item.id,
+        staff_name: item.staff?.name || '未知員工',
+        overtime_date: item.overtime_date,
+        start_time: item.start_time,
+        end_time: item.end_time,
+        hours: item.hours,
+        overtime_type: item.overtime_type,
+        compensation_type: item.compensation_type,
+        reason: item.reason,
+        status: item.status,
+        created_at: item.created_at
+      }));
+
+      return records;
     } catch (error) {
       console.error('❌ 加班記錄服務錯誤:', error);
       throw error;

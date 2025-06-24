@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUnifiedPermissions } from '@/hooks/useUnifiedPermissions';
 import { useToast } from '@/hooks/use-toast';
-import { OvertimeService, OvertimeRequest } from '@/services/overtimeService';
+import { OvertimeService, OvertimeRecord } from '@/services/overtimeService';
 import HROvertimeHeader from './overtime/HROvertimeHeader';
 import HROvertimeFilters from './overtime/HROvertimeFilters';
 import HROvertimeCard from './overtime/HROvertimeCard';
@@ -12,7 +12,7 @@ const OvertimeManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
-  const [overtimes, setOvertimes] = useState<OvertimeRequest[]>([]);
+  const [overtimes, setOvertimes] = useState<OvertimeRecord[]>([]);
   const [loading, setLoading] = useState(true);
   
   const { hasPermission } = useUnifiedPermissions();
@@ -63,9 +63,7 @@ const OvertimeManagement: React.FC = () => {
   }
 
   const filteredOvertimes = overtimes.filter(overtime => {
-    // 假設有 staff_name 欄位或關聯的員工資料
-    const staffName = (overtime as any).staff?.name || '';
-    const matchesSearch = staffName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = overtime.staff_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          overtime.reason.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || overtime.status === statusFilter;
     const matchesType = typeFilter === 'all' || overtime.overtime_type === typeFilter;

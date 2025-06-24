@@ -3,6 +3,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Staff, StaffRole } from '../types';
+import { UnifiedPermissionService } from '@/services/unifiedPermissionService';
 
 interface EditStaffRoleFieldProps {
   currentStaff: Staff;
@@ -15,12 +16,15 @@ export const EditStaffRoleField: React.FC<EditStaffRoleFieldProps> = ({
   setCurrentStaff,
   roles
 }) => {
+  const permissionService = UnifiedPermissionService.getInstance();
+  
   const handleRoleChange = (value: string) => {
     const selectedRole = roles.find(r => r.id === value);
     console.log('🔄 角色變更:', {
       oldRole: currentStaff.role_id,
       newRole: value,
-      selectedRole: selectedRole?.name
+      selectedRole: selectedRole?.name,
+      staffName: currentStaff.name
     });
     
     setCurrentStaff({
@@ -28,6 +32,24 @@ export const EditStaffRoleField: React.FC<EditStaffRoleFieldProps> = ({
       role_id: value,
       role: selectedRole?.name || 'user'
     });
+    
+    // 清除權限快取，確保新角色權限即時生效
+    permissionService.clearCache();
+    
+    // 觸發權限更新事件
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('permissionUpdated', {
+        detail: { 
+          operation: 'staffRoleUpdate', 
+          staffData: { 
+            ...currentStaff, 
+            role_id: value,
+            role: selectedRole?.name || 'user'
+          },
+          timestamp: Date.now()
+        }
+      }));
+    }, 100);
   };
 
   return (
@@ -49,6 +71,9 @@ export const EditStaffRoleField: React.FC<EditStaffRoleFieldProps> = ({
               {role.description && (
                 <span className="text-gray-500 ml-2">({role.description})</span>
               )}
+              <span className="text-xs text-blue-600 ml-2">
+                [{role.permissions.length} 個權限]
+              </span>
             </SelectItem>
           ))}
         </SelectContent>

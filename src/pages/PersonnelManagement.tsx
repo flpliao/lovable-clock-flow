@@ -97,8 +97,8 @@ const PersonnelManagement = () => {
       }}></div>
 
       <div className="relative z-10 w-full">
-        {/* 頁面標題區域 */}
-        <div className="w-full px-4 lg:px-8 pt-32 md:pt-36 pb-8">
+        {/* 頁面標題區域 - 減少垂直間距 */}
+        <div className="w-full px-4 lg:px-8 pt-24 md:pt-28 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-purple-500/70 rounded-2xl shadow-lg backdrop-blur-xl border border-purple-400/30">
@@ -114,7 +114,7 @@ const PersonnelManagement = () => {
           </div>
           
           {/* 手機版同步狀態 */}
-          <div className="md:hidden mt-4 flex items-center justify-between">
+          <div className="md:hidden mt-3 flex items-center justify-between">
             <div className="flex items-center gap-2 p-2 bg-white/20 rounded-lg shadow-md backdrop-blur-xl border border-white/30">
               {getSyncStatusIcon()}
               <span className="text-white text-sm font-medium">{getSyncStatusText()}</span>
@@ -125,10 +125,10 @@ const PersonnelManagement = () => {
           </div>
         </div>
 
-        {/* 標籤導航 */}
-        <div className="w-full px-4 lg:px-8 pb-8">
+        {/* 標籤導航 - 減少垂直間距 */}
+        <div className="w-full px-4 lg:px-8 pb-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-xl border border-white/30 p-1 mb-6">
+            <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-xl border border-white/30 p-1 mb-4">
               <TabsTrigger value="staff" className="text-gray-800 data-[state=active]:bg-white/60 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-lg font-medium transition-all duration-200 py-2 px-4 flex items-center gap-2">
                 <UserCheck className="h-4 w-4" />
                 人員組織

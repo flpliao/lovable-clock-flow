@@ -21,12 +21,12 @@ const StaffManagement = () => {
   return (
     <CompanyManagementProvider>
       <DepartmentManagementProvider>
-        <div className="space-y-6">
+        <div className="space-y-3">
           <AdminVerificationCard />
           
-          {/* 人員管理主區塊 - 半透明設計 */}
-          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-6">
+          {/* 人員管理主區塊 - 半透明設計，減少內部間距 */}
+          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg p-4">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50">
                   <Users className="h-5 w-5 text-white" />
@@ -36,9 +36,9 @@ const StaffManagement = () => {
               <AddStaffDialog />
             </div>
 
-            {/* 子標籤 */}
+            {/* 子標籤 - 減少間距 */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3 bg-white/40 backdrop-blur-xl rounded-xl border border-white/30 p-1 mb-6">
+              <TabsList className="grid w-full grid-cols-3 bg-white/40 backdrop-blur-xl rounded-xl border border-white/30 p-1 mb-4">
                 <TabsTrigger 
                   value="list" 
                   className="text-gray-800 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-lg font-medium transition-all duration-200 py-2 px-4 flex items-center gap-2"

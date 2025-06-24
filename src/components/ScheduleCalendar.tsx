@@ -69,6 +69,12 @@ const ScheduleCalendar = () => {
     await handleRemoveSchedule(scheduleId);
   };
 
+  // 包裝 canDeleteSchedule 為異步函數，處理 Promise<boolean> 返回類型
+  const wrappedCanDeleteSchedule = async (scheduleId: string): Promise<boolean> => {
+    const result = await canDeleteSchedule(scheduleId);
+    return result;
+  };
+
   const daysInMonth = generateDaysInMonth(getScheduleCountForDate);
   const availableStaff = getAvailableStaff();
 
@@ -106,7 +112,7 @@ const ScheduleCalendar = () => {
           generateYears={generateYears}
           generateMonths={generateMonths}
           shiftsForSelectedDate={shiftsForSelectedDate}
-          canDeleteSchedule={canDeleteSchedule}
+          canDeleteSchedule={wrappedCanDeleteSchedule}
           onRemoveSchedule={wrappedHandleRemoveSchedule}
           currentUser={currentUser}
           setSelectedDateNav={setDateNavSelectedDate}

@@ -10,7 +10,10 @@ export const queryOvertimeService = {
       .select(`
         *,
         staff!staff_id (
-          name
+          name,
+          department,
+          position,
+          supervisor_id
         ),
         overtime_approval_records (
           id,
@@ -20,7 +23,8 @@ export const queryOvertimeService = {
           status,
           approval_date,
           comment,
-          created_at
+          created_at,
+          updated_at
         )
       `)
       .eq('staff_id', staffId)
@@ -35,7 +39,6 @@ export const queryOvertimeService = {
     return data || [];
   },
 
-  // 新增：所有用戶都可以查看自己的加班記錄（不受權限限制）
   async getOvertimeRequestsByCurrentUser(currentUserId: string) {
     console.log('🔍 查詢當前用戶加班記錄（不受權限限制）:', currentUserId);
     
@@ -44,7 +47,10 @@ export const queryOvertimeService = {
       .select(`
         *,
         staff!staff_id (
-          name
+          name,
+          department,
+          position,
+          supervisor_id
         ),
         overtime_approval_records (
           id,
@@ -54,7 +60,8 @@ export const queryOvertimeService = {
           status,
           approval_date,
           comment,
-          created_at
+          created_at,
+          updated_at
         )
       `)
       .eq('staff_id', currentUserId)
@@ -62,7 +69,6 @@ export const queryOvertimeService = {
 
     if (error) {
       console.error('❌ 查詢當前用戶加班記錄失敗:', error);
-      // 即使出錯也返回空陣列，避免影響頁面渲染
       return [];
     }
 
@@ -91,7 +97,8 @@ export const queryOvertimeService = {
           status,
           approval_date,
           comment,
-          created_at
+          created_at,
+          updated_at
         )
       `)
       .eq('status', 'pending')
@@ -103,6 +110,44 @@ export const queryOvertimeService = {
     }
 
     console.log('✅ 查詢待審核加班申請成功:', data?.length, '筆記錄');
+    return data || [];
+  },
+
+  async getOvertimeRequestsForApproval(approverId: string) {
+    console.log('🔍 查詢需要審核的加班申請:', approverId);
+    
+    const { data, error } = await supabase
+      .from('overtimes')
+      .select(`
+        *,
+        staff!staff_id (
+          name,
+          department,
+          position,
+          supervisor_id
+        ),
+        overtime_approval_records (
+          id,
+          approver_id,
+          approver_name,
+          level,
+          status,
+          approval_date,
+          comment,
+          created_at,
+          updated_at
+        )
+      `)
+      .eq('status', 'pending')
+      .or(`current_approver.eq.${approverId},approver_id.eq.${approverId}`)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('❌ 查詢需要審核的加班申請失敗:', error);
+      throw error;
+    }
+
+    console.log('✅ 查詢需要審核的加班申請成功:', data?.length, '筆記錄');
     return data || [];
   }
 };

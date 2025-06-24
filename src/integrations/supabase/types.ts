@@ -1017,6 +1017,8 @@ export type Database = {
           approval_level: number | null
           approved_by: string | null
           approved_by_name: string | null
+          approver_id: string | null
+          approver_name: string | null
           compensation_hours: number | null
           compensation_type: string
           created_at: string
@@ -1039,6 +1041,8 @@ export type Database = {
           approval_level?: number | null
           approved_by?: string | null
           approved_by_name?: string | null
+          approver_id?: string | null
+          approver_name?: string | null
           compensation_hours?: number | null
           compensation_type: string
           created_at?: string
@@ -1061,6 +1065,8 @@ export type Database = {
           approval_level?: number | null
           approved_by?: string | null
           approved_by_name?: string | null
+          approver_id?: string | null
+          approver_name?: string | null
           compensation_hours?: number | null
           compensation_type?: string
           created_at?: string

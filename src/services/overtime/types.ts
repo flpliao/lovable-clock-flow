@@ -20,6 +20,7 @@ export interface OvertimeApprovalRecord {
   approval_date?: string;
   comment?: string;
   created_at: string;
+  updated_at: string;
 }
 
 export interface OvertimeRecord {
@@ -37,6 +38,8 @@ export interface OvertimeRecord {
   updated_at: string;
   approval_level?: number;
   current_approver?: string;
+  approver_id?: string;
+  approver_name?: string;
   approved_by?: string;
   approved_by_name?: string;
   approval_date?: string;
@@ -45,6 +48,9 @@ export interface OvertimeRecord {
   compensation_hours?: number;
   staff?: {
     name: string;
+    department: string;
+    position: string;
+    supervisor_id?: string;
   };
   overtime_approval_records?: OvertimeApprovalRecord[];
 }

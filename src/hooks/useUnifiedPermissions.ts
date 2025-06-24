@@ -1,4 +1,3 @@
-
 import { useCallback, useMemo, useEffect, useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
@@ -9,6 +8,7 @@ export const useUnifiedPermissions = () => {
   const { currentUser } = useUser();
   const { staffList } = useStaffManagementContext();
   const [backendRoles, setBackendRoles] = useState<StaffRole[]>([]);
+  const [rolesLoading, setRolesLoading] = useState(true);
   
   const permissionService = useMemo(() => 
     UnifiedPermissionService.getInstance(), []
@@ -18,12 +18,20 @@ export const useUnifiedPermissions = () => {
   useEffect(() => {
     const loadBackendRoles = async () => {
       try {
+        setRolesLoading(true);
         console.log('🔄 載入後台角色資料用於權限檢查...');
         const roles = await permissionService.getCurrentRoles();
         setBackendRoles(roles);
         console.log('✅ 後台角色資料載入完成:', roles.length, '個角色');
+        console.log('📋 角色詳情:', roles.map(r => ({
+          id: r.id,
+          name: r.name,
+          permissionCount: r.permissions.length
+        })));
       } catch (error) {
         console.error('❌ 載入後台角色資料失敗:', error);
+      } finally {
+        setRolesLoading(false);
       }
     };
     
@@ -33,11 +41,24 @@ export const useUnifiedPermissions = () => {
   // 獲取當前用戶的員工資料
   const currentStaffData = useMemo(() => {
     if (!currentUser) return undefined;
-    return staffList.find(staff => 
+    
+    const staff = staffList.find(staff => 
       staff.email === currentUser.name || 
       staff.name === currentUser.name ||
       staff.id === currentUser.id
     );
+    
+    if (staff) {
+      console.log('👤 找到當前用戶員工資料:', {
+        name: staff.name,
+        roleId: staff.role_id,
+        role: staff.role
+      });
+    } else {
+      console.log('⚠️ 未找到當前用戶員工資料:', currentUser.name);
+    }
+    
+    return staff;
   }, [currentUser, staffList]);
 
   // 構建權限檢查上下文（使用後台角色資料）
@@ -49,15 +70,21 @@ export const useUnifiedPermissions = () => {
 
   // 統一權限檢查函數
   const hasPermission = useCallback((permission: string): boolean => {
+    if (rolesLoading) {
+      console.log('⏳ 角色資料載入中，暫時拒絕權限:', permission);
+      return false;
+    }
+    
     const result = permissionService.hasPermission(permission, permissionContext);
     console.log('🔐 統一權限檢查:', {
       user: currentUser?.name,
       permission,
       result,
-      rolesCount: backendRoles.length
+      rolesCount: backendRoles.length,
+      staffData: currentStaffData ? '有' : '無'
     });
     return result;
-  }, [permissionService, permissionContext, currentUser, backendRoles]);
+  }, [permissionService, permissionContext, currentUser, backendRoles, rolesLoading, currentStaffData]);
 
   // 批量權限檢查
   const hasAnyPermission = useCallback((permissions: string[]): boolean => {
@@ -69,14 +96,16 @@ export const useUnifiedPermissions = () => {
     return permissions.every(permission => hasPermission(permission));
   }, [hasPermission]);
 
-  // 角色檢查（保持向後兼容）
+  // 角色檢查（基於動態權限）
   const isAdmin = useCallback((): boolean => {
-    return hasPermission('admin:all') || currentUser?.role === 'admin';
-  }, [hasPermission, currentUser]);
+    // 檢查是否有系統管理權限
+    return hasPermission('system:manage') || hasPermission('system:settings_edit');
+  }, [hasPermission]);
 
   const isManager = useCallback((): boolean => {
-    return hasPermission('manager:all') || currentUser?.role === 'manager' || isAdmin();
-  }, [hasPermission, currentUser, isAdmin]);
+    // 檢查是否有管理相關權限
+    return hasPermission('staff:manage') || hasPermission('attendance:manage') || isAdmin();
+  }, [hasPermission, isAdmin]);
 
   // 清除權限快取
   const clearPermissionCache = useCallback(() => {
@@ -94,12 +123,15 @@ export const useUnifiedPermissions = () => {
   const reloadBackendRoles = useCallback(async () => {
     try {
       console.log('🔄 重新載入後台角色資料...');
+      setRolesLoading(true);
       const roles = await permissionService.getCurrentRoles();
       setBackendRoles(roles);
       permissionService.clearCache();
       console.log('✅ 後台角色資料重新載入完成');
     } catch (error) {
       console.error('❌ 重新載入後台角色資料失敗:', error);
+    } finally {
+      setRolesLoading(false);
     }
   }, [permissionService]);
 
@@ -137,6 +169,7 @@ export const useUnifiedPermissions = () => {
     reloadBackendRoles,
     currentStaffData,
     permissionContext,
-    backendRoles // 提供後台角色資料
+    backendRoles,
+    rolesLoading // 新增載入狀態
   };
 };

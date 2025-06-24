@@ -1,4 +1,3 @@
-
 import { User } from '@/contexts/user/types';
 import { Staff, StaffRole } from '@/components/staff/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -79,7 +78,19 @@ export class UnifiedPermissionService {
       
       const { data, error } = await supabase
         .from('staff_roles')
-        .select('*')
+        .select(`
+          *,
+          role_permissions!inner (
+            permission_id,
+            permissions!inner (
+              id,
+              name,
+              code,
+              description,
+              category
+            )
+          )
+        `)
         .order('created_at', { ascending: true });
       
       if (error) {
@@ -87,12 +98,18 @@ export class UnifiedPermissionService {
         return this.rolesCache; // 返回快取的角色資料
       }
       
-      // 轉換資料格式
+      // 轉換資料格式，包含權限
       const roles: StaffRole[] = (data || []).map(role => ({
         id: role.id,
         name: role.name,
         description: role.description || '',
-        permissions: [], // 權限將通過其他方式載入
+        permissions: (role.role_permissions || []).map((rp: any) => ({
+          id: rp.permissions.id,
+          name: rp.permissions.name,
+          code: rp.permissions.code,
+          description: rp.permissions.description || '',
+          category: rp.permissions.category || 'general'
+        })),
         is_system_role: role.is_system_role || false
       }));
       
@@ -144,7 +161,7 @@ export class UnifiedPermissionService {
   }
 
   /**
-   * 內部權限檢查邏輯
+   * 內部權限檢查邏輯 - 完全基於後台角色設定
    */
   private checkPermissionInternal(
     permission: string, 
@@ -157,19 +174,13 @@ export class UnifiedPermissionService {
       return false;
     }
 
-    // 廖俊雄擁有所有權限
+    // 廖俊雄擁有所有權限（特殊用戶例外）
     if (this.isLiaoJunxiong(currentUser)) {
       console.log('🔐 廖俊雄權限檢查:', permission, '✅ 允許');
       return true;
     }
 
-    // 系統管理員擁有所有權限
-    if (this.isSystemAdmin(currentUser)) {
-      console.log('🔐 系統管理員權限檢查:', currentUser.name, permission, '✅ 允許');
-      return true;
-    }
-
-    // 檢查員工動態角色權限
+    // 檢查員工動態角色權限（主要權限檢查邏輯）
     if (staffData && this.checkStaffRolePermission(staffData, permission, roles)) {
       console.log('🔐 員工角色權限檢查:', staffData.name, permission, '✅ 允許');
       return true;
@@ -181,10 +192,10 @@ export class UnifiedPermissionService {
       return true;
     }
 
-    // 檢查傳統角色權限（向後兼容）
-    if (this.checkLegacyRolePermission(permission, currentUser)) {
-      console.log('🔐 傳統角色權限檢查:', currentUser.name, permission, '✅ 允許');
-      return true;
+    // 如果沒有員工資料，但是系統管理員，給予基本管理權限
+    if (!staffData && this.isSystemAdmin(currentUser)) {
+      console.log('🔐 系統管理員基本權限檢查:', currentUser.name, permission, '✅ 允許');
+      return this.checkBasicAdminPermissions(permission);
     }
 
     console.log('🔐 權限檢查失敗:', currentUser.name, permission, '❌ 拒絕');
@@ -207,91 +218,52 @@ export class UnifiedPermissionService {
   }
 
   /**
-   * 檢查員工角色權限
+   * 檢查員工角色權限（主要邏輯）
    */
   private checkStaffRolePermission(
     staff: Staff, 
     permission: string, 
     roles: StaffRole[]
   ): boolean {
-    if (!staff.role_id) return false;
+    if (!staff.role_id) {
+      console.log('🔐 員工無角色ID:', staff.name);
+      return false;
+    }
     
     const role = roles.find(r => r.id === staff.role_id);
-    if (!role) return false;
+    if (!role) {
+      console.log('🔐 找不到角色:', staff.role_id, '員工:', staff.name);
+      return false;
+    }
     
-    return role.permissions.some(p => p.code === permission);
+    const hasPermission = role.permissions.some(p => p.code === permission);
+    console.log('🔐 角色權限檢查:', {
+      staff: staff.name,
+      role: role.name,
+      permission,
+      hasPermission,
+      rolePermissions: role.permissions.map(p => p.code)
+    });
+    
+    return hasPermission;
   }
 
   /**
-   * 檢查傳統角色權限（向後兼容）+ 新增權限支援
+   * 基本管理員權限檢查（當無員工資料時的後備方案）
    */
-  private checkLegacyRolePermission(permission: string, user: User): boolean {
-    // 系統管理權限
-    if (['system:manage', 'system:settings_view', 'system:settings_edit'].includes(permission)) {
-      return user.role === 'admin';
-    }
-
-    // 出勤管理權限
-    if (['attendance:view_own'].includes(permission)) {
-      return true; // 所有登入用戶都能查看自己的出勤
-    }
-    if (['attendance:view_all', 'attendance:manage'].includes(permission)) {
-      return user.role === 'admin' || user.role === 'manager';
-    }
-
-    // 加班管理權限
-    if (['overtime:request', 'overtime:view'].includes(permission)) {
-      return true; // 所有登入用戶都能申請和查看加班
-    }
-    if (['overtime:approve', 'overtime:manage'].includes(permission)) {
-      return user.role === 'admin' || user.role === 'manager';
-    }
-
-    // 請假類型管理權限
-    if (['leave_type:view'].includes(permission)) {
-      return true; // 所有登入用戶都能查看假別
-    }
-    if (['leave_type:create', 'leave_type:edit', 'leave_type:delete', 'leave_type:manage'].includes(permission)) {
-      return user.role === 'admin';
-    }
-
-    // HR管理權限
-    if (['hr:payroll_view', 'hr:payroll_manage', 'hr:overtime_manage', 'hr:manage'].includes(permission)) {
-      return user.role === 'admin' || user.department === 'HR';
-    }
-
-    // 原有權限檢查
-    switch (permission) {
-      case 'view_staff':
-      case 'manage_leave':
-      case 'manage_departments':
-      case 'create_department':
-      case 'edit_department':
-      case 'delete_department':
-        return user.role === 'manager' || user.role === 'admin';
-      
-      case 'create_announcement':
-      case 'manage_announcements':
-      case 'announcement:view':
-      case 'announcement:create':
-      case 'announcement:edit':
-      case 'announcement:delete':
-      case 'announcement:publish':
-        return user.department === 'HR' || user.role === 'admin';
-      
-      case 'schedule:view_all':
-      case 'schedule:create':
-      case 'schedule:edit':
-      case 'schedule:delete':
-      case 'schedule:manage':
-        return user.role === 'admin';
-      
-      case 'schedule:view_own':
-        return true; // 所有登入用戶都能查看自己的排班
-      
-      default:
-        return false;
-    }
+  private checkBasicAdminPermissions(permission: string): boolean {
+    // 只給予最基本的系統管理權限
+    const basicAdminPermissions = [
+      'system:manage',
+      'system:settings_view',
+      'system:settings_edit',
+      'staff:view',
+      'staff:create',
+      'staff:edit',
+      'staff:delete'
+    ];
+    
+    return basicAdminPermissions.includes(permission);
   }
 
   /**

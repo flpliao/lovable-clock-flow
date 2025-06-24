@@ -73,27 +73,35 @@ const OvertimeRequestForm: React.FC = () => {
       // 儲存到資料庫
       const result = await overtimeService.createOvertimeRequest(overtimeData);
       
-      // 發送通知給主管（如果有設定主管）
-      if (currentUser.supervisor_id) {
-        try {
-          await supabase.rpc('create_overtime_notification', {
-            p_user_id: currentUser.supervisor_id,
-            p_title: '新的加班申請',
-            p_message: `${currentUser.name} 提交了加班申請，日期：${formData.overtimeDate}`,
-            p_type: 'overtime_approval',
-            p_overtime_id: result.id,
-            p_action_required: true
-          });
-          console.log('✅ 通知已發送給主管');
-        } catch (notificationError) {
-          console.warn('⚠️ 發送通知失敗:', notificationError);
+      // 根據結果狀態顯示不同訊息
+      if (result.status === 'approved') {
+        toast({
+          title: '申請成功',
+          description: '您的加班申請已自動核准（無需主管審核）',
+        });
+      } else {
+        // 發送通知給主管（如果有設定主管）
+        if (currentUser.supervisor_id) {
+          try {
+            await supabase.rpc('create_overtime_notification', {
+              p_user_id: currentUser.supervisor_id,
+              p_title: '新的加班申請',
+              p_message: `${currentUser.name} 提交了加班申請，日期：${formData.overtimeDate}`,
+              p_type: 'overtime_approval',
+              p_overtime_id: result.id,
+              p_action_required: true
+            });
+            console.log('✅ 通知已發送給主管');
+          } catch (notificationError) {
+            console.warn('⚠️ 發送通知失敗:', notificationError);
+          }
         }
+        
+        toast({
+          title: '申請成功',
+          description: '您的加班申請已提交，等待主管審核',
+        });
       }
-      
-      toast({
-        title: '申請成功',
-        description: '您的加班申請已提交，等待主管審核',
-      });
       
       // 重置表單
       setFormData({

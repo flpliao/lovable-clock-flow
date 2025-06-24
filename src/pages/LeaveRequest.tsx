@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { NewLeaveRequestForm } from '@/components/leave/NewLeaveRequestForm';
 import LeaveBalance from '@/components/LeaveBalance';
@@ -8,7 +7,6 @@ import LeaveRequestDetail from '@/components/LeaveRequestDetail';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
 import { PiggyBank, FileText, History } from 'lucide-react';
-
 const LeaveRequest = () => {
   const [activeTab, setActiveTab] = useState<string>('request');
   const {
@@ -24,9 +22,7 @@ const LeaveRequest = () => {
   const handleNewLeaveRequest = () => {
     setActiveTab('view');
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36">
+  return <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36 py-[50px]">
       <div className="w-full px-4 sm:px-6 lg:px-8 pb-6">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Shift Reminder */}
@@ -64,13 +60,7 @@ const LeaveRequest = () => {
                 </TabsContent>
                 
                 <TabsContent value="view" className="mt-0">
-                  {pendingLeaveRequest ? (
-                    <LeaveRequestDetail 
-                      leaveRequest={pendingLeaveRequest} 
-                      isApprover={isApproverForRequest(pendingLeaveRequest)} 
-                    />
-                  ) : (
-                    <div className="text-center py-12">
+                  {pendingLeaveRequest ? <LeaveRequestDetail leaveRequest={pendingLeaveRequest} isApprover={isApproverForRequest(pendingLeaveRequest)} /> : <div className="text-center py-12">
                       <div className="w-16 h-16 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg className="w-8 h-8 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -78,8 +68,7 @@ const LeaveRequest = () => {
                       </div>
                       <p className="text-white font-medium drop-shadow-sm">尚無待審核的請假申請</p>
                       <p className="text-white/80 mt-1 font-medium drop-shadow-sm">您可以在申請請假頁面提交新的請假申請</p>
-                    </div>
-                  )}
+                    </div>}
                 </TabsContent>
 
                 <TabsContent value="history" className="mt-0">
@@ -98,8 +87,6 @@ const LeaveRequest = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default LeaveRequest;

@@ -34,6 +34,8 @@ const MonthlyCalendarGrid = ({
 }: MonthlyCalendarGridProps) => {
   const { calendarDays } = useExtendedCalendar(selectedDate);
 
+  console.log('MonthlyCalendarGrid - Rendering with schedules:', dragSchedules.length);
+
   return (
     <DndContext
       sensors={sensors}
@@ -60,7 +62,7 @@ const MonthlyCalendarGrid = ({
         <div className="grid grid-cols-7">
           {calendarDays.map((day, index) => (
             <DroppableCalendarDay
-              key={index}
+              key={`${day?.date?.getTime() || index}-${index}`}
               day={day}
               schedules={dragSchedules}
               getUserName={getUserName}
@@ -78,7 +80,7 @@ const MonthlyCalendarGrid = ({
       {/* Drag overlay for better visual feedback */}
       <DragOverlay>
         {activeSchedule ? (
-          <div className="bg-white/95 shadow-2xl rounded-lg border border-white/30 transform rotate-3">
+          <div className="bg-white/95 shadow-2xl rounded-lg border border-white/30 transform rotate-3 scale-105">
             <DragScheduleCard
               schedule={activeSchedule}
               getUserName={getUserName}

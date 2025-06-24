@@ -27,13 +27,13 @@ const DroppableCalendarDay = ({
   selectedScheduleId,
   isExtendedMonth = false
 }: DroppableCalendarDayProps) => {
-  if (!day) {
+  if (!day || !day.date) {
     return <div className="min-h-[100px] border-r border-b border-white/10 last:border-r-0"></div>;
   }
 
   const dateStr = format(day.date, 'yyyy-MM-dd');
   const { setNodeRef, isOver } = useDroppable({
-    id: dateStr,
+    id: `droppable-${dateStr}`,
     data: {
       date: day.date,
       dateStr: dateStr
@@ -42,8 +42,14 @@ const DroppableCalendarDay = ({
 
   // 篩選當天的排班
   const daySchedules = schedules.filter(schedule => {
-    const scheduleDate = new Date(schedule.workDate);
-    return isSameDay(scheduleDate, day.date);
+    if (!schedule?.workDate) return false;
+    try {
+      const scheduleDate = new Date(schedule.workDate);
+      return isSameDay(scheduleDate, day.date);
+    } catch (error) {
+      console.error('Error comparing dates:', error, schedule.workDate);
+      return false;
+    }
   });
 
   const isToday = isSameDay(day.date, new Date());
@@ -54,6 +60,8 @@ const DroppableCalendarDay = ({
       onShowAllSchedules(day.date, daySchedules);
     }
   };
+
+  console.log(`DroppableCalendarDay - ${dateStr} has ${daySchedules.length} schedules`);
 
   return (
     <div

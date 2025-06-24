@@ -32,7 +32,7 @@ const OvertimeManagement = () => {
       
       <div className="relative z-10 w-full">
         {/* 頁面標題區域 */}
-        <div className="w-full px-4 lg:px-8 pt-32 md:pt-36 pb-8 py-[50px]">
+        <div className="w-full px-4 lg:px-8 pt-32 md:pt-36 pb-8 py-[100px]">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/30 shadow-lg">

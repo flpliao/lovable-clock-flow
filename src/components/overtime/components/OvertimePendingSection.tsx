@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Clock, AlertCircle, User, CheckCircle, XCircle, Hourglass } from 'lucide-react';
+import { Clock, AlertCircle, User, CheckCircle, XCircle, Hourglass, Eye } from 'lucide-react';
 import ApprovalStatusBadge from './ApprovalStatusBadge';
 
 interface OvertimeApprovalRecord {
@@ -99,31 +99,31 @@ const OvertimePendingSection: React.FC<OvertimePendingSectionProps> = ({ pending
   }
 
   return (
-    <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 backdrop-blur-xl rounded-2xl p-6 border border-yellow-500/30 mb-6 shadow-lg">
+    <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 backdrop-blur-xl rounded-2xl p-6 border border-yellow-500/30 shadow-lg">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-yellow-500/80 rounded-xl flex items-center justify-center shadow-lg">
-          <AlertCircle className="h-5 w-5 text-white" />
+        <div className="w-12 h-12 bg-yellow-500/80 rounded-xl flex items-center justify-center shadow-lg">
+          <Eye className="h-6 w-6 text-white" />
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-medium text-white">正在審核的加班申請</h3>
-          <p className="text-yellow-200 text-sm">需要等待主管審核的加班申請</p>
+          <h2 className="text-xl font-bold text-white">我的待審核加班申請</h2>
+          <p className="text-yellow-200 text-sm">以下是您提交後正在等待主管審核的加班申請</p>
         </div>
-        <div className="bg-yellow-500/80 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm">
-          {pendingOvertimes.length} 筆申請
+        <div className="bg-yellow-500/80 text-white text-sm px-4 py-2 rounded-full font-medium shadow-sm">
+          {pendingOvertimes.length} 筆待審核
         </div>
       </div>
       
-      <div className="space-y-4">
+      <div className="space-y-5">
         {pendingOvertimes.map((overtime) => (
-          <div key={overtime.id} className="bg-white/10 rounded-xl p-5 border border-white/20 hover:bg-white/15 transition-all duration-200">
+          <div key={overtime.id} className="bg-white/10 rounded-xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-200 shadow-md">
             <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-yellow-500/30 rounded-lg flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-yellow-300" />
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-yellow-500/30 rounded-lg flex items-center justify-center">
+                  <Clock className="h-7 w-7 text-yellow-300" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="text-white font-medium text-lg">{getOvertimeTypeText(overtime.overtime_type)}</h4>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h4 className="text-white font-semibold text-lg">{getOvertimeTypeText(overtime.overtime_type)}</h4>
                     <ApprovalStatusBadge status={overtime.status} />
                   </div>
                   <div className="text-white/80 text-sm">
@@ -137,7 +137,7 @@ const OvertimePendingSection: React.FC<OvertimePendingSectionProps> = ({ pending
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
               <div className="bg-white/5 rounded-lg p-3">
                 <span className="text-white/70 text-sm block mb-1">時間範圍</span>
                 <div className="text-white text-sm font-medium">
@@ -152,7 +152,7 @@ const OvertimePendingSection: React.FC<OvertimePendingSectionProps> = ({ pending
               </div>
             </div>
             
-            <div className="mb-4">
+            <div className="mb-5">
               <span className="text-white/70 text-sm block mb-2">申請原因</span>
               <div className="bg-white/5 rounded-lg p-3">
                 <div className="text-white text-sm">{overtime.reason}</div>
@@ -163,7 +163,7 @@ const OvertimePendingSection: React.FC<OvertimePendingSectionProps> = ({ pending
             <div className="bg-gradient-to-r from-white/10 to-white/5 rounded-lg p-4 border border-white/10">
               <div className="flex items-center gap-2 mb-3">
                 <User className="h-4 w-4 text-white/80" />
-                <span className="text-white/80 text-sm font-medium">審核流程狀態</span>
+                <span className="text-white/80 text-sm font-medium">目前審核狀態</span>
               </div>
               
               {overtime.overtime_approval_records && overtime.overtime_approval_records.length > 0 ? (
@@ -195,16 +195,26 @@ const OvertimePendingSection: React.FC<OvertimePendingSectionProps> = ({ pending
                   ))}
                 </div>
               ) : (
-                <div className="flex items-center gap-2 p-3 bg-white/5 rounded-lg">
-                  <Hourglass className="h-4 w-4 text-yellow-400" />
+                <div className="flex items-center gap-3 p-4 bg-white/5 rounded-lg">
+                  <Hourglass className="h-5 w-5 text-yellow-400" />
                   <div className="text-white/80 text-sm">
-                    等待主管審核中...
+                    您的加班申請已提交，正在等待主管審核中...
                   </div>
                 </div>
               )}
             </div>
           </div>
         ))}
+      </div>
+      
+      {/* 提示訊息 */}
+      <div className="mt-4 p-3 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+        <div className="flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 text-blue-300" />
+          <span className="text-blue-200 text-xs">
+            審核完成後，您將收到通知。請耐心等候主管審核。
+          </span>
+        </div>
       </div>
     </div>
   );

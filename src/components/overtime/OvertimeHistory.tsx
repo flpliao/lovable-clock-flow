@@ -156,9 +156,12 @@ const OvertimeHistory: React.FC = () => {
 
       {/* 正在審核的加班申請區塊 - 獨立顯示且突出 */}
       {pendingOvertimes.length > 0 && (
-        <OvertimePendingSection pendingOvertimes={pendingOvertimes} />
+        <div className="mb-8">
+          <OvertimePendingSection pendingOvertimes={pendingOvertimes} />
+        </div>
       )}
 
+      {/* 搜尋篩選器 */}
       <OvertimeSearchFilters 
         searchTerm={searchTerm} 
         statusFilter={statusFilter} 
@@ -168,19 +171,31 @@ const OvertimeHistory: React.FC = () => {
         onTypeFilterChange={setTypeFilter} 
       />
 
-      {/* 所有加班記錄區塊 */}
+      {/* 其他加班記錄（非待審核）*/}
       <div className="space-y-6">
-        <h3 className="text-xl font-semibold text-white">所有加班記錄</h3>
-        {filteredOvertimes.length > 0 ? (
-          filteredOvertimes.map(overtime => (
-            <OvertimeRecordCard 
-              key={overtime.id} 
-              overtime={overtime} 
-              showApprovalProcess={true}
-            />
-          ))
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-semibold text-white">加班記錄歷史</h3>
+          <div className="text-sm text-white/60">
+            共 {otherOvertimes.length} 筆記錄
+          </div>
+        </div>
+        
+        {otherOvertimes.length > 0 ? (
+          <div className="space-y-4">
+            {otherOvertimes.map(overtime => (
+              <OvertimeRecordCard 
+                key={overtime.id} 
+                overtime={overtime} 
+                showApprovalProcess={true}
+              />
+            ))}
+          </div>
         ) : (
-          <OvertimeEmptyState />
+          <div className="text-center py-8">
+            <div className="text-white/60">
+              {filteredOvertimes.length === 0 ? '暫無加班記錄' : '暫無其他加班記錄'}
+            </div>
+          </div>
         )}
       </div>
     </div>

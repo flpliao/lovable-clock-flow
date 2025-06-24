@@ -10,12 +10,14 @@ interface UseScheduleDragDropProps {
   schedules: any[];
   selectedStaffId?: string;
   onUpdateSchedule: (id: string, updates: any) => Promise<void>;
+  onRefreshSchedules?: () => Promise<void>;
 }
 
 export const useScheduleDragDrop = ({
   schedules,
   selectedStaffId,
-  onUpdateSchedule
+  onUpdateSchedule,
+  onRefreshSchedules
 }: UseScheduleDragDropProps) => {
   const { toast } = useToast();
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -111,6 +113,12 @@ export const useScheduleDragDrop = ({
       await onUpdateSchedule(draggedSchedule.id, {
         workDate: newWorkDate
       });
+      
+      // 立即刷新排班數據以確保UI同步
+      if (onRefreshSchedules) {
+        console.log('🔄 刷新排班數據...');
+        await onRefreshSchedules();
+      }
       
       toast({
         title: "排班已移動",

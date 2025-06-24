@@ -4,35 +4,43 @@ import { DndContext, DragOverlay, closestCenter } from '@dnd-kit/core';
 import DroppableCalendarDay from './DroppableCalendarDay';
 import DragScheduleCard from './DragScheduleCard';
 import { useExtendedCalendar } from '../hooks/useExtendedCalendar';
+import { useScheduleOperationsHandlers } from '../hooks/useScheduleOperationsHandlers';
+import { useScheduleDragDrop } from '../hooks/useScheduleDragDrop';
+import { useScheduling } from '@/contexts/SchedulingContext';
 
 interface MonthlyCalendarGridProps {
   selectedDate: Date;
-  sensors: any;
-  dragSchedules: any[];
-  hasScheduleConflict: (userId: string, date: string) => boolean;
+  schedules: any[];
   getUserName: (userId: string) => string;
   selectedSchedule: any;
-  handleDragStart: (event: any) => void;
-  handleDragEnd: (event: any) => void;
   handleScheduleClick: (schedule: any) => void;
   handleShowAllSchedules: (date: Date, schedules: any[]) => void;
-  activeSchedule: any;
 }
 
 const MonthlyCalendarGrid = ({
   selectedDate,
-  sensors,
-  dragSchedules,
-  hasScheduleConflict,
+  schedules,
   getUserName,
   selectedSchedule,
-  handleDragStart,
-  handleDragEnd,
   handleScheduleClick,
-  handleShowAllSchedules,
-  activeSchedule
+  handleShowAllSchedules
 }: MonthlyCalendarGridProps) => {
   const { calendarDays } = useExtendedCalendar(selectedDate);
+  const { handleUpdateSchedule } = useScheduleOperationsHandlers();
+  const { refreshSchedules } = useScheduling();
+
+  const {
+    sensors,
+    dragSchedules,
+    hasScheduleConflict,
+    handleDragStart,
+    handleDragEnd,
+    activeSchedule
+  } = useScheduleDragDrop({
+    schedules,
+    onUpdateSchedule: handleUpdateSchedule,
+    onRefreshSchedules: refreshSchedules
+  });
 
   console.log('MonthlyCalendarGrid - Rendering with schedules:', dragSchedules.length);
 

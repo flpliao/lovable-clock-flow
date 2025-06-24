@@ -12,6 +12,7 @@ export const StaffManagementProvider: React.FC<{ children: ReactNode }> = ({ chi
   
   console.log('📊 StaffManagement context data:', {
     staffListLength: staffManagement.staffList?.length || 0,
+    rolesLength: staffManagement.roles?.length || 0,
     loading: staffManagement.loading
   });
 

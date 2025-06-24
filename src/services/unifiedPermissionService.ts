@@ -1,4 +1,3 @@
-
 import { User } from '@/contexts/user/types';
 import { Staff, StaffRole } from '@/components/staff/types';
 
@@ -13,12 +12,60 @@ export class UnifiedPermissionService {
   private permissionCache = new Map<string, boolean>();
   private cacheExpiry = new Map<string, number>();
   private readonly CACHE_DURATION = 5 * 60 * 1000; // 5分鐘快取
+  private eventListeners: Set<() => void> = new Set();
 
   static getInstance(): UnifiedPermissionService {
     if (!UnifiedPermissionService.instance) {
       UnifiedPermissionService.instance = new UnifiedPermissionService();
+      UnifiedPermissionService.instance.initializeEventListeners();
     }
     return UnifiedPermissionService.instance;
+  }
+
+  /**
+   * 初始化事件監聽器
+   */
+  private initializeEventListeners(): void {
+    // 監聽權限更新事件
+    window.addEventListener('permissionUpdated', this.handlePermissionUpdate.bind(this));
+    
+    // 監聽頁面可見性變化
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        // 頁面變為可見時，清除快取以確保權限同步
+        this.clearCache();
+      }
+    });
+  }
+
+  /**
+   * 處理權限更新事件
+   */
+  private handlePermissionUpdate(event: CustomEvent): void {
+    const { operation, roleData } = event.detail;
+    console.log('🔔 權限更新事件:', operation, roleData);
+    
+    // 清除相關快取
+    this.clearCache();
+    
+    // 通知所有監聽器
+    this.eventListeners.forEach(listener => {
+      try {
+        listener();
+      } catch (error) {
+        console.error('權限更新監聽器錯誤:', error);
+      }
+    });
+  }
+
+  /**
+   * 添加權限更新監聽器
+   */
+  addPermissionUpdateListener(listener: () => void): () => void {
+    this.eventListeners.add(listener);
+    return () => {
+      this.eventListeners.delete(listener);
+    };
   }
 
   /**
@@ -32,7 +79,9 @@ export class UnifiedPermissionService {
     
     // 檢查快取
     if (this.isCacheValid(cacheKey)) {
-      return this.permissionCache.get(cacheKey) || false;
+      const cachedResult = this.permissionCache.get(cacheKey) || false;
+      console.log('🎯 快取權限檢查:', permission, '結果:', cachedResult);
+      return cachedResult;
     }
 
     const result = this.checkPermissionInternal(permission, context);
@@ -52,7 +101,10 @@ export class UnifiedPermissionService {
   ): boolean {
     const { currentUser, staffData, roles } = context;
     
-    if (!currentUser) return false;
+    if (!currentUser) {
+      console.log('🔐 權限檢查: 用戶未登入');
+      return false;
+    }
 
     // 廖俊雄擁有所有權限
     if (this.isLiaoJunxiong(currentUser)) {
@@ -163,7 +215,8 @@ export class UnifiedPermissionService {
     const userId = context.currentUser?.id || 'anonymous';
     const staffId = context.staffData?.id || 'no-staff';
     const roleIds = context.roles.map(r => r.id).sort().join(',');
-    return `${userId}-${staffId}-${permission}-${roleIds}`;
+    const userRole = context.currentUser?.role || 'no-role';
+    return `${userId}-${staffId}-${permission}-${roleIds}-${userRole}`;
   }
 
   /**
@@ -202,5 +255,14 @@ export class UnifiedPermissionService {
         this.cacheExpiry.delete(key);
       }
     }
+  }
+
+  /**
+   * 強制重新載入權限
+   */
+  forceReload(): void {
+    console.log('🔄 強制重新載入權限');
+    this.clearCache();
+    window.dispatchEvent(new CustomEvent('permissionForceReload'));
   }
 }

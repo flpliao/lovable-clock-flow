@@ -13,6 +13,21 @@ export const useRoleOperations = (
   const { isAdmin } = useUser();
   const permissionService = UnifiedPermissionService.getInstance();
   
+  // 觸發全域權限同步的助手函數
+  const triggerPermissionSync = (operation: string, roleData: any) => {
+    // 清除權限快取
+    permissionService.clearCache();
+    
+    // 觸發全域權限更新事件
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('permissionUpdated', {
+        detail: { operation, roleData, timestamp: Date.now() }
+      }));
+    }, 100);
+    
+    console.log('🔄 權限同步已觸發:', operation, roleData);
+  };
+  
   // Add a new role
   const addRole = async (newRole: NewStaffRole): Promise<boolean> => {
     if (!newRole.name) {
@@ -44,8 +59,8 @@ export const useRoleOperations = (
     
     setRoles([...roles, roleToAdd]);
     
-    // 清除權限快取，因為角色已新增
-    permissionService.clearCache();
+    // 觸發權限同步
+    triggerPermissionSync('addRole', roleToAdd);
     
     toast({
       title: "新增成功",
@@ -93,8 +108,8 @@ export const useRoleOperations = (
       role.id === roleToUpdate.id ? roleToUpdate : role
     ));
     
-    // 清除權限快取，因為角色已更新
-    permissionService.clearCache();
+    // 觸發權限同步
+    triggerPermissionSync('updateRole', roleToUpdate);
     
     toast({
       title: "編輯成功",
@@ -139,8 +154,8 @@ export const useRoleOperations = (
     
     setRoles(roles.filter(role => role.id !== roleId));
     
-    // 清除權限快取，因為角色已刪除
-    permissionService.clearCache();
+    // 觸發權限同步
+    triggerPermissionSync('deleteRole', { id: roleId, name: roleToDelete.name });
     
     toast({
       title: "刪除成功",

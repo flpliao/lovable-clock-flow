@@ -1,5 +1,5 @@
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { UnifiedPermissionService, UnifiedPermissionContext } from '@/services/unifiedPermissionService';
@@ -64,6 +64,28 @@ export const useUnifiedPermissions = () => {
       permissionService.clearUserCache(currentUser.id);
     }
   }, [currentUser, permissionService]);
+
+  // 監聽權限更新事件
+  useEffect(() => {
+    const removeListener = permissionService.addPermissionUpdateListener(() => {
+      console.log('🔔 權限更新，觸發重新檢查');
+      // 這裡可以觸發組件重新渲染或其他必要的更新
+      clearPermissionCache();
+    });
+
+    // 監聽強制重新載入事件
+    const handleForceReload = () => {
+      console.log('🔄 收到強制重新載入事件');
+      clearPermissionCache();
+    };
+
+    window.addEventListener('permissionForceReload', handleForceReload);
+
+    return () => {
+      removeListener();
+      window.removeEventListener('permissionForceReload', handleForceReload);
+    };
+  }, [permissionService, clearPermissionCache]);
 
   return {
     hasPermission,

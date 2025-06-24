@@ -5,6 +5,7 @@ import OvertimeHistoryHeader from './components/OvertimeHistoryHeader';
 import OvertimeSearchFilters from './components/OvertimeSearchFilters';
 import OvertimeRecordCard from './components/OvertimeRecordCard';
 import OvertimeEmptyState from './components/OvertimeEmptyState';
+import OvertimePendingSection from './components/OvertimePendingSection';
 
 interface OvertimeRecord {
   id: string;
@@ -107,6 +108,10 @@ const OvertimeHistory: React.FC = () => {
     return matchesSearch && matchesStatus && matchesType;
   });
 
+  // 分離待審核的加班申請
+  const pendingOvertimes = filteredOvertimes.filter(o => o.status === 'pending');
+  const otherOvertimes = filteredOvertimes.filter(o => o.status !== 'pending');
+
   if (isLoading) {
     return (
       <div className="space-y-8">
@@ -148,6 +153,9 @@ const OvertimeHistory: React.FC = () => {
         </div>
       </div>
 
+      {/* 正在審核的加班申請區塊 */}
+      <OvertimePendingSection pendingOvertimes={pendingOvertimes} />
+
       <OvertimeSearchFilters 
         searchTerm={searchTerm} 
         statusFilter={statusFilter} 
@@ -158,6 +166,7 @@ const OvertimeHistory: React.FC = () => {
       />
 
       <div className="space-y-6">
+        <h3 className="text-xl font-semibold text-white">所有加班記錄</h3>
         {filteredOvertimes.map(overtime => (
           <OvertimeRecordCard 
             key={overtime.id} 

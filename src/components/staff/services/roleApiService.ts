@@ -4,7 +4,7 @@ import { StaffRole, NewStaffRole } from '../types';
 
 export class RoleApiService {
   
-  // 載入所有角色
+  // 載入所有角色及其權限
   static async loadRoles(): Promise<StaffRole[]> {
     try {
       console.log('🔄 從後台載入角色資料...');
@@ -19,14 +19,20 @@ export class RoleApiService {
         throw error;
       }
       
-      // 轉換資料格式以符合前台介面
-      const transformedRoles: StaffRole[] = (data || []).map(role => ({
-        id: role.id,
-        name: role.name,
-        description: role.description || '',
-        permissions: [], // 權限將通過 role_permissions 表格載入
-        is_system_role: role.is_system_role || false
-      }));
+      // 轉換資料格式以符合前台介面，並載入權限資料
+      const transformedRoles: StaffRole[] = await Promise.all(
+        (data || []).map(async (role) => {
+          const permissions = await this.loadRolePermissions(role.id);
+          
+          return {
+            id: role.id,
+            name: role.name,
+            description: role.description || '',
+            permissions: permissions,
+            is_system_role: role.is_system_role || false
+          };
+        })
+      );
       
       console.log('✅ 角色資料載入成功:', transformedRoles.length, '個角色');
       return transformedRoles;
@@ -34,6 +40,42 @@ export class RoleApiService {
     } catch (error) {
       console.error('❌ 載入角色資料系統錯誤:', error);
       throw error;
+    }
+  }
+  
+  // 載入角色權限
+  static async loadRolePermissions(roleId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('role_permissions')
+        .select(`
+          permission_id,
+          permissions (
+            id,
+            name,
+            code,
+            description,
+            category
+          )
+        `)
+        .eq('role_id', roleId);
+      
+      if (error) {
+        console.error('❌ 載入角色權限失敗:', error);
+        return [];
+      }
+      
+      return (data || []).map(item => ({
+        id: item.permissions.id,
+        name: item.permissions.name,
+        code: item.permissions.code,
+        description: item.permissions.description,
+        category: item.permissions.category
+      }));
+      
+    } catch (error) {
+      console.error('❌ 載入角色權限系統錯誤:', error);
+      return [];
     }
   }
   
@@ -57,6 +99,9 @@ export class RoleApiService {
         console.error('❌ 新增角色失敗:', error);
         throw error;
       }
+      
+      // 儲存權限
+      await this.saveRolePermissions(data.id, newRole.permissions);
       
       const createdRole: StaffRole = {
         id: data.id,
@@ -96,6 +141,9 @@ export class RoleApiService {
         throw error;
       }
       
+      // 更新權限
+      await this.saveRolePermissions(role.id, role.permissions);
+      
       const updatedRole: StaffRole = {
         id: data.id,
         name: data.name,
@@ -113,11 +161,52 @@ export class RoleApiService {
     }
   }
   
+  // 儲存角色權限
+  static async saveRolePermissions(roleId: string, permissions: any[]) {
+    try {
+      // 先刪除現有權限
+      await supabase
+        .from('role_permissions')
+        .delete()
+        .eq('role_id', roleId);
+      
+      // 插入新權限
+      if (permissions.length > 0) {
+        const permissionData = permissions.map(permission => ({
+          role_id: roleId,
+          permission_id: permission.id
+        }));
+        
+        const { error } = await supabase
+          .from('role_permissions')
+          .insert(permissionData);
+        
+        if (error) {
+          console.error('❌ 儲存角色權限失敗:', error);
+          throw error;
+        }
+      }
+      
+      console.log('✅ 角色權限儲存成功:', permissions.length, '個權限');
+      
+    } catch (error) {
+      console.error('❌ 儲存角色權限系統錯誤:', error);
+      throw error;
+    }
+  }
+  
   // 刪除角色
   static async deleteRole(roleId: string): Promise<void> {
     try {
       console.log('🔄 從後台刪除角色:', roleId);
       
+      // 先刪除角色權限
+      await supabase
+        .from('role_permissions')
+        .delete()
+        .eq('role_id', roleId);
+      
+      // 再刪除角色
       const { error } = await supabase
         .from('staff_roles')
         .delete()

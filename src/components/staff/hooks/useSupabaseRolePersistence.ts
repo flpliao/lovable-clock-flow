@@ -18,8 +18,14 @@ export const useSupabaseRolePersistence = () => {
       // 初始化系統預設角色
       await RoleApiService.initializeSystemRoles();
       
-      // 載入所有角色
+      // 載入所有角色及其權限
       const loadedRoles = await RoleApiService.loadRoles();
+      console.log('📊 載入的角色資料:', loadedRoles.map(r => ({
+        name: r.name,
+        permissionCount: r.permissions.length,
+        isSystem: r.is_system_role
+      })));
+      
       setRoles(loadedRoles);
       
       // 清除權限快取，確保使用最新角色資料
@@ -39,7 +45,7 @@ export const useSupabaseRolePersistence = () => {
   const addRole = async (newRole: Omit<StaffRole, 'id'>): Promise<boolean> => {
     try {
       setLoading(true);
-      console.log('🔄 新增角色:', newRole.name);
+      console.log('🔄 新增角色:', newRole.name, '權限數量:', newRole.permissions.length);
       
       const createdRole = await RoleApiService.createRole(newRole);
       
@@ -54,7 +60,7 @@ export const useSupabaseRolePersistence = () => {
         }));
       }, 100);
       
-      console.log('✅ 角色新增成功:', createdRole.name);
+      console.log('✅ 角色新增成功:', createdRole.name, '權限數量:', createdRole.permissions.length);
       return true;
       
     } catch (error) {
@@ -69,7 +75,7 @@ export const useSupabaseRolePersistence = () => {
   const updateRole = async (updatedRole: StaffRole): Promise<boolean> => {
     try {
       setLoading(true);
-      console.log('🔄 更新角色:', updatedRole.name);
+      console.log('🔄 更新角色:', updatedRole.name, '權限數量:', updatedRole.permissions.length);
       
       const savedRole = await RoleApiService.updateRole(updatedRole);
       
@@ -86,7 +92,7 @@ export const useSupabaseRolePersistence = () => {
         }));
       }, 100);
       
-      console.log('✅ 角色更新成功:', savedRole.name);
+      console.log('✅ 角色更新成功:', savedRole.name, '權限數量:', savedRole.permissions.length);
       return true;
       
     } catch (error) {

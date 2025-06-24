@@ -22,19 +22,24 @@ export const approvalOvertimeService = {
       throw error;
     }
 
-    // 更新審核記錄
-    const { error: approvalError } = await supabase
+    // 創建審核記錄
+    const { error: recordError } = await supabase
       .from('overtime_approval_records')
-      .update({
+      .insert({
+        overtime_id: overtimeId,
+        approver_id: approverId,
+        approver_name: approverName,
+        level: 1,
         status: 'approved',
         approval_date: new Date().toISOString(),
         comment: comment || '主管核准'
-      })
-      .eq('overtime_id', overtimeId)
-      .eq('approver_id', approverId);
+      });
 
-    if (approvalError) {
-      console.warn('⚠️ 更新加班審核記錄失敗:', approvalError);
+    if (recordError) {
+      console.error('❌ 創建加班審核記錄失敗:', recordError);
+      // 不拋出錯誤，因為主要操作已完成
+    } else {
+      console.log('✅ 加班審核記錄創建成功');
     }
 
     console.log('✅ 加班申請核准成功');
@@ -60,19 +65,24 @@ export const approvalOvertimeService = {
       throw error;
     }
 
-    // 更新審核記錄
-    const { error: approvalError } = await supabase
+    // 創建審核記錄
+    const { error: recordError } = await supabase
       .from('overtime_approval_records')
-      .update({
+      .insert({
+        overtime_id: overtimeId,
+        approver_id: approverId,
+        approver_name: approverName,
+        level: 1,
         status: 'rejected',
         approval_date: new Date().toISOString(),
         comment: reason
-      })
-      .eq('overtime_id', overtimeId)
-      .eq('approver_id', approverId);
+      });
 
-    if (approvalError) {
-      console.warn('⚠️ 更新加班審核記錄失敗:', approvalError);
+    if (recordError) {
+      console.error('❌ 創建加班審核記錄失敗:', recordError);
+      // 不拋出錯誤，因為主要操作已完成
+    } else {
+      console.log('✅ 加班審核記錄創建成功');
     }
 
     console.log('✅ 加班申請拒絕成功');

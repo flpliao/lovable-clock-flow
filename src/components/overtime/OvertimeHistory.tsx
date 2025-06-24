@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { overtimeService } from '@/services/overtimeService';
@@ -59,8 +58,23 @@ const OvertimeHistory: React.FC = () => {
         console.log('🔄 載入加班記錄...');
         const records = await overtimeService.getOvertimeRequestsByStaff(currentUser.id);
         
+        // 轉換和清理資料，確保符合介面定義
+        const cleanedRecords = records.map(record => ({
+          ...record,
+          // 確保 overtime_approval_records 是陣列或 undefined
+          overtime_approval_records: Array.isArray(record.overtime_approval_records) 
+            ? record.overtime_approval_records 
+            : undefined,
+          // 確保所有必要欄位都存在
+          approved_by_name: record.approved_by_name || undefined,
+          approval_date: record.approval_date || null,
+          approval_comment: record.approval_comment || null,
+          rejection_reason: record.rejection_reason || undefined,
+          compensation_hours: record.compensation_hours || null,
+        })) as OvertimeRecord[];
+        
         // 按狀態排序：pending 在前，然後按建立時間倒序
-        const sortedRecords = records.sort((a, b) => {
+        const sortedRecords = cleanedRecords.sort((a, b) => {
           // 如果一個是 pending 另一個不是，pending 排在前面
           if (a.status === 'pending' && b.status !== 'pending') return -1;
           if (a.status !== 'pending' && b.status === 'pending') return 1;

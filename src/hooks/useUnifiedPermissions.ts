@@ -38,7 +38,7 @@ export const useUnifiedPermissions = () => {
     loadBackendRoles();
   }, [permissionService]);
 
-  // 獲取當前用戶的員工資料
+  // 獲取當前用戶的員工資料（優先使用 role_id）
   const currentStaffData = useMemo(() => {
     if (!currentUser) return undefined;
     
@@ -52,7 +52,8 @@ export const useUnifiedPermissions = () => {
       console.log('👤 找到當前用戶員工資料:', {
         name: staff.name,
         roleId: staff.role_id,
-        role: staff.role
+        oldRole: staff.role,
+        currentUserRole: currentUser.role
       });
     } else {
       console.log('⚠️ 未找到當前用戶員工資料:', currentUser.name);
@@ -96,16 +97,47 @@ export const useUnifiedPermissions = () => {
     return permissions.every(permission => hasPermission(permission));
   }, [hasPermission]);
 
-  // 角色檢查（基於動態權限）
+  // 角色檢查（基於動態 role_id 權限）
   const isAdmin = useCallback((): boolean => {
-    // 檢查是否有系統管理權限
-    return hasPermission('system:manage') || hasPermission('system:settings_edit');
-  }, [hasPermission]);
+    if (!currentUser) return false;
+    
+    // 廖俊雄特殊處理
+    if (currentUser.name === '廖俊雄' && 
+        currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
+      return true;
+    }
+    
+    // 基於 role_id 動態設定的權限檢查
+    const result = currentUser.role === 'admin' || hasPermission('system:manage') || hasPermission('system:settings_edit');
+    
+    console.log('🔐 統一權限系統 - Admin 檢查:', {
+      user: currentUser.name,
+      role: currentUser.role,
+      hasSystemManage: hasPermission('system:manage'),
+      result
+    });
+    
+    return result;
+  }, [currentUser, hasPermission]);
 
   const isManager = useCallback((): boolean => {
-    // 檢查是否有管理相關權限
-    return hasPermission('staff:manage') || hasPermission('attendance:manage') || isAdmin();
-  }, [hasPermission, isAdmin]);
+    if (!currentUser) return false;
+    
+    // 基於 role_id 動態設定的權限檢查
+    const result = currentUser.role === 'manager' || 
+                   hasPermission('staff:manage') || 
+                   hasPermission('attendance:manage') || 
+                   isAdmin();
+    
+    console.log('🔐 統一權限系統 - Manager 檢查:', {
+      user: currentUser.name,
+      role: currentUser.role,
+      hasStaffManage: hasPermission('staff:manage'),
+      result
+    });
+    
+    return result;
+  }, [currentUser, hasPermission, isAdmin]);
 
   // 清除權限快取
   const clearPermissionCache = useCallback(() => {

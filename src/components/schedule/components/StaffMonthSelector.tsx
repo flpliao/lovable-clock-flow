@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -46,6 +47,14 @@ const StaffMonthSelector = ({
     const newDate = new Date(selectedDate.getFullYear(), parseInt(month), 1);
     onDateChange(newDate);
   };
+
+  // 處理上個月按鈕
+  const handlePreviousMonth = () => {
+    const previousMonth = new Date(selectedDate);
+    previousMonth.setMonth(previousMonth.getMonth() - 1);
+    onDateChange(previousMonth);
+  };
+
   return <Card className="bg-cyan-200">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -108,6 +117,9 @@ const StaffMonthSelector = ({
 
         {/* 快速選擇按鈕 */}
         <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handlePreviousMonth}>
+            上月
+          </Button>
           <Button variant="outline" size="sm" onClick={() => onDateChange(new Date())}>
             本月
           </Button>

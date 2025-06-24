@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,10 +24,14 @@ export const useMyApplications = () => {
       setIsLoading(true);
       console.log('🔍 載入我的申請記錄，當前用戶:', currentUser.id, currentUser.name);
 
-      // 載入加班申請 - 使用專門的方法確保所有用戶都能查看自己的記錄
-      console.log('📋 開始載入加班申請記錄...');
+      // 載入加班申請 - 確保能夠載入所有自己的加班記錄，包括 pending 狀態 
+      console.log('📋 開始載入加班申請記錄（包括待審核）...');
       const overtimeRecords = await queryOvertimeService.getOvertimeRequestsByCurrentUser(currentUser.id);
       console.log('✅ 加班申請記錄載入完成:', overtimeRecords.length, '筆');
+      
+      // 特別檢查 pending 狀態的加班申請
+      const pendingOvertimes = overtimeRecords.filter(record => record.status === 'pending');
+      console.log('⏳ 待審核加班申請:', pendingOvertimes.length, '筆');
       
       // 載入忘記打卡申請
       console.log('📋 開始載入忘記打卡申請記錄...');
@@ -65,7 +68,7 @@ export const useMyApplications = () => {
 
       const applications: MyApplication[] = [];
 
-      // 轉換加班申請
+      // 轉換加班申請 - 確保包含所有狀態，特別是 pending
       if (overtimeRecords && overtimeRecords.length > 0) {
         console.log('🔄 轉換加班申請記錄...');
         overtimeRecords.forEach(record => {
@@ -73,7 +76,8 @@ export const useMyApplications = () => {
             id: record.id,
             date: record.overtime_date,
             status: record.status,
-            hours: record.hours
+            hours: record.hours,
+            isPending: record.status === 'pending'
           });
           
           applications.push({
@@ -84,7 +88,6 @@ export const useMyApplications = () => {
             created_at: record.created_at,
             details: {
               ...record,
-              // 確保所有必要的欄位都存在
               overtime_date: record.overtime_date,
               start_time: record.start_time,
               end_time: record.end_time,
@@ -96,7 +99,7 @@ export const useMyApplications = () => {
             }
           });
         });
-        console.log('✅ 加班申請記錄轉換完成');
+        console.log('✅ 加班申請記錄轉換完成，包含待審核記錄');
       } else {
         console.log('ℹ️ 沒有找到加班申請記錄');
       }
@@ -135,12 +138,20 @@ export const useMyApplications = () => {
         console.log('✅ 請假申請記錄轉換完成');
       }
 
-      // 按建立時間排序
-      applications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // 按建立時間排序，pending 狀態的申請優先顯示
+      applications.sort((a, b) => {
+        // 如果狀態不同，pending 優先
+        if (a.status === 'pending' && b.status !== 'pending') return -1;
+        if (a.status !== 'pending' && b.status === 'pending') return 1;
+        
+        // 其他情況按建立時間倒序
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
 
       console.log('📊 最終統計:', {
         總計: applications.length,
         加班申請: applications.filter(a => a.type === 'overtime').length,
+        待審核加班: applications.filter(a => a.type === 'overtime' && a.status === 'pending').length,
         忘記打卡: applications.filter(a => a.type === 'missed_checkin').length,
         請假申請: applications.filter(a => a.type === 'leave').length,
         狀態分布: {

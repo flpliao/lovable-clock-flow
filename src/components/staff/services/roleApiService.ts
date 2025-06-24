@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { StaffRole, NewStaffRole } from '../types';
 
@@ -66,15 +67,19 @@ export class RoleApiService {
         return [];
       }
       
-      const permissions = (data || []).map(item => ({
-        id: item.permissions.id,
-        name: item.permissions.name,
-        code: item.permissions.code,
-        description: item.permissions.description,
-        category: item.permissions.category
-      }));
+      const permissions = (data || [])
+        .filter(item => item.permissions) // 確保權限資料存在
+        .map(item => ({
+          id: item.permissions.id,
+          name: item.permissions.name,
+          code: item.permissions.code,
+          description: item.permissions.description,
+          category: item.permissions.category
+        }));
       
       console.log('✅ 角色權限載入成功:', roleId, '共', permissions.length, '個權限');
+      console.log('📋 權限詳細:', permissions.map(p => ({ id: p.id, name: p.name, category: p.category })));
+      
       return permissions;
       
     } catch (error) {
@@ -91,15 +96,29 @@ export class RoleApiService {
       const { data, error } = await supabase
         .from('permissions')
         .select('*')
-        .order('category', { ascending: true });
+        .order('category', { ascending: true })
+        .order('name', { ascending: true });
       
       if (error) {
         console.error('❌ 載入權限資料失敗:', error);
         return [];
       }
       
-      console.log('✅ 權限資料載入成功:', (data || []).length, '個權限');
-      return data || [];
+      const permissions = (data || []).map(permission => ({
+        id: permission.id,
+        name: permission.name,
+        code: permission.code,
+        description: permission.description || '',
+        category: permission.category || 'general'
+      }));
+      
+      console.log('✅ 權限資料載入成功:', permissions.length, '個權限');
+      console.log('📊 權限分類統計:', permissions.reduce((acc, p) => {
+        acc[p.category] = (acc[p.category] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>));
+      
+      return permissions;
       
     } catch (error) {
       console.error('❌ 載入權限資料系統錯誤:', error);

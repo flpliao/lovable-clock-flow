@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { StaffRole, Permission } from '../types';
-import { getPermissionCategories, getPermissionsByCategory } from '../RoleConstants';
+import { RoleApiService } from '../services/roleApiService';
 
 interface EditRolePermissionsTabProps {
   editedRole: StaffRole;
@@ -17,8 +17,53 @@ export const EditRolePermissionsTab: React.FC<EditRolePermissionsTabProps> = ({
   setEditedRole,
   isSubmitting
 }) => {
-  const permissionCategories = getPermissionCategories();
-  const permissionsByCategory = getPermissionsByCategory();
+  const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
+  const [permissionsByCategory, setPermissionsByCategory] = useState<Record<string, Permission[]>>({});
+  const [loading, setLoading] = useState(true);
+
+  // 載入所有可用權限
+  useEffect(() => {
+    const loadPermissions = async () => {
+      try {
+        setLoading(true);
+        console.log('🔄 載入所有可用權限用於編輯角色...');
+        
+        const permissions = await RoleApiService.loadAllPermissions();
+        console.log('✅ 載入權限成功:', permissions.length, '個權限');
+        
+        setAllPermissions(permissions);
+        
+        // 按分類組織權限
+        const categorized = permissions.reduce((acc, permission) => {
+          const category = permission.category || 'general';
+          if (!acc[category]) {
+            acc[category] = [];
+          }
+          acc[category].push(permission);
+          return acc;
+        }, {} as Record<string, Permission[]>);
+        
+        setPermissionsByCategory(categorized);
+        console.log('📊 權限分類:', Object.keys(categorized));
+        
+      } catch (error) {
+        console.error('❌ 載入權限失敗:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadPermissions();
+  }, []);
+
+  // 確保角色權限與後台同步
+  useEffect(() => {
+    console.log('🔍 檢查角色權限同步狀態:', {
+      roleName: editedRole.name,
+      currentPermissions: editedRole.permissions.length,
+      permissionDetails: editedRole.permissions.map(p => ({ id: p.id, name: p.name }))
+    });
+  }, [editedRole.permissions]);
   
   const togglePermission = (permission: Permission) => {
     console.log('🔄 切換權限:', permission.name, '角色:', editedRole.name);
@@ -44,15 +89,27 @@ export const EditRolePermissionsTab: React.FC<EditRolePermissionsTabProps> = ({
   };
   
   const isPermissionSelected = (permissionId: string) => {
-    const isSelected = editedRole.permissions.some(p => p.id === permissionId);
-    return isSelected;
+    return editedRole.permissions.some(p => p.id === permissionId);
   };
+
+  const permissionCategories = Object.keys(permissionsByCategory).sort();
+
+  if (loading) {
+    return (
+      <div className="py-4">
+        <div className="flex items-center justify-center h-32">
+          <div className="text-sm text-gray-500">載入權限設定中...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="py-4">
       <div className="mb-4 p-3 bg-blue-50 rounded-lg">
         <p className="text-sm text-blue-700">
           目前已選擇 <span className="font-bold">{editedRole.permissions.length}</span> 個權限
+          （共 {allPermissions.length} 個可用權限）
         </p>
       </div>
       
@@ -60,7 +117,9 @@ export const EditRolePermissionsTab: React.FC<EditRolePermissionsTabProps> = ({
         <div className="space-y-6">
           {permissionCategories.map(category => (
             <div key={category} className="space-y-2">
-              <h3 className="text-sm font-semibold text-gray-700 border-b pb-1 sticky top-0 bg-white z-10">{category}</h3>
+              <h3 className="text-sm font-semibold text-gray-700 border-b pb-1 sticky top-0 bg-white z-10">
+                {category} ({permissionsByCategory[category].length} 個權限)
+              </h3>
               <div className="grid grid-cols-1 gap-2">
                 {permissionsByCategory[category].map(permission => (
                   <div key={permission.id} className="flex items-start space-x-2 p-2 rounded hover:bg-gray-50">
@@ -77,7 +136,12 @@ export const EditRolePermissionsTab: React.FC<EditRolePermissionsTabProps> = ({
                       >
                         {permission.name}
                       </Label>
-                      <p className="text-xs text-gray-500 mt-1">{permission.description}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {permission.description}
+                        <span className="ml-2 text-xs text-gray-400">
+                          (ID: {permission.id})
+                        </span>
+                      </p>
                     </div>
                   </div>
                 ))}

@@ -307,104 +307,108 @@ const CheckInHistory: React.FC = () => {
                   </div>
                 )}
                 
-                {/* 表格容器 */}
+                {/* 表格容器 - 添加水平滾動 */}
                 <div className="bg-white/10 backdrop-blur-xl rounded-xl border border-white/20 shadow-lg overflow-hidden">
-                  <ScrollArea className="h-[500px]">
-                    <Table>
-                      <TableHeader className="sticky top-0 bg-white/20 backdrop-blur-xl">
-                        <TableRow className="border-white/20 hover:bg-white/5">
-                          <TableHead className="text-white/90 font-semibold">日期</TableHead>
-                          <TableHead className="text-white/90 font-semibold">時間</TableHead>
-                          <TableHead className="text-white/90 font-semibold">動作</TableHead>
-                          <TableHead className="text-white/90 font-semibold">類型</TableHead>
-                          <TableHead className="text-white/90 font-semibold">狀態</TableHead>
-                          <TableHead className="text-white/90 font-semibold">詳情</TableHead>
-                          {activeView !== 'my' && <TableHead className="text-white/90 font-semibold">員工</TableHead>}
-                          {isAdmin() && <TableHead className="text-white/90 font-semibold">操作</TableHead>}
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {currentRecords.map((record: CheckInRecord) => (
-                          <TableRow key={record.id} className="border-white/20 hover:bg-white/5 transition-colors duration-200">
-                            <TableCell className="text-white/90 font-medium">{formatDate(record.timestamp)}</TableCell>
-                            <TableCell className="text-white/90 font-medium">{formatTime(record.timestamp)}</TableCell>
-                            <TableCell>
-                              <span className={`font-semibold ${record.action === 'check-in' ? 'text-green-300' : 'text-blue-300'}`}>
-                                {record.action === 'check-in' ? '上班打卡' : '下班打卡'}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center text-white/90">
-                                {record.type === 'location' ? (
-                                  <MapPin className="h-3.5 w-3.5 mr-1" />
-                                ) : (
-                                  <Wifi className="h-3.5 w-3.5 mr-1" />
+                  <div className="w-full overflow-x-auto">
+                    <div className="min-w-full">
+                      <ScrollArea className="h-[500px]">
+                        <Table>
+                          <TableHeader className="sticky top-0 bg-white/20 backdrop-blur-xl">
+                            <TableRow className="border-white/20 hover:bg-white/5">
+                              <TableHead className="text-white/90 font-semibold min-w-[80px] whitespace-nowrap">日期</TableHead>
+                              <TableHead className="text-white/90 font-semibold min-w-[80px] whitespace-nowrap">時間</TableHead>
+                              <TableHead className="text-white/90 font-semibold min-w-[80px] whitespace-nowrap">動作</TableHead>
+                              <TableHead className="text-white/90 font-semibold min-w-[80px] whitespace-nowrap">類型</TableHead>
+                              <TableHead className="text-white/90 font-semibold min-w-[60px] whitespace-nowrap">狀態</TableHead>
+                              <TableHead className="text-white/90 font-semibold min-w-[120px] whitespace-nowrap">詳情</TableHead>
+                              {activeView !== 'my' && <TableHead className="text-white/90 font-semibold min-w-[80px] whitespace-nowrap">員工</TableHead>}
+                              {isAdmin() && <TableHead className="text-white/90 font-semibold min-w-[60px] whitespace-nowrap">操作</TableHead>}
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {currentRecords.map((record: CheckInRecord) => (
+                              <TableRow key={record.id} className="border-white/20 hover:bg-white/5 transition-colors duration-200">
+                                <TableCell className="text-white/90 font-medium whitespace-nowrap">{formatDate(record.timestamp)}</TableCell>
+                                <TableCell className="text-white/90 font-medium whitespace-nowrap">{formatTime(record.timestamp)}</TableCell>
+                                <TableCell className="whitespace-nowrap">
+                                  <span className={`font-semibold ${record.action === 'check-in' ? 'text-green-300' : 'text-blue-300'}`}>
+                                    {record.action === 'check-in' ? '上班打卡' : '下班打卡'}
+                                  </span>
+                                </TableCell>
+                                <TableCell className="whitespace-nowrap">
+                                  <div className="flex items-center text-white/90">
+                                    {record.type === 'location' ? (
+                                      <MapPin className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+                                    ) : (
+                                      <Wifi className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+                                    )}
+                                    <span>
+                                      {record.type === 'location' ? '位置打卡' : 'IP打卡'}
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="whitespace-nowrap">
+                                  {record.status === 'success' ? (
+                                    <Badge className="bg-green-500/80 text-white border-green-400/50 backdrop-blur-xl">成功</Badge>
+                                  ) : (
+                                    <Badge className="bg-red-500/80 text-white border-red-400/50 backdrop-blur-xl">失敗</Badge>
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-white/80 whitespace-nowrap">
+                                  {record.type === 'location' ? (
+                                    <span>
+                                      {record.details.locationName} 
+                                      {record.details.distance && ` (${Math.round(record.details.distance)}公尺)`}
+                                    </span>
+                                  ) : (
+                                    <span>IP: {record.details.ip}</span>
+                                  )}
+                                </TableCell>
+                                {activeView !== 'my' && (
+                                  <TableCell className="text-white/80 whitespace-nowrap">
+                                    {(record as any).staff_name || '未知員工'}
+                                  </TableCell>
                                 )}
-                                <span>
-                                  {record.type === 'location' ? '位置打卡' : 'IP打卡'}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {record.status === 'success' ? (
-                                <Badge className="bg-green-500/80 text-white border-green-400/50 backdrop-blur-xl">成功</Badge>
-                              ) : (
-                                <Badge className="bg-red-500/80 text-white border-red-400/50 backdrop-blur-xl">失敗</Badge>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-white/80">
-                              {record.type === 'location' ? (
-                                <span>
-                                  {record.details.locationName} 
-                                  {record.details.distance && ` (${Math.round(record.details.distance)}公尺)`}
-                                </span>
-                              ) : (
-                                <span>IP: {record.details.ip}</span>
-                              )}
-                            </TableCell>
-                            {activeView !== 'my' && (
-                              <TableCell className="text-white/80">
-                                {(record as any).staff_name || '未知員工'}
-                              </TableCell>
-                            )}
-                            {isAdmin() && (
-                              <TableCell>
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
-                                      disabled={deleting === record.id}
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>確認刪除打卡記錄</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        您確定要刪除這筆打卡記錄嗎？刪除後將無法復原，請通知該員工重新補打卡。
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>取消</AlertDialogCancel>
-                                      <AlertDialogAction 
-                                        onClick={() => handleDeleteRecord(record.id)}
-                                        className="bg-red-500 hover:bg-red-600"
-                                      >
-                                        確認刪除
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </TableCell>
-                            )}
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </ScrollArea>
+                                {isAdmin() && (
+                                  <TableCell className="whitespace-nowrap">
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                                          disabled={deleting === record.id}
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>確認刪除打卡記錄</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            您確定要刪除這筆打卡記錄嗎？刪除後將無法復原，請通知該員工重新補打卡。
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>取消</AlertDialogCancel>
+                                          <AlertDialogAction 
+                                            onClick={() => handleDeleteRecord(record.id)}
+                                            className="bg-red-500 hover:bg-red-600"
+                                          >
+                                            確認刪除
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  </TableCell>
+                                )}
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </ScrollArea>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -486,64 +490,68 @@ const CheckInHistory: React.FC = () => {
                 </div>
               )}
               
-              {/* 表格容器 */}
+              {/* 表格容器 - 添加水平滾動 */}
               <div className="bg-white/10 backdrop-blur-xl rounded-xl border border-white/20 shadow-lg overflow-hidden">
-                <ScrollArea className="h-[500px]">
-                  <Table>
-                    <TableHeader className="sticky top-0 bg-white/20 backdrop-blur-xl">
-                      <TableRow className="border-white/20 hover:bg-white/5">
-                        <TableHead className="text-white/90 font-semibold">日期</TableHead>
-                        <TableHead className="text-white/90 font-semibold">時間</TableHead>
-                        <TableHead className="text-white/90 font-semibold">動作</TableHead>
-                        <TableHead className="text-white/90 font-semibold">類型</TableHead>
-                        <TableHead className="text-white/90 font-semibold">狀態</TableHead>
-                        <TableHead className="text-white/90 font-semibold">詳情</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {currentRecords.map((record: CheckInRecord) => (
-                        <TableRow key={record.id} className="border-white/20 hover:bg-white/5 transition-colors duration-200">
-                          <TableCell className="text-white/90 font-medium">{formatDate(record.timestamp)}</TableCell>
-                          <TableCell className="text-white/90 font-medium">{formatTime(record.timestamp)}</TableCell>
-                          <TableCell>
-                            <span className={`font-semibold ${record.action === 'check-in' ? 'text-green-300' : 'text-blue-300'}`}>
-                              {record.action === 'check-in' ? '上班打卡' : '下班打卡'}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center text-white/90">
-                              {record.type === 'location' ? (
-                                <MapPin className="h-3.5 w-3.5 mr-1" />
-                              ) : (
-                                <Wifi className="h-3.5 w-3.5 mr-1" />
-                              )}
-                              <span>
-                                {record.type === 'location' ? '位置打卡' : 'IP打卡'}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {record.status === 'success' ? (
-                              <Badge className="bg-green-500/80 text-white border-green-400/50 backdrop-blur-xl">成功</Badge>
-                            ) : (
-                              <Badge className="bg-red-500/80 text-white border-red-400/50 backdrop-blur-xl">失敗</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-white/80">
-                            {record.type === 'location' ? (
-                              <span>
-                                {record.details.locationName} 
-                                {record.details.distance && ` (${Math.round(record.details.distance)}公尺)`}
-                              </span>
-                            ) : (
-                              <span>IP: {record.details.ip}</span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </ScrollArea>
+                <div className="w-full overflow-x-auto">
+                  <div className="min-w-full">
+                    <ScrollArea className="h-[500px]">
+                      <Table>
+                        <TableHeader className="sticky top-0 bg-white/20 backdrop-blur-xl">
+                          <TableRow className="border-white/20 hover:bg-white/5">
+                            <TableHead className="text-white/90 font-semibold min-w-[80px] whitespace-nowrap">日期</TableHead>
+                            <TableHead className="text-white/90 font-semibold min-w-[80px] whitespace-nowrap">時間</TableHead>
+                            <TableHead className="text-white/90 font-semibold min-w-[80px] whitespace-nowrap">動作</TableHead>
+                            <TableHead className="text-white/90 font-semibold min-w-[80px] whitespace-nowrap">類型</TableHead>
+                            <TableHead className="text-white/90 font-semibold min-w-[60px] whitespace-nowrap">狀態</TableHead>
+                            <TableHead className="text-white/90 font-semibold min-w-[120px] whitespace-nowrap">詳情</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {currentRecords.map((record: CheckInRecord) => (
+                            <TableRow key={record.id} className="border-white/20 hover:bg-white/5 transition-colors duration-200">
+                              <TableCell className="text-white/90 font-medium whitespace-nowrap">{formatDate(record.timestamp)}</TableCell>
+                              <TableCell className="text-white/90 font-medium whitespace-nowrap">{formatTime(record.timestamp)}</TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                <span className={`font-semibold ${record.action === 'check-in' ? 'text-green-300' : 'text-blue-300'}`}>
+                                  {record.action === 'check-in' ? '上班打卡' : '下班打卡'}
+                                </span>
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                <div className="flex items-center text-white/90">
+                                  {record.type === 'location' ? (
+                                    <MapPin className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+                                  ) : (
+                                    <Wifi className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+                                  )}
+                                  <span>
+                                    {record.type === 'location' ? '位置打卡' : 'IP打卡'}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {record.status === 'success' ? (
+                                  <Badge className="bg-green-500/80 text-white border-green-400/50 backdrop-blur-xl">成功</Badge>
+                                ) : (
+                                  <Badge className="bg-red-500/80 text-white border-red-400/50 backdrop-blur-xl">失敗</Badge>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-white/80 whitespace-nowrap">
+                                {record.type === 'location' ? (
+                                  <span>
+                                    {record.details.locationName} 
+                                    {record.details.distance && ` (${Math.round(record.details.distance)}公尺)`}
+                                  </span>
+                                ) : (
+                                  <span>IP: {record.details.ip}</span>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </ScrollArea>
+                  </div>
+                </div>
               </div>
             </div>
           )}

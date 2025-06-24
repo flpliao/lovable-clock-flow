@@ -6,7 +6,6 @@ import { format } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useScheduleDragDrop } from '../hooks/useScheduleDragDrop';
 import { useScheduleDialogs } from '../hooks/useScheduleDialogs';
 import { useExtendedCalendar } from '../hooks/useExtendedCalendar';
 import { useScheduleOperationsHandlers } from '../hooks/useScheduleOperationsHandlers';
@@ -41,19 +40,6 @@ const MonthlyScheduleView = ({
   const navigate = useNavigate();
   const { handleUpdateSchedule, handleDeleteSchedule } = useScheduleOperationsHandlers();
   
-  const {
-    sensors,
-    dragSchedules,
-    hasScheduleConflict,
-    handleDragStart,
-    handleDragEnd,
-    activeSchedule
-  } = useScheduleDragDrop({
-    schedules,
-    selectedStaffId,
-    onUpdateSchedule
-  });
-
   const {
     selectedSchedule,
     isEditDialogOpen,
@@ -177,16 +163,11 @@ const MonthlyScheduleView = ({
         
         <MonthlyCalendarGrid
           selectedDate={selectedDate}
-          sensors={sensors}
-          dragSchedules={dragSchedules}
-          hasScheduleConflict={hasScheduleConflict}
+          schedules={schedules}
           getUserName={getUserName}
           selectedSchedule={selectedSchedule}
-          handleDragStart={handleDragStart}
-          handleDragEnd={handleDragEnd}
           handleScheduleClick={handleScheduleClick}
           handleShowAllSchedules={handleShowAllSchedules}
-          activeSchedule={activeSchedule}
         />
       </div>
 

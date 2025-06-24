@@ -69,7 +69,6 @@ const ScheduleTabsContent = ({
           selectedStaffId={selectedStaffId}
           selectedDate={selectedDate}
           onStaffChange={onStaffChange}
-          onDateChange={onDateChange}
           getUserRelation={getUserRelation}
           schedules={schedules}
           getUserName={getUserName}
@@ -79,12 +78,15 @@ const ScheduleTabsContent = ({
 
       <TabsContent value="list">
         <ListViewSection
+          availableStaff={availableStaff}
+          selectedStaffId={selectedStaffId}
+          selectedDate={selectedDate}
+          onStaffChange={onStaffChange}
+          onDateChange={onDateChange}
+          getUserRelation={getUserRelation}
           schedules={schedules}
           getUserName={getUserName}
-          getUserRelation={getUserRelation}
-          canDeleteSchedule={canDeleteSchedule}
-          onRemoveSchedule={onRemoveSchedule}
-          currentUser={currentUser}
+          viewableStaffIds={viewableStaffIds}
         />
       </TabsContent>
 
@@ -100,8 +102,6 @@ const ScheduleTabsContent = ({
           generateYears={generateYears}
           generateMonths={generateMonths}
           shiftsForSelectedDate={shiftsForSelectedDate}
-          getUserName={getUserName}
-          getUserRelation={getUserRelation}
           canDeleteSchedule={canDeleteSchedule}
           onRemoveSchedule={onRemoveSchedule}
           setSelectedDate={setSelectedDateNav}
@@ -119,6 +119,13 @@ const ScheduleTabsContent = ({
           schedules={schedules}
           getUserName={getUserName}
           getUserRelation={getUserRelation}
+          viewableStaffIds={viewableStaffIds}
+          selectedYear={selectedYear}
+          selectedMonth={selectedMonth}
+          onYearChange={onYearChange}
+          onMonthChange={onMonthChange}
+          generateYears={generateYears}
+          generateMonths={generateMonths}
         />
       </TabsContent>
     </>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { overtimeService } from '@/services/overtimeService';
@@ -90,7 +91,7 @@ const OvertimeHistory: React.FC = () => {
 
       <div className="space-y-6">
         {filteredOvertimes.map(overtime => (
-          <OvertimeRecordCard key={overtime.id} overtime={overtime} />
+          <OvertimeRecordCard key={overtime.id} overtime={overtime} showApprovalProcess={true} />
         ))}
         {filteredOvertimes.length === 0 && <OvertimeEmptyState />}
       </div>

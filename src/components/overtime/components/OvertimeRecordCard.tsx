@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Calendar, DollarSign, FileText, Timer, CheckCircle, User, UserCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Clock, Calendar, DollarSign, FileText, Timer, CheckCircle, User, UserCheck, ChevronDown, ChevronUp } from 'lucide-react';
 import { getOvertimeTypeText, getCompensationTypeText } from '@/utils/overtimeUtils';
 import { getExceptionStatusText, getExceptionStatusColor } from '@/utils/attendanceExceptionUtils';
 
@@ -41,9 +42,33 @@ interface OvertimeRecord {
 
 interface OvertimeRecordCardProps {
   overtime: OvertimeRecord;
+  showApprovalProcess?: boolean;
 }
 
-const OvertimeRecordCard: React.FC<OvertimeRecordCardProps> = ({ overtime }) => {
+const OvertimeRecordCard: React.FC<OvertimeRecordCardProps> = ({ 
+  overtime, 
+  showApprovalProcess = false 
+}) => {
+  const [showApprovalDetails, setShowApprovalDetails] = useState(false);
+
+  const formatApprovalDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleString('zh-TW');
+  };
+
+  const getApprovalStatusBadge = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return <Badge className="bg-green-500/80 text-white text-xs">已核准</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-500/80 text-white text-xs">已拒絕</Badge>;
+      case 'pending':
+        return <Badge className="bg-yellow-500/80 text-white text-xs">待審核</Badge>;
+      default:
+        return <Badge className="bg-gray-500/80 text-white text-xs">{status}</Badge>;
+    }
+  };
+
   return (
     <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-2xl shadow-lg p-6 hover:bg-white/35 transition-all duration-300">
       {/* 標題和狀態區域 */}
@@ -144,49 +169,106 @@ const OvertimeRecordCard: React.FC<OvertimeRecordCardProps> = ({ overtime }) => 
         </div>
       </div>
 
-      {/* 審核記錄區域 */}
-      {overtime.overtime_approval_records && overtime.overtime_approval_records.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <UserCheck className="h-4 w-4 text-white/90" />
-            <h4 className="text-base font-medium text-white">審核記錄</h4>
+      {/* 審核過程區域 */}
+      {showApprovalProcess && (
+        <div className="border-t border-white/20 pt-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-white/90" />
+              <h4 className="text-base font-medium text-white">審核過程</h4>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowApprovalDetails(!showApprovalDetails)}
+              className="text-white/80 hover:text-white hover:bg-white/10"
+            >
+              {showApprovalDetails ? (
+                <>
+                  <ChevronUp className="h-4 w-4 mr-1" />
+                  收起
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-4 w-4 mr-1" />
+                  展開
+                </>
+              )}
+            </Button>
           </div>
-          
-          <div className="space-y-2">
-            {overtime.overtime_approval_records.map((record) => (
-              <div key={record.id} className="bg-white/10 rounded-lg p-3 border border-white/20">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <UserCheck className="h-4 w-4 text-white/80" />
-                    <span className="text-white font-medium text-sm">{record.approver_name}</span>
-                    <Badge 
-                      className={`text-xs px-2 py-1 rounded-full ${
-                        record.status === 'approved' 
-                          ? 'bg-green-500/80 text-white' 
-                          : record.status === 'rejected'
-                          ? 'bg-red-500/80 text-white'
-                          : 'bg-yellow-500/80 text-white'
-                      }`}
-                    >
-                      {record.status === 'approved' ? '已核准' : record.status === 'rejected' ? '已拒絕' : '待審核'}
-                    </Badge>
-                  </div>
-                  {record.approval_date && (
-                    <span className="text-white/70 text-xs">
-                      {new Date(record.approval_date).toLocaleString('zh-TW')}
-                    </span>
-                  )}
-                </div>
-                
-                {record.comment && (
-                  <div className="text-sm">
-                    <span className="text-white/70">審核意見:</span>
-                    <p className="text-white mt-1">{record.comment}</p>
-                  </div>
-                )}
+
+          {/* 基本審核資訊 */}
+          <div className="bg-white/10 rounded-lg p-3 border border-white/20 mb-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-white/70">當前狀態:</span>
+                <div className="mt-1">{getApprovalStatusBadge(overtime.status)}</div>
               </div>
-            ))}
+              {overtime.approved_by_name && (
+                <div>
+                  <span className="text-white/70">審核人員:</span>
+                  <p className="text-white font-medium">{overtime.approved_by_name}</p>
+                </div>
+              )}
+              {overtime.approval_date && (
+                <div>
+                  <span className="text-white/70">審核時間:</span>
+                  <p className="text-white font-medium">{formatApprovalDate(overtime.approval_date)}</p>
+                </div>
+              )}
+              {(overtime.approval_comment || overtime.rejection_reason) && (
+                <div>
+                  <span className="text-white/70">審核意見:</span>
+                  <p className="text-white">{overtime.approval_comment || overtime.rejection_reason}</p>
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* 詳細審核記錄 */}
+          {showApprovalDetails && overtime.overtime_approval_records && overtime.overtime_approval_records.length > 0 && (
+            <div className="space-y-2">
+              <h5 className="text-sm font-medium text-white/90 mb-2">詳細審核記錄</h5>
+              {overtime.overtime_approval_records.map((record, index) => (
+                <div key={record.id} className="bg-white/5 rounded-lg p-3 border border-white/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <UserCheck className="h-4 w-4 text-white/80" />
+                      <span className="text-white font-medium text-sm">
+                        第 {record.level} 級審核 - {record.approver_name}
+                      </span>
+                      {getApprovalStatusBadge(record.status)}
+                    </div>
+                    {record.approval_date && (
+                      <span className="text-white/70 text-xs">
+                        {formatApprovalDate(record.approval_date)}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {record.comment && (
+                    <div className="text-sm">
+                      <span className="text-white/70">審核意見:</span>
+                      <p className="text-white mt-1">{record.comment}</p>
+                    </div>
+                  )}
+                  
+                  <div className="text-xs text-white/60 mt-2">
+                    記錄建立時間: {formatApprovalDate(record.created_at)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* 無審核記錄時的提示 */}
+          {showApprovalDetails && (!overtime.overtime_approval_records || overtime.overtime_approval_records.length === 0) && (
+            <div className="text-center py-4">
+              <div className="text-white/70 text-sm">
+                尚無詳細審核記錄
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

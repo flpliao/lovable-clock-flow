@@ -49,8 +49,8 @@ const DesktopNavigation: React.FC<DesktopNavigationProps> = ({
             <ChevronDown className="h-4 w-4 ml-2 transition-transform group-hover:rotate-180" />
           </Button>
           
-          {/* 下拉選單 */}
-          <div className="absolute top-full right-0 mt-3 w-56 bg-white/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+          {/* 下拉選單 - 增加更高的 z-index */}
+          <div className="absolute top-full right-0 mt-3 w-56 bg-white/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-[9999]">
             <div className="py-2">
               {visibleMenuItems.slice(4).map((item) => (
                 <Button

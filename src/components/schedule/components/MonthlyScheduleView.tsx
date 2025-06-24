@@ -130,35 +130,6 @@ const MonthlyScheduleView = ({
     return null;
   };
 
-  // 使用統一的處理器來確保更新正確傳遞
-  const handleScheduleUpdate = async (scheduleId: string, updates: any) => {
-    console.log('MonthlyScheduleView - Schedule update requested:', { scheduleId, updates });
-    try {
-      await handleUpdateSchedule(scheduleId, updates);
-      // 強制重新整理排班資料（如果需要的話）
-      if (onUpdateSchedule) {
-        await onUpdateSchedule(scheduleId, updates);
-      }
-    } catch (error) {
-      console.error('MonthlyScheduleView - Schedule update failed:', error);
-      throw error;
-    }
-  };
-
-  const handleScheduleDelete = async (scheduleId: string) => {
-    console.log('MonthlyScheduleView - Schedule delete requested:', scheduleId);
-    try {
-      await handleDeleteSchedule(scheduleId);
-      // 強制重新整理排班資料（如果需要的話）
-      if (onDeleteSchedule) {
-        await onDeleteSchedule(scheduleId);
-      }
-    } catch (error) {
-      console.error('MonthlyScheduleView - Schedule delete failed:', error);
-      throw error;
-    }
-  };
-
   return (
     <>
       <div className="backdrop-blur-xl bg-white/10 border border-white/25 rounded-2xl shadow-xl p-6">

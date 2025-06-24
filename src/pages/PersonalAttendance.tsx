@@ -48,7 +48,7 @@ const PersonalAttendance = () => {
       <div className="relative z-10 w-full">
         
 
-        <div className="w-full px-4 sm:px-6 lg:px-8 pb-6 py-[100px]">
+        <div className="w-full px-4 sm:px-6 lg:px-8 pb-6 py-[50px]">
           <AttendanceTabsContainer activeTab={activeTab} setActiveTab={setActiveTab} date={date} setDate={setDate} selectedDateRecords={selectedDateRecords} checkInRecords={checkInRecords} />
         </div>
       </div>

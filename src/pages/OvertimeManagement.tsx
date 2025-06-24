@@ -8,8 +8,9 @@ import OvertimeRequestForm from '@/components/overtime/OvertimeRequestForm';
 import OvertimeHistory from '@/components/overtime/OvertimeHistory';
 import { useUnifiedPermissions } from '@/hooks/useUnifiedPermissions';
 import { OVERTIME_PERMISSIONS } from '@/components/staff/constants/permissions/overtimePermissions';
+import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 
-const OvertimeManagement = () => {
+const OvertimeManagementContent = () => {
   const { currentUser } = useUser();
   const { hasPermission } = useUnifiedPermissions();
 
@@ -136,6 +137,14 @@ const OvertimeManagement = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const OvertimeManagement = () => {
+  return (
+    <StaffManagementProvider>
+      <OvertimeManagementContent />
+    </StaffManagementProvider>
   );
 };
 

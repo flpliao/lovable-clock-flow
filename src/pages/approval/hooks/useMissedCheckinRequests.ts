@@ -69,8 +69,10 @@ export const useMissedCheckinRequests = () => {
       const { error } = await supabase.from('missed_checkin_requests').update({
         status: action,
         approved_by: currentUser.id,
+        approved_by_name: currentUser.name,
         approval_comment: action === 'approved' ? '主管核准' : '主管拒絕',
-        approval_date: new Date().toISOString()
+        approval_date: new Date().toISOString(),
+        rejection_reason: action === 'rejected' ? '主管拒絕' : null
       }).eq('id', requestId);
       
       if (error) throw error;

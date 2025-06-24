@@ -4,6 +4,7 @@ import { CheckCircle, XCircle, User, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { MissedCheckinRequest } from '@/types/missedCheckin';
+import MissedCheckinApprovalProcess from '@/components/check-in/components/MissedCheckinApprovalProcess';
 
 interface MissedCheckinApprovalTabProps {
   missedCheckinRequests: MissedCheckinRequest[];
@@ -48,14 +49,14 @@ const MissedCheckinApprovalTab: React.FC<MissedCheckinApprovalTabProps> = ({
     <div className="space-y-4">
       {missedCheckinRequests.map(request => (
         <div key={request.id} className="bg-white/10 rounded-2xl p-6 border border-white/20">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
                 <User className="h-5 w-5 text-white/80" />
                 <h3 className="text-lg font-semibold text-white">申請人員：{request.staff?.name || '未知申請人'}</h3>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm mb-4">
                 <div>
                   <span className="text-white/70">申請類型</span>
                   <div className="text-white font-medium">{getMissedTypeText(request.missed_type)}</div>
@@ -81,7 +82,7 @@ const MissedCheckinApprovalTab: React.FC<MissedCheckinApprovalTabProps> = ({
               </div>
 
               {request.reason && (
-                <div className="mt-3 p-3 bg-white/10 rounded-lg">
+                <div className="mb-4 p-3 bg-white/10 rounded-lg">
                   <div className="flex items-center gap-2 mb-1">
                     <FileText className="h-4 w-4 text-white/80" />
                     <span className="text-white/70 text-sm">申請原因</span>
@@ -89,6 +90,18 @@ const MissedCheckinApprovalTab: React.FC<MissedCheckinApprovalTabProps> = ({
                   <p className="text-white text-sm">{request.reason}</p>
                 </div>
               )}
+
+              {/* 審核過程 */}
+              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                <MissedCheckinApprovalProcess
+                  status={request.status}
+                  approvedByName={request.approved_by_name}
+                  approvalDate={request.approval_date}
+                  approvalComment={request.approval_comment}
+                  rejectionReason={request.rejection_reason}
+                  missedCheckinApprovalRecords={request.missed_checkin_approval_records}
+                />
+              </div>
             </div>
 
             <div className="flex flex-col gap-2 lg:ml-6">

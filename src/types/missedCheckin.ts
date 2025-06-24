@@ -1,4 +1,16 @@
 
+export interface MissedCheckinApprovalRecord {
+  id: string;
+  missed_checkin_request_id: string;
+  approver_id: string | null;
+  approver_name: string;
+  level: number;
+  status: 'pending' | 'approved' | 'rejected';
+  approval_date: string | null;
+  comment: string | null;
+  created_at: string;
+}
+
 export interface MissedCheckinRequest {
   id: string;
   staff_id: string;
@@ -9,8 +21,10 @@ export interface MissedCheckinRequest {
   reason: string;
   status: 'pending' | 'approved' | 'rejected';
   approved_by?: string;
+  approved_by_name?: string;
   approval_comment?: string;
   approval_date?: string;
+  rejection_reason?: string;
   created_at: string;
   updated_at: string;
   staff?: {
@@ -19,4 +33,5 @@ export interface MissedCheckinRequest {
     position: string;
     branch_name?: string;
   };
+  missed_checkin_approval_records?: MissedCheckinApprovalRecord[];
 }

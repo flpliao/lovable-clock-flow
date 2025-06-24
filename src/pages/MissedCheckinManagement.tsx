@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { NotificationDatabaseOperations } from '@/services/notifications';
+import MissedCheckinApprovalProcess from '@/components/check-in/components/MissedCheckinApprovalProcess';
 
 const MissedCheckinManagement = () => {
   const { currentUser, isAdmin, isManager } = useUser();
@@ -144,8 +145,10 @@ const MissedCheckinManagement = () => {
         .update({
           status: action,
           approved_by: currentUser.id,
+          approved_by_name: currentUser.name,
           approval_comment: approvalComment,
-          approval_date: new Date().toISOString()
+          approval_date: new Date().toISOString(),
+          rejection_reason: action === 'rejected' ? approvalComment : null
         })
         .eq('id', requestId)
         .select(`
@@ -351,6 +354,16 @@ const MissedCheckinManagement = () => {
                         <p className="text-sm mt-1">{request.reason}</p>
                       </div>
                     )}
+
+                    {/* 審核過程組件 */}
+                    <MissedCheckinApprovalProcess
+                      status={request.status}
+                      approvedByName={request.approved_by_name}
+                      approvalDate={request.approval_date}
+                      approvalComment={request.approval_comment}
+                      rejectionReason={request.rejection_reason}
+                      missedCheckinApprovalRecords={request.missed_checkin_approval_records}
+                    />
 
                     {/* 審核按鈕 - 只有有權限的用戶且狀態為待審核時才顯示 */}
                     {request.status === 'pending' && canApproveRequest(request) && (

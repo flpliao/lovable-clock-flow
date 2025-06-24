@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -44,10 +43,21 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
     setIsSubmitting(true);
     
     try {
+      // 驗證權限資料格式
+      const validPermissions = editedRole.permissions.filter(permission => 
+        permission && permission.id && permission.name
+      );
+      
+      console.log('🔍 有效權限數量:', validPermissions.length);
+      
+      if (validPermissions.length !== editedRole.permissions.length) {
+        console.warn('⚠️ 部分權限資料無效，已過濾');
+      }
+      
       // 確保權限資料格式正確
       const roleToUpdate = {
         ...editedRole,
-        permissions: editedRole.permissions.map(permission => ({
+        permissions: validPermissions.map(permission => ({
           id: permission.id,
           name: permission.name,
           code: permission.code || permission.id,
@@ -56,7 +66,7 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
         }))
       };
       
-      console.log('💾 準備更新的角色資料:', roleToUpdate);
+      console.log('💾 準備更新的角色資料:', roleToUpdate.name, '權限數量:', roleToUpdate.permissions.length);
       
       const success = await updateRole(roleToUpdate);
       console.log('💾 角色更新結果:', success);
@@ -73,15 +83,25 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
         console.error('❌ 角色更新失敗');
         toast({
           title: "儲存失敗",
-          description: "角色更新過程中發生錯誤，請稍後重試",
+          description: "角色更新過程中發生錯誤，請檢查權限設定後重試",
           variant: "destructive"
         });
       }
     } catch (error) {
       console.error('❌ 更新角色時發生錯誤:', error);
+      let errorMessage = "角色更新過程中發生系統錯誤";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('foreign key constraint')) {
+          errorMessage = "權限設定錯誤：部分權限不存在於系統中";
+        } else if (error.message.includes('violates')) {
+          errorMessage = "資料驗證錯誤：請檢查輸入的資料格式";
+        }
+      }
+      
       toast({
         title: "儲存失敗",
-        description: "角色更新過程中發生系統錯誤",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {

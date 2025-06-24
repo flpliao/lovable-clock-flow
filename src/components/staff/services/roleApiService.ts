@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { StaffRole, NewStaffRole } from '../types';
 
@@ -84,6 +83,30 @@ export class RoleApiService {
     }
   }
   
+  // 載入所有可用權限
+  static async loadAllPermissions() {
+    try {
+      console.log('🔄 載入所有可用權限...');
+      
+      const { data, error } = await supabase
+        .from('permissions')
+        .select('*')
+        .order('category', { ascending: true });
+      
+      if (error) {
+        console.error('❌ 載入權限資料失敗:', error);
+        return [];
+      }
+      
+      console.log('✅ 權限資料載入成功:', (data || []).length, '個權限');
+      return data || [];
+      
+    } catch (error) {
+      console.error('❌ 載入權限資料系統錯誤:', error);
+      return [];
+    }
+  }
+  
   // 新增角色
   static async createRole(newRole: NewStaffRole): Promise<StaffRole> {
     try {
@@ -131,6 +154,10 @@ export class RoleApiService {
       console.log('🔄 更新角色到後台:', role.name, '權限數量:', role.permissions.length);
       console.log('📋 權限詳細資料:', role.permissions.map(p => ({ id: p.id, name: p.name })));
       
+      // 先驗證權限ID是否存在
+      const validPermissions = await this.validatePermissions(role.permissions);
+      console.log('🔍 驗證權限結果:', validPermissions.length, '個有效權限');
+      
       // 更新角色基本資料
       const { data, error } = await supabase
         .from('staff_roles')
@@ -148,8 +175,8 @@ export class RoleApiService {
         throw error;
       }
       
-      // 更新權限
-      await this.saveRolePermissions(role.id, role.permissions);
+      // 更新權限，使用驗證過的權限
+      await this.saveRolePermissions(role.id, validPermissions);
       
       // 驗證權限是否正確儲存
       const savedPermissions = await this.loadRolePermissions(role.id);
@@ -172,6 +199,40 @@ export class RoleApiService {
     }
   }
   
+  // 驗證權限ID是否有效
+  static async validatePermissions(permissions: any[]) {
+    try {
+      console.log('🔍 驗證權限ID有效性...');
+      
+      if (!permissions || permissions.length === 0) {
+        return [];
+      }
+      
+      const permissionIds = permissions.map(p => p.id);
+      console.log('📋 要驗證的權限ID:', permissionIds);
+      
+      const { data, error } = await supabase
+        .from('permissions')
+        .select('*')
+        .in('id', permissionIds);
+      
+      if (error) {
+        console.error('❌ 驗證權限失敗:', error);
+        return [];
+      }
+      
+      const validPermissions = data || [];
+      console.log('✅ 有效權限:', validPermissions.length, '個');
+      console.log('📋 有效權限詳細:', validPermissions.map(p => ({ id: p.id, name: p.name })));
+      
+      return validPermissions;
+      
+    } catch (error) {
+      console.error('❌ 驗證權限系統錯誤:', error);
+      return [];
+    }
+  }
+  
   // 儲存角色權限
   static async saveRolePermissions(roleId: string, permissions: any[]) {
     try {
@@ -191,7 +252,7 @@ export class RoleApiService {
       
       console.log('✅ 舊權限已清除');
       
-      // 插入新權限
+      // 插入新權限（只有當權限陣列不為空時）
       if (permissions.length > 0) {
         const permissionData = permissions.map(permission => ({
           role_id: roleId,

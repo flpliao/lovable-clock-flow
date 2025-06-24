@@ -77,7 +77,7 @@ export default function LeaveTypeManagement() {
   return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-100 relative">
       <LeaveTypeBackground />
 
-      <div className="container mx-auto px-4 relative z-10 bg-violet-400 py-[100px]">
+      <div className="container mx-auto px-4 relative z-10 bg-violet-400 py-[50px]">
         <div className="space-y-6">
           <LeaveTypePageHeader />
 

@@ -180,6 +180,12 @@ export class UnifiedPermissionService {
       return true;
     }
 
+    // 針對加班權限的特殊處理 - 所有用戶都能查看自己的加班記錄
+    if (permission === 'overtime:view_own' || permission === 'overtime:create') {
+      console.log('🔐 加班基本權限檢查:', currentUser.name, permission, '✅ 允許 (所有用戶)');
+      return true;
+    }
+
     // 檢查員工動態角色權限（主要權限檢查邏輯）
     if (staffData && this.checkStaffRolePermission(staffData, permission, roles)) {
       console.log('🔐 員工角色權限檢查:', staffData.name, permission, '✅ 允許');
@@ -252,7 +258,7 @@ export class UnifiedPermissionService {
    * 基本管理員權限檢查（當無員工資料時的後備方案）
    */
   private checkBasicAdminPermissions(permission: string): boolean {
-    // 只給予最基本的系統管理權限
+    // 只給予最基本的系統管理權限和加班管理權限
     const basicAdminPermissions = [
       'system:manage',
       'system:settings_view',
@@ -260,7 +266,10 @@ export class UnifiedPermissionService {
       'staff:view',
       'staff:create',
       'staff:edit',
-      'staff:delete'
+      'staff:delete',
+      'overtime:view_all',
+      'overtime:approve',
+      'overtime:manage'
     ];
     
     return basicAdminPermissions.includes(permission);

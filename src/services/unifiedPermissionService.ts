@@ -223,9 +223,44 @@ export class UnifiedPermissionService {
   }
 
   /**
-   * 檢查傳統角色權限（向後兼容）
+   * 檢查傳統角色權限（向後兼容）+ 新增權限支援
    */
   private checkLegacyRolePermission(permission: string, user: User): boolean {
+    // 系統管理權限
+    if (['system:manage', 'system:settings_view', 'system:settings_edit'].includes(permission)) {
+      return user.role === 'admin';
+    }
+
+    // 出勤管理權限
+    if (['attendance:view_own'].includes(permission)) {
+      return true; // 所有登入用戶都能查看自己的出勤
+    }
+    if (['attendance:view_all', 'attendance:manage'].includes(permission)) {
+      return user.role === 'admin' || user.role === 'manager';
+    }
+
+    // 加班管理權限
+    if (['overtime:request', 'overtime:view'].includes(permission)) {
+      return true; // 所有登入用戶都能申請和查看加班
+    }
+    if (['overtime:approve', 'overtime:manage'].includes(permission)) {
+      return user.role === 'admin' || user.role === 'manager';
+    }
+
+    // 請假類型管理權限
+    if (['leave_type:view'].includes(permission)) {
+      return true; // 所有登入用戶都能查看假別
+    }
+    if (['leave_type:create', 'leave_type:edit', 'leave_type:delete', 'leave_type:manage'].includes(permission)) {
+      return user.role === 'admin';
+    }
+
+    // HR管理權限
+    if (['hr:payroll_view', 'hr:payroll_manage', 'hr:overtime_manage', 'hr:manage'].includes(permission)) {
+      return user.role === 'admin' || user.department === 'HR';
+    }
+
+    // 原有權限檢查
     switch (permission) {
       case 'view_staff':
       case 'manage_leave':
@@ -233,7 +268,7 @@ export class UnifiedPermissionService {
       case 'create_department':
       case 'edit_department':
       case 'delete_department':
-        return user.role === 'manager';
+        return user.role === 'manager' || user.role === 'admin';
       
       case 'create_announcement':
       case 'manage_announcements':
@@ -242,7 +277,7 @@ export class UnifiedPermissionService {
       case 'announcement:edit':
       case 'announcement:delete':
       case 'announcement:publish':
-        return user.department === 'HR';
+        return user.department === 'HR' || user.role === 'admin';
       
       case 'schedule:view_all':
       case 'schedule:create':
@@ -270,43 +305,28 @@ export class UnifiedPermissionService {
     return `${userId}-${staffId}-${permission}-${roleIds}-${userRole}`;
   }
 
-  /**
-   * 檢查快取是否有效
-   */
   private isCacheValid(cacheKey: string): boolean {
     const expiry = this.cacheExpiry.get(cacheKey);
     return expiry ? Date.now() < expiry : false;
   }
 
-  /**
-   * 更新快取
-   */
   private updateCache(cacheKey: string, result: boolean): void {
     this.permissionCache.set(cacheKey, result);
     this.cacheExpiry.set(cacheKey, Date.now() + this.CACHE_DURATION);
   }
 
-  /**
-   * 清除快取（當權限更新時調用）
-   */
   clearCache(): void {
     console.log('🔄 清除權限快取');
     this.permissionCache.clear();
     this.cacheExpiry.clear();
   }
 
-  /**
-   * 清除角色快取
-   */
   clearRolesCache(): void {
     console.log('🔄 清除角色快取');
     this.rolesCache = [];
     this.rolesCacheExpiry = 0;
   }
 
-  /**
-   * 清除特定用戶的快取
-   */
   clearUserCache(userId: string): void {
     console.log('🔄 清除用戶權限快取:', userId);
     for (const [key] of this.permissionCache) {
@@ -317,9 +337,6 @@ export class UnifiedPermissionService {
     }
   }
 
-  /**
-   * 強制重新載入權限
-   */
   forceReload(): void {
     console.log('🔄 強制重新載入權限');
     this.clearCache();
@@ -327,9 +344,6 @@ export class UnifiedPermissionService {
     window.dispatchEvent(new CustomEvent('permissionForceReload'));
   }
 
-  /**
-   * 取得最新角色資料
-   */
   async getCurrentRoles(): Promise<StaffRole[]> {
     return await this.loadRolesFromBackend();
   }

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,7 @@ import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { NewStaffRole, Permission } from './types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { getPermissionCategories, getPermissionsByCategory } from './RoleConstants';
+import { RoleApiService } from './services/roleApiService';
 import { useToast } from '@/hooks/use-toast';
 
 interface AddRoleDialogProps {
@@ -30,15 +30,57 @@ const AddRoleDialog = ({ open, onOpenChange }: AddRoleDialogProps) => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<string>('基本資料');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
+  const [permissionsByCategory, setPermissionsByCategory] = useState<Record<string, Permission[]>>({});
+  const [loadingPermissions, setLoadingPermissions] = useState(true);
   
   const [newRole, setNewRole] = useState<NewStaffRole>({
     name: '',
     description: '',
     permissions: []
   });
-  
-  const permissionCategories = getPermissionCategories();
-  const permissionsByCategory = getPermissionsByCategory();
+
+  // 載入所有可用權限
+  useEffect(() => {
+    const loadPermissions = async () => {
+      if (!open) return;
+      
+      try {
+        setLoadingPermissions(true);
+        console.log('🔄 載入所有可用權限用於新增角色...');
+        
+        const permissions = await RoleApiService.loadAllPermissions();
+        console.log('✅ 載入權限成功:', permissions.length, '個權限');
+        
+        setAllPermissions(permissions);
+        
+        // 按分類組織權限
+        const categorized = permissions.reduce((acc, permission) => {
+          const category = permission.category || 'general';
+          if (!acc[category]) {
+            acc[category] = [];
+          }
+          acc[category].push(permission);
+          return acc;
+        }, {} as Record<string, Permission[]>);
+        
+        // 按分類內的權限名稱排序
+        Object.keys(categorized).forEach(category => {
+          categorized[category].sort((a, b) => a.name.localeCompare(b.name));
+        });
+        
+        setPermissionsByCategory(categorized);
+        console.log('📊 權限分類:', Object.keys(categorized));
+        
+      } catch (error) {
+        console.error('❌ 載入權限失敗:', error);
+      } finally {
+        setLoadingPermissions(false);
+      }
+    };
+    
+    loadPermissions();
+  }, [open]);
   
   const handleSubmit = async (e?: React.MouseEvent) => {
     if (e) {
@@ -163,6 +205,28 @@ const AddRoleDialog = ({ open, onOpenChange }: AddRoleDialogProps) => {
     setActiveTab('基本資料');
     onOpenChange(false);
   };
+
+  // 定義分類顯示順序和中文名稱
+  const categoryDisplayConfig = {
+    'system': { name: '系統管理', order: 1 },
+    'staff': { name: '人員管理', order: 2 },
+    'attendance': { name: '出勤管理', order: 3 },
+    'leave': { name: '請假管理', order: 4 },
+    'leave_type': { name: '假別管理', order: 5 },
+    'overtime': { name: '加班管理', order: 6 },
+    'schedule': { name: '排班管理', order: 7 },
+    'announcement': { name: '公告管理', order: 8 },
+    'holiday': { name: '假日管理', order: 9 },
+    'department': { name: '部門管理', order: 10 },
+    'hr': { name: 'HR管理', order: 11 },
+    'general': { name: '一般權限', order: 99 }
+  };
+
+  const permissionCategories = Object.keys(permissionsByCategory).sort((a, b) => {
+    const orderA = categoryDisplayConfig[a as keyof typeof categoryDisplayConfig]?.order || 99;
+    const orderB = categoryDisplayConfig[b as keyof typeof categoryDisplayConfig]?.order || 99;
+    return orderA - orderB;
+  });
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -233,39 +297,54 @@ const AddRoleDialog = ({ open, onOpenChange }: AddRoleDialogProps) => {
             <div className="mb-4 p-3 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-700">
                 目前已選擇 <span className="font-bold">{newRole.permissions.length}</span> 個權限
+                （共 {allPermissions.length} 個可用權限）
               </p>
             </div>
             
-            <ScrollArea className="h-[400px] w-full rounded-md border p-4 flex-1">
-              <div className="space-y-6">
-                {permissionCategories.map(category => (
-                  <div key={category} className="space-y-2">
-                    <h3 className="text-sm font-semibold text-gray-700 border-b pb-1 sticky top-0 bg-white z-10">{category}</h3>
-                    <div className="grid grid-cols-1 gap-2">
-                      {permissionsByCategory[category].map(permission => (
-                        <div key={permission.id} className="flex items-start space-x-2 p-2 rounded hover:bg-gray-50">
-                          <Checkbox 
-                            id={`add-${permission.id}`} 
-                            checked={isPermissionSelected(permission.id)}
-                            onCheckedChange={() => togglePermission(permission)}
-                            disabled={isSubmitting}
-                          />
-                          <div className="flex-1">
-                            <Label 
-                              htmlFor={`add-${permission.id}`} 
-                              className="font-medium cursor-pointer"
-                            >
-                              {permission.name}
-                            </Label>
-                            <p className="text-xs text-gray-500 mt-1">{permission.description}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+            {loadingPermissions ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="text-sm text-gray-500">載入權限設定中...</div>
               </div>
-            </ScrollArea>
+            ) : (
+              <ScrollArea className="h-[400px] w-full rounded-md border p-4 flex-1">
+                <div className="space-y-6">
+                  {permissionCategories.map(category => (
+                    <div key={category} className="space-y-2">
+                      <h3 className="text-sm font-semibold text-gray-700 border-b pb-1 sticky top-0 bg-white z-10">
+                        {categoryDisplayConfig[category as keyof typeof categoryDisplayConfig]?.name || category}
+                        ({permissionsByCategory[category].length} 個權限)
+                      </h3>
+                      <div className="grid grid-cols-1 gap-2">
+                        {permissionsByCategory[category].map(permission => (
+                          <div key={permission.id} className="flex items-start space-x-2 p-2 rounded hover:bg-gray-50">
+                            <Checkbox 
+                              id={`add-${permission.id}`} 
+                              checked={isPermissionSelected(permission.id)}
+                              onCheckedChange={() => togglePermission(permission)}
+                              disabled={isSubmitting}
+                            />
+                            <div className="flex-1">
+                              <Label 
+                                htmlFor={`add-${permission.id}`} 
+                                className="font-medium cursor-pointer"
+                              >
+                                {permission.name}
+                              </Label>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {permission.description}
+                                <span className="ml-2 text-xs text-gray-400">
+                                  (代碼: {permission.code})
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
             
             <DialogFooter className="mt-4 pt-4 border-t">
               <Button 
@@ -278,7 +357,7 @@ const AddRoleDialog = ({ open, onOpenChange }: AddRoleDialogProps) => {
               </Button>
               <Button 
                 onClick={handleSubmit}
-                disabled={isSubmitting || !newRole.name.trim()}
+                disabled={isSubmitting || !newRole.name.trim() || loadingPermissions}
                 type="button"
               >
                 {isSubmitting ? '建立中...' : '建立角色'}

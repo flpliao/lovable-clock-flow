@@ -33,7 +33,7 @@ export const EditRolePermissionsTab: React.FC<EditRolePermissionsTabProps> = ({
         
         setAllPermissions(permissions);
         
-        // 按分類組織權限
+        // 按分類組織權限，並確保分類順序
         const categorized = permissions.reduce((acc, permission) => {
           const category = permission.category || 'general';
           if (!acc[category]) {
@@ -42,6 +42,11 @@ export const EditRolePermissionsTab: React.FC<EditRolePermissionsTabProps> = ({
           acc[category].push(permission);
           return acc;
         }, {} as Record<string, Permission[]>);
+        
+        // 按分類內的權限名稱排序
+        Object.keys(categorized).forEach(category => {
+          categorized[category].sort((a, b) => a.name.localeCompare(b.name));
+        });
         
         setPermissionsByCategory(categorized);
         console.log('📊 權限分類:', Object.keys(categorized));
@@ -92,7 +97,27 @@ export const EditRolePermissionsTab: React.FC<EditRolePermissionsTabProps> = ({
     return editedRole.permissions.some(p => p.id === permissionId);
   };
 
-  const permissionCategories = Object.keys(permissionsByCategory).sort();
+  // 定義分類顯示順序和中文名稱
+  const categoryDisplayConfig = {
+    'system': { name: '系統管理', order: 1 },
+    'staff': { name: '人員管理', order: 2 },
+    'attendance': { name: '出勤管理', order: 3 },
+    'leave': { name: '請假管理', order: 4 },
+    'leave_type': { name: '假別管理', order: 5 },
+    'overtime': { name: '加班管理', order: 6 },
+    'schedule': { name: '排班管理', order: 7 },
+    'announcement': { name: '公告管理', order: 8 },
+    'holiday': { name: '假日管理', order: 9 },
+    'department': { name: '部門管理', order: 10 },
+    'hr': { name: 'HR管理', order: 11 },
+    'general': { name: '一般權限', order: 99 }
+  };
+
+  const permissionCategories = Object.keys(permissionsByCategory).sort((a, b) => {
+    const orderA = categoryDisplayConfig[a as keyof typeof categoryDisplayConfig]?.order || 99;
+    const orderB = categoryDisplayConfig[b as keyof typeof categoryDisplayConfig]?.order || 99;
+    return orderA - orderB;
+  });
 
   if (loading) {
     return (
@@ -118,7 +143,8 @@ export const EditRolePermissionsTab: React.FC<EditRolePermissionsTabProps> = ({
           {permissionCategories.map(category => (
             <div key={category} className="space-y-2">
               <h3 className="text-sm font-semibold text-gray-700 border-b pb-1 sticky top-0 bg-white z-10">
-                {category} ({permissionsByCategory[category].length} 個權限)
+                {categoryDisplayConfig[category as keyof typeof categoryDisplayConfig]?.name || category} 
+                ({permissionsByCategory[category].length} 個權限)
               </h3>
               <div className="grid grid-cols-1 gap-2">
                 {permissionsByCategory[category].map(permission => (
@@ -139,7 +165,7 @@ export const EditRolePermissionsTab: React.FC<EditRolePermissionsTabProps> = ({
                       <p className="text-xs text-gray-500 mt-1">
                         {permission.description}
                         <span className="ml-2 text-xs text-gray-400">
-                          (ID: {permission.id})
+                          (代碼: {permission.code})
                         </span>
                       </p>
                     </div>

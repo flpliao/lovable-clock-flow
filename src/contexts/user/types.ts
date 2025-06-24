@@ -19,7 +19,7 @@ export interface UserContextType {
   setAnnualLeaveBalance: (balance: AnnualLeaveBalance | null) => void;
   isAdmin: () => boolean;
   isManager: () => boolean;
-  hasPermission: (permission: string) => boolean;
+  hasPermission: (permission: string) => Promise<boolean>; // 更新為 async 版本
   canManageUser: (userId: string) => boolean;
   isUserLoaded: boolean;
   userError: string | null;

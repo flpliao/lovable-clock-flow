@@ -2,6 +2,7 @@
 import { useToast } from '@/components/ui/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { StaffRole, NewStaffRole, Staff } from '../types';
+import { UnifiedPermissionService } from '@/services/unifiedPermissionService';
 
 export const useRoleOperations = (
   roles: StaffRole[], 
@@ -10,6 +11,7 @@ export const useRoleOperations = (
 ) => {
   const { toast } = useToast();
   const { isAdmin } = useUser();
+  const permissionService = UnifiedPermissionService.getInstance();
   
   // Add a new role
   const addRole = async (newRole: NewStaffRole): Promise<boolean> => {
@@ -42,6 +44,9 @@ export const useRoleOperations = (
     
     setRoles([...roles, roleToAdd]);
     
+    // 清除權限快取，因為角色已新增
+    permissionService.clearCache();
+    
     toast({
       title: "新增成功",
       description: `已成功新增 ${roleToAdd.name} 角色`
@@ -64,7 +69,7 @@ export const useRoleOperations = (
     
     let roleToUpdate = { ...updatedRole };
     
-    // For system roles, only allow updating permissions unless user is admin
+    // For system roles, allow admin to edit everything
     if (existingRole.is_system_role && !isAdmin()) {
       roleToUpdate = {
         ...roleToUpdate,
@@ -87,6 +92,9 @@ export const useRoleOperations = (
     setRoles(roles.map(role => 
       role.id === roleToUpdate.id ? roleToUpdate : role
     ));
+    
+    // 清除權限快取，因為角色已更新
+    permissionService.clearCache();
     
     toast({
       title: "編輯成功",
@@ -130,6 +138,9 @@ export const useRoleOperations = (
     }
     
     setRoles(roles.filter(role => role.id !== roleId));
+    
+    // 清除權限快取，因為角色已刪除
+    permissionService.clearCache();
     
     toast({
       title: "刪除成功",

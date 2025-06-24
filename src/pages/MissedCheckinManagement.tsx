@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,15 +14,35 @@ import { format } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { NotificationDatabaseOperations } from '@/services/notifications';
 import MissedCheckinApprovalProcess from '@/components/check-in/components/MissedCheckinApprovalProcess';
+import { useUnifiedPermissions } from '@/hooks/useUnifiedPermissions';
+import { MISSED_CHECKIN_PERMISSIONS } from '@/components/staff/constants/permissions/missedCheckinPermissions';
+import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 
-const MissedCheckinManagement = () => {
-  const { currentUser, isAdmin, isManager } = useUser();
+const MissedCheckinManagementContent = () => {
+  const { currentUser } = useUser();
+  const { hasPermission } = useUnifiedPermissions();
   const { toast } = useToast();
   const [requests, setRequests] = useState<MissedCheckinRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<MissedCheckinRequest | null>(null);
   const [approvalComment, setApprovalComment] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+
+  // 按照請假申請邏輯檢查忘記打卡權限
+  const canViewOwnMissedCheckin = hasPermission(MISSED_CHECKIN_PERMISSIONS.VIEW_OWN_MISSED_CHECKIN);
+  const canCreateMissedCheckin = hasPermission(MISSED_CHECKIN_PERMISSIONS.CREATE_MISSED_CHECKIN);
+  const canViewAllMissedCheckin = hasPermission(MISSED_CHECKIN_PERMISSIONS.VIEW_ALL_MISSED_CHECKIN);
+  const canApproveMissedCheckin = hasPermission(MISSED_CHECKIN_PERMISSIONS.APPROVE_MISSED_CHECKIN);
+  const canManageMissedCheckin = hasPermission(MISSED_CHECKIN_PERMISSIONS.MANAGE_MISSED_CHECKIN);
+
+  console.log('🔐 忘記打卡權限檢查:', {
+    user: currentUser?.name,
+    canViewOwnMissedCheckin,
+    canCreateMissedCheckin,
+    canViewAllMissedCheckin,
+    canApproveMissedCheckin,
+    canManageMissedCheckin
+  });
 
   const loadRequests = async () => {
     if (!currentUser) {
@@ -31,6 +52,7 @@ const MissedCheckinManagement = () => {
     }
 
     try {
+      setLoading(true);
       console.log('開始載入忘記打卡申請，用戶:', currentUser.name);
       
       const { data, error } = await supabase
@@ -60,22 +82,34 @@ const MissedCheckinManagement = () => {
         return;
       }
 
-      // 過濾權限：只顯示當前用戶可以處理的申請
+      // 過濾權限：按照請假申請邏輯
       const filteredData = (data || []).filter(item => {
         const staff = Array.isArray(item.staff) ? item.staff[0] : item.staff;
         
-        // 管理員可以看到所有申請
-        if (isAdmin()) {
+        // 完整管理權限：可以看到所有申請
+        if (canManageMissedCheckin) {
           return true;
         }
         
-        // 申請人可以看到自己的申請（但不能審核）
-        if (item.staff_id === currentUser.id) {
+        // 查看所有權限：可以看到所有申請
+        if (canViewAllMissedCheckin) {
           return true;
         }
         
-        // 直屬主管可以看到下屬的申請
-        if (staff?.supervisor_id === currentUser.id) {
+        // 審核權限：可以看到需要審核的申請
+        if (canApproveMissedCheckin) {
+          // 管理員可以看到所有申請
+          if (currentUser.role === 'admin') {
+            return true;
+          }
+          // 直屬主管可以看到下屬的申請
+          if (staff?.supervisor_id === currentUser.id) {
+            return true;
+          }
+        }
+        
+        // 查看自己權限：只能看到自己的申請
+        if (canViewOwnMissedCheckin && item.staff_id === currentUser.id) {
           return true;
         }
         
@@ -108,8 +142,7 @@ const MissedCheckinManagement = () => {
   useEffect(() => {
     console.log('MissedCheckinManagement useEffect:', {
       currentUser: currentUser?.name,
-      isAdmin: isAdmin(),
-      isManager: isManager()
+      hasAnyPermission: canViewOwnMissedCheckin || canViewAllMissedCheckin || canApproveMissedCheckin || canManageMissedCheckin
     });
     
     if (currentUser) {
@@ -117,7 +150,7 @@ const MissedCheckinManagement = () => {
     } else {
       setLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser, canViewOwnMissedCheckin, canViewAllMissedCheckin, canApproveMissedCheckin, canManageMissedCheckin]);
 
   const canApproveRequest = (request: MissedCheckinRequest) => {
     // 申請人不能審核自己的申請
@@ -125,14 +158,23 @@ const MissedCheckinManagement = () => {
       return false;
     }
     
-    // 管理員可以審核所有申請
-    if (isAdmin()) {
+    // 完整管理權限
+    if (canManageMissedCheckin) {
       return true;
     }
     
-    // 直屬主管可以審核下屬的申請
-    const staff = Array.isArray(request.staff) ? request.staff[0] : request.staff;
-    return staff?.supervisor_id === currentUser?.id;
+    // 審核權限
+    if (canApproveMissedCheckin) {
+      // 管理員可以審核所有申請
+      if (currentUser?.role === 'admin') {
+        return true;
+      }
+      // 直屬主管可以審核下屬的申請
+      const staff = Array.isArray(request.staff) ? request.staff[0] : request.staff;
+      return staff?.supervisor_id === currentUser?.id;
+    }
+    
+    return false;
   };
 
   const handleApproval = async (requestId: string, action: 'approved' | 'rejected') => {
@@ -251,6 +293,21 @@ const MissedCheckinManagement = () => {
           <CardContent className="text-center p-6">
             <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600">請先登入以查看此頁面</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // 檢查是否有任何權限
+  if (!canViewOwnMissedCheckin && !canViewAllMissedCheckin && !canApproveMissedCheckin && !canManageMissedCheckin) {
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="text-center p-6">
+            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-gray-800 mb-2">權限不足</h2>
+            <p className="text-gray-600">您沒有存取忘記打卡管理功能的權限</p>
           </CardContent>
         </Card>
       </div>
@@ -414,6 +471,14 @@ const MissedCheckinManagement = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const MissedCheckinManagement = () => {
+  return (
+    <StaffManagementProvider>
+      <MissedCheckinManagementContent />
+    </StaffManagementProvider>
   );
 };
 

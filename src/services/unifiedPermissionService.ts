@@ -1,3 +1,4 @@
+
 import { User } from '@/contexts/user/types';
 import { Staff, StaffRole } from '@/components/staff/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -161,7 +162,7 @@ export class UnifiedPermissionService {
   }
 
   /**
-   * 內部權限檢查邏輯 - 完全基於後台角色設定
+   * 內部權限檢查邏輯 - 完全基於後台角色設定和請假申請邏輯
    */
   private checkPermissionInternal(
     permission: string, 
@@ -180,9 +181,9 @@ export class UnifiedPermissionService {
       return true;
     }
 
-    // 針對加班權限的特殊處理 - 所有用戶都能查看自己的加班記錄
-    if (permission === 'overtime:view_own' || permission === 'overtime:create') {
-      console.log('🔐 加班基本權限檢查:', currentUser.name, permission, '✅ 允許 (所有用戶)');
+    // 基本用戶權限：所有用戶都能查看自己的記錄和申請
+    if (this.isBasicUserPermission(permission)) {
+      console.log('🔐 基本用戶權限檢查:', currentUser.name, permission, '✅ 允許');
       return true;
     }
 
@@ -224,6 +225,25 @@ export class UnifiedPermissionService {
   }
 
   /**
+   * 檢查基本用戶權限（參照請假申請邏輯）
+   */
+  private isBasicUserPermission(permission: string): boolean {
+    const basicPermissions = [
+      // 加班基本權限
+      'overtime:view_own',
+      'overtime:create',
+      // 忘記打卡基本權限
+      'missed_checkin:view_own',
+      'missed_checkin:create',
+      // 請假基本權限
+      'leave:view_own',
+      'leave:create'
+    ];
+    
+    return basicPermissions.includes(permission);
+  }
+
+  /**
    * 檢查員工角色權限（主要邏輯）
    */
   private checkStaffRolePermission(
@@ -258,7 +278,7 @@ export class UnifiedPermissionService {
    * 基本管理員權限檢查（當無員工資料時的後備方案）
    */
   private checkBasicAdminPermissions(permission: string): boolean {
-    // 只給予最基本的系統管理權限和加班管理權限
+    // 按照請假申請邏輯，給予完整的管理權限
     const basicAdminPermissions = [
       'system:manage',
       'system:settings_view',
@@ -267,9 +287,24 @@ export class UnifiedPermissionService {
       'staff:create',
       'staff:edit',
       'staff:delete',
+      // 加班管理權限
       'overtime:view_all',
+      'overtime:view_own',
+      'overtime:create',
       'overtime:approve',
-      'overtime:manage'
+      'overtime:manage',
+      // 忘記打卡管理權限
+      'missed_checkin:view_all',
+      'missed_checkin:view_own',
+      'missed_checkin:create',
+      'missed_checkin:approve',
+      'missed_checkin:manage',
+      // 請假管理權限
+      'leave:view_all',
+      'leave:view_own',
+      'leave:create',
+      'leave:approve',
+      'leave:manage'
     ];
     
     return basicAdminPermissions.includes(permission);

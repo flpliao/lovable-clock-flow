@@ -800,15 +800,58 @@ export type Database = {
         }
         Relationships: []
       }
+      missed_checkin_approval_records: {
+        Row: {
+          approval_date: string | null
+          approver_id: string | null
+          approver_name: string
+          comment: string | null
+          created_at: string
+          id: string
+          level: number
+          missed_checkin_request_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approval_date?: string | null
+          approver_id?: string | null
+          approver_name: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          level: number
+          missed_checkin_request_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approval_date?: string | null
+          approver_id?: string | null
+          approver_name?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          level?: number
+          missed_checkin_request_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       missed_checkin_requests: {
         Row: {
           approval_comment: string | null
           approval_date: string | null
+          approval_level: number | null
           approved_by: string | null
+          approved_by_name: string | null
           created_at: string
+          current_approver: string | null
           id: string
           missed_type: string
           reason: string
+          rejection_reason: string | null
           request_date: string
           requested_check_in_time: string | null
           requested_check_out_time: string | null
@@ -819,11 +862,15 @@ export type Database = {
         Insert: {
           approval_comment?: string | null
           approval_date?: string | null
+          approval_level?: number | null
           approved_by?: string | null
+          approved_by_name?: string | null
           created_at?: string
+          current_approver?: string | null
           id?: string
           missed_type: string
           reason: string
+          rejection_reason?: string | null
           request_date: string
           requested_check_in_time?: string | null
           requested_check_out_time?: string | null
@@ -834,11 +881,15 @@ export type Database = {
         Update: {
           approval_comment?: string | null
           approval_date?: string | null
+          approval_level?: number | null
           approved_by?: string | null
+          approved_by_name?: string | null
           created_at?: string
+          current_approver?: string | null
           id?: string
           missed_type?: string
           reason?: string
+          rejection_reason?: string | null
           request_date?: string
           requested_check_in_time?: string | null
           requested_check_out_time?: string | null

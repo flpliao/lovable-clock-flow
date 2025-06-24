@@ -18,18 +18,24 @@ const OvertimeManagementContent = () => {
     return <Navigate to="/login" />;
   }
 
-  // 檢查加班基本權限 - 所有員工都能查看自己的加班記錄和申請加班
+  // 按照請假申請邏輯檢查加班權限
   const canViewOwnOvertime = hasPermission(OVERTIME_PERMISSIONS.VIEW_OWN_OVERTIME);
   const canCreateOvertime = hasPermission(OVERTIME_PERMISSIONS.CREATE_OVERTIME);
+  const canViewAllOvertime = hasPermission(OVERTIME_PERMISSIONS.VIEW_ALL_OVERTIME);
+  const canApproveOvertime = hasPermission(OVERTIME_PERMISSIONS.APPROVE_OVERTIME);
+  const canManageOvertime = hasPermission(OVERTIME_PERMISSIONS.MANAGE_OVERTIME);
 
   console.log('🔐 加班權限檢查:', {
     user: currentUser.name,
     canViewOwnOvertime,
-    canCreateOvertime
+    canCreateOvertime,
+    canViewAllOvertime,
+    canApproveOvertime,
+    canManageOvertime
   });
 
-  // 如果沒有任何加班權限，顯示權限不足（這種情況應該很少發生）
-  if (!canViewOwnOvertime && !canCreateOvertime) {
+  // 如果沒有任何加班權限，顯示權限不足
+  if (!canViewOwnOvertime && !canCreateOvertime && !canViewAllOvertime && !canApproveOvertime && !canManageOvertime) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
@@ -107,7 +113,7 @@ const OvertimeManagementContent = () => {
                   <span className="sm:hidden">申請</span>
                 </TabsTrigger>
               )}
-              {canViewOwnOvertime && (
+              {(canViewOwnOvertime || canViewAllOvertime) && (
                 <TabsTrigger 
                   value="history" 
                   className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
@@ -127,7 +133,7 @@ const OvertimeManagementContent = () => {
                 </TabsContent>
               )}
               
-              {canViewOwnOvertime && (
+              {(canViewOwnOvertime || canViewAllOvertime) && (
                 <TabsContent value="history" className="mt-0">
                   <OvertimeHistory />
                 </TabsContent>

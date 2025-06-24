@@ -132,7 +132,7 @@ const MonthlyScheduleView = ({
 
   return (
     <>
-      <div className="backdrop-blur-xl bg-white/15 border border-white/25 rounded-2xl shadow-lg p-6">
+      <div className="backdrop-blur-2xl bg-white/8 border border-white/20 rounded-3xl shadow-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex-1">
             <h2 className="text-xl font-bold text-gray-900 mb-2 drop-shadow-sm">
@@ -153,7 +153,7 @@ const MonthlyScheduleView = ({
             onClick={() => navigate('/schedule-statistics')}
             variant="outline"
             size="sm"
-            className="ml-4 flex items-center gap-2 bg-white/40 border-white/50 text-gray-800 hover:bg-white/50 hover:text-gray-900 backdrop-blur-xl shadow-md"
+            className="ml-4 flex items-center gap-2 bg-cyan-100/40 border-cyan-200/50 text-gray-800 hover:bg-cyan-100/60 hover:text-gray-900 backdrop-blur-xl shadow-md"
           >
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">統計資訊</span>

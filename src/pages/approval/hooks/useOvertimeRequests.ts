@@ -19,7 +19,6 @@ interface OvertimeRequestWithApplicant {
   created_at: string;
   approval_level?: number;
   current_approver?: string;
-  approver_id?: string;
   staff?: {
     name: string;
     department: string;
@@ -57,7 +56,7 @@ export const useOvertimeRequests = () => {
         return;
       }
 
-      // 根據三種審核權限條件篩選申請
+      // 根據兩種審核權限條件篩選申請
       const formattedData = (data || [])
         .filter(request => {
           const staffData = Array.isArray(request.staff) ? request.staff[0] : request.staff;
@@ -68,23 +67,18 @@ export const useOvertimeRequests = () => {
           // 條件2：我是 overtime.current_approver
           const isCurrentApprover = request.current_approver === currentUser.id;
           
-          // 條件3：我是 overtime.approver_id (如果有這個欄位)
-          const isAssignedApprover = request.approver_id === currentUser.id;
-          
           console.log('🔍 檢查審核權限:', {
             requestId: request.id,
             applicantName: staffData?.name,
             isDirectSupervisor,
             isCurrentApprover,
-            isAssignedApprover,
             staffSupervisorId: staffData?.supervisor_id,
             currentApprover: request.current_approver,
-            approverId: request.approver_id,
             currentUserId: currentUser.id
           });
           
           // 符合任一條件即可顯示
-          return isDirectSupervisor || isCurrentApprover || isAssignedApprover;
+          return isDirectSupervisor || isCurrentApprover;
         })
         .map(item => ({
           ...item,

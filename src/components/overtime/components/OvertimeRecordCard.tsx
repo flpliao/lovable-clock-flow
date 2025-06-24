@@ -30,8 +30,10 @@ interface OvertimeRecord {
   created_at: string;
   staff_id: string;
   approved_by: string | null;
+  approved_by_name?: string;
   approval_date: string | null;
   approval_comment: string | null;
+  rejection_reason?: string;
   compensation_hours: number | null;
   updated_at: string;
   staff?: {

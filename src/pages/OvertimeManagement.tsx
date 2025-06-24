@@ -17,17 +17,23 @@ const OvertimeManagement = () => {
     return <Navigate to="/login" />;
   }
 
-  // 檢查基本加班權限
+  // 檢查加班基本權限 - 所有員工都能查看自己的加班記錄和申請加班
   const canViewOwnOvertime = hasPermission(OVERTIME_PERMISSIONS.VIEW_OWN_OVERTIME);
   const canCreateOvertime = hasPermission(OVERTIME_PERMISSIONS.CREATE_OVERTIME);
 
-  // 如果沒有任何加班權限，顯示權限不足
+  console.log('🔐 加班權限檢查:', {
+    user: currentUser.name,
+    canViewOwnOvertime,
+    canCreateOvertime
+  });
+
+  // 如果沒有任何加班權限，顯示權限不足（這種情況應該很少發生）
   if (!canViewOwnOvertime && !canCreateOvertime) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
         <div className="relative z-10 w-full">
-          <div className="w-full px-4 lg:px-8 pt-32 md:pt-36 pb-8 py-[100px]">
+          <div className="w-full px-4 lg:px-8 pt-32 md:pt-36 pb-8">
             <div className="flex items-center justify-center">
               <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20 text-center">
                 <Clock className="h-16 w-16 text-white/60 mx-auto mb-4" />
@@ -40,6 +46,9 @@ const OvertimeManagement = () => {
       </div>
     );
   }
+
+  // 決定預設標籤頁：優先顯示申請頁面，如果沒有申請權限則顯示記錄頁面
+  const defaultTab = canCreateOvertime ? "request" : "history";
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
@@ -62,7 +71,7 @@ const OvertimeManagement = () => {
       
       <div className="relative z-10 w-full">
         {/* 頁面標題區域 */}
-        <div className="w-full px-4 lg:px-8 pt-32 md:pt-36 pb-8 py-[100px]">
+        <div className="w-full px-4 lg:px-8 pt-32 md:pt-36 pb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/30 shadow-lg">
@@ -70,6 +79,7 @@ const OvertimeManagement = () => {
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">加班管理</h1>
+                <p className="text-white/80 text-lg">管理您的加班申請和記錄</p>
               </div>
             </div>
           </div>
@@ -84,17 +94,23 @@ const OvertimeManagement = () => {
             <h2 className="text-xl font-semibold text-white drop-shadow-md">加班功能</h2>
           </div>
 
-          <Tabs defaultValue={canCreateOvertime ? "request" : "history"} className="w-full">
+          <Tabs defaultValue={defaultTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
               {canCreateOvertime && (
-                <TabsTrigger value="request" className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2">
+                <TabsTrigger 
+                  value="request" 
+                  className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                >
                   <Plus className="h-4 w-4" />
                   <span className="hidden sm:inline">申請加班</span>
                   <span className="sm:hidden">申請</span>
                 </TabsTrigger>
               )}
               {canViewOwnOvertime && (
-                <TabsTrigger value="history" className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2">
+                <TabsTrigger 
+                  value="history" 
+                  className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+                >
                   <History className="h-4 w-4" />
                   <span className="hidden sm:inline">加班記錄</span>
                   <span className="sm:hidden">記錄</span>

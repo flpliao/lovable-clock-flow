@@ -112,76 +112,79 @@ const StaffTable = () => {
 
   return (
     <>
-      <div className="rounded-lg border bg-white/70 backdrop-blur-xl shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>姓名</TableHead>
-              <TableHead>職位</TableHead>
-              <TableHead>部門</TableHead>
-              <TableHead>分店/分部</TableHead>
-              <TableHead>直屬主管</TableHead>
-              <TableHead>聯絡方式</TableHead>
-              <TableHead>角色</TableHead>
-              <TableHead className="text-right">操作</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {staffListState.map((staff) => (
-              <TableRow key={staff.id}>
-                <TableCell className="font-medium">{staff.name}</TableCell>
-                <TableCell>{staff.position}</TableCell>
-                <TableCell>{staff.department}</TableCell>
-                <TableCell>{staff.branch_name}</TableCell>
-                <TableCell>
-                  <span className={`text-sm ${
-                    staff.supervisor_id ? 'text-gray-900' : 'text-gray-500 italic'
-                  }`}>
-                    {getSupervisorName(staff.supervisor_id)}
-                  </span>
-                </TableCell>
-                <TableCell>{staff.contact}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    staff.role === 'admin' ? 'bg-red-100 text-red-800' :
-                    staff.role === 'manager' ? 'bg-blue-100 text-blue-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {getRoleDisplayName(staff)}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => openEditDialog(staff)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        編輯
-                      </DropdownMenuItem>
-                      {canManageAccounts && (
-                        <DropdownMenuItem onClick={() => handleCredentialManagement(staff)}>
-                          <Key className="mr-2 h-4 w-4" />
-                          帳號設定
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem 
-                        onClick={() => handleDeleteStaff(staff.id)}
-                        className="text-red-600"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        刪除
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+      {/* 添加水平滾動容器 */}
+      <div className="w-full overflow-x-auto">
+        <div className="min-w-full rounded-lg border bg-white/70 backdrop-blur-xl shadow-sm">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[80px] whitespace-nowrap">姓名</TableHead>
+                <TableHead className="min-w-[100px] whitespace-nowrap">職位</TableHead>
+                <TableHead className="min-w-[80px] whitespace-nowrap">部門</TableHead>
+                <TableHead className="min-w-[120px] whitespace-nowrap">分店/分部</TableHead>
+                <TableHead className="min-w-[100px] whitespace-nowrap">直屬主管</TableHead>
+                <TableHead className="min-w-[120px] whitespace-nowrap">聯絡方式</TableHead>
+                <TableHead className="min-w-[80px] whitespace-nowrap">角色</TableHead>
+                <TableHead className="min-w-[80px] whitespace-nowrap text-right">操作</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {staffListState.map((staff) => (
+                <TableRow key={staff.id}>
+                  <TableCell className="font-medium whitespace-nowrap">{staff.name}</TableCell>
+                  <TableCell className="whitespace-nowrap">{staff.position}</TableCell>
+                  <TableCell className="whitespace-nowrap">{staff.department}</TableCell>
+                  <TableCell className="whitespace-nowrap">{staff.branch_name}</TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    <span className={`text-sm ${
+                      staff.supervisor_id ? 'text-gray-900' : 'text-gray-500 italic'
+                    }`}>
+                      {getSupervisorName(staff.supervisor_id)}
+                    </span>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">{staff.contact}</TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      staff.role === 'admin' ? 'bg-red-100 text-red-800' :
+                      staff.role === 'manager' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {getRoleDisplayName(staff)}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right whitespace-nowrap">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEditDialog(staff)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          編輯
+                        </DropdownMenuItem>
+                        {canManageAccounts && (
+                          <DropdownMenuItem onClick={() => handleCredentialManagement(staff)}>
+                            <Key className="mr-2 h-4 w-4" />
+                            帳號設定
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteStaff(staff.id)}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          刪除
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {/* 帳號設定對話框 */}

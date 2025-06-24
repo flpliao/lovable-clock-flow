@@ -54,10 +54,10 @@ const DragScheduleCard = ({
         onClick();
       }}
       className={`
-        text-xs p-2 rounded-lg mb-1 cursor-grab active:cursor-grabbing transition-all duration-200 border
+        text-xs p-2 rounded-lg mb-1 cursor-grab active:cursor-grabbing transition-all duration-200 border backdrop-blur-sm
         ${hasConflict 
-          ? 'bg-red-100/90 border-red-300 text-red-800' 
-          : 'bg-white/90 border-white/30 text-gray-800 hover:bg-white hover:shadow-md'
+          ? 'bg-red-100/70 border-red-300/60 text-red-800' 
+          : 'bg-white/60 border-white/40 text-gray-900 hover:bg-white/70 hover:shadow-md'
         }
         ${isDragging ? 'opacity-50 shadow-2xl scale-105' : 'hover:scale-102'}
       `}
@@ -74,12 +74,12 @@ const DragScheduleCard = ({
         </div>
       </div>
       
-      <div className="text-xs text-gray-600 mb-1 truncate">
+      <div className="text-xs text-gray-700 mb-1 truncate">
         {displayTime}
       </div>
       
       {getUserRelation(schedule.userId) && (
-        <div className="text-xs text-blue-600">
+        <div className="text-xs text-blue-700">
           {getUserRelation(schedule.userId)}
         </div>
       )}

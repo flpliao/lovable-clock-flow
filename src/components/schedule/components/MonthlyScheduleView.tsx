@@ -132,19 +132,19 @@ const MonthlyScheduleView = ({
 
   return (
     <>
-      <div className="backdrop-blur-2xl bg-gradient-to-br from-white/75 to-white/55 border border-white/40 rounded-2xl shadow-lg p-6">
+      <div className="backdrop-blur-xl bg-white/15 border border-white/25 rounded-2xl shadow-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-gray-800 mb-2 drop-shadow-sm">
+            <h2 className="text-xl font-bold text-gray-900 mb-2 drop-shadow-sm">
               {getDisplayTitle()} 排班總覽
               {selectedStaffId && (
-                <span className="ml-2 text-lg text-gray-700">
+                <span className="ml-2 text-lg text-gray-800">
                   - {getUserName(selectedStaffId)}
                 </span>
               )}
             </h2>
             {getExtendedDescription() && (
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-700">
                 {getExtendedDescription()}
               </div>
             )}
@@ -153,7 +153,7 @@ const MonthlyScheduleView = ({
             onClick={() => navigate('/schedule-statistics')}
             variant="outline"
             size="sm"
-            className="ml-4 flex items-center gap-2 bg-white/60 border-white/50 text-gray-700 hover:bg-white/80 hover:text-gray-800 backdrop-blur-xl shadow-md"
+            className="ml-4 flex items-center gap-2 bg-white/40 border-white/50 text-gray-800 hover:bg-white/50 hover:text-gray-900 backdrop-blur-xl shadow-md"
           >
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">統計資訊</span>

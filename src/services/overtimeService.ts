@@ -77,8 +77,17 @@ export class OvertimeService {
       const { data, error } = await supabase
         .from('overtimes')
         .select(`
-          *,
-          staff:staff_id (
+          id,
+          overtime_date,
+          start_time,
+          end_time,
+          hours,
+          overtime_type,
+          compensation_type,
+          reason,
+          status,
+          created_at,
+          staff:staff_id!inner (
             name
           )
         `)
@@ -95,15 +104,15 @@ export class OvertimeService {
       // 轉換為 OvertimeRecord 格式
       const records: OvertimeRecord[] = (data || []).map(item => ({
         id: item.id,
-        staff_name: item.staff?.name || '未知員工',
+        staff_name: (item.staff as any)?.name || '未知員工',
         overtime_date: item.overtime_date,
         start_time: item.start_time,
         end_time: item.end_time,
         hours: item.hours,
-        overtime_type: item.overtime_type,
-        compensation_type: item.compensation_type,
+        overtime_type: item.overtime_type as 'weekday' | 'weekend' | 'holiday',
+        compensation_type: item.compensation_type as 'pay' | 'time_off' | 'both',
         reason: item.reason,
-        status: item.status,
+        status: item.status as 'pending' | 'approved' | 'rejected',
         created_at: item.created_at
       }));
 
@@ -124,8 +133,17 @@ export class OvertimeService {
       const { data, error } = await supabase
         .from('overtimes')
         .select(`
-          *,
-          staff:staff_id (
+          id,
+          overtime_date,
+          start_time,
+          end_time,
+          hours,
+          overtime_type,
+          compensation_type,
+          reason,
+          status,
+          created_at,
+          staff:staff_id!inner (
             name
           )
         `)
@@ -141,15 +159,15 @@ export class OvertimeService {
       // 轉換為 OvertimeRecord 格式
       const records: OvertimeRecord[] = (data || []).map(item => ({
         id: item.id,
-        staff_name: item.staff?.name || '未知員工',
+        staff_name: (item.staff as any)?.name || '未知員工',
         overtime_date: item.overtime_date,
         start_time: item.start_time,
         end_time: item.end_time,
         hours: item.hours,
-        overtime_type: item.overtime_type,
-        compensation_type: item.compensation_type,
+        overtime_type: item.overtime_type as 'weekday' | 'weekend' | 'holiday',
+        compensation_type: item.compensation_type as 'pay' | 'time_off' | 'both',
         reason: item.reason,
-        status: item.status,
+        status: item.status as 'pending' | 'approved' | 'rejected',
         created_at: item.created_at
       }));
 

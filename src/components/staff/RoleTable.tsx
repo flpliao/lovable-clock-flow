@@ -50,71 +50,84 @@ const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
   };
   
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>角色名稱</TableHead>
-          <TableHead>描述</TableHead>
-          <TableHead>權限數量</TableHead>
-          <TableHead>類型</TableHead>
-          <TableHead className="text-right">操作</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {roles.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={5} className="h-24 text-center">
-              尚未設定任何角色
-            </TableCell>
-          </TableRow>
-        ) : (
-          roles.map((role) => {
-            const roleType = getRoleType(role);
-            
-            return (
-              <TableRow key={role.id}>
-                <TableCell className="font-medium">
-                  <div className="flex items-center">
-                    {role.is_system_role && <Shield className="h-3.5 w-3.5 mr-2 text-blue-500" />}
-                    {role.name}
-                  </div>
-                </TableCell>
-                <TableCell>{role.description}</TableCell>
-                <TableCell>
-                  <Badge variant="secondary">
-                    {role.permissions.length} 個權限
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className={roleType.color}>
-                    {roleType.label}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEdit(role)}
-                    title={role.is_system_role ? "編輯系統角色權限" : "編輯角色"}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => deleteRole(role.id)}
-                    disabled={role.is_system_role && !isAdmin()}
-                    title={role.is_system_role ? "系統管理員可刪除系統角色" : "刪除角色"}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+    /* 添加水平滾動容器 */
+    <div className="w-full overflow-x-auto">
+      <div className="min-w-full rounded-lg border bg-white/70 backdrop-blur-xl shadow-sm">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="min-w-[120px] whitespace-nowrap">角色名稱</TableHead>
+              <TableHead className="min-w-[150px] whitespace-nowrap">描述</TableHead>
+              <TableHead className="min-w-[100px] whitespace-nowrap">權限數量</TableHead>
+              <TableHead className="min-w-[100px] whitespace-nowrap">類型</TableHead>
+              <TableHead className="min-w-[80px] whitespace-nowrap text-right">操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {roles.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center whitespace-nowrap">
+                  尚未設定任何角色
                 </TableCell>
               </TableRow>
-            );
-          })
-        )}
-      </TableBody>
-    </Table>
+            ) : (
+              roles.map((role) => {
+                const roleType = getRoleType(role);
+                
+                return (
+                  <TableRow key={role.id}>
+                    <TableCell className="font-medium whitespace-nowrap">
+                      <div className="flex items-center">
+                        {role.is_system_role && <Shield className="h-3.5 w-3.5 mr-2 text-blue-500 flex-shrink-0" />}
+                        <span className="truncate">{role.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <span className="truncate block max-w-[150px]" title={role.description}>
+                        {role.description}
+                      </span>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <Badge variant="secondary">
+                        {role.permissions.length} 個權限
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <Badge variant="outline" className={roleType.color}>
+                        {roleType.label}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onEdit(role)}
+                          title={role.is_system_role ? "編輯系統角色權限" : "編輯角色"}
+                          className="h-8 w-8 flex-shrink-0"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteRole(role.id)}
+                          disabled={role.is_system_role && !isAdmin()}
+                          title={role.is_system_role ? "系統管理員可刪除系統角色" : "刪除角色"}
+                          className="h-8 w-8 flex-shrink-0"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   );
 };
 

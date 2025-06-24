@@ -24,21 +24,21 @@ const OrganizationChart: React.FC = () => {
       <div key={staff.id} className="relative">
         {/* Staff node */}
         <div className={`
-            bg-white/90 border border-gray-200/80 rounded-lg p-4 mb-3 shadow-md hover:shadow-lg transition-all duration-200 backdrop-blur-sm
+            bg-white/90 border border-gray-200/80 rounded-lg p-4 mb-3 shadow-md hover:shadow-lg transition-all duration-200 backdrop-blur-sm min-w-max
             ${level === 0 ? 'bg-blue-50/90 border-blue-200/80 shadow-lg' : 'ml-8'}
           `}>
-          <div className="flex items-center">
+          <div className="flex items-center whitespace-nowrap">
             <div className={`
-              h-12 w-12 rounded-full flex items-center justify-center mr-4 shadow-sm
+              h-12 w-12 rounded-full flex items-center justify-center mr-4 shadow-sm flex-shrink-0
               ${staff.role === 'admin' ? 'bg-blue-600 text-white' : 'bg-gray-600 text-white'}
             `}>
               <UserRound className="h-6 w-6" />
             </div>
-            <div className="flex-1">
-              <div className="font-semibold text-gray-900 text-lg">{staff.name}</div>
-              <div className="text-sm text-gray-600 mt-1">{staff.position}</div>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-gray-900 text-lg whitespace-nowrap">{staff.name}</div>
+              <div className="text-sm text-gray-600 mt-1 whitespace-nowrap">{staff.position}</div>
             </div>
-            <div className="text-sm bg-gray-100 text-gray-800 px-3 py-1 rounded-full font-medium border">
+            <div className="text-sm bg-gray-100 text-gray-800 px-3 py-1 rounded-full font-medium border whitespace-nowrap ml-4 flex-shrink-0">
               {staff.department}
             </div>
           </div>
@@ -48,7 +48,7 @@ const OrganizationChart: React.FC = () => {
         {hasSubordinates && (
           <div className="flex items-center ml-6 mb-2">
             <ChevronDown className="h-4 w-4 text-gray-600" />
-            <div className="text-sm text-gray-700 ml-2 font-medium">管理 {subordinates.length} 人</div>
+            <div className="text-sm text-gray-700 ml-2 font-medium whitespace-nowrap">管理 {subordinates.length} 人</div>
           </div>
         )}
         
@@ -82,8 +82,11 @@ const OrganizationChart: React.FC = () => {
         <CardTitle className="text-gray-900">公司組織圖</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="p-4 overflow-auto max-h-[600px]">
-          {topLevelManagers.map(manager => renderOrganizationTree(manager))}
+        {/* 添加水平滾動容器 */}
+        <div className="w-full overflow-x-auto">
+          <div className="p-4 max-h-[600px] overflow-y-auto min-w-max">
+            {topLevelManagers.map(manager => renderOrganizationTree(manager))}
+          </div>
         </div>
       </CardContent>
     </Card>

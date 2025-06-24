@@ -1,10 +1,6 @@
 
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { useUnifiedPermissions } from '@/hooks/useUnifiedPermissions';
-import { OvertimeService } from '@/services/overtimeService';
 import OvertimeFormHeader from './components/OvertimeFormHeader';
 import OvertimeBasicInfoSection from './components/OvertimeBasicInfoSection';
 import OvertimeTimeSection from './components/OvertimeTimeSection';
@@ -23,95 +19,14 @@ const OvertimeRequestForm: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { currentUser } = useUser();
-  const { staffList } = useStaffManagementContext();
-  const { hasPermission } = useUnifiedPermissions();
-
-  // 權限檢查
-  const canRequestOvertime = hasPermission('overtime:request');
-
-  // 獲取當前用戶的員工資料
-  const currentStaff = staffList.find(staff => 
-    staff.email === currentUser?.name || 
-    staff.name === currentUser?.name ||
-    staff.id === currentUser?.id
-  );
-
-  if (!canRequestOvertime) {
-    return (
-      <div className="text-center py-8">
-        <div className="text-white/80 text-lg">
-          您沒有申請加班的權限
-        </div>
-      </div>
-    );
-  }
-
-  if (!currentStaff) {
-    return (
-      <div className="text-center py-8">
-        <div className="text-white/80 text-lg">
-          找不到您的員工資料，無法提交加班申請
-        </div>
-      </div>
-    );
-  }
-
-  const calculateHours = (startTime: string, endTime: string): number => {
-    if (!startTime || !endTime) return 0;
-    
-    const start = new Date(`2000-01-01T${startTime}`);
-    const end = new Date(`2000-01-01T${endTime}`);
-    
-    if (end <= start) {
-      // 跨日情況
-      end.setDate(end.getDate() + 1);
-    }
-    
-    return (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.overtimeDate || !formData.startTime || !formData.endTime || 
-        !formData.overtimeType || !formData.compensationType || !formData.reason.trim()) {
-      toast({
-        title: '資料不完整',
-        description: '請填寫所有必填欄位',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setIsSubmitting(true);
     
     try {
-      const hours = calculateHours(formData.startTime, formData.endTime);
-      
-      if (hours <= 0) {
-        toast({
-          title: '時間設定錯誤',
-          description: '結束時間必須晚於開始時間',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      const overtimeRequest = {
-        staff_id: currentStaff.id,
-        overtime_date: formData.overtimeDate,
-        start_time: `${formData.overtimeDate}T${formData.startTime}:00Z`,
-        end_time: `${formData.overtimeDate}T${formData.endTime}:00Z`,
-        hours,
-        overtime_type: formData.overtimeType as 'weekday' | 'weekend' | 'holiday',
-        compensation_type: formData.compensationType as 'pay' | 'time_off',
-        reason: formData.reason.trim()
-      };
-
-      console.log('📝 提交加班申請:', overtimeRequest);
-      
-      await OvertimeService.submitOvertimeRequest(overtimeRequest);
+      // 這裡會整合實際的 API 調用
+      await new Promise(resolve => setTimeout(resolve, 1000)); // 模擬 API 調用
       
       toast({
         title: '申請成功',
@@ -128,10 +43,9 @@ const OvertimeRequestForm: React.FC = () => {
         reason: ''
       });
     } catch (error) {
-      console.error('❌ 加班申請提交失敗:', error);
       toast({
         title: '申請失敗',
-        description: error instanceof Error ? error.message : '提交加班申請時發生錯誤，請稍後再試',
+        description: '提交加班申請時發生錯誤，請稍後再試',
         variant: 'destructive',
       });
     } finally {

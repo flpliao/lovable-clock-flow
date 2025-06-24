@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Clock, AlertCircle, User } from 'lucide-react';
+import { Clock, AlertCircle, User, CheckCircle, XCircle, Hourglass } from 'lucide-react';
 import ApprovalStatusBadge from './ApprovalStatusBadge';
 
 interface OvertimeApprovalRecord {
@@ -81,107 +81,125 @@ const OvertimePendingSection: React.FC<OvertimePendingSectionProps> = ({ pending
     });
   };
 
+  const getApprovalStatusIcon = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return <CheckCircle className="h-4 w-4 text-green-400" />;
+      case 'rejected':
+        return <XCircle className="h-4 w-4 text-red-400" />;
+      case 'pending':
+        return <Hourglass className="h-4 w-4 text-yellow-400" />;
+      default:
+        return <Clock className="h-4 w-4 text-gray-400" />;
+    }
+  };
+
   if (pendingOvertimes.length === 0) {
-    return (
-      <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 mb-6">
-        <div className="flex items-center gap-3 mb-4">
-          <AlertCircle className="h-5 w-5 text-yellow-400" />
-          <h3 className="text-lg font-medium text-white">正在審核的加班申請</h3>
-        </div>
-        <div className="text-center py-8">
-          <div className="text-white/70">目前沒有正在審核的加班申請</div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 mb-6">
+    <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 backdrop-blur-xl rounded-2xl p-6 border border-yellow-500/30 mb-6 shadow-lg">
       <div className="flex items-center gap-3 mb-6">
-        <AlertCircle className="h-5 w-5 text-yellow-400" />
-        <h3 className="text-lg font-medium text-white">正在審核的加班申請</h3>
-        <div className="bg-yellow-500/80 text-white text-xs px-2 py-1 rounded-full">
-          {pendingOvertimes.length} 筆
+        <div className="w-10 h-10 bg-yellow-500/80 rounded-xl flex items-center justify-center shadow-lg">
+          <AlertCircle className="h-5 w-5 text-white" />
+        </div>
+        <div className="flex-1">
+          <h3 className="text-lg font-medium text-white">正在審核的加班申請</h3>
+          <p className="text-yellow-200 text-sm">需要等待主管審核的加班申請</p>
+        </div>
+        <div className="bg-yellow-500/80 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm">
+          {pendingOvertimes.length} 筆申請
         </div>
       </div>
       
       <div className="space-y-4">
         {pendingOvertimes.map((overtime) => (
-          <div key={overtime.id} className="bg-white/5 rounded-xl p-4 border border-white/10">
-            <div className="flex items-start justify-between mb-3">
+          <div key={overtime.id} className="bg-white/10 rounded-xl p-5 border border-white/20 hover:bg-white/15 transition-all duration-200">
+            <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-                  <Clock className="h-5 w-5 text-yellow-300" />
+                <div className="w-12 h-12 bg-yellow-500/30 rounded-lg flex items-center justify-center">
+                  <Clock className="h-6 w-6 text-yellow-300" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <h4 className="text-white font-medium">{getOvertimeTypeText(overtime.overtime_type)}</h4>
+                    <h4 className="text-white font-medium text-lg">{getOvertimeTypeText(overtime.overtime_type)}</h4>
                     <ApprovalStatusBadge status={overtime.status} />
                   </div>
-                  <div className="text-white/70 text-sm">
-                    {formatDate(overtime.overtime_date)} | {overtime.hours} 小時
+                  <div className="text-white/80 text-sm">
+                    {formatDate(overtime.overtime_date)} | {overtime.hours} 小時 | {getCompensationTypeText(overtime.compensation_type)}
                   </div>
                 </div>
               </div>
               <div className="text-right text-xs text-white/60">
-                申請時間: {formatDate(overtime.created_at)}
+                <div>申請時間</div>
+                <div className="font-medium">{formatDate(overtime.created_at)}</div>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
-              <div>
-                <span className="text-white/70 text-sm">時間範圍:</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="bg-white/5 rounded-lg p-3">
+                <span className="text-white/70 text-sm block mb-1">時間範圍</span>
                 <div className="text-white text-sm font-medium">
                   {formatTime(overtime.start_time)} - {formatTime(overtime.end_time)}
                 </div>
               </div>
-              <div>
-                <span className="text-white/70 text-sm">補償方式:</span>
-                <div className="text-white text-sm font-medium">
-                  {getCompensationTypeText(overtime.compensation_type)}
-                </div>
-              </div>
-              <div>
-                <span className="text-white/70 text-sm">總時數:</span>
-                <div className="text-white text-sm font-bold text-yellow-300">
+              <div className="bg-white/5 rounded-lg p-3">
+                <span className="text-white/70 text-sm block mb-1">總時數</span>
+                <div className="text-yellow-300 text-sm font-bold">
                   {overtime.hours} 小時
                 </div>
               </div>
             </div>
             
-            <div className="mb-3">
-              <span className="text-white/70 text-sm">申請原因:</span>
-              <div className="text-white text-sm mt-1">{overtime.reason}</div>
+            <div className="mb-4">
+              <span className="text-white/70 text-sm block mb-2">申請原因</span>
+              <div className="bg-white/5 rounded-lg p-3">
+                <div className="text-white text-sm">{overtime.reason}</div>
+              </div>
             </div>
 
-            {/* 審核狀態資訊 */}
-            <div className="bg-white/5 rounded-lg p-3 border border-white/10">
-              <div className="flex items-center gap-2 mb-2">
+            {/* 審核狀態詳細資訊 */}
+            <div className="bg-gradient-to-r from-white/10 to-white/5 rounded-lg p-4 border border-white/10">
+              <div className="flex items-center gap-2 mb-3">
                 <User className="h-4 w-4 text-white/80" />
-                <span className="text-white/80 text-sm font-medium">審核狀態</span>
+                <span className="text-white/80 text-sm font-medium">審核流程狀態</span>
               </div>
               
               {overtime.overtime_approval_records && overtime.overtime_approval_records.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {overtime.overtime_approval_records.map((record) => (
-                    <div key={record.id} className="flex items-center justify-between">
+                    <div key={record.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <span className="text-white text-sm">
-                          第 {record.level} 級審核 - {record.approver_name}
-                        </span>
-                        <ApprovalStatusBadge status={record.status} />
+                        {getApprovalStatusIcon(record.status)}
+                        <div>
+                          <div className="text-white text-sm font-medium">
+                            第 {record.level} 級審核 - {record.approver_name}
+                          </div>
+                          {record.comment && (
+                            <div className="text-white/70 text-xs mt-1">
+                              備註: {record.comment}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      {record.approval_date && (
-                        <span className="text-white/60 text-xs">
-                          {formatDate(record.approval_date)}
-                        </span>
-                      )}
+                      <div className="text-right">
+                        <ApprovalStatusBadge status={record.status} />
+                        {record.approval_date && (
+                          <div className="text-white/60 text-xs mt-1">
+                            {formatDate(record.approval_date)}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-white/70 text-sm">
-                  等待審核中...
+                <div className="flex items-center gap-2 p-3 bg-white/5 rounded-lg">
+                  <Hourglass className="h-4 w-4 text-yellow-400" />
+                  <div className="text-white/80 text-sm">
+                    等待主管審核中...
+                  </div>
                 </div>
               )}
             </div>

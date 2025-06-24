@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { overtimeService } from '@/services/overtimeService';
@@ -153,8 +154,10 @@ const OvertimeHistory: React.FC = () => {
         </div>
       </div>
 
-      {/* 正在審核的加班申請區塊 */}
-      <OvertimePendingSection pendingOvertimes={pendingOvertimes} />
+      {/* 正在審核的加班申請區塊 - 獨立顯示且突出 */}
+      {pendingOvertimes.length > 0 && (
+        <OvertimePendingSection pendingOvertimes={pendingOvertimes} />
+      )}
 
       <OvertimeSearchFilters 
         searchTerm={searchTerm} 
@@ -165,16 +168,20 @@ const OvertimeHistory: React.FC = () => {
         onTypeFilterChange={setTypeFilter} 
       />
 
+      {/* 所有加班記錄區塊 */}
       <div className="space-y-6">
         <h3 className="text-xl font-semibold text-white">所有加班記錄</h3>
-        {filteredOvertimes.map(overtime => (
-          <OvertimeRecordCard 
-            key={overtime.id} 
-            overtime={overtime} 
-            showApprovalProcess={true}
-          />
-        ))}
-        {filteredOvertimes.length === 0 && <OvertimeEmptyState />}
+        {filteredOvertimes.length > 0 ? (
+          filteredOvertimes.map(overtime => (
+            <OvertimeRecordCard 
+              key={overtime.id} 
+              overtime={overtime} 
+              showApprovalProcess={true}
+            />
+          ))
+        ) : (
+          <OvertimeEmptyState />
+        )}
       </div>
     </div>
   );

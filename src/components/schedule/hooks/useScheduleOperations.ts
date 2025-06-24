@@ -3,12 +3,14 @@ import { useScheduling } from '@/contexts/SchedulingContext';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import { useUnifiedPermissions } from '@/hooks/useUnifiedPermissions';
 
 export const useScheduleOperations = () => {
   const { schedules, removeSchedule } = useScheduling();
   const { staffList, getSubordinates } = useStaffManagementContext();
-  const { currentUser, hasPermission } = useUser();
+  const { currentUser } = useUser();
   const { toast } = useToast();
+  const { hasPermission } = useUnifiedPermissions();
 
   // 獲取可查看的員工列表
   const getAvailableStaff = () => {
@@ -58,7 +60,7 @@ export const useScheduleOperations = () => {
   };
 
   // 刪除排班
-  const handleRemoveSchedule = (scheduleId: string) => {
+  const handleRemoveSchedule = async (scheduleId: string) => {
     // 檢查刪除權限
     if (!hasPermission('schedule:delete')) {
       toast({
@@ -76,8 +78,8 @@ export const useScheduleOperations = () => {
     });
   };
 
-  // 檢查是否可以刪除排班
-  const canDeleteSchedule = (schedule: any) => {
+  // 檢查是否可以刪除排班 - 改為同步函數
+  const canDeleteSchedule = (schedule: any): boolean => {
     if (!currentUser) return false;
     
     // 系統管理員可以刪除所有排班

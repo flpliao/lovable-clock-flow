@@ -11,7 +11,7 @@ import OvertimeManagementComponent from '@/components/hr/OvertimeManagement';
 
 const OvertimeManagement = () => {
   const { currentUser } = useUser();
-  const { hasPermission, rolesLoading } = useUnifiedPermissions();
+  const { hasPermission, rolesLoading, isAdmin } = useUnifiedPermissions();
 
   console.log('🔍 加班管理頁面載入中...', {
     currentUser: currentUser?.name,
@@ -36,6 +36,10 @@ const OvertimeManagement = () => {
     );
   }
 
+  // 檢查是否為廖俊雄（特殊用戶）
+  const isLiaoJunxiong = currentUser?.name === '廖俊雄' && 
+                        currentUser?.id === '550e8400-e29b-41d4-a716-446655440001';
+
   // 權限檢查 - 檢查各種加班相關權限
   const canRequestOvertime = hasPermission('overtime:request');
   const canViewOvertime = hasPermission('overtime:view') || hasPermission('overtime:view_own');
@@ -49,12 +53,14 @@ const OvertimeManagement = () => {
     canManageOvertime,
     canApproveOvertime,
     canViewAllOvertime,
+    isLiaoJunxiong,
+    isAdmin: isAdmin(),
     userRole: currentUser.role,
     userName: currentUser.name
   });
 
-  // 管理員或HR看到管理介面
-  if (canManageOvertime || canViewAllOvertime) {
+  // 廖俊雄或系統管理員優先顯示管理介面
+  if (isLiaoJunxiong || isAdmin() || canManageOvertime || canViewAllOvertime) {
     console.log('✅ 顯示加班管理介面 (管理員/HR)');
     return <OvertimeManagementComponent />;
   }
@@ -128,6 +134,11 @@ const OvertimeManagement = () => {
               <Users className="h-5 w-5" />
               <span className="font-medium">當前權限:</span>
               <div className="flex flex-wrap gap-2">
+                {(isLiaoJunxiong || isAdmin()) && (
+                  <span className="px-2 py-1 bg-red-500/20 text-red-100 rounded-lg text-sm border border-red-400/30">
+                    系統管理員
+                  </span>
+                )}
                 {canRequestOvertime && (
                   <span className="px-2 py-1 bg-green-500/20 text-green-100 rounded-lg text-sm border border-green-400/30">
                     申請加班

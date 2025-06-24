@@ -81,23 +81,25 @@ const EditStaffDialog = () => {
   return (
     <>
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[500px] max-h-[95vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>編輯人員資料</DialogTitle>
             <DialogDescription>
               更新員工資料，完成後請點擊儲存
             </DialogDescription>
           </DialogHeader>
           
-          <EditStaffFormContent 
-            currentStaff={currentStaff}
-            setCurrentStaff={setCurrentStaff}
-            potentialSupervisors={potentialSupervisors}
-            roles={roles}
-            onHireDateChange={handleHireDateChange}
-          />
+          <div className="flex-1 overflow-y-auto px-1">
+            <EditStaffFormContent 
+              currentStaff={currentStaff}
+              setCurrentStaff={setCurrentStaff}
+              potentialSupervisors={potentialSupervisors}
+              roles={roles}
+              onHireDateChange={handleHireDateChange}
+            />
+          </div>
           
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>取消</Button>
             <Button onClick={handleSaveClick}>儲存變更</Button>
           </DialogFooter>

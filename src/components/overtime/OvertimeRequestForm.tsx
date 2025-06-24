@@ -1,6 +1,9 @@
 
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/contexts/UserContext';
+import { overtimeService } from '@/services/overtimeService';
+import { calculateOvertimeHours } from '@/utils/overtimeUtils';
 import OvertimeFormHeader from './components/OvertimeFormHeader';
 import OvertimeBasicInfoSection from './components/OvertimeBasicInfoSection';
 import OvertimeTimeSection from './components/OvertimeTimeSection';
@@ -9,6 +12,7 @@ import OvertimeReasonSection from './components/OvertimeReasonSection';
 import OvertimeSubmitSection from './components/OvertimeSubmitSection';
 
 const OvertimeRequestForm: React.FC = () => {
+  const { currentUser } = useUser();
   const [formData, setFormData] = useState({
     overtimeDate: '',
     startTime: '',
@@ -22,11 +26,51 @@ const OvertimeRequestForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!currentUser) {
+      toast({
+        title: '錯誤',
+        description: '請先登入後再提交申請',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // 驗證表單資料
+    if (!formData.overtimeDate || !formData.startTime || !formData.endTime || 
+        !formData.overtimeType || !formData.compensationType || !formData.reason) {
+      toast({
+        title: '錯誤',
+        description: '請填寫所有必填欄位',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
-      // 這裡會整合實際的 API 調用
-      await new Promise(resolve => setTimeout(resolve, 1000)); // 模擬 API 調用
+      // 計算加班時數
+      const startDateTime = `${formData.overtimeDate}T${formData.startTime}:00`;
+      const endDateTime = `${formData.overtimeDate}T${formData.endTime}:00`;
+      const hours = calculateOvertimeHours(startDateTime, endDateTime);
+
+      // 準備儲存到資料庫的資料
+      const overtimeData = {
+        staff_id: currentUser.id,
+        overtime_date: formData.overtimeDate,
+        start_time: startDateTime,
+        end_time: endDateTime,
+        overtime_type: formData.overtimeType as 'weekday' | 'weekend' | 'holiday',
+        compensation_type: formData.compensationType as 'pay' | 'time_off' | 'both',
+        reason: formData.reason,
+        hours: hours
+      };
+
+      console.log('📝 提交加班申請資料:', overtimeData);
+
+      // 儲存到資料庫
+      await overtimeService.createOvertimeRequest(overtimeData);
       
       toast({
         title: '申請成功',
@@ -43,6 +87,7 @@ const OvertimeRequestForm: React.FC = () => {
         reason: ''
       });
     } catch (error) {
+      console.error('❌ 提交加班申請失敗:', error);
       toast({
         title: '申請失敗',
         description: '提交加班申請時發生錯誤，請稍後再試',

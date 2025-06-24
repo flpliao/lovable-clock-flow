@@ -1,66 +1,93 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
+import { useUser } from '@/contexts/UserContext';
+import { overtimeService } from '@/services/overtimeService';
 import OvertimeHistoryHeader from './components/OvertimeHistoryHeader';
 import OvertimeSearchFilters from './components/OvertimeSearchFilters';
 import OvertimeRecordCard from './components/OvertimeRecordCard';
 import OvertimeEmptyState from './components/OvertimeEmptyState';
+
+interface OvertimeRecord {
+  id: string;
+  overtime_date: string;
+  start_time: string;
+  end_time: string;
+  hours: number;
+  overtime_type: 'weekday' | 'weekend' | 'holiday';
+  compensation_type: 'pay' | 'time_off' | 'both';
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+}
+
 const OvertimeHistory: React.FC = () => {
+  const { currentUser } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [overtimes, setOvertimes] = useState<OvertimeRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 模擬當前用戶的加班記錄
-  const overtimes = [{
-    id: '1',
-    overtime_date: '2024-01-15',
-    start_time: '2024-01-15T18:00:00Z',
-    end_time: '2024-01-15T21:00:00Z',
-    hours: 3,
-    overtime_type: 'weekday' as const,
-    compensation_type: 'pay' as const,
-    reason: '專案趕工',
-    status: 'approved' as const,
-    created_at: '2024-01-15T10:00:00Z'
-  }, {
-    id: '2',
-    overtime_date: '2024-01-14',
-    start_time: '2024-01-14T09:00:00Z',
-    end_time: '2024-01-14T17:00:00Z',
-    hours: 8,
-    overtime_type: 'weekend' as const,
-    compensation_type: 'time_off' as const,
-    reason: '系統維護',
-    status: 'pending' as const,
-    created_at: '2024-01-14T08:00:00Z'
-  }, {
-    id: '3',
-    overtime_date: '2024-01-10',
-    start_time: '2024-01-10T19:00:00Z',
-    end_time: '2024-01-10T22:00:00Z',
-    hours: 3,
-    overtime_type: 'weekday' as const,
-    compensation_type: 'pay' as const,
-    reason: '客戶需求變更',
-    status: 'rejected' as const,
-    created_at: '2024-01-10T15:00:00Z'
-  }];
+  // 載入加班記錄
+  useEffect(() => {
+    const loadOvertimeRecords = async () => {
+      if (!currentUser) return;
+      
+      try {
+        setIsLoading(true);
+        console.log('🔄 載入加班記錄...');
+        const records = await overtimeService.getOvertimeRequestsByStaff(currentUser.id);
+        setOvertimes(records);
+        console.log('✅ 載入完成:', records.length, '筆記錄');
+      } catch (error) {
+        console.error('❌ 載入加班記錄失敗:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadOvertimeRecords();
+  }, [currentUser]);
+
   const filteredOvertimes = overtimes.filter(overtime => {
     const matchesSearch = overtime.reason.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || overtime.status === statusFilter;
     const matchesType = typeFilter === 'all' || overtime.overtime_type === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
   });
-  return <div className="space-y-8">
-      {/* 標題區域 */}
-      
 
-      {/* 搜尋和篩選區域 - 移除背景容器 */}
-      <OvertimeSearchFilters searchTerm={searchTerm} statusFilter={statusFilter} typeFilter={typeFilter} onSearchTermChange={setSearchTerm} onStatusFilterChange={setStatusFilter} onTypeFilterChange={setTypeFilter} />
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <OvertimeHistoryHeader />
+        <div className="flex justify-center items-center py-12">
+          <div className="text-white">載入中...</div>
+        </div>
+      </div>
+    );
+  }
 
-      {/* 加班記錄列表 */}
+  return (
+    <div className="space-y-8">
+      <OvertimeHistoryHeader />
+
+      <OvertimeSearchFilters 
+        searchTerm={searchTerm} 
+        statusFilter={statusFilter} 
+        typeFilter={typeFilter} 
+        onSearchTermChange={setSearchTerm} 
+        onStatusFilterChange={setStatusFilter} 
+        onTypeFilterChange={setTypeFilter} 
+      />
+
       <div className="space-y-6">
-        {filteredOvertimes.map(overtime => <OvertimeRecordCard key={overtime.id} overtime={overtime} />)}
+        {filteredOvertimes.map(overtime => (
+          <OvertimeRecordCard key={overtime.id} overtime={overtime} />
+        ))}
         {filteredOvertimes.length === 0 && <OvertimeEmptyState />}
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default OvertimeHistory;

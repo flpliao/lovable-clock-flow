@@ -4,6 +4,7 @@ import { useUser } from '@/contexts/UserContext';
 import { Staff } from '../types';
 import { StaffApiService } from '../services/staffApiService';
 import { useStaffValidation } from './useStaffValidation';
+import { UnifiedPermissionService } from '@/services/unifiedPermissionService';
 
 export const useStaffUpdateOperation = (
   staffList: Staff[],
@@ -12,6 +13,7 @@ export const useStaffUpdateOperation = (
   const { toast } = useToast();
   const { isAdmin, currentUser } = useUser();
   const { validateStaffUpdate, getErrorMessage } = useStaffValidation();
+  const permissionService = UnifiedPermissionService.getInstance();
 
   const updateStaff = async (updatedStaff: Staff): Promise<boolean> => {
     if (!isAdmin()) {
@@ -57,7 +59,7 @@ export const useStaffUpdateOperation = (
         supervisor_id: updatedStaff.supervisor_id || null,
         username: updatedStaff.username || null,
         email: updatedStaff.email || null,
-        hire_date: updatedStaff.hire_date || null // 新增入職日期欄位
+        hire_date: updatedStaff.hire_date || null
       };
 
       console.log('準備更新的資料:', updateData);
@@ -66,11 +68,26 @@ export const useStaffUpdateOperation = (
 
       console.log('更新成功的資料:', data);
 
+      // 立即更新本地狀態
       setStaffList(
         staffList.map(staff => 
           staff.id === updatedStaff.id ? data : staff
         )
       );
+      
+      // 清除權限快取，確保權限變更即時生效
+      permissionService.clearCache();
+      
+      // 觸發全域權限同步事件，通知其他組件更新
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('permissionUpdated', {
+          detail: { 
+            operation: 'staffRoleUpdate', 
+            staffData: data,
+            timestamp: Date.now()
+          }
+        }));
+      }, 100);
       
       toast({
         title: "編輯成功",

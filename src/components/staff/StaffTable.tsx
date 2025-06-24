@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Edit, Trash2, Settings, Key } from 'lucide-react';
@@ -16,11 +16,35 @@ const StaffTable = () => {
     openEditDialog, 
     handleDeleteStaff,
     hasPermission,
-    getSupervisorName
+    getSupervisorName,
+    roles
   } = useStaffManagementContext();
   const { currentUser, isAdmin } = useUser();
   const [selectedStaffForCredentials, setSelectedStaffForCredentials] = useState<Staff | null>(null);
   const [isCredentialDialogOpen, setIsCredentialDialogOpen] = useState(false);
+  const [staffListState, setStaffListState] = useState(filteredStaffList);
+
+  // 監聽權限更新事件，確保角色變更即時反映
+  useEffect(() => {
+    const handlePermissionUpdate = (event: CustomEvent) => {
+      console.log('📊 StaffTable 收到權限更新事件:', event.detail);
+      if (event.detail.operation === 'staffRoleUpdate' && event.detail.staffData) {
+        // 強制刷新列表狀態
+        setStaffListState([...filteredStaffList]);
+      }
+    };
+
+    window.addEventListener('permissionUpdated', handlePermissionUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('permissionUpdated', handlePermissionUpdate as EventListener);
+    };
+  }, [filteredStaffList]);
+
+  // 同步更新本地狀態
+  useEffect(() => {
+    setStaffListState(filteredStaffList);
+  }, [filteredStaffList]);
 
   // 檢查是否有帳號管理權限 - 系統管理員應該擁有權限
   const canManageAccounts = currentUser && (
@@ -35,6 +59,25 @@ const StaffTable = () => {
     isAdmin: isAdmin(),
     canManageAccounts
   });
+
+  // 獲取角色顯示名稱的函數
+  const getRoleDisplayName = (staff: Staff) => {
+    // 先從後台角色資料中查找
+    const backendRole = roles.find(r => r.id === staff.role_id);
+    if (backendRole) {
+      return backendRole.name;
+    }
+    
+    // 如果沒有找到，使用傳統角色顯示方式
+    switch (staff.role) {
+      case 'admin':
+        return '管理員';
+      case 'manager':
+        return '主管';
+      default:
+        return '員工';
+    }
+  };
 
   const handleCredentialManagement = (staff: Staff) => {
     console.log('🔐 開啟帳號設定對話框:', staff.name);
@@ -59,7 +102,7 @@ const StaffTable = () => {
     );
   }
 
-  if (filteredStaffList.length === 0) {
+  if (staffListState.length === 0) {
     return (
       <div className="text-center p-8">
         <p className="text-gray-500 mb-4">目前沒有員工資料</p>
@@ -84,7 +127,7 @@ const StaffTable = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredStaffList.map((staff) => (
+            {staffListState.map((staff) => (
               <TableRow key={staff.id}>
                 <TableCell className="font-medium">{staff.name}</TableCell>
                 <TableCell>{staff.position}</TableCell>
@@ -104,8 +147,7 @@ const StaffTable = () => {
                     staff.role === 'manager' ? 'bg-blue-100 text-blue-800' :
                     'bg-gray-100 text-gray-800'
                   }`}>
-                    {staff.role === 'admin' ? '管理員' : 
-                     staff.role === 'manager' ? '主管' : '員工'}
+                    {getRoleDisplayName(staff)}
                   </span>
                 </TableCell>
                 <TableCell className="text-right">

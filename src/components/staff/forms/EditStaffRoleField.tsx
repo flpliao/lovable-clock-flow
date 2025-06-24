@@ -15,6 +15,21 @@ export const EditStaffRoleField: React.FC<EditStaffRoleFieldProps> = ({
   setCurrentStaff,
   roles
 }) => {
+  const handleRoleChange = (value: string) => {
+    const selectedRole = roles.find(r => r.id === value);
+    console.log('🔄 角色變更:', {
+      oldRole: currentStaff.role_id,
+      newRole: value,
+      selectedRole: selectedRole?.name
+    });
+    
+    setCurrentStaff({
+      ...currentStaff, 
+      role_id: value,
+      role: selectedRole?.name || 'user'
+    });
+  };
+
   return (
     <div className="grid grid-cols-4 items-center gap-4">
       <Label htmlFor="role" className="text-right">
@@ -22,14 +37,7 @@ export const EditStaffRoleField: React.FC<EditStaffRoleFieldProps> = ({
       </Label>
       <Select 
         value={currentStaff.role_id || ''} 
-        onValueChange={(value) => {
-          const selectedRole = roles.find(r => r.id === value);
-          setCurrentStaff({
-            ...currentStaff, 
-            role_id: value,
-            role: selectedRole?.name || 'user'
-          });
-        }}
+        onValueChange={handleRoleChange}
       >
         <SelectTrigger className="col-span-3" id="role">
           <SelectValue placeholder="選擇權限角色" />

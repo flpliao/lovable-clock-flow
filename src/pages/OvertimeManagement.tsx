@@ -53,8 +53,17 @@ const OvertimeManagement = () => {
     userName: currentUser.name
   });
 
+  // 管理員或HR看到管理介面
+  if (canManageOvertime || canViewAllOvertime) {
+    console.log('✅ 顯示加班管理介面 (管理員/HR)');
+    return <OvertimeManagementComponent />;
+  }
+
+  // 檢查是否有任何加班相關權限
+  const hasAnyOvertimePermission = canRequestOvertime || canViewOvertime || canApproveOvertime;
+
   // 如果用戶沒有任何加班相關權限，顯示無權限提示
-  if (!canRequestOvertime && !canViewOvertime && !canManageOvertime && !canApproveOvertime) {
+  if (!hasAnyOvertimePermission) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
@@ -68,12 +77,6 @@ const OvertimeManagement = () => {
         </div>
       </div>
     );
-  }
-
-  // 管理員或HR看到管理介面
-  if (canManageOvertime || canViewAllOvertime) {
-    console.log('✅ 顯示加班管理介面 (管理員/HR)');
-    return <OvertimeManagementComponent />;
   }
 
   // 一般員工看到個人加班功能

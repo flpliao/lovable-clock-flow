@@ -1,20 +1,27 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users, Calendar } from 'lucide-react';
 import MonthlyScheduleView from './MonthlyScheduleView';
+import StaffSelectorCard from './StaffSelectorCard';
+import MonthSelectorCard from './MonthSelectorCard';
 
 interface MonthlyTabContentProps {
   availableStaff: any[];
   selectedStaffId?: string;
   selectedDate: Date;
-  onStaffChange: (staffId?: string) => void;
-  onDateChange: (date: Date) => void;
+  onStaffChange: (staffId: string | undefined) => void;
   getUserRelation: (userId: string) => string;
   schedules: any[];
   getUserName: (userId: string) => string;
-  viewableStaffIds: string[];
-  canDeleteSchedule: (schedule: any) => boolean;
-  onRemoveSchedule: (id: string) => Promise<void>;
-  currentUser: any;
+  selectedYear: number;
+  selectedMonth: number;
+  onYearChange: (year: number) => void;
+  onMonthChange: (month: number) => void;
+  generateYears: () => number[];
+  generateMonths: () => Array<{ value: number; label: string }>;
+  onUpdateSchedule: (id: string, updates: any) => Promise<void>;
+  onDeleteSchedule: (id: string) => Promise<void>;
 }
 
 const MonthlyTabContent = ({
@@ -22,76 +29,67 @@ const MonthlyTabContent = ({
   selectedStaffId,
   selectedDate,
   onStaffChange,
-  onDateChange,
   getUserRelation,
   schedules,
   getUserName,
-  viewableStaffIds,
-  canDeleteSchedule,
-  onRemoveSchedule,
-  currentUser,
+  selectedYear,
+  selectedMonth,
+  onYearChange,
+  onMonthChange,
+  generateYears,
+  generateMonths,
+  onUpdateSchedule,
+  onDeleteSchedule
 }: MonthlyTabContentProps) => {
-  // 過濾當月的排班記錄
-  const monthlySchedules = schedules.filter(schedule => {
-    const scheduleDate = new Date(schedule.workDate);
-    return scheduleDate.getMonth() === selectedDate.getMonth() && 
-           scheduleDate.getFullYear() === selectedDate.getFullYear();
-  });
+  // 新增：排班總覽的獨立日期狀態
+  const [overviewDate, setOverviewDate] = useState<Date>(selectedDate);
 
-  const handleUpdateSchedule = async (id: string, updates: any) => {
-    // 這裡應該調用實際的更新邏輯
-    console.log('Update schedule:', id, updates);
-  };
+  // 當外部 selectedDate 改變時，同步更新 overviewDate
+  useEffect(() => {
+    setOverviewDate(selectedDate);
+  }, [selectedDate]);
 
-  const handleDeleteSchedule = async (id: string) => {
-    await onRemoveSchedule(id);
-  };
+  const mockTimeSlots = [
+    { id: '1', name: '早班', start_time: '08:00', end_time: '16:00' },
+    { id: '2', name: '中班', start_time: '16:00', end_time: '24:00' },
+    { id: '3', name: '晚班', start_time: '00:00', end_time: '08:00' },
+  ];
 
   return (
     <div className="space-y-6">
       {/* 員工選擇器 */}
-      <div className="bg-white/20 backdrop-blur-xl rounded-xl border border-white/30 shadow-lg p-4">
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => onStaffChange(undefined)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              !selectedStaffId 
-                ? 'bg-white/40 text-white border border-white/50' 
-                : 'bg-white/10 text-white/80 hover:bg-white/20'
-            }`}
-          >
-            全部員工
-          </button>
-          {availableStaff.map(staff => (
-            <button
-              key={staff.id}
-              onClick={() => onStaffChange(staff.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                selectedStaffId === staff.id 
-                  ? 'bg-white/40 text-white border border-white/50' 
-                  : 'bg-white/10 text-white/80 hover:bg-white/20'
-              }`}
-            >
-              {getUserName(staff.id)}
-              <span className="ml-1 text-xs opacity-70">
-                ({getUserRelation(staff.id)})
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+      <StaffSelectorCard
+        availableStaff={availableStaff}
+        selectedStaffId={selectedStaffId}
+        onStaffChange={onStaffChange}
+        getUserRelation={getUserRelation}
+        icon={Users}
+        title="選擇查看員工"
+      />
+
+      {/* 月份選擇器 */}
+      <MonthSelectorCard
+        selectedYear={selectedYear}
+        selectedMonth={selectedMonth}
+        onYearChange={onYearChange}
+        onMonthChange={onMonthChange}
+        generateYears={generateYears}
+        generateMonths={generateMonths}
+        onOverviewDateChange={setOverviewDate}
+      />
 
       {/* 月度排班視圖 */}
-      <MonthlyScheduleView
-        selectedDate={selectedDate}
-        schedules={monthlySchedules}
-        getUserName={getUserName}
-        selectedStaffId={selectedStaffId}
-        onUpdateSchedule={handleUpdateSchedule}
-        onDeleteSchedule={handleDeleteSchedule}
-        onDateChange={onDateChange}
-        timeSlots={[]}
-      />
+      <div className="bg-white/90 backdrop-blur-xl border border-white/30 shadow-xl rounded-3xl overflow-hidden">
+        <MonthlyScheduleView
+          selectedDate={overviewDate}
+          schedules={schedules}
+          getUserName={getUserName}
+          selectedStaffId={selectedStaffId}
+          onUpdateSchedule={onUpdateSchedule}
+          onDeleteSchedule={onDeleteSchedule}
+          timeSlots={mockTimeSlots}
+        />
+      </div>
     </div>
   );
 };

@@ -48,6 +48,9 @@ const NotificationCenter: React.FC = () => {
       navigate('/leave-request');
     } else if (notification.type === 'missed_checkin_approval' && notification.data?.missedCheckinRequestId) {
       navigate('/missed-checkin-management');
+    } else if (notification.type === 'overtime_approval' || notification.type === 'overtime_status') {
+      // 導航到核准中心，並設置為加班審核標籤
+      navigate('/approval-center?tab=overtime');
     } else if (notification.type === 'announcement' || notification.type === 'system') {
       console.log(`公告通知點擊 by ${currentUser?.name} (${currentUser?.role})，觸發刷新`);
       

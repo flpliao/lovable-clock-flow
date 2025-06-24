@@ -920,20 +920,63 @@ export type Database = {
           },
         ]
       }
+      overtime_approval_records: {
+        Row: {
+          approval_date: string | null
+          approver_id: string | null
+          approver_name: string
+          comment: string | null
+          created_at: string
+          id: string
+          level: number
+          overtime_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approval_date?: string | null
+          approver_id?: string | null
+          approver_name: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          level: number
+          overtime_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approval_date?: string | null
+          approver_id?: string | null
+          approver_name?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          level?: number
+          overtime_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       overtimes: {
         Row: {
           approval_comment: string | null
           approval_date: string | null
+          approval_level: number | null
           approved_by: string | null
+          approved_by_name: string | null
           compensation_hours: number | null
           compensation_type: string
           created_at: string
+          current_approver: string | null
           end_time: string
           hours: number
           id: string
           overtime_date: string
           overtime_type: string
           reason: string
+          rejection_reason: string | null
           staff_id: string
           start_time: string
           status: string
@@ -942,16 +985,20 @@ export type Database = {
         Insert: {
           approval_comment?: string | null
           approval_date?: string | null
+          approval_level?: number | null
           approved_by?: string | null
+          approved_by_name?: string | null
           compensation_hours?: number | null
           compensation_type: string
           created_at?: string
+          current_approver?: string | null
           end_time: string
           hours: number
           id?: string
           overtime_date: string
           overtime_type: string
           reason: string
+          rejection_reason?: string | null
           staff_id: string
           start_time: string
           status?: string
@@ -960,16 +1007,20 @@ export type Database = {
         Update: {
           approval_comment?: string | null
           approval_date?: string | null
+          approval_level?: number | null
           approved_by?: string | null
+          approved_by_name?: string | null
           compensation_hours?: number | null
           compensation_type?: string
           created_at?: string
+          current_approver?: string | null
           end_time?: string
           hours?: number
           id?: string
           overtime_date?: string
           overtime_type?: string
           reason?: string
+          rejection_reason?: string | null
           staff_id?: string
           start_time?: string
           status?: string
@@ -1643,6 +1694,17 @@ export type Database = {
           p_type?: string
           p_announcement_id?: string
           p_leave_request_id?: string
+          p_action_required?: boolean
+        }
+        Returns: string
+      }
+      create_overtime_notification: {
+        Args: {
+          p_user_id: string
+          p_title: string
+          p_message: string
+          p_type?: string
+          p_overtime_id?: string
           p_action_required?: boolean
         }
         Returns: string

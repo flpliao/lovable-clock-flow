@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Clock, FileText, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, FileText, AlertCircle, Timer } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -9,18 +9,21 @@ export interface Notification {
   id: string;
   title: string;
   message: string;
-  type: 'leave_approval' | 'leave_status' | 'system' | 'announcement' | 'missed_checkin_approval';
+  type: 'leave_approval' | 'leave_status' | 'system' | 'announcement' | 'missed_checkin_approval' | 'overtime_approval' | 'overtime_status';
   createdAt: string;
   isRead: boolean;
   data?: {
     leaveRequestId?: string;
     missedCheckinRequestId?: string;
+    overtimeRequestId?: string;
     userId?: string;
     actionRequired?: boolean;
     announcementId?: string;
     applicantName?: string;
     requestDate?: string;
     missedType?: string;
+    overtimeDate?: string;
+    overtimeType?: string;
   };
 }
 
@@ -45,6 +48,10 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onCli
         return <FileText className="h-5 w-5 text-purple-500" />;
       case 'missed_checkin_approval':
         return <AlertCircle className="h-5 w-5 text-orange-500" />;
+      case 'overtime_approval':
+        return <Timer className="h-5 w-5 text-red-500" />;
+      case 'overtime_status':
+        return <Timer className="h-5 w-5 text-indigo-500" />;
       default:
         return <Clock className="h-5 w-5 text-gray-500" />;
     }

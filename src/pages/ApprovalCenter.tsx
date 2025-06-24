@@ -12,30 +12,55 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { sendLeaveStatusNotification } from '@/services/leaveNotificationService';
 import LeaveApprovalDetail from '@/components/leave/LeaveApprovalDetail';
+
 interface ApprovalStats {
   todayApproved: number;
   todayRejected: number;
   missedCheckinApproved: number;
   missedCheckinRejected: number;
+  overtimeApproved: number;
+  overtimeRejected: number;
 }
+
 interface LeaveRequestWithApplicant extends LeaveRequest {
   applicant_name?: string;
 }
+
+interface OvertimeRequestWithApplicant {
+  id: string;
+  staff_id: string;
+  overtime_date: string;
+  start_time: string;
+  end_time: string;
+  hours: number;
+  overtime_type: string;
+  compensation_type: string;
+  reason: string;
+  status: string;
+  created_at: string;
+  approval_level?: number;
+  current_approver?: string;
+  staff?: {
+    name: string;
+    department: string;
+    position: string;
+  };
+}
+
 const ApprovalCenter = () => {
-  const {
-    currentUser
-  } = useUser();
-  const {
-    toast
-  } = useToast();
+  const { currentUser } = useUser();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<string>('leave');
   const [pendingRequests, setPendingRequests] = useState<LeaveRequestWithApplicant[]>([]);
   const [missedCheckinRequests, setMissedCheckinRequests] = useState<MissedCheckinRequest[]>([]);
+  const [overtimeRequests, setOvertimeRequests] = useState<OvertimeRequestWithApplicant[]>([]);
   const [approvalStats, setApprovalStats] = useState<ApprovalStats>({
     todayApproved: 0,
     todayRejected: 0,
     missedCheckinApproved: 0,
-    missedCheckinRejected: 0
+    missedCheckinRejected: 0,
+    overtimeApproved: 0,
+    overtimeRejected: 0
   });
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -48,52 +73,63 @@ const ApprovalCenter = () => {
       const today = new Date().toISOString().split('T')[0];
 
       // 查詢今日已核准的請假申請
-      const {
-        data: approvedData,
-        error: approvedError
-      } = await supabase.from('leave_requests').select('id').eq('status', 'approved').gte('updated_at', `${today}T00:00:00`).lt('updated_at', `${today}T23:59:59`);
-      if (approvedError) {
-        console.error('❌ 查詢今日已核准申請失敗:', approvedError);
-      }
+      const { data: approvedData } = await supabase
+        .from('leave_requests')
+        .select('id')
+        .eq('status', 'approved')
+        .gte('updated_at', `${today}T00:00:00`)
+        .lt('updated_at', `${today}T23:59:59`);
 
       // 查詢今日已拒絕的請假申請
-      const {
-        data: rejectedData,
-        error: rejectedError
-      } = await supabase.from('leave_requests').select('id').eq('status', 'rejected').gte('updated_at', `${today}T00:00:00`).lt('updated_at', `${today}T23:59:59`);
-      if (rejectedError) {
-        console.error('❌ 查詢今日已拒絕申請失敗:', rejectedError);
-      }
+      const { data: rejectedData } = await supabase
+        .from('leave_requests')
+        .select('id')
+        .eq('status', 'rejected')
+        .gte('updated_at', `${today}T00:00:00`)
+        .lt('updated_at', `${today}T23:59:59`);
 
       // 查詢今日已核准的忘記打卡申請
-      const {
-        data: missedApprovedData,
-        error: missedApprovedError
-      } = await supabase.from('missed_checkin_requests').select('id').eq('status', 'approved').gte('updated_at', `${today}T00:00:00`).lt('updated_at', `${today}T23:59:59`);
-      if (missedApprovedError) {
-        console.error('❌ 查詢今日已核准忘記打卡申請失敗:', missedApprovedError);
-      }
+      const { data: missedApprovedData } = await supabase
+        .from('missed_checkin_requests')
+        .select('id')
+        .eq('status', 'approved')
+        .gte('updated_at', `${today}T00:00:00`)
+        .lt('updated_at', `${today}T23:59:59`);
 
       // 查詢今日已拒絕的忘記打卡申請
-      const {
-        data: missedRejectedData,
-        error: missedRejectedError
-      } = await supabase.from('missed_checkin_requests').select('id').eq('status', 'rejected').gte('updated_at', `${today}T00:00:00`).lt('updated_at', `${today}T23:59:59`);
-      if (missedRejectedError) {
-        console.error('❌ 查詢今日已拒絕忘記打卡申請失敗:', missedRejectedError);
-      }
+      const { data: missedRejectedData } = await supabase
+        .from('missed_checkin_requests')
+        .select('id')
+        .eq('status', 'rejected')
+        .gte('updated_at', `${today}T00:00:00`)
+        .lt('updated_at', `${today}T23:59:59`);
+
+      // 查詢今日已核准的加班申請
+      const { data: overtimeApprovedData } = await supabase
+        .from('overtimes')
+        .select('id')
+        .eq('status', 'approved')
+        .gte('updated_at', `${today}T00:00:00`)
+        .lt('updated_at', `${today}T23:59:59`);
+
+      // 查詢今日已拒絕的加班申請
+      const { data: overtimeRejectedData } = await supabase
+        .from('overtimes')
+        .select('id')
+        .eq('status', 'rejected')
+        .gte('updated_at', `${today}T00:00:00`)
+        .lt('updated_at', `${today}T23:59:59`);
+
       setApprovalStats({
         todayApproved: approvedData?.length || 0,
         todayRejected: rejectedData?.length || 0,
         missedCheckinApproved: missedApprovedData?.length || 0,
-        missedCheckinRejected: missedRejectedData?.length || 0
+        missedCheckinRejected: missedRejectedData?.length || 0,
+        overtimeApproved: overtimeApprovedData?.length || 0,
+        overtimeRejected: overtimeRejectedData?.length || 0
       });
-      console.log('✅ 成功載入今日審核統計:', {
-        approved: approvedData?.length || 0,
-        rejected: rejectedData?.length || 0,
-        missedApproved: missedApprovedData?.length || 0,
-        missedRejected: missedRejectedData?.length || 0
-      });
+      
+      console.log('✅ 成功載入今日審核統計');
     } catch (error) {
       console.error('❌ 載入今日審核統計時發生錯誤:', error);
     }
@@ -110,10 +146,7 @@ const ApprovalCenter = () => {
       setRefreshing(true);
 
       // 查詢方式1: 查詢 current_approver 等於當前用戶的申請
-      const {
-        data: directRequests,
-        error: directError
-      } = await supabase.from('leave_requests').select(`
+      const { data: directRequests, error: directError } = await supabase.from('leave_requests').select(`
           *,
           approval_records (*),
           staff!leave_requests_user_id_fkey(name)
@@ -123,10 +156,7 @@ const ApprovalCenter = () => {
       }
 
       // 查詢方式2: 查詢審核記錄中需要當前用戶審核的申請
-      const {
-        data: approvalRequests,
-        error: approvalError
-      } = await supabase.from('approval_records').select(`
+      const { data: approvalRequests, error: approvalError } = await supabase.from('approval_records').select(`
           leave_request_id,
           leave_requests!inner(
             *,
@@ -139,10 +169,7 @@ const ApprovalCenter = () => {
       }
 
       // 查詢方式3: 通過主管關係查詢下屬的待審核申請
-      const {
-        data: subordinateRequests,
-        error: subordinateError
-      } = await supabase.from('leave_requests').select(`
+      const { data: subordinateRequests, error: subordinateError } = await supabase.from('leave_requests').select(`
           *,
           approval_records (*),
           staff!leave_requests_user_id_fkey(name, supervisor_id)
@@ -219,15 +246,55 @@ const ApprovalCenter = () => {
     }
   };
 
+  // 載入加班申請
+  const loadOvertimeRequests = async () => {
+    if (!currentUser?.id) return;
+    try {
+      console.log('🔍 載入待審核加班申請，當前用戶:', currentUser.id, currentUser.name);
+      
+      const { data, error } = await supabase
+        .from('overtimes')
+        .select(`
+          *,
+          staff!staff_id (
+            name,
+            department,
+            position,
+            supervisor_id
+          )
+        `)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ 載入加班申請失敗:', error);
+        return;
+      }
+
+      // 篩選當前用戶有權限審核的申請
+      const formattedData = (data || [])
+        .filter(request => {
+          // 檢查是否為下屬的申請
+          return request.staff && request.staff.supervisor_id === currentUser.id;
+        })
+        .map(item => ({
+          ...item,
+          staff: Array.isArray(item.staff) ? item.staff[0] : item.staff
+        }));
+
+      console.log('✅ 成功載入待審核加班申請:', formattedData.length, '筆');
+      setOvertimeRequests(formattedData);
+    } catch (error) {
+      console.error('❌ 載入加班申請時發生錯誤:', error);
+    }
+  };
+
   // 載入忘記打卡申請
   const loadMissedCheckinRequests = async () => {
     if (!currentUser?.id) return;
     try {
       console.log('🔍 載入待審核忘記打卡申請，當前用戶:', currentUser.id, currentUser.name);
-      const {
-        data,
-        error
-      } = await supabase.from('missed_checkin_requests').select(`
+      const { data, error } = await supabase.from('missed_checkin_requests').select(`
           *,
           staff:staff_id (
             name,
@@ -254,19 +321,20 @@ const ApprovalCenter = () => {
       console.error('❌ 載入忘記打卡申請時發生錯誤:', error);
     }
   };
+
   useEffect(() => {
     if (currentUser?.id) {
       loadPendingRequests();
       loadMissedCheckinRequests();
+      loadOvertimeRequests();
       loadApprovalStats();
     }
   }, [currentUser?.id]);
+
   const handleApprove = async (request: LeaveRequestWithApplicant) => {
     try {
       console.log('🚀 開始核准請假申請:', request.id);
-      const {
-        error
-      } = await supabase.from('leave_requests').update({
+      const { error } = await supabase.from('leave_requests').update({
         status: 'approved',
         updated_at: new Date().toISOString()
       }).eq('id', request.id);
@@ -281,9 +349,7 @@ const ApprovalCenter = () => {
       }
 
       // 更新審核記錄
-      const {
-        error: approvalError
-      } = await supabase.from('approval_records').update({
+      const { error: approvalError } = await supabase.from('approval_records').update({
         status: 'approved',
         approval_date: new Date().toISOString(),
         comment: '主管核准'
@@ -314,12 +380,11 @@ const ApprovalCenter = () => {
       });
     }
   };
+
   const handleReject = async (request: LeaveRequestWithApplicant) => {
     try {
       console.log('🚀 開始拒絕請假申請:', request.id);
-      const {
-        error
-      } = await supabase.from('leave_requests').update({
+      const { error } = await supabase.from('leave_requests').update({
         status: 'rejected',
         rejection_reason: '主管拒絕',
         updated_at: new Date().toISOString()
@@ -335,9 +400,7 @@ const ApprovalCenter = () => {
       }
 
       // 更新審核記錄
-      const {
-        error: approvalError
-      } = await supabase.from('approval_records').update({
+      const { error: approvalError } = await supabase.from('approval_records').update({
         status: 'rejected',
         approval_date: new Date().toISOString(),
         comment: '主管拒絕'
@@ -370,13 +433,53 @@ const ApprovalCenter = () => {
     }
   };
 
+  // 處理加班申請的審核
+  const handleOvertimeApproval = async (requestId: string, action: 'approved' | 'rejected', reason?: string) => {
+    if (!currentUser) return;
+    try {
+      if (action === 'approved') {
+        await supabase.rpc('approve_overtime_request', {
+          p_overtime_id: requestId,
+          p_approver_id: currentUser.id,
+          p_approver_name: currentUser.name || '主管',
+          p_comment: '主管核准'
+        });
+        toast({
+          title: "申請已核准",
+          description: "加班申請已核准"
+        });
+      } else {
+        await supabase.rpc('reject_overtime_request', {
+          p_overtime_id: requestId,
+          p_approver_id: currentUser.id,
+          p_approver_name: currentUser.name || '主管',
+          p_reason: reason || '主管拒絕'
+        });
+        toast({
+          title: "申請已拒絕",
+          description: "加班申請已拒絕",
+          variant: "destructive"
+        });
+      }
+
+      // 重新載入申請列表和統計
+      setOvertimeRequests(prev => prev.filter(req => req.id !== requestId));
+      loadApprovalStats();
+    } catch (error) {
+      console.error('審核失敗:', error);
+      toast({
+        title: "審核失敗",
+        description: "無法處理申請，請稍後重試",
+        variant: "destructive"
+      });
+    }
+  };
+
   // 處理忘記打卡申請的審核
   const handleMissedCheckinApproval = async (requestId: string, action: 'approved' | 'rejected') => {
     if (!currentUser) return;
     try {
-      const {
-        error
-      } = await supabase.from('missed_checkin_requests').update({
+      const { error } = await supabase.from('missed_checkin_requests').update({
         status: action,
         approved_by: currentUser.id,
         approval_comment: action === 'approved' ? '主管核准' : '主管拒絕',
@@ -400,22 +503,28 @@ const ApprovalCenter = () => {
       });
     }
   };
+
   const handleViewDetail = (request: LeaveRequestWithApplicant) => {
     setSelectedRequest(request);
   };
+
   const handleBackToList = () => {
     setSelectedRequest(null);
   };
+
   const handleApprovalComplete = () => {
     setSelectedRequest(null);
     loadPendingRequests();
     loadApprovalStats();
   };
+
   const refreshData = () => {
     loadPendingRequests();
     loadMissedCheckinRequests();
+    loadOvertimeRequests();
     loadApprovalStats();
   };
+
   const getMissedTypeText = (type: string) => {
     switch (type) {
       case 'check_in':
@@ -428,6 +537,7 @@ const ApprovalCenter = () => {
         return type;
     }
   };
+
   const formatTime = (timeString?: string) => {
     if (!timeString) return '-';
     return format(new Date(timeString), 'HH:mm');
@@ -437,6 +547,7 @@ const ApprovalCenter = () => {
   if (selectedRequest) {
     return <LeaveApprovalDetail request={selectedRequest} onBack={handleBackToList} onApprovalComplete={handleApprovalComplete} />;
   }
+
   if (!currentUser) {
     return <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36">
         <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -449,7 +560,9 @@ const ApprovalCenter = () => {
         </div>
       </div>;
   }
-  return <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36 py-[50px]">
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36 py-[50px]">
       <div className="w-full px-4 sm:px-6 lg:px-8 pb-6">
         <div className="max-w-6xl mx-auto space-y-6">
           {/* 頁面標題 */}
@@ -472,7 +585,7 @@ const ApprovalCenter = () => {
           </div>
 
           {/* 統計資訊 */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 text-center">
               <div className="text-3xl font-bold text-white mb-2">{pendingRequests.length}</div>
               <div className="text-white/80 text-sm font-medium">待審核請假</div>
@@ -482,11 +595,19 @@ const ApprovalCenter = () => {
               <div className="text-white/80 text-sm font-medium">待審核打卡</div>
             </div>
             <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 text-center">
-              <div className="text-3xl font-bold text-green-300 mb-2">{approvalStats.todayApproved + approvalStats.missedCheckinApproved}</div>
+              <div className="text-3xl font-bold text-white mb-2">{overtimeRequests.length}</div>
+              <div className="text-white/80 text-sm font-medium">待審核加班</div>
+            </div>
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 text-center">
+              <div className="text-3xl font-bold text-green-300 mb-2">
+                {approvalStats.todayApproved + approvalStats.missedCheckinApproved + approvalStats.overtimeApproved}
+              </div>
               <div className="text-white/80 text-sm font-medium">今日已核准</div>
             </div>
             <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 text-center">
-              <div className="text-3xl font-bold text-red-300 mb-2">{approvalStats.todayRejected + approvalStats.missedCheckinRejected}</div>
+              <div className="text-3xl font-bold text-red-300 mb-2">
+                {approvalStats.todayRejected + approvalStats.missedCheckinRejected + approvalStats.overtimeRejected}
+              </div>
               <div className="text-white/80 text-sm font-medium">今日已拒絕</div>
             </div>
           </div>
@@ -494,12 +615,15 @@ const ApprovalCenter = () => {
           {/* 主要內容區域 */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-1 h-12 mb-6">
+              <TabsList className="grid w-full grid-cols-3 backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-1 h-12 mb-6">
                 <TabsTrigger value="leave" className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-4">
                   請假審核 ({pendingRequests.length})
                 </TabsTrigger>
                 <TabsTrigger value="missed-checkin" className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-4">
                   忘記打卡 ({missedCheckinRequests.length})
+                </TabsTrigger>
+                <TabsTrigger value="overtime" className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-4">
+                  加班審核 ({overtimeRequests.length})
                 </TabsTrigger>
               </TabsList>
 
@@ -637,10 +761,94 @@ const ApprovalCenter = () => {
                       </div>)}
                   </div>}
               </TabsContent>
+
+              <TabsContent value="overtime" className="mt-0">
+                <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">待審核加班申請</h2>
+                
+                {overtimeRequests.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle className="w-8 h-8 text-white/60" />
+                    </div>
+                    <p className="text-white font-medium drop-shadow-sm">目前沒有待審核的加班申請</p>
+                    <p className="text-white/80 mt-1 font-medium drop-shadow-sm">所有加班申請都已處理完畢</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {overtimeRequests.map(request => (
+                      <div key={request.id} className="bg-white/10 rounded-2xl p-6 border border-white/20">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-3">
+                              <User className="h-5 w-5 text-white/80" />
+                              <h3 className="text-lg font-semibold text-white">申請人員：{request.staff?.name}</h3>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <span className="text-white/70">加班日期</span>
+                                <div className="text-white font-medium">{request.overtime_date}</div>
+                              </div>
+                              <div>
+                                <span className="text-white/70">加班時間</span>
+                                <div className="text-white font-medium">
+                                  {new Date(request.start_time).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - 
+                                  {new Date(request.end_time).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                              </div>
+                              <div>
+                                <span className="text-white/70">加班時數</span>
+                                <div className="text-white font-medium">{request.hours} 小時</div>
+                              </div>
+                              <div>
+                                <span className="text-white/70">申請時間</span>
+                                <div className="text-white font-medium">
+                                  {format(new Date(request.created_at), 'MM/dd HH:mm')}
+                                </div>
+                              </div>
+                            </div>
+
+                            {request.reason && (
+                              <div className="mt-3 p-3 bg-white/10 rounded-lg">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <FileText className="h-4 w-4 text-white/80" />
+                                  <span className="text-white/70 text-sm">加班原因</span>
+                                </div>
+                                <p className="text-white text-sm">{request.reason}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex flex-col gap-2 lg:ml-6">
+                            <Button
+                              onClick={() => handleOvertimeApproval(request.id, 'approved')}
+                              className="bg-green-500 hover:bg-green-600 text-white border-0"
+                              size="sm"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              核准
+                            </Button>
+                            <Button
+                              onClick={() => handleOvertimeApproval(request.id, 'rejected', '主管拒絕')}
+                              variant="destructive"
+                              size="sm"
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              拒絕
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
             </Tabs>
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default ApprovalCenter;

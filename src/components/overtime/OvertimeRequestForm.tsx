@@ -70,7 +70,24 @@ const OvertimeRequestForm: React.FC = () => {
       console.log('📝 提交加班申請資料:', overtimeData);
 
       // 儲存到資料庫
-      await overtimeService.createOvertimeRequest(overtimeData);
+      const result = await overtimeService.createOvertimeRequest(overtimeData);
+      
+      // 發送通知給主管（如果有設定主管）
+      if (currentUser.supervisor_id) {
+        try {
+          await supabase.rpc('create_overtime_notification', {
+            p_user_id: currentUser.supervisor_id,
+            p_title: '新的加班申請',
+            p_message: `${currentUser.name} 提交了加班申請，日期：${formData.overtimeDate}`,
+            p_type: 'overtime_approval',
+            p_overtime_id: result.id,
+            p_action_required: true
+          });
+          console.log('✅ 通知已發送給主管');
+        } catch (notificationError) {
+          console.warn('⚠️ 發送通知失敗:', notificationError);
+        }
+      }
       
       toast({
         title: '申請成功',

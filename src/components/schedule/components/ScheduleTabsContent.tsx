@@ -104,6 +104,7 @@ const ScheduleTabsContent = ({
           shiftsForSelectedDate={shiftsForSelectedDate}
           canDeleteSchedule={canDeleteSchedule}
           onRemoveSchedule={onRemoveSchedule}
+          currentUser={currentUser}
           setSelectedDate={setSelectedDateNav}
           getScheduleCountForDate={getScheduleCountForDate}
         />

@@ -48,7 +48,7 @@ export const overtimeService = {
       .from('overtimes')
       .select(`
         *,
-        staff:staff_id (
+        staff!staff_id (
           name
         )
       `)

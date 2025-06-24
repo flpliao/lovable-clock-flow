@@ -41,68 +41,71 @@ const PositionTable = () => {
 
   return (
     <div className="backdrop-blur-xl bg-white/30 border border-white/40 rounded-xl shadow-lg overflow-hidden">
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-white/40 bg-white/20">
-              <TableHead className="text-gray-900 font-semibold py-4 px-6">職位名稱</TableHead>
-              <TableHead className="text-gray-900 font-semibold py-4 px-6">職級</TableHead>
-              <TableHead className="text-gray-900 font-semibold py-4 px-6 hidden sm:table-cell">說明</TableHead>
-              {isAdmin() && <TableHead className="text-gray-900 font-semibold py-4 px-6 text-center">操作</TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredPositions.map((position, index) => (
-              <TableRow 
-                key={position.id} 
-                className={`border-white/30 hover:bg-white/40 transition-colors ${
-                  index % 2 === 0 ? 'bg-white/10' : 'bg-white/5'
-                }`}
-              >
-                <TableCell className="font-medium text-gray-900 py-4 px-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-100/70 rounded-lg">
-                      <Briefcase className="h-4 w-4 text-orange-600" />
-                    </div>
-                    <span className="font-semibold">{position.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="py-4 px-6">
-                  <Badge className={`font-semibold px-3 py-1 ${getLevelColor(position.level)}`}>
-                    Level {position.level}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-gray-800 py-4 px-6 hidden sm:table-cell">
-                  <span className="line-clamp-2">
-                    {position.description || '無說明'}
-                  </span>
-                </TableCell>
-                {isAdmin() && (
-                  <TableCell className="py-4 px-6">
-                    <div className="flex items-center justify-center gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => openEditDialog(position)}
-                        className="h-9 w-9 p-0 hover:bg-blue-100/70 text-blue-600 hover:text-blue-700"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-9 w-9 p-0 hover:bg-red-100/70 text-red-600 hover:text-red-700"
-                        onClick={() => handleDeletePosition(position.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+      {/* 添加水平滾動容器 */}
+      <div className="w-full overflow-x-auto">
+        <div className="min-w-full">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-white/40 bg-white/20">
+                <TableHead className="text-gray-900 font-semibold py-4 px-6 min-w-[120px] whitespace-nowrap">職位名稱</TableHead>
+                <TableHead className="text-gray-900 font-semibold py-4 px-6 min-w-[80px] whitespace-nowrap">職級</TableHead>
+                <TableHead className="text-gray-900 font-semibold py-4 px-6 hidden sm:table-cell min-w-[150px] whitespace-nowrap">說明</TableHead>
+                {isAdmin() && <TableHead className="text-gray-900 font-semibold py-4 px-6 text-center min-w-[100px] whitespace-nowrap">操作</TableHead>}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredPositions.map((position, index) => (
+                <TableRow 
+                  key={position.id} 
+                  className={`border-white/30 hover:bg-white/40 transition-colors ${
+                    index % 2 === 0 ? 'bg-white/10' : 'bg-white/5'
+                  }`}
+                >
+                  <TableCell className="font-medium text-gray-900 py-4 px-6 whitespace-nowrap">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-orange-100/70 rounded-lg flex-shrink-0">
+                        <Briefcase className="h-4 w-4 text-orange-600" />
+                      </div>
+                      <span className="font-semibold truncate">{position.name}</span>
                     </div>
                   </TableCell>
-                )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  <TableCell className="py-4 px-6 whitespace-nowrap">
+                    <Badge className={`font-semibold px-3 py-1 ${getLevelColor(position.level)}`}>
+                      Level {position.level}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-gray-800 py-4 px-6 hidden sm:table-cell whitespace-nowrap">
+                    <span className="truncate block max-w-[150px]" title={position.description || '無說明'}>
+                      {position.description || '無說明'}
+                    </span>
+                  </TableCell>
+                  {isAdmin() && (
+                    <TableCell className="py-4 px-6 whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => openEditDialog(position)}
+                          className="h-9 w-9 p-0 hover:bg-blue-100/70 text-blue-600 hover:text-blue-700 flex-shrink-0"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-9 w-9 p-0 hover:bg-red-100/70 text-red-600 hover:text-red-700 flex-shrink-0"
+                          onClick={() => handleDeletePosition(position.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

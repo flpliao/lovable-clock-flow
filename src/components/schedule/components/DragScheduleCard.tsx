@@ -4,7 +4,7 @@ import { useDraggable } from '@dnd-kit/core';
 import { TimeSlotIcon } from '../utils/timeSlotIcons';
 import { useTimeSlotOperations } from '@/components/timeslot/hooks/useTimeSlotOperations';
 
-interface DraggableScheduleCardProps {
+interface DragScheduleCardProps {
   schedule: any;
   getUserName: (userId: string) => string;
   getUserRelation: (userId: string) => string;
@@ -12,13 +12,13 @@ interface DraggableScheduleCardProps {
   onClick: () => void;
 }
 
-const DraggableScheduleCard = ({
+const DragScheduleCard = ({
   schedule,
   getUserName,
   getUserRelation,
   hasConflict,
   onClick
-}: DraggableScheduleCardProps) => {
+}: DragScheduleCardProps) => {
   const { timeSlots } = useTimeSlotOperations();
   
   const {
@@ -29,10 +29,14 @@ const DraggableScheduleCard = ({
     isDragging,
   } = useDraggable({
     id: schedule.id,
+    data: {
+      schedule: schedule
+    }
   });
 
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+    zIndex: isDragging ? 1000 : 'auto',
   } : undefined;
 
   // 根據時間段名稱找到對應的時間段資料
@@ -45,17 +49,20 @@ const DraggableScheduleCard = ({
       style={style}
       {...listeners}
       {...attributes}
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
       className={`
-        text-xs p-1.5 rounded mb-1 cursor-pointer transition-all duration-200 border
+        text-xs p-2 rounded-lg mb-1 cursor-grab active:cursor-grabbing transition-all duration-200 border
         ${hasConflict 
-          ? 'bg-red-100 border-red-300 text-red-800' 
-          : 'bg-white/90 border-white/20 text-gray-800 hover:bg-white hover:shadow-sm'
+          ? 'bg-red-100/90 border-red-300 text-red-800' 
+          : 'bg-white/90 border-white/30 text-gray-800 hover:bg-white hover:shadow-md'
         }
-        ${isDragging ? 'opacity-50 z-50' : ''}
+        ${isDragging ? 'opacity-50 shadow-2xl scale-105' : 'hover:scale-102'}
       `}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-1">
         <div className="flex items-center space-x-1 min-w-0 flex-1">
           <TimeSlotIcon 
             timeSlotName={schedule.timeSlot} 
@@ -67,12 +74,12 @@ const DraggableScheduleCard = ({
         </div>
       </div>
       
-      <div className="text-xs text-gray-600 mt-0.5 truncate">
+      <div className="text-xs text-gray-600 mb-1 truncate">
         {displayTime}
       </div>
       
       {getUserRelation(schedule.userId) && (
-        <div className="text-xs text-blue-600 mt-0.5">
+        <div className="text-xs text-blue-600">
           {getUserRelation(schedule.userId)}
         </div>
       )}
@@ -80,4 +87,4 @@ const DraggableScheduleCard = ({
   );
 };
 
-export default DraggableScheduleCard;
+export default DragScheduleCard;

@@ -2,9 +2,9 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { format, isSameDay } from 'date-fns';
-import DraggableScheduleCard from './DraggableScheduleCard';
+import DragScheduleCard from './DragScheduleCard';
 
-interface DroppableCalendarCellProps {
+interface DroppableCalendarDayProps {
   day: any;
   schedules: any[];
   getUserName: (userId: string) => string;
@@ -16,7 +16,7 @@ interface DroppableCalendarCellProps {
   isExtendedMonth?: boolean;
 }
 
-const DroppableCalendarCell = ({
+const DroppableCalendarDay = ({
   day,
   schedules,
   getUserName,
@@ -26,14 +26,18 @@ const DroppableCalendarCell = ({
   onShowAllSchedules,
   selectedScheduleId,
   isExtendedMonth = false
-}: DroppableCalendarCellProps) => {
+}: DroppableCalendarDayProps) => {
   if (!day) {
     return <div className="min-h-[100px] border-r border-b border-white/10 last:border-r-0"></div>;
   }
 
   const dateStr = format(day.date, 'yyyy-MM-dd');
-  const { setNodeRef } = useDroppable({
+  const { setNodeRef, isOver } = useDroppable({
     id: dateStr,
+    data: {
+      date: day.date,
+      dateStr: dateStr
+    }
   });
 
   // 篩選當天的排班
@@ -55,13 +59,17 @@ const DroppableCalendarCell = ({
     <div
       ref={setNodeRef}
       onClick={handleCellClick}
-      className={`min-h-[100px] p-2 border-r border-b border-white/10 last:border-r-0 cursor-pointer transition-all hover:bg-white/10 ${
-        isExtendedMonth ? 'bg-white/5' : ''
-      } ${isToday ? 'bg-white/20' : ''}`}
+      className={`
+        min-h-[100px] p-2 border-r border-b border-white/10 last:border-r-0 
+        cursor-pointer transition-all duration-200
+        ${isExtendedMonth ? 'bg-white/5' : ''}
+        ${isToday ? 'bg-white/20' : ''}
+        ${isOver ? 'bg-blue-200/30 ring-2 ring-blue-400/50' : 'hover:bg-white/10'}
+      `}
     >
       <div className="flex flex-col h-full">
         {/* 日期標題 */}
-        <div className={`text-sm mb-1 ${
+        <div className={`text-sm mb-1 font-medium ${
           isCurrentMonth ? (day.isWeekend ? 'text-red-300' : 'text-white/90') : 'text-white/50'
         } ${isToday ? 'font-bold text-white' : ''}`}>
           {day.label}
@@ -79,7 +87,7 @@ const DroppableCalendarCell = ({
         {/* 排班列表 */}
         <div className="flex-1 space-y-1">
           {daySchedules.slice(0, 3).map((schedule) => (
-            <DraggableScheduleCard
+            <DragScheduleCard
               key={schedule.id}
               schedule={schedule}
               getUserName={getUserName}
@@ -91,8 +99,15 @@ const DroppableCalendarCell = ({
           
           {/* 顯示更多排班提示 */}
           {daySchedules.length > 3 && (
-            <div className="text-xs text-white/70 bg-white/20 px-2 py-1 rounded text-center cursor-pointer hover:bg-white/30">
+            <div className="text-xs text-white/70 bg-white/20 px-2 py-1 rounded text-center cursor-pointer hover:bg-white/30 transition-colors">
               還有 {daySchedules.length - 3} 個排班...
+            </div>
+          )}
+
+          {/* 拖拽提示區域 */}
+          {isOver && daySchedules.length === 0 && (
+            <div className="text-xs text-blue-400 bg-blue-100/20 px-2 py-1 rounded text-center border-2 border-dashed border-blue-400/50">
+              放開以移動排班到這天
             </div>
           )}
         </div>
@@ -101,4 +116,4 @@ const DroppableCalendarCell = ({
   );
 };
 
-export default DroppableCalendarCell;
+export default DroppableCalendarDay;

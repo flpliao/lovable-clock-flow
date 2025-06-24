@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { DndContext, DragOverlay, closestCenter } from '@dnd-kit/core';
-import DroppableCalendarCell from './DroppableCalendarCell';
-import DraggableScheduleCard from './DraggableScheduleCard';
+import DroppableCalendarDay from './DroppableCalendarDay';
+import DragScheduleCard from './DragScheduleCard';
 import { useExtendedCalendar } from '../hooks/useExtendedCalendar';
 
 interface MonthlyCalendarGridProps {
@@ -56,10 +56,10 @@ const MonthlyCalendarGrid = ({
           ))}
         </div>
         
-        {/* Calendar cells */}
+        {/* Calendar cells with drag and drop */}
         <div className="grid grid-cols-7">
           {calendarDays.map((day, index) => (
-            <DroppableCalendarCell
+            <DroppableCalendarDay
               key={index}
               day={day}
               schedules={dragSchedules}
@@ -75,16 +75,18 @@ const MonthlyCalendarGrid = ({
         </div>
       </div>
 
-      {/* Drag overlay */}
+      {/* Drag overlay for better visual feedback */}
       <DragOverlay>
         {activeSchedule ? (
-          <DraggableScheduleCard
-            schedule={activeSchedule}
-            getUserName={getUserName}
-            getUserRelation={() => ''}
-            hasConflict={false}
-            onClick={() => {}}
-          />
+          <div className="bg-white/95 shadow-2xl rounded-lg border border-white/30 transform rotate-3">
+            <DragScheduleCard
+              schedule={activeSchedule}
+              getUserName={getUserName}
+              getUserRelation={() => ''}
+              hasConflict={false}
+              onClick={() => {}}
+            />
+          </div>
         ) : null}
       </DragOverlay>
     </DndContext>

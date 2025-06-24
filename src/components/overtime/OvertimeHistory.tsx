@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
-import { overtimeService } from '@/services/overtimeService';
+import { queryOvertimeService } from '@/services/overtime/queryOvertimeService';
 import OvertimeHistoryHeader from './components/OvertimeHistoryHeader';
 import OvertimeSearchFilters from './components/OvertimeSearchFilters';
 import OvertimeRecordCard from './components/OvertimeRecordCard';
@@ -50,15 +50,17 @@ const OvertimeHistory: React.FC = () => {
   const [overtimes, setOvertimes] = useState<OvertimeRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 載入加班記錄（包含所有狀態的記錄）
+  // 載入加班記錄（包含所有狀態的記錄）- 所有用戶都可以查看自己的記錄
   useEffect(() => {
     const loadOvertimeRecords = async () => {
       if (!currentUser) return;
       
       try {
         setIsLoading(true);
-        console.log('🔄 載入加班記錄...');
-        const records = await overtimeService.getOvertimeRequestsByStaff(currentUser.id);
+        console.log('🔄 載入加班記錄（所有用戶可查看自己記錄）...');
+        
+        // 使用新的查詢方法，確保所有用戶都能查看自己的記錄
+        const records = await queryOvertimeService.getOvertimeRequestsByCurrentUser(currentUser.id);
         
         // 轉換和清理資料，確保符合介面定義
         const cleanedRecords = records.map(record => ({
@@ -86,7 +88,7 @@ const OvertimeHistory: React.FC = () => {
         });
         
         setOvertimes(sortedRecords);
-        console.log('✅ 載入完成:', sortedRecords.length, '筆記錄');
+        console.log('✅ 載入完成:', sortedRecords.length, '筆記錄（用戶:', currentUser.name, '）');
         console.log('📊 狀態統計:', {
           pending: sortedRecords.filter(r => r.status === 'pending').length,
           approved: sortedRecords.filter(r => r.status === 'approved').length,
@@ -94,6 +96,8 @@ const OvertimeHistory: React.FC = () => {
         });
       } catch (error) {
         console.error('❌ 載入加班記錄失敗:', error);
+        // 出錯時設置為空陣列，不影響頁面顯示
+        setOvertimes([]);
       } finally {
         setIsLoading(false);
       }

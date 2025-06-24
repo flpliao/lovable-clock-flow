@@ -18,8 +18,8 @@ const OvertimeManagementContent = () => {
     return <Navigate to="/login" />;
   }
 
-  // 按照請假申請邏輯檢查加班權限
-  const canViewOwnOvertime = hasPermission(OVERTIME_PERMISSIONS.VIEW_OWN_OVERTIME);
+  // 基本權限檢查：所有用戶都可以查看自己的加班記錄
+  const canViewOwnOvertime = true; // 所有用戶都能查看自己的記錄
   const canCreateOvertime = hasPermission(OVERTIME_PERMISSIONS.CREATE_OVERTIME);
   const canViewAllOvertime = hasPermission(OVERTIME_PERMISSIONS.VIEW_ALL_OVERTIME);
   const canApproveOvertime = hasPermission(OVERTIME_PERMISSIONS.APPROVE_OVERTIME);
@@ -27,34 +27,14 @@ const OvertimeManagementContent = () => {
 
   console.log('🔐 加班權限檢查:', {
     user: currentUser.name,
-    canViewOwnOvertime,
+    canViewOwnOvertime: true, // 強制為 true
     canCreateOvertime,
     canViewAllOvertime,
     canApproveOvertime,
     canManageOvertime
   });
 
-  // 如果沒有任何加班權限，顯示權限不足
-  if (!canViewOwnOvertime && !canCreateOvertime && !canViewAllOvertime && !canApproveOvertime && !canManageOvertime) {
-    return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
-        <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
-        <div className="relative z-10 w-full">
-          <div className="w-full px-4 lg:px-8 pt-32 md:pt-36 pb-8">
-            <div className="flex items-center justify-center">
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20 text-center">
-                <Clock className="h-16 w-16 text-white/60 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">權限不足</h2>
-                <p className="text-white/80">您沒有存取加班管理功能的權限</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // 決定預設標籤頁：優先顯示申請頁面，如果沒有申請權限則顯示記錄頁面
+  // 決定預設標籤頁：優先顯示記錄頁面（因為所有人都能看到）
   const defaultTab = canCreateOvertime ? "request" : "history";
 
   return (
@@ -113,16 +93,15 @@ const OvertimeManagementContent = () => {
                   <span className="sm:hidden">申請</span>
                 </TabsTrigger>
               )}
-              {(canViewOwnOvertime || canViewAllOvertime) && (
-                <TabsTrigger 
-                  value="history" 
-                  className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
-                >
-                  <History className="h-4 w-4" />
-                  <span className="hidden sm:inline">加班記錄</span>
-                  <span className="sm:hidden">記錄</span>
-                </TabsTrigger>
-              )}
+              {/* 所有用戶都能查看加班記錄 */}
+              <TabsTrigger 
+                value="history" 
+                className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+              >
+                <History className="h-4 w-4" />
+                <span className="hidden sm:inline">加班記錄</span>
+                <span className="sm:hidden">記錄</span>
+              </TabsTrigger>
             </TabsList>
             
             {/* 內容區域 */}
@@ -133,11 +112,10 @@ const OvertimeManagementContent = () => {
                 </TabsContent>
               )}
               
-              {(canViewOwnOvertime || canViewAllOvertime) && (
-                <TabsContent value="history" className="mt-0">
-                  <OvertimeHistory />
-                </TabsContent>
-              )}
+              {/* 所有用戶都能查看加班記錄 */}
+              <TabsContent value="history" className="mt-0">
+                <OvertimeHistory />
+              </TabsContent>
             </div>
           </Tabs>
         </div>

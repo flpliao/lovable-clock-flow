@@ -46,6 +46,8 @@ export class RoleApiService {
   // 載入角色權限
   static async loadRolePermissions(roleId: string) {
     try {
+      console.log('🔄 載入角色權限:', roleId);
+      
       const { data, error } = await supabase
         .from('role_permissions')
         .select(`
@@ -65,13 +67,16 @@ export class RoleApiService {
         return [];
       }
       
-      return (data || []).map(item => ({
+      const permissions = (data || []).map(item => ({
         id: item.permissions.id,
         name: item.permissions.name,
         code: item.permissions.code,
         description: item.permissions.description,
         category: item.permissions.category
       }));
+      
+      console.log('✅ 角色權限載入成功:', roleId, '共', permissions.length, '個權限');
+      return permissions;
       
     } catch (error) {
       console.error('❌ 載入角色權限系統錯誤:', error);
@@ -123,8 +128,9 @@ export class RoleApiService {
   // 更新角色
   static async updateRole(role: StaffRole): Promise<StaffRole> {
     try {
-      console.log('🔄 更新角色到後台:', role.name);
+      console.log('🔄 更新角色到後台:', role.name, '權限數量:', role.permissions.length);
       
+      // 更新角色基本資料
       const { data, error } = await supabase
         .from('staff_roles')
         .update({
@@ -152,7 +158,7 @@ export class RoleApiService {
         is_system_role: data.is_system_role
       };
       
-      console.log('✅ 角色更新成功:', updatedRole.name);
+      console.log('✅ 角色更新成功:', updatedRole.name, '權限數量:', updatedRole.permissions.length);
       return updatedRole;
       
     } catch (error) {
@@ -164,11 +170,18 @@ export class RoleApiService {
   // 儲存角色權限
   static async saveRolePermissions(roleId: string, permissions: any[]) {
     try {
+      console.log('🔄 儲存角色權限:', roleId, '權限數量:', permissions.length);
+      
       // 先刪除現有權限
-      await supabase
+      const { error: deleteError } = await supabase
         .from('role_permissions')
         .delete()
         .eq('role_id', roleId);
+      
+      if (deleteError) {
+        console.error('❌ 刪除舊權限失敗:', deleteError);
+        throw deleteError;
+      }
       
       // 插入新權限
       if (permissions.length > 0) {
@@ -177,13 +190,13 @@ export class RoleApiService {
           permission_id: permission.id
         }));
         
-        const { error } = await supabase
+        const { error: insertError } = await supabase
           .from('role_permissions')
           .insert(permissionData);
         
-        if (error) {
-          console.error('❌ 儲存角色權限失敗:', error);
-          throw error;
+        if (insertError) {
+          console.error('❌ 儲存角色權限失敗:', insertError);
+          throw insertError;
         }
       }
       

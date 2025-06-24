@@ -26,36 +26,43 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
   const [editedRole, setEditedRole] = useState<StaffRole>({...role});
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Update local state when prop changes
+  // Update local state when prop changes and ensure permissions are properly loaded
   useEffect(() => {
-    setEditedRole({...role});
+    console.log('🔄 編輯角色對話框初始化:', role.name, '權限數量:', role.permissions.length);
+    setEditedRole({
+      ...role,
+      permissions: [...role.permissions] // 確保權限陣列被正確複製
+    });
   }, [role]);
   
   const handleSubmit = async () => {
-    console.log('開始儲存角色變更:', editedRole.name);
+    console.log('🔄 開始儲存角色變更:', editedRole.name, '權限數量:', editedRole.permissions.length);
     setIsSubmitting(true);
     
     try {
       const success = await updateRole(editedRole);
-      console.log('更新結果:', success);
+      console.log('💾 角色更新結果:', success);
       
       if (success) {
-        console.log('角色更新成功，關閉對話框');
+        console.log('✅ 角色更新成功，關閉對話框');
         onOpenChange(false);
         setActiveTab('基本資料'); // 重置到第一個標籤
       } else {
-        console.error('角色更新失敗');
+        console.error('❌ 角色更新失敗');
       }
     } catch (error) {
-      console.error('更新角色時發生錯誤:', error);
+      console.error('❌ 更新角色時發生錯誤:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
   
   const handleCancel = () => {
-    console.log('取消編輯，重置角色資料');
-    setEditedRole({...role}); // 重置到原始狀態
+    console.log('❌ 取消編輯，重置角色資料');
+    setEditedRole({
+      ...role,
+      permissions: [...role.permissions] // 確保權限陣列被正確重置
+    });
     setActiveTab('基本資料'); // 重置到第一個標籤
     onOpenChange(false);
   };

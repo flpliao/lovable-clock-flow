@@ -21,20 +21,20 @@ export const EditRolePermissionsTab: React.FC<EditRolePermissionsTabProps> = ({
   const permissionsByCategory = getPermissionsByCategory();
   
   const togglePermission = (permission: Permission) => {
-    console.log('切換權限:', permission.name);
+    console.log('🔄 切換權限:', permission.name, '角色:', editedRole.name);
     setEditedRole(prev => {
       const hasPermission = prev.permissions.some(p => p.id === permission.id);
       
       if (hasPermission) {
         const newPermissions = prev.permissions.filter(p => p.id !== permission.id);
-        console.log('移除權限，剩餘權限數量:', newPermissions.length);
+        console.log('➖ 移除權限:', permission.name, '剩餘權限數量:', newPermissions.length);
         return {
           ...prev,
           permissions: newPermissions
         };
       } else {
         const newPermissions = [...prev.permissions, permission];
-        console.log('新增權限，總權限數量:', newPermissions.length);
+        console.log('➕ 新增權限:', permission.name, '總權限數量:', newPermissions.length);
         return {
           ...prev,
           permissions: newPermissions
@@ -44,11 +44,18 @@ export const EditRolePermissionsTab: React.FC<EditRolePermissionsTabProps> = ({
   };
   
   const isPermissionSelected = (permissionId: string) => {
-    return editedRole.permissions.some(p => p.id === permissionId);
+    const isSelected = editedRole.permissions.some(p => p.id === permissionId);
+    return isSelected;
   };
 
   return (
     <div className="py-4">
+      <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+        <p className="text-sm text-blue-700">
+          目前已選擇 <span className="font-bold">{editedRole.permissions.length}</span> 個權限
+        </p>
+      </div>
+      
       <ScrollArea className="h-[500px] w-full rounded-md border p-4">
         <div className="space-y-6">
           {permissionCategories.map(category => (

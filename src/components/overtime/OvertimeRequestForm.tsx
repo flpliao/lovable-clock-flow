@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
+import { supabase } from '@/integrations/supabase/client';
 import { overtimeService } from '@/services/overtimeService';
 import { calculateOvertimeHours } from '@/utils/overtimeUtils';
 import OvertimeFormHeader from './components/OvertimeFormHeader';

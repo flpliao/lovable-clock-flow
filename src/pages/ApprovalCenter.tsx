@@ -11,6 +11,7 @@ import { getLeaveTypeText } from '@/utils/leaveUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { sendLeaveStatusNotification } from '@/services/leaveNotificationService';
+import { overtimeService } from '@/services/overtimeService';
 import LeaveApprovalDetail from '@/components/leave/LeaveApprovalDetail';
 
 interface ApprovalStats {
@@ -438,23 +439,13 @@ const ApprovalCenter = () => {
     if (!currentUser) return;
     try {
       if (action === 'approved') {
-        await supabase.rpc('approve_overtime_request', {
-          p_overtime_id: requestId,
-          p_approver_id: currentUser.id,
-          p_approver_name: currentUser.name || '主管',
-          p_comment: '主管核准'
-        });
+        await overtimeService.approveOvertimeRequest(requestId, currentUser.id, currentUser.name || '主管', '主管核准');
         toast({
           title: "申請已核准",
           description: "加班申請已核准"
         });
       } else {
-        await supabase.rpc('reject_overtime_request', {
-          p_overtime_id: requestId,
-          p_approver_id: currentUser.id,
-          p_approver_name: currentUser.name || '主管',
-          p_reason: reason || '主管拒絕'
-        });
+        await overtimeService.rejectOvertimeRequest(requestId, currentUser.id, currentUser.name || '主管', reason || '主管拒絕');
         toast({
           title: "申請已拒絕",
           description: "加班申請已拒絕",

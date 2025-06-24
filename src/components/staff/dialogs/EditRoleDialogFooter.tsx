@@ -14,18 +14,27 @@ export const EditRoleDialogFooter: React.FC<EditRoleDialogFooterProps> = ({
   onPrevious,
   onSubmit
 }) => {
+  const handleSubmit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('🔄 點擊儲存變更按鈕');
+    onSubmit();
+  };
+
   return (
     <DialogFooter className="mt-6">
       <Button 
         variant="outline" 
         onClick={onPrevious}
         disabled={isSubmitting}
+        type="button"
       >
         上一步
       </Button>
       <Button 
-        onClick={onSubmit}
+        onClick={handleSubmit}
         disabled={isSubmitting}
+        type="button"
       >
         {isSubmitting ? '儲存中...' : '儲存變更'}
       </Button>

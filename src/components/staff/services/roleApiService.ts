@@ -129,6 +129,7 @@ export class RoleApiService {
   static async updateRole(role: StaffRole): Promise<StaffRole> {
     try {
       console.log('🔄 更新角色到後台:', role.name, '權限數量:', role.permissions.length);
+      console.log('📋 權限詳細資料:', role.permissions.map(p => ({ id: p.id, name: p.name })));
       
       // 更新角色基本資料
       const { data, error } = await supabase
@@ -150,11 +151,15 @@ export class RoleApiService {
       // 更新權限
       await this.saveRolePermissions(role.id, role.permissions);
       
+      // 驗證權限是否正確儲存
+      const savedPermissions = await this.loadRolePermissions(role.id);
+      console.log('🔍 驗證儲存的權限:', savedPermissions.length, '個');
+      
       const updatedRole: StaffRole = {
         id: data.id,
         name: data.name,
         description: data.description || '',
-        permissions: role.permissions,
+        permissions: savedPermissions, // 使用實際儲存的權限
         is_system_role: data.is_system_role
       };
       
@@ -171,6 +176,7 @@ export class RoleApiService {
   static async saveRolePermissions(roleId: string, permissions: any[]) {
     try {
       console.log('🔄 儲存角色權限:', roleId, '權限數量:', permissions.length);
+      console.log('📋 要儲存的權限ID:', permissions.map(p => p.id));
       
       // 先刪除現有權限
       const { error: deleteError } = await supabase
@@ -183,12 +189,16 @@ export class RoleApiService {
         throw deleteError;
       }
       
+      console.log('✅ 舊權限已清除');
+      
       // 插入新權限
       if (permissions.length > 0) {
         const permissionData = permissions.map(permission => ({
           role_id: roleId,
           permission_id: permission.id
         }));
+        
+        console.log('🔄 準備插入權限資料:', permissionData);
         
         const { error: insertError } = await supabase
           .from('role_permissions')
@@ -198,6 +208,8 @@ export class RoleApiService {
           console.error('❌ 儲存角色權限失敗:', insertError);
           throw insertError;
         }
+        
+        console.log('✅ 新權限已儲存');
       }
       
       console.log('✅ 角色權限儲存成功:', permissions.length, '個權限');

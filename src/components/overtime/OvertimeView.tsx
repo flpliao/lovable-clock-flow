@@ -5,40 +5,7 @@ import { queryOvertimeService } from '@/services/overtime/queryOvertimeService';
 import { Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-
-interface OvertimeRecord {
-  id: string;
-  overtime_date: string;
-  start_time: string;
-  end_time: string;
-  hours: number;
-  overtime_type: string;
-  compensation_type: string;
-  reason: string;
-  status: string;
-  created_at: string;
-  staff_id: string;
-  approved_by: string | null;
-  approved_by_name?: string;
-  approval_date: string | null;
-  approval_comment: string | null;
-  rejection_reason?: string;
-  compensation_hours: number | null;
-  updated_at: string;
-  staff?: {
-    name: string;
-  };
-  overtime_approval_records?: Array<{
-    id: string;
-    approver_id: string | null;
-    approver_name: string;
-    level: number;
-    status: string;
-    approval_date: string | null;
-    comment: string | null;
-    created_at: string;
-  }>;
-}
+import type { OvertimeRecord } from '@/services/overtime/types';
 
 const OvertimeView: React.FC = () => {
   const { currentUser } = useUser();
@@ -61,8 +28,17 @@ const OvertimeView: React.FC = () => {
           (record.status !== 'pending' && new Date(record.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
         );
         
-        setOvertimes(filteredRecords);
-        console.log('✅ 載入完成:', filteredRecords.length, '筆記錄');
+        // 確保資料結構正確
+        const formattedRecords = filteredRecords.map(record => ({
+          ...record,
+          staff: Array.isArray(record.staff) ? record.staff[0] : record.staff,
+          overtime_approval_records: Array.isArray(record.overtime_approval_records) 
+            ? record.overtime_approval_records 
+            : []
+        }));
+        
+        setOvertimes(formattedRecords);
+        console.log('✅ 載入完成:', formattedRecords.length, '筆記錄');
       } catch (error) {
         console.error('❌ 載入加班申請失敗:', error);
         setOvertimes([]);

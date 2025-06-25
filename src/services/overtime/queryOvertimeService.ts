@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { OvertimeRecord } from './types';
+import type { OvertimeRecord, SupervisorHierarchyItem, OvertimeApprovalRecord } from './types';
 
 export const queryOvertimeService = {
   async getOvertimeRequestsByCurrentUser(userId: string): Promise<OvertimeRecord[]> {
@@ -51,7 +51,24 @@ export const queryOvertimeService = {
       }
 
       console.log('✅ 查詢加班申請成功:', data?.length, '筆記錄');
-      return data || [];
+      
+      // Transform the data to match OvertimeRecord type
+      const transformedData: OvertimeRecord[] = (data || []).map(record => ({
+        ...record,
+        staff: Array.isArray(record.staff) ? record.staff[0] : record.staff,
+        supervisor_hierarchy: Array.isArray(record.supervisor_hierarchy) 
+          ? record.supervisor_hierarchy as SupervisorHierarchyItem[]
+          : (record.supervisor_hierarchy as unknown as SupervisorHierarchyItem[]) || [],
+        overtime_approval_records: Array.isArray(record.overtime_approval_records) 
+          ? record.overtime_approval_records.map(approvalRecord => ({
+              ...approvalRecord,
+              overtime_id: record.id,
+              status: approvalRecord.status as 'pending' | 'approved' | 'rejected'
+            } as OvertimeApprovalRecord))
+          : []
+      }));
+      
+      return transformedData;
     } catch (error) {
       console.error('❌ 查詢加班申請時發生錯誤:', error);
       throw error;
@@ -95,7 +112,24 @@ export const queryOvertimeService = {
       }
 
       console.log('✅ 查詢加班申請詳情成功:', data);
-      return data;
+      
+      // Transform the data to match OvertimeRecord type
+      const transformedRecord: OvertimeRecord = {
+        ...data,
+        staff: Array.isArray(data.staff) ? data.staff[0] : data.staff,
+        supervisor_hierarchy: Array.isArray(data.supervisor_hierarchy) 
+          ? data.supervisor_hierarchy as SupervisorHierarchyItem[]
+          : (data.supervisor_hierarchy as unknown as SupervisorHierarchyItem[]) || [],
+        overtime_approval_records: Array.isArray(data.overtime_approval_records) 
+          ? data.overtime_approval_records.map(approvalRecord => ({
+              ...approvalRecord,
+              overtime_id: data.id,
+              status: approvalRecord.status as 'pending' | 'approved' | 'rejected'
+            } as OvertimeApprovalRecord))
+          : []
+      };
+      
+      return transformedRecord;
     } catch (error) {
       console.error('❌ 查詢加班申請詳情時發生錯誤:', error);
       throw error;
@@ -137,7 +171,24 @@ export const queryOvertimeService = {
       }
 
       console.log('✅ 查詢所有加班申請成功:', data?.length, '筆記錄');
-      return data || [];
+      
+      // Transform the data to match OvertimeRecord type
+      const transformedData: OvertimeRecord[] = (data || []).map(record => ({
+        ...record,
+        staff: Array.isArray(record.staff) ? record.staff[0] : record.staff,
+        supervisor_hierarchy: Array.isArray(record.supervisor_hierarchy) 
+          ? record.supervisor_hierarchy as SupervisorHierarchyItem[]
+          : (record.supervisor_hierarchy as unknown as SupervisorHierarchyItem[]) || [],
+        overtime_approval_records: Array.isArray(record.overtime_approval_records) 
+          ? record.overtime_approval_records.map(approvalRecord => ({
+              ...approvalRecord,
+              overtime_id: record.id,
+              status: approvalRecord.status as 'pending' | 'approved' | 'rejected'
+            } as OvertimeApprovalRecord))
+          : []
+      }));
+      
+      return transformedData;
     } catch (error) {
       console.error('❌ 查詢所有加班申請時發生錯誤:', error);
       throw error;

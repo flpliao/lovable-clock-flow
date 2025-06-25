@@ -7,7 +7,6 @@ import { ArrowLeft, Plus, History, Users } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import OvertimeRequestForm from '@/components/overtime/OvertimeRequestForm';
 import OvertimeHistory from '@/components/overtime/OvertimeHistory';
-import { OvertimeDebugInfo } from '@/components/overtime/OvertimeDebugInfo';
 
 const OvertimeManagement: React.FC = () => {
   const navigate = useNavigate();
@@ -95,9 +94,6 @@ const OvertimeManagement: React.FC = () => {
           </div>
         </div>
       </div>
-      
-      {/* 調試信息組件 - 只在開發環境顯示 */}
-      {process.env.NODE_ENV === 'development' && <OvertimeDebugInfo />}
     </div>
   );
 };

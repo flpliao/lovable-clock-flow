@@ -11,8 +11,8 @@ export const OVERTIME_PERMISSIONS = {
   EDIT_OWN_OVERTIME: 'overtime:edit_own',
   DELETE_OWN_OVERTIME: 'overtime:delete_own',
   
-  // 審核權限
-  APPROVE_OVERTIME_LEVEL_1: 'overtime:approve_level_1',
+  // 審核權限 - 更新為使用資料庫中的權限代碼
+  APPROVE_OVERTIME_LEVEL_1: 'overtime:approve',
   APPROVE_OVERTIME_LEVEL_2: 'overtime:approve_level_2',
   REJECT_OVERTIME: 'overtime:reject',
   
@@ -28,7 +28,7 @@ export const OVERTIME_PERMISSIONS = {
 export const OVERTIME_PERMISSION_DEFINITIONS = [
   {
     id: OVERTIME_PERMISSIONS.VIEW_OWN_OVERTIME,
-    code: OVERTIME_PERMISSIONS.VIEW_OWN_OVERTIME, // 添加 code 屬性
+    code: OVERTIME_PERMISSIONS.VIEW_OWN_OVERTIME,
     name: '查看自己的加班記錄',
     description: '可以查看自己提交的加班申請記錄',
     category: 'overtime'
@@ -71,8 +71,8 @@ export const OVERTIME_PERMISSION_DEFINITIONS = [
   {
     id: OVERTIME_PERMISSIONS.APPROVE_OVERTIME_LEVEL_1,
     code: OVERTIME_PERMISSIONS.APPROVE_OVERTIME_LEVEL_1,
-    name: '一級主管審核加班',
-    description: '可以作為一級主管審核下屬的加班申請',
+    name: '審核加班申請',
+    description: '可以審核和批准加班申請',
     category: 'overtime'
   },
   {

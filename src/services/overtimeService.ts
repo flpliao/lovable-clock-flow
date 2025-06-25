@@ -26,17 +26,12 @@ export const overtimeService = {
 
   // 提交加班申請
   async submitOvertimeRequest(formData: OvertimeFormData): Promise<string> {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw new Error('用戶未登入');
-
     // 計算加班時數
     const startTime = new Date(`2000-01-01T${formData.start_time}`);
     const endTime = new Date(`2000-01-01T${formData.end_time}`);
     const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
 
     const requestData = {
-      staff_id: userData.user.id,
-      user_id: userData.user.id,
       overtime_type: formData.overtime_type,
       overtime_date: formData.overtime_date,
       start_time: formData.start_time,
@@ -63,19 +58,16 @@ export const overtimeService = {
 
   // 獲取用戶的加班申請
   async getUserOvertimeRequests(userId?: string): Promise<OvertimeRequest[]> {
-    let targetUserId = userId;
-    
-    if (!targetUserId) {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('用戶未登入');
-      targetUserId = userData.user.id;
-    }
-
-    const { data, error } = await supabase
+    let query = supabase
       .from('overtime_requests')
       .select('*')
-      .or(`staff_id.eq.${targetUserId},user_id.eq.${targetUserId}`)
       .order('created_at', { ascending: false });
+
+    if (userId) {
+      query = query.or(`staff_id.eq.${userId},user_id.eq.${userId}`);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
     
@@ -88,9 +80,6 @@ export const overtimeService = {
 
   // 獲取待審核的加班申請
   async getPendingOvertimeRequests(): Promise<OvertimeRequest[]> {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw new Error('用戶未登入');
-
     const { data, error } = await supabase
       .from('overtime_requests')
       .select(`
@@ -102,7 +91,6 @@ export const overtimeService = {
         )
       `)
       .eq('status', 'pending')
-      .or(`current_approver.eq.${userData.user.id},staff_id.in.(select id from staff where supervisor_id = '${userData.user.id}')`)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -116,9 +104,6 @@ export const overtimeService = {
 
   // 審核加班申請
   async approveOvertimeRequest(requestId: string, action: 'approve' | 'reject', comment?: string): Promise<void> {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw new Error('用戶未登入');
-
     const status = action === 'approve' ? 'approved' : 'rejected';
     
     const { error } = await supabase
@@ -136,8 +121,6 @@ export const overtimeService = {
       .from('overtime_approval_records')
       .insert({
         overtime_request_id: requestId,
-        approver_id: userData.user.id,
-        approver_name: '審核人', // 實際應該從用戶資料獲取
         level: 1,
         status: action === 'approve' ? 'approved' : 'rejected',
         approval_date: new Date().toISOString(),

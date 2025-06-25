@@ -1033,6 +1033,7 @@ export type Database = {
           staff_id: string
           start_time: string
           status: string
+          supervisor_hierarchy: Json | null
           updated_at: string
         }
         Insert: {
@@ -1057,6 +1058,7 @@ export type Database = {
           staff_id: string
           start_time: string
           status?: string
+          supervisor_hierarchy?: Json | null
           updated_at?: string
         }
         Update: {
@@ -1081,6 +1083,7 @@ export type Database = {
           staff_id?: string
           start_time?: string
           status?: string
+          supervisor_hierarchy?: Json | null
           updated_at?: string
         }
         Relationships: [
@@ -1782,6 +1785,10 @@ export type Database = {
       get_current_user_role_safe: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_supervisor_hierarchy: {
+        Args: { staff_id_param: string; max_levels?: number }
+        Returns: Json
       }
       get_table_rls_status: {
         Args: { table_name: string }

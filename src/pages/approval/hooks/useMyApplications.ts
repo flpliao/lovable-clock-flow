@@ -1,7 +1,7 @@
+
 import { useState, useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { supabase } from '@/integrations/supabase/client';
-import { queryOvertimeService } from '@/services/overtime/queryOvertimeService';
 
 interface MyApplication {
   id: string;
@@ -24,16 +24,40 @@ export const useMyApplications = () => {
       setIsLoading(true);
       console.log('🔍 載入我的申請記錄，當前用戶:', currentUser.id, currentUser.name);
 
-      // 載入加班申請 - 確保能夠載入所有自己的加班記錄，包括 pending 狀態 
-      console.log('📋 開始載入加班申請記錄（包括待審核）...');
-      const overtimeRecords = await queryOvertimeService.getOvertimeRequestsByCurrentUser(currentUser.id);
-      console.log('✅ 加班申請記錄載入完成:', overtimeRecords.length, '筆');
+      // 載入加班申請 - 僅限自己申請的記錄
+      console.log('📋 開始載入加班申請記錄...');
+      const { data: overtimeData, error: overtimeError } = await supabase
+        .from('overtimes')
+        .select(`
+          *,
+          staff!staff_id (
+            name,
+            department,
+            position,
+            supervisor_id
+          ),
+          overtime_approval_records (
+            id,
+            approver_id,
+            approver_name,
+            level,
+            status,
+            approval_date,
+            comment,
+            created_at,
+            updated_at
+          )
+        `)
+        .eq('staff_id', currentUser.id)  // 僅查詢自己的申請
+        .order('created_at', { ascending: false });
+
+      if (overtimeError) {
+        console.error('❌ 載入加班申請失敗:', overtimeError);
+      } else {
+        console.log('✅ 加班申請記錄載入完成:', overtimeData?.length || 0, '筆');
+      }
       
-      // 特別檢查 pending 狀態的加班申請
-      const pendingOvertimes = overtimeRecords.filter(record => record.status === 'pending');
-      console.log('⏳ 待審核加班申請:', pendingOvertimes.length, '筆');
-      
-      // 載入忘記打卡申請
+      // 載入忘記打卡申請 - 僅限自己申請的記錄
       console.log('📋 開始載入忘記打卡申請記錄...');
       const { data: missedCheckinData, error: missedCheckinError } = await supabase
         .from('missed_checkin_requests')
@@ -43,7 +67,7 @@ export const useMyApplications = () => {
             name
           )
         `)
-        .eq('staff_id', currentUser.id)
+        .eq('staff_id', currentUser.id)  // 僅查詢自己的申請
         .order('created_at', { ascending: false });
 
       if (missedCheckinError) {
@@ -52,12 +76,12 @@ export const useMyApplications = () => {
         console.log('✅ 忘記打卡申請記錄載入完成:', missedCheckinData?.length || 0, '筆');
       }
 
-      // 載入請假申請
+      // 載入請假申請 - 僅限自己申請的記錄
       console.log('📋 開始載入請假申請記錄...');
       const { data: leaveData, error: leaveError } = await supabase
         .from('leave_requests')  
         .select('*')
-        .or(`staff_id.eq.${currentUser.id},user_id.eq.${currentUser.id}`)
+        .or(`staff_id.eq.${currentUser.id},user_id.eq.${currentUser.id}`)  // 僅查詢自己的申請
         .order('created_at', { ascending: false });
 
       if (leaveError) {
@@ -68,10 +92,10 @@ export const useMyApplications = () => {
 
       const applications: MyApplication[] = [];
 
-      // 轉換加班申請 - 確保包含所有狀態，特別是 pending
-      if (overtimeRecords && overtimeRecords.length > 0) {
+      // 轉換加班申請
+      if (overtimeData && overtimeData.length > 0) {
         console.log('🔄 轉換加班申請記錄...');
-        overtimeRecords.forEach(record => {
+        overtimeData.forEach(record => {
           console.log('📝 處理加班記錄:', {
             id: record.id,
             date: record.overtime_date,
@@ -88,20 +112,14 @@ export const useMyApplications = () => {
             created_at: record.created_at,
             details: {
               ...record,
-              overtime_date: record.overtime_date,
-              start_time: record.start_time,
-              end_time: record.end_time,
-              hours: record.hours,
-              overtime_type: record.overtime_type,
-              compensation_type: record.compensation_type,
-              reason: record.reason,
-              status: record.status
+              staff: Array.isArray(record.staff) ? record.staff[0] : record.staff,
+              overtime_approval_records: Array.isArray(record.overtime_approval_records) 
+                ? record.overtime_approval_records 
+                : []
             }
           });
         });
-        console.log('✅ 加班申請記錄轉換完成，包含待審核記錄');
-      } else {
-        console.log('ℹ️ 沒有找到加班申請記錄');
+        console.log('✅ 加班申請記錄轉換完成');
       }
 
       // 轉換忘記打卡申請

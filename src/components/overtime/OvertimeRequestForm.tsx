@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
-import { supabase } from '@/integrations/supabase/client';
-import { overtimeService } from '@/services/overtimeService';
+import { overtimeSubmissionService } from '@/services/overtime/overtimeSubmissionService';
 import { calculateOvertimeHours } from '@/utils/overtimeUtils';
 import OvertimeFormHeader from './components/OvertimeFormHeader';
 import OvertimeBasicInfoSection from './components/OvertimeBasicInfoSection';
@@ -56,9 +55,9 @@ const OvertimeRequestForm: React.FC = () => {
       const endDateTime = `${formData.overtimeDate}T${formData.endTime}:00`;
       const hours = calculateOvertimeHours(startDateTime, endDateTime);
 
-      // 準備儲存到資料庫的資料
+      // 準備提交資料 - 確保只能為自己申請
       const overtimeData = {
-        staff_id: currentUser.id,
+        staff_id: currentUser.id,  // 強制設定為當前用戶ID
         overtime_date: formData.overtimeDate,
         start_time: startDateTime,
         end_time: endDateTime,
@@ -70,25 +69,8 @@ const OvertimeRequestForm: React.FC = () => {
 
       console.log('📝 提交加班申請資料:', overtimeData);
 
-      // 儲存到資料庫
-      const result = await overtimeService.createOvertimeRequest(overtimeData);
-      
-      // 發送通知給主管（如果有設定主管）
-      if (currentUser.supervisor_id) {
-        try {
-          await supabase.rpc('create_overtime_notification', {
-            p_user_id: currentUser.supervisor_id,
-            p_title: '新的加班申請',
-            p_message: `${currentUser.name} 提交了加班申請，日期：${formData.overtimeDate}`,
-            p_type: 'overtime_approval',
-            p_overtime_id: result.id,
-            p_action_required: true
-          });
-          console.log('✅ 通知已發送給主管');
-        } catch (notificationError) {
-          console.warn('⚠️ 發送通知失敗:', notificationError);
-        }
-      }
+      // 使用新的提交服務
+      const result = await overtimeSubmissionService.submitOvertimeRequest(overtimeData, currentUser.id);
       
       toast({
         title: '申請成功',
@@ -108,7 +90,7 @@ const OvertimeRequestForm: React.FC = () => {
       console.error('❌ 提交加班申請失敗:', error);
       toast({
         title: '申請失敗',
-        description: '提交加班申請時發生錯誤，請稍後再試',
+        description: error instanceof Error ? error.message : '提交加班申請時發生錯誤，請稍後再試',
         variant: 'destructive',
       });
     } finally {

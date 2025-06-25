@@ -1,17 +1,17 @@
 
-import { createOvertimeService } from './createOvertimeService';
+import { overtimeSubmissionService } from './overtimeSubmissionService';
 import { queryOvertimeService } from './queryOvertimeService';
-import { approvalOvertimeService } from './approvalOvertimeService';
+import { overtimeApprovalService } from './overtimeApprovalService';
 
 export const overtimeService = {
   // 創建加班申請
-  ...createOvertimeService,
+  ...overtimeSubmissionService,
   
   // 查詢加班記錄
   ...queryOvertimeService,
   
   // 審核加班申請
-  ...approvalOvertimeService
+  ...overtimeApprovalService
 };
 
 // 重新導出類型

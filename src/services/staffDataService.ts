@@ -20,9 +20,11 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData |
     // 從 staff 表獲取員工資料（包含 supervisor_id）
     const { data: staffData, error: staffError } = await supabase
       .from('staff')
-      .select('name, department, position, hire_date, supervisor_id')
+      .select('name, department, position, hire_date, supervisor_id, role, email')
       .eq('id', userId)
       .maybeSingle();
+
+    console.log('📊 員工資料查詢結果:', { staffData, staffError });
 
     if (staffError) {
       console.error('❌ 載入員工資料失敗:', staffError);
@@ -31,7 +33,16 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData |
 
     if (!staffData) {
       console.log('⚠️ 找不到員工資料，用戶ID:', userId);
-      throw new Error('找不到員工資料，請確認您的帳戶設定');
+      
+      // 調試：檢查是否有其他員工資料
+      const { data: debugStaff, error: debugError } = await supabase
+        .from('staff')
+        .select('id, name, email')
+        .limit(5);
+      
+      console.log('🔍 調試 - 系統中的員工資料樣例:', debugStaff);
+      
+      throw new Error('找不到員工資料。請確認您的帳戶已正確設定在員工管理系統中。');
     }
 
     console.log('✅ 成功載入員工基本資料:', {
@@ -39,7 +50,8 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData |
       department: staffData.department,
       position: staffData.position,
       hire_date: staffData.hire_date,
-      has_supervisor: !!staffData.supervisor_id
+      has_supervisor: !!staffData.supervisor_id,
+      role: staffData.role
     });
 
     // 計算年資

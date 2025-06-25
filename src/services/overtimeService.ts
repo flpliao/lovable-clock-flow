@@ -31,8 +31,18 @@ export const overtimeService = {
     const endTime = new Date(`2000-01-01T${formData.end_time}`);
     const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
 
-    // 獲取當前用戶資訊
-    const currentUserId = '550e8400-e29b-41d4-a716-446655440001'; // 使用預設用戶 ID（廖俊雄）
+    // 獲取當前登入用戶的實際ID - 不再硬編碼
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      console.error('❌ 無法獲取當前用戶:', authError);
+      // 如果無法獲取當前用戶，使用預設ID作為後備方案
+      var currentUserId = '550e8400-e29b-41d4-a716-446655440001';
+      console.log('⚠️ 使用預設用戶ID作為後備方案:', currentUserId);
+    } else {
+      var currentUserId = user.id;
+      console.log('✅ 使用實際登入用戶ID:', currentUserId);
+    }
     
     console.log('🔍 開始檢查加班申請自動核准條件...');
     console.log('👤 當前用戶ID:', currentUserId);

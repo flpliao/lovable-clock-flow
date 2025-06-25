@@ -29,52 +29,68 @@ const OvertimeRequestForm: React.FC = () => {
     
     if (!currentUser) {
       toast({
-        title: '錯誤',
+        title: '登入錯誤',
         description: '請先登入後再提交申請',
         variant: 'destructive',
       });
       return;
     }
 
-    // 驗證表單資料
-    if (!formData.overtimeDate || !formData.startTime || !formData.endTime || 
-        !formData.overtimeType || !formData.compensationType || !formData.reason) {
-      toast({
-        title: '錯誤',
-        description: '請填寫所有必填欄位',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    
+    // 客戶端驗證
     try {
-      // 計算加班時數
+      if (!formData.overtimeDate) {
+        throw new Error('請選擇加班日期');
+      }
+      if (!formData.startTime) {
+        throw new Error('請選擇開始時間');
+      }
+      if (!formData.endTime) {
+        throw new Error('請選擇結束時間');
+      }
+      if (!formData.overtimeType) {
+        throw new Error('請選擇加班類型');
+      }
+      if (!formData.compensationType) {
+        throw new Error('請選擇補償方式');
+      }
+      if (!formData.reason.trim()) {
+        throw new Error('請填寫加班原因');
+      }
+
+      // 驗證時間合理性
       const startDateTime = `${formData.overtimeDate}T${formData.startTime}:00`;
       const endDateTime = `${formData.overtimeDate}T${formData.endTime}:00`;
       const hours = calculateOvertimeHours(startDateTime, endDateTime);
 
-      // 準備提交資料 - 確保只能為自己申請
+      if (hours <= 0) {
+        throw new Error('結束時間必須晚於開始時間');
+      }
+
+      if (hours > 12) {
+        throw new Error('單日加班時數不能超過12小時');
+      }
+
+      setIsSubmitting(true);
+
+      // 準備提交資料
       const overtimeData = {
-        staff_id: currentUser.id,  // 強制設定為當前用戶ID
+        staff_id: currentUser.id,
         overtime_date: formData.overtimeDate,
         start_time: startDateTime,
         end_time: endDateTime,
         overtime_type: formData.overtimeType as 'weekday' | 'weekend' | 'holiday',
         compensation_type: formData.compensationType as 'pay' | 'time_off' | 'both',
-        reason: formData.reason,
+        reason: formData.reason.trim(),
         hours: hours
       };
 
-      console.log('📝 提交加班申請資料:', overtimeData);
+      console.log('📝 準備提交加班申請:', overtimeData);
 
-      // 使用新的提交服務
       const result = await overtimeSubmissionService.submitOvertimeRequest(overtimeData, currentUser.id);
       
       toast({
         title: '申請成功',
-        description: '您的加班申請已提交，等待主管審核',
+        description: `您的加班申請已提交成功，申請編號：${result.id.slice(0, 8)}`,
       });
       
       // 重置表單
@@ -86,11 +102,17 @@ const OvertimeRequestForm: React.FC = () => {
         compensationType: '',
         reason: ''
       });
+
+      console.log('✅ 加班申請提交完成');
+      
     } catch (error) {
-      console.error('❌ 提交加班申請失敗:', error);
+      console.error('❌ 表單提交錯誤:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : '提交加班申請時發生錯誤，請稍後再試';
+      
       toast({
         title: '申請失敗',
-        description: error instanceof Error ? error.message : '提交加班申請時發生錯誤，請稍後再試',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

@@ -20,10 +20,38 @@ export const getCompensationTypeText = (type: string): string => {
 };
 
 export const calculateOvertimeHours = (startTime: string, endTime: string): number => {
-  const start = new Date(startTime);
-  const end = new Date(endTime);
-  const diff = end.getTime() - start.getTime();
-  const hours = diff / (1000 * 60 * 60);
-  // 限制到小數點後一位
-  return Math.round(hours * 10) / 10;
+  try {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    
+    // 驗證日期是否有效
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      console.error('❌ 無效的時間格式:', { startTime, endTime });
+      return 0;
+    }
+    
+    const diff = end.getTime() - start.getTime();
+    
+    if (diff <= 0) {
+      console.error('❌ 結束時間必須晚於開始時間:', { startTime, endTime });
+      return 0;
+    }
+    
+    const hours = diff / (1000 * 60 * 60);
+    
+    // 限制到小數點後一位，並確保合理範圍
+    const calculatedHours = Math.round(hours * 10) / 10;
+    
+    console.log('⏰ 計算加班時數:', {
+      startTime,
+      endTime,
+      diffMs: diff,
+      hours: calculatedHours
+    });
+    
+    return Math.max(0, Math.min(24, calculatedHours)); // 限制在0-24小時之間
+  } catch (error) {
+    console.error('❌ 計算加班時數時發生錯誤:', error);
+    return 0;
+  }
 };

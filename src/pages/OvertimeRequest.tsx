@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { NewOvertimeRequestForm } from '@/components/overtime/NewOvertimeRequestForm';
+import NewOvertimeRequestForm from '@/components/overtime/NewOvertimeRequestForm';
 import OvertimeHistory from '@/components/overtime/OvertimeHistory';
 import ShiftReminder from '@/components/ShiftReminder';
 import OvertimeRequestDetail from '@/components/overtime/OvertimeRequestDetail';

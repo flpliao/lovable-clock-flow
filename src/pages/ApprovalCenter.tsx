@@ -14,6 +14,7 @@ import LeaveApprovalTab from './approval/components/LeaveApprovalTab';
 import MissedCheckinApprovalTab from './approval/components/MissedCheckinApprovalTab';
 import OvertimeApprovalTab from './approval/components/OvertimeApprovalTab';
 import MyApplicationsTab from './approval/components/MyApplicationsTab';
+import type { MyApplication } from '@/types/myApplication';
 
 const ApprovalCenter = () => {
   const { currentUser } = useUser();
@@ -153,7 +154,7 @@ const ApprovalCenter = () => {
               <TabsContent value="my-applications" className="mt-0">
                 <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">我的申請記錄</h2>
                 <MyApplicationsTab
-                  applications={myApplications}
+                  applications={myApplications as MyApplication[]}
                   isLoading={myApplicationsLoading}
                 />
               </TabsContent>

@@ -1,18 +1,8 @@
-
 import { useState, useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { queryOvertimeService } from '@/services/overtime/queryOvertimeService';
 import { supabase } from '@/integrations/supabase/client';
-
-// 統一 MyApplication 介面定義，包含 cancelled 狀態
-interface MyApplication {
-  id: string;
-  type: 'overtime' | 'missed_checkin' | 'leave';
-  title: string;
-  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
-  created_at: string;
-  details: any;
-}
+import type { MyApplication } from '@/types/myApplication';
 
 export const useMyApplications = () => {
   const { currentUser } = useUser();

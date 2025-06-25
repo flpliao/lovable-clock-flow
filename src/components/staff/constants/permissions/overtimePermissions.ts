@@ -21,3 +21,73 @@ export const OVERTIME_PERMISSIONS = {
 } as const;
 
 export type OvertimePermission = typeof OVERTIME_PERMISSIONS[keyof typeof OVERTIME_PERMISSIONS];
+
+// 添加權限定義，對齊其他權限文件的結構
+export const OVERTIME_PERMISSION_DEFINITIONS = [
+  {
+    id: OVERTIME_PERMISSIONS.VIEW_OWN_OVERTIME,
+    name: '查看自己的加班記錄',
+    category: 'overtime',
+    description: '允許查看自己的加班申請和記錄'
+  },
+  {
+    id: OVERTIME_PERMISSIONS.CREATE_OVERTIME,
+    name: '申請加班',
+    category: 'overtime',
+    description: '允許建立加班申請'
+  },
+  {
+    id: OVERTIME_PERMISSIONS.UPDATE_OWN_OVERTIME,
+    name: '修改自己的加班申請',
+    category: 'overtime',
+    description: '允許修改自己待審核的加班申請'
+  },
+  {
+    id: OVERTIME_PERMISSIONS.DELETE_OWN_OVERTIME,
+    name: '取消自己的加班申請',
+    category: 'overtime',
+    description: '允許取消自己待審核的加班申請'
+  },
+  {
+    id: OVERTIME_PERMISSIONS.APPROVE_OVERTIME,
+    name: '審核加班申請',
+    category: 'overtime',
+    description: '允許審核下屬的加班申請'
+  },
+  {
+    id: OVERTIME_PERMISSIONS.VIEW_SUBORDINATE_OVERTIME,
+    name: '查看下屬加班記錄',
+    category: 'overtime',
+    description: '允許查看直屬下屬的加班記錄'
+  },
+  {
+    id: OVERTIME_PERMISSIONS.VIEW_ALL_OVERTIME,
+    name: '查看所有加班記錄',
+    category: 'overtime',
+    description: '允許查看所有員工的加班記錄'
+  },
+  {
+    id: OVERTIME_PERMISSIONS.MANAGE_OVERTIME,
+    name: '管理加班申請',
+    category: 'overtime',
+    description: '允許管理所有加班申請和設定'
+  },
+  {
+    id: OVERTIME_PERMISSIONS.EXPORT_OVERTIME,
+    name: '匯出加班資料',
+    category: 'overtime',
+    description: '允許匯出加班記錄和統計資料'
+  },
+  {
+    id: OVERTIME_PERMISSIONS.VIEW_OVERTIME_REPORTS,
+    name: '查看加班報表',
+    category: 'overtime',
+    description: '允許查看加班統計報表'
+  },
+  {
+    id: OVERTIME_PERMISSIONS.MANAGE_OVERTIME_REPORTS,
+    name: '管理加班報表',
+    category: 'overtime',
+    description: '允許管理和設定加班報表'
+  }
+] as const;

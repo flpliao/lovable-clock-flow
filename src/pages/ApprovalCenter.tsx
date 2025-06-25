@@ -15,6 +15,16 @@ import MissedCheckinApprovalTab from './approval/components/MissedCheckinApprova
 import OvertimeApprovalTab from './approval/components/OvertimeApprovalTab';
 import MyApplicationsTab from './approval/components/MyApplicationsTab';
 
+// 統一 MyApplication 介面定義，包含 cancelled 狀態
+interface MyApplication {
+  id: string;
+  type: 'overtime' | 'missed_checkin' | 'leave';
+  title: string;
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  created_at: string;
+  details: any;
+}
+
 const ApprovalCenter = () => {
   const { currentUser } = useUser();
   const [activeTab, setActiveTab] = useState<string>('my-applications');

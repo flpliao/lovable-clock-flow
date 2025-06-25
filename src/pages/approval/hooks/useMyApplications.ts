@@ -4,6 +4,7 @@ import { useUser } from '@/contexts/UserContext';
 import { queryOvertimeService } from '@/services/overtime/queryOvertimeService';
 import { supabase } from '@/integrations/supabase/client';
 
+// 統一 MyApplication 介面定義，包含 cancelled 狀態
 interface MyApplication {
   id: string;
   type: 'overtime' | 'missed_checkin' | 'leave';

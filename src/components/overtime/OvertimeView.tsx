@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { queryOvertimeService } from '@/services/overtime/queryOvertimeService';
@@ -28,12 +27,15 @@ const OvertimeView: React.FC = () => {
           (record.status !== 'pending' && new Date(record.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
         );
         
-        // 確保資料結構正確
-        const formattedRecords = filteredRecords.map(record => ({
+        // 確保資料結構正確，補充缺失的 overtime_id
+        const formattedRecords: OvertimeRecord[] = filteredRecords.map(record => ({
           ...record,
           staff: Array.isArray(record.staff) ? record.staff[0] : record.staff,
           overtime_approval_records: Array.isArray(record.overtime_approval_records) 
-            ? record.overtime_approval_records 
+            ? record.overtime_approval_records.map(approvalRecord => ({
+                ...approvalRecord,
+                overtime_id: approvalRecord.overtime_id || record.id // 確保有 overtime_id
+              }))
             : []
         }));
         

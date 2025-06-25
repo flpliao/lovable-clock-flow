@@ -1,5 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
+import type { SupervisorHierarchyItem } from './types';
 
 export const overtimeApprovalService = {
   async approveOvertimeRequest(
@@ -44,7 +44,7 @@ export const overtimeApprovalService = {
       }
 
       // 3. 檢查是否還有下一層審核
-      const supervisorHierarchy = overtimeData.supervisor_hierarchy || [];
+      const supervisorHierarchy = overtimeData.supervisor_hierarchy as SupervisorHierarchyItem[] || [];
       const currentLevel = overtimeData.approval_level || 1;
       const hasNextLevel = Array.isArray(supervisorHierarchy) && currentLevel < supervisorHierarchy.length;
 

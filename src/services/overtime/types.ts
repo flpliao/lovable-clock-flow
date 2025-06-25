@@ -46,7 +46,7 @@ export interface OvertimeRecord {
   approval_comment?: string;
   rejection_reason?: string;
   compensation_hours?: number;
-  supervisor_hierarchy?: any; // Changed to any to handle Json type from Supabase
+  supervisor_hierarchy?: SupervisorHierarchyItem[];
   staff?: {
     name: string;
     department: string;
@@ -54,4 +54,12 @@ export interface OvertimeRecord {
     supervisor_id?: string;
   };
   overtime_approval_records?: OvertimeApprovalRecord[];
+}
+
+export interface SupervisorHierarchyItem {
+  level: number;
+  supervisor_id: string;
+  supervisor_name: string;
+  supervisor_department?: string;
+  supervisor_position?: string;
 }

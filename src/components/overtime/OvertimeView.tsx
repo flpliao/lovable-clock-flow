@@ -5,7 +5,7 @@ import { queryOvertimeService } from '@/services/overtime/queryOvertimeService';
 import { Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import type { OvertimeRecord, SupervisorHierarchyItem } from '@/services/overtime/types';
+import type { OvertimeRecord, SupervisorHierarchyItem, OvertimeApprovalRecord } from '@/services/overtime/types';
 
 const OvertimeView: React.FC = () => {
   const { currentUser } = useUser();
@@ -33,13 +33,14 @@ const OvertimeView: React.FC = () => {
           ...record,
           staff: Array.isArray(record.staff) ? record.staff[0] : record.staff,
           supervisor_hierarchy: Array.isArray(record.supervisor_hierarchy) 
-            ? record.supervisor_hierarchy as SupervisorHierarchyItem[]
+            ? (record.supervisor_hierarchy as unknown as SupervisorHierarchyItem[])
             : [],
           overtime_approval_records: Array.isArray(record.overtime_approval_records) 
             ? record.overtime_approval_records.map(approvalRecord => ({
                 ...approvalRecord,
-                overtime_id: record.id // 使用 record.id 作為 overtime_id
-              }))
+                overtime_id: record.id,
+                status: approvalRecord.status as 'pending' | 'approved' | 'rejected'
+              } as OvertimeApprovalRecord))
             : []
         }));
         

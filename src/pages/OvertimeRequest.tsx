@@ -45,7 +45,7 @@ const OvertimeRequest: React.FC = () => {
                   className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-3 text-sm data-[state=active]:backdrop-blur-xl"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  提交申請
+                  申請加班
                 </TabsTrigger>
                 <TabsTrigger 
                   value="history" 

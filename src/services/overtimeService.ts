@@ -5,13 +5,19 @@ import type { OvertimeRequest, OvertimeFormData, OvertimeType } from '@/types/ov
 export const overtimeService = {
   // 獲取加班類型
   async getOvertimeTypes(): Promise<OvertimeType[]> {
+    console.log('🔍 開始獲取加班類型');
     const { data, error } = await supabase
       .from('overtime_types')
       .select('*')
       .eq('is_active', true)
       .order('sort_order', { ascending: true });
     
-    if (error) throw error;
+    if (error) {
+      console.error('❌ 獲取加班類型失敗:', error);
+      throw error;
+    }
+    
+    console.log('✅ 獲取加班類型成功:', data);
     
     // 添加類型轉換確保類型安全
     return (data || []).map(item => ({
@@ -26,13 +32,49 @@ export const overtimeService = {
 
   // 提交加班申請
   async submitOvertimeRequest(formData: OvertimeFormData): Promise<string> {
+    console.log('🔍 開始提交加班申請，表單數據:', formData);
+    
     const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw new Error('用戶未登入');
+    if (!userData.user) {
+      console.error('❌ 用戶未登入');
+      throw new Error('用戶未登入');
+    }
+    
+    console.log('✅ 用戶已登入，用戶ID:', userData.user.id);
+
+    // 驗證必要欄位
+    if (!formData.overtime_type) {
+      console.error('❌ 缺少加班類型');
+      throw new Error('請選擇加班類型');
+    }
+    if (!formData.overtime_date) {
+      console.error('❌ 缺少加班日期');
+      throw new Error('請選擇加班日期');
+    }
+    if (!formData.start_time) {
+      console.error('❌ 缺少開始時間');
+      throw new Error('請選擇開始時間');
+    }
+    if (!formData.end_time) {
+      console.error('❌ 缺少結束時間');
+      throw new Error('請選擇結束時間');
+    }
+    if (!formData.reason) {
+      console.error('❌ 缺少加班原因');
+      throw new Error('請填寫加班原因');
+    }
 
     // 計算加班時數
     const startTime = new Date(`2000-01-01T${formData.start_time}`);
     const endTime = new Date(`2000-01-01T${formData.end_time}`);
     const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+
+    if (hours <= 0) {
+      console.error('❌ 結束時間必須大於開始時間');
+      throw new Error('結束時間必須大於開始時間');
+    }
+
+    console.log('✅ 計算加班時數:', hours);
 
     const requestData = {
       staff_id: userData.user.id,
@@ -47,16 +89,34 @@ export const overtimeService = {
       approval_level: 1
     };
 
+    console.log('🚀 準備插入資料庫的數據:', requestData);
+
     const { data, error } = await supabase
       .from('overtime_requests')
       .insert(requestData)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ 插入資料庫失敗:', error);
+      console.error('錯誤詳情:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      throw new Error(`加班申請提交失敗: ${error.message}`);
+    }
+
+    console.log('✅ 資料庫插入成功:', data);
 
     // 創建通知
-    await this.createOvertimeNotification(data.id, '加班申請已提交', '您的加班申請已提交，等待審核');
+    try {
+      await this.createOvertimeNotification(data.id, '加班申請已提交', '您的加班申請已提交，等待審核');
+      console.log('✅ 通知創建成功');
+    } catch (notificationError) {
+      console.warn('⚠️ 通知創建失敗，但加班申請已成功提交:', notificationError);
+    }
 
     return data.id;
   },

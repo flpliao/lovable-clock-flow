@@ -57,5 +57,6 @@ export interface OvertimeFormData {
   start_time: string;
   end_time: string;
   reason: string;
+  compensation_type?: string;
   attachment?: File;
 }

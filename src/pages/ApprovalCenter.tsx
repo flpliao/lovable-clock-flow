@@ -6,13 +6,11 @@ import LeaveApprovalDetail from '@/components/leave/LeaveApprovalDetail';
 import { useApprovalStats } from './approval/hooks/useApprovalStats';
 import { useLeaveRequests } from './approval/hooks/useLeaveRequests';
 import { useMissedCheckinRequests } from './approval/hooks/useMissedCheckinRequests';
-import { useOvertimeRequests } from './approval/hooks/useOvertimeRequests';
 import { useMyApplications } from './approval/hooks/useMyApplications';
 import ApprovalHeader from './approval/components/ApprovalHeader';
 import ApprovalStats from './approval/components/ApprovalStats';
 import LeaveApprovalTab from './approval/components/LeaveApprovalTab';
 import MissedCheckinApprovalTab from './approval/components/MissedCheckinApprovalTab';
-import OvertimeApprovalTab from './approval/components/OvertimeApprovalTab';
 import MyApplicationsTab from './approval/components/MyApplicationsTab';
 import type { MyApplication } from '@/types/myApplication';
 
@@ -37,11 +35,6 @@ const ApprovalCenter = () => {
     handleMissedCheckinApproval
   } = useMissedCheckinRequests();
   const {
-    overtimeRequests,
-    loadOvertimeRequests,
-    handleOvertimeApproval
-  } = useOvertimeRequests();
-  const {
     myApplications,
     isLoading: myApplicationsLoading,
     loadMyApplications
@@ -51,11 +44,10 @@ const ApprovalCenter = () => {
     if (currentUser?.id) {
       loadPendingRequests();
       loadMissedCheckinRequests();
-      loadOvertimeRequests();
       loadApprovalStats();
       loadMyApplications();
     }
-  }, [currentUser?.id, loadPendingRequests, loadMissedCheckinRequests, loadOvertimeRequests, loadApprovalStats, loadMyApplications]);
+  }, [currentUser?.id, loadPendingRequests, loadMissedCheckinRequests, loadApprovalStats, loadMyApplications]);
 
   const handleViewDetail = (request: any) => {
     setSelectedRequest(request);
@@ -74,7 +66,6 @@ const ApprovalCenter = () => {
   const refreshData = () => {
     loadPendingRequests();
     loadMissedCheckinRequests();
-    loadOvertimeRequests();
     loadApprovalStats();
     loadMyApplications();
   };
@@ -102,8 +93,8 @@ const ApprovalCenter = () => {
   const totalApproved = approvalStats.todayApproved + approvalStats.missedCheckinApproved + approvalStats.overtimeApproved;
   const totalRejected = approvalStats.todayRejected + approvalStats.missedCheckinRejected + approvalStats.overtimeRejected;
 
-  // 計算需要審核的總數（僅針對有審核權限的申請）
-  const totalPendingForApproval = pendingRequests.length + missedCheckinRequests.length + overtimeRequests.length;
+  // 計算需要審核的總數（加班功能已移除，設為 0）
+  const totalPendingForApproval = pendingRequests.length + missedCheckinRequests.length + 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36 py-[50px]">
@@ -116,7 +107,7 @@ const ApprovalCenter = () => {
           <ApprovalStats
             pendingLeave={pendingRequests.length}
             pendingMissedCheckin={missedCheckinRequests.length}
-            pendingOvertime={overtimeRequests.length}
+            pendingOvertime={0}
             todayApproved={totalApproved}
             todayRejected={totalRejected}
           />
@@ -124,7 +115,7 @@ const ApprovalCenter = () => {
           {/* Main Content Area */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-1 h-12 mb-6">
+              <TabsList className="grid w-full grid-cols-3 backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-1 h-12 mb-6">
                 <TabsTrigger 
                   value="my-applications" 
                   className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-3 text-sm data-[state=active]:backdrop-blur-xl"
@@ -142,12 +133,6 @@ const ApprovalCenter = () => {
                   className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-3 text-sm data-[state=active]:backdrop-blur-xl"
                 >
                   忘記打卡 ({missedCheckinRequests.length})
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="overtime" 
-                  className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-3 text-sm data-[state=active]:backdrop-blur-xl"
-                >
-                  加班審核 ({overtimeRequests.length})
                 </TabsTrigger>
               </TabsList>
 
@@ -175,14 +160,6 @@ const ApprovalCenter = () => {
                 <MissedCheckinApprovalTab
                   missedCheckinRequests={missedCheckinRequests}
                   onApproval={handleMissedCheckinApproval}
-                />
-              </TabsContent>
-
-              <TabsContent value="overtime" className="mt-0">
-                <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">待審核加班申請</h2>
-                <OvertimeApprovalTab
-                  overtimeRequests={overtimeRequests}
-                  onApproval={handleOvertimeApproval}
                 />
               </TabsContent>
             </Tabs>

@@ -5,7 +5,6 @@ import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, Clock, DollarSign, Settings, Activity, Database } from 'lucide-react';
 import AttendanceExceptionManagement from '@/components/attendance/AttendanceExceptionManagement';
-import OvertimeManagement from '@/components/hr/OvertimeManagement';
 import PayrollManagement from '@/components/hr/PayrollManagement';
 import SalaryStructureManagement from '@/components/hr/SalaryStructureManagement';
 

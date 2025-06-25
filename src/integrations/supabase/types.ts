@@ -971,143 +971,6 @@ export type Database = {
           },
         ]
       }
-      overtime_approval_records: {
-        Row: {
-          approval_date: string | null
-          approver_id: string | null
-          approver_name: string
-          comment: string | null
-          created_at: string
-          id: string
-          level: number
-          overtime_id: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          approval_date?: string | null
-          approver_id?: string | null
-          approver_name: string
-          comment?: string | null
-          created_at?: string
-          id?: string
-          level: number
-          overtime_id: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          approval_date?: string | null
-          approver_id?: string | null
-          approver_name?: string
-          comment?: string | null
-          created_at?: string
-          id?: string
-          level?: number
-          overtime_id?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_overtime_approval_records_overtime_id"
-            columns: ["overtime_id"]
-            isOneToOne: false
-            referencedRelation: "overtimes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      overtimes: {
-        Row: {
-          approval_comment: string | null
-          approval_date: string | null
-          approval_level: number | null
-          approved_by: string | null
-          approved_by_name: string | null
-          attachment_url: string | null
-          compensation_hours: number | null
-          compensation_type: string
-          created_at: string
-          current_approver: string | null
-          end_time: string
-          hours: number
-          id: string
-          overtime_date: string
-          overtime_type: string
-          reason: string
-          rejection_reason: string | null
-          staff_id: string
-          start_time: string
-          status: string
-          supervisor_hierarchy: Json | null
-          updated_at: string
-        }
-        Insert: {
-          approval_comment?: string | null
-          approval_date?: string | null
-          approval_level?: number | null
-          approved_by?: string | null
-          approved_by_name?: string | null
-          attachment_url?: string | null
-          compensation_hours?: number | null
-          compensation_type: string
-          created_at?: string
-          current_approver?: string | null
-          end_time: string
-          hours: number
-          id?: string
-          overtime_date: string
-          overtime_type: string
-          reason: string
-          rejection_reason?: string | null
-          staff_id: string
-          start_time: string
-          status?: string
-          supervisor_hierarchy?: Json | null
-          updated_at?: string
-        }
-        Update: {
-          approval_comment?: string | null
-          approval_date?: string | null
-          approval_level?: number | null
-          approved_by?: string | null
-          approved_by_name?: string | null
-          attachment_url?: string | null
-          compensation_hours?: number | null
-          compensation_type?: string
-          created_at?: string
-          current_approver?: string | null
-          end_time?: string
-          hours?: number
-          id?: string
-          overtime_date?: string
-          overtime_type?: string
-          reason?: string
-          rejection_reason?: string | null
-          staff_id?: string
-          start_time?: string
-          status?: string
-          supervisor_hierarchy?: Json | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "overtimes_approved_by_fkey"
-            columns: ["approved_by"]
-            isOneToOne: false
-            referencedRelation: "staff"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "overtimes_staff_id_fkey"
-            columns: ["staff_id"]
-            isOneToOne: false
-            referencedRelation: "staff"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       payroll_approvals: {
         Row: {
           action: string
@@ -1763,17 +1626,6 @@ export type Database = {
         }
         Returns: string
       }
-      create_overtime_notification: {
-        Args: {
-          p_user_id: string
-          p_title: string
-          p_message: string
-          p_type?: string
-          p_overtime_id?: string
-          p_action_required?: boolean
-        }
-        Returns: string
-      }
       get_announcement_read_stats: {
         Args: { announcement_uuid: string }
         Returns: {
@@ -1790,14 +1642,6 @@ export type Database = {
       get_current_user_role_safe: {
         Args: Record<PropertyKey, never>
         Returns: string
-      }
-      get_overtime_supervisor_hierarchy: {
-        Args: { staff_id_param: string; max_levels?: number }
-        Returns: Json
-      }
-      get_supervisor_hierarchy: {
-        Args: { staff_id_param: string; max_levels?: number }
-        Returns: Json
       }
       get_table_rls_status: {
         Args: { table_name: string }

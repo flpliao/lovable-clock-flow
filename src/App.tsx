@@ -5,8 +5,6 @@ import Login from '@/pages/Login';
 import LeaveRequest from '@/pages/LeaveRequest';
 import AnnouncementManagementPage from '@/pages/AnnouncementManagementPage';
 import HolidayManagement from '@/pages/HolidayManagement';
-import DepartmentManagement from '@/pages/DepartmentManagement';
-import ScheduleManagement from '@/pages/ScheduleManagement';
 import AttendancePage from '@/pages/AttendancePage';
 import ApprovalCenter from '@/pages/ApprovalCenter';
 import HRManagement from '@/pages/HRManagement';
@@ -32,8 +30,6 @@ const App = () => {
                 <Route path="/leave-request" element={<LeaveRequest />} />
                 <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
                 <Route path="/holiday-management" element={<HolidayManagement />} />
-                <Route path="/department-management" element={<DepartmentManagement />} />
-                <Route path="/schedule-management" element={<ScheduleManagement />} />
                 <Route path="/attendance" element={<AttendancePage />} />
                 <Route path="/approval-center" element={<ApprovalCenter />} />
                 <Route path="/hr-management" element={<HRManagement />} />

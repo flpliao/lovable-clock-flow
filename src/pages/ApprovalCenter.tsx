@@ -14,6 +14,7 @@ import LeaveApprovalTab from './approval/components/LeaveApprovalTab';
 import MissedCheckinApprovalTab from './approval/components/MissedCheckinApprovalTab';
 import OvertimeApprovalTab from './approval/components/OvertimeApprovalTab';
 import MyApplicationsTab from './approval/components/MyApplicationsTab';
+import type { MyApplication } from '@/types/myApplication';
 
 const ApprovalCenter = () => {
   const { currentUser } = useUser();

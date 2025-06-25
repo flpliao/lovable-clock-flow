@@ -1,16 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Plus, History, AlertCircle } from 'lucide-react';
+import { Clock, FileText, History } from 'lucide-react';
 import OvertimeRequestForm from '@/components/overtime/OvertimeRequestForm';
 import OvertimeHistory from '@/components/overtime/OvertimeHistory';
+import OvertimeView from '@/components/overtime/OvertimeView';
 import { useOvertimePermissions } from '@/hooks/useOvertimePermissions';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 
 const OvertimeManagementContent = () => {
   const { currentUser } = useUser();
+  const [activeTab, setActiveTab] = useState<string>('request');
   const {
     canViewOwnOvertime,
     canCreateOvertime,
@@ -43,7 +45,7 @@ const OvertimeManagementContent = () => {
         <div className="relative z-10 w-full flex items-center justify-center min-h-screen">
           <div className="bg-white/20 backdrop-blur-xl rounded-2xl p-8 border border-white/30 shadow-lg text-center max-w-md">
             <div className="w-16 h-16 bg-red-500/80 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="h-8 w-8 text-white" />
+              <Clock className="h-8 w-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-4">無加班權限</h2>
             <p className="text-white/80 mb-6">
@@ -60,9 +62,6 @@ const OvertimeManagementContent = () => {
       </div>
     );
   }
-
-  // 決定預設標籤頁
-  const defaultTab = canCreateOvertime ? "request" : "history";
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
@@ -99,45 +98,49 @@ const OvertimeManagementContent = () => {
           </div>
         </div>
 
-        {/* 功能選擇區域 */}
+        {/* 功能選擇區域 - 模仿請假管理的三個選項卡 */}
         <div className="w-full px-4 lg:px-8 pb-8">
-          <Tabs defaultValue={defaultTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
-              {canCreateOvertime && (
-                <TabsTrigger 
-                  value="request" 
-                  className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">申請加班</span>
-                  <span className="sm:hidden">申請</span>
-                </TabsTrigger>
-              )}
-              {canViewOwnOvertime && (
-                <TabsTrigger 
-                  value="history" 
-                  className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
-                >
-                  <History className="h-4 w-4" />
-                  <span className="hidden sm:inline">加班記錄</span>
-                  <span className="sm:hidden">記錄</span>
-                </TabsTrigger>
-              )}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
+              <TabsTrigger 
+                value="request" 
+                className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline">申請加班</span>
+                <span className="sm:hidden">申請</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="view" 
+                className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+              >
+                <Clock className="h-4 w-4" />
+                <span className="hidden sm:inline">查看加班</span>
+                <span className="sm:hidden">查看</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="history" 
+                className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
+              >
+                <History className="h-4 w-4" />
+                <span className="hidden sm:inline">加班記錄</span>
+                <span className="sm:hidden">記錄</span>
+              </TabsTrigger>
             </TabsList>
             
             {/* 內容區域 */}
             <div className="mt-8">
-              {canCreateOvertime && (
-                <TabsContent value="request" className="mt-0">
-                  <OvertimeRequestForm />
-                </TabsContent>
-              )}
+              <TabsContent value="request" className="mt-0">
+                <OvertimeRequestForm />
+              </TabsContent>
               
-              {canViewOwnOvertime && (
-                <TabsContent value="history" className="mt-0">
-                  <OvertimeHistory />
-                </TabsContent>
-              )}
+              <TabsContent value="view" className="mt-0">
+                <OvertimeView />
+              </TabsContent>
+              
+              <TabsContent value="history" className="mt-0">
+                <OvertimeHistory />
+              </TabsContent>
             </div>
           </Tabs>
         </div>

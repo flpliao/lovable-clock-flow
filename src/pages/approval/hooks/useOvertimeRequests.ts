@@ -46,7 +46,7 @@ export const useOvertimeRequests = () => {
       console.log('✅ 加班申請審核完成');
     } catch (error) {
       console.error('❌ 加班申請審核失敗:', error);
-      toast.error('加班申請審核失敗');
+      toast.error(`加班申請審核失敗：${error?.message || '未知錯誤'}`);
     }
   }, []);
 

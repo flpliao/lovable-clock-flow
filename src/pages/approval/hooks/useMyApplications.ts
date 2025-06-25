@@ -75,6 +75,10 @@ export const useMyApplications = () => {
             title: `加班申請 - ${record.overtime_type} (${record.hours}小時) - ${statusText}`,
             status: record.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
             created_at: record.created_at,
+            applicant: currentUser?.name || '未知用戶',
+            department: '預設部門',
+            date: record.overtime_date,
+            reason: record.reason,
             details: record
           });
         });
@@ -97,6 +101,10 @@ export const useMyApplications = () => {
             title: `${typeText} - ${record.request_date} - ${statusText}`,
             status: record.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
             created_at: record.created_at,
+            applicant: currentUser?.name || '未知用戶',
+            department: '預設部門',
+            date: record.request_date,
+            reason: record.reason,
             details: record
           });
         });
@@ -117,6 +125,10 @@ export const useMyApplications = () => {
             title: `請假申請 - ${record.leave_type} (${record.hours}小時) - ${statusText}`,
             status: record.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
             created_at: record.created_at,
+            applicant: currentUser?.name || '未知用戶',
+            department: '預設部門',
+            date: record.start_date,
+            reason: record.reason,
             details: record
           });
         });

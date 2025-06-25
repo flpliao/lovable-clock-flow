@@ -31,16 +31,29 @@ export const overtimeService = {
     const endTime = new Date(`2000-01-01T${formData.end_time}`);
     const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
 
+    // 獲取當前用戶資訊來判斷是否為主管
+    const currentUserId = '550e8400-e29b-41d4-a716-446655440001'; // 使用預設用戶 ID
+    
+    // 檢查當前用戶是否為主管（檢查是否有下屬）
+    const { data: subordinates } = await supabase
+      .from('staff')
+      .select('id')
+      .eq('supervisor_id', currentUserId)
+      .limit(1);
+
+    const isManager = subordinates && subordinates.length > 0;
+
     const requestData = {
-      staff_id: '550e8400-e29b-41d4-a716-446655440001', // 使用預設用戶 ID
-      user_id: '550e8400-e29b-41d4-a716-446655440001',
+      staff_id: currentUserId,
+      user_id: currentUserId,
       overtime_type: formData.overtime_type,
       overtime_date: formData.overtime_date,
       start_time: formData.start_time,
       end_time: formData.end_time,
       hours,
       reason: formData.reason,
-      status: 'pending' as const,
+      // 如果是主管，直接核准；否則等待審核
+      status: isManager ? 'approved' as const : 'pending' as const,
       approval_level: 1
     };
 
@@ -52,8 +65,21 @@ export const overtimeService = {
 
     if (error) throw error;
 
-    // 創建通知
-    await this.createOvertimeNotification(data.id, '加班申請已提交', '您的加班申請已提交，等待審核');
+    // 如果是主管自己核准，創建核准通知
+    if (isManager) {
+      await this.createOvertimeNotification(
+        data.id, 
+        '加班申請已自動核准', 
+        '您的加班申請已自動核准（主管權限）'
+      );
+    } else {
+      // 創建提交通知
+      await this.createOvertimeNotification(
+        data.id, 
+        '加班申請已提交', 
+        '您的加班申請已提交，等待審核'
+      );
+    }
 
     return data.id;
   },

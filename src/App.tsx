@@ -5,14 +5,14 @@ import Login from '@/pages/Login';
 import LeaveRequest from '@/pages/LeaveRequest';
 import AnnouncementManagementPage from '@/pages/AnnouncementManagementPage';
 import HolidayManagement from '@/pages/HolidayManagement';
-import AttendancePage from '@/pages/AttendancePage';
 import ApprovalCenter from '@/pages/ApprovalCenter';
 import HRManagement from '@/pages/HRManagement';
 import OvertimeManagement from '@/pages/OvertimeManagement';
 import OvertimeRequestPage from '@/pages/OvertimeRequest';
-import MissedCheckinRequestPage from '@/pages/MissedCheckinRequestPage';
+import MissedCheckinManagement from '@/pages/MissedCheckinManagement';
 import CompanyBranchManagement from '@/pages/CompanyBranchManagement';
 import Index from '@/pages/Index';
+import PersonalAttendance from '@/pages/PersonalAttendance';
 import { UserProvider } from '@/contexts/UserContext';
 import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
 import { Toaster } from '@/components/ui/toaster';
@@ -30,11 +30,11 @@ const App = () => {
                 <Route path="/leave-request" element={<LeaveRequest />} />
                 <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
                 <Route path="/holiday-management" element={<HolidayManagement />} />
-                <Route path="/attendance" element={<AttendancePage />} />
+                <Route path="/attendance" element={<PersonalAttendance />} />
                 <Route path="/approval-center" element={<ApprovalCenter />} />
                 <Route path="/hr-management" element={<HRManagement />} />
                 <Route path="/overtime-management" element={<OvertimeManagement />} />
-                <Route path="/missed-checkin-request" element={<MissedCheckinRequestPage />} />
+                <Route path="/missed-checkin-management" element={<MissedCheckinManagement />} />
                 <Route path="/company-branch-management" element={<CompanyBranchManagement />} />
                 <Route path="/" element={<Index />} />
                 <Route path="/overtime-request" element={<OvertimeRequestPage />} />

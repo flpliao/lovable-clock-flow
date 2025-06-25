@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { overtimeSubmissionService } from '@/services/overtime/overtimeSubmissionService';
 import { calculateOvertimeHours } from '@/utils/overtimeUtils';
+import { loadUserStaffData } from '@/services/staffDataService';
 import OvertimeFormHeader from './components/OvertimeFormHeader';
 import OvertimeBasicInfoSection from './components/OvertimeBasicInfoSection';
 import OvertimeTimeSection from './components/OvertimeTimeSection';
@@ -22,7 +23,38 @@ const OvertimeRequestForm: React.FC = () => {
     reason: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isValidatingUser, setIsValidatingUser] = useState(true);
+  const [userValidated, setUserValidated] = useState(false);
   const { toast } = useToast();
+
+  // 驗證用戶是否為有效員工
+  useEffect(() => {
+    const validateUser = async () => {
+      if (!currentUser) {
+        setIsValidatingUser(false);
+        return;
+      }
+
+      try {
+        console.log('🔍 驗證用戶員工資料:', currentUser.id);
+        await loadUserStaffData(currentUser.id);
+        setUserValidated(true);
+        console.log('✅ 用戶員工資料驗證成功');
+      } catch (error) {
+        console.error('❌ 用戶員工資料驗證失敗:', error);
+        setUserValidated(false);
+        toast({
+          title: '驗證失敗',
+          description: '無法驗證您的員工資料，請聯繫系統管理員',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsValidatingUser(false);
+      }
+    };
+
+    validateUser();
+  }, [currentUser, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +63,15 @@ const OvertimeRequestForm: React.FC = () => {
       toast({
         title: '登入錯誤',
         description: '請先登入後再提交申請',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!userValidated) {
+      toast({
+        title: '驗證失敗',
+        description: '您的員工資料驗證失敗，無法提交申請',
         variant: 'destructive',
       });
       return;
@@ -123,6 +164,31 @@ const OvertimeRequestForm: React.FC = () => {
   const updateFormData = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  // 載入中狀態
+  if (isValidatingUser) {
+    return (
+      <div className="space-y-8">
+        <OvertimeFormHeader />
+        <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-8 text-center">
+          <div className="text-white">正在驗證員工資料...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // 驗證失敗狀態
+  if (!userValidated) {
+    return (
+      <div className="space-y-8">
+        <OvertimeFormHeader />
+        <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-8 text-center">
+          <div className="text-red-200 mb-4">員工資料驗證失敗</div>
+          <div className="text-white/80">請聯繫系統管理員檢查您的帳戶設定</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-12">

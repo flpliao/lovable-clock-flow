@@ -7,6 +7,22 @@ export const overtimeSubmissionService = {
     console.log('🚀 提交加班申請:', overtimeData);
     
     try {
+      // 首先驗證員工資料是否存在
+      console.log('🔍 驗證員工資料存在性，用戶ID:', currentUserId);
+      
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('id, name, department, position, supervisor_id')
+        .eq('id', currentUserId)
+        .single();
+
+      if (staffError || !staffData) {
+        console.error('❌ 員工資料驗證失敗:', staffError);
+        throw new Error('員工資料不存在，請聯繫系統管理員檢查您的帳戶設定');
+      }
+
+      console.log('✅ 員工資料驗證成功:', staffData);
+
       // 確保只能為自己申請
       if (overtimeData.staff_id !== currentUserId) {
         throw new Error('只能為自己申請加班');
@@ -43,7 +59,7 @@ export const overtimeSubmissionService = {
         throw new Error('結束時間必須晚於開始時間');
       }
 
-      console.log('✅ 驗證通過，準備提交到資料庫');
+      console.log('✅ 所有驗證通過，準備提交到資料庫');
       
       // 提交到資料庫，觸發器會自動設定審核流程
       const { data, error } = await supabase
@@ -88,9 +104,11 @@ export const overtimeSubmissionService = {
         if (error.code === '23505') {
           throw new Error('重複的加班申請，請檢查是否已提交相同時間的申請');
         } else if (error.code === '23503') {
-          throw new Error('員工資料不存在或無效');
+          throw new Error('員工資料參考錯誤，請聯繫系統管理員');
         } else if (error.code === '42501') {
           throw new Error('權限不足，無法提交申請');
+        } else if (error.message.includes('staff_id')) {
+          throw new Error('員工ID無效，請重新登入後再試');
         } else {
           throw new Error(`提交失敗: ${error.message || '資料庫操作錯誤'}`);
         }

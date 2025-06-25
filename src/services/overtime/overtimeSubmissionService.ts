@@ -8,13 +8,13 @@ export const overtimeSubmissionService = {
     console.log('🔍 當前用戶ID:', currentUserId);
     
     try {
-      // 透過 user_id 查詢對應的員工資料
-      console.log('🔍 透過 user_id 查詢員工資料:', currentUserId);
+      // 直接使用 currentUserId 作為 staff_id，假設 staff.id 就是 user_id
+      console.log('🔍 驗證員工資料是否存在:', currentUserId);
       
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
-        .select('id, name, department, position, supervisor_id, email, role, user_id')
-        .eq('user_id', currentUserId)
+        .select('id, name, department, position, supervisor_id, email, role')
+        .eq('id', currentUserId)
         .maybeSingle();
 
       console.log('📊 Staff查詢結果:', { staffData, staffError });
@@ -30,21 +30,20 @@ export const overtimeSubmissionService = {
         // 額外檢查：列出所有員工ID來調試
         const { data: allStaff, error: allStaffError } = await supabase
           .from('staff')
-          .select('id, name, email, role, user_id')
+          .select('id, name, email, role')
           .limit(10);
         
         console.log('📋 系統中的員工列表 (前10個):', allStaff);
         console.log('🔍 查找用戶ID匹配情況:', {
           searchingFor: currentUserId,
-          foundUserIds: allStaff?.map(s => s.user_id) || []
+          foundIds: allStaff?.map(s => s.id) || []
         });
         
-        throw new Error('找不到對應的員工資料。請確認您的帳戶已正確設定員工檔案，且 user_id 已正確關聯。如果問題持續，請聯繫系統管理員檢查員工資料設定。');
+        throw new Error('找不到對應的員工資料。請確認您的帳戶已正確設定員工檔案。如果問題持續，請聯繫系統管理員檢查員工資料設定。');
       }
 
       console.log('✅ 員工資料驗證成功:', {
         staff_id: staffData.id,
-        user_id: staffData.user_id,
         name: staffData.name,
         department: staffData.department,
         position: staffData.position,
@@ -84,9 +83,9 @@ export const overtimeSubmissionService = {
 
       console.log('✅ 所有驗證通過，準備提交到資料庫');
       
-      // 準備插入的資料 - 使用查詢到的 staff.id
+      // 準備插入的資料 - 使用 currentUserId 作為 staff_id
       const insertData = {
-        staff_id: staffData.id, // 使用從資料庫查詢到的員工ID (staff.id)
+        staff_id: currentUserId, // 直接使用當前用戶ID作為員工ID
         overtime_date: overtimeData.overtime_date,
         start_time: overtimeData.start_time,
         end_time: overtimeData.end_time,
@@ -100,8 +99,6 @@ export const overtimeSubmissionService = {
       console.log('📝 準備插入的資料:', insertData);
       console.log('🔍 確認員工ID關聯:', {
         用戶ID: currentUserId,
-        員工檔案ID: staffData.id,
-        員工關聯用戶ID: staffData.user_id,
         最終使用員工ID: insertData.staff_id
       });
       
@@ -176,17 +173,7 @@ export const overtimeSubmissionService = {
     console.log('🔄 更新加班申請:', { overtimeId, updateData });
     
     try {
-      // 先查詢員工ID
-      const { data: staffData, error: staffError } = await supabase
-        .from('staff')
-        .select('id')
-        .eq('user_id', currentUserId)
-        .single();
-
-      if (staffError || !staffData) {
-        throw new Error('找不到員工資料');
-      }
-
+      // 直接使用 currentUserId 作為 staff_id
       const { data, error } = await supabase
         .from('overtimes')
         .update({
@@ -200,7 +187,7 @@ export const overtimeSubmissionService = {
           updated_at: new Date().toISOString()
         })
         .eq('id', overtimeId)
-        .eq('staff_id', staffData.id) // 使用正確的 staff.id
+        .eq('staff_id', currentUserId) // 直接使用當前用戶ID
         .eq('status', 'pending') // 只能更新待審核的申請
         .select()
         .single();
@@ -222,17 +209,7 @@ export const overtimeSubmissionService = {
     console.log('🗑️ 取消加班申請:', overtimeId);
     
     try {
-      // 先查詢員工ID
-      const { data: staffData, error: staffError } = await supabase
-        .from('staff')
-        .select('id')
-        .eq('user_id', currentUserId)
-        .single();
-
-      if (staffError || !staffData) {
-        throw new Error('找不到員工資料');
-      }
-
+      // 直接使用 currentUserId 作為 staff_id
       const { data, error } = await supabase
         .from('overtimes')
         .update({
@@ -240,7 +217,7 @@ export const overtimeSubmissionService = {
           updated_at: new Date().toISOString()
         })
         .eq('id', overtimeId)
-        .eq('staff_id', staffData.id) // 使用正確的 staff.id
+        .eq('staff_id', currentUserId) // 直接使用當前用戶ID
         .eq('status', 'pending') // 只能取消待審核的申請
         .select()
         .single();

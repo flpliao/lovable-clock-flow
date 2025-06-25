@@ -12,7 +12,12 @@ export const overtimeService = {
       .order('sort_order', { ascending: true });
     
     if (error) throw error;
-    return data || [];
+    
+    // 添加類型轉換確保類型安全
+    return (data || []).map(item => ({
+      ...item,
+      compensation_type: item.compensation_type as 'overtime_pay' | 'compensatory_time'
+    }));
   },
 
   // 提交加班申請
@@ -61,7 +66,12 @@ export const overtimeService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // 添加類型轉換確保類型安全
+    return (data || []).map(item => ({
+      ...item,
+      status: item.status as 'pending' | 'approved' | 'rejected' | 'cancelled'
+    }));
   },
 
   // 獲取待審核的加班申請
@@ -84,7 +94,12 @@ export const overtimeService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // 添加類型轉換確保類型安全
+    return (data || []).map(item => ({
+      ...item,
+      status: item.status as 'pending' | 'approved' | 'rejected' | 'cancelled'
+    }));
   },
 
   // 審核加班申請

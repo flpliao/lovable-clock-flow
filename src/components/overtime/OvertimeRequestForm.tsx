@@ -45,7 +45,7 @@ const OvertimeRequestForm: React.FC = () => {
         setUserValidated(false);
         toast({
           title: '驗證失敗',
-          description: '無法驗證您的員工資料，請聯繫系統管理員檢查帳戶設定',
+          description: '無法驗證您的員工資料，請聯繫系統管理員',
           variant: 'destructive',
         });
       } finally {
@@ -113,9 +113,9 @@ const OvertimeRequestForm: React.FC = () => {
 
       setIsSubmitting(true);
 
-      // 準備提交資料 - 直接使用 currentUser.id 作為 staff_id
+      // 準備提交資料
       const overtimeData = {
-        staff_id: currentUser.id, // 直接使用當前用戶ID
+        staff_id: currentUser.id,
         overtime_date: formData.overtimeDate,
         start_time: startDateTime,
         end_time: endDateTime,

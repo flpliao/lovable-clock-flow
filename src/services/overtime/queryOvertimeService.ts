@@ -7,8 +7,17 @@ export const queryOvertimeService = {
     console.log('🔍 查詢用戶加班申請:', userId);
     
     try {
-      // 直接使用 userId 作為 staff_id 查詢
-      console.log('✅ 直接使用用戶ID查詢加班記錄:', userId);
+      // 首先驗證用戶是否為有效員工
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('id, name')
+        .eq('id', userId)
+        .single();
+
+      if (staffError || !staffData) {
+        console.warn('⚠️ 用戶不是有效員工:', userId);
+        return [];
+      }
 
       const { data, error } = await supabase
         .from('overtimes')
@@ -33,7 +42,7 @@ export const queryOvertimeService = {
             updated_at
           )
         `)
-        .eq('staff_id', userId) // 直接使用用戶ID
+        .eq('staff_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -70,7 +79,6 @@ export const queryOvertimeService = {
     console.log('🔍 查詢加班申請詳情:', { overtimeId, userId });
     
     try {
-      // 直接使用 userId 作為 staff_id 查詢
       const { data, error } = await supabase
         .from('overtimes')
         .select(`
@@ -95,7 +103,7 @@ export const queryOvertimeService = {
           )
         `)
         .eq('id', overtimeId)
-        .eq('staff_id', userId) // 直接使用用戶ID
+        .eq('staff_id', userId)
         .single();
 
       if (error) {

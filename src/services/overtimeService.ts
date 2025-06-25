@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { OvertimeRequest, OvertimeFormData, OvertimeType } from '@/types/overtime';
 
@@ -15,7 +14,7 @@ export const overtimeService = {
     
     if (error) {
       console.error('❌ 獲取加班類型失敗:', error);
-      throw error;
+      throw new Error(`獲取加班類型失敗: ${error.message}`);
     }
     
     console.log('✅ 成功獲取加班類型:', data?.length || 0, '筆');
@@ -31,9 +30,9 @@ export const overtimeService = {
     }));
   },
 
-  // 驗證用戶認證狀態
-  async validateUserAuth(): Promise<{ userId: string; isAuthenticated: boolean }> {
-    console.log('🔐 驗證用戶認證狀態...');
+  // 檢查用戶認證狀態
+  async checkUserAuthentication(): Promise<{ userId: string; isAuthenticated: boolean; staffData: any }> {
+    console.log('🔐 檢查用戶認證狀態...');
     
     try {
       // 檢查 Supabase session
@@ -41,7 +40,7 @@ export const overtimeService = {
       
       if (sessionError) {
         console.error('❌ 獲取 session 失敗:', sessionError);
-        return { userId: '', isAuthenticated: false };
+        throw new Error(`獲取 session 失敗: ${sessionError.message}`);
       }
 
       const session = sessionData?.session;
@@ -55,10 +54,12 @@ export const overtimeService = {
 
       if (!session || !userId) {
         console.warn('⚠️ 用戶未登入或 session 無效');
-        return { userId: '', isAuthenticated: false };
+        throw new Error('用戶未登入，請重新登入後再試');
       }
 
       // 驗證用戶是否存在於 staff 表格中
+      console.log('🔍 驗證員工資料，用戶ID:', userId);
+      
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
         .select('id, name, role, department')
@@ -82,7 +83,7 @@ export const overtimeService = {
         department: staffData.department
       });
 
-      return { userId, isAuthenticated: true };
+      return { userId, isAuthenticated: true, staffData };
     } catch (error) {
       console.error('❌ 用戶認證驗證失敗:', error);
       throw error;
@@ -96,13 +97,14 @@ export const overtimeService = {
 
     try {
       // 驗證用戶認證
-      const { userId, isAuthenticated } = await this.validateUserAuth();
+      const { userId, isAuthenticated, staffData } = await this.checkUserAuthentication();
       
       if (!isAuthenticated) {
         throw new Error('用戶未登入，請重新登入後再試');
       }
 
       console.log('👤 使用認證用戶ID:', userId);
+      console.log('👤 員工資料:', staffData);
 
       // 驗證必填欄位
       const requiredFields = ['overtime_type', 'overtime_date', 'start_time', 'end_time', 'reason'];
@@ -172,7 +174,6 @@ export const overtimeService = {
     }
   },
 
-  // 獲取用戶的加班申請
   async getUserOvertimeRequests(userId?: string): Promise<OvertimeRequest[]> {
     console.log('📋 開始獲取用戶加班申請...');
     
@@ -180,7 +181,7 @@ export const overtimeService = {
       let targetUserId = userId;
       
       if (!targetUserId) {
-        const { userId: authUserId, isAuthenticated } = await this.validateUserAuth();
+        const { userId: authUserId, isAuthenticated } = await this.checkUserAuthentication();
         if (!isAuthenticated) {
           throw new Error('用戶未登入');
         }
@@ -218,7 +219,7 @@ export const overtimeService = {
     console.log('📋 開始獲取待審核加班申請...');
     
     try {
-      const { userId, isAuthenticated } = await this.validateUserAuth();
+      const { userId, isAuthenticated } = await this.checkUserAuthentication();
       
       if (!isAuthenticated) {
         throw new Error('用戶未登入');
@@ -261,7 +262,7 @@ export const overtimeService = {
     console.log('📋 開始審核加班申請:', { requestId, action, comment });
     
     try {
-      const { userId, isAuthenticated } = await this.validateUserAuth();
+      const { userId, isAuthenticated } = await this.checkUserAuthentication();
       
       if (!isAuthenticated) {
         throw new Error('用戶未登入');

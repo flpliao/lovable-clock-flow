@@ -10,6 +10,7 @@ import { OvertimeTimeSettings } from './form/OvertimeTimeSettings';
 import { OvertimeCompensation } from './form/OvertimeCompensation';
 import { OvertimeReason } from './form/OvertimeReason';
 import { OvertimeSubmitButton } from './form/OvertimeSubmitButton';
+import OvertimeAuthCheck from './OvertimeAuthCheck';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,7 @@ const OvertimeRequestForm: React.FC<OvertimeRequestFormProps> = ({ onSuccess }) 
     } catch (error) {
       console.error('❌ 載入加班類型失敗:', error);
       toast.error('載入加班類型失敗');
-      setAuthError('載入加班類型失敗，請重新整理頁面');
+      setAuthError('載入加班類型失敗，請重新整理頁面或重新登入');
     } finally {
       setIsLoading(false);
     }
@@ -62,26 +63,6 @@ const OvertimeRequestForm: React.FC<OvertimeRequestFormProps> = ({ onSuccess }) 
     setAuthError(null);
     
     try {
-      // 表單驗證
-      const requiredFields = ['overtime_type', 'overtime_date', 'start_time', 'end_time', 'reason'];
-      const missingFields = requiredFields.filter(field => !data[field as keyof OvertimeFormData]);
-      
-      if (missingFields.length > 0) {
-        toast.error(`請填寫必填欄位: ${missingFields.join(', ')}`);
-        return;
-      }
-
-      // 時間驗證
-      if (data.start_time && data.end_time) {
-        const startTime = new Date(`2000-01-01T${data.start_time}`);
-        const endTime = new Date(`2000-01-01T${data.end_time}`);
-        
-        if (endTime <= startTime) {
-          toast.error('結束時間必須晚於開始時間');
-          return;
-        }
-      }
-
       console.log('📤 提交加班申請至後端...');
       await overtimeService.submitOvertimeRequest(data);
       
@@ -152,31 +133,33 @@ const OvertimeRequestForm: React.FC<OvertimeRequestFormProps> = ({ onSuccess }) 
   }
 
   return (
-    <div className="space-y-6">
-      <OvertimeFormHeader />
+    <OvertimeAuthCheck>
+      <div className="space-y-6">
+        <OvertimeFormHeader />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <OvertimeBasicInfo 
-          form={form}
-          overtimeTypes={overtimeTypes}
-          errors={errors}
-        />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <OvertimeBasicInfo 
+            form={form}
+            overtimeTypes={overtimeTypes}
+            errors={errors}
+          />
 
-        <OvertimeTimeSettings 
-          form={form}
-          errors={errors}
-        />
+          <OvertimeTimeSettings 
+            form={form}
+            errors={errors}
+          />
 
-        <OvertimeCompensation form={form} />
+          <OvertimeCompensation form={form} />
 
-        <OvertimeReason 
-          form={form}
-          errors={errors}
-        />
+          <OvertimeReason 
+            form={form}
+            errors={errors}
+          />
 
-        <OvertimeSubmitButton isSubmitting={isSubmitting} />
-      </form>
-    </div>
+          <OvertimeSubmitButton isSubmitting={isSubmitting} />
+        </form>
+      </div>
+    </OvertimeAuthCheck>
   );
 };
 

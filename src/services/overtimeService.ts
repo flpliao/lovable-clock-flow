@@ -80,13 +80,13 @@ export const overtimeService = {
     }));
   },
 
-  // 獲取待審核的加班申請
+  // 獲取待審核的加班申請（修正關聯查詢語法）
   async getPendingOvertimeRequests(): Promise<OvertimeRequest[]> {
     const { data, error } = await supabase
       .from('overtime_requests')
       .select(`
         *,
-        staff:staff_id (
+        staff!staff_id (
           name,
           department,
           position

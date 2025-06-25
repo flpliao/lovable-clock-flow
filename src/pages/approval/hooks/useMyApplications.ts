@@ -16,8 +16,24 @@ export const useMyApplications = () => {
       setIsLoading(true);
       console.log('🔍 載入我的申請記錄，當前用戶:', currentUser.id, currentUser.name);
 
-      // 加班功能已移除
-      console.log('⚠️ 加班功能已移除，跳過加班申請記錄載入');
+      // 載入加班申請
+      console.log('📋 開始載入加班申請記錄...');
+      const { data: overtimeData, error: overtimeError } = await supabase
+        .from('overtime_requests')
+        .select(`
+          *,
+          staff:staff_id (
+            name
+          )
+        `)
+        .eq('staff_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (overtimeError) {
+        console.error('❌ 載入加班申請失敗:', overtimeError);
+      } else {
+        console.log('✅ 加班申請記錄載入完成:', overtimeData?.length || 0, '筆');
+      }
       
       // 載入忘記打卡申請
       console.log('📋 開始載入忘記打卡申請記錄...');
@@ -53,6 +69,22 @@ export const useMyApplications = () => {
       }
 
       const applications: MyApplication[] = [];
+
+      // 轉換加班申請
+      if (overtimeData && overtimeData.length > 0) {
+        console.log('🔄 轉換加班申請記錄...');
+        overtimeData.forEach(record => {
+          applications.push({
+            id: record.id,
+            type: 'overtime',
+            title: `加班申請 - ${record.overtime_date} (${record.hours}小時)`,
+            status: record.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
+            created_at: record.created_at,
+            details: record
+          });
+        });
+        console.log('✅ 加班申請記錄轉換完成');
+      }
 
       // 轉換忘記打卡申請
       if (missedCheckinData && missedCheckinData.length > 0) {
@@ -97,6 +129,7 @@ export const useMyApplications = () => {
 
       console.log('📊 最終統計:', {
         總計: applications.length,
+        加班申請: applications.filter(a => a.type === 'overtime').length,
         忘記打卡: applications.filter(a => a.type === 'missed_checkin').length,
         請假申請: applications.filter(a => a.type === 'leave').length,
         狀態分布: {

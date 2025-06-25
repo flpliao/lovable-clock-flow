@@ -2,6 +2,7 @@
 // Re-export all permission constants and definitions
 export { STAFF_PERMISSIONS, STAFF_PERMISSION_DEFINITIONS } from './staffPermissions';
 export { LEAVE_PERMISSIONS, LEAVE_PERMISSION_DEFINITIONS } from './leavePermissions';
+export { OVERTIME_PERMISSIONS, OVERTIME_PERMISSION_DEFINITIONS } from './overtimePermissions';
 export { ANNOUNCEMENT_PERMISSIONS, ANNOUNCEMENT_PERMISSION_DEFINITIONS } from './announcementPermissions';
 export { HOLIDAY_PERMISSIONS, HOLIDAY_PERMISSION_DEFINITIONS } from './holidayPermissions';
 export { DEPARTMENT_PERMISSIONS, DEPARTMENT_PERMISSION_DEFINITIONS } from './departmentPermissions';
@@ -11,16 +12,18 @@ export { MISSED_CHECKIN_PERMISSIONS, MISSED_CHECKIN_PERMISSION_DEFINITIONS } fro
 // Import the permission definitions to create the combined array
 import { STAFF_PERMISSION_DEFINITIONS } from './staffPermissions';
 import { LEAVE_PERMISSION_DEFINITIONS } from './leavePermissions';
+import { OVERTIME_PERMISSION_DEFINITIONS } from './overtimePermissions';
 import { ANNOUNCEMENT_PERMISSION_DEFINITIONS } from './announcementPermissions';
 import { HOLIDAY_PERMISSION_DEFINITIONS } from './holidayPermissions';
 import { DEPARTMENT_PERMISSION_DEFINITIONS } from './departmentPermissions';
 import { SCHEDULE_PERMISSION_DEFINITIONS } from './schedulePermissions';
 import { MISSED_CHECKIN_PERMISSION_DEFINITIONS } from './missedCheckinPermissions';
 
-// Combine all permission definitions (移除加班權限)
+// Combine all permission definitions
 export const ALL_PERMISSIONS = [
   ...STAFF_PERMISSION_DEFINITIONS,
   ...LEAVE_PERMISSION_DEFINITIONS,
+  ...OVERTIME_PERMISSION_DEFINITIONS,
   ...ANNOUNCEMENT_PERMISSION_DEFINITIONS,
   ...HOLIDAY_PERMISSION_DEFINITIONS,
   ...DEPARTMENT_PERMISSION_DEFINITIONS,

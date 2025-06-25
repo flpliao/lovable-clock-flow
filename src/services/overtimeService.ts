@@ -31,17 +31,40 @@ export const overtimeService = {
     const endTime = new Date(`2000-01-01T${formData.end_time}`);
     const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
 
-    // 獲取當前用戶資訊來判斷是否為主管
+    // 獲取當前用戶資訊
     const currentUserId = '550e8400-e29b-41d4-a716-446655440001'; // 使用預設用戶 ID
     
-    // 檢查當前用戶是否為主管（檢查是否有下屬）
-    const { data: subordinates } = await supabase
+    // 檢查當前用戶的角色權限 - 只有 admin 或 manager 角色才能自動核准
+    const { data: currentUser } = await supabase
       .from('staff')
-      .select('id')
-      .eq('supervisor_id', currentUserId)
-      .limit(1);
+      .select('role')
+      .eq('id', currentUserId)
+      .single();
 
-    const isManager = subordinates && subordinates.length > 0;
+    const isManagerRole = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
+
+    // 如果是管理者角色，再檢查是否有實際下屬
+    let hasSubordinates = false;
+    if (isManagerRole) {
+      const { data: subordinates } = await supabase
+        .from('staff')
+        .select('id')
+        .eq('supervisor_id', currentUserId)
+        .limit(1);
+      
+      hasSubordinates = subordinates && subordinates.length > 0;
+    }
+
+    // 只有同時滿足管理者角色且有下屬的用戶才能自動核准
+    const canAutoApprove = isManagerRole && hasSubordinates;
+
+    console.log('🔐 加班申請權限檢查:', {
+      userId: currentUserId,
+      role: currentUser?.role,
+      isManagerRole,
+      hasSubordinates,
+      canAutoApprove
+    });
 
     const requestData = {
       staff_id: currentUserId,
@@ -52,8 +75,8 @@ export const overtimeService = {
       end_time: formData.end_time,
       hours,
       reason: formData.reason,
-      // 如果是主管，直接核准；否則等待審核
-      status: isManager ? 'approved' as const : 'pending' as const,
+      // 只有具備管理權限且有下屬的用戶才能自動核准
+      status: canAutoApprove ? 'approved' as const : 'pending' as const,
       approval_level: 1
     };
 
@@ -65,20 +88,21 @@ export const overtimeService = {
 
     if (error) throw error;
 
-    // 如果是主管自己核准，創建核准通知
-    if (isManager) {
+    // 根據審核結果發送對應通知
+    if (canAutoApprove) {
       await this.createOvertimeNotification(
         data.id, 
         '加班申請已自動核准', 
         '您的加班申請已自動核准（主管權限）'
       );
+      console.log('✅ 主管加班申請已自動核准');
     } else {
-      // 創建提交通知
       await this.createOvertimeNotification(
         data.id, 
         '加班申請已提交', 
         '您的加班申請已提交，等待審核'
       );
+      console.log('📋 一般員工加班申請已提交，等待審核');
     }
 
     return data.id;

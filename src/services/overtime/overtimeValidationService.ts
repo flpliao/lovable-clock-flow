@@ -24,6 +24,14 @@ export const overtimeValidationService = {
     console.log('🔍 開始檢查加班申請自動核准條件...');
     console.log('👤 當前用戶ID:', userId);
     
+    // 只有廖俊雄（系統最高管理員）才能自動核准
+    const isSystemAdmin = userId === '550e8400-e29b-41d4-a716-446655440001';
+    
+    if (!isSystemAdmin) {
+      console.log('❌ 非系統最高管理員，無法自動核准');
+      return false;
+    }
+    
     // 檢查當前用戶的詳細資訊
     const currentUser = await overtimeApiService.getStaffInfo(userId);
     
@@ -69,13 +77,14 @@ export const overtimeValidationService = {
       console.log('⏭️ 非管理者角色，跳過下屬檢查');
     }
 
-    // 只有同時滿足管理者角色且有下屬的用戶才能自動核准
-    const canAutoApprove = isManagerRole && hasSubordinates;
+    // 只有系統最高管理員且同時滿足管理者角色且有下屬的用戶才能自動核准
+    const canAutoApprove = isSystemAdmin && isManagerRole && hasSubordinates;
 
     console.log('📊 最終審核結果判定:', {
       userId: userId,
       userName: currentUser?.name,
       role: currentUser?.role,
+      isSystemAdmin: isSystemAdmin,
       isManagerRole: isManagerRole,
       hasSubordinates: hasSubordinates,
       canAutoApprove: canAutoApprove,

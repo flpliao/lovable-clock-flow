@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { OvertimeRequest, OvertimeFormData, OvertimeType } from '@/types/overtime';
 
@@ -206,6 +205,129 @@ export const overtimeService = {
       }));
     } catch (error) {
       console.error('❌ 獲取用戶加班申請失敗:', error);
+      throw error;
+    }
+  },
+
+  // 獲取待審核的加班申請 (新增方法)
+  async getPendingOvertimeRequests(): Promise<OvertimeRequest[]> {
+    console.log('🔍 開始獲取待審核加班申請...');
+    
+    try {
+      // 驗證 session 有效性
+      const sessionCheck = await this.ensureValidSession();
+      if (!sessionCheck.isValid) {
+        throw new Error(sessionCheck.error || '登入狀態無效');
+      }
+
+      console.log('🔍 查詢待審核加班申請...');
+
+      const { data, error } = await supabase
+        .from('overtime_requests')
+        .select(`
+          *,
+          staff:staff_id(name, department)
+        `)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ 查詢待審核加班申請失敗:', error);
+        throw new Error(`查詢待審核加班申請失敗: ${error.message}`);
+      }
+      
+      console.log('✅ 成功獲取待審核加班申請:', data?.length || 0, '筆');
+      
+      return (data || []).map(item => ({
+        ...item,
+        status: item.status as 'pending' | 'approved' | 'rejected' | 'cancelled'
+      }));
+    } catch (error) {
+      console.error('❌ 獲取待審核加班申請失敗:', error);
+      throw error;
+    }
+  },
+
+  // 審核加班申請 (新增方法)
+  async approveOvertimeRequest(
+    requestId: string, 
+    action: 'approve' | 'reject', 
+    comment?: string
+  ): Promise<void> {
+    console.log(`📝 開始審核加班申請: ${action}`, { requestId, comment });
+
+    try {
+      // 驗證 session 有效性
+      const sessionCheck = await this.ensureValidSession();
+      if (!sessionCheck.isValid) {
+        throw new Error(sessionCheck.error || '登入狀態無效，請重新登入');
+      }
+
+      const userId = sessionCheck.userId!;
+      const status = action === 'approve' ? 'approved' : 'rejected';
+      
+      // 更新加班申請狀態
+      const updateData: any = {
+        status,
+        updated_at: new Date().toISOString()
+      };
+
+      if (action === 'reject' && comment) {
+        updateData.rejection_reason = comment;
+      }
+
+      const { data, error } = await supabase
+        .from('overtime_requests')
+        .update(updateData)
+        .eq('id', requestId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ 更新加班申請狀態失敗:', error);
+        throw new Error(`審核加班申請失敗: ${error.message}`);
+      }
+
+      console.log('✅ 加班申請狀態更新成功:', data);
+
+      // 創建審核記錄
+      try {
+        const { error: recordError } = await supabase
+          .from('overtime_approval_records')
+          .insert({
+            overtime_request_id: requestId,
+            approver_id: userId,
+            approver_name: '審核者', // 這裡可以從 staff 表獲取真實姓名
+            level: 1,
+            status: status === 'approved' ? 'approved' : 'rejected',
+            approval_date: new Date().toISOString(),
+            comment: comment || null
+          });
+
+        if (recordError) {
+          console.warn('⚠️ 創建審核記錄失敗:', recordError);
+        } else {
+          console.log('✅ 審核記錄創建成功');
+        }
+      } catch (recordError) {
+        console.warn('⚠️ 創建審核記錄過程異常:', recordError);
+      }
+
+      // 創建通知
+      try {
+        const notificationTitle = action === 'approve' ? '加班申請已核准' : '加班申請已拒絕';
+        const notificationMessage = action === 'approve' 
+          ? '您的加班申請已經核准' 
+          : `您的加班申請已被拒絕${comment ? `：${comment}` : ''}`;
+
+        await this.createOvertimeNotification(requestId, notificationTitle, notificationMessage);
+        console.log('✅ 審核通知創建成功');
+      } catch (notificationError) {
+        console.warn('⚠️ 審核通知創建失敗:', notificationError);
+      }
+
+    } catch (error) {
+      console.error('❌ 審核加班申請過程中發生錯誤:', error);
       throw error;
     }
   },

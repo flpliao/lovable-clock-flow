@@ -62,11 +62,19 @@ export const overtimeService = {
   },
 
   // 獲取用戶的加班申請
-  async getUserOvertimeRequests(userId: string): Promise<OvertimeRequest[]> {
+  async getUserOvertimeRequests(userId?: string): Promise<OvertimeRequest[]> {
+    let targetUserId = userId;
+    
+    if (!targetUserId) {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('用戶未登入');
+      targetUserId = userData.user.id;
+    }
+
     const { data, error } = await supabase
       .from('overtime_requests')
       .select('*')
-      .or(`staff_id.eq.${userId},user_id.eq.${userId}`)
+      .or(`staff_id.eq.${targetUserId},user_id.eq.${targetUserId}`)
       .order('created_at', { ascending: false });
 
     if (error) throw error;

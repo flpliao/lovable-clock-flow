@@ -41,6 +41,7 @@ const OvertimeRequestForm: React.FC<OvertimeRequestFormProps> = ({ onSuccess }) 
     try {
       await overtimeService.submitOvertimeRequest(data);
       toast.success('加班申請提交成功');
+      form.reset();
       onSuccess?.();
     } catch (error) {
       console.error('提交失敗:', error);

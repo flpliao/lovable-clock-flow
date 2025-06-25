@@ -21,7 +21,7 @@ const OvertimeManagement: React.FC = () => {
   const isManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 pt-32 md:pt-36">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Header */}

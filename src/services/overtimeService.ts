@@ -32,6 +32,8 @@ export const overtimeService = {
     const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
 
     const requestData = {
+      staff_id: '550e8400-e29b-41d4-a716-446655440001', // 使用預設用戶 ID
+      user_id: '550e8400-e29b-41d4-a716-446655440001',
       overtime_type: formData.overtime_type,
       overtime_date: formData.overtime_date,
       start_time: formData.start_time,
@@ -121,6 +123,7 @@ export const overtimeService = {
       .from('overtime_approval_records')
       .insert({
         overtime_request_id: requestId,
+        approver_name: '系統管理員', // 提供預設審核人名稱
         level: 1,
         status: action === 'approve' ? 'approved' : 'rejected',
         approval_date: new Date().toISOString(),

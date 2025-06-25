@@ -27,7 +27,20 @@ export const overtimeApprovalService = {
         throw new Error('找不到加班申請');
       }
 
-      const supervisorHierarchy = overtimeData.supervisor_hierarchy || [];
+      // 安全地處理 supervisor_hierarchy，確保它是數組
+      let supervisorHierarchy: any[] = [];
+      if (overtimeData.supervisor_hierarchy) {
+        if (Array.isArray(overtimeData.supervisor_hierarchy)) {
+          supervisorHierarchy = overtimeData.supervisor_hierarchy;
+        } else if (typeof overtimeData.supervisor_hierarchy === 'string') {
+          try {
+            supervisorHierarchy = JSON.parse(overtimeData.supervisor_hierarchy);
+          } catch {
+            supervisorHierarchy = [];
+          }
+        }
+      }
+
       const currentLevel = overtimeData.approval_level || 1;
       const isLastLevel = currentLevel >= supervisorHierarchy.length;
 

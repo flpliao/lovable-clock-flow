@@ -30,7 +30,7 @@ interface OvertimeRequestWithApplicant {
   created_at: string;
   approval_level?: number;
   current_approver?: string;
-  supervisor_hierarchy?: any[];
+  supervisor_hierarchy?: any; // Changed from any[] to any to handle Json type
   staff?: {
     name: string;
     department: string;
@@ -60,7 +60,8 @@ export const useOvertimeRequests = () => {
         staff: Array.isArray(item.staff) ? item.staff[0] : item.staff,
         overtime_approval_records: Array.isArray(item.overtime_approval_records) 
           ? item.overtime_approval_records 
-          : []
+          : [],
+        supervisor_hierarchy: item.supervisor_hierarchy || [] // Ensure it's always an array
       }));
 
       console.log('✅ 成功載入待審核加班申請:', formattedData.length, '筆');

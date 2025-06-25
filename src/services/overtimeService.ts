@@ -32,38 +32,84 @@ export const overtimeService = {
     const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
 
     // 獲取當前用戶資訊
-    const currentUserId = '550e8400-e29b-41d4-a716-446655440001'; // 使用預設用戶 ID
+    const currentUserId = '550e8400-e29b-41d4-a716-446655440001'; // 使用預設用戶 ID（廖俊雄）
     
-    // 檢查當前用戶的角色權限 - 只有 admin 或 manager 角色才能自動核准
-    const { data: currentUser } = await supabase
+    console.log('🔍 開始檢查加班申請自動核准條件...');
+    console.log('👤 當前用戶ID:', currentUserId);
+    
+    // 檢查當前用戶的詳細資訊
+    const { data: currentUser, error: userError } = await supabase
       .from('staff')
-      .select('role')
+      .select('id, name, role, role_id, department, position')
       .eq('id', currentUserId)
       .single();
 
+    if (userError) {
+      console.error('❌ 查詢用戶資訊失敗:', userError);
+    } else {
+      console.log('👤 用戶詳細資訊:', {
+        id: currentUser.id,
+        name: currentUser.name,
+        role: currentUser.role,
+        role_id: currentUser.role_id,
+        department: currentUser.department,
+        position: currentUser.position
+      });
+    }
+
     const isManagerRole = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
+    console.log('🔐 角色權限檢查:', {
+      role: currentUser?.role,
+      isManagerRole: isManagerRole,
+      判定結果: isManagerRole ? '✅ 符合管理者角色' : '❌ 非管理者角色'
+    });
 
     // 如果是管理者角色，再檢查是否有實際下屬
     let hasSubordinates = false;
+    let subordinatesList = [];
+    
     if (isManagerRole) {
-      const { data: subordinates } = await supabase
+      console.log('🔍 檢查下屬關係...');
+      const { data: subordinates, error: subError } = await supabase
         .from('staff')
-        .select('id')
-        .eq('supervisor_id', currentUserId)
-        .limit(1);
+        .select('id, name, position, department')
+        .eq('supervisor_id', currentUserId);
       
-      hasSubordinates = subordinates && subordinates.length > 0;
+      if (subError) {
+        console.error('❌ 查詢下屬失敗:', subError);
+      } else {
+        subordinatesList = subordinates || [];
+        hasSubordinates = subordinatesList.length > 0;
+        
+        console.log('👥 下屬關係檢查:', {
+          下屬數量: subordinatesList.length,
+          hasSubordinates: hasSubordinates,
+          判定結果: hasSubordinates ? '✅ 有下屬' : '❌ 無下屬'
+        });
+        
+        if (subordinatesList.length > 0) {
+          console.log('📋 下屬名單:', subordinatesList.map(s => ({
+            姓名: s.name,
+            職位: s.position,
+            部門: s.department
+          })));
+        }
+      }
+    } else {
+      console.log('⏭️ 非管理者角色，跳過下屬檢查');
     }
 
     // 只有同時滿足管理者角色且有下屬的用戶才能自動核准
     const canAutoApprove = isManagerRole && hasSubordinates;
 
-    console.log('🔐 加班申請權限檢查:', {
+    console.log('📊 最終審核結果判定:', {
       userId: currentUserId,
+      userName: currentUser?.name,
       role: currentUser?.role,
-      isManagerRole,
-      hasSubordinates,
-      canAutoApprove
+      isManagerRole: isManagerRole,
+      hasSubordinates: hasSubordinates,
+      canAutoApprove: canAutoApprove,
+      結論: canAutoApprove ? '🎉 自動核准' : '⏳ 需要審核'
     });
 
     const requestData = {
@@ -95,14 +141,14 @@ export const overtimeService = {
         '加班申請已自動核准', 
         '您的加班申請已自動核准（主管權限）'
       );
-      console.log('✅ 主管加班申請已自動核准');
+      console.log('✅ 主管加班申請已自動核准 - 申請ID:', data.id);
     } else {
       await this.createOvertimeNotification(
         data.id, 
         '加班申請已提交', 
         '您的加班申請已提交，等待審核'
       );
-      console.log('📋 一般員工加班申請已提交，等待審核');
+      console.log('📋 一般員工加班申請已提交，等待審核 - 申請ID:', data.id);
     }
 
     return data.id;

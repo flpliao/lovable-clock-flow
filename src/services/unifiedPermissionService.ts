@@ -231,13 +231,13 @@ export class UnifiedPermissionService {
     const basicPermissions = [
       // 加班基本權限
       'overtime:view_own',
-      'overtime:request',
+      'overtime:create',
       // 忘記打卡基本權限
       'missed_checkin:view_own',
       'missed_checkin:create',
       // 請假基本權限
       'leave:view_own',
-      'leave:request'
+      'leave:create'
     ];
     
     return basicPermissions.includes(permission);
@@ -290,7 +290,7 @@ export class UnifiedPermissionService {
       // 加班管理權限
       'overtime:view_all',
       'overtime:view_own',
-      'overtime:request',
+      'overtime:create',
       'overtime:approve',
       'overtime:manage',
       // 忘記打卡管理權限
@@ -302,7 +302,7 @@ export class UnifiedPermissionService {
       // 請假管理權限
       'leave:view_all',
       'leave:view_own',
-      'leave:request',
+      'leave:create',
       'leave:approve',
       'leave:manage'
     ];

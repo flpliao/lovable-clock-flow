@@ -57,17 +57,29 @@ export const useApprovalStats = () => {
         .gte('updated_at', `${today}T00:00:00`)
         .lt('updated_at', `${today}T23:59:59`);
 
-      // 加班功能已移除，設為 0
-      const overtimeApprovedCount = 0;
-      const overtimeRejectedCount = 0;
+      // Query today's approved overtime requests
+      const { data: overtimeApprovedData } = await supabase
+        .from('overtime_requests')
+        .select('id')
+        .eq('status', 'approved')
+        .gte('updated_at', `${today}T00:00:00`)
+        .lt('updated_at', `${today}T23:59:59`);
+
+      // Query today's rejected overtime requests
+      const { data: overtimeRejectedData } = await supabase
+        .from('overtime_requests')
+        .select('id')
+        .eq('status', 'rejected')
+        .gte('updated_at', `${today}T00:00:00`)
+        .lt('updated_at', `${today}T23:59:59`);
 
       setApprovalStats({
         todayApproved: approvedData?.length || 0,
         todayRejected: rejectedData?.length || 0,
         missedCheckinApproved: missedApprovedData?.length || 0,
         missedCheckinRejected: missedRejectedData?.length || 0,
-        overtimeApproved: overtimeApprovedCount,
-        overtimeRejected: overtimeRejectedCount
+        overtimeApproved: overtimeApprovedData?.length || 0,
+        overtimeRejected: overtimeRejectedData?.length || 0
       });
       
       console.log('✅ 成功載入今日審核統計');

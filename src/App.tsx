@@ -1,3 +1,4 @@
+
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -21,6 +22,7 @@ import NotFound from './pages/NotFound';
 import StaffDashboard from './pages/StaffDashboard';
 import CompanyBranchManagement from './pages/CompanyBranchManagement';
 import HRManagement from './pages/HRManagement';
+import OvertimeRequest from './pages/OvertimeRequest';
 import OvertimeManagement from './pages/OvertimeManagement';
 import HolidayManagement from './pages/HolidayManagement';
 import MissedCheckinManagement from './pages/MissedCheckinManagement';
@@ -53,6 +55,7 @@ function App() {
                 <Route path="/staff-dashboard" element={<StaffDashboard />} />
                 <Route path="/company-branch-management" element={<CompanyBranchManagement />} />
                 <Route path="/hr-management" element={<HRManagement />} />
+                <Route path="/overtime-request" element={<OvertimeRequest />} />
                 <Route path="/overtime-management" element={<OvertimeManagement />} />
                 <Route path="/holiday-management" element={<HolidayManagement />} />
                 <Route path="/leave-type-management" element={<LeaveTypeManagement />} />

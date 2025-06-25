@@ -1008,7 +1008,15 @@ export type Database = {
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_overtime_approval_records_overtime_request_id"
+            columns: ["overtime_request_id"]
+            isOneToOne: false
+            referencedRelation: "overtime_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       overtime_requests: {
         Row: {
@@ -1020,6 +1028,7 @@ export type Database = {
           hours: number
           id: string
           overtime_date: string
+          overtime_type: string
           reason: string
           rejection_reason: string | null
           staff_id: string | null
@@ -1037,6 +1046,7 @@ export type Database = {
           hours: number
           id?: string
           overtime_date: string
+          overtime_type: string
           reason: string
           rejection_reason?: string | null
           staff_id?: string | null
@@ -1054,6 +1064,7 @@ export type Database = {
           hours?: number
           id?: string
           overtime_date?: string
+          overtime_type?: string
           reason?: string
           rejection_reason?: string | null
           staff_id?: string | null
@@ -1061,6 +1072,63 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      overtime_types: {
+        Row: {
+          code: string
+          compensation_type: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_system_default: boolean
+          max_hours_per_day: number | null
+          max_hours_per_month: number | null
+          name_en: string
+          name_zh: string
+          requires_approval: boolean
+          requires_attachment: boolean
+          sort_order: number
+          special_rules: Json | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          compensation_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system_default?: boolean
+          max_hours_per_day?: number | null
+          max_hours_per_month?: number | null
+          name_en: string
+          name_zh: string
+          requires_approval?: boolean
+          requires_attachment?: boolean
+          sort_order?: number
+          special_rules?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          compensation_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system_default?: boolean
+          max_hours_per_day?: number | null
+          max_hours_per_month?: number | null
+          name_en?: string
+          name_zh?: string
+          requires_approval?: boolean
+          requires_attachment?: boolean
+          sort_order?: number
+          special_rules?: Json | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1715,6 +1783,17 @@ export type Database = {
           p_type?: string
           p_announcement_id?: string
           p_leave_request_id?: string
+          p_action_required?: boolean
+        }
+        Returns: string
+      }
+      create_overtime_notification: {
+        Args: {
+          p_user_id: string
+          p_title: string
+          p_message: string
+          p_type?: string
+          p_overtime_request_id?: string
           p_action_required?: boolean
         }
         Returns: string

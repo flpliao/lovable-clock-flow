@@ -1,19 +1,20 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import LoginPage from '@/pages/LoginPage';
-import StaffManagement from '@/pages/StaffManagement';
+import LoginPage from '@/pages/Login';
+import StaffManagement from '@/pages/PersonnelManagement';
 import LeaveRequest from '@/pages/LeaveRequest';
-import AnnouncementManagement from '@/pages/AnnouncementManagement';
+import AnnouncementManagement from '@/pages/AnnouncementManagementPage';
 import HolidayManagement from '@/pages/HolidayManagement';
-import DepartmentManagement from '@/pages/DepartmentManagement';
-import ScheduleManagement from '@/pages/ScheduleManagement';
-import AttendancePage from '@/pages/AttendancePage';
+import DepartmentManagement from '@/pages/CompanyBranchManagement';
+import ScheduleManagement from '@/pages/Scheduling';
+import AttendancePage from '@/pages/PersonalAttendance';
 import ApprovalCenter from '@/pages/ApprovalCenter';
 import HRManagement from '@/pages/HRManagement';
 import OvertimeManagement from '@/pages/OvertimeManagement';
 import OvertimeRequestPage from '@/pages/OvertimeRequest';
-import MissedCheckinRequestPage from '@/pages/MissedCheckinRequestPage';
-import Dashboard from '@/pages/Dashboard';
+import MissedCheckinRequestPage from '@/pages/MissedCheckinManagement';
+import Dashboard from '@/pages/Index';
 import { UserProvider } from '@/contexts/UserContext';
 import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
 import { AnnouncementProvider } from '@/contexts/AnnouncementContext';
@@ -23,12 +24,12 @@ import { ScheduleProvider } from '@/contexts/ScheduleContext';
 import { StaffProvider } from '@/contexts/StaffContext';
 import { AttendanceProvider } from '@/contexts/AttendanceContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
-import { ToastProvider } from '@/components/ui/use-toast';
+import { Toaster } from '@/components/ui/toaster';
 import { UnifiedPermissionService } from '@/services/unifiedPermissionService';
 
 const App = () => {
   return (
-    <ToastProvider>
+    <>
       <NotificationProvider>
         <UserProvider>
           <StaffProvider>
@@ -67,7 +68,8 @@ const App = () => {
           </StaffProvider>
         </UserProvider>
       </NotificationProvider>
-    </ToastProvider>
+      <Toaster />
+    </>
   );
 };
 

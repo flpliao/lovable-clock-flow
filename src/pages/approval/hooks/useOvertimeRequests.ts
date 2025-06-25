@@ -62,7 +62,7 @@ export const useOvertimeRequests = () => {
           overtime.id === overtimeId 
             ? { 
                 ...overtime, 
-                status: approved ? 'approved' : 'rejected',
+                status: (approved ? 'approved' : 'rejected') as 'approved' | 'rejected',
                 rejection_reason: approved ? undefined : comment
               }
             : overtime

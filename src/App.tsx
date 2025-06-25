@@ -15,6 +15,7 @@ import OvertimeManagement from '@/pages/OvertimeManagement';
 import OvertimeRequestPage from '@/pages/OvertimeRequest';
 import MissedCheckinRequestPage from '@/pages/MissedCheckinManagement';
 import Dashboard from '@/pages/Index';
+import Header from '@/components/Header';
 import { UserProvider } from '@/contexts/UserContext';
 import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
 import { Toaster } from '@/components/ui/toaster';
@@ -26,6 +27,7 @@ const App = () => {
         <LeaveManagementProvider>
           <Router>
             <div className="min-h-screen bg-gray-50">
+              <Header />
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/staff-management" element={<StaffManagement />} />

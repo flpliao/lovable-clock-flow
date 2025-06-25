@@ -1,18 +1,14 @@
 
 import { useState, useCallback } from 'react';
-import { useUser } from '@/contexts/UserContext';
 import { overtimeService } from '@/services/overtimeService';
 import type { OvertimeRequest } from '@/types/overtime';
 import { toast } from 'sonner';
 
 export const useOvertimeRequests = () => {
-  const { currentUser } = useUser();
   const [overtimeRequests, setOvertimeRequests] = useState<OvertimeRequest[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const loadOvertimeRequests = useCallback(async () => {
-    if (!currentUser?.id) return;
-    
     try {
       setIsLoading(true);
       console.log('🔍 載入待審核加班申請...');
@@ -27,7 +23,7 @@ export const useOvertimeRequests = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentUser?.id]);
+  }, []);
 
   const handleOvertimeApproval = useCallback(async (
     requestId: string, 

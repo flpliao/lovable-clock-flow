@@ -7,17 +7,19 @@ export const queryOvertimeService = {
     console.log('🔍 查詢用戶加班申請:', userId);
     
     try {
-      // 首先驗證用戶是否為有效員工
+      // 首先透過 user_id 查詢對應的員工資料
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
         .select('id, name')
-        .eq('id', userId)
+        .eq('user_id', userId)
         .single();
 
       if (staffError || !staffData) {
         console.warn('⚠️ 用戶不是有效員工:', userId);
         return [];
       }
+
+      console.log('✅ 找到員工資料:', { staff_id: staffData.id, user_id: userId });
 
       const { data, error } = await supabase
         .from('overtimes')
@@ -42,7 +44,7 @@ export const queryOvertimeService = {
             updated_at
           )
         `)
-        .eq('staff_id', userId)
+        .eq('staff_id', staffData.id) // 使用正確的 staff.id
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -79,6 +81,18 @@ export const queryOvertimeService = {
     console.log('🔍 查詢加班申請詳情:', { overtimeId, userId });
     
     try {
+      // 首先透過 user_id 查詢對應的員工資料
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+
+      if (staffError || !staffData) {
+        console.warn('⚠️ 用戶不是有效員工:', userId);
+        return null;
+      }
+
       const { data, error } = await supabase
         .from('overtimes')
         .select(`
@@ -103,7 +117,7 @@ export const queryOvertimeService = {
           )
         `)
         .eq('id', overtimeId)
-        .eq('staff_id', userId)
+        .eq('staff_id', staffData.id) // 使用正確的 staff.id
         .single();
 
       if (error) {

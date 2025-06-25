@@ -15,13 +15,12 @@ export interface UserStaffData {
 export const loadUserStaffData = async (userId: string): Promise<UserStaffData | null> => {
   try {
     console.log('🔍 正在載入員工資料，用戶ID:', userId);
-    console.log('🔍 是否為廖有朋:', userId === '550e8400-e29b-41d4-a716-446655440001');
     
-    // 從 staff 表獲取員工資料（包含 supervisor_id）
+    // 透過 user_id 從 staff 表獲取員工資料
     const { data: staffData, error: staffError } = await supabase
       .from('staff')
-      .select('name, department, position, hire_date, supervisor_id, role, email')
-      .eq('id', userId)
+      .select('name, department, position, hire_date, supervisor_id, role, email, user_id')
+      .eq('user_id', userId)
       .maybeSingle();
 
     console.log('📊 員工資料查詢結果:', { 
@@ -36,13 +35,13 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData |
       // 額外調試信息
       const { data: debugStaff, error: debugError } = await supabase
         .from('staff')
-        .select('id, name, email, role')
+        .select('id, name, email, role, user_id')
         .limit(10);
       
       console.log('🔍 調試 - 系統中的員工資料:', debugStaff);
       console.log('🔍 查找匹配:', {
-        尋找ID: userId,
-        找到的IDs: debugStaff?.map(s => ({ id: s.id, name: s.name })) || []
+        尋找用戶ID: userId,
+        找到的用戶IDs: debugStaff?.map(s => ({ user_id: s.user_id, name: s.name })) || []
       });
       
       throw new Error(`載入員工資料失敗: ${staffError.message}`);
@@ -54,14 +53,14 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData |
       // 調試：檢查是否有其他員工資料
       const { data: debugStaff, error: debugError } = await supabase
         .from('staff')
-        .select('id, name, email, role')
+        .select('id, name, email, role, user_id')
         .limit(5);
       
       console.log('🔍 調試 - 系統中的員工資料樣例:', debugStaff);
       console.log('🔍 尋找的用戶ID:', userId);
-      console.log('🔍 可用的員工IDs:', debugStaff?.map(s => s.id) || []);
+      console.log('🔍 可用的用戶IDs:', debugStaff?.map(s => s.user_id) || []);
       
-      throw new Error('找不到員工資料。請確認您的帳戶已正確設定在員工管理系統中。');
+      throw new Error('找不到員工資料。請確認您的帳戶已正確設定在員工管理系統中，且 user_id 已正確關聯。');
     }
 
     console.log('✅ 成功載入員工基本資料:', {
@@ -70,7 +69,8 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData |
       position: staffData.position,
       hire_date: staffData.hire_date,
       has_supervisor: !!staffData.supervisor_id,
-      role: staffData.role
+      role: staffData.role,
+      user_id: staffData.user_id
     });
 
     // 計算年資

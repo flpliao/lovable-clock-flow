@@ -23,6 +23,14 @@ export interface OvertimeApprovalRecord {
   updated_at: string;
 }
 
+export interface SupervisorHierarchyItem {
+  level: number;
+  supervisor_id: string;
+  supervisor_name: string;
+  supervisor_department?: string;
+  supervisor_position?: string;
+}
+
 export interface OvertimeRecord {
   id: string;
   staff_id: string;
@@ -54,12 +62,4 @@ export interface OvertimeRecord {
     supervisor_id?: string;
   };
   overtime_approval_records?: OvertimeApprovalRecord[];
-}
-
-export interface SupervisorHierarchyItem {
-  level: number;
-  supervisor_id: string;
-  supervisor_name: string;
-  supervisor_department?: string;
-  supervisor_position?: string;
 }

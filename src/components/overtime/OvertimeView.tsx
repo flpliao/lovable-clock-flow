@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { queryOvertimeService } from '@/services/overtime/queryOvertimeService';
 import { Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import type { OvertimeRecord } from '@/services/overtime/types';
+import type { OvertimeRecord, SupervisorHierarchyItem } from '@/services/overtime/types';
 
 const OvertimeView: React.FC = () => {
   const { currentUser } = useUser();
@@ -27,14 +28,17 @@ const OvertimeView: React.FC = () => {
           (record.status !== 'pending' && new Date(record.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
         );
         
-        // 確保資料結構正確，補充缺失的 overtime_id
+        // 確保資料結構正確，處理類型轉換
         const formattedRecords: OvertimeRecord[] = filteredRecords.map(record => ({
           ...record,
           staff: Array.isArray(record.staff) ? record.staff[0] : record.staff,
+          supervisor_hierarchy: Array.isArray(record.supervisor_hierarchy) 
+            ? record.supervisor_hierarchy as SupervisorHierarchyItem[]
+            : [],
           overtime_approval_records: Array.isArray(record.overtime_approval_records) 
             ? record.overtime_approval_records.map(approvalRecord => ({
                 ...approvalRecord,
-                overtime_id: approvalRecord.overtime_id || record.id // 確保有 overtime_id
+                overtime_id: record.id // 使用 record.id 作為 overtime_id
               }))
             : []
         }));

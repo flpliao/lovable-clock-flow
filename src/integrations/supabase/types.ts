@@ -1008,7 +1008,15 @@ export type Database = {
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_overtime_approval_records_overtime_id"
+            columns: ["overtime_id"]
+            isOneToOne: false
+            referencedRelation: "overtimes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       overtimes: {
         Row: {

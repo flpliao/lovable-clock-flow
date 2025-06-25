@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { OvertimeRequest } from './types';
 
@@ -44,6 +45,7 @@ export const overtimeSubmissionService = {
 
       console.log('✅ 驗證通過，準備提交到資料庫');
       
+      // 提交到資料庫，觸發器會自動設定審核流程
       const { data, error } = await supabase
         .from('overtimes')
         .insert({

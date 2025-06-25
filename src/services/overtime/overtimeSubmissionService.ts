@@ -8,8 +8,12 @@ export const overtimeSubmissionService = {
     console.log('🔍 當前用戶ID:', currentUserId);
     
     try {
-      // 首先驗證員工資料是否存在 - 更詳細的查詢
+      // 首先驗證員工資料是否存在 - 特別處理廖有朋的情況
       console.log('🔍 驗證員工資料存在性，用戶ID:', currentUserId);
+      
+      // 特別處理廖有朋的用戶ID
+      const isLiaoYouPeng = currentUserId === '550e8400-e29b-41d4-a716-446655440001';
+      console.log('🔍 是否為廖有朋用戶:', isLiaoYouPeng);
       
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
@@ -30,10 +34,14 @@ export const overtimeSubmissionService = {
         // 額外檢查：列出所有員工ID來調試
         const { data: allStaff, error: allStaffError } = await supabase
           .from('staff')
-          .select('id, name, email')
+          .select('id, name, email, role')
           .limit(10);
         
         console.log('📋 系統中的員工列表 (前10個):', allStaff);
+        console.log('🔍 查找用戶ID匹配情況:', {
+          searchingFor: currentUserId,
+          foundIds: allStaff?.map(s => s.id) || []
+        });
         
         throw new Error('找不到對應的員工資料。請確認您的帳戶已正確設定。如果問題持續，請聯繫系統管理員檢查員工資料設定。');
       }
@@ -88,9 +96,9 @@ export const overtimeSubmissionService = {
 
       console.log('✅ 所有驗證通過，準備提交到資料庫');
       
-      // 準備插入的資料
+      // 準備插入的資料 - 確保使用正確的員工ID
       const insertData = {
-        staff_id: overtimeData.staff_id,
+        staff_id: staffData.id, // 使用從資料庫查詢到的員工ID
         overtime_date: overtimeData.overtime_date,
         start_time: overtimeData.start_time,
         end_time: overtimeData.end_time,
@@ -102,6 +110,12 @@ export const overtimeSubmissionService = {
       };
       
       console.log('📝 準備插入的資料:', insertData);
+      console.log('🔍 確認員工ID匹配:', {
+        原始請求ID: overtimeData.staff_id,
+        當前用戶ID: currentUserId,
+        資料庫員工ID: staffData.id,
+        最終使用ID: insertData.staff_id
+      });
       
       // 提交到資料庫，觸發器會自動設定審核流程
       const { data, error } = await supabase
@@ -142,6 +156,10 @@ export const overtimeSubmissionService = {
         if (error.code === '23505') {
           throw new Error('重複的加班申請，請檢查是否已提交相同時間的申請');
         } else if (error.code === '23503') {
+          console.error('❌ 外鍵約束錯誤，檢查員工ID:', {
+            使用的員工ID: insertData.staff_id,
+            錯誤訊息: error.message
+          });
           throw new Error('員工資料參考錯誤。您的員工帳戶可能存在設定問題，請聯繫系統管理員檢查staff表格設定。');
         } else if (error.code === '42501') {
           throw new Error('權限不足，無法提交申請');

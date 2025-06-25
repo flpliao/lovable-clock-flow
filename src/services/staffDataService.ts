@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface UserStaffData {
@@ -16,6 +15,7 @@ export interface UserStaffData {
 export const loadUserStaffData = async (userId: string): Promise<UserStaffData | null> => {
   try {
     console.log('🔍 正在載入員工資料，用戶ID:', userId);
+    console.log('🔍 是否為廖有朋:', userId === '550e8400-e29b-41d4-a716-446655440001');
     
     // 從 staff 表獲取員工資料（包含 supervisor_id）
     const { data: staffData, error: staffError } = await supabase
@@ -24,10 +24,27 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData |
       .eq('id', userId)
       .maybeSingle();
 
-    console.log('📊 員工資料查詢結果:', { staffData, staffError });
+    console.log('📊 員工資料查詢結果:', { 
+      staffData, 
+      staffError,
+      查詢用戶ID: userId
+    });
 
     if (staffError) {
       console.error('❌ 載入員工資料失敗:', staffError);
+      
+      // 額外調試信息
+      const { data: debugStaff, error: debugError } = await supabase
+        .from('staff')
+        .select('id, name, email, role')
+        .limit(10);
+      
+      console.log('🔍 調試 - 系統中的員工資料:', debugStaff);
+      console.log('🔍 查找匹配:', {
+        尋找ID: userId,
+        找到的IDs: debugStaff?.map(s => ({ id: s.id, name: s.name })) || []
+      });
+      
       throw new Error(`載入員工資料失敗: ${staffError.message}`);
     }
 
@@ -37,10 +54,12 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData |
       // 調試：檢查是否有其他員工資料
       const { data: debugStaff, error: debugError } = await supabase
         .from('staff')
-        .select('id, name, email')
+        .select('id, name, email, role')
         .limit(5);
       
       console.log('🔍 調試 - 系統中的員工資料樣例:', debugStaff);
+      console.log('🔍 尋找的用戶ID:', userId);
+      console.log('🔍 可用的員工IDs:', debugStaff?.map(s => s.id) || []);
       
       throw new Error('找不到員工資料。請確認您的帳戶已正確設定在員工管理系統中。');
     }

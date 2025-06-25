@@ -5,43 +5,56 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Clock, Search, Filter } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
+import { Calendar, Clock, Search, Filter, RefreshCw, AlertTriangle } from 'lucide-react';
 import { overtimeService } from '@/services/overtimeService';
 import type { OvertimeRequest } from '@/types/overtime';
 import { toast } from 'sonner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const OvertimeHistory: React.FC = () => {
-  const { currentUser } = useUser();
   const [requests, setRequests] = useState<OvertimeRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<OvertimeRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
-    if (currentUser?.id) {
-      loadOvertimeHistory();
-    }
-  }, [currentUser?.id]);
+    loadOvertimeHistory();
+  }, []);
 
   useEffect(() => {
     filterRequests();
   }, [requests, searchTerm, statusFilter]);
 
   const loadOvertimeHistory = async () => {
-    if (!currentUser?.id) return;
-    
     try {
       setIsLoading(true);
-      const history = await overtimeService.getUserOvertimeRequests(currentUser.id);
+      setAuthError(null);
+      console.log('🔄 載入加班歷史記錄...');
+      
+      const history = await overtimeService.getUserOvertimeRequests();
       setRequests(history);
-    } catch (error) {
-      console.error('載入加班歷史失敗:', error);
-      toast.error('載入加班歷史失敗');
+      console.log('✅ 加班歷史記錄載入成功:', history.length, '筆');
+    } catch (error: any) {
+      console.error('❌ 載入加班歷史失敗:', error);
+      
+      const errorMessage = error?.message || '載入加班歷史失敗';
+      
+      if (errorMessage.includes('未登入') || errorMessage.includes('認證')) {
+        setAuthError('登入狀態已過期，請重新登入');
+      } else {
+        setAuthError(errorMessage);
+        toast.error(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRetry = () => {
+    console.log('🔄 用戶點擊重試載入');
+    loadOvertimeHistory();
   };
 
   const filterRequests = () => {
@@ -79,14 +92,51 @@ const OvertimeHistory: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="animate-pulse">
-          <div className="h-8 bg-white/20 rounded mb-4"></div>
-          <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-32 bg-white/20 rounded"></div>
-            ))}
+      <div className="space-y-6">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-white drop-shadow-md mb-2">
+            加班記錄
+          </h2>
+          <p className="text-white/80 font-medium drop-shadow-sm">
+            查看您的加班申請歷史記錄
+          </p>
+        </div>
+        <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+          <div className="flex items-center justify-center py-8">
+            <RefreshCw className="h-6 w-6 animate-spin text-white mr-2" />
+            <span className="text-white">載入中...</span>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (authError) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-white drop-shadow-md mb-2">
+            加班記錄
+          </h2>
+          <p className="text-white/80 font-medium drop-shadow-sm">
+            查看您的加班申請歷史記錄
+          </p>
+        </div>
+        <Alert className="backdrop-blur-xl bg-red-500/20 border border-red-300/30 shadow-xl">
+          <AlertTriangle className="h-4 w-4 text-red-300" />
+          <AlertDescription className="text-red-200">
+            {authError}
+          </AlertDescription>
+        </Alert>
+        <div className="text-center">
+          <Button
+            onClick={handleRetry}
+            variant="outline"
+            className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            重新載入
+          </Button>
         </div>
       </div>
     );

@@ -6,20 +6,34 @@ import { OVERTIME_PERMISSIONS } from '@/components/staff/constants/permissions/o
 import ApplicationCard from './ApplicationCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Clock, Lock } from 'lucide-react';
+import type { OvertimeRequest } from '@/types/overtime';
 
-const OvertimeApprovalTab: React.FC = () => {
+// 定義組件 props 接口
+interface OvertimeApprovalTabProps {
+  overtimeRequests: OvertimeRequest[];
+  onApproval: (requestId: string, action: 'approve' | 'reject', comment?: string) => Promise<void>;
+}
+
+const OvertimeApprovalTab: React.FC<OvertimeApprovalTabProps> = ({ 
+  overtimeRequests: propOvertimeRequests, 
+  onApproval: propOnApproval 
+}) => {
   const { overtimeRequests, isLoading, loadOvertimeRequests, handleOvertimeApproval } = useOvertimeRequests();
   const { hasPermission } = useUnifiedPermissions();
 
   // 檢查是否有審核加班的權限
   const canApproveOvertime = hasPermission(OVERTIME_PERMISSIONS.APPROVE_OVERTIME_LEVEL_1);
 
+  // 使用 props 或 hook 的數據
+  const requestsToShow = propOvertimeRequests || overtimeRequests;
+  const approvalHandler = propOnApproval || handleOvertimeApproval;
+
   useEffect(() => {
     // 只有具備審核權限的用戶才載入待審核申請
-    if (canApproveOvertime) {
+    if (canApproveOvertime && !propOvertimeRequests) {
       loadOvertimeRequests();
     }
-  }, [loadOvertimeRequests, canApproveOvertime]);
+  }, [loadOvertimeRequests, canApproveOvertime, propOvertimeRequests]);
 
   // 如果沒有審核權限，顯示權限不足提示
   if (!canApproveOvertime) {
@@ -38,7 +52,7 @@ const OvertimeApprovalTab: React.FC = () => {
     );
   }
 
-  if (isLoading) {
+  if (isLoading && !propOvertimeRequests) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
@@ -51,7 +65,7 @@ const OvertimeApprovalTab: React.FC = () => {
     );
   }
 
-  if (overtimeRequests.length === 0) {
+  if (requestsToShow.length === 0) {
     return (
       <div className="text-center py-12">
         <Clock className="h-16 w-16 mx-auto text-gray-400 mb-4" />
@@ -63,7 +77,7 @@ const OvertimeApprovalTab: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {overtimeRequests.map((request) => (
+      {requestsToShow.map((request) => (
         <ApplicationCard
           key={request.id}
           application={{
@@ -75,6 +89,7 @@ const OvertimeApprovalTab: React.FC = () => {
             date: request.overtime_date,
             status: request.status,
             reason: request.reason,
+            created_at: request.created_at,
             details: {
               overtimeDate: request.overtime_date,
               startTime: request.start_time,
@@ -83,8 +98,8 @@ const OvertimeApprovalTab: React.FC = () => {
               overtimeType: request.overtime_type
             }
           }}
-          onApprove={(comment) => handleOvertimeApproval(request.id, 'approve', comment)}
-          onReject={(comment) => handleOvertimeApproval(request.id, 'reject', comment)}
+          onApprove={(comment) => approvalHandler(request.id, 'approve', comment)}
+          onReject={(comment) => approvalHandler(request.id, 'reject', comment)}
         />
       ))}
     </div>

@@ -1,10 +1,74 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import type { OvertimeRequest, OvertimeFormData, OvertimeType } from '@/types/overtime';
 
 export const overtimeService = {
+  // 檢查並確保用戶認證狀態有效
+  async ensureValidSession(): Promise<{ isValid: boolean; userId: string | null; error?: string }> {
+    try {
+      console.log('🔐 檢查 Supabase session 有效性...');
+      
+      // 獲取當前 session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('❌ Session 檢查失敗:', sessionError);
+        return { isValid: false, userId: null, error: `Session 檢查失敗: ${sessionError.message}` };
+      }
+
+      const userId = session?.user?.id;
+      const isExpired = session?.expires_at ? (session.expires_at * 1000) < Date.now() : true;
+      
+      console.log('📋 Session 狀態檢查:', {
+        hasSession: !!session,
+        userId: userId || 'null',
+        expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toLocaleString() : 'N/A',
+        isExpired,
+        currentTime: new Date().toLocaleString()
+      });
+
+      if (!session || !userId || isExpired) {
+        const reason = !session ? '無 session' : !userId ? '無 user ID' : '已過期';
+        console.warn(`⚠️ Session 無效: ${reason}`);
+        return { isValid: false, userId: null, error: `登入狀態無效: ${reason}，請重新登入` };
+      }
+
+      // 驗證用戶在 staff 表中是否存在
+      console.log('🔍 驗證員工資料存在性...');
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('id, name, role, department')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (staffError) {
+        console.error('❌ 員工資料查詢失敗:', staffError);
+        return { isValid: false, userId: null, error: `員工資料查詢失敗: ${staffError.message}` };
+      }
+
+      if (!staffData) {
+        console.error('❌ 找不到對應的員工資料');
+        return { isValid: false, userId: null, error: '找不到對應的員工資料，請聯絡系統管理員' };
+      }
+
+      console.log('✅ Session 和員工資料驗證通過:', staffData);
+      return { isValid: true, userId, error: undefined };
+      
+    } catch (error: any) {
+      console.error('❌ Session 驗證過程異常:', error);
+      return { isValid: false, userId: null, error: `Session 驗證異常: ${error.message}` };
+    }
+  },
+
   // 獲取加班類型
   async getOvertimeTypes(): Promise<OvertimeType[]> {
     console.log('🔍 開始獲取加班類型...');
+    
+    // 先檢查 session 有效性
+    const sessionCheck = await this.ensureValidSession();
+    if (!sessionCheck.isValid) {
+      throw new Error(sessionCheck.error || '登入狀態無效');
+    }
     
     const { data, error } = await supabase
       .from('overtime_types')
@@ -19,7 +83,6 @@ export const overtimeService = {
     
     console.log('✅ 成功獲取加班類型:', data?.length || 0, '筆');
     
-    // 添加類型轉換確保類型安全
     return (data || []).map(item => ({
       ...item,
       compensation_type: item.compensation_type as 'overtime_pay' | 'compensatory_time',
@@ -30,81 +93,20 @@ export const overtimeService = {
     }));
   },
 
-  // 檢查用戶認證狀態
-  async checkUserAuthentication(): Promise<{ userId: string; isAuthenticated: boolean; staffData: any }> {
-    console.log('🔐 檢查用戶認證狀態...');
-    
-    try {
-      // 檢查 Supabase session
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('❌ 獲取 session 失敗:', sessionError);
-        throw new Error(`獲取 session 失敗: ${sessionError.message}`);
-      }
-
-      const session = sessionData?.session;
-      const userId = session?.user?.id;
-      
-      console.log('📋 Session 狀態:', {
-        hasSession: !!session,
-        userId: userId || 'undefined',
-        expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toLocaleString() : 'N/A'
-      });
-
-      if (!session || !userId) {
-        console.warn('⚠️ 用戶未登入或 session 無效');
-        throw new Error('用戶未登入，請重新登入後再試');
-      }
-
-      // 驗證用戶是否存在於 staff 表格中
-      console.log('🔍 驗證員工資料，用戶ID:', userId);
-      
-      const { data: staffData, error: staffError } = await supabase
-        .from('staff')
-        .select('id, name, role, department')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (staffError) {
-        console.error('❌ 查詢員工資料失敗:', staffError);
-        throw new Error(`查詢員工資料失敗: ${staffError.message}`);
-      }
-
-      if (!staffData) {
-        console.error('❌ 找不到對應的員工資料，用戶ID:', userId);
-        throw new Error('找不到對應的員工資料，請聯絡系統管理員');
-      }
-
-      console.log('✅ 用戶認證成功:', {
-        userId,
-        name: staffData.name,
-        role: staffData.role,
-        department: staffData.department
-      });
-
-      return { userId, isAuthenticated: true, staffData };
-    } catch (error) {
-      console.error('❌ 用戶認證驗證失敗:', error);
-      throw error;
-    }
-  },
-
   // 提交加班申請
   async submitOvertimeRequest(formData: OvertimeFormData): Promise<string> {
     console.log('📝 開始提交加班申請...');
     console.log('📋 表單資料:', formData);
 
     try {
-      // 驗證用戶認證
-      const { userId, isAuthenticated, staffData } = await this.checkUserAuthentication();
-      
-      if (!isAuthenticated) {
-        throw new Error('用戶未登入，請重新登入後再試');
+      // 驗證 session 有效性
+      const sessionCheck = await this.ensureValidSession();
+      if (!sessionCheck.isValid) {
+        throw new Error(sessionCheck.error || '登入狀態無效，請重新登入');
       }
 
+      const userId = sessionCheck.userId!;
       console.log('👤 使用認證用戶ID:', userId);
-      console.log('👤 員工資料:', staffData);
 
       // 驗證必填欄位
       const requiredFields = ['overtime_type', 'overtime_date', 'start_time', 'end_time', 'reason'];
@@ -127,7 +129,7 @@ export const overtimeService = {
 
       const requestData = {
         staff_id: userId,
-        user_id: userId, // 同時設定兩個欄位以確保相容性
+        user_id: userId,
         overtime_type: formData.overtime_type,
         overtime_date: formData.overtime_date,
         start_time: formData.start_time,
@@ -148,12 +150,6 @@ export const overtimeService = {
 
       if (error) {
         console.error('❌ 插入加班申請失敗:', error);
-        console.error('❌ 錯誤詳情:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        });
         throw new Error(`提交加班申請失敗: ${error.message}`);
       }
 
@@ -174,6 +170,7 @@ export const overtimeService = {
     }
   },
 
+  // 獲取用戶加班申請記錄
   async getUserOvertimeRequests(userId?: string): Promise<OvertimeRequest[]> {
     console.log('📋 開始獲取用戶加班申請...');
     
@@ -181,11 +178,11 @@ export const overtimeService = {
       let targetUserId = userId;
       
       if (!targetUserId) {
-        const { userId: authUserId, isAuthenticated } = await this.checkUserAuthentication();
-        if (!isAuthenticated) {
-          throw new Error('用戶未登入');
+        const sessionCheck = await this.ensureValidSession();
+        if (!sessionCheck.isValid) {
+          throw new Error(sessionCheck.error || '登入狀態無效');
         }
-        targetUserId = authUserId;
+        targetUserId = sessionCheck.userId!;
       }
 
       console.log('🔍 查詢用戶ID:', targetUserId);
@@ -203,106 +200,12 @@ export const overtimeService = {
       
       console.log('✅ 成功獲取加班申請:', data?.length || 0, '筆');
       
-      // 添加類型轉換確保類型安全
       return (data || []).map(item => ({
         ...item,
         status: item.status as 'pending' | 'approved' | 'rejected' | 'cancelled'
       }));
     } catch (error) {
       console.error('❌ 獲取用戶加班申請失敗:', error);
-      throw error;
-    }
-  },
-
-  // 獲取待審核的加班申請
-  async getPendingOvertimeRequests(): Promise<OvertimeRequest[]> {
-    console.log('📋 開始獲取待審核加班申請...');
-    
-    try {
-      const { userId, isAuthenticated } = await this.checkUserAuthentication();
-      
-      if (!isAuthenticated) {
-        throw new Error('用戶未登入');
-      }
-
-      const { data, error } = await supabase
-        .from('overtime_requests')
-        .select(`
-          *,
-          staff:staff_id (
-            name,
-            department,
-            position
-          )
-        `)
-        .eq('status', 'pending')
-        .or(`current_approver.eq.${userId},staff_id.in.(select id from staff where supervisor_id = '${userId}')`)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('❌ 查詢待審核加班申請失敗:', error);
-        throw error;
-      }
-      
-      console.log('✅ 成功獲取待審核加班申請:', data?.length || 0, '筆');
-      
-      // 添加類型轉換確保類型安全
-      return (data || []).map(item => ({
-        ...item,
-        status: item.status as 'pending' | 'approved' | 'rejected' | 'cancelled'
-      }));
-    } catch (error) {
-      console.error('❌ 獲取待審核加班申請失敗:', error);
-      throw error;
-    }
-  },
-
-  // 審核加班申請
-  async approveOvertimeRequest(requestId: string, action: 'approve' | 'reject', comment?: string): Promise<void> {
-    console.log('📋 開始審核加班申請:', { requestId, action, comment });
-    
-    try {
-      const { userId, isAuthenticated } = await this.checkUserAuthentication();
-      
-      if (!isAuthenticated) {
-        throw new Error('用戶未登入');
-      }
-
-      const status = action === 'approve' ? 'approved' : 'rejected';
-      
-      const { error } = await supabase
-        .from('overtime_requests')
-        .update({ 
-          status,
-          rejection_reason: action === 'reject' ? comment : null
-        })
-        .eq('id', requestId);
-
-      if (error) {
-        console.error('❌ 審核加班申請失敗:', error);
-        throw error;
-      }
-
-      // 創建審核記錄
-      await supabase
-        .from('overtime_approval_records')
-        .insert({
-          overtime_request_id: requestId,
-          approver_id: userId,
-          approver_name: '審核人', // 實際應該從用戶資料獲取
-          level: 1,
-          status: action === 'approve' ? 'approved' : 'rejected',
-          approval_date: new Date().toISOString(),
-          comment
-        });
-
-      // 發送通知
-      const message = action === 'approve' ? '您的加班申請已通過審核' : '您的加班申請已被拒絕';
-      await this.createOvertimeNotification(requestId, '加班申請審核結果', message);
-      
-      console.log('✅ 加班申請審核完成');
-    } catch (error) {
-      console.error('❌ 審核加班申請失敗:', error);
       throw error;
     }
   },

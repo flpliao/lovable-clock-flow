@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { AlertTriangle, RefreshCw, LogIn } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
+import { useSessionManager } from '@/hooks/useSessionManager';
 
 interface OvertimeAuthCheckProps {
   children: React.ReactNode;
@@ -12,69 +12,31 @@ interface OvertimeAuthCheckProps {
 
 const OvertimeAuthCheck: React.FC<OvertimeAuthCheckProps> = ({ children }) => {
   const { currentUser, isAuthenticated } = useUser();
-  const [supabaseAuthStatus, setSupabaseAuthStatus] = useState<{
-    isAuthenticated: boolean;
-    userId: string | null;
-    isLoading: boolean;
-    error: string | null;
-  }>({
-    isAuthenticated: false,
-    userId: null,
-    isLoading: true,
-    error: null
-  });
+  const { sessionStatus, ensureValidSession, requestReLogin } = useSessionManager();
+  const [isValidating, setIsValidating] = useState(false);
 
-  const checkSupabaseAuth = async () => {
+  // 驗證完整的認證狀態
+  const validateAuthState = async () => {
+    setIsValidating(true);
     try {
-      console.log('🔐 檢查 Supabase 認證狀態...');
+      console.log('🔍 驗證完整認證狀態...');
+      console.log('Context 狀態:', { hasUser: !!currentUser, isAuthenticated });
+      console.log('Session 狀態:', sessionStatus);
       
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('❌ Supabase 認證檢查失敗:', error);
-        setSupabaseAuthStatus({
-          isAuthenticated: false,
-          userId: null,
-          isLoading: false,
-          error: `認證檢查失敗: ${error.message}`
-        });
-        return;
-      }
-
-      const userId = session?.user?.id || null;
-      const isAuthenticated = !!session && !!userId;
-      
-      console.log('📋 Supabase 認證狀態:', {
-        hasSession: !!session,
-        userId,
-        isAuthenticated,
-        expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toLocaleString() : 'N/A'
-      });
-
-      setSupabaseAuthStatus({
-        isAuthenticated,
-        userId,
-        isLoading: false,
-        error: null
-      });
-
-    } catch (error: any) {
-      console.error('❌ 認證狀態檢查異常:', error);
-      setSupabaseAuthStatus({
-        isAuthenticated: false,
-        userId: null,
-        isLoading: false,
-        error: `認證檢查異常: ${error.message}`
-      });
+      await ensureValidSession();
+    } finally {
+      setIsValidating(false);
     }
   };
 
   useEffect(() => {
-    checkSupabaseAuth();
-  }, []);
+    if (isAuthenticated && currentUser) {
+      validateAuthState();
+    }
+  }, [isAuthenticated, currentUser]);
 
   // 載入中狀態
-  if (supabaseAuthStatus.isLoading) {
+  if (sessionStatus.isChecking || isValidating) {
     return (
       <div className="flex items-center justify-center py-8">
         <RefreshCw className="h-6 w-6 animate-spin text-white mr-2" />
@@ -83,12 +45,13 @@ const OvertimeAuthCheck: React.FC<OvertimeAuthCheckProps> = ({ children }) => {
     );
   }
 
-  // 檢查 Context 和 Supabase 認證狀態是否一致
-  const contextAuthStatus = isAuthenticated && currentUser;
-  const supabaseAuthOk = supabaseAuthStatus.isAuthenticated && supabaseAuthStatus.userId;
-  
-  // 如果兩者都正常，顯示子組件
-  if (contextAuthStatus && supabaseAuthOk) {
+  // 檢查認證狀態
+  const contextAuthOk = isAuthenticated && currentUser;
+  const sessionAuthOk = sessionStatus.isValid;
+  const isFullyAuthenticated = contextAuthOk && sessionAuthOk;
+
+  // 如果完全認證通過，顯示子組件
+  if (isFullyAuthenticated) {
     return <>{children}</>;
   }
 
@@ -98,19 +61,42 @@ const OvertimeAuthCheck: React.FC<OvertimeAuthCheckProps> = ({ children }) => {
       <Alert className="backdrop-blur-xl bg-red-500/20 border border-red-300/30 shadow-xl">
         <AlertTriangle className="h-4 w-4 text-red-300" />
         <AlertDescription className="text-red-200">
-          <div className="space-y-2">
-            <div className="font-semibold">登入狀態已過期，請重新登入</div>
-            <div className="text-sm space-y-1">
-              <div>Context 認證狀態: {contextAuthStatus ? '✅ 正常' : '❌ 異常'}</div>
-              <div>Supabase 認證狀態: {supabaseAuthOk ? '✅ 正常' : '❌ 異常'}</div>
+          <div className="space-y-3">
+            <div className="font-semibold text-lg">登入狀態異常</div>
+            
+            <div className="text-sm space-y-2">
+              <div className="flex items-center justify-between">
+                <span>Context 認證狀態:</span>
+                <span className={contextAuthOk ? 'text-green-300' : 'text-red-300'}>
+                  {contextAuthOk ? '✅ 正常' : '❌ 異常'}
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span>Supabase Session:</span>
+                <span className={sessionAuthOk ? 'text-green-300' : 'text-red-300'}>
+                  {sessionAuthOk ? '✅ 有效' : '❌ 無效或已過期'}
+                </span>
+              </div>
+              
               {currentUser && (
-                <div>當前用戶: {currentUser.name} (ID: {currentUser.id})</div>
+                <div className="pt-2 border-t border-red-300/30">
+                  <div>用戶: {currentUser.name}</div>
+                  <div>ID: {currentUser.id}</div>
+                </div>
               )}
-              {supabaseAuthStatus.userId && (
-                <div>Supabase 用戶ID: {supabaseAuthStatus.userId}</div>
+              
+              {sessionStatus.error && (
+                <div className="pt-2 border-t border-red-300/30 text-red-300">
+                  <div className="font-medium">錯誤詳情:</div>
+                  <div className="text-xs">{sessionStatus.error}</div>
+                </div>
               )}
-              {supabaseAuthStatus.error && (
-                <div className="text-red-300">錯誤: {supabaseAuthStatus.error}</div>
+              
+              {sessionStatus.lastChecked && (
+                <div className="text-xs text-red-200">
+                  最後檢查: {sessionStatus.lastChecked.toLocaleString()}
+                </div>
               )}
             </div>
           </div>
@@ -118,17 +104,33 @@ const OvertimeAuthCheck: React.FC<OvertimeAuthCheckProps> = ({ children }) => {
       </Alert>
       
       <div className="text-center space-y-4">
-        <Button
-          onClick={checkSupabaseAuth}
-          variant="outline"
-          className="bg-white/20 border-white/30 text-white hover:bg-white/30"
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          重新檢查登入狀態
-        </Button>
+        <div className="flex gap-3 justify-center">
+          <Button
+            onClick={validateAuthState}
+            variant="outline"
+            className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+            disabled={isValidating}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isValidating ? 'animate-spin' : ''}`} />
+            重新檢查狀態
+          </Button>
+          
+          <Button
+            onClick={requestReLogin}
+            className="bg-blue-500/80 hover:bg-blue-600/80 text-white border-blue-400/50"
+          >
+            <LogIn className="h-4 w-4 mr-2" />
+            重新登入
+          </Button>
+        </div>
         
-        <div className="text-white/80 text-sm">
-          如果問題持續存在，請嘗試重新登入系統
+        <div className="text-white/80 text-sm max-w-md mx-auto">
+          {!contextAuthOk && !sessionAuthOk 
+            ? '請重新登入系統以繼續使用加班功能'
+            : !sessionAuthOk 
+            ? '登入狀態已過期，請重新登入'
+            : '認證狀態異常，請重新檢查或登入'
+          }
         </div>
       </div>
     </div>

@@ -57,8 +57,8 @@ export const queryOvertimeService = {
         ...record,
         staff: Array.isArray(record.staff) ? record.staff[0] : record.staff,
         supervisor_hierarchy: Array.isArray(record.supervisor_hierarchy) 
-          ? record.supervisor_hierarchy as SupervisorHierarchyItem[]
-          : (record.supervisor_hierarchy as unknown as SupervisorHierarchyItem[]) || [],
+          ? (record.supervisor_hierarchy as unknown as SupervisorHierarchyItem[])
+          : ((record.supervisor_hierarchy as unknown) as SupervisorHierarchyItem[]) || [],
         overtime_approval_records: Array.isArray(record.overtime_approval_records) 
           ? record.overtime_approval_records.map(approvalRecord => ({
               ...approvalRecord,
@@ -118,8 +118,8 @@ export const queryOvertimeService = {
         ...data,
         staff: Array.isArray(data.staff) ? data.staff[0] : data.staff,
         supervisor_hierarchy: Array.isArray(data.supervisor_hierarchy) 
-          ? data.supervisor_hierarchy as SupervisorHierarchyItem[]
-          : (data.supervisor_hierarchy as unknown as SupervisorHierarchyItem[]) || [],
+          ? (data.supervisor_hierarchy as unknown as SupervisorHierarchyItem[])
+          : ((data.supervisor_hierarchy as unknown) as SupervisorHierarchyItem[]) || [],
         overtime_approval_records: Array.isArray(data.overtime_approval_records) 
           ? data.overtime_approval_records.map(approvalRecord => ({
               ...approvalRecord,
@@ -177,8 +177,8 @@ export const queryOvertimeService = {
         ...record,
         staff: Array.isArray(record.staff) ? record.staff[0] : record.staff,
         supervisor_hierarchy: Array.isArray(record.supervisor_hierarchy) 
-          ? record.supervisor_hierarchy as SupervisorHierarchyItem[]
-          : (record.supervisor_hierarchy as unknown as SupervisorHierarchyItem[]) || [],
+          ? (record.supervisor_hierarchy as unknown as SupervisorHierarchyItem[])
+          : ((record.supervisor_hierarchy as unknown) as SupervisorHierarchyItem[]) || [],
         overtime_approval_records: Array.isArray(record.overtime_approval_records) 
           ? record.overtime_approval_records.map(approvalRecord => ({
               ...approvalRecord,

@@ -1,52 +1,82 @@
 
 import React from 'react';
-import { Clock, FileText } from 'lucide-react';
-import { format } from 'date-fns';
+import { Clock, Calendar, User, FileText } from 'lucide-react';
 import type { MyApplication } from '@/types/myApplication';
-import ApplicationTypeIcon from './ApplicationTypeIcon';
 import ApplicationStatusBadge from './ApplicationStatusBadge';
 import ApplicationDetails from './ApplicationDetails';
 
 interface ApplicationCardProps {
   application: MyApplication;
-  isPending?: boolean;
+  isPending: boolean;
 }
 
-const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, isPending = false }) => {
-  const cardClass = isPending 
-    ? "bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6 backdrop-blur-xl"
-    : "bg-white/10 rounded-2xl p-6 border border-white/20";
+const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, isPending }) => {
+  const getApplicationIcon = (type: string) => {
+    switch (type) {
+      case 'overtime':
+        return <Clock className="h-5 w-5 text-orange-400" />;
+      case 'missed_checkin':
+        return <Calendar className="h-5 w-5 text-blue-400" />;
+      case 'leave':
+        return <User className="h-5 w-5 text-green-400" />;
+      default:
+        return <FileText className="h-5 w-5 text-gray-400" />;
+    }
+  };
+
+  const getTypeDisplayName = (type: string) => {
+    switch (type) {
+      case 'overtime':
+        return '加班申請';
+      case 'missed_checkin':
+        return '忘記打卡申請';
+      case 'leave':
+        return '請假申請';
+      default:
+        return '其他申請';
+    }
+  };
 
   return (
-    <div key={`${isPending ? 'pending-' : ''}${application.type}-${application.id}`} className={cardClass}>
-      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-3">
-            <ApplicationTypeIcon type={application.type} />
-            <ApplicationStatusBadge status={application.status} />
-          </div>
-          
-          <ApplicationDetails application={application} />
-
-          {application.details.reason && (
-            <div className="mt-4 p-3 bg-white/10 rounded-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <FileText className="h-4 w-4 text-white/80" />
-                <span className="text-white/70 text-sm">申請原因</span>
-              </div>
-              <p className="text-white text-sm">{application.details.reason}</p>
-            </div>
-          )}
-
-          <div className="mt-3 text-xs text-white/60">
-            申請時間: {format(new Date(application.created_at), 'yyyy/MM/dd HH:mm')}
+    <div className={`backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-xl p-4 transition-all duration-300 hover:shadow-2xl ${
+      isPending ? 'ring-2 ring-yellow-300/50' : ''
+    }`}>
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-3">
+          {getApplicationIcon(application.type)}
+          <div>
+            <h3 className="font-medium text-white text-sm">
+              {getTypeDisplayName(application.type)}
+            </h3>
+            <p className="text-white/80 text-xs mt-1">
+              {new Date(application.created_at).toLocaleString('zh-TW')}
+            </p>
           </div>
         </div>
-
         <div className="flex items-center gap-2">
           <ApplicationStatusBadge status={application.status} />
         </div>
       </div>
+
+      {/* 標題顯示 */}
+      <div className="mb-3">
+        <p className="text-white/90 text-sm font-medium">
+          {application.title}
+        </p>
+      </div>
+
+      {/* 詳細信息 */}
+      <ApplicationDetails application={application} />
+
+      {/* 拒絕原因 */}
+      {application.status === 'rejected' && application.details?.rejection_reason && (
+        <div className="mt-3 p-2 bg-red-500/20 border border-red-300/30 rounded-lg">
+          <p className="text-red-200 text-xs">
+            <span className="font-medium">拒絕原因：</span>
+            {application.details.rejection_reason}
+          </p>
+        </div>
+      )}
     </div>
   );
 };

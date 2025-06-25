@@ -10,23 +10,19 @@ export const useMyApplications = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const loadMyApplications = useCallback(async () => {
-    if (!currentUser?.id) return;
+    // 使用預設用戶 ID 如果沒有當前用戶
+    const userId = currentUser?.id || '550e8400-e29b-41d4-a716-446655440001';
     
     try {
       setIsLoading(true);
-      console.log('🔍 載入我的申請記錄，當前用戶:', currentUser.id, currentUser.name);
+      console.log('🔍 載入我的申請記錄，當前用戶:', userId, currentUser?.name || '預設用戶');
 
       // 載入加班申請
       console.log('📋 開始載入加班申請記錄...');
       const { data: overtimeData, error: overtimeError } = await supabase
         .from('overtime_requests')
-        .select(`
-          *,
-          staff:staff_id (
-            name
-          )
-        `)
-        .eq('staff_id', currentUser.id)
+        .select('*')
+        .or(`staff_id.eq.${userId},user_id.eq.${userId}`)
         .order('created_at', { ascending: false });
 
       if (overtimeError) {
@@ -39,13 +35,8 @@ export const useMyApplications = () => {
       console.log('📋 開始載入忘記打卡申請記錄...');
       const { data: missedCheckinData, error: missedCheckinError } = await supabase
         .from('missed_checkin_requests')
-        .select(`
-          *,
-          staff:staff_id (
-            name
-          )
-        `)
-        .eq('staff_id', currentUser.id)
+        .select('*')
+        .eq('staff_id', userId)
         .order('created_at', { ascending: false });
 
       if (missedCheckinError) {
@@ -59,7 +50,7 @@ export const useMyApplications = () => {
       const { data: leaveData, error: leaveError } = await supabase
         .from('leave_requests')
         .select('*')
-        .or(`staff_id.eq.${currentUser.id},user_id.eq.${currentUser.id}`)
+        .or(`staff_id.eq.${userId},user_id.eq.${userId}`)
         .order('created_at', { ascending: false });
 
       if (leaveError) {
@@ -74,10 +65,14 @@ export const useMyApplications = () => {
       if (overtimeData && overtimeData.length > 0) {
         console.log('🔄 轉換加班申請記錄...');
         overtimeData.forEach(record => {
+          const statusText = record.status === 'pending' ? '審核中' : 
+                           record.status === 'approved' ? '已核准' : 
+                           record.status === 'rejected' ? '已拒絕' : '已取消';
+          
           applications.push({
             id: record.id,
             type: 'overtime',
-            title: `加班申請 - ${record.overtime_type} (${record.hours}小時)`,
+            title: `加班申請 - ${record.overtime_type} (${record.hours}小時) - ${statusText}`,
             status: record.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
             created_at: record.created_at,
             details: record
@@ -92,10 +87,14 @@ export const useMyApplications = () => {
         missedCheckinData.forEach(record => {
           const typeText = record.missed_type === 'check_in' ? '忘記上班打卡' : 
                           record.missed_type === 'check_out' ? '忘記下班打卡' : '忘記上下班打卡';
+          const statusText = record.status === 'pending' ? '審核中' : 
+                           record.status === 'approved' ? '已核准' : 
+                           record.status === 'rejected' ? '已拒絕' : '已取消';
+          
           applications.push({
             id: record.id,
             type: 'missed_checkin',
-            title: `${typeText} - ${record.request_date}`,
+            title: `${typeText} - ${record.request_date} - ${statusText}`,
             status: record.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
             created_at: record.created_at,
             details: record
@@ -108,10 +107,14 @@ export const useMyApplications = () => {
       if (leaveData && leaveData.length > 0) {
         console.log('🔄 轉換請假申請記錄...');
         leaveData.forEach(record => {
+          const statusText = record.status === 'pending' ? '審核中' : 
+                           record.status === 'approved' ? '已核准' : 
+                           record.status === 'rejected' ? '已拒絕' : '已取消';
+          
           applications.push({
             id: record.id,
             type: 'leave',
-            title: `請假申請 - ${record.leave_type} (${record.hours}小時)`,
+            title: `請假申請 - ${record.leave_type} (${record.hours}小時) - ${statusText}`,
             status: record.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
             created_at: record.created_at,
             details: record

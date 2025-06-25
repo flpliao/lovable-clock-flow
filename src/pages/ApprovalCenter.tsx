@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,7 +14,6 @@ import LeaveApprovalTab from './approval/components/LeaveApprovalTab';
 import MissedCheckinApprovalTab from './approval/components/MissedCheckinApprovalTab';
 import OvertimeApprovalTab from './approval/components/OvertimeApprovalTab';
 import MyApplicationsTab from './approval/components/MyApplicationsTab';
-import type { MyApplication } from '@/types/myApplication';
 
 const ApprovalCenter = () => {
   const { currentUser } = useUser();

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { OvertimeRequest, OvertimeFormData, OvertimeType } from '@/types/overtime';
 
@@ -26,36 +25,164 @@ export const overtimeService = {
 
   // 提交加班申請
   async submitOvertimeRequest(formData: OvertimeFormData): Promise<string> {
-    // 計算加班時數
-    const startTime = new Date(`2000-01-01T${formData.start_time}`);
-    const endTime = new Date(`2000-01-01T${formData.end_time}`);
-    const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+    console.log('🔍 開始提交加班申請，原始表單資料:', formData);
 
-    const requestData = {
-      staff_id: '550e8400-e29b-41d4-a716-446655440001', // 使用預設用戶 ID
-      user_id: '550e8400-e29b-41d4-a716-446655440001',
-      overtime_type: formData.overtime_type,
-      overtime_date: formData.overtime_date,
-      start_time: formData.start_time,
-      end_time: formData.end_time,
-      hours,
-      reason: formData.reason,
-      status: 'pending' as const,
-      approval_level: 1
-    };
+    try {
+      // 1️⃣ 驗證必填欄位
+      if (!formData.overtime_type) {
+        console.error('❌ 加班類型為空');
+        throw new Error('請選擇加班類型');
+      }
+      if (!formData.overtime_date) {
+        console.error('❌ 加班日期為空');
+        throw new Error('請選擇加班日期');
+      }
+      if (!formData.start_time) {
+        console.error('❌ 開始時間為空');
+        throw new Error('請選擇開始時間');
+      }
+      if (!formData.end_time) {
+        console.error('❌ 結束時間為空');
+        throw new Error('請選擇結束時間');
+      }
+      if (!formData.reason || formData.reason.trim() === '') {
+        console.error('❌ 加班原因為空');
+        throw new Error('請填寫加班原因');
+      }
 
-    const { data, error } = await supabase
-      .from('overtime_requests')
-      .insert(requestData)
-      .select()
-      .single();
+      // 2️⃣ 驗證時間邏輯
+      const startTime = new Date(`2000-01-01T${formData.start_time}`);
+      const endTime = new Date(`2000-01-01T${formData.end_time}`);
+      
+      console.log('⏰ 時間驗證:', {
+        start_time: formData.start_time,
+        end_time: formData.end_time,
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString()
+      });
 
-    if (error) throw error;
+      if (startTime >= endTime) {
+        console.error('❌ 開始時間必須早於結束時間');
+        throw new Error('開始時間必須早於結束時間');
+      }
 
-    // 創建通知
-    await this.createOvertimeNotification(data.id, '加班申請已提交', '您的加班申請已提交，等待審核');
+      // 計算加班時數
+      const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+      
+      if (hours <= 0) {
+        console.error('❌ 計算出的加班時數無效:', hours);
+        throw new Error('加班時數計算錯誤');
+      }
 
-    return data.id;
+      console.log('✅ 計算加班時數:', hours, '小時');
+
+      // 3️⃣ 準備插入資料
+      const defaultUserId = '550e8400-e29b-41d4-a716-446655440001';
+      const requestData = {
+        staff_id: defaultUserId,
+        user_id: defaultUserId,
+        overtime_type: formData.overtime_type,
+        overtime_date: formData.overtime_date,
+        start_time: formData.start_time,
+        end_time: formData.end_time,
+        hours: Number(hours.toFixed(2)), // 確保是數字格式
+        reason: formData.reason.trim(),
+        status: 'pending' as const,
+        approval_level: 1
+      };
+
+      console.log('📝 準備插入的資料:', requestData);
+
+      // 4️⃣ 驗證 UUID 格式
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(defaultUserId)) {
+        console.error('❌ UUID 格式錯誤:', defaultUserId);
+        throw new Error('用戶ID格式錯誤');
+      }
+
+      // 5️⃣ 執行資料庫插入
+      console.log('💾 開始插入資料庫...');
+      const { data, error } = await supabase
+        .from('overtime_requests')
+        .insert(requestData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ 資料庫插入失敗:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          requestData
+        });
+        
+        // 根據錯誤類型提供更具體的錯誤訊息
+        if (error.code === '23502') {
+          throw new Error(`必填欄位缺失: ${error.message}`);
+        } else if (error.code === '23503') {
+          throw new Error(`外鍵約束錯誤: ${error.message}`);
+        } else if (error.code === '22P02') {
+          throw new Error(`資料格式錯誤: ${error.message}`);
+        } else if (error.code === '23514') {
+          throw new Error(`檢查約束失敗: ${error.message}`);
+        } else {
+          throw new Error(`資料庫錯誤 (${error.code}): ${error.message}`);
+        }
+      }
+
+      console.log('✅ 加班申請插入成功:', data);
+
+      // 6️⃣ 創建審核記錄
+      try {
+        console.log('📋 開始創建審核記錄...');
+        const approvalRecordData = {
+          overtime_request_id: data.id,
+          approver_name: '系統管理員',
+          level: 1,
+          status: 'pending' as const,
+          comment: '待審核'
+        };
+
+        console.log('📋 審核記錄資料:', approvalRecordData);
+
+        const { error: approvalError } = await supabase
+          .from('overtime_approval_records')
+          .insert(approvalRecordData);
+
+        if (approvalError) {
+          console.error('⚠️ 創建審核記錄失敗，但申請已提交:', approvalError);
+          // 不拋出錯誤，因為主要申請已成功
+        } else {
+          console.log('✅ 審核記錄創建成功');
+        }
+      } catch (approvalRecordError) {
+        console.error('⚠️ 審核記錄創建異常:', approvalRecordError);
+        // 不影響主流程
+      }
+
+      // 7️⃣ 創建通知
+      try {
+        console.log('🔔 開始創建通知...');
+        await this.createOvertimeNotification(data.id, '加班申請已提交', '您的加班申請已提交，等待審核');
+        console.log('✅ 通知創建成功');
+      } catch (notificationError) {
+        console.error('⚠️ 通知創建失敗，但申請已提交:', notificationError);
+        // 不影響主流程
+      }
+
+      console.log('🎉 加班申請流程完成，申請ID:', data.id);
+      return data.id;
+
+    } catch (error) {
+      console.error('💥 提交加班申請時發生錯誤:', error);
+      
+      if (error instanceof Error) {
+        throw error; // 重新拋出具體錯誤
+      } else {
+        throw new Error('提交加班申請時發生未知錯誤');
+      }
+    }
   },
 
   // 獲取用戶的加班申請

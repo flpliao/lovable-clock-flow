@@ -1,16 +1,7 @@
-
 import React from 'react';
 import { Clock, CheckCircle, XCircle, Calendar, User, FileText } from 'lucide-react';
 import { format } from 'date-fns';
-
-interface MyApplication {
-  id: string;
-  type: 'overtime' | 'missed_checkin' | 'leave';
-  title: string;
-  status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
-  details: any;
-}
+import type { MyApplication } from '@/types/myApplication';
 
 interface MyApplicationsTabProps {
   applications: MyApplication[];
@@ -27,6 +18,8 @@ const MyApplicationsTab: React.FC<MyApplicationsTabProps> = ({
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'rejected':
         return <XCircle className="h-5 w-5 text-red-500" />;
+      case 'cancelled':
+        return <XCircle className="h-5 w-5 text-gray-500" />;
       default:
         return <Clock className="h-5 w-5 text-yellow-500" />;
     }
@@ -38,6 +31,8 @@ const MyApplicationsTab: React.FC<MyApplicationsTabProps> = ({
         return '已核准';
       case 'rejected':
         return '已拒絕';
+      case 'cancelled':
+        return '已取消';
       default:
         return '審核中';
     }
@@ -49,6 +44,8 @@ const MyApplicationsTab: React.FC<MyApplicationsTabProps> = ({
         return 'bg-green-100 text-green-800 border-green-200';
       case 'rejected':
         return 'bg-red-100 text-red-800 border-red-200';
+      case 'cancelled':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
       default:
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
     }

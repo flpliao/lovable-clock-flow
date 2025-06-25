@@ -971,6 +971,99 @@ export type Database = {
           },
         ]
       }
+      overtime_approval_records: {
+        Row: {
+          approval_date: string | null
+          approver_id: string | null
+          approver_name: string
+          comment: string | null
+          created_at: string
+          id: string
+          level: number
+          overtime_request_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approval_date?: string | null
+          approver_id?: string | null
+          approver_name: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          level: number
+          overtime_request_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approval_date?: string | null
+          approver_id?: string | null
+          approver_name?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          level?: number
+          overtime_request_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      overtime_requests: {
+        Row: {
+          approval_level: number | null
+          attachment_url: string | null
+          created_at: string
+          current_approver: string | null
+          end_time: string
+          hours: number
+          id: string
+          overtime_date: string
+          reason: string
+          rejection_reason: string | null
+          staff_id: string | null
+          start_time: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          approval_level?: number | null
+          attachment_url?: string | null
+          created_at?: string
+          current_approver?: string | null
+          end_time: string
+          hours: number
+          id?: string
+          overtime_date: string
+          reason: string
+          rejection_reason?: string | null
+          staff_id?: string | null
+          start_time: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          approval_level?: number | null
+          attachment_url?: string | null
+          created_at?: string
+          current_approver?: string | null
+          end_time?: string
+          hours?: number
+          id?: string
+          overtime_date?: string
+          reason?: string
+          rejection_reason?: string | null
+          staff_id?: string | null
+          start_time?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       payroll_approvals: {
         Row: {
           action: string

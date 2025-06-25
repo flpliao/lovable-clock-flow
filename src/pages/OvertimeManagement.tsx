@@ -16,7 +16,8 @@ const OvertimeManagementContent = () => {
     canCreateOvertime,
     canViewAllOvertime,
     canApproveOvertime,
-    canManageOvertime
+    canManageOvertime,
+    hasAnyOvertimePermission
   } = useOvertimePermissions();
 
   if (!currentUser) {
@@ -29,11 +30,12 @@ const OvertimeManagementContent = () => {
     canCreateOvertime,
     canViewAllOvertime,
     canApproveOvertime,
-    canManageOvertime
+    canManageOvertime,
+    hasAnyOvertimePermission
   });
 
   // 如果用戶沒有任何加班相關權限
-  if (!canViewOwnOvertime && !canCreateOvertime && !canViewAllOvertime && !canApproveOvertime && !canManageOvertime) {
+  if (!hasAnyOvertimePermission) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-red-400 via-red-500 to-red-600 relative overflow-hidden mobile-fullscreen">
         <div className="absolute inset-0 bg-gradient-to-tr from-red-400/80 via-red-500/60 to-red-600/80"></div>

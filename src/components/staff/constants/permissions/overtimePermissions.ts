@@ -1,46 +1,23 @@
 
 export const OVERTIME_PERMISSIONS = {
+  // 基本權限
   VIEW_OWN_OVERTIME: 'overtime:view_own',
-  VIEW_ALL_OVERTIME: 'overtime:view_all',
   CREATE_OVERTIME: 'overtime:create',
+  UPDATE_OWN_OVERTIME: 'overtime:update_own',
+  DELETE_OWN_OVERTIME: 'overtime:delete_own',
+  
+  // 審核權限
   APPROVE_OVERTIME: 'overtime:approve',
-  MANAGE_OVERTIME: 'overtime:manage'
+  VIEW_SUBORDINATE_OVERTIME: 'overtime:view_subordinate',
+  
+  // 管理權限
+  VIEW_ALL_OVERTIME: 'overtime:view_all',
+  MANAGE_OVERTIME: 'overtime:manage',
+  EXPORT_OVERTIME: 'overtime:export',
+  
+  // 報表權限
+  VIEW_OVERTIME_REPORTS: 'overtime:view_reports',
+  MANAGE_OVERTIME_REPORTS: 'overtime:manage_reports'
 } as const;
 
-export const OVERTIME_PERMISSION_DEFINITIONS = [
-  {
-    id: OVERTIME_PERMISSIONS.VIEW_OWN_OVERTIME,
-    name: '查看自己加班記錄',
-    code: OVERTIME_PERMISSIONS.VIEW_OWN_OVERTIME,
-    category: 'overtime',
-    description: '可以查看自己的加班申請和記錄'
-  },
-  {
-    id: OVERTIME_PERMISSIONS.VIEW_ALL_OVERTIME,
-    name: '查看所有加班記錄',
-    code: OVERTIME_PERMISSIONS.VIEW_ALL_OVERTIME,
-    category: 'overtime',
-    description: '可以查看所有員工的加班記錄'
-  },
-  {
-    id: OVERTIME_PERMISSIONS.CREATE_OVERTIME,
-    name: '申請加班',
-    code: OVERTIME_PERMISSIONS.CREATE_OVERTIME,
-    category: 'overtime',
-    description: '可以提交加班申請'
-  },
-  {
-    id: OVERTIME_PERMISSIONS.APPROVE_OVERTIME,
-    name: '審核加班',
-    code: OVERTIME_PERMISSIONS.APPROVE_OVERTIME,
-    category: 'overtime',
-    description: '可以審核員工的加班申請'
-  },
-  {
-    id: OVERTIME_PERMISSIONS.MANAGE_OVERTIME,
-    name: '完整加班管理',
-    code: OVERTIME_PERMISSIONS.MANAGE_OVERTIME,
-    category: 'overtime',
-    description: '具備完整的加班管理權限'
-  }
-] as const;
+export type OvertimePermission = typeof OVERTIME_PERMISSIONS[keyof typeof OVERTIME_PERMISSIONS];

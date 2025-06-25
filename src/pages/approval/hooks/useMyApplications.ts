@@ -1,13 +1,14 @@
 
 import { useState, useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
+import { queryOvertimeService } from '@/services/overtime/queryOvertimeService';
 import { supabase } from '@/integrations/supabase/client';
 
 interface MyApplication {
   id: string;
   type: 'overtime' | 'missed_checkin' | 'leave';
   title: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
   created_at: string;
   details: any;
 }
@@ -24,40 +25,12 @@ export const useMyApplications = () => {
       setIsLoading(true);
       console.log('🔍 載入我的申請記錄，當前用戶:', currentUser.id, currentUser.name);
 
-      // 載入加班申請 - 僅限自己申請的記錄
+      // 載入加班申請 - 使用新的查詢服務
       console.log('📋 開始載入加班申請記錄...');
-      const { data: overtimeData, error: overtimeError } = await supabase
-        .from('overtimes')
-        .select(`
-          *,
-          staff!staff_id (
-            name,
-            department,
-            position,
-            supervisor_id
-          ),
-          overtime_approval_records (
-            id,
-            approver_id,
-            approver_name,
-            level,
-            status,
-            approval_date,
-            comment,
-            created_at,
-            updated_at
-          )
-        `)
-        .eq('staff_id', currentUser.id)  // 僅查詢自己的申請
-        .order('created_at', { ascending: false });
-
-      if (overtimeError) {
-        console.error('❌ 載入加班申請失敗:', overtimeError);
-      } else {
-        console.log('✅ 加班申請記錄載入完成:', overtimeData?.length || 0, '筆');
-      }
+      const overtimeData = await queryOvertimeService.getOvertimeRequestsByCurrentUser(currentUser.id);
+      console.log('✅ 加班申請記錄載入完成:', overtimeData?.length || 0, '筆');
       
-      // 載入忘記打卡申請 - 僅限自己申請的記錄
+      // 載入忘記打卡申請
       console.log('📋 開始載入忘記打卡申請記錄...');
       const { data: missedCheckinData, error: missedCheckinError } = await supabase
         .from('missed_checkin_requests')
@@ -67,7 +40,7 @@ export const useMyApplications = () => {
             name
           )
         `)
-        .eq('staff_id', currentUser.id)  // 僅查詢自己的申請
+        .eq('staff_id', currentUser.id)
         .order('created_at', { ascending: false });
 
       if (missedCheckinError) {
@@ -76,12 +49,12 @@ export const useMyApplications = () => {
         console.log('✅ 忘記打卡申請記錄載入完成:', missedCheckinData?.length || 0, '筆');
       }
 
-      // 載入請假申請 - 僅限自己申請的記錄
+      // 載入請假申請
       console.log('📋 開始載入請假申請記錄...');
       const { data: leaveData, error: leaveError } = await supabase
-        .from('leave_requests')  
+        .from('leave_requests')
         .select('*')
-        .or(`staff_id.eq.${currentUser.id},user_id.eq.${currentUser.id}`)  // 僅查詢自己的申請
+        .or(`staff_id.eq.${currentUser.id},user_id.eq.${currentUser.id}`)
         .order('created_at', { ascending: false });
 
       if (leaveError) {
@@ -101,14 +74,14 @@ export const useMyApplications = () => {
             date: record.overtime_date,
             status: record.status,
             hours: record.hours,
-            isPending: record.status === 'pending'
+            type: record.overtime_type
           });
           
           applications.push({
             id: record.id,
             type: 'overtime',
-            title: `加班申請 - ${record.overtime_date}`,
-            status: record.status as 'pending' | 'approved' | 'rejected',
+            title: `加班申請 - ${record.overtime_date} (${record.hours}小時)`,
+            status: record.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
             created_at: record.created_at,
             details: {
               ...record,
@@ -132,7 +105,7 @@ export const useMyApplications = () => {
             id: record.id,
             type: 'missed_checkin',
             title: `${typeText} - ${record.request_date}`,
-            status: record.status as 'pending' | 'approved' | 'rejected',
+            status: record.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
             created_at: record.created_at,
             details: record
           });
@@ -147,8 +120,8 @@ export const useMyApplications = () => {
           applications.push({
             id: record.id,
             type: 'leave',
-            title: `請假申請 - ${record.leave_type}`,
-            status: record.status as 'pending' | 'approved' | 'rejected',
+            title: `請假申請 - ${record.leave_type} (${record.hours}小時)`,
+            status: record.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
             created_at: record.created_at,
             details: record
           });
@@ -158,11 +131,8 @@ export const useMyApplications = () => {
 
       // 按建立時間排序，pending 狀態的申請優先顯示
       applications.sort((a, b) => {
-        // 如果狀態不同，pending 優先
         if (a.status === 'pending' && b.status !== 'pending') return -1;
         if (a.status !== 'pending' && b.status === 'pending') return 1;
-        
-        // 其他情況按建立時間倒序
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
 
@@ -175,7 +145,8 @@ export const useMyApplications = () => {
         狀態分布: {
           pending: applications.filter(a => a.status === 'pending').length,
           approved: applications.filter(a => a.status === 'approved').length,  
-          rejected: applications.filter(a => a.status === 'rejected').length
+          rejected: applications.filter(a => a.status === 'rejected').length,
+          cancelled: applications.filter(a => a.status === 'cancelled').length
         }
       });
 
@@ -190,10 +161,15 @@ export const useMyApplications = () => {
     }
   }, [currentUser?.id, currentUser?.name]);
 
+  const refreshMyApplications = useCallback(() => {
+    return loadMyApplications();
+  }, [loadMyApplications]);
+
   return {
     myApplications,
     isLoading,
     loadMyApplications,
+    refreshMyApplications,
     setMyApplications
   };
 };

@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import { overtimeApprovalService } from '@/services/overtime/overtimeApprovalService';
+import { queryOvertimeService } from '@/services/overtime/queryOvertimeService';
 
 interface OvertimeApprovalRecord {
   id: string;
@@ -28,9 +29,15 @@ interface OvertimeRequestWithApplicant {
   reason: string;
   status: string;
   created_at: string;
+  updated_at: string;
   approval_level?: number;
   current_approver?: string;
-  supervisor_hierarchy?: any; // Changed from any[] to any to handle Json type
+  supervisor_hierarchy?: any;
+  approved_by?: string;
+  approved_by_name?: string;
+  approval_date?: string;
+  approval_comment?: string;
+  rejection_reason?: string;
   staff?: {
     name: string;
     department: string;
@@ -44,24 +51,25 @@ export const useOvertimeRequests = () => {
   const { currentUser } = useUser();
   const { toast } = useToast();
   const [overtimeRequests, setOvertimeRequests] = useState<OvertimeRequestWithApplicant[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const loadOvertimeRequests = useCallback(async () => {
     if (!currentUser?.id) return;
     
     try {
+      setIsLoading(true);
       console.log('🔍 載入待審核加班申請，當前用戶:', currentUser.id, currentUser.name);
       
-      // 使用新的審核服務載入待審核申請
       const requests = await overtimeApprovalService.getPendingOvertimeRequestsForApprover(currentUser.id);
       
-      // 格式化資料
-      const formattedData = requests.map(item => ({
+      // 格式化資料，確保類型安全
+      const formattedData: OvertimeRequestWithApplicant[] = requests.map(item => ({
         ...item,
         staff: Array.isArray(item.staff) ? item.staff[0] : item.staff,
         overtime_approval_records: Array.isArray(item.overtime_approval_records) 
           ? item.overtime_approval_records 
           : [],
-        supervisor_hierarchy: item.supervisor_hierarchy || [] // Ensure it's always an array
+        supervisor_hierarchy: item.supervisor_hierarchy || []
       }));
 
       console.log('✅ 成功載入待審核加班申請:', formattedData.length, '筆');
@@ -78,8 +86,15 @@ export const useOvertimeRequests = () => {
     } catch (error) {
       console.error('❌ 載入加班申請時發生錯誤:', error);
       setOvertimeRequests([]);
+      toast({
+        title: "載入失敗",
+        description: "無法載入待審核的加班申請，請稍後重試",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }, [currentUser?.id, currentUser?.name]);
+  }, [currentUser?.id, currentUser?.name, toast]);
 
   const handleOvertimeApproval = useCallback(async (
     requestId: string, 
@@ -100,7 +115,7 @@ export const useOvertimeRequests = () => {
         );
         toast({
           title: "申請已核准",
-          description: "加班申請已核准"
+          description: "加班申請已核准",
         });
       } else {
         await overtimeApprovalService.rejectOvertimeRequest(
@@ -124,16 +139,22 @@ export const useOvertimeRequests = () => {
       console.error('❌ 審核失敗:', error);
       toast({
         title: "審核失敗",
-        description: "無法處理申請，請稍後重試",
+        description: error instanceof Error ? error.message : "無法處理申請，請稍後重試",
         variant: "destructive"
       });
     }
   }, [currentUser, toast]);
 
+  const refreshOvertimeRequests = useCallback(() => {
+    return loadOvertimeRequests();
+  }, [loadOvertimeRequests]);
+
   return {
     overtimeRequests,
+    isLoading,
     loadOvertimeRequests,
     handleOvertimeApproval,
+    refreshOvertimeRequests,
     setOvertimeRequests
   };
 };

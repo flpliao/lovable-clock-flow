@@ -16,18 +16,16 @@ export const overtimeApprovalService = {
         .from('overtimes')
         .select('*, supervisor_hierarchy, approval_level')
         .eq('id', overtimeId)
+        .eq('current_approver', approverId) // 確保只能審核分配給自己的申請
+        .eq('status', 'pending')
         .single();
 
-      if (fetchError) {
+      if (fetchError || !overtimeData) {
         console.error('❌ 獲取加班申請資訊失敗:', fetchError);
-        throw fetchError;
+        throw new Error('無法找到需要審核的加班申請');
       }
 
-      if (!overtimeData) {
-        throw new Error('找不到加班申請');
-      }
-
-      // 安全地處理 supervisor_hierarchy，確保它是數組
+      // 2. 安全地處理 supervisor_hierarchy
       let supervisorHierarchy: any[] = [];
       if (overtimeData.supervisor_hierarchy) {
         if (Array.isArray(overtimeData.supervisor_hierarchy)) {
@@ -38,19 +36,25 @@ export const overtimeApprovalService = {
           } catch {
             supervisorHierarchy = [];
           }
+        } else if (typeof overtimeData.supervisor_hierarchy === 'object') {
+          // 處理 JSONB 物件
+          supervisorHierarchy = Array.isArray(overtimeData.supervisor_hierarchy) 
+            ? overtimeData.supervisor_hierarchy 
+            : [];
         }
       }
 
       const currentLevel = overtimeData.approval_level || 1;
       const isLastLevel = currentLevel >= supervisorHierarchy.length;
 
-      // 2. 更新當前層級的審核記錄
+      // 3. 更新當前層級的審核記錄
       const { error: recordError } = await supabase
         .from('overtime_approval_records')
         .update({
           status: 'approved',
           approval_date: new Date().toISOString(),
-          comment: comment || '主管核准'
+          comment: comment || '主管核准',
+          updated_at: new Date().toISOString()
         })
         .eq('overtime_id', overtimeId)
         .eq('level', currentLevel)
@@ -61,7 +65,7 @@ export const overtimeApprovalService = {
         throw recordError;
       }
 
-      // 3. 如果是最後一層，直接核准申請
+      // 4. 如果是最後一層，直接核准申請
       if (isLastLevel) {
         const { error: updateError } = await supabase
           .from('overtimes')
@@ -82,7 +86,7 @@ export const overtimeApprovalService = {
 
         console.log('✅ 加班申請最終核准成功');
       } else {
-        // 4. 還有下一層審核，更新為下一層
+        // 5. 還有下一層審核，更新為下一層
         const nextLevel = currentLevel + 1;
         const nextApprover = supervisorHierarchy[nextLevel - 1];
         
@@ -101,10 +105,13 @@ export const overtimeApprovalService = {
             throw updateError;
           }
 
-          // 5. 更新下一層審核記錄狀態為 pending
+          // 6. 更新下一層審核記錄狀態為 pending
           const { error: nextRecordError } = await supabase
             .from('overtime_approval_records')
-            .update({ status: 'pending' })
+            .update({ 
+              status: 'pending',
+              updated_at: new Date().toISOString()
+            })
             .eq('overtime_id', overtimeId)
             .eq('level', nextLevel);
 
@@ -132,7 +139,21 @@ export const overtimeApprovalService = {
     console.log('🚀 拒絕加班申請:', { overtimeId, approverId, approverName, reason });
     
     try {
-      // 1. 更新加班申請狀態為拒絕
+      // 1. 驗證審核權限
+      const { data: overtimeData, error: fetchError } = await supabase
+        .from('overtimes')
+        .select('id, staff_id, current_approver, status')
+        .eq('id', overtimeId)
+        .eq('current_approver', approverId)
+        .eq('status', 'pending')
+        .single();
+
+      if (fetchError || !overtimeData) {
+        console.error('❌ 驗證審核權限失敗:', fetchError);
+        throw new Error('無法找到需要審核的加班申請');
+      }
+
+      // 2. 更新加班申請狀態為拒絕
       const { error: updateError } = await supabase
         .from('overtimes')
         .update({
@@ -150,13 +171,14 @@ export const overtimeApprovalService = {
         throw updateError;
       }
 
-      // 2. 更新當前層級的審核記錄
+      // 3. 更新當前層級的審核記錄
       const { error: recordError } = await supabase
         .from('overtime_approval_records')
         .update({
           status: 'rejected',
           approval_date: new Date().toISOString(),
-          comment: reason
+          comment: reason,
+          updated_at: new Date().toISOString()
         })
         .eq('overtime_id', overtimeId)
         .eq('approver_id', approverId)
@@ -164,7 +186,6 @@ export const overtimeApprovalService = {
 
       if (recordError) {
         console.error('❌ 更新審核記錄失敗:', recordError);
-        // 不拋出錯誤，因為主要操作已完成
       }
 
       console.log('✅ 加班申請拒絕成功');
@@ -209,6 +230,24 @@ export const overtimeApprovalService = {
     }
 
     console.log('✅ 查詢需要審核的加班申請成功:', data?.length, '筆記錄');
+    return data || [];
+  },
+
+  async getOvertimeApprovalHistory(overtimeId: string) {
+    console.log('🔍 查詢加班審核歷史:', overtimeId);
+    
+    const { data, error } = await supabase
+      .from('overtime_approval_records')
+      .select('*')
+      .eq('overtime_id', overtimeId)
+      .order('level', { ascending: true });
+
+    if (error) {
+      console.error('❌ 查詢加班審核歷史失敗:', error);
+      throw error;
+    }
+
+    console.log('✅ 查詢加班審核歷史成功:', data?.length, '筆記錄');
     return data || [];
   }
 };

@@ -1017,8 +1017,7 @@ export type Database = {
           approval_level: number | null
           approved_by: string | null
           approved_by_name: string | null
-          approver_id: string | null
-          approver_name: string | null
+          attachment_url: string | null
           compensation_hours: number | null
           compensation_type: string
           created_at: string
@@ -1042,8 +1041,7 @@ export type Database = {
           approval_level?: number | null
           approved_by?: string | null
           approved_by_name?: string | null
-          approver_id?: string | null
-          approver_name?: string | null
+          attachment_url?: string | null
           compensation_hours?: number | null
           compensation_type: string
           created_at?: string
@@ -1067,8 +1065,7 @@ export type Database = {
           approval_level?: number | null
           approved_by?: string | null
           approved_by_name?: string | null
-          approver_id?: string | null
-          approver_name?: string | null
+          attachment_url?: string | null
           compensation_hours?: number | null
           compensation_type?: string
           created_at?: string
@@ -1785,6 +1782,10 @@ export type Database = {
       get_current_user_role_safe: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_overtime_supervisor_hierarchy: {
+        Args: { staff_id_param: string; max_levels?: number }
+        Returns: Json
       }
       get_supervisor_hierarchy: {
         Args: { staff_id_param: string; max_levels?: number }

@@ -4,7 +4,7 @@ import { queryOvertimeService } from './queryOvertimeService';
 import { overtimeApprovalService } from './overtimeApprovalService';
 
 export const overtimeService = {
-  // 創建加班申請
+  // 加班申請相關
   ...overtimeSubmissionService,
   
   // 查詢加班記錄
@@ -14,5 +14,6 @@ export const overtimeService = {
   ...overtimeApprovalService
 };
 
-// 重新導出類型
+// 重新導出類型和權限
 export * from './types';
+export { OVERTIME_PERMISSIONS } from '@/components/staff/constants/permissions/overtimePermissions';

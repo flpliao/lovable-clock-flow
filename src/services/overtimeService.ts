@@ -16,7 +16,11 @@ export const overtimeService = {
     // 添加類型轉換確保類型安全
     return (data || []).map(item => ({
       ...item,
-      compensation_type: item.compensation_type as 'overtime_pay' | 'compensatory_time'
+      compensation_type: item.compensation_type as 'overtime_pay' | 'compensatory_time',
+      description: item.description || undefined,
+      special_rules: (typeof item.special_rules === 'object' && item.special_rules !== null) 
+        ? item.special_rules as Record<string, any>
+        : {} as Record<string, any>
     }));
   },
 

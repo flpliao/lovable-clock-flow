@@ -7,10 +7,17 @@ import ApplicationDetails from './ApplicationDetails';
 
 interface ApplicationCardProps {
   application: MyApplication;
-  isPending: boolean;
+  isPending?: boolean;
+  onApprove?: (comment?: string) => Promise<void>;
+  onReject?: (comment?: string) => Promise<void>;
 }
 
-const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, isPending }) => {
+const ApplicationCard: React.FC<ApplicationCardProps> = ({ 
+  application, 
+  isPending = false,
+  onApprove,
+  onReject 
+}) => {
   const getApplicationIcon = (type: string) => {
     switch (type) {
       case 'overtime':
@@ -67,6 +74,28 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, isPendin
 
       {/* 詳細信息 */}
       <ApplicationDetails application={application} />
+
+      {/* 審核按鈕 - 只在有審核權限且狀態為 pending 時顯示 */}
+      {application.status === 'pending' && (onApprove || onReject) && (
+        <div className="mt-4 flex gap-2">
+          {onApprove && (
+            <button
+              onClick={() => onApprove()}
+              className="flex-1 bg-green-500/80 hover:bg-green-500 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              核准
+            </button>
+          )}
+          {onReject && (
+            <button
+              onClick={() => onReject()}
+              className="flex-1 bg-red-500/80 hover:bg-red-500 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              拒絕
+            </button>
+          )}
+        </div>
+      )}
 
       {/* 拒絕原因 */}
       {application.status === 'rejected' && application.details?.rejection_reason && (

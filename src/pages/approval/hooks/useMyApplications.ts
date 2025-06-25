@@ -73,7 +73,11 @@ export const useMyApplications = () => {
             id: record.id,
             type: 'overtime',
             title: `加班申請 - ${record.overtime_type} (${record.hours}小時) - ${statusText}`,
+            applicant: currentUser?.name || '未知申請人',
+            department: currentUser?.department || '未知部門',
+            date: record.overtime_date,
             status: record.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
+            reason: record.reason,
             created_at: record.created_at,
             details: record
           });
@@ -95,7 +99,11 @@ export const useMyApplications = () => {
             id: record.id,
             type: 'missed_checkin',
             title: `${typeText} - ${record.request_date} - ${statusText}`,
+            applicant: currentUser?.name || '未知申請人',
+            department: currentUser?.department || '未知部門',
+            date: record.request_date,
             status: record.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
+            reason: record.reason,
             created_at: record.created_at,
             details: record
           });
@@ -115,7 +123,11 @@ export const useMyApplications = () => {
             id: record.id,
             type: 'leave',
             title: `請假申請 - ${record.leave_type} (${record.hours}小時) - ${statusText}`,
+            applicant: currentUser?.name || '未知申請人',
+            department: currentUser?.department || '未知部門',
+            date: record.start_date,
             status: record.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
+            reason: record.reason,
             created_at: record.created_at,
             details: record
           });
@@ -152,7 +164,7 @@ export const useMyApplications = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentUser?.id, currentUser?.name]);
+  }, [currentUser?.id, currentUser?.name, currentUser?.department]);
 
   const refreshMyApplications = useCallback(() => {
     return loadMyApplications();

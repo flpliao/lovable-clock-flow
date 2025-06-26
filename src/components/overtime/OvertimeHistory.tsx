@@ -20,25 +20,37 @@ const OvertimeHistory: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
-    if (currentUser?.id) {
-      loadOvertimeHistory();
-    }
-  }, [currentUser?.id]);
+    loadOvertimeHistory();
+  }, []);
 
   useEffect(() => {
     filterRequests();
   }, [requests, searchTerm, statusFilter]);
 
   const loadOvertimeHistory = async () => {
-    if (!currentUser?.id) return;
-    
     try {
       setIsLoading(true);
-      const history = await overtimeService.getUserOvertimeRequests(currentUser.id);
+      console.log('🔍 載入加班歷史記錄...');
+      
+      // 使用預設用戶ID或當前用戶ID
+      const userId = currentUser?.id || '550e8400-e29b-41d4-a716-446655440001';
+      console.log('👤 當前用戶ID:', userId);
+      
+      const history = await overtimeService.getUserOvertimeRequests(userId);
+      console.log('📋 載入的加班記錄:', history);
+      console.log('📊 記錄統計:', {
+        總計: history.length,
+        pending: history.filter(r => r.status === 'pending').length,
+        approved: history.filter(r => r.status === 'approved').length,
+        rejected: history.filter(r => r.status === 'rejected').length,
+        cancelled: history.filter(r => r.status === 'cancelled').length
+      });
+      
       setRequests(history);
     } catch (error) {
-      console.error('載入加班歷史失敗:', error);
+      console.error('❌ 載入加班歷史失敗:', error);
       toast.error('載入加班歷史失敗');
+      setRequests([]);
     } finally {
       setIsLoading(false);
     }
@@ -57,6 +69,13 @@ const OvertimeHistory: React.FC = () => {
     if (statusFilter !== 'all') {
       filtered = filtered.filter(request => request.status === statusFilter);
     }
+
+    console.log('🔍 篩選結果:', {
+      原始記錄數: requests.length,
+      篩選後記錄數: filtered.length,
+      搜尋條件: searchTerm,
+      狀態篩選: statusFilter
+    });
 
     setFilteredRequests(filtered);
   };
@@ -126,19 +145,41 @@ const OvertimeHistory: React.FC = () => {
               <SelectValue placeholder="選擇狀態" />
             </SelectTrigger>
             <SelectContent className="bg-white/90 backdrop-blur-xl border-white/50">
-              <SelectItem value="all">全部狀態</SelectItem>
-              <SelectItem value="pending">待審核</SelectItem>
-              <SelectItem value="approved">已核准</SelectItem>
-              <SelectItem value="rejected">已拒絕</SelectItem>
-              <SelectItem value="cancelled">已取消</SelectItem>
+              <SelectItem value="all">全部狀態 ({requests.length})</SelectItem>
+              <SelectItem value="pending">待審核 ({requests.filter(r => r.status === 'pending').length})</SelectItem>
+              <SelectItem value="approved">已核准 ({requests.filter(r => r.status === 'approved').length})</SelectItem>
+              <SelectItem value="rejected">已拒絕 ({requests.filter(r => r.status === 'rejected').length})</SelectItem>
+              <SelectItem value="cancelled">已取消 ({requests.filter(r => r.status === 'cancelled').length})</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+        
+        {/* 重新載入按鈕 */}
+        <div className="mt-4 flex justify-end">
+          <Button 
+            onClick={loadOvertimeHistory}
+            disabled={isLoading}
+            className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+          >
+            {isLoading ? '載入中...' : '重新載入'}
+          </Button>
         </div>
       </div>
 
       {/* 記錄列表 */}
       <div className="space-y-4">
-        {filteredRequests.length === 0 ? (
+        {isLoading ? (
+          <div className="space-y-4">
+            <div className="animate-pulse">
+              <div className="h-8 bg-white/20 rounded mb-4"></div>
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-32 bg-white/20 rounded"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : filteredRequests.length === 0 ? (
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-8 text-center">
             <div className="text-white/60 mb-4">
               <Calendar className="h-12 w-12 mx-auto mb-4" />
@@ -146,12 +187,20 @@ const OvertimeHistory: React.FC = () => {
             <h3 className="text-lg font-semibold text-white mb-2">
               {requests.length === 0 ? '暫無加班記錄' : '沒有符合條件的記錄'}
             </h3>
-            <p className="text-white/80">
+            <p className="text-white/80 mb-4">
               {requests.length === 0 
                 ? '您還沒有提交過加班申請' 
                 : '請調整篩選條件以查看其他記錄'
               }
             </p>
+            {requests.length === 0 && (
+              <Button 
+                onClick={loadOvertimeHistory}
+                className="bg-white/30 border-white/30 text-white hover:bg-white/40"
+              >
+                重新載入
+              </Button>
+            )}
           </div>
         ) : (
           filteredRequests.map((request) => (
@@ -209,7 +258,7 @@ const OvertimeHistory: React.FC = () => {
 
       {filteredRequests.length > 0 && (
         <div className="text-center text-white/60 text-sm">
-          共 {filteredRequests.length} 筆記錄
+          共 {filteredRequests.length} 筆記錄 (總計 {requests.length} 筆)
         </div>
       )}
     </div>

@@ -34,8 +34,19 @@ export interface OvertimeRequest {
   approval_level?: number;
   current_approver?: string;
   rejection_reason?: string;
+  approval_comment?: string;
+  approval_date?: string;
+  approved_by?: string;
+  approved_by_name?: string;
+  supervisor_hierarchy?: any;
   created_at: string;
   updated_at: string;
+  staff?: {
+    name: string;
+    department?: string;
+    position?: string;
+  };
+  overtime_approval_records?: OvertimeApprovalRecord[];
 }
 
 export interface OvertimeApprovalRecord {

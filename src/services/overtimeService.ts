@@ -55,9 +55,18 @@ export const overtimeService = {
     }
   },
 
-  // 獲取用戶的加班申請 - 統一查詢介面
+  // 獲取用戶的加班申請 - 統一查詢介面，使用 Supabase Auth
   async getUserOvertimeRequests(userId?: string): Promise<OvertimeRequest[]> {
-    return overtimeApiService.getUserOvertimeRequests(userId);
+    console.log('🔍 獲取用戶加班申請 - 傳入用戶ID:', userId);
+    
+    // 如果沒有提供用戶ID，使用當前登入用戶
+    if (!userId) {
+      console.log('🔑 未提供用戶ID，使用 Supabase Auth 當前用戶');
+      return overtimeApiService.getUserOvertimeRequests();
+    } else {
+      console.log('👤 使用指定用戶ID查詢:', userId);
+      return overtimeApiService.getUserOvertimeRequests(userId);
+    }
   },
 
   // 獲取待審核的加班申請 - 支援權限檢查

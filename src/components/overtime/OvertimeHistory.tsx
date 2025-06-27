@@ -21,7 +21,7 @@ const OvertimeHistory: React.FC = () => {
 
   useEffect(() => {
     loadOvertimeHistory();
-  }, []);
+  }, [currentUser?.id]);
 
   useEffect(() => {
     filterRequests();
@@ -30,9 +30,9 @@ const OvertimeHistory: React.FC = () => {
   const loadOvertimeHistory = async () => {
     try {
       setIsLoading(true);
-      console.log('🔍 使用 Supabase Auth 載入加班歷史記錄...');
+      console.log('🔍 載入加班歷史記錄 - 當前用戶:', currentUser?.id, currentUser?.name);
       
-      // 使用 Supabase Auth 獲取當前用戶的加班記錄
+      // 直接使用 overtimeService，它會自動使用 Supabase Auth 獲取當前用戶的記錄
       const history = await overtimeService.getUserOvertimeRequests();
       console.log('📋 載入的加班記錄:', history);
       console.log('📊 記錄統計:', {
@@ -116,7 +116,12 @@ const OvertimeHistory: React.FC = () => {
           加班記錄
         </h2>
         <p className="text-white/80 font-medium drop-shadow-sm">
-          查看您的加班申請歷史記錄（使用 Supabase Auth JWT Token）
+          查看您的加班申請歷史記錄
+          {currentUser && (
+            <span className="block text-sm text-white/60 mt-1">
+              當前用戶: {currentUser.name} (ID: {currentUser.id})
+            </span>
+          )}
         </p>
       </div>
 

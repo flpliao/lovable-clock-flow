@@ -25,6 +25,20 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 創建權限檢查器
   const { hasPermission } = createPermissionChecker(currentUser, isAdmin);
 
+  // 將 AuthUser 轉換為 User 的輔助函數
+  const convertAuthUserToUser = (authUser: any): User => {
+    return {
+      id: authUser.id,
+      name: authUser.name,
+      position: authUser.position,
+      department: authUser.department,
+      onboard_date: new Date().toISOString().split('T')[0], // 默認今天作為入職日期
+      hire_date: authUser.hire_date,
+      supervisor_id: authUser.supervisor_id,
+      role: authUser.role
+    };
+  };
+
   useEffect(() => {
     console.log('👤 UserProvider: 初始化 Supabase Auth 狀態管理');
     
@@ -93,16 +107,18 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       if (result.success && result.user) {
         console.log('✅ 成功獲取用戶資料:', result.user.name);
-        setCurrentUser(result.user);
+        // 將 AuthUser 轉換為 User
+        const user = convertAuthUserToUser(result.user);
+        setCurrentUser(user);
       } else {
         // 如果無法從資料庫獲取，使用會話中的基本資料
         console.log('⚠️ 無法從資料庫獲取用戶資料，使用會話資料');
         const fallbackUser: User = {
           id: session.user.id,
-          email: session.user.email || '',
           name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '用戶',
           position: '員工',
           department: '一般',
+          onboard_date: new Date().toISOString().split('T')[0],
           role: 'user'
         };
         setCurrentUser(fallbackUser);
@@ -112,10 +128,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // 使用會話中的基本資料作為後備
       const fallbackUser: User = {
         id: session.user.id,
-        email: session.user.email || '',
         name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '用戶',
         position: '員工',
         department: '一般',
+        onboard_date: new Date().toISOString().split('T')[0],
         role: 'user'
       };
       setCurrentUser(fallbackUser);

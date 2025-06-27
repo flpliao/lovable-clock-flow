@@ -1,14 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User } from 'lucide-react';
+import { KeyRound } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
-import LoginForm from '@/components/auth/LoginForm';
-import { useToast } from '@/hooks/use-toast';
+import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 
-const Login = () => {
+const ForgotPassword = () => {
   const { currentUser, isAuthenticated, isUserLoaded } = useUser();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
@@ -66,22 +64,22 @@ const Login = () => {
           {/* Logo 和標題 */}
           <div className="text-center">
             <div className="mx-auto w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4 backdrop-blur-xl border border-white/30 shadow-lg">
-              <User className="h-8 w-8 text-white" />
+              <KeyRound className="h-8 w-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-white drop-shadow-md">
-              考勤系統
+              忘記密碼
             </h2>
-            <p className="text-white/80 mt-2">請登入您的帳號</p>
+            <p className="text-white/80 mt-2">請輸入您的電子郵件地址，我們將發送重設密碼的連結給您</p>
           </div>
 
-          <LoginForm />
+          <ForgotPasswordForm />
 
           <div className="text-center space-y-2">
             <Link 
-              to="/forgot-password" 
+              to="/login" 
               className="text-sm text-white/80 hover:text-white underline block"
             >
-              忘記密碼？
+              記得密碼了？立即登入
             </Link>
             <Link 
               to="/register" 
@@ -96,4 +94,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ForgotPassword;

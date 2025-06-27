@@ -1,30 +1,32 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { User } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Lock } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
-import LoginForm from '@/components/auth/LoginForm';
-import { useToast } from '@/hooks/use-toast';
+import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
 
-const Login = () => {
+const ResetPassword = () => {
   const { currentUser, isAuthenticated, isUserLoaded } = useUser();
-  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // 檢查已登入用戶並重定向
+  // 檢查是否有重設密碼的 token
+  const hasResetToken = searchParams.get('token') || searchParams.get('access_token');
+
+  // 檢查已登入用戶並重定向（但如果有重設 token 則允許繼續）
   useEffect(() => {
-    if (isUserLoaded && isAuthenticated && currentUser && !isRedirecting) {
-      console.log('🔐 用戶已登入，重定向到主頁面:', currentUser.name);
+    if (isUserLoaded && isAuthenticated && currentUser && !hasResetToken && !isRedirecting) {
+      console.log('🔐 用戶已登入且無重設 token，重定向到主頁面:', currentUser.name);
       setIsRedirecting(true);
       setTimeout(() => {
         navigate('/', { replace: true });
       }, 100);
     }
-  }, [isUserLoaded, isAuthenticated, currentUser, navigate, isRedirecting]);
+  }, [isUserLoaded, isAuthenticated, currentUser, hasResetToken, navigate, isRedirecting]);
 
-  // 已登入用戶顯示跳轉中
-  if (isRedirecting || (isAuthenticated && currentUser)) {
+  // 已登入用戶顯示跳轉中（僅在沒有重設 token 時）
+  if (isRedirecting || (isAuthenticated && currentUser && !hasResetToken)) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
         <div className="text-white text-center">
@@ -66,34 +68,19 @@ const Login = () => {
           {/* Logo 和標題 */}
           <div className="text-center">
             <div className="mx-auto w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4 backdrop-blur-xl border border-white/30 shadow-lg">
-              <User className="h-8 w-8 text-white" />
+              <Lock className="h-8 w-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-white drop-shadow-md">
-              考勤系統
+              重設密碼
             </h2>
-            <p className="text-white/80 mt-2">請登入您的帳號</p>
+            <p className="text-white/80 mt-2">請輸入您的新密碼</p>
           </div>
 
-          <LoginForm />
-
-          <div className="text-center space-y-2">
-            <Link 
-              to="/forgot-password" 
-              className="text-sm text-white/80 hover:text-white underline block"
-            >
-              忘記密碼？
-            </Link>
-            <Link 
-              to="/register" 
-              className="text-sm text-white/80 hover:text-white underline block"
-            >
-              還沒有帳號？立即註冊
-            </Link>
-          </div>
+          <ResetPasswordForm />
         </div>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default ResetPassword;

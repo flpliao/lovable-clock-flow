@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { OvertimeRequest, OvertimeFormData, OvertimeType } from '@/types/overtime';
 
@@ -57,7 +56,7 @@ export const overtimeApiService = {
             department,
             position
           ),
-          overtime_approval_records (
+          overtime_approval_records!fk_overtime_approval_records_overtime_request_id (
             id,
             overtime_request_id,
             approver_id,
@@ -139,7 +138,7 @@ export const overtimeApiService = {
             department,
             position
           ),
-          overtime_approval_records (
+          overtime_approval_records!fk_overtime_approval_records_overtime_request_id (
             id,
             overtime_request_id,
             approver_id,

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -52,8 +53,11 @@ const AuthCallback = () => {
               description: '歡迎回來！您已成功登入。',
             });
             
-            // 重定向到主頁面
-            navigate('/', { replace: true });
+            // 等待一下讓 UserContext 處理認證狀態變化
+            setTimeout(() => {
+              console.log('🔄 重定向到主頁面');
+              navigate('/', { replace: true });
+            }, 1000);
           } else {
             throw new Error('無法建立會話');
           }
@@ -103,7 +107,28 @@ const AuthCallback = () => {
           navigate('/', { replace: true });
         } else {
           console.log('⚠️ 未知的回調類型或缺少必要參數');
-          throw new Error('無效的認證回調');
+          console.log('🔄 嘗試直接檢查會話狀態');
+          
+          // 嘗試直接檢查當前會話狀態
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          
+          if (sessionError) {
+            throw sessionError;
+          }
+          
+          if (session) {
+            console.log('✅ 發現有效會話，直接重定向');
+            toast({
+              title: '登入成功',
+              description: '歡迎回來！',
+            });
+            
+            setTimeout(() => {
+              navigate('/', { replace: true });
+            }, 500);
+          } else {
+            throw new Error('無效的認證回調或會話已過期');
+          }
         }
       } catch (error) {
         console.error('🔥 認證回調處理失敗:', error);

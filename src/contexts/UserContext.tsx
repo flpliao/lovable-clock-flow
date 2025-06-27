@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnnualLeaveBalance } from '@/types';
@@ -18,8 +17,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [userError, setUserError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // 檢查是否已驗證登入
-  const isAuthenticated = currentUser !== null;
+  // 檢查是否已驗證登入 - 修正邏輯
+  const isAuthenticated = currentUser !== null && isUserLoaded;
 
   // 創建角色檢查器
   const { isAdmin, isManager, canManageUser } = createRoleChecker(currentUser);
@@ -49,7 +48,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log('🔄 Supabase Auth 狀態變化:', event, '會話存在:', !!session);
       
       // 處理所有可能的登入情況
-      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
         console.log('✅ 用戶已登入 - 事件:', event);
         console.log('🎫 JWT Token:', session.access_token.substring(0, 20) + '...');
         
@@ -75,10 +74,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           await handleUserLogin(session);
         } else {
           console.log('❌ 無現有 Supabase 會話');
+          setIsUserLoaded(true);
         }
       } catch (error) {
         console.error('❌ 初始化認證狀態失敗:', error);
-      } finally {
         setIsUserLoaded(true);
       }
     };
@@ -100,7 +99,29 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log('📦 恢復已存儲的用戶資料:', storedUser.name);
         setCurrentUser(storedUser);
         setIsUserLoaded(true);
-        navigate('/', { replace: true });
+        
+        // 檢查是否在 callback 頁面，如果是則重定向
+        if (window.location.pathname === '/auth/callback') {
+          console.log('🔄 從 callback 頁面重定向到首頁');
+          navigate('/', { replace: true });
+        }
+        return;
+      }
+
+      // 如果沒有本地存儲資料，使用 AuthService 獲取
+      const result = await AuthService.getUserFromSession(session.user.email);
+      if (result.success && result.user) {
+        console.log('✅ 成功獲取用戶資料:', result.user.name);
+        // 將 AuthUser 转換為 User
+        const user = convertAuthUserToUser(result.user);
+        setCurrentUser(user);
+        setIsUserLoaded(true);
+        
+        // 檢查是否在 callback 頁面，如果是則重定向
+        if (window.location.pathname === '/auth/callback') {
+          console.log('🔄 從 callback 頁面重定向到首頁');
+          navigate('/', { replace: true });
+        }
         return;
       }
     } catch (error) {

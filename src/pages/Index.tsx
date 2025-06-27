@@ -34,6 +34,13 @@ const Index = () => {
 
   // 檢查登入狀態，若未登入則重定向到登入頁
   useEffect(() => {
+    console.log('🔍 Index: 檢查認證狀態', {
+      isUserLoaded,
+      isAuthenticated,
+      hasCurrentUser: !!currentUser,
+      isRedirecting
+    });
+    
     if (isUserLoaded && !isAuthenticated && !isRedirecting) {
       console.log('🚫 Index: 用戶未登入，重定向到登入頁面');
       setIsRedirecting(true);
@@ -43,7 +50,7 @@ const Index = () => {
         });
       }, 100);
     }
-  }, [isUserLoaded, isAuthenticated, navigate, isRedirecting]);
+  }, [isUserLoaded, isAuthenticated, currentUser, navigate, isRedirecting]);
 
   // 在載入用戶狀態期間顯示載入畫面
   if (!isUserLoaded) {
@@ -76,7 +83,9 @@ const Index = () => {
         </div>
       </div>;
   }
+  
   console.log('✅ Index: 用戶已登入，顯示主頁面:', currentUser.name);
+  
   const leaveHours = annualLeaveBalance ? (annualLeaveBalance.total_days - annualLeaveBalance.used_days) * 8 : 0;
   return <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
       {/* 背景層 */}

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { OvertimeRequest, OvertimeFormData, OvertimeType } from '@/types/overtime';
 
@@ -59,7 +58,11 @@ export const overtimeApiService = {
     
     return (data || []).map(item => ({
       ...item,
-      status: item.status as 'pending' | 'approved' | 'rejected' | 'cancelled'
+      status: item.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
+      overtime_approval_records: (item.overtime_approval_records || []).map(record => ({
+        ...record,
+        status: record.status as 'pending' | 'approved' | 'rejected'
+      }))
     }));
   },
 
@@ -71,7 +74,11 @@ export const overtimeApiService = {
       const requests = await overtimeValidationService.getUserApprovalRequests(userId);
       return requests.map(item => ({
         ...item,
-        status: item.status as 'pending' | 'approved' | 'rejected' | 'cancelled'
+        status: item.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
+        overtime_approval_records: (item.overtime_approval_records || []).map(record => ({
+          ...record,
+          status: record.status as 'pending' | 'approved' | 'rejected'
+        }))
       }));
     }
 
@@ -105,7 +112,11 @@ export const overtimeApiService = {
     
     return (data || []).map(item => ({
       ...item,
-      status: item.status as 'pending' | 'approved' | 'rejected' | 'cancelled'
+      status: item.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
+      overtime_approval_records: (item.overtime_approval_records || []).map(record => ({
+        ...record,
+        status: record.status as 'pending' | 'approved' | 'rejected'
+      }))
     }));
   },
 
@@ -124,7 +135,7 @@ export const overtimeApiService = {
     return data.id;
   },
 
-  // 更新加班申請狀態 - 支援完整審核流程
+  // 更新加班申請狀態 - 支持完整審核流程
   async updateOvertimeRequestStatus(
     requestId: string, 
     status: string, 

@@ -21,14 +21,14 @@ export const useCheckInTodayRecords = (userId: string) => {
     } catch (error) {
       console.error('載入今日打卡記錄失敗:', error);
     }
-  }, [userId, getTodayCheckInRecords]);
+  }, [userId]); // 移除 getTodayCheckInRecords 依賴，避免無限迴圈
 
   // 初始載入 - 只在 userId 改變時執行
   useEffect(() => {
     if (userId) {
       loadTodayRecords();
     }
-  }, [userId]); // 移除 loadTodayRecords 依賴，避免無限迴圈
+  }, [userId, loadTodayRecords]);
 
   // 判斷當前應該進行的動作類型
   const actionType: 'check-in' | 'check-out' = todayRecords.checkIn && !todayRecords.checkOut ? 'check-out' : 'check-in';

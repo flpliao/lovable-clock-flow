@@ -1,5 +1,4 @@
-
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckInRecord } from '@/types';
@@ -10,7 +9,7 @@ export const useCheckInRecords = () => {
   const { toast } = useToast();
   const loadingRef = useRef(false);
 
-  const loadCheckInRecords = async (userId?: string) => {
+  const loadCheckInRecords = useCallback(async (userId?: string) => {
     // 如果沒有提供 userId，則不執行查詢
     if (!userId) {
       console.log('沒有使用者 ID，跳過載入打卡記錄');
@@ -103,7 +102,7 @@ export const useCheckInRecords = () => {
       setLoading(false);
       loadingRef.current = false;
     }
-  };
+  }, []);
 
   return {
     checkInRecords,

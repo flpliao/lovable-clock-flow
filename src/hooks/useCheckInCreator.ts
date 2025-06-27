@@ -1,4 +1,4 @@
-
+import { useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckInRecord } from '@/types';
@@ -6,7 +6,7 @@ import { CheckInRecord } from '@/types';
 export const useCheckInCreator = () => {
   const { toast } = useToast();
 
-  const createCheckInRecord = async (record: Omit<CheckInRecord, 'id'>, currentUserId?: string) => {
+  const createCheckInRecord = useCallback(async (record: Omit<CheckInRecord, 'id'>, currentUserId?: string) => {
     try {
       console.log('Creating check-in record:', record);
       console.log('Current user ID:', currentUserId);
@@ -89,7 +89,7 @@ export const useCheckInCreator = () => {
       });
       return false;
     }
-  };
+  }, [toast]);
 
   return {
     createCheckInRecord

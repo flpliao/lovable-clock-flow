@@ -13,7 +13,7 @@ export const useSupabaseCheckIn = () => {
   const { getTodayCheckInRecords } = useTodayCheckInRecords();
   const initialLoadRef = useRef(false);
 
-  const createCheckInRecord = async (record: Omit<CheckInRecord, 'id'>) => {
+  const createCheckInRecord = useCallback(async (record: Omit<CheckInRecord, 'id'>) => {
     if (!currentUser?.id) {
       console.error('無使用者 ID，無法建立打卡記錄');
       return false;
@@ -31,7 +31,7 @@ export const useSupabaseCheckIn = () => {
       console.error('建立打卡記錄失敗:', error);
       return false;
     }
-  };
+  }, [currentUser?.id, createRecord]);
 
   const getTodayRecords = useCallback(async (userId?: string) => {
     const targetUserId = userId || currentUser?.id;
@@ -64,10 +64,11 @@ export const useSupabaseCheckIn = () => {
 
   // 手動載入記錄 - 加強錯誤處理
   const manualLoadRecords = useCallback(async () => {
-    if (currentUser?.id && !loading) {
+    if (currentUser?.id && !loading && !initialLoadRef.current) {
       try {
         const validatedUserId = UserIdValidationService.validateUserId(currentUser.id);
         console.log('手動載入打卡記錄，使用者ID:', validatedUserId);
+        initialLoadRef.current = true;
         await loadCheckInRecords(validatedUserId);
       } catch (error) {
         console.error('手動載入記錄失敗:', error);
@@ -75,6 +76,11 @@ export const useSupabaseCheckIn = () => {
       }
     }
   }, [currentUser?.id, loadCheckInRecords, loading]);
+
+  // 當使用者改變時重置初始載入標記
+  useEffect(() => {
+    initialLoadRef.current = false;
+  }, [currentUser?.id]);
 
   return {
     checkInRecords,

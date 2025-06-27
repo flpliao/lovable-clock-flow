@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useAttendanceRecords } from '@/hooks/useAttendanceRecords';
 import AttendanceLoginPrompt from '@/components/attendance/AttendanceLoginPrompt';
 import AttendanceWelcomeHeader from '@/components/attendance/AttendanceWelcomeHeader';
 import AttendanceTabsContainer from '@/components/attendance/AttendanceTabsContainer';
+
 const PersonalAttendance = () => {
   const {
     currentUser
@@ -16,17 +17,31 @@ const PersonalAttendance = () => {
     checkInRecords,
     refreshData
   } = useAttendanceRecords();
+  const lastActiveTabRef = useRef(activeTab);
+
+  // 穩定化 refreshData 調用
+  const handleCalendarTabRefresh = useCallback(async () => {
+    if (activeTab === 'calendar' && currentUser?.id && lastActiveTabRef.current !== 'calendar') {
+      console.log('切換到月曆視圖，重新整理資料');
+      lastActiveTabRef.current = activeTab;
+      await refreshData();
+    }
+  }, [activeTab, currentUser?.id, refreshData]);
 
   // 當切換到月曆視圖時重新整理資料
   useEffect(() => {
-    if (activeTab === 'calendar' && currentUser?.id) {
-      console.log('切換到月曆視圖，重新整理資料');
-      refreshData();
-    }
-  }, [activeTab, currentUser?.id, refreshData]);
+    handleCalendarTabRefresh();
+  }, [handleCalendarTabRefresh]);
+
+  // 更新 lastActiveTabRef
+  useEffect(() => {
+    lastActiveTabRef.current = activeTab;
+  }, [activeTab]);
+
   if (!currentUser) {
     return <AttendanceLoginPrompt />;
   }
+
   return <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
       {/* 動態背景漸層 */}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
@@ -54,4 +69,5 @@ const PersonalAttendance = () => {
       </div>
     </div>;
 };
+
 export default PersonalAttendance;

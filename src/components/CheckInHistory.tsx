@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { MapPin, Wifi, RefreshCw, AlertCircle, ChevronLeft, ChevronRight, Trash2, Users, User, Globe } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -34,8 +34,8 @@ const CheckInHistory: React.FC = () => {
     setMounted(true);
   }, []);
 
-  // 根據選擇的視圖載入對應的記錄
-  const loadRecordsByView = async (view: RecordViewType) => {
+  // 穩定化 loadRecordsByView 函數
+  const loadRecordsByView = useCallback(async (view: RecordViewType) => {
     if (!currentUser?.id) return;
     
     try {
@@ -44,23 +44,23 @@ const CheckInHistory: React.FC = () => {
       switch (view) {
         case 'my':
           await loadCheckInRecords();
-          records = checkInRecords;
+          // 不直接使用 checkInRecords，而是等待 loadCheckInRecords 完成後再更新
           break;
         case 'subordinates':
           if (isAdmin()) {
             records = await loadSubordinateRecords(currentUser.id);
+            setViewRecords(records);
           }
           break;
         case 'all':
           if (isAdmin()) {
             records = await loadAllRecords();
+            setViewRecords(records);
           }
           break;
         default:
-          records = checkInRecords;
+          break;
       }
-      
-      setViewRecords(records);
     } catch (error) {
       console.error('載入記錄失敗:', error);
       toast({
@@ -69,7 +69,7 @@ const CheckInHistory: React.FC = () => {
         variant: "destructive"
       });
     }
-  };
+  }, [currentUser?.id, loadCheckInRecords, isAdmin, loadSubordinateRecords, loadAllRecords, toast]);
 
   // 初始載入
   useEffect(() => {
@@ -77,7 +77,7 @@ const CheckInHistory: React.FC = () => {
       console.log('CheckInHistory - 初次載入打卡記錄');
       loadRecordsByView(activeView);
     }
-  }, [mounted, currentUser?.id, activeView]);
+  }, [mounted, currentUser?.id, activeView, loadRecordsByView, loading]);
 
   // 當 checkInRecords 更新時，同步更新 viewRecords（僅限 'my' 視圖）
   useEffect(() => {
@@ -86,7 +86,7 @@ const CheckInHistory: React.FC = () => {
     }
   }, [checkInRecords, activeView]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     if (currentUser?.id && !refreshing && !loading) {
       console.log('CheckInHistory - 手動重新載入打卡記錄');
       setRefreshing(true);
@@ -107,9 +107,9 @@ const CheckInHistory: React.FC = () => {
         setRefreshing(false);
       }
     }
-  };
+  }, [currentUser?.id, refreshing, loading, loadRecordsByView, activeView, viewRecords.length, toast]);
 
-  const handleDeleteRecord = async (recordId: string) => {
+  const handleDeleteRecord = useCallback(async (recordId: string) => {
     if (!isAdmin()) {
       toast({
         title: "權限不足",
@@ -140,12 +140,12 @@ const CheckInHistory: React.FC = () => {
     } finally {
       setDeleting(null);
     }
-  };
+  }, [isAdmin, deleteCheckInRecord, loadRecordsByView, activeView, toast]);
 
-  const handleViewChange = (view: RecordViewType) => {
+  const handleViewChange = useCallback((view: RecordViewType) => {
     setActiveView(view);
     setCurrentPage(1); // 重置頁碼
-  };
+  }, []);
 
   const isLoading = loading || refreshing;
 

@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { format } from 'date-fns';
 import { useUser } from '@/contexts/UserContext';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
@@ -13,23 +12,31 @@ export const useAttendanceRecords = () => {
     checkOut?: CheckInRecord;
   }>({});
   const { checkInRecords, loadCheckInRecords, refreshData } = useSupabaseCheckIn();
+  const initialLoadRef = useRef(false);
 
-  // 載入打卡記錄 - 加入錯誤處理
-  useEffect(() => {
-    const loadRecords = async () => {
-      if (currentUser?.id) {
-        try {
-          console.log('PersonalAttendance - 載入打卡記錄，使用者ID:', currentUser.id);
-          await loadCheckInRecords();
-        } catch (error) {
-          console.error('載入打卡記錄失敗:', error);
-          // 不顯示錯誤提示，只記錄到控制台
-        }
+  // 穩定化 loadRecords 函數
+  const loadRecords = useCallback(async () => {
+    if (currentUser?.id && !initialLoadRef.current) {
+      try {
+        console.log('PersonalAttendance - 初次載入打卡記錄，使用者ID:', currentUser.id);
+        initialLoadRef.current = true;
+        await loadCheckInRecords();
+      } catch (error) {
+        console.error('載入打卡記錄失敗:', error);
+        // 不顯示錯誤提示，只記錄到控制台
       }
-    };
-
-    loadRecords();
+    }
   }, [currentUser?.id, loadCheckInRecords]);
+
+  // 載入打卡記錄 - 只在初次載入時執行
+  useEffect(() => {
+    loadRecords();
+  }, [loadRecords]);
+
+  // 當使用者改變時重置初始載入標記
+  useEffect(() => {
+    initialLoadRef.current = false;
+  }, [currentUser?.id]);
 
   // 根據選擇的日期過濾打卡記錄
   useEffect(() => {

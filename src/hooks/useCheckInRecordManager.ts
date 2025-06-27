@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckInRecord } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -9,7 +8,7 @@ export const useCheckInRecordManager = () => {
   const { toast } = useToast();
 
   // 載入所有打卡記錄（系統管理員專用）
-  const loadAllRecords = async (): Promise<CheckInRecord[]> => {
+  const loadAllRecords = useCallback(async (): Promise<CheckInRecord[]> => {
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -56,10 +55,10 @@ export const useCheckInRecordManager = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   // 載入下屬打卡記錄（管理員專用）
-  const loadSubordinateRecords = async (supervisorId: string): Promise<CheckInRecord[]> => {
+  const loadSubordinateRecords = useCallback(async (supervisorId: string): Promise<CheckInRecord[]> => {
     setLoading(true);
     try {
       // 先找出下屬
@@ -121,10 +120,10 @@ export const useCheckInRecordManager = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   // 刪除打卡記錄（系統管理員專用）
-  const deleteCheckInRecord = async (recordId: string): Promise<boolean> => {
+  const deleteCheckInRecord = useCallback(async (recordId: string): Promise<boolean> => {
     try {
       const { error } = await supabase
         .from('check_in_records')
@@ -138,7 +137,7 @@ export const useCheckInRecordManager = () => {
       console.error('刪除打卡記錄失敗:', error);
       throw error;
     }
-  };
+  }, []);
 
   return {
     loading,

@@ -45,7 +45,7 @@ export const overtimeValidationService = {
         return true;
       }
 
-      // 審核權限檢查 - 管理者角色可以審核
+      // 審核權限檢查 - 管理者角色或有下屬的主管可以審核
       if (permission === 'overtime:approve') {
         const isManager = userInfo.role === 'admin' || userInfo.role === 'manager';
         const hasSubordinates = await this.checkHasSubordinates(userId);
@@ -54,10 +54,10 @@ export const overtimeValidationService = {
           role: userInfo.role,
           isManager: isManager,
           hasSubordinates: hasSubordinates,
-          canApprove: isManager && hasSubordinates
+          canApprove: isManager || hasSubordinates
         });
         
-        return isManager && hasSubordinates;
+        return isManager || hasSubordinates;
       }
 
       // 查看所有申請權限 - 只有管理員
@@ -83,31 +83,6 @@ export const overtimeValidationService = {
     }
   },
 
-  // 檢查用戶是否可以自動核准 - 更新邏輯，移除硬編碼ID
-  async checkAutoApprovalEligibility(userId: string): Promise<boolean> {
-    console.log('🔍 開始檢查加班申請自動核准條件...');
-    console.log('👤 當前用戶ID:', userId);
-    
-    // 檢查用戶是否有審核權限
-    const canApprove = await this.checkUserPermissions(userId, 'overtime:approve');
-    
-    if (!canApprove) {
-      console.log('❌ 用戶無審核權限，無法自動核准');
-      return false;
-    }
-
-    // 檢查是否為自己申請（自己不能審核自己的申請）
-    // 這個邏輯會在審核流程中處理，這裡先允許通過
-    
-    console.log('📊 自動核准條件檢查:', {
-      userId: userId,
-      canApprove: canApprove,
-      結論: canApprove ? '🎉 可以自動核准' : '⏳ 需要審核'
-    });
-
-    return canApprove;
-  },
-
   // 獲取用戶的審核申請 - 統一查詢邏輯，比照請假系統
   async getUserApprovalRequests(userId: string): Promise<any[]> {
     console.log('🔍 獲取用戶需要審核的加班申請...');
@@ -122,6 +97,18 @@ export const overtimeValidationService = {
             name,
             department,
             position
+          ),
+          overtime_approval_records (
+            id,
+            overtime_request_id,
+            approver_id,
+            approver_name,
+            level,
+            status,
+            approval_date,
+            comment,
+            created_at,
+            updated_at
           )
         `)
         .eq('current_approver', userId)
@@ -139,6 +126,18 @@ export const overtimeValidationService = {
               name,
               department,
               position
+            ),
+            overtime_approval_records (
+              id,
+              overtime_request_id,
+              approver_id,
+              approver_name,
+              level,
+              status,
+              approval_date,
+              comment,
+              created_at,
+              updated_at
             )
           )
         `)
@@ -156,6 +155,18 @@ export const overtimeValidationService = {
             department,
             position,
             supervisor_id
+          ),
+          overtime_approval_records (
+            id,
+            overtime_request_id,
+            approver_id,
+            approver_name,
+            level,
+            status,
+            approval_date,
+            comment,
+            created_at,
+            updated_at
           )
         `)
         .eq('staff.supervisor_id', userId)

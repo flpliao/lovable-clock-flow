@@ -1859,6 +1859,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_overtime_supervisor_hierarchy: {
+        Args: { staff_uuid: string }
+        Returns: Json
+      }
       get_table_rls_status: {
         Args: { table_name: string }
         Returns: boolean

@@ -10,13 +10,17 @@ export const overtimeService = {
     return overtimeApiService.getOvertimeTypes();
   },
 
-  // 提交加班申請 - 統一業務邏輯，移除硬編碼邏輯
+  // 提交加班申請 - 統一業務邏輯，確保觸發器正常運作
   async submitOvertimeRequest(formData: OvertimeFormData): Promise<string> {
+    console.log('📝 開始提交加班申請:', formData);
+    
     // 計算加班時數
     const hours = overtimeValidationService.calculateOvertimeHours(formData.start_time, formData.end_time);
+    console.log('⏰ 計算加班時數:', hours);
 
     // 獲取當前登入用戶的實際ID
     const currentUserId = await overtimeValidationService.getCurrentUserId();
+    console.log('👤 當前用戶ID:', currentUserId);
     
     const requestData = {
       staff_id: currentUserId,
@@ -27,22 +31,28 @@ export const overtimeService = {
       end_time: formData.end_time,
       hours,
       reason: formData.reason,
-      status: 'pending' as const, // 讓觸發器決定是否自動核准
+      status: 'pending' as const, // 讓觸發器決定審核流程
       approval_level: 1
     };
 
-    const requestId = await overtimeApiService.createOvertimeRequest(requestData);
+    console.log('💾 準備插入資料:', requestData);
 
-    // 發送提交通知
-    await overtimeNotificationService.createOvertimeNotification(
-      requestId, 
-      '加班申請已提交', 
-      '您的加班申請已提交，系統將自動分配審核流程'
-    );
-    
-    console.log('✅ 加班申請已提交 - 申請ID:', requestId);
+    try {
+      const requestId = await overtimeApiService.createOvertimeRequest(requestData);
+      console.log('✅ 加班申請已提交 - 申請ID:', requestId);
 
-    return requestId;
+      // 發送提交通知
+      await overtimeNotificationService.createOvertimeNotification(
+        requestId, 
+        '加班申請已提交', 
+        '您的加班申請已提交，系統將自動分配審核流程'
+      );
+      
+      return requestId;
+    } catch (error) {
+      console.error('❌ 提交加班申請失敗:', error);
+      throw error;
+    }
   },
 
   // 獲取用戶的加班申請 - 統一查詢介面
@@ -101,7 +111,11 @@ export const overtimeService = {
     const requests = await overtimeValidationService.getUserApprovalRequests(userId);
     return requests.map(item => ({
       ...item,
-      status: item.status as 'pending' | 'approved' | 'rejected' | 'cancelled'
+      status: item.status as 'pending' | 'approved' | 'rejected' | 'cancelled',
+      overtime_approval_records: (item.overtime_approval_records || []).map(record => ({
+        ...record,
+        status: record.status as 'pending' | 'approved' | 'rejected'
+      }))
     }));
   },
 

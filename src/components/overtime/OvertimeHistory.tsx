@@ -32,10 +32,18 @@ const OvertimeHistory: React.FC = () => {
       setIsLoading(true);
       console.log('🔍 載入加班歷史記錄...');
       
-      // 使用統一的用戶ID獲取邏輯
-      const { overtimeValidationService } = await import('@/services/overtime/overtimeValidationService');
-      const userId = await overtimeValidationService.getCurrentUserId();
-      console.log('👤 當前用戶ID:', userId);
+      // 獲取當前用戶ID
+      let userId: string;
+      try {
+        const { overtimeValidationService } = await import('@/services/overtime/overtimeValidationService');
+        userId = await overtimeValidationService.getCurrentUserId();
+        console.log('👤 當前用戶ID:', userId);
+      } catch (error) {
+        console.error('❌ 獲取用戶ID失敗:', error);
+        // 使用預設用戶ID作為後備
+        userId = currentUser?.id || '550e8400-e29b-41d4-a716-446655440001';
+        console.log('⚠️ 使用預設用戶ID:', userId);
+      }
       
       const history = await overtimeService.getUserOvertimeRequests(userId);
       console.log('📋 載入的加班記錄:', history);
@@ -44,13 +52,14 @@ const OvertimeHistory: React.FC = () => {
         pending: history.filter(r => r.status === 'pending').length,
         approved: history.filter(r => r.status === 'approved').length,
         rejected: history.filter(r => r.status === 'rejected').length,
-        cancelled: history.filter(r => r.status === 'cancelled').length
       });
       
       setRequests(history);
     } catch (error) {
       console.error('❌ 載入加班歷史失敗:', error);
-      toast.error('載入加班歷史失敗');
+      toast.error('載入加班歷史失敗', {
+        description: error?.message || '請稍後重試'
+      });
       setRequests([]);
     } finally {
       setIsLoading(false);

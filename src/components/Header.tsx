@@ -56,13 +56,7 @@ const Header: React.FC = () => {
           </div>
           
           {/* User Info - 只在桌面版顯示 */}
-          <UserInfo
-            currentUser={currentUser}
-            isAuthenticated={isAuthenticated}
-            isLoginPage={isLoginPage}
-            onLogout={handleLogout}
-            onLogin={handleLogin}
-          />
+          <UserInfo />
         </div>
 
         {/* 平板和手機版佈局 */}

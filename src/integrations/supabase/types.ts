@@ -1662,6 +1662,7 @@ export type Database = {
           role_id: string
           supervisor_id: string | null
           updated_at: string
+          user_id: string | null
           username: string | null
         }
         Insert: {
@@ -1680,6 +1681,7 @@ export type Database = {
           role_id?: string
           supervisor_id?: string | null
           updated_at?: string
+          user_id?: string | null
           username?: string | null
         }
         Update: {
@@ -1698,6 +1700,7 @@ export type Database = {
           role_id?: string
           supervisor_id?: string | null
           updated_at?: string
+          user_id?: string | null
           username?: string | null
         }
         Relationships: [

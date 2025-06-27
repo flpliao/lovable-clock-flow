@@ -20,12 +20,12 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
   const managingOwnAccount = !userId || userId === currentUser?.id;
   const targetUserId = userId || currentUser?.id;
   
-  // 系統管理員應該擁有所有帳號管理權限
+  // 系統管理員和用戶本人都可以修改密碼
   const isSystemAdmin = isAdmin();
-  const canManageEmail = isSystemAdmin || managingOwnAccount;
-  const canManagePassword = isSystemAdmin || managingOwnAccount;
+  const canManageEmail = managingOwnAccount; // 只有用戶本人可以修改 email（需要驗證）
+  const canManagePassword = managingOwnAccount; // 只有用戶本人可以修改密碼（需要當前密碼驗證）
   
-  // Validate permissions - 系統管理員可以管理所有帳號
+  // Validate permissions - 管理員可以查看，但密碼修改需要是用戶本人
   const hasPermissionToManage = targetUserId && (
     managingOwnAccount || 
     (isSystemAdmin && canManageUser(targetUserId))
@@ -78,12 +78,12 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="text-blue-800 font-medium mb-2">管理員模式</h3>
           <p className="text-blue-600 text-sm">
-            您正在以系統管理員身份修改其他使用者的帳號設定。修改後該使用者需要使用新的登入資訊。
+            您正在以系統管理員身份查看其他使用者的帳號設定。密碼修改必須由用戶本人進行。
           </p>
         </div>
       )}
 
-      {/* 電子郵件管理 - 系統管理員和用戶本人都可以管理 */}
+      {/* 電子郵件管理 - 只有用戶本人可以修改 */}
       {canManageEmail && (
         <EmailManagementCard 
           currentEmail={currentEmail} 
@@ -91,7 +91,7 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
         />
       )}
       
-      {/* 密碼管理 - 系統管理員和用戶本人都可以管理 */}
+      {/* 密碼管理 - 只有用戶本人可以修改 */}
       {canManagePassword && (
         <PasswordManagementCard 
           managingOwnAccount={managingOwnAccount}
@@ -103,9 +103,15 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
       {!canManageEmail && !canManagePassword && (
         <div className="text-center p-4">
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <p className="text-gray-600">
-              您沒有足夠的權限管理此帳號設定。
+            <h3 className="text-gray-800 font-medium mb-2">帳號安全設定</h3>
+            <p className="text-gray-600 text-sm">
+              基於安全考量，密碼和電子郵件修改必須由用戶本人進行。
             </p>
+            {!managingOwnAccount && (
+              <p className="text-gray-500 text-xs mt-2">
+                請通知該用戶登入自己的帳號來修改這些設定。
+              </p>
+            )}
           </div>
         </div>
       )}

@@ -48,7 +48,18 @@ export const useCredentials = ({ userId, onSuccess }: UseCredentialsProps) => {
     try {
       console.log('🔄 更新用戶電子郵件:', { userId, newEmail });
 
-      const { error } = await supabase
+      // 更新 Supabase Auth 用戶的 email
+      const { error: authError } = await supabase.auth.updateUser({
+        email: newEmail
+      });
+
+      if (authError) {
+        console.error('❌ 更新 Supabase Auth 電子郵件失敗:', authError);
+        throw new Error(`更新失敗: ${authError.message}`);
+      }
+
+      // 同時更新 staff 表的 email
+      const { error: staffError } = await supabase
         .from('staff')
         .update({ 
           email: newEmail,
@@ -56,17 +67,18 @@ export const useCredentials = ({ userId, onSuccess }: UseCredentialsProps) => {
         })
         .eq('id', userId);
 
-      if (error) {
-        console.error('❌ 更新電子郵件失敗:', error);
-        throw new Error(`更新失敗: ${error.message}`);
+      if (staffError) {
+        console.error('❌ 更新 staff 表電子郵件失敗:', staffError);
+        // 這裡不拋出錯誤，因為主要的 Auth 更新已經成功
+        console.log('⚠️ Staff 表更新失敗，但 Auth 更新成功');
       }
 
       console.log('✅ 電子郵件更新成功');
       setCurrentEmail(newEmail);
       
       toast({
-        title: "電子郵件已更新",
-        description: `新的電子郵件地址：${newEmail}`,
+        title: "電子郵件更新請求已發送",
+        description: `請檢查新的電子郵件地址 ${newEmail} 以確認更改`,
       });
 
       if (onSuccess) {
@@ -84,20 +96,13 @@ export const useCredentials = ({ userId, onSuccess }: UseCredentialsProps) => {
   };
 
   const updatePassword = async (currentPassword: string, newPassword: string) => {
-    if (!userId) {
-      throw new Error('未指定用戶 ID');
-    }
-
     try {
-      console.log('🔄 更新用戶密碼:', { userId });
+      console.log('🔄 更新用戶密碼');
 
-      const { error } = await supabase
-        .from('staff')
-        .update({ 
-          password: newPassword,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId);
+      // 使用 Supabase Auth 更新密碼
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
 
       if (error) {
         console.error('❌ 更新密碼失敗:', error);

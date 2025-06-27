@@ -24,8 +24,10 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
   onPasswordChange
 }) => {
   const { toast } = useToast();
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,12 +65,15 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
     setIsSubmitting(true);
     
     try {
-      // 傳遞空字串作為當前密碼，因為管理員可以直接重設密碼
+      // 對於 Supabase Auth，我們不需要當前密碼來更新密碼
+      // 因為用戶已經通過認證了
       await onPasswordChange('', newPassword);
       
       // 重設表單
+      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      setShowCurrentPassword(false);
       setShowNewPassword(false);
       setShowConfirmPassword(false);
     } catch (error) {
@@ -87,7 +92,7 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
           <CardTitle>更改密碼</CardTitle>
         </div>
         <CardDescription>
-          更新此帳號的登錄密碼
+          更新您的 Supabase 帳號密碼
         </CardDescription>
       </CardHeader>
       <form onSubmit={handlePasswordChange}>
@@ -149,14 +154,12 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
               </div>
             </div>
             
-            {!managingOwnAccount && (
-              <div className="flex items-center mt-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
-                <ShieldAlert className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0" />
-                <p className="text-sm text-amber-700">
-                  注意：您正在以管理員身份更改其他用戶的密碼。該用戶不會收到密碼變更通知。
-                </p>
-              </div>
-            )}
+            <div className="flex items-center mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <ShieldAlert className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
+              <p className="text-sm text-blue-700">
+                密碼更新後，您可能需要重新登入。請確保記住新密碼。
+              </p>
+            </div>
           </div>
         </CardContent>
         <CardFooter>

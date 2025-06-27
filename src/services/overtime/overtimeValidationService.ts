@@ -1,34 +1,31 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { overtimeApiService } from './overtimeApiService';
 
 export const overtimeValidationService = {
-  // 獲取當前用戶ID - 使用 Supabase Auth
+  // 獲取當前用戶ID - 使用 Supabase Auth JWT token
   async getCurrentUserId(): Promise<string> {
     try {
+      console.log('🔍 使用 Supabase Auth 獲取當前用戶ID');
+      
       const { data: { user }, error } = await supabase.auth.getUser();
       
       if (error || !user) {
         console.error('❌ 無法從 Supabase Auth 獲取用戶:', error);
-        // 開發環境使用預設ID作為後備方案
-        const fallbackUserId = '550e8400-e29b-41d4-a716-446655440001';
-        console.log('⚠️ 使用預設用戶ID作為後備方案:', fallbackUserId);
-        return fallbackUserId;
+        throw new Error('用戶未認證');
       }
       
       console.log('✅ 從 Supabase Auth 獲取用戶ID:', user.id);
       return user.id;
     } catch (error) {
       console.error('🔥 獲取 Supabase Auth 用戶ID失敗:', error);
-      // 後備方案
-      const fallbackUserId = '550e8400-e29b-41d4-a716-446655440001';
-      console.log('⚠️ 使用預設用戶ID作為後備方案:', fallbackUserId);
-      return fallbackUserId;
+      throw new Error('無法獲取用戶身份');
     }
   },
 
-  // 檢查用戶權限 - 統一權限檢查邏輯，比照請假系統
+  // 檢查用戶權限 - 使用 JWT token 進行身份驗證
   async checkUserPermissions(userId: string, permission: string): Promise<boolean> {
-    console.log('🔍 檢查用戶權限:', { userId, permission });
+    console.log('🔍 使用 Supabase Auth 檢查用戶權限:', { userId, permission });
     
     try {
       // 獲取用戶資訊和角色
@@ -79,7 +76,7 @@ export const overtimeValidationService = {
     }
   },
 
-  // 檢查是否有下屬
+  // 檢查是否有下屬 - 使用 JWT token 進行身份驗證
   async checkHasSubordinates(userId: string): Promise<boolean> {
     try {
       const subordinates = await overtimeApiService.getSubordinates(userId);
@@ -90,11 +87,19 @@ export const overtimeValidationService = {
     }
   },
 
-  // 獲取用戶的審核申請 - 統一查詢邏輯，比照請假系統
+  // 獲取用戶的審核申請 - 使用 JWT token 進行身份驗證
   async getUserApprovalRequests(userId: string): Promise<any[]> {
-    console.log('🔍 獲取用戶需要審核的加班申請...');
+    console.log('🔍 使用 Supabase Auth 獲取用戶需要審核的加班申請');
     
     try {
+      // 獲取當前認證用戶
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        console.error('❌ 無法獲取當前用戶:', authError);
+        throw new Error('用戶未認證');
+      }
+      
       // 1. 直接指派的審核申請
       const directAssigned = await supabase
         .from('overtime_requests')

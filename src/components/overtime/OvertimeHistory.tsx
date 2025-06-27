@@ -30,22 +30,10 @@ const OvertimeHistory: React.FC = () => {
   const loadOvertimeHistory = async () => {
     try {
       setIsLoading(true);
-      console.log('🔍 載入加班歷史記錄...');
+      console.log('🔍 使用 Supabase Auth 載入加班歷史記錄...');
       
-      // 獲取當前用戶ID
-      let userId: string;
-      try {
-        const { overtimeValidationService } = await import('@/services/overtime/overtimeValidationService');
-        userId = await overtimeValidationService.getCurrentUserId();
-        console.log('👤 當前用戶ID:', userId);
-      } catch (error) {
-        console.error('❌ 獲取用戶ID失敗:', error);
-        // 使用預設用戶ID作為後備
-        userId = currentUser?.id || '550e8400-e29b-41d4-a716-446655440001';
-        console.log('⚠️ 使用預設用戶ID:', userId);
-      }
-      
-      const history = await overtimeService.getUserOvertimeRequests(userId);
+      // 使用 Supabase Auth 獲取當前用戶的加班記錄
+      const history = await overtimeService.getUserOvertimeRequests();
       console.log('📋 載入的加班記錄:', history);
       console.log('📊 記錄統計:', {
         總計: history.length,
@@ -128,7 +116,7 @@ const OvertimeHistory: React.FC = () => {
           加班記錄
         </h2>
         <p className="text-white/80 font-medium drop-shadow-sm">
-          查看您的加班申請歷史記錄
+          查看您的加班申請歷史記錄（使用 Supabase Auth JWT Token）
         </p>
       </div>
 
@@ -271,6 +259,10 @@ const OvertimeHistory: React.FC = () => {
       {filteredRequests.length > 0 && (
         <div className="text-center text-white/60 text-sm">
           共 {filteredRequests.length} 筆記錄 (總計 {requests.length} 筆)
+          <br />
+          <span className="text-xs text-white/40">
+            使用 Supabase Auth JWT Token 進行身份驗證
+          </span>
         </div>
       )}
     </div>

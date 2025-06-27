@@ -45,7 +45,10 @@ export const overtimeApiService = {
       
       console.log('👤 當前認證用戶:', user.id);
       
-      let query = supabase
+      // 使用當前認證用戶的 ID 查詢
+      const targetUserId = userId || user.id;
+      
+      const { data, error } = await supabase
         .from('overtime_requests')
         .select(`
           *,
@@ -67,17 +70,8 @@ export const overtimeApiService = {
             updated_at
           )
         `)
+        .or(`staff_id.eq.${targetUserId},user_id.eq.${targetUserId}`)
         .order('created_at', { ascending: false });
-
-      // 使用 JWT token 進行 RLS 查詢
-      if (userId) {
-        query = query.or(`staff_id.eq.${userId},user_id.eq.${userId}`);
-      } else {
-        // 如果沒有指定用戶ID，查詢當前認證用戶的記錄
-        query = query.or(`staff_id.eq.${user.id},user_id.eq.${user.id}`);
-      }
-
-      const { data, error } = await query;
 
       if (error) {
         console.error('❌ 查詢加班申請失敗:', error);
@@ -85,6 +79,14 @@ export const overtimeApiService = {
       }
       
       console.log('✅ 查詢成功，返回', data?.length || 0, '筆記錄');
+      console.log('📋 查詢條件 - 目標用戶ID:', targetUserId);
+      console.log('📋 查詢結果預覽:', data?.slice(0, 3)?.map(r => ({
+        id: r.id,
+        staff_id: r.staff_id,
+        user_id: r.user_id,
+        overtime_date: r.overtime_date,
+        status: r.status
+      })));
       
       return (data || []).map(item => ({
         ...item,

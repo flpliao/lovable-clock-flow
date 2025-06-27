@@ -1,107 +1,85 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { overtimeApiService } from './overtimeApiService';
 
 export const overtimeValidationService = {
-  // 獲取當前用戶ID - 使用 Supabase Auth JWT token
+  // 獲取當前用戶 ID - 使用 Supabase Auth
   async getCurrentUserId(): Promise<string> {
-    try {
-      console.log('🔍 使用 Supabase Auth 獲取當前用戶ID');
-      
-      const { data: { user }, error } = await supabase.auth.getUser();
-      
-      if (error || !user) {
-        console.error('❌ 無法從 Supabase Auth 獲取用戶:', error);
-        throw new Error('用戶未認證');
-      }
-      
-      console.log('✅ 從 Supabase Auth 獲取用戶ID:', user.id);
-      return user.id;
-    } catch (error) {
-      console.error('🔥 獲取 Supabase Auth 用戶ID失敗:', error);
-      throw new Error('無法獲取用戶身份');
+    const { data: { user }, error } = await supabase.auth.getUser();
+    
+    if (error || !user) {
+      console.error('❌ 無法獲取當前用戶:', error);
+      throw new Error('用戶未認證');
     }
+    
+    console.log('👤 當前認證用戶 ID:', user.id);
+    return user.id;
   },
 
-  // 檢查用戶權限 - 使用 JWT token 進行身份驗證
-  async checkUserPermissions(userId: string, permission: string): Promise<boolean> {
-    console.log('🔍 使用 Supabase Auth 檢查用戶權限:', { userId, permission });
+  // 計算加班時數
+  calculateOvertimeHours(startTime: string, endTime: string): number {
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const [endHour, endMinute] = endTime.split(':').map(Number);
     
+    const startTotalMinutes = startHour * 60 + startMinute;
+    const endTotalMinutes = endHour * 60 + endMinute;
+    
+    // 處理跨午夜的情況
+    let diffMinutes = endTotalMinutes - startTotalMinutes;
+    if (diffMinutes < 0) {
+      diffMinutes += 24 * 60; // 加上24小時
+    }
+    
+    return Math.round((diffMinutes / 60) * 100) / 100; // 保留兩位小數
+  },
+
+  // 檢查用戶權限
+  async checkUserPermissions(userId: string, permission: string): Promise<boolean> {
     try {
-      // 獲取用戶資訊和角色
-      const userInfo = await overtimeApiService.getStaffInfo(userId);
+      console.log('🔍 檢查用戶權限:', { userId, permission });
       
-      if (!userInfo) {
-        console.log('❌ 找不到用戶資料');
+      // 獲取用戶角色資訊
+      const { data: staffData, error } = await supabase
+        .from('staff')
+        .select('role, role_id')
+        .or(`user_id.eq.${userId},id.eq.${userId}`)
+        .single();
+
+      if (error || !staffData) {
+        console.error('❌ 獲取用戶角色失敗:', error);
         return false;
       }
 
-      console.log('👤 用戶資訊:', {
-        id: userInfo.id,
-        name: userInfo.name,
-        role: userInfo.role,
-        department: userInfo.department,
-        position: userInfo.position
-      });
-
-      // 基本權限檢查 - 所有員工都可以申請加班
-      if (permission === 'overtime:create' || permission === 'overtime:view_own') {
+      // 根據角色判斷權限
+      const role = staffData.role || staffData.role_id;
+      
+      // 管理員和 HR 擁有所有權限
+      if (role === 'admin' || role === 'hr_manager') {
         return true;
       }
 
-      // 審核權限檢查 - 管理者角色或有下屬的主管可以審核
-      if (permission === 'overtime:approve') {
-        const isManager = userInfo.role === 'admin' || userInfo.role === 'manager';
-        const hasSubordinates = await this.checkHasSubordinates(userId);
-        
-        console.log('🔐 審核權限檢查:', {
-          role: userInfo.role,
-          isManager: isManager,
-          hasSubordinates: hasSubordinates,
-          canApprove: isManager || hasSubordinates
-        });
-        
-        return isManager || hasSubordinates;
+      // 部門主管擁有審核權限
+      if (role === 'department_manager' && permission.includes('approve')) {
+        return true;
       }
 
-      // 查看所有申請權限 - 只有管理員
-      if (permission === 'overtime:view_all') {
-        return userInfo.role === 'admin';
+      // 一般用戶只能查看自己的記錄
+      if (role === 'user' && permission.includes('view')) {
+        return true;
       }
 
       return false;
     } catch (error) {
-      console.error('❌ 權限檢查失敗:', error);
+      console.error('❌ 檢查權限時發生錯誤:', error);
       return false;
     }
   },
 
-  // 檢查是否有下屬 - 使用 JWT token 進行身份驗證
-  async checkHasSubordinates(userId: string): Promise<boolean> {
-    try {
-      const subordinates = await overtimeApiService.getSubordinates(userId);
-      return subordinates.length > 0;
-    } catch (error) {
-      console.error('❌ 檢查下屬關係失敗:', error);
-      return false;
-    }
-  },
-
-  // 獲取用戶的審核申請 - 使用 JWT token 進行身份驗證
+  // 獲取用戶需要審核的加班申請
   async getUserApprovalRequests(userId: string): Promise<any[]> {
-    console.log('🔍 使用 Supabase Auth 獲取用戶需要審核的加班申請');
-    
     try {
-      // 獲取當前認證用戶
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      console.log('🔍 獲取用戶審核申請:', userId);
       
-      if (authError || !user) {
-        console.error('❌ 無法獲取當前用戶:', authError);
-        throw new Error('用戶未認證');
-      }
-      
-      // 1. 直接指派的審核申請
-      const directAssigned = await supabase
+      const { data, error } = await supabase
         .from('overtime_requests')
         .select(`
           *,
@@ -127,93 +105,16 @@ export const overtimeValidationService = {
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
-      // 2. 透過審核記錄表查詢的申請
-      const throughApprovalRecords = await supabase
-        .from('overtime_approval_records')
-        .select(`
-          overtime_request_id,
-          overtime_requests!inner (
-            *,
-            staff!staff_id (
-              name,
-              department,
-              position
-            ),
-            overtime_approval_records (
-              id,
-              overtime_request_id,
-              approver_id,
-              approver_name,
-              level,
-              status,
-              approval_date,
-              comment,
-              created_at,
-              updated_at
-            )
-          )
-        `)
-        .eq('approver_id', userId)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
+      if (error) {
+        console.error('❌ 獲取審核申請失敗:', error);
+        throw error;
+      }
 
-      // 3. 主管關係查詢 - 查詢下屬的申請
-      const subordinateRequests = await supabase
-        .from('overtime_requests')
-        .select(`
-          *,
-          staff!staff_id (
-            name,
-            department,
-            position,
-            supervisor_id
-          ),
-          overtime_approval_records (
-            id,
-            overtime_request_id,
-            approver_id,
-            approver_name,
-            level,
-            status,
-            approval_date,
-            comment,
-            created_at,
-            updated_at
-          )
-        `)
-        .eq('staff.supervisor_id', userId)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-
-      // 合併去重
-      const allRequests = new Map();
-      
-      directAssigned.data?.forEach(req => allRequests.set(req.id, req));
-      throughApprovalRecords.data?.forEach(item => 
-        allRequests.set(item.overtime_request_id, item.overtime_requests)
-      );
-      subordinateRequests.data?.forEach(req => allRequests.set(req.id, req));
-
-      const result = Array.from(allRequests.values());
-      
-      console.log('📋 查詢結果統計:', {
-        直接指派: directAssigned.data?.length || 0,
-        審核記錄: throughApprovalRecords.data?.length || 0,
-        下屬申請: subordinateRequests.data?.length || 0,
-        總計: result.length
-      });
-
-      return result;
+      console.log('✅ 成功獲取審核申請:', data?.length || 0, '筆');
+      return data || [];
     } catch (error) {
-      console.error('❌ 獲取審核申請失敗:', error);
-      return [];
+      console.error('❌ getUserApprovalRequests 失敗:', error);
+      throw new Error(`獲取審核申請失敗: ${error.message || '未知錯誤'}`);
     }
-  },
-
-  // 計算加班時數
-  calculateOvertimeHours(startTime: string, endTime: string): number {
-    const start = new Date(`2000-01-01T${startTime}`);
-    const end = new Date(`2000-01-01T${endTime}`);
-    return (end.getTime() - start.getTime()) / (1000 * 60 * 60);
   }
 };

@@ -11,22 +11,23 @@ const ResetPassword = () => {
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // 檢查是否有重設密碼的 token
+  // 檢查是否有重設密碼的 token 或已驗證標記
   const hasResetToken = searchParams.get('token') || searchParams.get('access_token');
+  const isVerified = searchParams.get('verified') === 'true';
 
-  // 檢查已登入用戶並重定向（但如果有重設 token 則允許繼續）
+  // 檢查已登入用戶並重定向（但如果有重設 token 或已驗證則允許繼續）
   useEffect(() => {
-    if (isUserLoaded && isAuthenticated && currentUser && !hasResetToken && !isRedirecting) {
+    if (isUserLoaded && isAuthenticated && currentUser && !hasResetToken && !isVerified && !isRedirecting) {
       console.log('🔐 用戶已登入且無重設 token，重定向到主頁面:', currentUser.name);
       setIsRedirecting(true);
       setTimeout(() => {
         navigate('/', { replace: true });
       }, 100);
     }
-  }, [isUserLoaded, isAuthenticated, currentUser, hasResetToken, navigate, isRedirecting]);
+  }, [isUserLoaded, isAuthenticated, currentUser, hasResetToken, isVerified, navigate, isRedirecting]);
 
-  // 已登入用戶顯示跳轉中（僅在沒有重設 token 時）
-  if (isRedirecting || (isAuthenticated && currentUser && !hasResetToken)) {
+  // 已登入用戶顯示跳轉中（僅在沒有重設 token 且未驗證時）
+  if (isRedirecting || (isAuthenticated && currentUser && !hasResetToken && !isVerified)) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
         <div className="text-white text-center">
@@ -56,7 +57,6 @@ const ResetPassword = () => {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-purple-400/20 via-transparent to-transparent"></div>
 
-      {/* 浮動光點效果 */}
       <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-white/30 rounded-full animate-pulse"></div>
       <div className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -30,11 +29,11 @@ const ForgotPasswordForm: React.FC = () => {
     
     console.log('🔐 開始 Supabase Auth 密碼重設流程');
     console.log('📧 目標郵件:', email);
-    console.log('🔗 重定向 URL:', `${window.location.origin}/reset-password`);
+    console.log('🔗 重定向 URL:', `${window.location.origin}/auth/callback`);
     
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       });
 
       if (error) {

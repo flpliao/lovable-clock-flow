@@ -30,55 +30,113 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     // 設置 Supabase Auth 狀態監聽器
     const { data: { subscription } } = AuthService.onAuthStateChange(async (event, session) => {
-      console.log('🔄 Supabase Auth 狀態變化:', event);
+      console.log('🔄 Supabase Auth 狀態變化:', event, '會話存在:', !!session);
       
-      if (event === 'SIGNED_IN' && session) {
-        console.log('✅ 用戶已登入');
+      // 處理所有可能的登入情況
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+        console.log('✅ 用戶已登入 - 事件:', event);
         console.log('🎫 JWT Token:', session.access_token.substring(0, 20) + '...');
         
-        // 從會話中獲取用戶資料（如果之前存儲過）
-        const storedUser = getUserFromStorage();
-        if (storedUser && storedUser.id === session.user.id) {
-          console.log('📦 使用已存儲的用戶資料');
-          setCurrentUser(storedUser);
-        } else {
-          console.log('🔍 需要重新獲取用戶資料');
-          // 這裡可能需要重新獲取用戶資料
-        }
+        await handleUserLogin(session);
       } else if (event === 'SIGNED_OUT') {
         console.log('🚪 用戶已登出');
-        setCurrentUser(null);
-        clearUserStorage();
-      } else if (event === 'TOKEN_REFRESHED' && session) {
-        console.log('🔄 JWT Token 已刷新');
-        console.log('🎫 新 JWT Token:', session.access_token.substring(0, 20) + '...');
+        handleUserLogout();
+      } else if (session && !currentUser) {
+        // 處理 setSession 後可能沒有觸發特定事件的情況
+        console.log('🔄 檢測到會話但無事件，處理登入狀態');
+        await handleUserLogin(session);
       }
     });
 
     // 檢查是否有現有會話
-    AuthService.getCurrentSession().then((session) => {
-      if (session) {
-        console.log('📦 發現現有 Supabase 會話');
-        console.log('🎫 JWT Token:', session.access_token.substring(0, 20) + '...');
-        
-        // 嘗試從本地存儲恢復用戶資料
-        const storedUser = getUserFromStorage();
-        if (storedUser && storedUser.id === session.user.id) {
-          console.log('📦 恢復已存儲的用戶資料:', storedUser.name);
-          setCurrentUser(storedUser);
+    const initializeAuth = async () => {
+      try {
+        const session = await AuthService.getCurrentSession();
+        if (session) {
+          console.log('📦 發現現有 Supabase 會話');
+          console.log('🎫 JWT Token:', session.access_token.substring(0, 20) + '...');
+          
+          await handleUserLogin(session);
+        } else {
+          console.log('❌ 無現有 Supabase 會話');
         }
-      } else {
-        console.log('❌ 無現有 Supabase 會話');
+      } catch (error) {
+        console.error('❌ 初始化認證狀態失敗:', error);
+      } finally {
+        setIsUserLoaded(true);
       }
-      
-      setIsUserLoaded(true);
-    });
+    };
+
+    initializeAuth();
 
     // 清理函數
     return () => {
       subscription.unsubscribe();
     };
   }, []);
+
+  // 處理用戶登入的統一函數
+  const handleUserLogin = async (session: any) => {
+    try {
+      // 嘗試從本地存儲恢復用戶資料
+      const storedUser = getUserFromStorage();
+      if (storedUser && storedUser.id === session.user.id) {
+        console.log('📦 恢復已存儲的用戶資料:', storedUser.name);
+        setCurrentUser(storedUser);
+        setIsUserLoaded(true);
+        return;
+      }
+
+      // 如果沒有存儲的用戶資料，嘗試從 staff 表格獲取
+      console.log('🔍 從資料庫獲取用戶資料');
+      const result = await AuthService.authenticate(session.user.email, ''); // 使用空密碼，因為已有會話
+      
+      if (result.success && result.user) {
+        console.log('✅ 成功獲取用戶資料:', result.user.name);
+        setCurrentUser(result.user);
+      } else {
+        // 如果無法從資料庫獲取，使用會話中的基本資料
+        console.log('⚠️ 無法從資料庫獲取用戶資料，使用會話資料');
+        const fallbackUser: User = {
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '用戶',
+          position: '員工',
+          department: '一般',
+          role: 'user'
+        };
+        setCurrentUser(fallbackUser);
+      }
+    } catch (error) {
+      console.error('❌ 處理用戶登入失敗:', error);
+      // 使用會話中的基本資料作為後備
+      const fallbackUser: User = {
+        id: session.user.id,
+        email: session.user.email || '',
+        name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '用戶',
+        position: '員工',
+        department: '一般',
+        role: 'user'
+      };
+      setCurrentUser(fallbackUser);
+    } finally {
+      setIsUserLoaded(true);
+    }
+  };
+
+  // 處理用戶登出的統一函數
+  const handleUserLogout = () => {
+    setCurrentUser(null);
+    setAnnualLeaveBalance(null);
+    setUserError(null);
+    clearUserStorage();
+    
+    // 清除權限快取
+    const permissionService = UnifiedPermissionService.getInstance();
+    permissionService.clearCache();
+    
+    setIsUserLoaded(true);
+  };
 
   // 當用戶改變時的處理
   useEffect(() => {
@@ -113,15 +171,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // 使用 Supabase Auth 登出
     await AuthService.signOut();
     
-    setCurrentUser(null);
-    setAnnualLeaveBalance(null);
-    setUserError(null);
-    setIsUserLoaded(true);
-    clearUserStorage();
-    
-    // 清除權限快取
-    const permissionService = UnifiedPermissionService.getInstance();
-    permissionService.clearCache();
+    handleUserLogout();
   };
 
   return (

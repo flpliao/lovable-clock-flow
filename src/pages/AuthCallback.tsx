@@ -16,6 +16,22 @@ const AuthCallback = () => {
       console.log('🔄 處理認證回調...');
       
       try {
+        // 首先檢查是否已經有有效會話
+        const { data: { session: existingSession }, error: sessionCheckError } = await supabase.auth.getSession();
+        
+        if (!sessionCheckError && existingSession) {
+          console.log('✅ 用戶已登入，直接重定向到主頁面');
+          toast({
+            title: '歡迎回來',
+            description: '您已經登入了！',
+          });
+          
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 500);
+          return;
+        }
+
         // 獲取 URL 中的 hash 參數
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');

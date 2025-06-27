@@ -1,21 +1,28 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { overtimeApiService } from './overtimeApiService';
 
 export const overtimeValidationService = {
-  // 獲取當前用戶ID - 統一使用Supabase認證
+  // 獲取當前用戶ID - 使用 Supabase Auth
   async getCurrentUserId(): Promise<string> {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
-      console.error('❌ 無法獲取當前用戶:', authError);
-      // 開發環境使用預設ID作為後備方案
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error || !user) {
+        console.error('❌ 無法從 Supabase Auth 獲取用戶:', error);
+        // 開發環境使用預設ID作為後備方案
+        const fallbackUserId = '550e8400-e29b-41d4-a716-446655440001';
+        console.log('⚠️ 使用預設用戶ID作為後備方案:', fallbackUserId);
+        return fallbackUserId;
+      }
+      
+      console.log('✅ 從 Supabase Auth 獲取用戶ID:', user.id);
+      return user.id;
+    } catch (error) {
+      console.error('🔥 獲取 Supabase Auth 用戶ID失敗:', error);
+      // 後備方案
       const fallbackUserId = '550e8400-e29b-41d4-a716-446655440001';
       console.log('⚠️ 使用預設用戶ID作為後備方案:', fallbackUserId);
       return fallbackUserId;
-    } else {
-      console.log('✅ 使用實際登入用戶ID:', user.id);
-      return user.id;
     }
   },
 

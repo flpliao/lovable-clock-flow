@@ -6,6 +6,7 @@ import { createRoleChecker } from './user/roleUtils';
 import { createPermissionChecker } from './user/permissionUtils';
 import { getUserFromStorage, saveUserToStorage, clearUserStorage } from './user/userStorageUtils';
 import { UnifiedPermissionService } from '@/services/unifiedPermissionService';
+import { AuthService } from '@/services/authService';
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -25,17 +26,58 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const { hasPermission } = createPermissionChecker(currentUser, isAdmin);
 
   useEffect(() => {
-    console.log('👤 UserProvider: 初始化用戶狀態管理');
+    console.log('👤 UserProvider: 初始化 Supabase Auth 狀態管理');
     
-    // 檢查本地存儲是否有用戶 session
-    const storedUser = getUserFromStorage();
-    if (storedUser) {
-      console.log('📦 載入儲存的用戶資料:', storedUser);
-      setCurrentUser(storedUser);
-    }
-    
-    // 確保載入狀態設為 true，無論是否有用戶
-    setIsUserLoaded(true);
+    // 設置 Supabase Auth 狀態監聽器
+    const { data: { subscription } } = AuthService.onAuthStateChange(async (event, session) => {
+      console.log('🔄 Supabase Auth 狀態變化:', event);
+      
+      if (event === 'SIGNED_IN' && session) {
+        console.log('✅ 用戶已登入');
+        console.log('🎫 JWT Token:', session.access_token.substring(0, 20) + '...');
+        
+        // 從會話中獲取用戶資料（如果之前存儲過）
+        const storedUser = getUserFromStorage();
+        if (storedUser && storedUser.id === session.user.id) {
+          console.log('📦 使用已存儲的用戶資料');
+          setCurrentUser(storedUser);
+        } else {
+          console.log('🔍 需要重新獲取用戶資料');
+          // 這裡可能需要重新獲取用戶資料
+        }
+      } else if (event === 'SIGNED_OUT') {
+        console.log('🚪 用戶已登出');
+        setCurrentUser(null);
+        clearUserStorage();
+      } else if (event === 'TOKEN_REFRESHED' && session) {
+        console.log('🔄 JWT Token 已刷新');
+        console.log('🎫 新 JWT Token:', session.access_token.substring(0, 20) + '...');
+      }
+    });
+
+    // 檢查是否有現有會話
+    AuthService.getCurrentSession().then((session) => {
+      if (session) {
+        console.log('📦 發現現有 Supabase 會話');
+        console.log('🎫 JWT Token:', session.access_token.substring(0, 20) + '...');
+        
+        // 嘗試從本地存儲恢復用戶資料
+        const storedUser = getUserFromStorage();
+        if (storedUser && storedUser.id === session.user.id) {
+          console.log('📦 恢復已存儲的用戶資料:', storedUser.name);
+          setCurrentUser(storedUser);
+        }
+      } else {
+        console.log('❌ 無現有 Supabase 會話');
+      }
+      
+      setIsUserLoaded(true);
+    });
+
+    // 清理函數
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   // 當用戶改變時的處理
@@ -47,7 +89,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log('👤 UserProvider: 用戶登出，清除所有狀態');
     } else {
       console.log('👤 UserProvider: 用戶登入:', currentUser.name, '權限等級:', currentUser.role);
-      console.log('🆔 UserProvider: 用戶ID:', currentUser.id);
+      console.log('🆔 UserProvider: Supabase Auth 用戶ID:', currentUser.id);
       
       // 將用戶資料存儲到本地存儲
       saveUserToStorage(currentUser);
@@ -65,8 +107,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserError(null);
   };
 
-  const resetUserState = () => {
+  const resetUserState = async () => {
     console.log('🔄 UserProvider: 重置用戶狀態 - 登出');
+    
+    // 使用 Supabase Auth 登出
+    await AuthService.signOut();
+    
     setCurrentUser(null);
     setAnnualLeaveBalance(null);
     setUserError(null);

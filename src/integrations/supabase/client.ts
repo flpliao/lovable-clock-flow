@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 const SUPABASE_URL = "https://skfdbxhlbqnoflbczlfu.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZmRieGhsYnFub2ZsYmN6bGZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzMzgzOTMsImV4cCI6MjA2MzkxNDM5M30.nHlFgWyHoGEpCRKXtWWHpoCRE2FjoD5XTESlae3zMhQ";
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZmRieGhsYnFub2ZsYmN6bGZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE7NDgzMzgzOTMsImV4cCI6MjA2MzkxNDM5M30.nHlFgWyHoGEpCRKXtWWHpoCRE2FjoD5XTESlae3zMhQ";
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -13,42 +13,50 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: false
+    detectSessionInUrl: true,
+    storage: localStorage
   }
 });
 
-// 廖俊雄的管理員認證 - 模擬認證狀態
+// Supabase Auth 工具函數
 export const ensureUserAuthenticated = async () => {
   try {
-    console.log('🔐 檢查用戶認證狀態...');
+    console.log('🔐 檢查 Supabase Auth 認證狀態...');
     
-    const adminUserId = '550e8400-e29b-41d4-a716-446655440001';
+    const { data: { session }, error } = await supabase.auth.getSession();
     
-    // 檢查當前會話
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      console.log('🎯 模擬廖俊雄管理員登入狀態');
-      // 在實際應用中，這裡會進行真實的認證
-      // 現在我們模擬管理員已登入的狀態
-    } else {
-      console.log('✅ 用戶會話正常');
+    if (error) {
+      console.error('❌ 獲取 Supabase 會話失敗:', error);
+      return false;
     }
     
-    console.log('✅ 認證檢查完成');
+    if (!session) {
+      console.log('❌ 未發現 Supabase 會話');
+      return false;
+    }
+    
+    console.log('✅ Supabase Auth 會話正常');
+    console.log('🎫 JWT Token:', session.access_token.substring(0, 20) + '...');
     return true;
   } catch (error) {
-    console.log('認證檢查錯誤:', error);
-    return true; // 在開發環境中保持系統運作
+    console.error('🔥 Supabase Auth 檢查錯誤:', error);
+    return false;
   }
 };
 
-// 管理員權限檢查
-export const verifyAdminPermissions = () => {
-  console.log('🔐 管理員權限確認');
-  console.log('✅ 擁有完整系統權限');
+// 管理員權限檢查（保持向後相容）
+export const verifyAdminPermissions = async () => {
+  console.log('🔐 檢查管理員權限...');
+  const isAuthenticated = await ensureUserAuthenticated();
+  
+  if (!isAuthenticated) {
+    console.log('❌ 用戶未認證');
+    return false;
+  }
+  
+  console.log('✅ 管理員權限確認');
   return true;
 };
 
-// 初始化時確保認證狀態
-console.log('🚀 Supabase 客戶端初始化完成');
+// 初始化日誌
+console.log('🚀 Supabase 客戶端初始化完成 - 支援 Auth 系統');

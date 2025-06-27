@@ -20,18 +20,20 @@ const LoginForm: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    console.log('🔐 登入嘗試，電子郵件:', email);
+    console.log('🔐 開始 Supabase Auth 登入流程');
     
     try {
-      // 使用新的 AuthService 進行驗證
+      // 使用新的 Supabase Auth Service
       const authResult = await AuthService.authenticate(email, password);
       
-      if (authResult.success && authResult.user) {
-        console.log('✅ 登入成功，用戶資料:', authResult.user);
+      if (authResult.success && authResult.user && authResult.session) {
+        console.log('✅ Supabase Auth 登入成功');
+        console.log('🎫 獲得 JWT Token:', authResult.session.access_token.substring(0, 20) + '...');
+        console.log('👤 用戶資料:', authResult.user);
         
         // 構建用戶資料用於 UserContext
         const userData = {
-          id: authResult.user.id,
+          id: authResult.user.id, // 使用 Supabase Auth 的用戶 ID
           name: authResult.user.name,
           position: authResult.user.position,
           department: authResult.user.department,
@@ -41,19 +43,22 @@ const LoginForm: React.FC = () => {
         
         setCurrentUser(userData);
         
+        // 將 JWT token 和會話資訊存儲到 localStorage（可選）
+        localStorage.setItem('supabase_session', JSON.stringify(authResult.session));
+        
         // 登入成功提醒
         toast({
           title: '登入成功',
-          description: `歡迎回來，${authResult.user.name}！`,
+          description: `歡迎回來，${authResult.user.name}！已獲取認證令牌。`,
         });
         
-        // 稍微延遲跳轉，讓用戶看到成功提醒
+        // 稍微延遲跳轉
         setTimeout(() => {
           console.log('🔄 跳轉到主頁面');
           navigate('/');
         }, 1000);
       } else {
-        console.log('❌ 登入失敗:', authResult.error);
+        console.log('❌ Supabase Auth 登入失敗:', authResult.error);
         toast({
           variant: 'destructive',
           title: '登錄失敗',
@@ -111,6 +116,10 @@ const LoginForm: React.FC = () => {
       >
         {isLoading ? '登入中...' : '登入'}
       </Button>
+      
+      <div className="text-center text-sm text-white/80">
+        使用 Supabase Auth 系統進行安全認證
+      </div>
     </form>
   );
 };

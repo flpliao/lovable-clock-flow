@@ -18,7 +18,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const navigate = useNavigate();
 
   // 檢查是否已驗證登入 - 修正邏輯
-  const isAuthenticated = currentUser !== null && isUserLoaded;
+  const isAuthenticated = currentUser !== null;
 
   // 創建角色檢查器
   const { isAdmin, isManager, canManageUser } = createRoleChecker(currentUser);

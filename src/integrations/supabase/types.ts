@@ -1016,11 +1016,22 @@ export type Database = {
             referencedRelation: "overtime_requests"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_overtime_approval_records_request_id"
+            columns: ["overtime_request_id"]
+            isOneToOne: false
+            referencedRelation: "overtime_requests"
+            referencedColumns: ["id"]
+          },
         ]
       }
       overtime_requests: {
         Row: {
+          approval_comment: string | null
+          approval_date: string | null
           approval_level: number | null
+          approved_by: string | null
+          approved_by_name: string | null
           attachment_url: string | null
           created_at: string
           current_approver: string | null
@@ -1034,11 +1045,16 @@ export type Database = {
           staff_id: string | null
           start_time: string
           status: string
+          supervisor_hierarchy: Json | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          approval_comment?: string | null
+          approval_date?: string | null
           approval_level?: number | null
+          approved_by?: string | null
+          approved_by_name?: string | null
           attachment_url?: string | null
           created_at?: string
           current_approver?: string | null
@@ -1052,11 +1068,16 @@ export type Database = {
           staff_id?: string | null
           start_time: string
           status?: string
+          supervisor_hierarchy?: Json | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          approval_comment?: string | null
+          approval_date?: string | null
           approval_level?: number | null
+          approved_by?: string | null
+          approved_by_name?: string | null
           attachment_url?: string | null
           created_at?: string
           current_approver?: string | null
@@ -1070,6 +1091,7 @@ export type Database = {
           staff_id?: string | null
           start_time?: string
           status?: string
+          supervisor_hierarchy?: Json | null
           updated_at?: string
           user_id?: string | null
         }
@@ -1084,6 +1106,13 @@ export type Database = {
           {
             foreignKeyName: "fk_overtime_requests_user_id"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "overtime_requests_approved_by_fkey"
+            columns: ["approved_by"]
             isOneToOne: false
             referencedRelation: "staff"
             referencedColumns: ["id"]

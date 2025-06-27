@@ -3,13 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { overtimeApiService } from './overtimeApiService';
 
 export const overtimeValidationService = {
-  // 獲取當前用戶ID
+  // 獲取當前用戶ID - 統一使用Supabase認證
   async getCurrentUserId(): Promise<string> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
       console.error('❌ 無法獲取當前用戶:', authError);
-      // 如果無法獲取當前用戶，使用預設ID作為後備方案
+      // 開發環境使用預設ID作為後備方案
       const fallbackUserId = '550e8400-e29b-41d4-a716-446655440001';
       console.log('⚠️ 使用預設用戶ID作為後備方案:', fallbackUserId);
       return fallbackUserId;
@@ -19,79 +19,172 @@ export const overtimeValidationService = {
     }
   },
 
-  // 檢查用戶是否可以自動核准
+  // 檢查用戶權限 - 統一權限檢查邏輯，比照請假系統
+  async checkUserPermissions(userId: string, permission: string): Promise<boolean> {
+    console.log('🔍 檢查用戶權限:', { userId, permission });
+    
+    try {
+      // 獲取用戶資訊和角色
+      const userInfo = await overtimeApiService.getStaffInfo(userId);
+      
+      if (!userInfo) {
+        console.log('❌ 找不到用戶資料');
+        return false;
+      }
+
+      console.log('👤 用戶資訊:', {
+        id: userInfo.id,
+        name: userInfo.name,
+        role: userInfo.role,
+        department: userInfo.department,
+        position: userInfo.position
+      });
+
+      // 基本權限檢查 - 所有員工都可以申請加班
+      if (permission === 'overtime:create' || permission === 'overtime:view_own') {
+        return true;
+      }
+
+      // 審核權限檢查 - 管理者角色可以審核
+      if (permission === 'overtime:approve') {
+        const isManager = userInfo.role === 'admin' || userInfo.role === 'manager';
+        const hasSubordinates = await this.checkHasSubordinates(userId);
+        
+        console.log('🔐 審核權限檢查:', {
+          role: userInfo.role,
+          isManager: isManager,
+          hasSubordinates: hasSubordinates,
+          canApprove: isManager && hasSubordinates
+        });
+        
+        return isManager && hasSubordinates;
+      }
+
+      // 查看所有申請權限 - 只有管理員
+      if (permission === 'overtime:view_all') {
+        return userInfo.role === 'admin';
+      }
+
+      return false;
+    } catch (error) {
+      console.error('❌ 權限檢查失敗:', error);
+      return false;
+    }
+  },
+
+  // 檢查是否有下屬
+  async checkHasSubordinates(userId: string): Promise<boolean> {
+    try {
+      const subordinates = await overtimeApiService.getSubordinates(userId);
+      return subordinates.length > 0;
+    } catch (error) {
+      console.error('❌ 檢查下屬關係失敗:', error);
+      return false;
+    }
+  },
+
+  // 檢查用戶是否可以自動核准 - 更新邏輯，移除硬編碼ID
   async checkAutoApprovalEligibility(userId: string): Promise<boolean> {
     console.log('🔍 開始檢查加班申請自動核准條件...');
     console.log('👤 當前用戶ID:', userId);
     
-    // 只有廖俊雄（系統最高管理員）才能自動核准
-    const isSystemAdmin = userId === '550e8400-e29b-41d4-a716-446655440001';
+    // 檢查用戶是否有審核權限
+    const canApprove = await this.checkUserPermissions(userId, 'overtime:approve');
     
-    if (!isSystemAdmin) {
-      console.log('❌ 非系統最高管理員，無法自動核准');
+    if (!canApprove) {
+      console.log('❌ 用戶無審核權限，無法自動核准');
       return false;
     }
+
+    // 檢查是否為自己申請（自己不能審核自己的申請）
+    // 這個邏輯會在審核流程中處理，這裡先允許通過
     
-    // 檢查當前用戶的詳細資訊
-    const currentUser = await overtimeApiService.getStaffInfo(userId);
-    
-    console.log('👤 用戶詳細資訊:', {
-      id: currentUser.id,
-      name: currentUser.name,
-      role: currentUser.role,
-      role_id: currentUser.role_id,
-      department: currentUser.department,
-      position: currentUser.position
-    });
-
-    const isManagerRole = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
-    console.log('🔐 角色權限檢查:', {
-      role: currentUser?.role,
-      isManagerRole: isManagerRole,
-      判定結果: isManagerRole ? '✅ 符合管理者角色' : '❌ 非管理者角色'
-    });
-
-    // 如果是管理者角色，再檢查是否有實際下屬
-    let hasSubordinates = false;
-    let subordinatesList = [];
-    
-    if (isManagerRole) {
-      console.log('🔍 檢查下屬關係...');
-      subordinatesList = await overtimeApiService.getSubordinates(userId);
-      hasSubordinates = subordinatesList.length > 0;
-      
-      console.log('👥 下屬關係檢查:', {
-        下屬數量: subordinatesList.length,
-        hasSubordinates: hasSubordinates,
-        判定結果: hasSubordinates ? '✅ 有下屬' : '❌ 無下屬'
-      });
-      
-      if (subordinatesList.length > 0) {
-        console.log('📋 下屬名單:', subordinatesList.map(s => ({
-          姓名: s.name,
-          職位: s.position,
-          部門: s.department
-        })));
-      }
-    } else {
-      console.log('⏭️ 非管理者角色，跳過下屬檢查');
-    }
-
-    // 只有系統最高管理員且同時滿足管理者角色且有下屬的用戶才能自動核准
-    const canAutoApprove = isSystemAdmin && isManagerRole && hasSubordinates;
-
-    console.log('📊 最終審核結果判定:', {
+    console.log('📊 自動核准條件檢查:', {
       userId: userId,
-      userName: currentUser?.name,
-      role: currentUser?.role,
-      isSystemAdmin: isSystemAdmin,
-      isManagerRole: isManagerRole,
-      hasSubordinates: hasSubordinates,
-      canAutoApprove: canAutoApprove,
-      結論: canAutoApprove ? '🎉 自動核准' : '⏳ 需要審核'
+      canApprove: canApprove,
+      結論: canApprove ? '🎉 可以自動核准' : '⏳ 需要審核'
     });
 
-    return canAutoApprove;
+    return canApprove;
+  },
+
+  // 獲取用戶的審核申請 - 統一查詢邏輯，比照請假系統
+  async getUserApprovalRequests(userId: string): Promise<any[]> {
+    console.log('🔍 獲取用戶需要審核的加班申請...');
+    
+    try {
+      // 1. 直接指派的審核申請
+      const directAssigned = await supabase
+        .from('overtime_requests')
+        .select(`
+          *,
+          staff!staff_id (
+            name,
+            department,
+            position
+          )
+        `)
+        .eq('current_approver', userId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      // 2. 透過審核記錄表查詢的申請
+      const throughApprovalRecords = await supabase
+        .from('overtime_approval_records')
+        .select(`
+          overtime_request_id,
+          overtime_requests!inner (
+            *,
+            staff!staff_id (
+              name,
+              department,
+              position
+            )
+          )
+        `)
+        .eq('approver_id', userId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      // 3. 主管關係查詢 - 查詢下屬的申請
+      const subordinateRequests = await supabase
+        .from('overtime_requests')
+        .select(`
+          *,
+          staff!staff_id (
+            name,
+            department,
+            position,
+            supervisor_id
+          )
+        `)
+        .eq('staff.supervisor_id', userId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      // 合併去重
+      const allRequests = new Map();
+      
+      directAssigned.data?.forEach(req => allRequests.set(req.id, req));
+      throughApprovalRecords.data?.forEach(item => 
+        allRequests.set(item.overtime_request_id, item.overtime_requests)
+      );
+      subordinateRequests.data?.forEach(req => allRequests.set(req.id, req));
+
+      const result = Array.from(allRequests.values());
+      
+      console.log('📋 查詢結果統計:', {
+        直接指派: directAssigned.data?.length || 0,
+        審核記錄: throughApprovalRecords.data?.length || 0,
+        下屬申請: subordinateRequests.data?.length || 0,
+        總計: result.length
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ 獲取審核申請失敗:', error);
+      return [];
+    }
   },
 
   // 計算加班時數

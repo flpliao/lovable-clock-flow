@@ -13,13 +13,36 @@ export const useOvertimeRequests = () => {
       setIsLoading(true);
       console.log('🔍 載入待審核加班申請...');
       
-      const requests = await overtimeService.getPendingOvertimeRequests();
+      // 獲取當前用戶ID - 使用統一服務
+      const { overtimeValidationService } = await import('@/services/overtime/overtimeValidationService');
+      const currentUserId = await overtimeValidationService.getCurrentUserId();
+      
+      // 檢查審核權限
+      const canApprove = await overtimeService.checkUserPermission(currentUserId, 'overtime:approve');
+      
+      if (!canApprove) {
+        console.log('⚠️ 當前用戶無加班審核權限');
+        setOvertimeRequests([]);
+        return;
+      }
+      
+      // 獲取該用戶需要審核的申請
+      const requests = await overtimeService.getUserApprovalRequests(currentUserId);
       setOvertimeRequests(requests);
       
       console.log('✅ 成功載入加班申請:', requests.length, '筆');
+      console.log('📋 申請詳情:', requests.map(r => ({
+        id: r.id,
+        staff_name: r.staff?.name,
+        status: r.status,
+        overtime_date: r.overtime_date,
+        reason: r.reason
+      })));
+      
     } catch (error) {
       console.error('❌ 載入加班申請失敗:', error);
       toast.error('載入加班申請失敗');
+      setOvertimeRequests([]);
     } finally {
       setIsLoading(false);
     }
@@ -33,7 +56,11 @@ export const useOvertimeRequests = () => {
     try {
       console.log(`📝 處理加班申請審核: ${action}`, { requestId, comment });
       
-      await overtimeService.approveOvertimeRequest(requestId, action, comment);
+      // 獲取當前用戶ID作為審核人
+      const { overtimeValidationService } = await import('@/services/overtime/overtimeValidationService');
+      const currentUserId = await overtimeValidationService.getCurrentUserId();
+      
+      await overtimeService.approveOvertimeRequest(requestId, action, comment, currentUserId);
       
       // 更新本地狀態
       setOvertimeRequests(prev => 

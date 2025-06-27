@@ -30,8 +30,9 @@ const OvertimeRequestForm: React.FC<OvertimeRequestFormProps> = ({ onSuccess }) 
     try {
       const types = await overtimeService.getOvertimeTypes();
       setOvertimeTypes(types);
+      console.log('✅ 載入加班類型:', types.length, '種');
     } catch (error) {
-      console.error('載入加班類型失敗:', error);
+      console.error('❌ 載入加班類型失敗:', error);
       toast.error('載入加班類型失敗');
     }
   };
@@ -39,13 +40,23 @@ const OvertimeRequestForm: React.FC<OvertimeRequestFormProps> = ({ onSuccess }) 
   const onSubmit = async (data: OvertimeFormData) => {
     setIsSubmitting(true);
     try {
-      await overtimeService.submitOvertimeRequest(data);
-      toast.success('加班申請提交成功');
+      console.log('📝 提交加班申請:', data);
+      
+      const requestId = await overtimeService.submitOvertimeRequest(data);
+      
+      toast.success('加班申請提交成功！系統將自動分配審核流程。', {
+        description: `申請編號: ${requestId.slice(0, 8)}...`
+      });
+      
       form.reset();
       onSuccess?.();
+      
+      console.log('✅ 加班申請提交成功:', requestId);
     } catch (error) {
-      console.error('提交失敗:', error);
-      toast.error('加班申請提交失敗');
+      console.error('❌ 提交失敗:', error);
+      toast.error('加班申請提交失敗', {
+        description: error?.message || '請稍後重試'
+      });
     } finally {
       setIsSubmitting(false);
     }

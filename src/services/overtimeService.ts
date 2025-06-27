@@ -10,7 +10,7 @@ export const overtimeService = {
     return overtimeApiService.getOvertimeTypes();
   },
 
-  // 提交加班申請
+  // 提交加班申請 - 統一業務邏輯，移除硬編碼邏輯
   async submitOvertimeRequest(formData: OvertimeFormData): Promise<string> {
     // 計算加班時數
     const hours = overtimeValidationService.calculateOvertimeHours(formData.start_time, formData.end_time);
@@ -18,9 +18,6 @@ export const overtimeService = {
     // 獲取當前登入用戶的實際ID
     const currentUserId = await overtimeValidationService.getCurrentUserId();
     
-    // 檢查是否可以自動核准
-    const canAutoApprove = await overtimeValidationService.checkAutoApprovalEligibility(currentUserId);
-
     const requestData = {
       staff_id: currentUserId,
       user_id: currentUserId,
@@ -30,66 +27,82 @@ export const overtimeService = {
       end_time: formData.end_time,
       hours,
       reason: formData.reason,
-      // 只有具備管理權限且有下屬的用戶才能自動核准
-      status: canAutoApprove ? 'approved' as const : 'pending' as const,
+      status: 'pending' as const, // 讓觸發器決定是否自動核准
       approval_level: 1
     };
 
     const requestId = await overtimeApiService.createOvertimeRequest(requestData);
 
-    // 根據審核結果發送對應通知
-    if (canAutoApprove) {
-      await overtimeNotificationService.createOvertimeNotification(
-        requestId, 
-        '加班申請已自動核准', 
-        '您的加班申請已自動核准（主管權限）'
-      );
-      console.log('✅ 主管加班申請已自動核准 - 申請ID:', requestId);
-    } else {
-      await overtimeNotificationService.createOvertimeNotification(
-        requestId, 
-        '加班申請已提交', 
-        '您的加班申請已提交，等待審核'
-      );
-      console.log('📋 一般員工加班申請已提交，等待審核 - 申請ID:', requestId);
-    }
+    // 發送提交通知
+    await overtimeNotificationService.createOvertimeNotification(
+      requestId, 
+      '加班申請已提交', 
+      '您的加班申請已提交，系統將自動分配審核流程'
+    );
+    
+    console.log('✅ 加班申請已提交 - 申請ID:', requestId);
 
     return requestId;
   },
 
-  // 獲取用戶的加班申請
+  // 獲取用戶的加班申請 - 統一查詢介面
   async getUserOvertimeRequests(userId?: string): Promise<OvertimeRequest[]> {
     return overtimeApiService.getUserOvertimeRequests(userId);
   },
 
-  // 獲取待審核的加班申請
-  async getPendingOvertimeRequests(): Promise<OvertimeRequest[]> {
-    return overtimeApiService.getPendingOvertimeRequests();
+  // 獲取待審核的加班申請 - 支援權限檢查
+  async getPendingOvertimeRequests(userId?: string): Promise<OvertimeRequest[]> {
+    return overtimeApiService.getPendingOvertimeRequests(userId);
   },
 
-  // 審核加班申請
-  async approveOvertimeRequest(requestId: string, action: 'approve' | 'reject', comment?: string): Promise<void> {
+  // 審核加班申請 - 統一審核邏輯
+  async approveOvertimeRequest(
+    requestId: string, 
+    action: 'approve' | 'reject', 
+    comment?: string,
+    approverId?: string
+  ): Promise<void> {
     const status = action === 'approve' ? 'approved' : 'rejected';
     
+    // 獲取審核人資訊
+    let approverInfo;
+    if (approverId) {
+      approverInfo = await overtimeApiService.getStaffInfo(approverId);
+    } else {
+      const currentUserId = await overtimeValidationService.getCurrentUserId();
+      approverInfo = await overtimeApiService.getStaffInfo(currentUserId);
+    }
+
     await overtimeApiService.updateOvertimeRequestStatus(
       requestId, 
       status, 
-      action === 'reject' ? comment : undefined
+      action === 'reject' ? comment : undefined,
+      approverInfo ? {
+        id: approverInfo.id,
+        name: approverInfo.name
+      } : undefined,
+      comment
     );
 
-    // 創建審核記錄
-    await overtimeApiService.createApprovalRecord({
-      overtime_request_id: requestId,
-      approver_name: '系統管理員', // 提供預設審核人名稱
-      level: 1,
-      status: action === 'approve' ? 'approved' : 'rejected',
-      approval_date: new Date().toISOString(),
-      comment
-    });
-
-    // 發送通知
+    // 發送審核結果通知
     const message = action === 'approve' ? '您的加班申請已通過審核' : '您的加班申請已被拒絕';
     await overtimeNotificationService.createOvertimeNotification(requestId, '加班申請審核結果', message);
+    
+    console.log(`✅ 加班申請審核完成: ${action} - 申請ID: ${requestId}`);
+  },
+
+  // 檢查用戶權限 - 統一權限檢查介面
+  async checkUserPermission(userId: string, permission: string): Promise<boolean> {
+    return overtimeValidationService.checkUserPermissions(userId, permission);
+  },
+
+  // 獲取用戶審核申請 - 新增功能
+  async getUserApprovalRequests(userId: string): Promise<OvertimeRequest[]> {
+    const requests = await overtimeValidationService.getUserApprovalRequests(userId);
+    return requests.map(item => ({
+      ...item,
+      status: item.status as 'pending' | 'approved' | 'rejected' | 'cancelled'
+    }));
   },
 
   // 創建通知

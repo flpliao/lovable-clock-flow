@@ -32,8 +32,9 @@ const OvertimeHistory: React.FC = () => {
       setIsLoading(true);
       console.log('🔍 載入加班歷史記錄...');
       
-      // 使用預設用戶ID或當前用戶ID
-      const userId = currentUser?.id || '550e8400-e29b-41d4-a716-446655440001';
+      // 使用統一的用戶ID獲取邏輯
+      const { overtimeValidationService } = await import('@/services/overtime/overtimeValidationService');
+      const userId = await overtimeValidationService.getCurrentUserId();
       console.log('👤 當前用戶ID:', userId);
       
       const history = await overtimeService.getUserOvertimeRequests(userId);
@@ -154,7 +155,6 @@ const OvertimeHistory: React.FC = () => {
           </Select>
         </div>
         
-        {/* 重新載入按鈕 */}
         <div className="mt-4 flex justify-end">
           <Button 
             onClick={loadOvertimeHistory}
@@ -168,18 +168,7 @@ const OvertimeHistory: React.FC = () => {
 
       {/* 記錄列表 */}
       <div className="space-y-4">
-        {isLoading ? (
-          <div className="space-y-4">
-            <div className="animate-pulse">
-              <div className="h-8 bg-white/20 rounded mb-4"></div>
-              <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-32 bg-white/20 rounded"></div>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : filteredRequests.length === 0 ? (
+        {filteredRequests.length === 0 ? (
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-8 text-center">
             <div className="text-white/60 mb-4">
               <Calendar className="h-12 w-12 mx-auto mb-4" />
@@ -244,9 +233,23 @@ const OvertimeHistory: React.FC = () => {
                     </div>
                   )}
 
+                  {request.approval_comment && (
+                    <div>
+                      <div className="text-sm text-green-300 mb-1">審核意見</div>
+                      <div className="text-green-200 text-sm bg-green-500/20 p-2 rounded-lg border border-green-300/30">
+                        {request.approval_comment}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="pt-2 border-t border-white/20">
                     <div className="text-xs text-white/60">
                       申請時間：{new Date(request.created_at).toLocaleString('zh-TW')}
+                      {request.approval_date && (
+                        <span className="ml-4">
+                          審核時間：{new Date(request.approval_date).toLocaleString('zh-TW')}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

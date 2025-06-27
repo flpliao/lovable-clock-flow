@@ -1,9 +1,13 @@
-
+import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckInRecord } from '@/types';
+import { Tables } from '@/integrations/supabase/types';
+
+// 使用資料庫的實際類型定義
+type CheckInRecordDB = Tables<'check_in_records'>;
 
 export const useTodayCheckInRecords = () => {
-  const getTodayCheckInRecords = async (userId?: string) => {
+  const getTodayCheckInRecords = useCallback(async (userId?: string) => {
     try {
       if (!userId) {
         console.log('No userId provided for getTodayCheckInRecords');
@@ -44,10 +48,10 @@ export const useTodayCheckInRecords = () => {
         return { checkIn: undefined, checkOut: undefined };
       }
 
-      const checkInRecord = data.find((record: any) => record.action === 'check-in');
-      const checkOutRecord = data.find((record: any) => record.action === 'check-out');
+      const checkInRecord = data.find((record: CheckInRecordDB) => record.action === 'check-in');
+      const checkOutRecord = data.find((record: CheckInRecordDB) => record.action === 'check-out');
 
-      const formatRecord = (record: any): CheckInRecord | undefined => {
+      const formatRecord = (record: CheckInRecordDB): CheckInRecord | undefined => {
         if (!record) return undefined;
         
         return {
@@ -79,7 +83,7 @@ export const useTodayCheckInRecords = () => {
       // 不拋出錯誤，返回空結果
       return { checkIn: undefined, checkOut: undefined };
     }
-  };
+  }, []); // 空依賴陣列，因為這個函數不依賴任何外部變數
 
   return {
     getTodayCheckInRecords

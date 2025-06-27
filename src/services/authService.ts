@@ -71,12 +71,18 @@ export class AuthService {
     try {
       console.log('🔍 從會話中獲取用戶資料:', email);
       
-      // 從 staff 表格獲取完整的用戶資料
-      const { data: staffData, error: staffError } = await supabase
+      // 從 staff 表格獲取完整的用戶資料，添加超時保護
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('數據庫查詢超時')), 10000)
+      );
+      
+      const staffQueryPromise = supabase
         .from('staff')
         .select('*')
         .eq('email', email)
         .single();
+
+      const { data: staffData, error: staffError } = await Promise.race([staffQueryPromise, timeoutPromise]) as any;
 
       if (staffError || !staffData) {
         console.log('⚠️ 無法載入員工資料，使用預設資料');
@@ -151,9 +157,13 @@ export class AuthService {
       userRole = 'admin';
       console.log('🔐 廖俊雄最高管理員權限');
     } else if (staffData.role_id && staffData.role_id !== 'user') {
-      // 基於 role_id 查詢後台角色權限
+      // 基於 role_id 查詢後台角色權限，添加超時保護
       try {
-        const { data: roleInfo } = await supabase
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('權限查詢超時')), 5000)
+        );
+        
+        const roleQueryPromise = supabase
           .from('staff_roles')
           .select(`
             *,
@@ -170,6 +180,8 @@ export class AuthService {
           `)
           .eq('id', staffData.role_id)
           .single();
+
+        const { data: roleInfo } = await Promise.race([roleQueryPromise, timeoutPromise]) as any;
 
         if (roleInfo && roleInfo.role_permissions && roleInfo.role_permissions.length > 0) {
           const hasSystemManage = roleInfo.role_permissions?.some((rp: any) => 
@@ -188,6 +200,8 @@ export class AuthService {
         }
       } catch (error) {
         console.error('❌ 查詢角色權限失敗:', error);
+        // 權限查詢失敗時，使用預設的 user 權限，不影響登入流程
+        userRole = 'user';
       }
     }
 

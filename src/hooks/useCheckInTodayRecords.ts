@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useSupabaseCheckIn } from './useSupabaseCheckIn';
 import { CheckInRecord } from '@/types';
@@ -24,10 +23,12 @@ export const useCheckInTodayRecords = (userId: string) => {
     }
   }, [userId, getTodayCheckInRecords]);
 
-  // 初始載入
+  // 初始載入 - 只在 userId 改變時執行
   useEffect(() => {
-    loadTodayRecords();
-  }, [loadTodayRecords]);
+    if (userId) {
+      loadTodayRecords();
+    }
+  }, [userId]); // 移除 loadTodayRecords 依賴，避免無限迴圈
 
   // 判斷當前應該進行的動作類型
   const actionType: 'check-in' | 'check-out' = todayRecords.checkIn && !todayRecords.checkOut ? 'check-out' : 'check-in';

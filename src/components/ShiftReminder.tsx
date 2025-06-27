@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -44,7 +43,7 @@ const ShiftReminder: React.FC = () => {
     };
 
     checkTodayRecords();
-  }, [currentUser?.id, getTodayCheckInRecords]);
+  }, [currentUser?.id]);
 
   useEffect(() => {
     // 只有在沒有顯示過提醒且使用者已登入的情況下才檢查

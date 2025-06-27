@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback, useRef } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useCheckInRecords } from './useCheckInRecords';

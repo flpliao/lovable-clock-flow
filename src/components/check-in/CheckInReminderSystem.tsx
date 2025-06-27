@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
@@ -208,7 +207,7 @@ const CheckInReminderSystem: React.FC = () => {
         intervalRef.current = null;
       }
     };
-  }, [todaySchedule, reminderSettings, currentUser?.id, getTodayCheckInRecords, toast, reminderCount, lastReminderTime]);
+  }, [todaySchedule, reminderSettings, currentUser?.id, toast, reminderCount, lastReminderTime]);
 
   // 重置提醒計數器（每天重置）
   useEffect(() => {

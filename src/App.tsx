@@ -9,6 +9,7 @@ import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
 import Header from '@/components/Header';
 import Index from './pages/Index';
 import Login from './pages/Login';
+import MagicLinkLogin from './pages/MagicLinkLogin';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -46,6 +47,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/magic-link" element={<MagicLinkLogin />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />

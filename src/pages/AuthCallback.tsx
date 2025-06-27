@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,8 +28,36 @@ const AuthCallback = () => {
           fullHash: window.location.hash
         });
 
-        // 檢查是否為密碼重設回調
-        if (type === 'recovery' && accessToken && refreshToken) {
+        // 檢查是否為 Magic Link 登入回調
+        if (type === 'magiclink' && accessToken && refreshToken) {
+          console.log('🪄 處理 Magic Link 登入回調');
+          
+          // 使用 access_token 和 refresh_token 設置會話
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+
+          if (error) {
+            console.error('❌ Magic Link 設置會話失敗:', error);
+            throw error;
+          }
+
+          if (data.session) {
+            console.log('✅ Magic Link 登入成功');
+            console.log('👤 用戶:', data.session.user.email);
+            
+            toast({
+              title: 'Magic Link 登入成功',
+              description: '歡迎回來！您已成功登入。',
+            });
+            
+            // 重定向到主頁面
+            navigate('/', { replace: true });
+          } else {
+            throw new Error('無法建立會話');
+          }
+        } else if (type === 'recovery' && accessToken && refreshToken) {
           console.log('🔐 處理密碼重設回調');
           
           // 使用 access_token 和 refresh_token 設置會話
@@ -53,7 +80,6 @@ const AuthCallback = () => {
               description: '請設定您的新密碼',
             });
             
-            // 重定向到重設密碼頁面，並傳遞必要的參數
             navigate('/reset-password?verified=true', { replace: true });
           } else {
             throw new Error('無法建立會話');

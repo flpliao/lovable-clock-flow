@@ -29,11 +29,11 @@ const ForgotPasswordForm: React.FC = () => {
     
     console.log('🔐 開始 Supabase Auth 密碼重設流程');
     console.log('📧 目標郵件:', email);
-    console.log('🔗 重定向 URL:', `${window.location.origin}/auth/callback`);
+    console.log('🔗 重定向 URL:', `${window.location.origin}/reset-password`);
     
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) {

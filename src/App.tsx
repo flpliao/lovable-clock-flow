@@ -79,6 +79,7 @@ function App() {
               <Route path="/overtime-request-page" element={<OvertimeRequestPage />} />
               <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
               <Route path="/company-announcements" element={<CompanyAnnouncements />} />
+              <Route path="/auth/reset-password" element={<ResetPassword />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />

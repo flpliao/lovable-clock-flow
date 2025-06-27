@@ -100,52 +100,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log('📦 恢復已存儲的用戶資料:', storedUser.name);
         setCurrentUser(storedUser);
         setIsUserLoaded(true);
-        
-        // 如果當前在 auth/callback 頁面，重定向到首頁
-        if (window.location.pathname === '/auth/callback') {
-          console.log('🔄 從 auth/callback 重定向到首頁');
-          navigate('/', { replace: true });
-        }
+        navigate('/', { replace: true });
         return;
-      }
-
-      // 如果沒有存儲的用戶資料，嘗試從 staff 表格獲取
-      console.log('🔍 從資料庫獲取用戶資料');
-      const result = await AuthService.authenticate(session.user.email, ''); // 使用空密碼，因為已有會話
-      
-      if (result.success && result.user) {
-        console.log('✅ 成功獲取用戶資料:', result.user.name);
-        // 將 AuthUser 轉換為 User
-        const user = convertAuthUserToUser(result.user);
-        setCurrentUser(user);
-        
-        // 登入成功後重定向到首頁
-        if (window.location.pathname === '/auth/callback') {
-          console.log('🔄 登入成功，從 auth/callback 重定向到首頁');
-          setTimeout(() => {
-            navigate('/', { replace: true });
-          }, 500);
-        }
-      } else {
-        // 如果無法從資料庫獲取，使用會話中的基本資料
-        console.log('⚠️ 無法從資料庫獲取用戶資料，使用會話資料');
-        const fallbackUser: User = {
-          id: session.user.id,
-          name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '用戶',
-          position: '員工',
-          department: '一般',
-          onboard_date: new Date().toISOString().split('T')[0],
-          role: 'user'
-        };
-        setCurrentUser(fallbackUser);
-        
-        // 登入成功後重定向到首頁
-        if (window.location.pathname === '/auth/callback') {
-          console.log('🔄 使用備用用戶資料登入成功，從 auth/callback 重定向到首頁');
-          setTimeout(() => {
-            navigate('/', { replace: true });
-          }, 500);
-        }
       }
     } catch (error) {
       console.error('❌ 處理用戶登入失敗:', error);

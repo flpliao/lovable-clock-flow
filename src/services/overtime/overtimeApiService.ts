@@ -36,11 +36,15 @@ export const overtimeApiService = {
         ),
         overtime_approval_records (
           id,
+          overtime_request_id,
+          approver_id,
           approver_name,
           level,
           status,
           approval_date,
-          comment
+          comment,
+          created_at,
+          updated_at
         )
       `)
       .order('created_at', { ascending: false });
@@ -83,11 +87,15 @@ export const overtimeApiService = {
         ),
         overtime_approval_records (
           id,
+          overtime_request_id,
+          approver_id,
           approver_name,
           level,
           status,
           approval_date,
-          comment
+          comment,
+          created_at,
+          updated_at
         )
       `)
       .eq('status', 'pending')

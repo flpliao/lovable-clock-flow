@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Key, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { PasswordValidationService } from '@/services/passwordValidationService';
 import {
   Card,
   CardContent,
@@ -16,7 +16,7 @@ import {
 
 interface PasswordManagementCardProps {
   managingOwnAccount: boolean;
-  onPasswordChange: (currentPassword: string, newPassword: string) => Promise<void>;
+  onPasswordChange?: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
 const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
@@ -34,6 +34,35 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!currentPassword.trim()) {
+      toast({
+        title: "請輸入當前密碼",
+        description: "必須輸入當前密碼以驗證身份",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // 驗證當前密碼
+    try {
+      const isValid = await PasswordValidationService.validateCurrentPassword(currentPassword);
+      if (!isValid) {
+        toast({
+          title: "當前密碼錯誤",
+          description: "請輸入正確的當前密碼",
+          variant: "destructive"
+        });
+        return;
+      }
+    } catch (error) {
+      toast({
+        title: "驗證錯誤",
+        description: "驗證當前密碼時發生錯誤",
+        variant: "destructive"
+      });
+      return;
+    }
     
     if (!newPassword.trim()) {
       toast({
@@ -65,9 +94,16 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
     setIsSubmitting(true);
     
     try {
-      // 對於 Supabase Auth，我們不需要當前密碼來更新密碼
-      // 因為用戶已經通過認證了
-      await onPasswordChange('', newPassword);
+      // 使用自定義的 onPasswordChange 或預設的 Supabase 更新方法
+      if (onPasswordChange) {
+        await onPasswordChange(currentPassword, newPassword);
+      } else {
+        // 使用 Supabase Auth API 更新密碼
+        const result = await PasswordValidationService.updatePassword(newPassword);
+        if (!result.success) {
+          throw new Error(result.error || '密碼更新失敗');
+        }
+      }
       
       // 重設表單
       setCurrentPassword('');
@@ -76,9 +112,19 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
       setShowCurrentPassword(false);
       setShowNewPassword(false);
       setShowConfirmPassword(false);
+      
+      toast({
+        title: "密碼更新成功",
+        description: "您的密碼已成功更新",
+      });
+      
     } catch (error) {
-      // 錯誤處理已在 hook 中完成
       console.error('Password update failed:', error);
+      toast({
+        title: "更新失敗",
+        description: error instanceof Error ? error.message : "密碼更新失敗",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -92,12 +138,40 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
           <CardTitle>更改密碼</CardTitle>
         </div>
         <CardDescription>
-          更新您的 Supabase 帳號密碼
+          更新您的帳號密碼，需要先驗證當前密碼
         </CardDescription>
       </CardHeader>
       <form onSubmit={handlePasswordChange}>
         <CardContent>
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="current-password">當前密碼</Label>
+              <div className="relative">
+                <Input
+                  id="current-password"
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="請輸入當前密碼"
+                  disabled={isSubmitting}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  disabled={isSubmitting}
+                >
+                  {showCurrentPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            
             <div className="space-y-2">
               <Label htmlFor="new-password">新密碼</Label>
               <div className="relative">
@@ -165,7 +239,7 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
         <CardFooter>
           <Button 
             type="submit" 
-            disabled={isSubmitting || !newPassword.trim() || !confirmPassword.trim()}
+            disabled={isSubmitting || !currentPassword.trim() || !newPassword.trim() || !confirmPassword.trim()}
             className="w-full md:w-auto"
           >
             {isSubmitting ? '更新中...' : '更新密碼'}

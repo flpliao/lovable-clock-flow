@@ -29,6 +29,8 @@ const ForgotPasswordForm: React.FC = () => {
     setIsLoading(true);
     
     console.log('🔐 開始 Supabase Auth 密碼重設流程');
+    console.log('📧 目標郵件:', email);
+    console.log('🔗 重定向 URL:', `${window.location.origin}/reset-password`);
     
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -37,6 +39,11 @@ const ForgotPasswordForm: React.FC = () => {
 
       if (error) {
         console.error('❌ Supabase Auth 密碼重設失敗:', error);
+        console.error('錯誤詳情:', {
+          message: error.message,
+          status: error.status,
+          name: error.name
+        });
         
         let errorMessage = '發送重設郵件失敗，請稍後再試';
         
@@ -44,6 +51,10 @@ const ForgotPasswordForm: React.FC = () => {
           errorMessage = '請輸入有效的電子郵件地址';
         } else if (error.message.includes('Email not confirmed')) {
           errorMessage = '此電子郵件尚未確認，請先完成註冊流程';
+        } else if (error.message.includes('For security purposes')) {
+          errorMessage = '為了安全考量，請稍後再試';
+        } else if (error.message.includes('rate limit')) {
+          errorMessage = '請求過於頻繁，請稍後再試';
         }
         
         toast({
@@ -89,6 +100,15 @@ const ForgotPasswordForm: React.FC = () => {
           <p className="text-sm text-white/80 mt-4">
             請檢查您的郵箱（包括垃圾郵件資料夾），並點擊連結重設密碼。
           </p>
+          <div className="mt-4 p-4 bg-white/10 rounded-lg text-xs text-white/70">
+            <p className="font-medium mb-2">注意事項：</p>
+            <ul className="text-left space-y-1">
+              <li>• 郵件可能需要幾分鐘才會送達</li>
+              <li>• 請檢查垃圾郵件資料夾</li>
+              <li>• 重設連結有效期為 1 小時</li>
+              <li>• 如未收到郵件，請聯繫系統管理員</li>
+            </ul>
+          </div>
         </div>
         
         <Button
@@ -129,8 +149,11 @@ const ForgotPasswordForm: React.FC = () => {
         {isLoading ? '發送中...' : '發送重設郵件'}
       </Button>
       
-      <div className="text-center text-sm text-white/80">
-        使用 Supabase Auth 系統進行安全的密碼重設
+      <div className="text-center text-sm text-white/80 space-y-2">
+        <p>使用 Supabase Auth 系統進行安全的密碼重設</p>
+        <p className="text-xs text-white/60">
+          如果您未收到郵件，請檢查垃圾郵件資料夾或聯繫系統管理員
+        </p>
       </div>
     </form>
   );

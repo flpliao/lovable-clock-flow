@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AnnualLeaveBalance } from '@/types';
 import { User, UserContextType } from './user/types';
 import { createRoleChecker } from './user/roleUtils';
@@ -15,6 +16,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [annualLeaveBalance, setAnnualLeaveBalance] = useState<AnnualLeaveBalance | null>(null);
   const [isUserLoaded, setIsUserLoaded] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // 檢查是否已驗證登入
   const isAuthenticated = currentUser !== null;
@@ -98,6 +100,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log('📦 恢復已存儲的用戶資料:', storedUser.name);
         setCurrentUser(storedUser);
         setIsUserLoaded(true);
+        
+        // 如果當前在 auth/callback 頁面，重定向到首頁
+        if (window.location.pathname === '/auth/callback') {
+          console.log('🔄 從 auth/callback 重定向到首頁');
+          navigate('/', { replace: true });
+        }
         return;
       }
 
@@ -110,6 +118,14 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // 將 AuthUser 轉換為 User
         const user = convertAuthUserToUser(result.user);
         setCurrentUser(user);
+        
+        // 登入成功後重定向到首頁
+        if (window.location.pathname === '/auth/callback') {
+          console.log('🔄 登入成功，從 auth/callback 重定向到首頁');
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 500);
+        }
       } else {
         // 如果無法從資料庫獲取，使用會話中的基本資料
         console.log('⚠️ 無法從資料庫獲取用戶資料，使用會話資料');
@@ -122,6 +138,14 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           role: 'user'
         };
         setCurrentUser(fallbackUser);
+        
+        // 登入成功後重定向到首頁
+        if (window.location.pathname === '/auth/callback') {
+          console.log('🔄 使用備用用戶資料登入成功，從 auth/callback 重定向到首頁');
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 500);
+        }
       }
     } catch (error) {
       console.error('❌ 處理用戶登入失敗:', error);
@@ -135,6 +159,14 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         role: 'user'
       };
       setCurrentUser(fallbackUser);
+      
+      // 即使發生錯誤也要重定向
+      if (window.location.pathname === '/auth/callback') {
+        console.log('🔄 發生錯誤但仍重定向到首頁');
+        setTimeout(() => {
+          navigate('/', { replace: true });
+        }, 500);
+      }
     } finally {
       setIsUserLoaded(true);
     }

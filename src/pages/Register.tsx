@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { User } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
-import LoginForm from '@/components/auth/LoginForm';
+import RegisterForm from '@/components/auth/RegisterForm';
 import { useToast } from '@/hooks/use-toast';
 
-const Login = () => {
+const Register = () => {
   const { currentUser, isAuthenticated, isUserLoaded } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -71,23 +71,14 @@ const Login = () => {
             <h2 className="text-2xl font-bold text-white drop-shadow-md">
               考勤系統
             </h2>
-            <p className="text-white/80 mt-2">請登入您的帳號</p>
+            <p className="text-white/80 mt-2">建立您的帳號</p>
           </div>
 
-          <LoginForm />
-
-          <div className="text-center">
-            <Link 
-              to="/register" 
-              className="text-sm text-white/80 hover:text-white underline"
-            >
-              還沒有帳號？立即註冊
-            </Link>
-          </div>
+          <RegisterForm />
         </div>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default Register;

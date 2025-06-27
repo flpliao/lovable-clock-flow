@@ -9,6 +9,7 @@ import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
 import Header from '@/components/Header';
 import Index from './pages/Index';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import PersonnelManagement from './pages/PersonnelManagement';
 import Scheduling from './pages/Scheduling';
 import ScheduleStatistics from './pages/ScheduleStatistics';
@@ -42,6 +43,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
                 <Route path="/personnel-management" element={<PersonnelManagement />} />
                 <Route path="/scheduling" element={<Scheduling />} />
                 <Route path="/schedule-statistics" element={<ScheduleStatistics />} />

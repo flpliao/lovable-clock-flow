@@ -1822,6 +1822,15 @@ export type Database = {
         Args: { hire_date: string } | { hire_date: string; target_year: number }
         Returns: number
       }
+      check_user_staff_sync: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_auth_users: number
+          total_staff_records: number
+          synced_records: number
+          unsynced_auth_users: number
+        }[]
+      }
       create_notification: {
         Args: {
           p_user_id: string
@@ -1888,6 +1897,10 @@ export type Database = {
       }
       mark_announcement_as_read: {
         Args: { user_uuid: string; announcement_uuid: string }
+        Returns: undefined
+      }
+      sync_users_to_staff: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       toggle_table_rls: {

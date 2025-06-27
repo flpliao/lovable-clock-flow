@@ -44,8 +44,8 @@ import NotFound from '@/pages/NotFound';
 
 function App() {
   return (
-    <UserProvider>
-      <Router>
+    <Router>
+      <UserProvider>
         <div className="min-h-screen bg-gray-50">
           <Header />
           <Routes>
@@ -81,8 +81,8 @@ function App() {
           </Routes>
           <Toaster />
         </div>
-      </Router>
-    </UserProvider>
+      </UserProvider>
+    </Router>
   );
 }
 

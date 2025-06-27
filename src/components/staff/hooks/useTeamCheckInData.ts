@@ -1,5 +1,5 @@
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { CheckInRecord } from '@/types';
@@ -20,51 +20,57 @@ export const useTeamCheckInData = () => {
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [allRecords, setAllRecords] = useState<CheckInRecord[]>([]);
 
-  // Check if user has permission to view this page - admin users can view
-  const hasPermission = isAdmin();
+  // 穩定化 hasPermission 檢查
+  const hasPermission = useMemo(() => {
+    return isAdmin();
+  }, [isAdmin]);
 
-  // Load check-in records from Supabase
-  useEffect(() => {
-    const loadRecords = async () => {
-      if (!hasPermission) return;
+  // 使用 useCallback 穩定化載入函數
+  const loadRecords = useCallback(async () => {
+    if (!hasPermission) return;
 
-      try {
-        const { data, error } = await supabase
-          .from('check_in_records')
-          .select('*')
-          .order('timestamp', { ascending: false });
+    try {
+      console.log('🔄 載入團隊打卡記錄...');
+      
+      const { data, error } = await supabase
+        .from('check_in_records')
+        .select('*')
+        .order('timestamp', { ascending: false });
 
-        if (error) {
-          console.error('Error loading team check-in records:', error);
-          return;
-        }
-
-        const formattedRecords = (data || []).map((record: any) => ({
-          id: record.id,
-          userId: record.user_id,
-          timestamp: record.timestamp,
-          type: record.type as 'location' | 'ip',
-          status: record.status as 'success' | 'failed',
-          action: record.action as 'check-in' | 'check-out',
-          details: {
-            latitude: record.latitude,
-            longitude: record.longitude,
-            distance: record.distance,
-            ip: record.ip_address,
-            locationName: record.location_name
-          }
-        }));
-
-        setAllRecords(formattedRecords);
-      } catch (error) {
-        console.error('載入團隊打卡記錄失敗:', error);
+      if (error) {
+        console.error('Error loading team check-in records:', error);
+        return;
       }
-    };
 
-    loadRecords();
+      const formattedRecords = (data || []).map((record: any) => ({
+        id: record.id,
+        userId: record.user_id,
+        timestamp: record.timestamp,
+        type: record.type as 'location' | 'ip',
+        status: record.status as 'success' | 'failed',
+        action: record.action as 'check-in' | 'check-out',
+        details: {
+          latitude: record.latitude,
+          longitude: record.longitude,
+          distance: record.distance,
+          ip: record.ip_address,
+          locationName: record.location_name
+        }
+      }));
+
+      console.log('✅ 團隊打卡記錄載入完成:', formattedRecords.length, '筆記錄');
+      setAllRecords(formattedRecords);
+    } catch (error) {
+      console.error('載入團隊打卡記錄失敗:', error);
+    }
   }, [hasPermission]);
 
-  // Get all departments
+  // Load check-in records from Supabase - 只在 hasPermission 改變時執行
+  useEffect(() => {
+    loadRecords();
+  }, [loadRecords]);
+
+  // Get all departments - 穩定化計算
   const departments = useMemo(() => {
     const deptSet = new Set<string>();
     staffList.forEach(staff => {
@@ -75,7 +81,7 @@ export const useTeamCheckInData = () => {
     return Array.from(deptSet);
   }, [staffList]);
 
-  // Filter staff members by department
+  // Filter staff members by department - 穩定化計算
   const filteredStaff = useMemo(() => {
     if (departmentFilter === 'all') {
       return staffList;
@@ -83,7 +89,7 @@ export const useTeamCheckInData = () => {
     return staffList.filter(staff => staff.department === departmentFilter);
   }, [staffList, departmentFilter]);
 
-  // Process check-in data
+  // Process check-in data - 穩定化計算
   const teamCheckInData = useMemo(() => {
     if (!hasPermission) return [];
 

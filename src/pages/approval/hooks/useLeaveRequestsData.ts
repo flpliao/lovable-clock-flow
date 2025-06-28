@@ -44,7 +44,7 @@ export const useLeaveRequestsData = ({
         console.error('❌ 查詢審核記錄申請失敗:', approvalError);
       }
 
-      // Query method 3: Subordinate requests
+      // Query method 3: Subordinate requests - Fix the select to get supervisor_id
       const { data: subordinateRequests, error: subordinateError } = await supabase.from('leave_requests').select(`
           *,
           approval_records (*),
@@ -71,10 +71,12 @@ export const useLeaveRequestsData = ({
 
       if (subordinateRequests) {
         subordinateRequests.forEach(request => {
-          // Fix the TypeScript error: properly access supervisor_id from staff object
-          if (request.staff && request.staff.supervisor_id === currentUser.id) {
-            if (!allRequests.some(req => req.id === request.id)) {
-              allRequests.push(request);
+          // Fix the TypeScript error: properly check if staff exists and has supervisor_id
+          if (request.staff && typeof request.staff === 'object' && !Array.isArray(request.staff)) {
+            if ((request.staff as any).supervisor_id === currentUser.id) {
+              if (!allRequests.some(req => req.id === request.id)) {
+                allRequests.push(request);
+              }
             }
           }
         });

@@ -6,7 +6,7 @@ import { RolesCacheManager } from './permissions/rolesCache';
 import { PermissionEventManager } from './permissions/eventManager';
 import { PermissionChecker } from './permissions/permissionChecker';
 
-export { UnifiedPermissionContext } from './permissions/types';
+export type { UnifiedPermissionContext } from './permissions/types';
 
 export class UnifiedPermissionService {
   private static instance: UnifiedPermissionService;

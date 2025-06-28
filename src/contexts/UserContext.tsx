@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnnualLeaveBalance } from '@/types';
@@ -77,8 +78,25 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // 嘗試從本地存儲恢復用戶資料
       const storedUser = getUserFromStorage();
       if (storedUser && storedUser.id === session.user.id) {
-        console.log('📦 恢復已存儲的用戶資料:', storedUser.name);
-        setCurrentUser(storedUser);
+        console.log('📦 恢復已存儲的用戶資料:', storedUser.name, '角色:', storedUser.role);
+        
+        // 強制從資料庫重新載入用戶資料確保最新權限
+        try {
+          const result = await AuthService.getUserFromSession(session.user.email);
+          if (result.success && result.user) {
+            console.log('✅ 從資料庫重新載入用戶資料:', result.user.name, '角色:', result.user.role);
+            const user = convertAuthUserToUser(result.user);
+            setCurrentUser(user);
+            saveUserToStorage(user);
+          } else {
+            console.log('⚠️ 使用本地存儲的用戶資料');
+            setCurrentUser(storedUser);
+          }
+        } catch (error) {
+          console.log('⚠️ 重新載入失敗，使用本地存儲的用戶資料');
+          setCurrentUser(storedUser);
+        }
+        
         setIsUserLoaded(true);
         
         // 檢查是否在 callback 頁面，如果是則重定向
@@ -94,10 +112,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // 如果沒有本地存儲資料，使用 AuthService 獲取
       const result = await AuthService.getUserFromSession(session.user.email);
       if (result.success && result.user) {
-        console.log('✅ 成功獲取用戶資料:', result.user.name);
+        console.log('✅ 成功獲取用戶資料:', result.user.name, '角色:', result.user.role);
         // 將 AuthUser 转換為 User
         const user = convertAuthUserToUser(result.user);
         setCurrentUser(user);
+        saveUserToStorage(user);
         setIsUserLoaded(true);
         
         // 檢查是否在 callback 頁面，如果是則重定向
@@ -237,6 +256,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } else {
       console.log('👤 UserProvider: 用戶登入:', currentUser.name, '權限等級:', currentUser.role);
       console.log('🆔 UserProvider: Supabase Auth 用戶ID:', currentUser.id);
+      console.log('🔐 UserProvider: 管理員權限檢查:', currentUser.role === 'admin');
       
       // 將用戶資料存儲到本地存儲
       saveUserToStorage(currentUser);

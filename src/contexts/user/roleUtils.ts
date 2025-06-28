@@ -12,19 +12,24 @@ export const createRoleChecker = (currentUser: User | null) => {
       const isLiaoJunxiong = currentUser?.name === '廖俊雄' && 
                             currentUser?.id === '550e8400-e29b-41d4-a716-446655440001';
       
-      // 檢查 role 是否為 admin（改回原本的 role 欄位）
+      // 檢查 endless640c@gmail.com 是否為管理員
+      const isEndlessAdmin = currentUser?.name === 'endless640c' || 
+                             currentUser?.id === 'ddd209be-0408-4fcc-80c9-d33e9c1042ca';
+      
+      // 檢查 role 是否為 admin
       const isRoleAdmin = currentUser?.role === 'admin';
       
-      console.log('🔐 管理員權限檢查 (使用 role):', {
+      console.log('🔐 管理員權限檢查 (更新版):', {
         userName: currentUser.name,
         userId: currentUser.id,
         role: currentUser.role,
         isLiaoJunxiong,
+        isEndlessAdmin,
         isRoleAdmin,
-        finalResult: isLiaoJunxiong || isRoleAdmin
+        finalResult: isLiaoJunxiong || isEndlessAdmin || isRoleAdmin
       });
       
-      return isLiaoJunxiong || isRoleAdmin;
+      return isLiaoJunxiong || isEndlessAdmin || isRoleAdmin;
     };
   }, [currentUser]);
 
@@ -35,7 +40,7 @@ export const createRoleChecker = (currentUser: User | null) => {
       // 基於 role 進行權限檢查
       const result = currentUser.role === 'manager' || isAdmin();
       
-      console.log('🔐 管理者權限檢查 (使用 role):', {
+      console.log('🔐 管理者權限檢查:', {
         userName: currentUser.name,
         role: currentUser.role,
         result
@@ -56,6 +61,13 @@ export const createRoleChecker = (currentUser: User | null) => {
         return true;
       }
       
+      // endless640c 也可以管理所有用戶
+      if (currentUser.name === 'endless640c' || 
+          currentUser.id === 'ddd209be-0408-4fcc-80c9-d33e9c1042ca') {
+        console.log('🔐 endless640c 管理員: 可管理所有用戶');
+        return true;
+      }
+      
       // 系統管理員可以管理所有用戶
       if (isAdmin()) {
         console.log('🔐 系統管理員: 可管理所有用戶', currentUser.name);
@@ -65,7 +77,7 @@ export const createRoleChecker = (currentUser: User | null) => {
       // 管理員或用戶管理自己
       const result = currentUser.role === 'manager' || currentUser.id === userId;
       
-      console.log('🔐 用戶管理權限檢查 (使用 role):', {
+      console.log('🔐 用戶管理權限檢查:', {
         userName: currentUser.name,
         role: currentUser.role,
         targetUserId: userId,

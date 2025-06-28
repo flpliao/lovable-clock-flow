@@ -17,11 +17,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [annualLeaveBalance, setAnnualLeaveBalance] = useState<AnnualLeaveBalance | null>(null);
   const [isUserLoaded, setIsUserLoaded] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const initializationRef = useRef(false);
   const navigate = useNavigate();
-
-  // 檢查是否已驗證登入
-  const isAuthenticated = currentUser !== null;
 
   // 從 staff 表載入用戶完整權限資料
   const loadUserFromStaffTable = async (authUser: any): Promise<User | null> => {
@@ -97,6 +95,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (staffUser) {
         console.log('✅ 使用 staff 表資料:', staffUser.name, '角色:', staffUser.role);
         setCurrentUser(staffUser);
+        setIsAuthenticated(true);
         saveUserToStorage(staffUser);
         setUserError(null);
         return;
@@ -117,6 +116,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
         
         setCurrentUser(user);
+        setIsAuthenticated(true);
         saveUserToStorage(user);
         setUserError(null);
         return;
@@ -135,11 +135,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       };
       
       setCurrentUser(fallbackUser);
+      setIsAuthenticated(true);
       saveUserToStorage(fallbackUser);
       setUserError(null);
     } catch (error) {
       console.error('❌ 處理用戶登入失敗:', error);
       setUserError('載入用戶資料失敗');
+      setIsAuthenticated(false);
     }
   }, []);
 
@@ -147,6 +149,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const handleUserLogout = useCallback(() => {
     console.log('🚪 處理用戶登出');
     setCurrentUser(null);
+    setIsAuthenticated(false);
     setAnnualLeaveBalance(null);
     setUserError(null);
     clearUserStorage();
@@ -196,6 +199,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } catch (error) {
         console.error('❌ 認證狀態變化處理錯誤:', error);
         setUserError('認證狀態處理失敗');
+        setIsAuthenticated(false);
       } finally {
         isProcessing = false;
         setIsUserLoaded(true);
@@ -224,10 +228,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }
         } else {
           console.log('❌ 未發現現有會話');
+          setIsAuthenticated(false);
         }
       } catch (error) {
         console.error('❌ 初始化認證狀態失敗:', error);
         setUserError('初始化認證失敗');
+        setIsAuthenticated(false);
       } finally {
         setIsUserLoaded(true);
       }
@@ -247,9 +253,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!currentUser) {
       setAnnualLeaveBalance(null);
       setUserError(null);
+      setIsAuthenticated(false);
       console.log('👤 UserProvider: 用戶登出，清除所有狀態');
     } else {
       console.log('👤 UserProvider: 用戶登入:', currentUser.name, '權限等級:', currentUser.role);
+      console.log('🔐 認證狀態已設定為 true');
+      setIsAuthenticated(true);
       
       // 將用戶資料存儲到本地存儲
       saveUserToStorage(currentUser);

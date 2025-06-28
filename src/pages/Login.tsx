@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User } from 'lucide-react';
@@ -17,9 +16,9 @@ const Login = () => {
     if (isUserLoaded && isAuthenticated && currentUser && !isRedirecting) {
       console.log('🔐 用戶已登入，重定向到主頁面:', currentUser.name);
       setIsRedirecting(true);
-      setTimeout(() => {
-        navigate('/', { replace: true });
-      }, 100);
+      
+      // 立即重定向
+      navigate('/', { replace: true });
     }
   }, [isUserLoaded, isAuthenticated, currentUser, navigate, isRedirecting]);
 

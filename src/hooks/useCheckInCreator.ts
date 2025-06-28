@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,15 +25,43 @@ export const useCheckInCreator = () => {
         return false;
       }
 
+      // 先確認用戶在 staff 表中存在
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('id, user_id')
+        .eq('user_id', targetUserId)
+        .maybeSingle();
+
+      if (staffError) {
+        console.error('Error checking staff record:', staffError);
+        toast({
+          title: "打卡失敗",
+          description: "無法確認員工身份",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      if (!staffData) {
+        console.error('No staff record found for user:', targetUserId);
+        toast({
+          title: "打卡失敗",
+          description: "找不到員工記錄，請聯繫管理員",
+          variant: "destructive"
+        });
+        return false;
+      }
+
       const distance = record.details.distance 
         ? Math.round(record.details.distance) 
         : null;
       
       console.log('處理後的距離:', distance);
+      console.log('使用的 staff_id:', staffData.id);
       
       const recordData = {
         user_id: targetUserId,
-        staff_id: targetUserId,
+        staff_id: staffData.id, // 使用從 staff 表查詢到的 ID
         timestamp: record.timestamp,
         type: record.type,
         status: record.status,

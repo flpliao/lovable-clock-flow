@@ -1,10 +1,11 @@
+
 import { useEffect, useCallback, useRef } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useCheckInRecords } from './useCheckInRecords';
 import { useCheckInCreator } from './useCheckInCreator';
 import { useTodayCheckInRecords } from './useTodayCheckInRecords';
 import { CheckInRecord } from '@/types';
-import { UserIdValidationService } from '@/services/userIdValidationService';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useSupabaseCheckIn = () => {
   const { currentUser } = useUser();
@@ -13,6 +14,32 @@ export const useSupabaseCheckIn = () => {
   const { getTodayCheckInRecords } = useTodayCheckInRecords();
   const initialLoadRef = useRef(false);
 
+  const validateAndGetStaffId = useCallback(async (userId: string) => {
+    try {
+      const { data: staffData, error } = await supabase
+        .from('staff')
+        .select('id, user_id, name')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error validating staff:', error);
+        return null;
+      }
+
+      if (!staffData) {
+        console.error('No staff record found for user:', userId);
+        return null;
+      }
+
+      console.log('驗證成功 - 員工資料:', staffData);
+      return staffData.id;
+    } catch (error) {
+      console.error('Staff validation failed:', error);
+      return null;
+    }
+  }, []);
+
   const createCheckInRecord = useCallback(async (record: Omit<CheckInRecord, 'id'>) => {
     if (!currentUser?.id) {
       console.error('無使用者 ID，無法建立打卡記錄');
@@ -20,8 +47,15 @@ export const useSupabaseCheckIn = () => {
     }
     
     try {
-      const validatedUserId = UserIdValidationService.validateUserId(currentUser.id);
-      const success = await createRecord(record, validatedUserId);
+      // 先驗證用戶是否存在於 staff 表中
+      const staffId = await validateAndGetStaffId(currentUser.id);
+      
+      if (!staffId) {
+        console.error('用戶驗證失敗，無法建立打卡記錄');
+        return false;
+      }
+
+      const success = await createRecord(record, currentUser.id);
       if (success) {
         // 重新載入記錄
         await refreshData();
@@ -31,7 +65,7 @@ export const useSupabaseCheckIn = () => {
       console.error('建立打卡記錄失敗:', error);
       return false;
     }
-  }, [currentUser?.id, createRecord]);
+  }, [currentUser?.id, createRecord, validateAndGetStaffId]);
 
   const getTodayRecords = useCallback(async (userId?: string) => {
     const targetUserId = userId || currentUser?.id;
@@ -41,41 +75,59 @@ export const useSupabaseCheckIn = () => {
     }
     
     try {
-      const validatedUserId = UserIdValidationService.validateUserId(targetUserId);
-      return await getTodayCheckInRecords(validatedUserId);
+      // 先驗證用戶
+      const staffId = await validateAndGetStaffId(targetUserId);
+      if (!staffId) {
+        console.error('用戶驗證失敗');
+        return { checkIn: undefined, checkOut: undefined };
+      }
+
+      return await getTodayCheckInRecords(targetUserId);
     } catch (error) {
       console.error('取得今日記錄失敗:', error);
       return { checkIn: undefined, checkOut: undefined };
     }
-  }, [currentUser?.id, getTodayCheckInRecords]);
+  }, [currentUser?.id, getTodayCheckInRecords, validateAndGetStaffId]);
 
   const refreshData = useCallback(async () => {
     if (currentUser?.id) {
       try {
-        const validatedUserId = UserIdValidationService.validateUserId(currentUser.id);
-        console.log('重新整理打卡資料，使用者 ID:', validatedUserId);
-        await loadCheckInRecords(validatedUserId);
+        // 先驗證用戶
+        const staffId = await validateAndGetStaffId(currentUser.id);
+        if (!staffId) {
+          console.error('用戶驗證失敗，無法重新整理資料');
+          return;
+        }
+
+        console.log('重新整理打卡資料，使用者 ID:', currentUser.id);
+        await loadCheckInRecords(currentUser.id);
       } catch (error) {
         console.error('重新整理資料失敗:', error);
         // 不顯示用戶錯誤提示，只記錄到控制台
       }
     }
-  }, [currentUser?.id, loadCheckInRecords]);
+  }, [currentUser?.id, loadCheckInRecords, validateAndGetStaffId]);
 
   // 手動載入記錄 - 加強錯誤處理
   const manualLoadRecords = useCallback(async () => {
     if (currentUser?.id && !loading && !initialLoadRef.current) {
       try {
-        const validatedUserId = UserIdValidationService.validateUserId(currentUser.id);
-        console.log('手動載入打卡記錄，使用者ID:', validatedUserId);
+        // 先驗證用戶
+        const staffId = await validateAndGetStaffId(currentUser.id);
+        if (!staffId) {
+          console.error('用戶驗證失敗，無法載入記錄');
+          return;
+        }
+
+        console.log('手動載入打卡記錄，使用者ID:', currentUser.id);
         initialLoadRef.current = true;
-        await loadCheckInRecords(validatedUserId);
+        await loadCheckInRecords(currentUser.id);
       } catch (error) {
         console.error('手動載入記錄失敗:', error);
         // 不顯示用戶錯誤提示，只記錄到控制台
       }
     }
-  }, [currentUser?.id, loadCheckInRecords, loading]);
+  }, [currentUser?.id, loadCheckInRecords, loading, validateAndGetStaffId]);
 
   // 當使用者改變時重置初始載入標記
   useEffect(() => {

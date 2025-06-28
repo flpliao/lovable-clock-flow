@@ -175,7 +175,7 @@ export class UnifiedPermissionService {
       return false;
     }
 
-    // 廖俊雄擁有所有權限（特殊用戶例外）
+    // 廖俊雄擁有所有權限（特殊用戶例外）- 使用正確的 Supabase Auth UID
     if (this.isLiaoJunxiong(currentUser)) {
       console.log('🔐 廖俊雄權限檢查:', permission, '✅ 允許');
       return true;
@@ -210,11 +210,12 @@ export class UnifiedPermissionService {
   }
 
   /**
-   * 檢查是否為廖俊雄
+   * 檢查是否為廖俊雄 - 使用正確的 Supabase Auth UID
    */
   private isLiaoJunxiong(user: User): boolean {
-    return user.name === '廖俊雄' && 
-           user.id === '550e8400-e29b-41d4-a716-446655440001';
+    return (user.name === '廖俊雄' && 
+            user.id === '0765138a-6f11-45f4-be07-dab965116a2d') ||
+           user?.email === 'flpliao@gmail.com';
   }
 
   /**

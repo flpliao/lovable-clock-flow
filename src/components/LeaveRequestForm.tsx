@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -39,7 +40,7 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
   // 計算天數用於驗證
   const calculatedDays = calculatedHours / 8;
   
-  // 使用驗證邏輯
+  // 使用增強的驗證邏輯，包含員工資料
   const validationResult = useLeaveFormValidation({
     leave_type: selectedLeaveType || '',
     start_date: form.watch('start_date'),
@@ -47,25 +48,20 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
     hours: calculatedHours
   });
 
-  // 模擬剩餘病假天數和已使用天數 (實際應該從後端獲取)
-  const getLeaveData = (leaveType: string) => {
-    if (leaveType === 'sick') {
-      return {
-        remainingDays: 27, // 假設還剩27天病假
-        usedDays: 3 // 假設已使用3天
-      };
-    }
-    return {
-      remainingDays: undefined,
-      usedDays: 0
-    };
-  };
+  console.log('🔍 表單驗證結果:', {
+    isValid: validationResult.isValid,
+    hasHireDate: validationResult.hasHireDate,
+    userStaffData: validationResult.userStaffData,
+    errors: validationResult.errors,
+    warnings: validationResult.warnings
+  });
 
   async function handleSubmit(data: LeaveFormValues) {
     if (!currentUser) return;
 
     // 檢查驗證結果
     if (!validationResult.isValid) {
+      console.log('❌ 表單驗證失敗，無法提交');
       return;
     }
 
@@ -76,16 +72,9 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
     console.log('請假申請提交 - 台灣時區 (UTC+8) 日期處理日誌:', {
       form_start_date: data.start_date,
       form_end_date: data.end_date,
-      form_start_date_string: data.start_date.toString(),
-      form_end_date_string: data.end_date.toString(),
-      form_start_date_iso: data.start_date.toISOString(),
-      form_end_date_iso: data.end_date.toISOString(),
       converted_start_date: localStartDate,
       converted_end_date: localEndDate,
-      taiwan_timezone: 'Asia/Taipei (UTC+8)',
-      current_time: new Date().toString(),
-      taiwan_current_time: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
-      date_picker_timezone_offset: data.start_date.getTimezoneOffset()
+      user_staff_data: validationResult.userStaffData
     });
 
     // Create the leave request - 使用處理過的本地日期
@@ -112,7 +101,7 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
       }))
     };
 
-    console.log('即將提交的請假申請（本地日期處理）:', leaveRequest);
+    console.log('即將提交的請假申請（含員工資料驗證）:', leaveRequest);
 
     const success = await createLeaveRequest(leaveRequest);
     
@@ -134,12 +123,58 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
           請假申請
         </h2>
         <p className="text-white/80 font-medium drop-shadow-sm">
-          請填寫以下資訊提交您的請假申請（確保使用本地日期）
+          請填寫以下資訊提交您的請假申請
         </p>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          
+          {/* 員工資料狀態顯示 */}
+          {validationResult.userStaffData && (
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+              <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">員工資料</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-white">
+                    <span>姓名：</span>
+                    <span className="font-medium">{validationResult.userStaffData.name}</span>
+                  </div>
+                  <div className="flex justify-between text-white">
+                    <span>部門：</span>
+                    <span className="font-medium">{validationResult.userStaffData.department}</span>
+                  </div>
+                  <div className="flex justify-between text-white">
+                    <span>職位：</span>
+                    <span className="font-medium">{validationResult.userStaffData.position}</span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-white">
+                    <span>入職日期：</span>
+                    <span className={`font-medium ${validationResult.hasHireDate ? 'text-green-300' : 'text-orange-300'}`}>
+                      {validationResult.hasHireDate ? validationResult.userStaffData.hire_date : '未設定'}
+                    </span>
+                  </div>
+                  {validationResult.hasHireDate && (
+                    <>
+                      <div className="flex justify-between text-white">
+                        <span>年資：</span>
+                        <span className="font-medium">{validationResult.userStaffData.yearsOfService}</span>
+                      </div>
+                      <div className="flex justify-between text-white">
+                        <span>特休餘額：</span>
+                        <span className="font-medium text-green-300">
+                          {validationResult.userStaffData.remainingAnnualLeaveDays} / {validationResult.userStaffData.totalAnnualLeaveDays} 天
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* 日期選擇區塊 */}
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
             <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假日期</h3>
@@ -156,15 +191,17 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
               form={form}
               selectedLeaveType={selectedLeaveType}
               calculatedDays={calculatedDays}
+              hasHireDate={validationResult.hasHireDate}
+              userStaffData={validationResult.userStaffData}
             />
           </div>
 
-          {/* 請假類型詳細資訊 - 移到請假類型選擇下面 */}
+          {/* 請假類型詳細資訊 */}
           {selectedLeaveType && (
             <LeaveTypeDetailCard 
               leaveType={selectedLeaveType}
-              remainingDays={getLeaveData(selectedLeaveType).remainingDays}
-              usedDays={getLeaveData(selectedLeaveType).usedDays}
+              remainingDays={validationResult.userStaffData?.remainingAnnualLeaveDays}
+              usedDays={validationResult.userStaffData?.usedAnnualLeaveDays || 0}
             />
           )}
 

@@ -29,7 +29,6 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
   const [calculatedHours, setCalculatedHours] = useState<number>(0);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [staffHireDate, setStaffHireDate] = useState<string | null>(null);
-  const [userStaffData, setUserStaffData] = useState<any>(null);
   const [annualLeaveData, setAnnualLeaveData] = useState<{
     totalDays: number;
     usedDays: number;
@@ -62,14 +61,13 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         // 從 staff 表取得員工的入職日期
         const { data: staffData, error: staffError } = await supabase
           .from('staff')
-          .select('hire_date, name, department, position')
+          .select('hire_date')
           .eq('id', currentUser.id)
           .single();
 
-        if (staffError || !staffData) {
-          console.log('No staff data found:', staffError);
+        if (staffError || !staffData?.hire_date) {
+          console.log('No hire date found in staff table:', staffError);
           setStaffHireDate(null);
-          setUserStaffData(null);
           return;
         }
 
@@ -77,25 +75,8 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         setStaffHireDate(hireDate);
         
         // 計算特休天數
-        let totalDays = 0;
-        let yearsOfService = '0年';
-        
-        if (hireDate) {
-          const hireDateObj = new Date(hireDate);
-          totalDays = calculateAnnualLeaveDays(hireDateObj);
-          
-          const now = new Date();
-          const diffTime = Math.abs(now.getTime() - hireDateObj.getTime());
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          const years = Math.floor(diffDays / 365);
-          const months = Math.floor((diffDays % 365) / 30);
-          
-          if (years > 0) {
-            yearsOfService = months > 0 ? `${years}年${months}個月` : `${years}年`;
-          } else {
-            yearsOfService = `${months}個月`;
-          }
-        }
+        const hireDateObj = new Date(hireDate);
+        const totalDays = calculateAnnualLeaveDays(hireDateObj);
         
         // 計算已使用的特休天數
         const currentYear = new Date().getFullYear();
@@ -123,18 +104,6 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           remainingDays
         });
 
-        // 設定完整的員工資料物件
-        setUserStaffData({
-          name: staffData.name,
-          department: staffData.department,
-          position: staffData.position,
-          hire_date: hireDate,
-          yearsOfService,
-          totalAnnualLeaveDays: totalDays,
-          usedAnnualLeaveDays: usedDays,
-          remainingAnnualLeaveDays: remainingDays
-        });
-
         console.log('Staff data loaded:', {
           hireDate,
           totalDays,
@@ -144,7 +113,6 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       } catch (error) {
         console.error('Error loading staff data:', error);
         setStaffHireDate(null);
-        setUserStaffData(null);
         setAnnualLeaveData(null);
       }
     };
@@ -340,7 +308,6 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
             calculatedHours={calculatedHours}
             validationError={validationError}
             hasHireDate={hasHireDate}
-            userStaffData={userStaffData}
           />
           
           {/* 請假類型詳細資訊卡片 - 當選擇了請假類型時顯示 */}

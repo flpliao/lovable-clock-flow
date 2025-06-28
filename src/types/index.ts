@@ -9,7 +9,6 @@ export interface User {
   supervisor_id?: string; // 新增主管ID欄位
   role?: 'user' | 'admin' | 'manager';
   gender?: 'male' | 'female'; // 新增性別欄位用於生理假驗證
-  email?: string; // 新增 email 欄位
   // 年資相關欄位（前端計算顯示用）
   years_of_service?: number;
   annual_leave_entitlement?: number; // 特休總天數

@@ -51,16 +51,14 @@ export const useLeaveFormValidation = (formData: LeaveFormData): ValidationResul
     }
 
     try {
-      // 載入員工資料 - 現在會受到更新的 RLS 政策保護
+      // 載入員工資料
       if (currentUser?.id) {
         console.log('🔍 載入員工資料用於驗證，用戶ID:', currentUser.id);
-        console.log('🔐 使用更新的 RLS 政策 (基於 role)');
-        
         userStaffData = await loadUserStaffData(currentUser.id);
         
         if (userStaffData) {
           hasHireDate = !!userStaffData.hire_date;
-          console.log('✅ 員工資料載入成功 (RLS 驗證通過):', {
+          console.log('✅ 員工資料載入成功:', {
             name: userStaffData.name,
             hire_date: userStaffData.hire_date,
             hasHireDate,
@@ -68,7 +66,7 @@ export const useLeaveFormValidation = (formData: LeaveFormData): ValidationResul
             remainingAnnualLeaveDays: userStaffData.remainingAnnualLeaveDays
           });
         } else {
-          console.log('⚠️ 找不到員工資料或 RLS 權限不足');
+          console.log('⚠️ 找不到員工資料');
           errors.push('找不到員工資料，請聯繫管理員');
         }
       }
@@ -128,8 +126,8 @@ export const useLeaveFormValidation = (formData: LeaveFormData): ValidationResul
         warnings.push('申請過去日期的請假可能需要特殊審核');
       }
     } catch (error) {
-      console.error('❌ 驗證請假申請失敗 (可能是 RLS 權限問題):', error);
-      errors.push('驗證請假申請時發生錯誤，請稍後再試或聯繫管理員');
+      console.error('❌ 驗證請假申請失敗:', error);
+      errors.push('驗證請假申請時發生錯誤，請稍後再試');
     }
 
     setValidationResult({

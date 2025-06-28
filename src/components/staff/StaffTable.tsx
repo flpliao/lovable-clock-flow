@@ -27,7 +27,7 @@ const StaffTable = () => {
   // 監聽權限更新事件，確保角色變更即時反映
   useEffect(() => {
     const handlePermissionUpdate = (event: CustomEvent) => {
-      console.log('📊 StaffTable 收到權限更新事件 (role):', event.detail);
+      console.log('📊 StaffTable 收到權限更新事件:', event.detail);
       if (event.detail.operation === 'staffRoleUpdate' && event.detail.staffData) {
         // 強制刷新列表狀態
         setStaffListState([...filteredStaffList]);
@@ -46,44 +46,36 @@ const StaffTable = () => {
     setStaffListState(filteredStaffList);
   }, [filteredStaffList]);
 
-  // 檢查是否有帳號管理權限 - 基於 role 進行檢查
+  // 檢查是否有帳號管理權限 - 系統管理員應該擁有權限
   const canManageAccounts = currentUser && (
-    isAdmin() || // 系統管理員直接允許（基於 role）
+    isAdmin() || // 系統管理員直接允許
     hasPermission(currentUser.id, 'account:email:manage') ||
     hasPermission(currentUser.id, 'account:password:manage')
   );
 
-  console.log('👥 人員列表帳號管理權限檢查 (基於 role):', {
+  console.log('👥 人員列表帳號管理權限檢查:', {
     currentUser: currentUser?.name,
     role: currentUser?.role,
     isAdmin: isAdmin(),
     canManageAccounts
   });
 
-  // 獲取角色顯示名稱的函數 - 改回優先使用 role
+  // 獲取角色顯示名稱的函數
   const getRoleDisplayName = (staff: Staff) => {
-    // 先從後台角色資料中查找 role
-    const backendRole = roles.find(r => r.id === staff.role);
+    // 先從後台角色資料中查找
+    const backendRole = roles.find(r => r.id === staff.role_id);
     if (backendRole) {
       return backendRole.name;
     }
     
-    // 如果沒有找到，使用 role 進行顯示
+    // 如果沒有找到，使用傳統角色顯示方式
     switch (staff.role) {
       case 'admin':
         return '管理員';
       case 'manager':
         return '主管';
       default:
-        // 向後兼容，如果 role 沒有值，使用 role_id
-        switch (staff.role_id) {
-          case 'admin':
-            return '管理員';
-          case 'manager':
-            return '主管';
-          default:
-            return '員工';
-        }
+        return '員工';
     }
   };
 

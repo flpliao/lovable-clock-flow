@@ -9,6 +9,7 @@ import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
 import { LeaveFormValues, leaveFormSchema } from '@/utils/leaveTypes';
 import { LeaveRequestFormFields } from './LeaveRequestFormFields';
 import { LeaveTypeDetailCard } from './LeaveTypeDetailCard';
+import { LeaveBalanceCard } from './LeaveBalanceCard';
 import { calculateWorkingHours } from '@/utils/workingHoursCalculator';
 import { validateLeaveRequest } from '@/utils/leaveValidation';
 import { datePickerToDatabase } from '@/utils/dateUtils';
@@ -35,6 +36,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     usedDays: number;
     remainingDays: number;
   } | null>(null);
+  const [isLoadingStaffData, setIsLoadingStaffData] = useState(true);
 
   const form = useForm<LeaveFormValues>({
     resolver: zodResolver(leaveFormSchema),
@@ -55,14 +57,17 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     const loadStaffData = async () => {
       if (!currentUser?.id) {
         console.log('No user available');
+        setIsLoadingStaffData(false);
         return;
       }
 
+      setIsLoadingStaffData(true);
+      
       try {
         // 從 staff 表取得員工的入職日期
         const { data: staffData, error: staffError } = await supabase
           .from('staff')
-          .select('hire_date, name, department, position')
+          .select('hire_date, name, department, position, supervisor_id')
           .eq('id', currentUser.id)
           .single();
 
@@ -129,6 +134,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           department: staffData.department,
           position: staffData.position,
           hire_date: hireDate,
+          supervisor_id: staffData.supervisor_id,
           yearsOfService,
           totalAnnualLeaveDays: totalDays,
           usedAnnualLeaveDays: usedDays,
@@ -146,6 +152,8 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         setStaffHireDate(null);
         setUserStaffData(null);
         setAnnualLeaveData(null);
+      } finally {
+        setIsLoadingStaffData(false);
       }
     };
 
@@ -272,7 +280,6 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         currentUser: currentUser.id
       });
 
-      // 使用修正的日期轉換函式
       const startDateStr = datePickerToDatabase(data.start_date);
       const endDateStr = datePickerToDatabase(data.end_date);
 
@@ -282,7 +289,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       });
 
       const leaveRequest = {
-        id: '', // 會由資料庫自動生成
+        id: '',
         user_id: currentUser.id,
         start_date: startDateStr,
         end_date: endDateStr,
@@ -306,12 +313,10 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           description: "請假申請已提交，等待審核",
         });
         
-        // 重置表單
         form.reset();
         setCalculatedHours(0);
         setValidationError(null);
         
-        // 呼叫回調函式
         if (onSubmit) {
           onSubmit();
         }
@@ -328,11 +333,17 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     }
   };
 
-  // 檢查是否有入職日期
   const hasHireDate = Boolean(staffHireDate);
 
   return (
     <div className="space-y-6">
+      {/* 員工資料和特休餘額顯示 */}
+      <LeaveBalanceCard 
+        userStaffData={userStaffData}
+        hasHireDate={hasHireDate}
+        isLoading={isLoadingStaffData}
+      />
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           <LeaveRequestFormFields 

@@ -16,7 +16,7 @@ const Index = () => {
     isAuthenticated
   } = useUser();
   const navigate = useNavigate();
-  const [redirectTimer, setRedirectTimer] = useState<NodeJS.Timeout | null>(null);
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
   // 清理錯誤狀態
   useEffect(() => {
@@ -36,38 +36,33 @@ const Index = () => {
 
   // 檢查登入狀態，若未登入則重定向到登入頁
   useEffect(() => {
+    // 只有當用戶狀態載入完成後才進行檢查
+    if (!isUserLoaded) {
+      return;
+    }
+
     console.log('🔍 Index: 檢查認證狀態', {
       isUserLoaded,
       isAuthenticated,
-      hasCurrentUser: !!currentUser
+      hasCurrentUser: !!currentUser,
+      hasCheckedAuth
     });
     
-    // 清除之前的重定向計時器
-    if (redirectTimer) {
-      clearTimeout(redirectTimer);
-      setRedirectTimer(null);
+    // 避免重複檢查
+    if (hasCheckedAuth) {
+      return;
     }
     
-    // 只有當用戶狀態載入完成且確實未登入時才重定向
-    if (isUserLoaded && !isAuthenticated && !currentUser) {
-      console.log('🚫 Index: 用戶未登入，設置重定向到登入頁面');
-      
-      // 設置延遲重定向，給用戶狀態恢復一些時間
-      const timer = setTimeout(() => {
-        console.log('🚫 Index: 執行重定向到登入頁面');
-        navigate('/login', { replace: true });
-      }, 500);
-      
-      setRedirectTimer(timer);
-    }
+    setHasCheckedAuth(true);
     
-    // 清理函數
-    return () => {
-      if (redirectTimer) {
-        clearTimeout(redirectTimer);
-      }
-    };
-  }, [isUserLoaded, isAuthenticated, currentUser, navigate]);
+    // 只有當確實未登入時才重定向
+    if (!isAuthenticated && !currentUser) {
+      console.log('🚫 Index: 用戶未登入，重定向到登入頁面');
+      navigate('/login', { replace: true });
+    } else {
+      console.log('✅ Index: 用戶已登入或正在載入中');
+    }
+  }, [isUserLoaded, isAuthenticated, currentUser, navigate, hasCheckedAuth]);
 
   // 在載入用戶狀態期間顯示載入畫面
   if (!isUserLoaded) {
@@ -82,8 +77,8 @@ const Index = () => {
     );
   }
 
-  // 如果用戶狀態已載入但沒有認證，顯示載入畫面（等待重定向）
-  if (isUserLoaded && !isAuthenticated) {
+  // 如果已經檢查過且未登入，不顯示任何內容（等待重定向）
+  if (hasCheckedAuth && !isAuthenticated && !currentUser) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
         <div className="text-white text-center">

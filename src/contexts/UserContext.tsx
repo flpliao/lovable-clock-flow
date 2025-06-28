@@ -17,8 +17,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [annualLeaveBalance, setAnnualLeaveBalance] = useState<AnnualLeaveBalance | null>(null);
   const [isUserLoaded, setIsUserLoaded] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
-  const isInitializedRef = useRef(false);
-  const authStateRef = useRef<string>('idle'); // 追蹤認證狀態
+  const initializationRef = useRef(false);
   const navigate = useNavigate();
 
   // 檢查是否已驗證登入
@@ -29,17 +28,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       console.log('🔄 從 staff 表載入用戶權限資料:', authUser.email);
       
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('載入用戶資料超時')), 10000)
-      );
-      
-      const staffQueryPromise = supabase
+      const { data: staffData, error } = await supabase
         .from('staff')
         .select('*')
         .eq('email', authUser.email)
         .single();
-
-      const { data: staffData, error } = await Promise.race([staffQueryPromise, timeoutPromise]) as any;
       
       if (error) {
         console.error('❌ 從 staff 表載入用戶失敗:', error);
@@ -64,7 +57,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         // 轉換為 User 格式，使用 Supabase Auth 的 user ID
         const user: User = {
-          id: authUser.id, // 使用 Supabase Auth 的 UID
+          id: authUser.id,
           name: staffData.name,
           position: staffData.position,
           department: staffData.department,
@@ -95,13 +88,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // 處理用戶登入的統一函數
   const handleUserLogin = useCallback(async (session: any) => {
-    // 防止重複處理相同會話
-    if (authStateRef.current === 'processing') {
-      console.log('⚠️ 正在處理認證狀態，跳過重複請求');
-      return;
-    }
-    
-    authStateRef.current = 'processing';
     console.log('🔄 開始處理用戶登入...', session.user?.email);
     
     try {
@@ -112,7 +98,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log('✅ 使用 staff 表資料:', staffUser.name, '角色:', staffUser.role);
         setCurrentUser(staffUser);
         saveUserToStorage(staffUser);
-        authStateRef.current = 'authenticated';
         return;
       }
 
@@ -132,7 +117,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         setCurrentUser(user);
         saveUserToStorage(user);
-        authStateRef.current = 'authenticated';
         return;
       }
 
@@ -150,11 +134,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       setCurrentUser(fallbackUser);
       saveUserToStorage(fallbackUser);
-      authStateRef.current = 'authenticated';
     } catch (error) {
       console.error('❌ 處理用戶登入失敗:', error);
       setUserError('載入用戶資料失敗');
-      authStateRef.current = 'error';
     }
   }, []);
 
@@ -165,7 +147,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setAnnualLeaveBalance(null);
     setUserError(null);
     clearUserStorage();
-    authStateRef.current = 'idle';
     
     // 清除權限快取
     const permissionService = UnifiedPermissionService.getInstance();
@@ -178,25 +159,28 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 創建權限檢查器
   const { hasPermission } = createPermissionChecker(currentUser, isAdmin);
 
+  // 初始化認證狀態
   useEffect(() => {
-    // 防止重複初始化
-    if (isInitializedRef.current) {
-      console.log('⚠️ UserContext 已經初始化，跳過重複初始化');
+    if (initializationRef.current) {
       return;
     }
+    initializationRef.current = true;
 
-    console.log('👤 UserProvider: 初始化 Supabase Auth 狀態管理');
-    isInitializedRef.current = true;
+    console.log('👤 UserProvider: 初始化認證狀態管理');
+    
+    let isProcessing = false;
     
     // 設置 Supabase Auth 狀態監聽器
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔄 Supabase Auth 狀態變化:', event, '會話存在:', !!session, '當前狀態:', authStateRef.current);
+      console.log('🔄 Auth 狀態變化:', event, '會話存在:', !!session);
       
-      // 避免重複處理相同的認證事件
-      if (authStateRef.current === 'processing') {
-        console.log('⚠️ 正在處理認證狀態，跳過事件:', event);
+      // 避免重複處理
+      if (isProcessing) {
+        console.log('⚠️ 正在處理中，跳過事件:', event);
         return;
       }
+      
+      isProcessing = true;
       
       try {
         if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
@@ -209,39 +193,49 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } catch (error) {
         console.error('❌ 認證狀態變化處理錯誤:', error);
         setUserError('認證狀態處理失敗');
-        authStateRef.current = 'error';
       } finally {
+        isProcessing = false;
         setIsUserLoaded(true);
       }
     });
 
-    // 檢查是否有現有會話
+    // 檢查現有會話
     const initializeAuth = async () => {
       try {
         console.log('🔍 檢查現有會話...');
-        const session = await AuthService.getCurrentSession();
-        if (session && authStateRef.current === 'idle') {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('❌ 獲取會話失敗:', error);
+          setIsUserLoaded(true);
+          return;
+        }
+        
+        if (session && !isProcessing) {
           console.log('📦 發現現有會話，載入用戶資料');
-          await handleUserLogin(session);
+          isProcessing = true;
+          try {
+            await handleUserLogin(session);
+          } finally {
+            isProcessing = false;
+          }
         } else {
-          console.log('❌ 未發現現有會話或狀態不正確');
+          console.log('❌ 未發現現有會話');
         }
       } catch (error) {
         console.error('❌ 初始化認證狀態失敗:', error);
         setUserError('初始化認證失敗');
-        authStateRef.current = 'error';
       } finally {
         setIsUserLoaded(true);
       }
     };
 
-    // 延遲初始化，確保組件完全掛載
-    const initTimer = setTimeout(initializeAuth, 100);
+    // 立即檢查會話
+    initializeAuth();
 
     // 清理函數
     return () => {
       subscription.unsubscribe();
-      clearTimeout(initTimer);
     };
   }, [handleUserLogin, handleUserLogout]);
 
@@ -271,16 +265,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const resetUserState = async () => {
     console.log('🔄 UserProvider: 重置用戶狀態 - 登出');
     
-    // 設置狀態為處理中，避免重複操作
-    authStateRef.current = 'processing';
-    
     try {
       // 使用 Supabase Auth 登出
       await AuthService.signOut();
       handleUserLogout();
     } catch (error) {
       console.error('❌ 登出失敗:', error);
-      authStateRef.current = 'error';
     }
   };
 

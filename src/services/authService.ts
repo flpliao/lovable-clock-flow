@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
@@ -31,9 +32,20 @@ export class AuthService {
 
       if (authError) {
         console.log('❌ Supabase Auth 登入失敗:', authError);
+        
+        // 根據錯誤類型返回友好的錯誤訊息
+        let friendlyError = '登入失敗';
+        if (authError.message.includes('Invalid login credentials')) {
+          friendlyError = '帳號或密碼不正確';
+        } else if (authError.message.includes('Email not confirmed')) {
+          friendlyError = '請先確認您的電子郵件';
+        } else if (authError.message.includes('Too many requests')) {
+          friendlyError = '嘗試次數過多，請稍後再試';
+        }
+        
         return { 
           success: false, 
-          error: authError.message || '登入失敗' 
+          error: friendlyError
         };
       }
 
@@ -46,8 +58,7 @@ export class AuthService {
       }
 
       console.log('✅ Supabase Auth 登入成功');
-      console.log('🎫 JWT Token:', authData.session.access_token);
-      console.log('👤 用戶資料:', authData.user);
+      console.log('👤 用戶資料:', authData.user.email);
 
       const user = await this.buildUserFromAuth(authData.user, email);
       return { 
@@ -73,7 +84,7 @@ export class AuthService {
       
       // 從 staff 表格獲取完整的用戶資料，添加超時保護
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('數據庫查詢超時')), 10000)
+        setTimeout(() => reject(new Error('數據庫查詢超時')), 8000)
       );
       
       const staffQueryPromise = supabase
@@ -153,56 +164,13 @@ export class AuthService {
     let userRole: 'admin' | 'manager' | 'user' = 'user';
     
     // 廖俊雄永遠是最高管理員
-    if (staffData.name === '廖俊雄' && staffData.id === '550e8400-e29b-41d4-a716-446655440001') {
+    if (staffData.name === '廖俊雄' || staffData.email === 'flpliao@gmail.com') {
       userRole = 'admin';
       console.log('🔐 廖俊雄最高管理員權限');
-    } else if (staffData.role_id && staffData.role_id !== 'user') {
-      // 基於 role_id 查詢後台角色權限，添加超時保護
-      try {
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('權限查詢超時')), 5000)
-        );
-        
-        const roleQueryPromise = supabase
-          .from('staff_roles')
-          .select(`
-            *,
-            role_permissions!inner (
-              permission_id,
-              permissions!inner (
-                id,
-                name,
-                code,
-                description,
-                category
-              )
-            )
-          `)
-          .eq('id', staffData.role_id)
-          .single();
-
-        const { data: roleInfo } = await Promise.race([roleQueryPromise, timeoutPromise]) as any;
-
-        if (roleInfo && roleInfo.role_permissions && roleInfo.role_permissions.length > 0) {
-          const hasSystemManage = roleInfo.role_permissions?.some((rp: any) => 
-            rp.permissions?.code === 'system:manage'
-          );
-          
-          const hasStaffManage = roleInfo.role_permissions?.some((rp: any) => 
-            rp.permissions?.code === 'staff:manage' || rp.permissions?.code === 'staff:edit'
-          );
-          
-          if (hasSystemManage || roleInfo.is_system_role === true) {
-            userRole = 'admin';
-          } else if (hasStaffManage) {
-            userRole = 'manager';
-          }
-        }
-      } catch (error) {
-        console.error('❌ 查詢角色權限失敗:', error);
-        // 權限查詢失敗時，使用預設的 user 權限，不影響登入流程
-        userRole = 'user';
-      }
+    } else if (staffData.role === 'admin') {
+      userRole = 'admin';
+    } else if (staffData.role === 'manager') {
+      userRole = 'manager';
     }
 
     const user: AuthUser = {
@@ -282,15 +250,5 @@ export class AuthService {
    */
   static onAuthStateChange(callback: (event: string, session: any) => void) {
     return supabase.auth.onAuthStateChange(callback);
-  }
-
-  /**
-   * 根據 email 查詢用戶資料（保持向後相容）
-   */
-  static async findUserByEmail(email: string): Promise<AuthUser | null> {
-    // 這個方法現在主要用於向後相容
-    // 實際的用戶驗證應該通過 authenticate 方法
-    console.log('⚠️ findUserByEmail 方法已棄用，請使用 authenticate 方法');
-    return null;
   }
 }

@@ -41,9 +41,8 @@ const LoginForm: React.FC = () => {
           description: `歡迎回來，${authResult.user.name}！`,
         });
         
-        // 立即重定向，不等待狀態更新
-        console.log('🔄 立即跳轉到主頁面');
-        navigate('/', { replace: true });
+        // 不立即重定向，讓 AuthStateManager 處理
+        console.log('🔄 登入成功，等待認證狀態管理器處理重定向');
         
       } else {
         console.log('❌ 登入失敗:', authResult.error);

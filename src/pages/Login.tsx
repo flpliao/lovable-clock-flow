@@ -14,35 +14,38 @@ const Login = () => {
 
   // 檢查已登入用戶並重定向
   useEffect(() => {
-    // 確保用戶狀態已載入且已認證
+    console.log('🔍 Login: 檢查認證狀態', {
+      isUserLoaded,
+      isAuthenticated,
+      hasCurrentUser: !!currentUser,
+      hasRedirected
+    });
+    
+    // 確保用戶狀態已載入且已認證，且尚未重定向
     if (isUserLoaded && isAuthenticated && currentUser && !hasRedirected) {
-      console.log('🔐 用戶已登入，準備重定向:', currentUser.name);
+      console.log('🔐 Login: 用戶已登入，準備重定向:', currentUser.name);
       setHasRedirected(true);
       
-      // 使用 setTimeout 確保狀態更新完成
+      toast({
+        title: '歡迎回來',
+        description: `${currentUser.name}，正在跳轉到主頁面...`,
+      });
+      
+      // 使用較短的延遲時間
       setTimeout(() => {
-        console.log('🔄 執行重定向到主頁面');
+        console.log('🔄 Login: 執行重定向到主頁面');
         navigate('/', { replace: true });
       }, 100);
     }
-  }, [isUserLoaded, isAuthenticated, currentUser, navigate, hasRedirected]);
-
-  // 監聽認證狀態變化
-  useEffect(() => {
-    if (isAuthenticated && currentUser && !hasRedirected) {
-      console.log('🔄 認證狀態變化，準備重定向');
-      setHasRedirected(true);
-      navigate('/', { replace: true });
-    }
-  }, [isAuthenticated, currentUser, navigate, hasRedirected]);
+  }, [isUserLoaded, isAuthenticated, currentUser, navigate, hasRedirected, toast]);
 
   // 已登入用戶顯示跳轉中
-  if (hasRedirected || (isAuthenticated && currentUser)) {
+  if (isAuthenticated && currentUser && (hasRedirected || isUserLoaded)) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
         <div className="text-white text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-          <p>正在跳轉...</p>
+          <p>正在跳轉到主頁面...</p>
         </div>
       </div>
     );

@@ -29,9 +29,10 @@ export const useAuthStateManager = () => {
 
     console.log('👤 UserProvider: 初始化認證狀態管理');
     
-    // 設置 Supabase Auth 独立監聽器
+    // 設置 Supabase Auth 监听器
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔄 Auth 独立監聽器:', event, '會話存在:', !!session);
+      console.log('🔄 Auth 状态变化:', event, '會話存在:', !!session);
+      console.log('🔄 用戶信息:', session?.user?.email);
       
       if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
         console.log('✅ 用戶已登入 - 事件:', event);
@@ -40,6 +41,15 @@ export const useAuthStateManager = () => {
         // 確保認證狀態立即更新
         setIsAuthenticated(true);
         console.log('🔐 強制設定認證狀態為 true');
+        
+        // 在登入成功後立即重定向（延遲以確保狀態更新完成）
+        if (event === 'SIGNED_IN') {
+          console.log('🔄 登入成功，準備重定向到主頁');
+          setTimeout(() => {
+            console.log('🔄 執行重定向到主頁');
+            navigate('/', { replace: true });
+          }, 500);
+        }
         
       } else if (event === 'SIGNED_OUT') {
         console.log('🚪 用戶已登出');
@@ -86,7 +96,7 @@ export const useAuthStateManager = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [handleUserLogin, handleUserLogout]);
+  }, [handleUserLogin, handleUserLogout, navigate]);
 
   return {
     currentUser,

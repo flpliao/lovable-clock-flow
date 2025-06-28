@@ -1,6 +1,5 @@
 
 import * as React from "react"
-
 import { cn } from "@/lib/utils"
 
 export interface InputProps
@@ -8,6 +7,27 @@ export interface InputProps
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, ...props }, ref) => {
+    // Enhanced input validation and sanitization
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      
+      // Basic XSS prevention - remove potential script tags and event handlers
+      const sanitizedValue = value
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+        .replace(/javascript:/gi, '');
+      
+      // Update the input value with sanitized content
+      if (sanitizedValue !== value) {
+        e.target.value = sanitizedValue;
+      }
+      
+      // Call original onChange if provided
+      if (props.onChange) {
+        props.onChange(e);
+      }
+    };
+
     return (
       <input
         type={type}
@@ -17,6 +37,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
         ref={ref}
         {...props}
+        onChange={handleChange}
       />
     )
   }

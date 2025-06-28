@@ -1883,6 +1883,10 @@ export type Database = {
         Args: { table_name: string }
         Returns: boolean
       }
+      get_user_role: {
+        Args: { user_uuid: string }
+        Returns: string
+      }
       get_user_role_safe: {
         Args: { user_uuid: string }
         Returns: string
@@ -1901,6 +1905,14 @@ export type Database = {
       }
       is_current_user_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_user_admin: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
+      is_user_manager: {
+        Args: { user_uuid: string }
         Returns: boolean
       }
       mark_announcement_as_read: {

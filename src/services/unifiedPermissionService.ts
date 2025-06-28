@@ -15,8 +15,8 @@ export class UnifiedPermissionService {
   private cacheExpiry = new Map<string, number>();
   private rolesCache: StaffRole[] = [];
   private rolesCacheExpiry = 0;
-  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5分鐘快取
-  private readonly ROLES_CACHE_DURATION = 10 * 60 * 1000; // 角色快取10分鐘
+  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+  private readonly ROLES_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes role cache
   private eventListeners: Set<() => void> = new Set();
 
   static getInstance(): UnifiedPermissionService {
@@ -27,55 +27,46 @@ export class UnifiedPermissionService {
     return UnifiedPermissionService.instance;
   }
 
-  /**
-   * 初始化事件監聽器
-   */
   private initializeEventListeners(): void {
-    // 監聽權限更新事件
+    // Listen for permission update events
     window.addEventListener('permissionUpdated', this.handlePermissionUpdate.bind(this));
     
-    // 監聽頁面可見性變化
+    // Listen for page visibility changes
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
-        // 頁面變為可見時，清除快取以確保權限同步
+        // Clear cache when page becomes visible to ensure permission sync
         this.clearCache();
       }
     });
   }
 
-  /**
-   * 處理權限更新事件
-   */
   private handlePermissionUpdate(event: CustomEvent): void {
     const { operation, roleData } = event.detail;
-    console.log('🔔 權限更新事件:', operation, roleData);
+    console.log('🔔 Permission update event:', operation);
     
-    // 清除相關快取
+    // Clear related cache
     this.clearCache();
     this.clearRolesCache();
     
-    // 通知所有監聽器
+    // Notify all listeners
     this.eventListeners.forEach(listener => {
       try {
         listener();
       } catch (error) {
-        console.error('權限更新監聽器錯誤:', error);
+        console.error('Permission update listener error:', error);
       }
     });
   }
 
-  /**
-   * 從後台載入角色資料
-   */
   private async loadRolesFromBackend(): Promise<StaffRole[]> {
     try {
-      // 檢查快取是否有效
+      // Check if cache is valid
       if (this.rolesCache.length > 0 && Date.now() < this.rolesCacheExpiry) {
-        console.log('🎯 使用角色快取資料');
+        console.log('🎯 Using cached role data');
         return this.rolesCache;
       }
       
-      console.log('🔄 從後台載入角色資料...');
+      console.log('🔄 Loading role data from backend...');
       
       const { data, error } = await supabase
         .from('staff_roles')
@@ -95,11 +86,11 @@ export class UnifiedPermissionService {
         .order('created_at', { ascending: true });
       
       if (error) {
-        console.error('❌ 載入角色資料失敗:', error);
-        return this.rolesCache; // 返回快取的角色資料
+        console.error('❌ Failed to load role data:', error.message);
+        return this.rolesCache; // Return cached role data
       }
       
-      // 轉換資料格式，包含權限
+      // Convert data format including permissions
       const roles: StaffRole[] = (data || []).map(role => ({
         id: role.id,
         name: role.name,
@@ -114,22 +105,19 @@ export class UnifiedPermissionService {
         is_system_role: role.is_system_role || false
       }));
       
-      // 更新快取
+      // Update cache
       this.rolesCache = roles;
       this.rolesCacheExpiry = Date.now() + this.ROLES_CACHE_DURATION;
       
-      console.log('✅ 角色資料載入成功:', roles.length, '個角色');
+      console.log('✅ Role data loaded successfully:', roles.length, 'roles');
       return roles;
       
     } catch (error) {
-      console.error('❌ 載入角色資料系統錯誤:', error);
-      return this.rolesCache; // 返回快取的角色資料
+      console.error('❌ System error loading role data:', error);
+      return this.rolesCache; // Return cached role data
     }
   }
 
-  /**
-   * 添加權限更新監聽器
-   */
   addPermissionUpdateListener(listener: () => void): () => void {
     this.eventListeners.add(listener);
     return () => {
@@ -137,33 +125,27 @@ export class UnifiedPermissionService {
     };
   }
 
-  /**
-   * 統一權限檢查入口
-   */
   hasPermission(
     permission: string, 
     context: UnifiedPermissionContext
   ): boolean {
     const cacheKey = this.getCacheKey(permission, context);
     
-    // 檢查快取
+    // Check cache
     if (this.isCacheValid(cacheKey)) {
       const cachedResult = this.permissionCache.get(cacheKey) || false;
-      console.log('🎯 快取權限檢查:', permission, '結果:', cachedResult);
+      console.log('🎯 Cached permission check:', permission, 'result:', cachedResult);
       return cachedResult;
     }
 
     const result = this.checkPermissionInternal(permission, context);
     
-    // 更新快取
+    // Update cache
     this.updateCache(cacheKey, result);
     
     return result;
   }
 
-  /**
-   * 內部權限檢查邏輯 - 完全基於後台角色設定和請假申請邏輯
-   */
   private checkPermissionInternal(
     permission: string, 
     context: UnifiedPermissionContext
@@ -171,72 +153,57 @@ export class UnifiedPermissionService {
     const { currentUser, staffData, roles } = context;
     
     if (!currentUser) {
-      console.log('🔐 權限檢查: 用戶未登入');
+      console.log('🔐 Permission check: User not logged in');
       return false;
     }
 
-    // 廖俊雄擁有所有權限（特殊用戶例外）- 使用正確的 Supabase Auth UID
-    if (this.isLiaoJunxiong(currentUser)) {
-      console.log('🔐 廖俊雄權限檢查:', permission, '✅ 允許');
+    // Role-based permission checking - no hardcoded special users
+    if (this.isSystemAdmin(currentUser)) {
+      console.log('🔐 System admin permission check:', permission, '✅ Allowed');
       return true;
     }
 
-    // 基本用戶權限：所有用戶都能查看自己的記錄和申請
+    // Basic user permissions: all users can view their own records and applications
     if (this.isBasicUserPermission(permission)) {
-      console.log('🔐 基本用戶權限檢查:', currentUser.name, permission, '✅ 允許');
+      console.log('🔐 Basic user permission check:', currentUser.name, permission, '✅ Allowed');
       return true;
     }
 
-    // 檢查員工動態角色權限（主要權限檢查邏輯）
+    // Check staff dynamic role permissions (main permission check logic)
     if (staffData && this.checkStaffRolePermission(staffData, permission, roles)) {
-      console.log('🔐 員工角色權限檢查:', staffData.name, permission, '✅ 允許');
+      console.log('🔐 Staff role permission check:', staffData.name, permission, '✅ Allowed');
       return true;
     }
 
-    // 檢查直接員工權限
+    // Check direct staff permissions
     if (staffData?.permissions?.includes(permission)) {
-      console.log('🔐 員工直接權限檢查:', staffData.name, permission, '✅ 允許');
+      console.log('🔐 Staff direct permission check:', staffData.name, permission, '✅ Allowed');
       return true;
     }
 
-    // 如果沒有員工資料，但是系統管理員，給予基本管理權限
+    // If no staff data but is system admin, give basic management permissions
     if (!staffData && this.isSystemAdmin(currentUser)) {
-      console.log('🔐 系統管理員基本權限檢查:', currentUser.name, permission, '✅ 允許');
+      console.log('🔐 System admin basic permission check:', currentUser.name, permission, '✅ Allowed');
       return this.checkBasicAdminPermissions(permission);
     }
 
-    console.log('🔐 權限檢查失敗:', currentUser.name, permission, '❌ 拒絕');
+    console.log('🔐 Permission check failed:', currentUser.name, permission, '❌ Denied');
     return false;
   }
 
-  /**
-   * 檢查是否為廖俊雄 - 使用正確的 Supabase Auth UID
-   */
-  private isLiaoJunxiong(user: User): boolean {
-    return (user.name === '廖俊雄' && 
-            user.id === '0765138a-6f11-45f4-be07-dab965116a2d') ||
-           user?.email === 'flpliao@gmail.com';
-  }
-
-  /**
-   * 檢查是否為系統管理員
-   */
   private isSystemAdmin(user: User): boolean {
     return user.role === 'admin';
   }
 
-  /**
-   * 檢查基本用戶權限（參照請假申請邏輯）
-   */
   private isBasicUserPermission(permission: string): boolean {
     const basicPermissions = [
-      // 加班基本權限
+      // Overtime basic permissions
       'overtime:view_own',
       'overtime:create',
-      // 忘記打卡基本權限
+      // Missed check-in basic permissions
       'missed_checkin:view_own',
       'missed_checkin:create',
-      // 請假基本權限
+      // Leave basic permissions
       'leave:view_own',
       'leave:create'
     ];
@@ -244,42 +211,35 @@ export class UnifiedPermissionService {
     return basicPermissions.includes(permission);
   }
 
-  /**
-   * 檢查員工角色權限（主要邏輯）
-   */
   private checkStaffRolePermission(
     staff: Staff, 
     permission: string, 
     roles: StaffRole[]
   ): boolean {
     if (!staff.role_id) {
-      console.log('🔐 員工無角色ID:', staff.name);
+      console.log('🔐 Staff has no role ID:', staff.name);
       return false;
     }
     
     const role = roles.find(r => r.id === staff.role_id);
     if (!role) {
-      console.log('🔐 找不到角色:', staff.role_id, '員工:', staff.name);
+      console.log('🔐 Role not found:', staff.role_id, 'for staff:', staff.name);
       return false;
     }
     
     const hasPermission = role.permissions.some(p => p.code === permission);
-    console.log('🔐 角色權限檢查:', {
+    console.log('🔐 Role permission check:', {
       staff: staff.name,
       role: role.name,
       permission,
-      hasPermission,
-      rolePermissions: role.permissions.map(p => p.code)
+      hasPermission
     });
     
     return hasPermission;
   }
 
-  /**
-   * 基本管理員權限檢查（當無員工資料時的後備方案）
-   */
   private checkBasicAdminPermissions(permission: string): boolean {
-    // 按照請假申請邏輯，給予完整的管理權限
+    // Give complete management permissions according to leave application logic
     const basicAdminPermissions = [
       'system:manage',
       'system:settings_view',
@@ -288,19 +248,19 @@ export class UnifiedPermissionService {
       'staff:create',
       'staff:edit',
       'staff:delete',
-      // 加班管理權限
+      // Overtime management permissions
       'overtime:view_all',
       'overtime:view_own',
       'overtime:create',
       'overtime:approve',
       'overtime:manage',
-      // 忘記打卡管理權限
+      // Missed check-in management permissions
       'missed_checkin:view_all',
       'missed_checkin:view_own',
       'missed_checkin:create',
       'missed_checkin:approve',
       'missed_checkin:manage',
-      // 請假管理權限
+      // Leave management permissions
       'leave:view_all',
       'leave:view_own',
       'leave:create',
@@ -311,9 +271,6 @@ export class UnifiedPermissionService {
     return basicAdminPermissions.includes(permission);
   }
 
-  /**
-   * 生成快取鍵
-   */
   private getCacheKey(permission: string, context: UnifiedPermissionContext): string {
     const userId = context.currentUser?.id || 'anonymous';
     const staffId = context.staffData?.id || 'no-staff';
@@ -333,19 +290,19 @@ export class UnifiedPermissionService {
   }
 
   clearCache(): void {
-    console.log('🔄 清除權限快取');
+    console.log('🔄 Clearing permission cache');
     this.permissionCache.clear();
     this.cacheExpiry.clear();
   }
 
   clearRolesCache(): void {
-    console.log('🔄 清除角色快取');
+    console.log('🔄 Clearing role cache');
     this.rolesCache = [];
     this.rolesCacheExpiry = 0;
   }
 
   clearUserCache(userId: string): void {
-    console.log('🔄 清除用戶權限快取:', userId);
+    console.log('🔄 Clearing user permission cache:', userId);
     for (const [key] of this.permissionCache) {
       if (key.startsWith(userId)) {
         this.permissionCache.delete(key);
@@ -355,7 +312,7 @@ export class UnifiedPermissionService {
   }
 
   forceReload(): void {
-    console.log('🔄 強制重新載入權限');
+    console.log('🔄 Force reloading permissions');
     this.clearCache();
     this.clearRolesCache();
     window.dispatchEvent(new CustomEvent('permissionForceReload'));

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,16 +11,16 @@ export const useSupabaseLeaveManagement = () => {
   const { toast } = useToast();
   const { currentUser } = useUser();
 
-  // 載入請假申請資料
+  // Load leave request data with secure logging
   const loadLeaveRequests = useCallback(async () => {
     if (!currentUser?.id) {
-      console.log('❌ useSupabaseLeaveManagement: 沒有當前用戶');
+      console.log('❌ useSupabaseLeaveManagement: No current user');
       return;
     }
 
     setLoading(true);
     try {
-      console.log('🔍 useSupabaseLeaveManagement: 載入請假申請，用戶ID:', currentUser.id);
+      console.log('🔍 useSupabaseLeaveManagement: Loading leave requests for authenticated user');
 
       const { data, error } = await supabase
         .from('leave_requests')
@@ -31,13 +32,13 @@ export const useSupabaseLeaveManagement = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('❌ useSupabaseLeaveManagement: 載入請假申請失敗:', error);
+        console.error('❌ useSupabaseLeaveManagement: Failed to load leave requests:', error.message);
         throw error;
       }
 
-      console.log('✅ useSupabaseLeaveManagement: 成功載入請假申請:', data?.length || 0, '筆');
+      console.log('✅ useSupabaseLeaveManagement: Successfully loaded leave requests:', data?.length || 0, 'records');
       
-      // 確保 leave_type 和 approvals 符合聯合類型
+      // Ensure leave_type and approvals conform to union types
       const typedData = data?.map(item => ({
         ...item,
         leave_type: item.leave_type as LeaveRequest['leave_type'],
@@ -50,10 +51,10 @@ export const useSupabaseLeaveManagement = () => {
       
       setLeaveRequests(typedData);
     } catch (error) {
-      console.error('❌ useSupabaseLeaveManagement: 載入請假申請時發生錯誤:', error);
+      console.error('❌ useSupabaseLeaveManagement: Error loading leave requests:', error);
       toast({
-        title: "載入失敗",
-        description: "無法載入請假申請資料",
+        title: "Loading Failed",
+        description: "Unable to load leave request data",
         variant: "destructive",
       });
     } finally {
@@ -61,12 +62,12 @@ export const useSupabaseLeaveManagement = () => {
     }
   }, [currentUser?.id, toast]);
 
-  // 獲取員工資料的輔助函數
+  // Helper function to get staff information with secure data handling
   const getStaffInfo = useCallback(async (userId: string) => {
-    console.log('🔍 useSupabaseLeaveManagement: 獲取員工資料，用戶ID:', userId);
+    console.log('🔍 useSupabaseLeaveManagement: Getting staff information for authenticated user');
     
     try {
-      // 首先嘗試通過 user_id 查找
+      // First try to find by user_id
       const { data: staffByUserId, error: userIdError } = await supabase
         .from('staff')
         .select('id, user_id, name, department, supervisor_id')
@@ -74,11 +75,11 @@ export const useSupabaseLeaveManagement = () => {
         .maybeSingle();
 
       if (staffByUserId && !userIdError) {
-        console.log('✅ 通過 user_id 找到員工資料:', staffByUserId);
+        console.log('✅ Found staff data by user_id');
         return staffByUserId;
       }
 
-      // 如果通過 user_id 找不到，嘗試通過 id 查找
+      // If not found by user_id, try by id
       const { data: staffById, error: idError } = await supabase
         .from('staff')
         .select('id, user_id, name, department, supervisor_id')
@@ -86,94 +87,77 @@ export const useSupabaseLeaveManagement = () => {
         .maybeSingle();
 
       if (staffById && !idError) {
-        console.log('✅ 通過 id 找到員工資料:', staffById);
+        console.log('✅ Found staff data by id');
         return staffById;
       }
 
-      console.error('❌ 無法找到員工資料:', { userIdError, idError });
+      console.error('❌ Unable to find staff data');
       return null;
     } catch (error) {
-      console.error('❌ 獲取員工資料時發生錯誤:', error);
+      console.error('❌ Error getting staff information:', error);
       return null;
     }
   }, []);
 
-  // 創建請假申請
+  // Create leave request with enhanced security validation
   const createLeaveRequest = useCallback(async (newRequest: Omit<LeaveRequest, 'id'>): Promise<boolean> => {
     if (!currentUser?.id) {
-      console.error('❌ useSupabaseLeaveManagement: 創建請假申請失敗 - 沒有當前用戶');
+      console.error('❌ useSupabaseLeaveManagement: Failed to create leave request - no current user');
       toast({
-        title: "提交失敗",
-        description: "請先登入系統",
+        title: "Submission Failed",
+        description: "Please log in to the system first",
         variant: "destructive",
       });
       return false;
     }
 
     try {
-      console.log('🚀 useSupabaseLeaveManagement: 開始創建請假申請');
-      console.log('👤 當前用戶資訊:', {
-        id: currentUser.id,
-        name: currentUser.name,
-        email: currentUser.email
-      });
+      console.log('🚀 useSupabaseLeaveManagement: Starting to create leave request');
 
-      // 檢查用戶認證狀態
+      // Check user authentication status
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
-        console.error('❌ 用戶認證失敗:', authError);
+        console.error('❌ User authentication failed:', authError?.message);
         toast({
-          title: "認證失敗",
-          description: "用戶認證已過期，請重新登入",
+          title: "Authentication Failed",
+          description: "User authentication has expired, please log in again",
           variant: "destructive",
         });
         return false;
       }
 
-      console.log('✅ 用戶認證確認:', user.id);
+      console.log('✅ User authentication confirmed');
 
-      // 獲取員工資料以確保正確的 staff_id
+      // Get staff data to ensure correct staff_id
       const staffInfo = await getStaffInfo(currentUser.id);
       if (!staffInfo) {
-        console.error('❌ 找不到員工資料記錄');
+        console.error('❌ Staff data record not found');
         toast({
-          title: "資料驗證失敗",
-          description: "找不到您的員工資料記錄，請聯繫管理員進行帳號設定",
+          title: "Data Validation Failed",
+          description: "Your staff data record was not found, please contact administrator for account setup",
           variant: "destructive",
         });
         return false;
       }
 
-      console.log('✅ 員工資料驗證成功:', {
-        staffId: staffInfo.id,
-        userId: staffInfo.user_id,
-        name: staffInfo.name
-      });
+      console.log('✅ Staff data validation successful');
 
-      // 準備插入資料，使用正確的 staff_id
+      // Prepare insert data using correct staff_id
       const requestData = {
         ...newRequest,
         user_id: currentUser.id,
-        staff_id: staffInfo.id, // 使用從 staff 表獲取的正確 ID
+        staff_id: staffInfo.id, // Use correct ID from staff table
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
-      // 移除不必要的欄位
+      // Remove unnecessary fields
       delete (requestData as any).approvals;
       delete (requestData as any).id;
 
-      console.log('📝 useSupabaseLeaveManagement: 準備插入的資料:', {
-        user_id: requestData.user_id,
-        staff_id: requestData.staff_id,
-        leave_type: requestData.leave_type,
-        start_date: requestData.start_date,
-        end_date: requestData.end_date,
-        hours: requestData.hours,
-        status: requestData.status
-      });
+      console.log('📝 useSupabaseLeaveManagement: Prepared data for insertion');
 
-      // 插入請假申請
+      // Insert leave request
       const { data, error } = await supabase
         .from('leave_requests')
         .insert([requestData])
@@ -181,41 +165,38 @@ export const useSupabaseLeaveManagement = () => {
         .single();
 
       if (error) {
-        console.error('❌ useSupabaseLeaveManagement: 插入請假申請失敗:', {
-          error,
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
+        console.error('❌ useSupabaseLeaveManagement: Failed to insert leave request:', {
+          error: error.message,
+          code: error.code
         });
         
-        // 根據錯誤類型提供更具體的錯誤訊息
-        let errorMessage = "無法提交請假申請";
-        let errorTitle = "申請失敗";
+        // Provide specific error messages based on error type
+        let errorMessage = "Unable to submit leave request";
+        let errorTitle = "Application Failed";
 
         if (error.code === '23503') {
           if (error.message.includes('staff_id_fkey')) {
-            errorMessage = "員工資料關聯錯誤，請聯繫系統管理員檢查帳號設定";
-            errorTitle = "資料關聯錯誤";
+            errorMessage = "Staff data association error, please contact system administrator to check account setup";
+            errorTitle = "Data Association Error";
           } else if (error.message.includes('leave_type')) {
-            errorMessage = "請假類型設定錯誤，請重新選擇請假類型";
-            errorTitle = "請假類型錯誤";
+            errorMessage = "Leave type setting error, please reselect leave type";
+            errorTitle = "Leave Type Error";
           } else {
-            errorMessage = "資料關聯錯誤，請檢查填寫內容或聯繫系統管理員";
-            errorTitle = "資料關聯錯誤";
+            errorMessage = "Data association error, please check input content or contact system administrator";
+            errorTitle = "Data Association Error";
           }
         } else if (error.code === 'PGRST301') {
-          errorMessage = "權限不足，無法提交請假申請。請確認您已正確登入且具備相關權限。";
-          errorTitle = "權限錯誤";
+          errorMessage = "Insufficient permissions to submit leave request. Please confirm you are properly logged in and have relevant permissions.";
+          errorTitle = "Permission Error";
         } else if (error.code === '23502') {
-          errorMessage = "資料不完整，請檢查所有必填欄位是否已填寫。";
-          errorTitle = "資料驗證失敗";
+          errorMessage = "Incomplete data, please check all required fields are filled.";
+          errorTitle = "Data Validation Failed";
         } else if (error.message.includes('row-level security')) {
-          errorMessage = "安全政策限制，無法提交請假申請。請聯繫系統管理員檢查權限設定。";
-          errorTitle = "安全政策錯誤";
+          errorMessage = "Security policy restriction, unable to submit leave request. Please contact system administrator to check permission settings.";
+          errorTitle = "Security Policy Error";
         } else if (error.message.includes('violates')) {
-          errorMessage = "資料驗證失敗，請檢查填寫內容是否符合規定。";
-          errorTitle = "資料驗證失敗";
+          errorMessage = "Data validation failed, please check if input content meets requirements.";
+          errorTitle = "Data Validation Failed";
         }
 
         toast({
@@ -226,16 +207,16 @@ export const useSupabaseLeaveManagement = () => {
         return false;
       }
 
-      console.log('✅ useSupabaseLeaveManagement: 請假申請創建成功:', data);
+      console.log('✅ useSupabaseLeaveManagement: Leave request created successfully');
 
-      // 如果有審核人，創建審核記錄
+      // If there are approvers, create approval records
       if (newRequest.approvals && newRequest.approvals.length > 0) {
-        console.log('📝 useSupabaseLeaveManagement: 創建審核記錄...');
+        console.log('📝 useSupabaseLeaveManagement: Creating approval records...');
         
         const approvalRecords = newRequest.approvals.map(approval => ({
           ...approval,
           leave_request_id: data.id,
-          id: undefined // 讓資料庫自動生成
+          id: undefined // Let database auto-generate
         }));
 
         const { error: approvalError } = await supabase
@@ -243,36 +224,36 @@ export const useSupabaseLeaveManagement = () => {
           .insert(approvalRecords);
 
         if (approvalError) {
-          console.warn('⚠️ useSupabaseLeaveManagement: 創建審核記錄失敗:', approvalError);
+          console.warn('⚠️ useSupabaseLeaveManagement: Failed to create approval records:', approvalError.message);
         } else {
-          console.log('✅ useSupabaseLeaveManagement: 審核記錄創建成功');
+          console.log('✅ useSupabaseLeaveManagement: Approval records created successfully');
         }
       }
 
       toast({
-        title: "申請成功",
-        description: "請假申請已提交，等待審核",
+        title: "Application Successful",
+        description: "Leave request has been submitted, awaiting approval",
       });
 
-      // 重新載入請假申請列表
+      // Reload leave request list
       await loadLeaveRequests();
       return true;
 
     } catch (error) {
-      console.error('❌ useSupabaseLeaveManagement: 創建請假申請時發生錯誤:', error);
+      console.error('❌ useSupabaseLeaveManagement: Error creating leave request:', error);
       toast({
-        title: "提交失敗",
-        description: "系統發生錯誤，請稍後重試或聯繫系統管理員",
+        title: "Submission Failed",
+        description: "System error occurred, please try again later or contact system administrator",
         variant: "destructive",
       });
       return false;
     }
   }, [currentUser?.id, toast, loadLeaveRequests, getStaffInfo]);
 
-  // 載入年假餘額
+  // Load annual leave balance with secure data access
   const loadAnnualLeaveBalance = useCallback(async (userId: string) => {
     try {
-      console.log('🔍 useSupabaseLeaveManagement: 載入年假餘額，用戶ID:', userId);
+      console.log('🔍 useSupabaseLeaveManagement: Loading annual leave balance for authenticated user');
       
       const currentYear = new Date().getFullYear();
       const { data, error } = await supabase
@@ -283,44 +264,44 @@ export const useSupabaseLeaveManagement = () => {
         .single();
 
       if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-        console.error('❌ useSupabaseLeaveManagement: 載入年假餘額失敗:', error);
+        console.error('❌ useSupabaseLeaveManagement: Failed to load annual leave balance:', error.message);
         throw error;
       }
 
-      console.log('✅ useSupabaseLeaveManagement: 年假餘額載入結果:', data);
+      console.log('✅ useSupabaseLeaveManagement: Annual leave balance loading result');
       return data;
     } catch (error) {
-      console.error('❌ useSupabaseLeaveManagement: 載入年假餘額時發生錯誤:', error);
+      console.error('❌ useSupabaseLeaveManagement: Error loading annual leave balance:', error);
       return null;
     }
   }, []);
 
-  // 初始化年假餘額
+  // Initialize annual leave balance
   const initializeAnnualLeaveBalance = useCallback(async (userId: string) => {
     try {
-      console.log('🚀 useSupabaseLeaveManagement: 初始化年假餘額，用戶ID:', userId);
+      console.log('🚀 useSupabaseLeaveManagement: Initializing annual leave balance for authenticated user');
       
       const currentYear = new Date().getFullYear();
       
-      // 調用 Supabase 函數來初始化年假餘額
+      // Call Supabase function to initialize annual leave balance
       const { error } = await supabase.rpc('initialize_or_update_annual_leave_balance', {
         staff_uuid: userId,
         target_year: currentYear
       });
 
       if (error) {
-        console.error('❌ useSupabaseLeaveManagement: 初始化年假餘額失敗:', error);
+        console.error('❌ useSupabaseLeaveManagement: Failed to initialize annual leave balance:', error.message);
         throw error;
       }
 
-      console.log('✅ useSupabaseLeaveManagement: 年假餘額初始化成功');
+      console.log('✅ useSupabaseLeaveManagement: Annual leave balance initialized successfully');
     } catch (error) {
-      console.error('❌ useSupabaseLeaveManagement: 初始化年假餘額時發生錯誤:', error);
+      console.error('❌ useSupabaseLeaveManagement: Error initializing annual leave balance:', error);
       throw error;
     }
   }, []);
 
-  // 更新請假申請狀態
+  // Update leave request status with secure validation
   const updateLeaveRequestStatus = useCallback(async (
     requestId: string,
     status: 'approved' | 'rejected',
@@ -328,7 +309,7 @@ export const useSupabaseLeaveManagement = () => {
     rejectionReason?: string
   ): Promise<boolean> => {
     try {
-      console.log('🔄 useSupabaseLeaveManagement: 更新請假申請狀態:', { requestId, status });
+      console.log('🔄 useSupabaseLeaveManagement: Updating leave request status');
 
       const updateData: any = {
         status,
@@ -344,38 +325,38 @@ export const useSupabaseLeaveManagement = () => {
         .eq('id', requestId);
 
       if (error) {
-        console.error('❌ useSupabaseLeaveManagement: 更新請假申請狀態失敗:', error);
+        console.error('❌ useSupabaseLeaveManagement: Failed to update leave request status:', error.message);
         throw error;
       }
 
-      console.log('✅ useSupabaseLeaveManagement: 請假申請狀態更新成功');
+      console.log('✅ useSupabaseLeaveManagement: Leave request status updated successfully');
       
       toast({
-        title: "更新成功",
-        description: `請假申請已${status === 'approved' ? '核准' : '拒絕'}`,
+        title: "Update Successful",
+        description: `Leave request has been ${status === 'approved' ? 'approved' : 'rejected'}`,
       });
 
-      // 重新載入請假申請列表
+      // Reload leave request list
       await loadLeaveRequests();
       return true;
 
     } catch (error) {
-      console.error('❌ useSupabaseLeaveManagement: 更新請假申請狀態時發生錯誤:', error);
+      console.error('❌ useSupabaseLeaveManagement: Error updating leave request status:', error);
       toast({
-        title: "更新失敗",
-        description: "無法更新請假申請狀態",
+        title: "Update Failed",
+        description: "Unable to update leave request status",
         variant: "destructive",
       });
       return false;
     }
   }, [toast, loadLeaveRequests]);
 
-  // 刷新資料
+  // Refresh data
   const refreshData = useCallback(async () => {
     await loadLeaveRequests();
   }, [loadLeaveRequests]);
 
-  // 組件掛載時載入資料
+  // Load data when component mounts
   useEffect(() => {
     if (currentUser?.id) {
       loadLeaveRequests();

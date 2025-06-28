@@ -1,6 +1,5 @@
 
 import * as React from "react"
-
 import { cn } from "@/lib/utils"
 
 export interface TextareaProps
@@ -8,6 +7,27 @@ export interface TextareaProps
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, ...props }, ref) => {
+    // Enhanced textarea validation and sanitization
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const value = e.target.value;
+      
+      // Basic XSS prevention - remove potential script tags and event handlers
+      const sanitizedValue = value
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+        .replace(/javascript:/gi, '');
+      
+      // Update the textarea value with sanitized content
+      if (sanitizedValue !== value) {
+        e.target.value = sanitizedValue;
+      }
+      
+      // Call original onChange if provided
+      if (props.onChange) {
+        props.onChange(e);
+      }
+    };
+
     return (
       <textarea
         className={cn(
@@ -16,6 +36,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         )}
         ref={ref}
         {...props}
+        onChange={handleChange}
       />
     )
   }

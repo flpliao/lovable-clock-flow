@@ -14,10 +14,10 @@ export const createAuthHandlers = (
 ) => {
   const navigate = useNavigate();
 
-  // 從 staff 表載入用戶完整權限資料
+  // Secure user data loading without exposing sensitive information
   const loadUserFromStaffTable = async (authUser: any): Promise<User | null> => {
     try {
-      console.log('🔄 從 staff 表載入用戶權限資料:', authUser.email);
+      console.log('🔄 Loading user permission data from staff table');
       
       const { data: staffData, error } = await supabase
         .from('staff')
@@ -26,12 +26,12 @@ export const createAuthHandlers = (
         .single();
       
       if (error) {
-        console.error('❌ 從 staff 表載入用戶失敗:', error);
+        console.error('❌ Failed to load user from staff table:', error.message);
         return null;
       }
       
       if (staffData) {
-        console.log('✅ 成功從 staff 表載入用戶資料:', {
+        console.log('✅ Successfully loaded user data from staff table:', {
           staff_id: staffData.id,
           user_id: staffData.user_id,
           name: staffData.name,
@@ -39,14 +39,7 @@ export const createAuthHandlers = (
           role: staffData.role
         });
         
-        // 特別處理廖俊雄的權限
-        let finalRole = staffData.role;
-        if (staffData.name === '廖俊雄' || staffData.email === 'flpliao@gmail.com') {
-          finalRole = 'admin';
-          console.log('🔐 廖俊雄特別權限處理，強制設定為 admin');
-        }
-        
-        // 轉換為 User 格式，使用 Supabase Auth 的 user ID
+        // Convert to User format using Supabase Auth user ID
         const user: User = {
           id: authUser.id,
           name: staffData.name,
@@ -55,11 +48,11 @@ export const createAuthHandlers = (
           onboard_date: staffData.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
           hire_date: staffData.hire_date,
           supervisor_id: staffData.supervisor_id,
-          role: finalRole as 'admin' | 'manager' | 'user',
+          role: staffData.role as 'admin' | 'manager' | 'user',
           email: staffData.email
         };
         
-        console.log('🔐 用戶權限資料載入完成:', {
+        console.log('🔐 User permission data loaded:', {
           auth_uid: user.id,
           staff_id: staffData.id,
           name: user.name,
@@ -72,33 +65,33 @@ export const createAuthHandlers = (
       
       return null;
     } catch (error) {
-      console.error('❌ 載入 staff 表資料系統錯誤:', error);
+      console.error('❌ System error loading staff table data:', error);
       return null;
     }
   };
 
-  // 處理用戶登入的統一函數
+  // Handle user login with secure data handling
   const handleUserLogin = useCallback(async (session: any) => {
-    console.log('🔄 開始處理用戶登入...', session.user?.email);
+    console.log('🔄 Processing user login...');
     
     try {
-      // 優先從 staff 表載入用戶資料
+      // Load user data from staff table first
       const staffUser = await loadUserFromStaffTable(session.user);
       
       if (staffUser) {
-        console.log('✅ 使用 staff 表資料:', staffUser.name, '角色:', staffUser.role);
+        console.log('✅ Using staff table data:', staffUser.name, 'role:', staffUser.role);
         setCurrentUser(staffUser);
         setIsAuthenticated(true);
         saveUserToStorage(staffUser);
         setUserError(null);
-        console.log('🔐 認證狀態已設定為 true (staff)');
+        console.log('🔐 Authentication status set to true (staff)');
         return;
       }
 
-      // 如果沒有 staff 資料，使用 AuthService 作為後備
+      // Fallback to AuthService if no staff data
       const result = await AuthService.getUserFromSession(session.user.email);
       if (result.success && result.user) {
-        console.log('✅ 使用 AuthService 用戶資料:', result.user.name);
+        console.log('✅ Using AuthService user data:', result.user.name);
         const user: User = {
           id: result.user.id,
           name: result.user.name,
@@ -113,17 +106,17 @@ export const createAuthHandlers = (
         setIsAuthenticated(true);
         saveUserToStorage(user);
         setUserError(null);
-        console.log('🔐 認證狀態已設定為 true (auth service)');
+        console.log('🔐 Authentication status set to true (auth service)');
         return;
       }
 
-      // 最後使用會話中的基本資料作為後備
-      console.log('⚠️ 使用會話基本資料作為後備');
+      // Final fallback to session basic data
+      console.log('⚠️ Using session basic data as fallback');
       const fallbackUser: User = {
         id: session.user.id,
-        name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '用戶',
-        position: '員工',
-        department: '一般',
+        name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+        position: 'Staff',
+        department: 'General',
         onboard_date: new Date().toISOString().split('T')[0],
         role: 'user',
         email: session.user.email
@@ -133,28 +126,28 @@ export const createAuthHandlers = (
       setIsAuthenticated(true);
       saveUserToStorage(fallbackUser);
       setUserError(null);
-      console.log('🔐 認證狀態已設定為 true (fallback)');
+      console.log('🔐 Authentication status set to true (fallback)');
     } catch (error) {
-      console.error('❌ 處理用戶登入失敗:', error);
-      setUserError('載入用戶資料失敗');
+      console.error('❌ User login processing failed:', error);
+      setUserError('Failed to load user data');
       setIsAuthenticated(false);
     }
   }, [setCurrentUser, setIsAuthenticated, setUserError]);
 
-  // 處理用戶登出的統一函數
+  // Handle user logout with proper cleanup
   const handleUserLogout = useCallback(() => {
-    console.log('🚪 處理用戶登出');
+    console.log('🚪 Processing user logout');
     setCurrentUser(null);
     setIsAuthenticated(false);
     setUserError(null);
     clearUserStorage();
     
-    // 清除權限快取
+    // Clear permission cache
     const permissionService = UnifiedPermissionService.getInstance();
     permissionService.clearCache();
     
-    // 確保跳轉到登入頁面
-    console.log('🔄 登出後導向登入頁面');
+    // Navigate to login page
+    console.log('🔄 Redirecting to login page after logout');
     navigate('/login', { replace: true });
   }, [navigate, setCurrentUser, setIsAuthenticated, setUserError]);
 

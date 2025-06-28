@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,10 +13,10 @@ import { LeaveBalanceCard } from './LeaveBalanceCard';
 import { calculateWorkingHours } from '@/utils/workingHoursCalculator';
 import { validateLeaveRequest } from '@/utils/leaveValidation';
 import { datePickerToDatabase } from '@/utils/dateUtils';
-import { calculateAnnualLeaveDays, formatYearsOfService } from '@/utils/annualLeaveCalculator';
-import { differenceInDays, format } from 'date-fns';
-import { Loader2 } from 'lucide-react';
+import { calculateAnnualLeaveDays } from '@/utils/annualLeaveCalculator';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface NewLeaveRequestFormProps {
   onSubmit?: () => void;
@@ -25,13 +24,14 @@ interface NewLeaveRequestFormProps {
 
 export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
   const { toast } = useToast();
-  const { currentUser } = useUser();
+  const { currentUser, isAuthenticated } = useUser();
   const { createLeaveRequest } = useLeaveManagementContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [calculatedHours, setCalculatedHours] = useState<number>(0);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [userStaffData, setUserStaffData] = useState<any>(null);
   const [isLoadingStaffData, setIsLoadingStaffData] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   const form = useForm<LeaveFormValues>({
     resolver: zodResolver(leaveFormSchema),
@@ -60,6 +60,10 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       setIsLoadingStaffData(true);
       
       try {
+        // 檢查認證狀態
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        console.log('🔍 認證狀態檢查:', { user: user?.id, authError });
+
         // 使用 user_id 欄位查詢員工資料
         const { data: staffData, error: staffError } = await supabase
           .from('staff')
@@ -67,7 +71,10 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           .eq('user_id', currentUser.id)
           .single();
 
-        console.log('📋 查詢員工資料結果:', { staffData, staffError });
+        console.log('📋 查詢員工資料結果:', { 
+          staffData: staffData ? { ...staffData, password: '隱藏' } : null, 
+          staffError 
+        });
 
         if (staffError) {
           console.error('❌ 載入員工資料失敗:', staffError);
@@ -163,6 +170,14 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         console.log('✅ 完整員工資料:', completeStaffData);
         setUserStaffData(completeStaffData);
 
+        // 設定調試資訊
+        setDebugInfo({
+          currentUser: { id: currentUser.id, name: currentUser.name },
+          authUser: user?.id,
+          isAuthenticated,
+          staffData: completeStaffData
+        });
+
       } catch (error) {
         console.error('❌ 載入員工資料時發生錯誤:', error);
         toast({
@@ -177,7 +192,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     };
 
     loadStaffData();
-  }, [currentUser?.id, toast]);
+  }, [currentUser?.id, toast, isAuthenticated]);
 
   // 計算請假時數
   useEffect(() => {
@@ -262,6 +277,15 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       return;
     }
 
+    if (!isAuthenticated) {
+      toast({
+        title: "認證錯誤",
+        description: "用戶認證狀態異常，請重新登入",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (validationError) {
       toast({
         title: "申請失敗",
@@ -283,7 +307,12 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     try {
       setIsSubmitting(true);
       
-      console.log('📝 提交請假申請:', data);
+      console.log('📝 提交請假申請:', {
+        formData: data,
+        calculatedHours,
+        userStaffData,
+        debugInfo
+      });
 
       const startDateStr = datePickerToDatabase(data.start_date);
       const endDateStr = datePickerToDatabase(data.end_date);
@@ -337,7 +366,30 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* 員工資料和特休餘額顯示 - 只保留這一個 */}
+      {/* 調試資訊 - 僅在開發環境顯示 */}
+      {process.env.NODE_ENV === 'development' && debugInfo && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>調試資訊:</strong>
+            <pre className="text-xs mt-2 whitespace-pre-wrap">
+              {JSON.stringify(debugInfo, null, 2)}
+            </pre>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* 認證狀態警告 */}
+      {!isAuthenticated && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            用戶未正確認證，請重新登入後再試
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* 員工資料和特休餘額顯示 */}
       <LeaveBalanceCard 
         userStaffData={userStaffData}
         hasHireDate={hasHireDate}
@@ -346,7 +398,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          {/* 使用簡化的表單欄位組件，不重複顯示員工資料 */}
+          {/* 使用簡化的表單欄位組件 */}
           <LeaveRequestSimplifiedFormFields 
             form={form}
             calculatedHours={calculatedHours}
@@ -359,15 +411,15 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           {watchedLeaveType && (
             <LeaveTypeDetailCard 
               leaveType={watchedLeaveType}
-              remainingDays={getLeaveData(watchedLeaveType).remainingDays}
-              usedDays={getLeaveData(watchedLeaveType).usedDays}
+              remainingDays={userStaffData?.remainingAnnualLeaveDays}
+              usedDays={userStaffData?.usedAnnualLeaveDays || 0}
             />
           )}
           
           <div className="flex justify-end pt-4">
             <Button
               type="submit"
-              disabled={isSubmitting || validationError !== null || calculatedHours <= 0}
+              disabled={isSubmitting || validationError !== null || calculatedHours <= 0 || !isAuthenticated}
               className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-2 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (

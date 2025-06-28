@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnnualLeaveBalance } from '@/types';
@@ -181,9 +180,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     console.log('👤 UserProvider: 初始化認證狀態管理');
     
-    // 設置 Supabase Auth 狀態監聽器
+    // 設置 Supabase Auth 独立監聽器
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔄 Auth 狀態變化:', event, '會話存在:', !!session);
+      console.log('🔄 Auth 独立監聽器:', event, '會話存在:', !!session);
       
       if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
         console.log('✅ 用戶已登入 - 事件:', event);
@@ -270,11 +269,38 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       // 使用 Supabase Auth 登出
       await AuthService.signOut();
-      // handleUserLogout 會在 onAuthStateChange 中自動被呼叫
+      
+      // 立即重置本地狀態，不等待 onAuthStateChange
+      console.log('🔄 立即重置本地狀態');
+      setCurrentUser(null);
+      setIsAuthenticated(false);
+      setAnnualLeaveBalance(null);
+      setUserError(null);
+      clearUserStorage();
+      
+      // 清除權限快取
+      const permissionService = UnifiedPermissionService.getInstance();
+      permissionService.clearCache();
+      
+      // 導向登入頁面
+      navigate('/login', { replace: true });
+      
     } catch (error) {
       console.error('❌ 登出失敗:', error);
       // 即使登出失敗，也要清除本地狀態
-      handleUserLogout();
+      console.log('🔄 強制重置本地狀態');
+      setCurrentUser(null);
+      setIsAuthenticated(false);
+      setAnnualLeaveBalance(null);
+      setUserError(null);
+      clearUserStorage();
+      
+      // 清除權限快取
+      const permissionService = UnifiedPermissionService.getInstance();
+      permissionService.clearCache();
+      
+      // 導向登入頁面
+      navigate('/login', { replace: true });
     }
   };
 

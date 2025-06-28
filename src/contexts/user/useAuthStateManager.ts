@@ -33,6 +33,7 @@ export const useAuthStateManager = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔄 Auth 状态变化:', event, '會話存在:', !!session);
       console.log('🔄 用戶信息:', session?.user?.email);
+      console.log('🔄 當前路徑:', window.location.pathname);
       
       if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
         console.log('✅ 用戶已登入 - 事件:', event);
@@ -42,13 +43,17 @@ export const useAuthStateManager = () => {
         setIsAuthenticated(true);
         console.log('🔐 強制設定認證狀態為 true');
         
-        // 在登入成功後立即重定向（延遲以確保狀態更新完成）
-        if (event === 'SIGNED_IN') {
-          console.log('🔄 登入成功，準備重定向到主頁');
+        // 只有在登入頁面時才進行重定向
+        if (event === 'SIGNED_IN' && window.location.pathname === '/login') {
+          console.log('🔄 在登入頁面檢測到登入成功，準備重定向到主頁');
+          // 使用更短的延遲時間並確保重定向
           setTimeout(() => {
-            console.log('🔄 執行重定向到主頁');
-            navigate('/', { replace: true });
-          }, 500);
+            console.log('🔄 執行重定向到主頁，當前路徑:', window.location.pathname);
+            if (window.location.pathname === '/login') {
+              console.log('🔄 確認在登入頁面，執行重定向');
+              navigate('/', { replace: true });
+            }
+          }, 100);
         }
         
       } else if (event === 'SIGNED_OUT') {
@@ -76,6 +81,14 @@ export const useAuthStateManager = () => {
           console.log('📦 發現現有會話，載入用戶資料');
           await handleUserLogin(session);
           setIsAuthenticated(true);
+          
+          // 如果在登入頁面且已有會話，立即重定向
+          if (window.location.pathname === '/login') {
+            console.log('🔄 在登入頁面發現現有會話，立即重定向');
+            setTimeout(() => {
+              navigate('/', { replace: true });
+            }, 100);
+          }
         } else {
           console.log('❌ 未發現現有會話');
           setIsAuthenticated(false);

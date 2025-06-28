@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -35,13 +34,14 @@ const LoginForm: React.FC = () => {
       
       if (authResult.success && authResult.user && authResult.session) {
         console.log('✅ 登入成功:', authResult.user.name);
+        console.log('🔄 登入成功，當前路徑:', window.location.pathname);
         
         toast({
           title: '登入成功',
           description: `歡迎回來，${authResult.user.name}！`,
         });
         
-        // 不立即重定向，讓 AuthStateManager 處理
+        // 完全不進行重定向，讓 AuthStateManager 完全處理
         console.log('🔄 登入成功，等待認證狀態管理器處理重定向');
         
       } else {

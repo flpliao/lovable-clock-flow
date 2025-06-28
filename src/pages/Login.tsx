@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User } from 'lucide-react';
@@ -18,7 +17,8 @@ const Login = () => {
       isUserLoaded,
       isAuthenticated,
       hasCurrentUser: !!currentUser,
-      hasRedirected
+      hasRedirected,
+      pathname: window.location.pathname
     });
     
     // 確保用戶狀態已載入且已認證，且尚未重定向
@@ -31,16 +31,14 @@ const Login = () => {
         description: `${currentUser.name}，正在跳轉到主頁面...`,
       });
       
-      // 使用較短的延遲時間
-      setTimeout(() => {
-        console.log('🔄 Login: 執行重定向到主頁面');
-        navigate('/', { replace: true });
-      }, 100);
+      // 立即重定向，不延遲
+      console.log('🔄 Login: 立即執行重定向到主頁面');
+      navigate('/', { replace: true });
     }
   }, [isUserLoaded, isAuthenticated, currentUser, navigate, hasRedirected, toast]);
 
   // 已登入用戶顯示跳轉中
-  if (isAuthenticated && currentUser && (hasRedirected || isUserLoaded)) {
+  if (isAuthenticated && currentUser) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
         <div className="text-white text-center">

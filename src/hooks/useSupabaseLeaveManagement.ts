@@ -61,6 +61,43 @@ export const useSupabaseLeaveManagement = () => {
     }
   }, [currentUser?.id, toast]);
 
+  // 獲取員工資料的輔助函數
+  const getStaffInfo = useCallback(async (userId: string) => {
+    console.log('🔍 useSupabaseLeaveManagement: 獲取員工資料，用戶ID:', userId);
+    
+    try {
+      // 首先嘗試通過 user_id 查找
+      const { data: staffByUserId, error: userIdError } = await supabase
+        .from('staff')
+        .select('id, user_id, name, department, supervisor_id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (staffByUserId && !userIdError) {
+        console.log('✅ 通過 user_id 找到員工資料:', staffByUserId);
+        return staffByUserId;
+      }
+
+      // 如果通過 user_id 找不到，嘗試通過 id 查找
+      const { data: staffById, error: idError } = await supabase
+        .from('staff')
+        .select('id, user_id, name, department, supervisor_id')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (staffById && !idError) {
+        console.log('✅ 通過 id 找到員工資料:', staffById);
+        return staffById;
+      }
+
+      console.error('❌ 無法找到員工資料:', { userIdError, idError });
+      return null;
+    } catch (error) {
+      console.error('❌ 獲取員工資料時發生錯誤:', error);
+      return null;
+    }
+  }, []);
+
   // 創建請假申請
   const createLeaveRequest = useCallback(async (newRequest: Omit<LeaveRequest, 'id'>): Promise<boolean> => {
     if (!currentUser?.id) {
@@ -95,11 +132,29 @@ export const useSupabaseLeaveManagement = () => {
 
       console.log('✅ 用戶認證確認:', user.id);
 
-      // 確保使用正確的用戶ID
+      // 獲取員工資料以確保正確的 staff_id
+      const staffInfo = await getStaffInfo(currentUser.id);
+      if (!staffInfo) {
+        console.error('❌ 找不到員工資料記錄');
+        toast({
+          title: "資料驗證失敗",
+          description: "找不到您的員工資料記錄，請聯繫管理員進行帳號設定",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      console.log('✅ 員工資料驗證成功:', {
+        staffId: staffInfo.id,
+        userId: staffInfo.user_id,
+        name: staffInfo.name
+      });
+
+      // 準備插入資料，使用正確的 staff_id
       const requestData = {
         ...newRequest,
         user_id: currentUser.id,
-        staff_id: currentUser.id, // 確保 staff_id 也設定
+        staff_id: staffInfo.id, // 使用從 staff 表獲取的正確 ID
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -109,10 +164,8 @@ export const useSupabaseLeaveManagement = () => {
       delete (requestData as any).id;
 
       console.log('📝 useSupabaseLeaveManagement: 準備插入的資料:', {
-        ...requestData,
-        // 隱藏敏感資訊，只顯示關鍵欄位
-        user_id: requestData.user_id ? '已設定' : '未設定',
-        staff_id: requestData.staff_id ? '已設定' : '未設定',
+        user_id: requestData.user_id,
+        staff_id: requestData.staff_id,
         leave_type: requestData.leave_type,
         start_date: requestData.start_date,
         end_date: requestData.end_date,
@@ -120,6 +173,7 @@ export const useSupabaseLeaveManagement = () => {
         status: requestData.status
       });
 
+      // 插入請假申請
       const { data, error } = await supabase
         .from('leave_requests')
         .insert([requestData])
@@ -139,15 +193,23 @@ export const useSupabaseLeaveManagement = () => {
         let errorMessage = "無法提交請假申請";
         let errorTitle = "申請失敗";
 
-        if (error.code === 'PGRST301') {
+        if (error.code === '23503') {
+          if (error.message.includes('staff_id_fkey')) {
+            errorMessage = "員工資料關聯錯誤，請聯繫系統管理員檢查帳號設定";
+            errorTitle = "資料關聯錯誤";
+          } else if (error.message.includes('leave_type')) {
+            errorMessage = "請假類型設定錯誤，請重新選擇請假類型";
+            errorTitle = "請假類型錯誤";
+          } else {
+            errorMessage = "資料關聯錯誤，請檢查填寫內容或聯繫系統管理員";
+            errorTitle = "資料關聯錯誤";
+          }
+        } else if (error.code === 'PGRST301') {
           errorMessage = "權限不足，無法提交請假申請。請確認您已正確登入且具備相關權限。";
           errorTitle = "權限錯誤";
         } else if (error.code === '23502') {
           errorMessage = "資料不完整，請檢查所有必填欄位是否已填寫。";
           errorTitle = "資料驗證失敗";
-        } else if (error.code === '23503') {
-          errorMessage = "資料關聯錯誤，請聯繫系統管理員。";
-          errorTitle = "資料錯誤";
         } else if (error.message.includes('row-level security')) {
           errorMessage = "安全政策限制，無法提交請假申請。請聯繫系統管理員檢查權限設定。";
           errorTitle = "安全政策錯誤";
@@ -155,15 +217,6 @@ export const useSupabaseLeaveManagement = () => {
           errorMessage = "資料驗證失敗，請檢查填寫內容是否符合規定。";
           errorTitle = "資料驗證失敗";
         }
-
-        // 顯示詳細錯誤給開發者（在 console）
-        console.error('🔍 詳細錯誤分析:', {
-          錯誤代碼: error.code,
-          錯誤訊息: error.message,
-          錯誤詳情: error.details,
-          錯誤提示: error.hint,
-          請求資料: requestData
-        });
 
         toast({
           title: errorTitle,
@@ -214,7 +267,7 @@ export const useSupabaseLeaveManagement = () => {
       });
       return false;
     }
-  }, [currentUser?.id, toast, loadLeaveRequests]);
+  }, [currentUser?.id, toast, loadLeaveRequests, getStaffInfo]);
 
   // 載入年假餘額
   const loadAnnualLeaveBalance = useCallback(async (userId: string) => {

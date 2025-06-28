@@ -31,7 +31,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [userStaffData, setUserStaffData] = useState<any>(null);
   const [isLoadingStaffData, setIsLoadingStaffData] = useState(true);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [staffValidationError, setStaffValidationError] = useState<string | null>(null);
 
   const form = useForm<LeaveFormValues>({
     resolver: zodResolver(leaveFormSchema),
@@ -47,67 +47,84 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
   const watchedEndDate = form.watch('end_date');
   const watchedLeaveType = form.watch('leave_type');
 
+  // 驗證員工資料的函數
+  const validateStaffData = async (userId: string) => {
+    console.log('🔍 驗證員工資料，用戶ID:', userId);
+    
+    try {
+      // 首先檢查通過 user_id 查詢
+      const { data: staffByUserId, error: userIdError } = await supabase
+        .from('staff')
+        .select('id, user_id, name, department, position, hire_date, supervisor_id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (staffByUserId && !userIdError) {
+        console.log('✅ 通過 user_id 找到員工資料:', staffByUserId);
+        return { staff: staffByUserId, error: null };
+      }
+
+      // 如果通過 user_id 找不到，嘗試通過 id 查詢
+      const { data: staffById, error: idError } = await supabase
+        .from('staff')
+        .select('id, user_id, name, department, position, hire_date, supervisor_id')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (staffById && !idError) {
+        console.log('✅ 通過 id 找到員工資料:', staffById);
+        return { staff: staffById, error: null };
+      }
+
+      console.error('❌ 無法找到員工資料:', { userIdError, idError });
+      return { 
+        staff: null, 
+        error: '找不到員工資料記錄，請聯繫管理員進行帳號設定' 
+      };
+    } catch (error) {
+      console.error('❌ 驗證員工資料時發生錯誤:', error);
+      return { 
+        staff: null, 
+        error: '驗證員工資料時發生系統錯誤' 
+      };
+    }
+  };
+
   // 載入員工資料
   useEffect(() => {
     const loadStaffData = async () => {
       if (!currentUser?.id) {
         console.log('❌ 沒有當前用戶');
         setIsLoadingStaffData(false);
+        setStaffValidationError('請先登入系統');
         return;
       }
 
       console.log('🚀 開始載入員工資料，用戶ID:', currentUser.id);
       setIsLoadingStaffData(true);
+      setStaffValidationError(null);
       
       try {
         // 檢查認證狀態
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         console.log('🔍 認證狀態檢查:', { user: user?.id, authError });
 
-        // 使用 user_id 欄位查詢員工資料
-        const { data: staffData, error: staffError } = await supabase
-          .from('staff')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .single();
+        if (authError || !user) {
+          setStaffValidationError('用戶認證已過期，請重新登入');
+          return;
+        }
 
-        console.log('📋 查詢員工資料結果:', { 
-          staffData: staffData ? { ...staffData, password: '隱藏' } : null, 
-          staffError 
-        });
-
-        if (staffError) {
-          console.error('❌ 載入員工資料失敗:', staffError);
-          
-          if (staffError.code === 'PGRST116') {
-            toast({
-              title: "員工資料不存在",
-              description: "找不到您的員工資料記錄，請聯繫管理員進行帳號設定",
-              variant: "destructive"
-            });
-          } else {
-            toast({
-              title: "載入失敗",
-              description: "無法載入員工資料：" + staffError.message,
-              variant: "destructive"
-            });
-          }
+        // 驗證員工資料
+        const { staff, error } = await validateStaffData(currentUser.id);
+        
+        if (error || !staff) {
+          console.error('❌ 員工資料驗證失敗:', error);
+          setStaffValidationError(error || '找不到員工資料');
           setUserStaffData(null);
           return;
         }
 
-        if (!staffData) {
-          console.log('⚠️ 找不到員工資料');
-          toast({
-            title: "員工資料不存在",
-            description: "找不到您的員工資料記錄，請聯繫管理員確認帳號設定",
-            variant: "destructive"
-          });
-          setUserStaffData(null);
-          return;
-        }
-
-        const hireDate = staffData.hire_date;
+        const hireDate = staff.hire_date;
         console.log('📅 入職日期:', hireDate);
         
         // 計算年資和特休天數
@@ -128,16 +145,15 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
             (months > 0 ? `${years}年${months}個月` : `${years}年`) : 
             `${months}個月`;
 
-          // 計算特休天數
           totalAnnualLeaveDays = calculateAnnualLeaveDays(hireDateObj);
           console.log('📊 計算的特休天數:', totalAnnualLeaveDays);
 
-          // 計算已使用的特休天數
+          // 計算已使用的特休天數 - 使用 staff.id 查詢
           const currentYear = new Date().getFullYear();
           const { data: leaveRecords, error: leaveError } = await supabase
             .from('leave_requests')
             .select('hours')
-            .eq('user_id', currentUser.id)
+            .eq('staff_id', staff.id) // 使用正確的 staff.id
             .eq('leave_type', 'annual')
             .eq('status', 'approved')
             .gte('start_date', `${currentYear}-01-01`)
@@ -156,11 +172,12 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
         // 設定完整的員工資料
         const completeStaffData = {
-          name: staffData.name,
-          department: staffData.department,
-          position: staffData.position,
+          id: staff.id, // 確保包含 staff.id
+          name: staff.name,
+          department: staff.department,
+          position: staff.position,
           hire_date: hireDate,
-          supervisor_id: staffData.supervisor_id,
+          supervisor_id: staff.supervisor_id,
           yearsOfService,
           totalAnnualLeaveDays,
           usedAnnualLeaveDays,
@@ -170,21 +187,9 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         console.log('✅ 完整員工資料:', completeStaffData);
         setUserStaffData(completeStaffData);
 
-        // 設定調試資訊
-        setDebugInfo({
-          currentUser: { id: currentUser.id, name: currentUser.name },
-          authUser: user?.id,
-          isAuthenticated,
-          staffData: completeStaffData
-        });
-
       } catch (error) {
         console.error('❌ 載入員工資料時發生錯誤:', error);
-        toast({
-          title: "載入錯誤",
-          description: "載入員工資料時發生系統錯誤，請稍後再試或聯繫管理員",
-          variant: "destructive"
-        });
+        setStaffValidationError('載入員工資料時發生系統錯誤，請稍後再試或聯繫管理員');
         setUserStaffData(null);
       } finally {
         setIsLoadingStaffData(false);
@@ -192,7 +197,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     };
 
     loadStaffData();
-  }, [currentUser?.id, toast, isAuthenticated]);
+  }, [currentUser?.id, isAuthenticated]);
 
   // 計算請假時數
   useEffect(() => {
@@ -268,6 +273,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
   };
 
   const handleSubmit = async (data: LeaveFormValues) => {
+    // 提交前驗證
     if (!currentUser) {
       toast({
         title: "錯誤",
@@ -281,6 +287,15 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       toast({
         title: "認證錯誤",
         description: "用戶認證狀態異常，請重新登入",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (staffValidationError || !userStaffData) {
+      toast({
+        title: "員工資料錯誤",
+        description: staffValidationError || "找不到員工資料，請聯繫管理員",
         variant: "destructive"
       });
       return;
@@ -310,8 +325,11 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       console.log('📝 提交請假申請:', {
         formData: data,
         calculatedHours,
-        userStaffData,
-        debugInfo
+        userStaffData: {
+          staffId: userStaffData.id,
+          name: userStaffData.name,
+          department: userStaffData.department
+        }
       });
 
       const startDateStr = datePickerToDatabase(data.start_date);
@@ -320,6 +338,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       const leaveRequest = {
         id: '',
         user_id: currentUser.id,
+        staff_id: userStaffData.id, // 使用驗證過的 staff.id
         start_date: startDateStr,
         end_date: endDateStr,
         leave_type: data.leave_type as any,
@@ -332,7 +351,14 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         updated_at: new Date().toISOString()
       };
 
-      console.log('📋 準備建立請假申請:', leaveRequest);
+      console.log('📋 準備建立請假申請:', {
+        user_id: leaveRequest.user_id,
+        staff_id: leaveRequest.staff_id,
+        leave_type: leaveRequest.leave_type,
+        start_date: leaveRequest.start_date,
+        end_date: leaveRequest.end_date,
+        hours: leaveRequest.hours
+      });
 
       const success = await createLeaveRequest(leaveRequest);
       
@@ -376,6 +402,16 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         </Alert>
       )}
 
+      {/* 員工資料驗證錯誤警告 */}
+      {staffValidationError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>員工資料驗證失敗：</strong>{staffValidationError}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* 員工資料和特休餘額顯示 */}
       <LeaveBalanceCard 
         userStaffData={userStaffData}
@@ -406,7 +442,14 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           <div className="flex justify-end pt-4">
             <Button
               type="submit"
-              disabled={isSubmitting || validationError !== null || calculatedHours <= 0 || !isAuthenticated}
+              disabled={
+                isSubmitting || 
+                validationError !== null || 
+                calculatedHours <= 0 || 
+                !isAuthenticated || 
+                !!staffValidationError || 
+                !userStaffData
+              }
               className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-2 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (

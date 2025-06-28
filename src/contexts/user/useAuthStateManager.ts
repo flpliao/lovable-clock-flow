@@ -36,6 +36,11 @@ export const useAuthStateManager = () => {
       if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
         console.log('✅ 用戶已登入 - 事件:', event);
         await handleUserLogin(session);
+        
+        // 確保認證狀態立即更新
+        setIsAuthenticated(true);
+        console.log('🔐 強制設定認證狀態為 true');
+        
       } else if (event === 'SIGNED_OUT') {
         console.log('🚪 用戶已登出');
         handleUserLogout();
@@ -60,6 +65,7 @@ export const useAuthStateManager = () => {
         if (session) {
           console.log('📦 發現現有會話，載入用戶資料');
           await handleUserLogin(session);
+          setIsAuthenticated(true);
         } else {
           console.log('❌ 未發現現有會話');
           setIsAuthenticated(false);

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User } from 'lucide-react';
@@ -9,21 +10,34 @@ const Login = () => {
   const { currentUser, isAuthenticated, isUserLoaded } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   // 檢查已登入用戶並重定向
   useEffect(() => {
-    if (isUserLoaded && isAuthenticated && currentUser && !isRedirecting) {
-      console.log('🔐 用戶已登入，重定向到主頁面:', currentUser.name);
-      setIsRedirecting(true);
+    // 確保用戶狀態已載入且已認證
+    if (isUserLoaded && isAuthenticated && currentUser && !hasRedirected) {
+      console.log('🔐 用戶已登入，準備重定向:', currentUser.name);
+      setHasRedirected(true);
       
-      // 立即重定向
+      // 使用 setTimeout 確保狀態更新完成
+      setTimeout(() => {
+        console.log('🔄 執行重定向到主頁面');
+        navigate('/', { replace: true });
+      }, 100);
+    }
+  }, [isUserLoaded, isAuthenticated, currentUser, navigate, hasRedirected]);
+
+  // 監聽認證狀態變化
+  useEffect(() => {
+    if (isAuthenticated && currentUser && !hasRedirected) {
+      console.log('🔄 認證狀態變化，準備重定向');
+      setHasRedirected(true);
       navigate('/', { replace: true });
     }
-  }, [isUserLoaded, isAuthenticated, currentUser, navigate, isRedirecting]);
+  }, [isAuthenticated, currentUser, navigate, hasRedirected]);
 
   // 已登入用戶顯示跳轉中
-  if (isRedirecting || (isAuthenticated && currentUser)) {
+  if (hasRedirected || (isAuthenticated && currentUser)) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
         <div className="text-white text-center">

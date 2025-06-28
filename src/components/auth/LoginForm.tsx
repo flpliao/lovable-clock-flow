@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { AuthService } from '@/services/authService';
-import { useUser } from '@/contexts/UserContext';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -14,7 +13,6 @@ const LoginForm: React.FC = () => {
   
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setCurrentUser } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,32 +35,16 @@ const LoginForm: React.FC = () => {
       
       if (authResult.success && authResult.user && authResult.session) {
         console.log('✅ 登入成功:', authResult.user.name);
-        console.log('📄 會話資料:', authResult.session.user.id);
-        
-        // 直接將用戶資料寫入 UserContext
-        const userForContext = {
-          id: authResult.session.user.id,
-          name: authResult.user.name,
-          position: authResult.user.position,
-          department: authResult.user.department,
-          onboard_date: new Date().toISOString().split('T')[0],
-          role: authResult.user.role,
-          email: authResult.user.email
-        };
-        
-        console.log('📝 寫入 UserContext 的用戶資料:', userForContext);
-        setCurrentUser(userForContext);
         
         toast({
           title: '登入成功',
           description: `歡迎回來，${authResult.user.name}！`,
         });
         
-        // 給 UserContext 更多時間處理用戶狀態變化
-        setTimeout(() => {
-          console.log('🔄 準備跳轉到主頁面');
-          navigate('/', { replace: true });
-        }, 1500);
+        // 立即重定向，不等待狀態更新
+        console.log('🔄 立即跳轉到主頁面');
+        navigate('/', { replace: true });
+        
       } else {
         console.log('❌ 登入失敗:', authResult.error);
         

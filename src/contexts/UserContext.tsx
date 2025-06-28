@@ -122,6 +122,15 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         saveUserToStorage(staffUser);
         setIsUserLoaded(true);
         
+        // 特別檢查廖俊雄的權限
+        if (staffUser.name === '廖俊雄' || session.user.email === 'flpliao@gmail.com') {
+          console.log('🔐 廖俊雄登入，確認管理員權限:', {
+            name: staffUser.name,
+            role: staffUser.role,
+            isAdmin: staffUser.role === 'admin'
+          });
+        }
+        
         // 檢查是否在 callback 頁面，如果是則重定向
         if (window.location.pathname === '/auth/callback') {
           console.log('🔄 從 callback 頁面重定向到首頁');

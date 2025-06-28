@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnnualLeaveBalance } from '@/types';
@@ -68,7 +67,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           role_id: staffData.role_id
         });
         
-        // 轉換為 User 格式
+        // 轉換為 User 格式，確保使用 staff 表的 role
         const user: User = {
           id: staffData.user_id || authUser.id,
           name: staffData.name,
@@ -77,7 +76,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           onboard_date: staffData.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
           hire_date: staffData.hire_date,
           supervisor_id: staffData.supervisor_id,
-          role: staffData.role as 'admin' | 'manager' | 'user'
+          role: staffData.role as 'admin' | 'manager' | 'user' // 確保使用 staff 表的 role
         };
         
         console.log('🔐 用戶權限資料載入完成:', {
@@ -137,7 +136,16 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const storedUser = getUserFromStorage();
       if (storedUser && storedUser.id === session.user.id) {
         console.log('📦 恢復已存儲的用戶資料:', storedUser.name, '角色:', storedUser.role);
-        setCurrentUser(storedUser);
+        
+        // 嘗試重新從 staff 表更新角色
+        const updatedStaffUser = await loadUserFromStaffTable(session.user);
+        if (updatedStaffUser) {
+          setCurrentUser(updatedStaffUser);
+          saveUserToStorage(updatedStaffUser);
+        } else {
+          setCurrentUser(storedUser);
+        }
+        
         setIsUserLoaded(true);
         
         if (window.location.pathname === '/auth/callback') {
@@ -161,8 +169,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           onboard_date: new Date().toISOString().split('T')[0],
           role: result.user.role
         };
-        setCurrentUser(user);
-        saveUserToStorage(user);
+        
+        // 再次嘗試從 staff 表更新角色
+        const staffUserUpdate = await loadUserFromStaffTable(session.user);
+        const finalUser = staffUserUpdate || user;
+        
+        setCurrentUser(finalUser);
+        saveUserToStorage(finalUser);
         setIsUserLoaded(true);
         
         if (window.location.pathname === '/auth/callback') {
@@ -186,7 +199,14 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         onboard_date: new Date().toISOString().split('T')[0],
         role: 'user'
       };
-      setCurrentUser(fallbackUser);
+      
+      // 即使是後備用戶，也嘗試從 staff 表更新角色
+      try {
+        const staffUserFinal = await loadUserFromStaffTable(session.user);
+        setCurrentUser(staffUserFinal || fallbackUser);
+      } catch {
+        setCurrentUser(fallbackUser);
+      }
       
       // 即使發生錯誤也要重定向
       if (window.location.pathname === '/auth/callback') {

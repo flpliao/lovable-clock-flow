@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { loadUserStaffData, UserStaffData } from '@/services/staffDataService';
@@ -53,7 +54,7 @@ export const useLeaveFormValidation = (formData: LeaveFormData): ValidationResul
       // 載入員工資料 - 現在會受到更新的 RLS 政策保護
       if (currentUser?.id) {
         console.log('🔍 載入員工資料用於驗證，用戶ID:', currentUser.id);
-        console.log('🔐 使用更新的 RLS 政策 (基於 role_id)');
+        console.log('🔐 使用更新的 RLS 政策 (基於 role)');
         
         userStaffData = await loadUserStaffData(currentUser.id);
         

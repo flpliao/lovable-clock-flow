@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnnualLeaveBalance } from '@/types';
@@ -158,8 +159,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           position: result.user.position,
           department: result.user.department,
           onboard_date: new Date().toISOString().split('T')[0],
-          hire_date: result.user.hire_date,
-          supervisor_id: result.user.supervisor_id,
           role: result.user.role
         };
         setCurrentUser(user);

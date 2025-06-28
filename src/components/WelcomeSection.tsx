@@ -1,12 +1,17 @@
+
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock } from 'lucide-react';
+import { useUser } from '@/contexts/UserContext';
+
 interface WelcomeSectionProps {
   userName: string;
 }
+
 const WelcomeSection = ({
   userName
 }: WelcomeSectionProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const { isAdmin } = useUser();
 
   // 每秒更新時間
   useEffect(() => {
@@ -15,11 +20,13 @@ const WelcomeSection = ({
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
   const timeString = currentTime.toLocaleTimeString('zh-TW', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false
   });
+
   const dateString = currentTime.toLocaleDateString('zh-TW', {
     year: 'numeric',
     month: 'long',
@@ -29,14 +36,26 @@ const WelcomeSection = ({
 
   // 確保顯示實際的用戶名稱，改善判斷邏輯
   const displayName = userName && userName !== 'User' && userName !== '訪客' && !userName.includes('-') && !userName.startsWith('User ') && !userName.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i) ? userName : '訪客';
-  return <div className="sm:py-[20px] px-[10px] py-[10px]">
+  
+  // 獲取用戶角色顯示
+  const getUserRoleDisplay = () => {
+    if (isAdmin()) {
+      return '管理員';
+    }
+    return '員工';
+  };
+
+  return (
+    <div className="sm:py-[20px] px-[10px] py-[10px]">
       <div className="space-y-6">
         {/* 問候語 */}
         <div className="text-center px-[10px]">
           <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-white drop-shadow-lg lg:text-4xl py-[10px] my-[20px]">
             您好，{displayName}
           </h1>
-          
+          <div className="inline-block px-3 py-1 bg-white/20 rounded-full backdrop-blur-xl border border-white/30">
+            <span className="text-white text-sm font-medium">{getUserRoleDisplay()}</span>
+          </div>
         </div>
         
         {/* 時間資訊 */}
@@ -60,6 +79,8 @@ const WelcomeSection = ({
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default WelcomeSection;

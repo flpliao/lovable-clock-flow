@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -123,36 +122,12 @@ export const useUserState = () => {
       // 使用 Supabase Auth 登出
       await AuthService.signOut();
       
-      // 立即重置本地狀態，不等待 onAuthStateChange
-      console.log('🔄 立即重置本地狀態');
-      setCurrentUser(null);
-      setIsAuthenticated(false);
-      setAnnualLeaveBalance(null);
-      setUserError(null);
-      clearUserStorage();
-      
-      // 清除權限快取
-      const permissionService = UnifiedPermissionService.getInstance();
-      permissionService.clearCache();
-      
       // 導向登入頁面
       navigate('/login', { replace: true });
       
     } catch (error) {
       console.error('❌ 登出失敗:', error);
-      // 即使登出失敗，也要清除本地狀態
-      console.log('🔄 強制重置本地狀態');
-      setCurrentUser(null);
-      setIsAuthenticated(false);
-      setAnnualLeaveBalance(null);
-      setUserError(null);
-      clearUserStorage();
-      
-      // 清除權限快取
-      const permissionService = UnifiedPermissionService.getInstance();
-      permissionService.clearCache();
-      
-      // 導向登入頁面
+      // 即使登出失敗，也要導向登入頁面
       navigate('/login', { replace: true });
     }
   };
@@ -166,6 +141,8 @@ export const useUserState = () => {
     userError,
     clearUserError,
     resetUserState,
-    isAuthenticated
+    isAuthenticated,
+    setIsAuthenticated,
+    setUserError
   };
 };

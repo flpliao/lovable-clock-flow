@@ -27,4 +27,6 @@ export interface UserContextType {
   clearUserError: () => void;
   resetUserState: () => void;
   isAuthenticated: boolean;
+  setIsAuthenticated: (auth: boolean) => void;
+  setUserError: (error: string | null) => void;
 }

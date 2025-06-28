@@ -18,7 +18,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     userError,
     clearUserError,
     resetUserState,
-    isAuthenticated
+    isAuthenticated,
+    setIsAuthenticated,
+    setUserError
   } = useUserState();
 
   // 創建角色檢查器
@@ -41,7 +43,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       userError,
       clearUserError,
       resetUserState,
-      isAuthenticated
+      isAuthenticated,
+      setIsAuthenticated,
+      setUserError
     }}>
       {children}
     </UserContext.Provider>

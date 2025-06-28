@@ -11,15 +11,22 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { createAuthHandlers } from '@/contexts/user/authHandlers';
 
 const UserInfo: React.FC = () => {
-  const { currentUser, resetUserState } = useUser();
+  const { currentUser, setCurrentUser, setIsAuthenticated, setUserError } = useUser();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
+  // 創建 auth handlers
+  const { handleUserLogout } = createAuthHandlers(
+    setCurrentUser,
+    setIsAuthenticated,
+    setUserError
+  );
+
   const handleLogout = async () => {
-    await resetUserState();
-    navigate('/login');
+    handleUserLogout();
   };
 
   const handleAccountSettings = () => {

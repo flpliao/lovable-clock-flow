@@ -174,39 +174,23 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     console.log('👤 UserProvider: 初始化認證狀態管理');
     
-    let isProcessing = false;
-    
     // 設置 Supabase Auth 狀態監聽器
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔄 Auth 狀態變化:', event, '會話存在:', !!session);
       
-      // 避免重複處理
-      if (isProcessing) {
-        console.log('⚠️ 正在處理中，跳過事件:', event);
-        return;
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
+        console.log('✅ 用戶已登入 - 事件:', event);
+        await handleUserLogin(session);
+      } else if (event === 'SIGNED_OUT') {
+        console.log('🚪 用戶已登出');
+        handleUserLogout();
       }
       
-      isProcessing = true;
-      
-      try {
-        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
-          console.log('✅ 用戶已登入 - 事件:', event);
-          await handleUserLogin(session);
-        } else if (event === 'SIGNED_OUT') {
-          console.log('🚪 用戶已登出');
-          handleUserLogout();
-        }
-      } catch (error) {
-        console.error('❌ 認證狀態變化處理錯誤:', error);
-        setUserError('認證狀態處理失敗');
-        setIsAuthenticated(false);
-      } finally {
-        isProcessing = false;
-        setIsUserLoaded(true);
-      }
+      // 標記用戶狀態已載入
+      setIsUserLoaded(true);
     });
 
-    // 檢查現有會話
+    // 立即檢查現有會話
     const initializeAuth = async () => {
       try {
         console.log('🔍 檢查現有會話...');
@@ -218,14 +202,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           return;
         }
         
-        if (session && !isProcessing) {
+        if (session) {
           console.log('📦 發現現有會話，載入用戶資料');
-          isProcessing = true;
-          try {
-            await handleUserLogin(session);
-          } finally {
-            isProcessing = false;
-          }
+          await handleUserLogin(session);
         } else {
           console.log('❌ 未發現現有會話');
           setIsAuthenticated(false);
@@ -253,12 +232,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!currentUser) {
       setAnnualLeaveBalance(null);
       setUserError(null);
-      setIsAuthenticated(false);
       console.log('👤 UserProvider: 用戶登出，清除所有狀態');
     } else {
       console.log('👤 UserProvider: 用戶登入:', currentUser.name, '權限等級:', currentUser.role);
-      console.log('🔐 認證狀態已設定為 true');
-      setIsAuthenticated(true);
+      console.log('🔐 認證狀態確認:', isAuthenticated);
       
       // 將用戶資料存儲到本地存儲
       saveUserToStorage(currentUser);
@@ -268,7 +245,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const permissionService = UnifiedPermissionService.getInstance();
       permissionService.clearCache();
     }
-  }, [currentUser]);
+  }, [currentUser, isAuthenticated]);
 
   const clearUserError = () => {
     setUserError(null);

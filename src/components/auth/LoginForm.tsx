@@ -35,17 +35,18 @@ const LoginForm: React.FC = () => {
       
       if (authResult.success && authResult.user && authResult.session) {
         console.log('✅ 登入成功:', authResult.user.name);
+        console.log('📄 會話資料:', authResult.session.user.id);
         
         toast({
           title: '登入成功',
           description: `歡迎回來，${authResult.user.name}！`,
         });
         
-        // 給 UserContext 更多時間處理用戶狀態
+        // 給 UserContext 更多時間處理用戶狀態變化
         setTimeout(() => {
-          console.log('🔄 跳轉到主頁面');
+          console.log('🔄 準備跳轉到主頁面');
           navigate('/', { replace: true });
-        }, 1000);
+        }, 1500);
       } else {
         console.log('❌ 登入失敗:', authResult.error);
         

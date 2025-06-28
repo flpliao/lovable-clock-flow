@@ -98,6 +98,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log('✅ 使用 staff 表資料:', staffUser.name, '角色:', staffUser.role);
         setCurrentUser(staffUser);
         saveUserToStorage(staffUser);
+        setUserError(null);
         return;
       }
 
@@ -117,6 +118,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         setCurrentUser(user);
         saveUserToStorage(user);
+        setUserError(null);
         return;
       }
 
@@ -134,6 +136,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       setCurrentUser(fallbackUser);
       saveUserToStorage(fallbackUser);
+      setUserError(null);
     } catch (error) {
       console.error('❌ 處理用戶登入失敗:', error);
       setUserError('載入用戶資料失敗');

@@ -41,10 +41,11 @@ const LoginForm: React.FC = () => {
           description: `歡迎回來，${authResult.user.name}！`,
         });
         
-        // 短延遲後跳轉，讓 UserContext 有時間處理狀態
+        // 給 UserContext 更多時間處理用戶狀態
         setTimeout(() => {
+          console.log('🔄 跳轉到主頁面');
           navigate('/', { replace: true });
-        }, 500);
+        }, 1000);
       } else {
         console.log('❌ 登入失敗:', authResult.error);
         

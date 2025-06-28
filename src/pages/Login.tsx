@@ -17,9 +17,13 @@ const Login = () => {
     if (isUserLoaded && isAuthenticated && currentUser && !isRedirecting) {
       console.log('🔐 用戶已登入，重定向到主頁面:', currentUser.name);
       setIsRedirecting(true);
-      setTimeout(() => {
+      
+      // 延遲重定向，確保狀態穩定
+      const redirectTimer = setTimeout(() => {
         navigate('/', { replace: true });
-      }, 100);
+      }, 500);
+      
+      return () => clearTimeout(redirectTimer);
     }
   }, [isUserLoaded, isAuthenticated, currentUser, navigate, isRedirecting]);
 

@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
 import { AuthService } from '@/services/authService';
 
 const LoginForm: React.FC = () => {
@@ -14,7 +13,6 @@ const LoginForm: React.FC = () => {
   
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setCurrentUser } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,18 +29,6 @@ const LoginForm: React.FC = () => {
         console.log('🎫 獲得 JWT Token:', authResult.session.access_token.substring(0, 20) + '...');
         console.log('👤 用戶資料:', authResult.user);
         
-        // 構建用戶資料用於 UserContext
-        const userData = {
-          id: authResult.user.id, // 使用 Supabase Auth 的用戶 ID
-          name: authResult.user.name,
-          position: authResult.user.position,
-          department: authResult.user.department,
-          onboard_date: '2023-01-15', // 預設值
-          role: authResult.user.role,
-        };
-        
-        setCurrentUser(userData);
-        
         // 將 JWT token 和會話資訊存儲到 localStorage（可選）
         localStorage.setItem('supabase_session', JSON.stringify(authResult.session));
         
@@ -52,7 +38,7 @@ const LoginForm: React.FC = () => {
           description: `歡迎回來，${authResult.user.name}！已獲取認證令牌。`,
         });
         
-        // 稍微延遲跳轉
+        // 稍微延遲跳轉，讓 UserContext 處理認證狀態
         setTimeout(() => {
           console.log('🔄 跳轉到主頁面');
           navigate('/');

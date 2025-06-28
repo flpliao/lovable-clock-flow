@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnnualLeaveBalance } from '@/types';
@@ -19,10 +20,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isProcessingLogin, setIsProcessingLogin] = useState(false);
   const isInitializedRef = useRef(false);
   const currentUserRef = useRef<User | null>(null);
-  const handleUserLoginRef = useRef<((session: any) => Promise<void>) | null>(null);
-  const handleUserLogoutRef = useRef<(() => void) | null>(null);
-  const navigateRef = useRef<any>(null);
-  const isProcessingLoginRef = useRef(false);
   const navigate = useNavigate();
 
   // 同步 currentUserRef
@@ -30,17 +27,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     currentUserRef.current = currentUser;
   }, [currentUser]);
 
-  // 同步 navigateRef
-  useEffect(() => {
-    navigateRef.current = navigate;
-  }, [navigate]);
-
-  // 同步 isProcessingLoginRef
-  useEffect(() => {
-    isProcessingLoginRef.current = isProcessingLogin;
-  }, [isProcessingLogin]);
-
-  // 檢查是否已驗證登入 - 修正邏輯
+  // 檢查是否已驗證登入
   const isAuthenticated = currentUser !== null;
 
   // 從 staff 表載入用戶完整權限資料
@@ -78,7 +65,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         // 轉換為 User 格式，使用 Supabase Auth 的 user ID
         const user: User = {
-          id: authUser.id, // 使用 Supabase Auth 的 UID (0765138a-6f11-45f4-be07-dab965116a2d)
+          id: authUser.id, // 使用 Supabase Auth 的 UID
           name: staffData.name,
           position: staffData.position,
           department: staffData.department,
@@ -86,10 +73,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           hire_date: staffData.hire_date,
           supervisor_id: staffData.supervisor_id,
           role: finalRole as 'admin' | 'manager' | 'user',
-          email: staffData.email // 加入 email 欄位
+          email: staffData.email
         };
         
-        console.log('🔐 用戶權限資料載入完成 (修正後):', {
+        console.log('🔐 用戶權限資料載入完成:', {
           auth_uid: user.id,
           staff_id: staffData.id,
           name: user.name,
@@ -117,13 +104,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 處理用戶登入的統一函數
   const handleUserLogin = useCallback(async (session: any) => {
     // 防止重複處理
-    if (isProcessingLoginRef.current) {
+    if (isProcessingLogin) {
       console.log('⚠️ 用戶登入處理中，跳過重複請求');
       return;
     }
 
-    setIsProcessingLogin(true);
     console.log('🔄 開始處理用戶登入...');
+    setIsProcessingLogin(true);
 
     try {
       // 優先從 staff 表載入用戶資料
@@ -133,7 +120,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log('✅ 使用 staff 表資料:', staffUser.name, '角色:', staffUser.role);
         setCurrentUser(staffUser);
         saveUserToStorage(staffUser);
-        setIsUserLoaded(true);
         
         // 特別檢查廖俊雄的權限
         if (staffUser.name === '廖俊雄' || session.user.email === 'flpliao@gmail.com') {
@@ -149,10 +135,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // 檢查是否在 callback 頁面，如果是則重定向
         if (window.location.pathname === '/auth/callback') {
           console.log('🔄 從 callback 頁面重定向到首頁');
-          if (navigateRef.current) {
-            navigateRef.current('/', { replace: true });
-          }
+          navigate('/', { replace: true });
         }
+        
+        setIsUserLoaded(true);
         return;
       }
 
@@ -160,23 +146,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const storedUser = getUserFromStorage();
       if (storedUser && storedUser.id === session.user.id) {
         console.log('📦 恢復已存儲的用戶資料:', storedUser.name, '角色:', storedUser.role);
-        
-        // 嘗試重新從 staff 表更新角色
-        const updatedStaffUser = await loadUserFromStaffTable(session.user);
-        if (updatedStaffUser) {
-          setCurrentUser(updatedStaffUser);
-          saveUserToStorage(updatedStaffUser);
-        } else {
-          setCurrentUser(storedUser);
-        }
-        
+        setCurrentUser(storedUser);
         setIsUserLoaded(true);
         
         if (window.location.pathname === '/auth/callback') {
           console.log('🔄 從 callback 頁面重定向到首頁');
-          if (navigateRef.current) {
-            navigateRef.current('/', { replace: true });
-          }
+          navigate('/', { replace: true });
         }
         return;
       }
@@ -191,22 +166,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           position: result.user.position,
           department: result.user.department,
           onboard_date: new Date().toISOString().split('T')[0],
-          role: result.user.role
+          role: result.user.role,
+          email: result.user.email
         };
         
-        // 再次嘗試從 staff 表更新角色
-        const staffUserUpdate = await loadUserFromStaffTable(session.user);
-        const finalUser = staffUserUpdate || user;
-        
-        setCurrentUser(finalUser);
-        saveUserToStorage(finalUser);
+        setCurrentUser(user);
+        saveUserToStorage(user);
         setIsUserLoaded(true);
         
         if (window.location.pathname === '/auth/callback') {
           console.log('🔄 從 callback 頁面重定向到首頁');
-          if (navigateRef.current) {
-            navigateRef.current('/', { replace: true });
-          }
+          navigate('/', { replace: true });
         }
         return;
       } else {
@@ -214,6 +184,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     } catch (error) {
       console.error('❌ 處理用戶登入失敗:', error);
+      
       // 使用會話中的基本資料作為後備
       const fallbackUser: User = {
         id: session.user.id,
@@ -221,32 +192,23 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         position: '員工',
         department: '一般',
         onboard_date: new Date().toISOString().split('T')[0],
-        role: 'user'
+        role: 'user',
+        email: session.user.email
       };
       
-      // 即使是後備用戶，也嘗試從 staff 表更新角色
-      try {
-        const staffUserFinal = await loadUserFromStaffTable(session.user);
-        setCurrentUser(staffUserFinal || fallbackUser);
-      } catch {
-        setCurrentUser(fallbackUser);
-      }
+      setCurrentUser(fallbackUser);
       
       // 即使發生錯誤也要重定向
       if (window.location.pathname === '/auth/callback') {
         console.log('🔄 發生錯誤但仍重定向到首頁');
-        setTimeout(() => {
-          if (navigateRef.current) {
-            navigateRef.current('/', { replace: true });
-          }
-        }, 500);
+        navigate('/', { replace: true });
       }
     } finally {
       setIsUserLoaded(true);
       setIsProcessingLogin(false);
       console.log('✅ 用戶登入處理完成');
     }
-  }, []);
+  }, [isProcessingLogin, navigate]);
 
   // 處理用戶登出的統一函數
   const handleUserLogout = useCallback(() => {
@@ -261,12 +223,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     setIsUserLoaded(true);
   }, []);
-
-  // 同步函數引用
-  useEffect(() => {
-    handleUserLoginRef.current = handleUserLogin;
-    handleUserLogoutRef.current = handleUserLogout;
-  }, [handleUserLogin, handleUserLogout]);
 
   useEffect(() => {
     // 防止重複初始化
@@ -283,32 +239,25 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (!isUserLoaded) {
         console.log('⚠️ 認證檢查超時，設置為載入完成');
         setIsUserLoaded(true);
+        setIsProcessingLogin(false);
       }
     }, 3000);
     
     // 設置 Supabase Auth 狀態監聽器
-    const { data: { subscription } } = AuthService.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔄 Supabase Auth 狀態變化:', event, '會話存在:', !!session);
       
       // 處理所有可能的登入情況
       if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
         console.log('✅ 用戶已登入 - 事件:', event);
-        console.log('🎫 JWT Token:', session.access_token.substring(0, 20) + '...');
-        
-        if (handleUserLoginRef.current) {
-          await handleUserLoginRef.current(session);
-        }
+        await handleUserLogin(session);
       } else if (event === 'SIGNED_OUT') {
         console.log('🚪 用戶已登出');
-        if (handleUserLogoutRef.current) {
-          handleUserLogoutRef.current();
-        }
+        handleUserLogout();
       } else if (session && !currentUserRef.current) {
         // 處理 setSession 後可能沒有觸發特定事件的情況
         console.log('🔄 檢測到會話但無事件，處理登入狀態');
-        if (handleUserLoginRef.current) {
-          await handleUserLoginRef.current(session);
-        }
+        await handleUserLogin(session);
       }
     });
 
@@ -318,11 +267,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const session = await AuthService.getCurrentSession();
         if (session) {
           console.log('📦 發現現有 Supabase 會話');
-          console.log('🎫 JWT Token:', session.access_token.substring(0, 20) + '...');
-          
-          if (handleUserLoginRef.current) {
-            await handleUserLoginRef.current(session);
-          }
+          await handleUserLogin(session);
         } else {
           console.log('❌ 無現有 Supabase 會話');
           setIsUserLoaded(true);
@@ -340,7 +285,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       subscription.unsubscribe();
       clearTimeout(fallbackTimer);
     };
-  }, []);
+  }, [handleUserLogin, handleUserLogout, isUserLoaded]);
 
   // 當用戶改變時的處理
   useEffect(() => {
@@ -352,7 +297,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } else {
       console.log('👤 UserProvider: 用戶登入:', currentUser.name, '權限等級:', currentUser.role);
       console.log('🆔 UserProvider: Supabase Auth 用戶ID:', currentUser.id);
-      console.log('📧 UserProvider: 用戶 Email:', (currentUser as any)?.email);
+      console.log('📧 UserProvider: 用戶 Email:', currentUser.email);
       console.log('🔐 UserProvider: 管理員權限檢查:', currentUser.role === 'admin');
       
       // 將用戶資料存儲到本地存儲

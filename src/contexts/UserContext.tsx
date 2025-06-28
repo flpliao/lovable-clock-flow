@@ -263,6 +263,14 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     console.log('👤 UserProvider: 初始化 Supabase Auth 狀態管理');
     isInitializedRef.current = true;
     
+    // 短時間後設置載入完成狀態（確保不會卡在載入畫面）
+    const fallbackTimer = setTimeout(() => {
+      if (!isUserLoaded) {
+        console.log('⚠️ 認證檢查超時，設置為載入完成');
+        setIsUserLoaded(true);
+      }
+    }, 3000);
+    
     // 設置 Supabase Auth 狀態監聽器
     const { data: { subscription } } = AuthService.onAuthStateChange(async (event, session) => {
       console.log('🔄 Supabase Auth 狀態變化:', event, '會話存在:', !!session);
@@ -315,6 +323,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // 清理函數
     return () => {
       subscription.unsubscribe();
+      clearTimeout(fallbackTimer);
     };
   }, []);
 

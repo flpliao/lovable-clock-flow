@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { LeaveRequest } from '@/types';
+import { LeaveRequest, ApprovalRecord } from '@/types';
 import { useUser } from '@/contexts/UserContext';
 
 export const useSupabaseLeaveManagement = () => {
@@ -38,11 +38,15 @@ export const useSupabaseLeaveManagement = () => {
 
       console.log('✅ useSupabaseLeaveManagement: 成功載入請假申請:', data?.length || 0, '筆');
       
-      // 確保 leave_type 符合聯合類型
+      // 確保 leave_type 和 approvals 符合聯合類型
       const typedData = data?.map(item => ({
         ...item,
         leave_type: item.leave_type as LeaveRequest['leave_type'],
-        status: item.status as LeaveRequest['status']
+        status: item.status as LeaveRequest['status'],
+        approvals: item.approvals?.map((approval: any) => ({
+          ...approval,
+          status: approval.status as ApprovalRecord['status']
+        })) || []
       })) || [];
       
       setLeaveRequests(typedData);

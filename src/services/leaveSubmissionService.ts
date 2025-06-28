@@ -1,8 +1,8 @@
-
 import { differenceInDays } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { UserStaffData } from './staffDataService';
 import { sendLeaveApprovalNotification } from './leaveNotificationService';
+import { ApprovalRecord } from '@/types';
 
 export interface LeaveSubmissionData {
   start_date: Date;
@@ -22,6 +22,9 @@ export interface LeaveRequestData {
   reason: string;
   approval_level?: number;
   current_approver?: string;
+  created_at: string;
+  updated_at: string;
+  approvals: ApprovalRecord[];
 }
 
 export interface SubmissionResult {

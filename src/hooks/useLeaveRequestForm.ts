@@ -168,12 +168,12 @@ export const useLeaveRequestForm = () => {
         console.log('👨‍💼 進入主管審核流程');
         
         // Convert LeaveRequestData to the format expected by createLeaveRequest
-        const leaveRequestForCreation = {
+        const leaveRequestForCreation: Omit<LeaveRequest, 'id'> = {
           user_id: result.leaveRequest.user_id,
           start_date: result.leaveRequest.start_date,
           end_date: result.leaveRequest.end_date,
-          leave_type: result.leaveRequest.leave_type as 'annual' | 'sick' | 'personal' | 'marriage' | 'bereavement' | 'maternity' | 'paternity' | 'parental' | 'occupational' | 'menstrual' | 'other',
-          status: result.leaveRequest.status as 'pending' | 'approved' | 'rejected',
+          leave_type: result.leaveRequest.leave_type as LeaveRequest['leave_type'],
+          status: result.leaveRequest.status as LeaveRequest['status'],  
           hours: result.leaveRequest.hours,
           reason: result.leaveRequest.reason,
           approval_level: result.leaveRequest.approval_level,

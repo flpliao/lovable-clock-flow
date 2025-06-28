@@ -10,6 +10,7 @@ export interface User {
   hire_date?: string; // 新增入職日期欄位
   supervisor_id?: string; // 新增主管ID欄位
   role: 'admin' | 'manager' | 'user';
+  email?: string; // 新增 email 欄位
 }
 
 export interface UserContextType {

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { UserStaffData } from '@/services/staffDataService';
-import { Calendar, Clock, User } from 'lucide-react';
+import { Calendar, Clock, User, AlertCircle } from 'lucide-react';
 
 interface LeaveBalanceCardProps {
   userStaffData: UserStaffData | null;
@@ -13,13 +13,18 @@ export function LeaveBalanceCard({ userStaffData, hasHireDate, isLoading }: Leav
   if (isLoading) {
     return (
       <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <User className="h-5 w-5 text-white" />
+          <h3 className="text-lg font-semibold text-white drop-shadow-md">員工資料</h3>
+        </div>
         <div className="animate-pulse">
-          <div className="h-4 bg-white/30 rounded w-1/4 mb-4"></div>
-          <div className="space-y-2">
-            <div className="h-3 bg-white/20 rounded w-1/2"></div>
-            <div className="h-3 bg-white/20 rounded w-1/3"></div>
+          <div className="space-y-3">
+            <div className="h-4 bg-white/30 rounded w-3/4"></div>
+            <div className="h-4 bg-white/30 rounded w-1/2"></div>
+            <div className="h-4 bg-white/30 rounded w-2/3"></div>
           </div>
         </div>
+        <p className="text-white/80 text-sm mt-3">正在載入員工資料...</p>
       </div>
     );
   }
@@ -28,10 +33,13 @@ export function LeaveBalanceCard({ userStaffData, hasHireDate, isLoading }: Leav
     return (
       <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
         <div className="flex items-center gap-2 mb-4">
-          <User className="h-5 w-5 text-white" />
+          <AlertCircle className="h-5 w-5 text-orange-300" />
           <h3 className="text-lg font-semibold text-white drop-shadow-md">員工資料</h3>
         </div>
-        <p className="text-white/80">載入員工資料中...</p>
+        <div className="text-center py-4">
+          <p className="text-orange-200 mb-2">無法載入員工資料</p>
+          <p className="text-white/60 text-sm">請檢查您的帳號設定或聯繫管理員</p>
+        </div>
       </div>
     );
   }
@@ -91,7 +99,7 @@ export function LeaveBalanceCard({ userStaffData, hasHireDate, isLoading }: Leav
                   <div 
                     className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-300"
                     style={{ 
-                      width: `${(userStaffData.remainingAnnualLeaveDays / userStaffData.totalAnnualLeaveDays) * 100}%` 
+                      width: `${Math.max(0, Math.min(100, (userStaffData.remainingAnnualLeaveDays / userStaffData.totalAnnualLeaveDays) * 100))}%` 
                     }}
                   ></div>
                 </div>
@@ -108,7 +116,7 @@ export function LeaveBalanceCard({ userStaffData, hasHireDate, isLoading }: Leav
       {!hasHireDate && (
         <div className="mt-4 p-3 bg-orange-500/20 border border-orange-400/30 rounded-lg">
           <p className="text-orange-200 text-sm flex items-center gap-2">
-            <span>⚠️</span>
+            <AlertCircle className="h-4 w-4" />
             請聯繫人事部門設定入職日期，以便正確計算特休天數
           </p>
         </div>

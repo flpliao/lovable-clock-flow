@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,13 +30,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [calculatedHours, setCalculatedHours] = useState<number>(0);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [staffHireDate, setStaffHireDate] = useState<string | null>(null);
   const [userStaffData, setUserStaffData] = useState<any>(null);
-  const [annualLeaveData, setAnnualLeaveData] = useState<{
-    totalDays: number;
-    usedDays: number;
-    remainingDays: number;
-  } | null>(null);
   const [isLoadingStaffData, setIsLoadingStaffData] = useState(true);
 
   const form = useForm<LeaveFormValues>({
@@ -52,124 +47,135 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
   const watchedEndDate = form.watch('end_date');
   const watchedLeaveType = form.watch('leave_type');
 
-  // 載入員工入職日期和特休資料
+  // 載入員工資料
   useEffect(() => {
     const loadStaffData = async () => {
       if (!currentUser?.id) {
-        console.log('No user available');
+        console.log('❌ 沒有當前用戶');
         setIsLoadingStaffData(false);
         return;
       }
 
+      console.log('🚀 開始載入員工資料，用戶ID:', currentUser.id);
       setIsLoadingStaffData(true);
       
       try {
-        // 從 staff 表取得員工的入職日期
+        // 從 staff 表取得員工資料
         const { data: staffData, error: staffError } = await supabase
           .from('staff')
-          .select('hire_date, name, department, position, supervisor_id')
+          .select('*')
           .eq('id', currentUser.id)
           .single();
 
-        if (staffError || !staffData) {
-          console.log('No staff data found:', staffError);
-          setStaffHireDate(null);
+        console.log('📋 查詢員工資料結果:', { staffData, staffError });
+
+        if (staffError) {
+          console.error('❌ 載入員工資料失敗:', staffError);
+          toast({
+            title: "載入失敗",
+            description: "無法載入員工資料：" + staffError.message,
+            variant: "destructive"
+          });
+          setUserStaffData(null);
+          return;
+        }
+
+        if (!staffData) {
+          console.log('⚠️ 找不到員工資料');
+          toast({
+            title: "找不到資料",
+            description: "找不到您的員工資料，請聯繫管理員",
+            variant: "destructive"
+          });
           setUserStaffData(null);
           return;
         }
 
         const hireDate = staffData.hire_date;
-        setStaffHireDate(hireDate);
+        console.log('📅 入職日期:', hireDate);
         
-        // 計算特休天數
-        let totalDays = 0;
-        let yearsOfService = '0年';
-        
+        // 計算年資和特休天數
+        let yearsOfService = '未設定';
+        let totalAnnualLeaveDays = 0;
+        let usedAnnualLeaveDays = 0;
+        let remainingAnnualLeaveDays = 0;
+
         if (hireDate) {
           const hireDateObj = new Date(hireDate);
-          totalDays = calculateAnnualLeaveDays(hireDateObj);
-          
           const now = new Date();
           const diffTime = Math.abs(now.getTime() - hireDateObj.getTime());
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
           const years = Math.floor(diffDays / 365);
           const months = Math.floor((diffDays % 365) / 30);
           
-          if (years > 0) {
-            yearsOfService = months > 0 ? `${years}年${months}個月` : `${years}年`;
-          } else {
-            yearsOfService = `${months}個月`;
+          yearsOfService = years > 0 ? 
+            (months > 0 ? `${years}年${months}個月` : `${years}年`) : 
+            `${months}個月`;
+
+          // 計算特休天數
+          totalAnnualLeaveDays = calculateAnnualLeaveDays(hireDateObj);
+          console.log('📊 計算的特休天數:', totalAnnualLeaveDays);
+
+          // 計算已使用的特休天數
+          const currentYear = new Date().getFullYear();
+          const { data: leaveRecords, error: leaveError } = await supabase
+            .from('leave_requests')
+            .select('hours')
+            .or(`user_id.eq.${currentUser.id},staff_id.eq.${currentUser.id}`)
+            .eq('leave_type', 'annual')
+            .eq('status', 'approved')
+            .gte('start_date', `${currentYear}-01-01`)
+            .lte('start_date', `${currentYear}-12-31`);
+
+          if (!leaveError && leaveRecords) {
+            usedAnnualLeaveDays = leaveRecords.reduce((total, record) => {
+              return total + (Number(record.hours) / 8);
+            }, 0);
           }
-        }
-        
-        // 計算已使用的特休天數
-        const currentYear = new Date().getFullYear();
-        const { data: leaveRecords, error: leaveError } = await supabase
-          .from('leave_requests')
-          .select('hours')
-          .or(`user_id.eq.${currentUser.id},staff_id.eq.${currentUser.id}`)
-          .eq('leave_type', 'annual')
-          .eq('status', 'approved')
-          .gte('start_date', `${currentYear}-01-01`)
-          .lte('start_date', `${currentYear}-12-31`);
+          console.log('📈 已使用特休天數:', usedAnnualLeaveDays);
 
-        let usedDays = 0;
-        if (!leaveError && leaveRecords) {
-          usedDays = leaveRecords.reduce((total, record) => {
-            return total + (Number(record.hours) / 8);
-          }, 0);
+          remainingAnnualLeaveDays = Math.max(0, totalAnnualLeaveDays - usedAnnualLeaveDays);
+          console.log('📉 剩餘特休天數:', remainingAnnualLeaveDays);
         }
 
-        const remainingDays = Math.max(0, totalDays - usedDays);
-        
-        setAnnualLeaveData({
-          totalDays,
-          usedDays,
-          remainingDays
-        });
-
-        // 設定完整的員工資料物件
-        setUserStaffData({
+        // 設定完整的員工資料
+        const completeStaffData = {
           name: staffData.name,
           department: staffData.department,
           position: staffData.position,
           hire_date: hireDate,
           supervisor_id: staffData.supervisor_id,
           yearsOfService,
-          totalAnnualLeaveDays: totalDays,
-          usedAnnualLeaveDays: usedDays,
-          remainingAnnualLeaveDays: remainingDays
-        });
+          totalAnnualLeaveDays,
+          usedAnnualLeaveDays,
+          remainingAnnualLeaveDays
+        };
 
-        console.log('Staff data loaded:', {
-          hireDate,
-          totalDays,
-          usedDays,
-          remainingDays
-        });
+        console.log('✅ 完整員工資料:', completeStaffData);
+        setUserStaffData(completeStaffData);
+
       } catch (error) {
-        console.error('Error loading staff data:', error);
-        setStaffHireDate(null);
+        console.error('❌ 載入員工資料時發生錯誤:', error);
+        toast({
+          title: "載入錯誤",
+          description: "載入員工資料時發生錯誤",
+          variant: "destructive"
+        });
         setUserStaffData(null);
-        setAnnualLeaveData(null);
       } finally {
         setIsLoadingStaffData(false);
       }
     };
 
     loadStaffData();
-  }, [currentUser?.id]);
+  }, [currentUser?.id, toast]);
 
   // 計算請假時數
   useEffect(() => {
     if (watchedStartDate && watchedEndDate) {
       const hours = calculateWorkingHours(watchedStartDate, watchedEndDate);
       setCalculatedHours(hours);
-      console.log('計算請假時數:', {
-        startDate: watchedStartDate,
-        endDate: watchedEndDate,
-        calculatedHours: hours
-      });
+      console.log('⏰ 計算請假時數:', hours);
     } else {
       setCalculatedHours(0);
     }
@@ -180,13 +186,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     const validateRequest = async () => {
       if (watchedStartDate && watchedEndDate && watchedLeaveType && currentUser) {
         try {
-          console.log('開始驗證請假申請:', {
-            leaveType: watchedLeaveType,
-            startDate: watchedStartDate,
-            endDate: watchedEndDate,
-            hours: calculatedHours,
-            userId: currentUser.id
-          });
+          console.log('🔍 開始驗證請假申請');
 
           const validation = await validateLeaveRequest({
             leave_type: watchedLeaveType,
@@ -198,13 +198,13 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
           if (!validation.isValid) {
             setValidationError(validation.message);
-            console.log('驗證失敗:', validation.message);
+            console.log('❌ 驗證失敗:', validation.message);
           } else {
             setValidationError(null);
-            console.log('驗證通過');
+            console.log('✅ 驗證通過');
           }
         } catch (error) {
-          console.error('驗證過程發生錯誤:', error);
+          console.error('❌ 驗證過程發生錯誤:', error);
           setValidationError('驗證過程發生錯誤，請稍後再試');
         }
       } else {
@@ -219,10 +219,10 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
   // 根據請假類型獲取假期資料
   const getLeaveData = (leaveType: string) => {
-    if (leaveType === 'annual' && annualLeaveData) {
+    if (leaveType === 'annual' && userStaffData) {
       return {
-        remainingDays: annualLeaveData.remainingDays,
-        usedDays: annualLeaveData.usedDays
+        remainingDays: userStaffData.remainingAnnualLeaveDays,
+        usedDays: userStaffData.usedAnnualLeaveDays
       };
     }
 
@@ -274,19 +274,10 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     try {
       setIsSubmitting(true);
       
-      console.log('提交請假申請:', {
-        originalData: data,
-        calculatedHours,
-        currentUser: currentUser.id
-      });
+      console.log('📝 提交請假申請:', data);
 
       const startDateStr = datePickerToDatabase(data.start_date);
       const endDateStr = datePickerToDatabase(data.end_date);
-
-      console.log('轉換後的日期:', {
-        startDate: startDateStr,
-        endDate: endDateStr
-      });
 
       const leaveRequest = {
         id: '',
@@ -298,12 +289,12 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         hours: calculatedHours,
         reason: data.reason,
         approval_level: 1,
-        current_approver: currentUser.supervisor_id || null,
+        current_approver: userStaffData?.supervisor_id || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
-      console.log('準備建立請假申請:', leaveRequest);
+      console.log('📋 準備建立請假申請:', leaveRequest);
 
       const success = await createLeaveRequest(leaveRequest);
       
@@ -322,7 +313,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         }
       }
     } catch (error) {
-      console.error('提交請假申請失敗:', error);
+      console.error('❌ 提交請假申請失敗:', error);
       toast({
         title: "申請失敗",
         description: "提交請假申請時發生錯誤",
@@ -333,7 +324,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     }
   };
 
-  const hasHireDate = Boolean(staffHireDate);
+  const hasHireDate = Boolean(userStaffData?.hire_date);
 
   return (
     <div className="space-y-6">
@@ -354,7 +345,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
             userStaffData={userStaffData}
           />
           
-          {/* 請假類型詳細資訊卡片 - 當選擇了請假類型時顯示 */}
+          {/* 請假類型詳細資訊卡片 */}
           {watchedLeaveType && (
             <LeaveTypeDetailCard 
               leaveType={watchedLeaveType}

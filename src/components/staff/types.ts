@@ -1,3 +1,4 @@
+
 export interface Staff {
   id: string;
   name: string;
@@ -9,6 +10,7 @@ export interface Staff {
   role: 'admin' | 'user' | string;
   role_id: string;
   supervisor_id?: string;
+  user_id?: string; // 添加 user_id 屬性
   username?: string;
   email?: string;
   hire_date?: string; // 新增入職日期
@@ -25,6 +27,7 @@ export interface NewStaff {
   role: 'admin' | 'user' | string;
   role_id: string;
   supervisor_id?: string;
+  user_id?: string; // 添加 user_id 屬性
   username?: string;
   email?: string;
   hire_date?: string; // 新增入職日期

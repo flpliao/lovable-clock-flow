@@ -1,43 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { User } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import LoginForm from '@/components/auth/LoginForm';
-import { useToast } from '@/hooks/use-toast';
 
 const Login = () => {
   const { currentUser, isAuthenticated, isUserLoaded } = useUser();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [hasRedirected, setHasRedirected] = useState(false);
 
-  // 檢查已登入用戶並重定向
-  useEffect(() => {
-    console.log('🔍 Login: 檢查認證狀態', {
-      isUserLoaded,
-      isAuthenticated,
-      hasCurrentUser: !!currentUser,
-      hasRedirected,
-      pathname: window.location.pathname
-    });
-    
-    // 確保用戶狀態已載入且已認證，且尚未重定向
-    if (isUserLoaded && isAuthenticated && currentUser && !hasRedirected) {
-      console.log('🔐 Login: 用戶已登入，準備重定向:', currentUser.name);
-      setHasRedirected(true);
-      
-      toast({
-        title: '歡迎回來',
-        description: `${currentUser.name}，正在跳轉到主頁面...`,
-      });
-      
-      // 立即重定向，不延遲
-      console.log('🔄 Login: 立即執行重定向到主頁面');
-      navigate('/', { replace: true });
-    }
-  }, [isUserLoaded, isAuthenticated, currentUser, navigate, hasRedirected, toast]);
+  console.log('🔍 Login: 檢查認證狀態', {
+    isUserLoaded,
+    isAuthenticated,
+    hasCurrentUser: !!currentUser,
+    pathname: window.location.pathname
+  });
 
-  // 已登入用戶顯示跳轉中
+  // 已登入用戶顯示跳轉中（AuthStateManager 會處理重定向）
   if (isAuthenticated && currentUser) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">

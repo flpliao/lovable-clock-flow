@@ -20,6 +20,14 @@ export const useAuthStateManager = () => {
     setUserError
   );
 
+  // 統一的重定向處理函數
+  const handleRedirectAfterLogin = () => {
+    if (window.location.pathname === '/login') {
+      console.log('🔄 統一重定向處理：從登入頁面重定向到主頁');
+      navigate('/', { replace: true });
+    }
+  };
+
   // 初始化認證狀態
   useEffect(() => {
     if (initializationRef.current) {
@@ -37,23 +45,21 @@ export const useAuthStateManager = () => {
       
       if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
         console.log('✅ 用戶已登入 - 事件:', event);
+        
+        // 首先處理用戶登入
         await handleUserLogin(session);
         
-        // 確保認證狀態立即更新
+        // 立即設定認證狀態
         setIsAuthenticated(true);
-        console.log('🔐 強制設定認證狀態為 true');
+        console.log('🔐 設定認證狀態為 true');
         
-        // 只有在登入頁面時才進行重定向
-        if (event === 'SIGNED_IN' && window.location.pathname === '/login') {
-          console.log('🔄 在登入頁面檢測到登入成功，準備重定向到主頁');
-          // 使用更短的延遲時間並確保重定向
-          setTimeout(() => {
-            console.log('🔄 執行重定向到主頁，當前路徑:', window.location.pathname);
-            if (window.location.pathname === '/login') {
-              console.log('🔄 確認在登入頁面，執行重定向');
-              navigate('/', { replace: true });
-            }
-          }, 100);
+        // 只在 SIGNED_IN 事件時重定向（即用戶剛剛登入）
+        if (event === 'SIGNED_IN') {
+          console.log('🔄 檢測到新登入，準備重定向');
+          // 使用 requestAnimationFrame 確保狀態更新完成後再重定向
+          requestAnimationFrame(() => {
+            handleRedirectAfterLogin();
+          });
         }
         
       } else if (event === 'SIGNED_OUT') {
@@ -82,12 +88,12 @@ export const useAuthStateManager = () => {
           await handleUserLogin(session);
           setIsAuthenticated(true);
           
-          // 如果在登入頁面且已有會話，立即重定向
+          // 如果在登入頁面且已有會話，重定向
           if (window.location.pathname === '/login') {
-            console.log('🔄 在登入頁面發現現有會話，立即重定向');
-            setTimeout(() => {
-              navigate('/', { replace: true });
-            }, 100);
+            console.log('🔄 在登入頁面發現現有會話，執行重定向');
+            requestAnimationFrame(() => {
+              handleRedirectAfterLogin();
+            });
           }
         } else {
           console.log('❌ 未發現現有會話');

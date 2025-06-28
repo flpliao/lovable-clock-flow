@@ -1,5 +1,5 @@
+
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -10,7 +10,6 @@ const LoginForm: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -41,8 +40,8 @@ const LoginForm: React.FC = () => {
           description: `歡迎回來，${authResult.user.name}！`,
         });
         
-        // 完全不進行重定向，讓 AuthStateManager 完全處理
-        console.log('🔄 登入成功，等待認證狀態管理器處理重定向');
+        // 完全不處理重定向，讓 AuthStateManager 完全處理
+        console.log('🔄 登入成功，AuthStateManager 將處理重定向');
         
       } else {
         console.log('❌ 登入失敗:', authResult.error);

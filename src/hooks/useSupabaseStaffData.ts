@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUser } from '@/contexts/UserContext';
@@ -24,28 +23,34 @@ export const useSupabaseStaffData = () => {
     const loadStaffData = async () => {
       if (!currentUser?.id) {
         setIsLoading(false);
+        setError('請先登入系統');
         return;
       }
 
       try {
         console.log('Loading staff data for user:', currentUser.id);
         
-        // 從 staff 表獲取員工資料
+        // 修正：使用 user_id 欄位從 staff 表獲取員工資料
         const { data: staffInfo, error: staffError } = await supabase
           .from('staff')
           .select('name, department, position, hire_date')
-          .eq('id', currentUser.id)
-          .maybeSingle();
+          .eq('user_id', currentUser.id)
+          .single();
 
         if (staffError) {
           console.error('載入員工資料失敗:', staffError);
-          setError('載入員工資料失敗');
+          
+          if (staffError.code === 'PGRST116') {
+            setError('找不到員工資料記錄，請聯繫管理員進行帳號設定');
+          } else {
+            setError('載入員工資料失敗');
+          }
           return;
         }
 
         if (!staffInfo) {
           console.log('找不到員工資料');
-          setError('找不到員工資料');
+          setError('員工資料不存在，請聯繫管理員確認帳號設定');
           return;
         }
 
@@ -117,7 +122,7 @@ export const useSupabaseStaffData = () => {
         setError(null);
       } catch (err) {
         console.error('載入員工資料時發生錯誤:', err);
-        setError('載入員工資料時發生錯誤');
+        setError('載入員工資料時發生系統錯誤');
       } finally {
         setIsLoading(false);
       }

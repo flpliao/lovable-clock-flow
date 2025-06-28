@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -60,22 +59,31 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       setIsLoadingStaffData(true);
       
       try {
-        // 從 staff 表取得員工資料
+        // 修正：使用 user_id 欄位查詢員工資料
         const { data: staffData, error: staffError } = await supabase
           .from('staff')
           .select('*')
-          .eq('id', currentUser.id)
+          .eq('user_id', currentUser.id)
           .single();
 
         console.log('📋 查詢員工資料結果:', { staffData, staffError });
 
         if (staffError) {
           console.error('❌ 載入員工資料失敗:', staffError);
-          toast({
-            title: "載入失敗",
-            description: "無法載入員工資料：" + staffError.message,
-            variant: "destructive"
-          });
+          
+          if (staffError.code === 'PGRST116') {
+            toast({
+              title: "員工資料不存在",
+              description: "找不到您的員工資料記錄，請聯繫管理員進行帳號設定",
+              variant: "destructive"
+            });
+          } else {
+            toast({
+              title: "載入失敗",
+              description: "無法載入員工資料：" + staffError.message,
+              variant: "destructive"
+            });
+          }
           setUserStaffData(null);
           return;
         }
@@ -83,8 +91,8 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         if (!staffData) {
           console.log('⚠️ 找不到員工資料');
           toast({
-            title: "找不到資料",
-            description: "找不到您的員工資料，請聯繫管理員",
+            title: "員工資料不存在",
+            description: "找不到您的員工資料記錄，請聯繫管理員確認帳號設定",
             variant: "destructive"
           });
           setUserStaffData(null);
@@ -116,12 +124,12 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           totalAnnualLeaveDays = calculateAnnualLeaveDays(hireDateObj);
           console.log('📊 計算的特休天數:', totalAnnualLeaveDays);
 
-          // 計算已使用的特休天數
+          // 計算已使用的特休天數 - 修正查詢邏輯
           const currentYear = new Date().getFullYear();
           const { data: leaveRecords, error: leaveError } = await supabase
             .from('leave_requests')
             .select('hours')
-            .or(`user_id.eq.${currentUser.id},staff_id.eq.${currentUser.id}`)
+            .eq('user_id', currentUser.id)
             .eq('leave_type', 'annual')
             .eq('status', 'approved')
             .gte('start_date', `${currentYear}-01-01`)
@@ -158,7 +166,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         console.error('❌ 載入員工資料時發生錯誤:', error);
         toast({
           title: "載入錯誤",
-          description: "載入員工資料時發生錯誤",
+          description: "載入員工資料時發生系統錯誤，請稍後再試或聯繫管理員",
           variant: "destructive"
         });
         setUserStaffData(null);

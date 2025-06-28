@@ -5,6 +5,7 @@ import FeatureCards from '@/components/FeatureCards';
 import LocationCheckIn from '@/components/LocationCheckIn';
 import { useUser } from '@/contexts/UserContext';
 import { DepartmentManagementProvider } from '@/components/departments/DepartmentManagementContext';
+
 const Index = () => {
   const {
     currentUser,
@@ -15,7 +16,7 @@ const Index = () => {
     isAuthenticated
   } = useUser();
   const navigate = useNavigate();
-  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [redirectTimer, setRedirectTimer] = useState<NodeJS.Timeout | null>(null);
 
   // 清理錯誤狀態
   useEffect(() => {
@@ -25,6 +26,7 @@ const Index = () => {
       return () => clearTimeout(timeoutId);
     }
   }, [userError, clearUserError]);
+
   useEffect(() => {
     if (currentUser) {
       console.log('User state changed, clearing any existing errors');
@@ -37,57 +39,80 @@ const Index = () => {
     console.log('🔍 Index: 檢查認證狀態', {
       isUserLoaded,
       isAuthenticated,
-      hasCurrentUser: !!currentUser,
-      isRedirecting
+      hasCurrentUser: !!currentUser
     });
     
-    if (isUserLoaded && !isAuthenticated && !isRedirecting) {
-      console.log('🚫 Index: 用戶未登入，重定向到登入頁面');
-      setIsRedirecting(true);
-      setTimeout(() => {
-        navigate('/login', {
-          replace: true
-        });
-      }, 100);
+    // 清除之前的重定向計時器
+    if (redirectTimer) {
+      clearTimeout(redirectTimer);
+      setRedirectTimer(null);
     }
-  }, [isUserLoaded, isAuthenticated, currentUser, navigate, isRedirecting]);
+    
+    // 只有當用戶狀態載入完成且確實未登入時才重定向
+    if (isUserLoaded && !isAuthenticated && !currentUser) {
+      console.log('🚫 Index: 用戶未登入，設置重定向到登入頁面');
+      
+      // 設置延遲重定向，給用戶狀態恢復一些時間
+      const timer = setTimeout(() => {
+        console.log('🚫 Index: 執行重定向到登入頁面');
+        navigate('/login', { replace: true });
+      }, 500);
+      
+      setRedirectTimer(timer);
+    }
+    
+    // 清理函數
+    return () => {
+      if (redirectTimer) {
+        clearTimeout(redirectTimer);
+      }
+    };
+  }, [isUserLoaded, isAuthenticated, currentUser, navigate]);
 
   // 在載入用戶狀態期間顯示載入畫面
   if (!isUserLoaded) {
     console.log('🔄 Index: 正在載入用戶狀態...');
-    return <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
         <div className="text-white text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
           <p>載入中...</p>
         </div>
-      </div>;
+      </div>
+    );
   }
 
-  // 重定向中狀態
-  if (isRedirecting || !isAuthenticated) {
-    return <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
+  // 如果用戶狀態已載入但沒有認證，顯示載入畫面（等待重定向）
+  if (isUserLoaded && !isAuthenticated) {
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
         <div className="text-white text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
           <p>跳轉中...</p>
         </div>
-      </div>;
+      </div>
+    );
   }
 
   // 確保有用戶資料才渲染主頁面
   if (!currentUser) {
     console.log('⚠️ Index: 已驗證但無用戶資料');
-    return <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
         <div className="text-white text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
           <p>載入用戶資料...</p>
         </div>
-      </div>;
+      </div>
+    );
   }
   
   console.log('✅ Index: 用戶已登入，顯示主頁面:', currentUser.name);
   
   const leaveHours = annualLeaveBalance ? (annualLeaveBalance.total_days - annualLeaveBalance.used_days) * 8 : 0;
-  return <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
+
+  return (
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
       {/* 背景層 */}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
@@ -96,14 +121,14 @@ const Index = () => {
       {/* 漂浮光點 */}
       <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-white/30 rounded-full animate-pulse"></div>
       <div className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{
-      animationDelay: '2s'
-    }}></div>
+        animationDelay: '2s'
+      }}></div>
       <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{
-      animationDelay: '4s'
-    }}></div>
+        animationDelay: '4s'
+      }}></div>
       <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{
-      animationDelay: '6s'
-    }}></div>
+        animationDelay: '6s'
+      }}></div>
 
       <div className="relative z-10 w-full min-h-screen pb-safe pt-12 md:pt-20 py-0">
         {/* 歡迎區塊 */}
@@ -123,6 +148,8 @@ const Index = () => {
           <FeatureCards abnormalCount={0} annualLeaveBalance={leaveHours} />
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;

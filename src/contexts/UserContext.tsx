@@ -95,7 +95,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (staffUser) {
         console.log('✅ 使用 staff 表資料:', staffUser.name, '角色:', staffUser.role);
         setCurrentUser(staffUser);
-        setIsAuthenticated(true); // 明確設置認證狀態
+        setIsAuthenticated(true);
         saveUserToStorage(staffUser);
         setUserError(null);
         console.log('🔐 認證狀態已設定為 true (staff)');
@@ -117,7 +117,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
         
         setCurrentUser(user);
-        setIsAuthenticated(true); // 明確設置認證狀態
+        setIsAuthenticated(true);
         saveUserToStorage(user);
         setUserError(null);
         console.log('🔐 認證狀態已設定為 true (auth service)');
@@ -137,7 +137,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       };
       
       setCurrentUser(fallbackUser);
-      setIsAuthenticated(true); // 明確設置認證狀態
+      setIsAuthenticated(true);
       saveUserToStorage(fallbackUser);
       setUserError(null);
       console.log('🔐 認證狀態已設定為 true (fallback)');
@@ -160,7 +160,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // 清除權限快取
     const permissionService = UnifiedPermissionService.getInstance();
     permissionService.clearCache();
-  }, []);
+    
+    // 確保跳轉到登入頁面
+    console.log('🔄 登出後導向登入頁面');
+    navigate('/login', { replace: true });
+  }, [navigate]);
 
   // 創建角色檢查器
   const { isAdmin, isManager, canManageUser } = createRoleChecker(currentUser);
@@ -266,9 +270,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       // 使用 Supabase Auth 登出
       await AuthService.signOut();
-      handleUserLogout();
+      // handleUserLogout 會在 onAuthStateChange 中自動被呼叫
     } catch (error) {
       console.error('❌ 登出失敗:', error);
+      // 即使登出失敗，也要清除本地狀態
+      handleUserLogout();
     }
   };
 

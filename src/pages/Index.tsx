@@ -16,7 +16,6 @@ const Index = () => {
     isAuthenticated
   } = useUser();
   const navigate = useNavigate();
-  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
   // 清理錯誤狀態
   useEffect(() => {
@@ -44,25 +43,18 @@ const Index = () => {
     console.log('🔍 Index: 檢查認證狀態', {
       isUserLoaded,
       isAuthenticated,
-      hasCurrentUser: !!currentUser,
-      hasCheckedAuth
+      hasCurrentUser: !!currentUser
     });
     
-    // 避免重複檢查
-    if (hasCheckedAuth) {
+    // 如果確實未登入，立即重定向
+    if (!isAuthenticated || !currentUser) {
+      console.log('🚫 Index: 用戶未登入，立即重定向到登入頁面');
+      navigate('/login', { replace: true });
       return;
     }
     
-    setHasCheckedAuth(true);
-    
-    // 只有當確實未登入時才重定向
-    if (!isAuthenticated && !currentUser) {
-      console.log('🚫 Index: 用戶未登入，重定向到登入頁面');
-      navigate('/login', { replace: true });
-    } else {
-      console.log('✅ Index: 用戶已登入或正在載入中');
-    }
-  }, [isUserLoaded, isAuthenticated, currentUser, navigate, hasCheckedAuth]);
+    console.log('✅ Index: 用戶已登入，顯示主頁面');
+  }, [isUserLoaded, isAuthenticated, currentUser, navigate]);
 
   // 在載入用戶狀態期間顯示載入畫面
   if (!isUserLoaded) {
@@ -77,26 +69,13 @@ const Index = () => {
     );
   }
 
-  // 如果已經檢查過且未登入，不顯示任何內容（等待重定向）
-  if (hasCheckedAuth && !isAuthenticated && !currentUser) {
+  // 如果未登入，顯示跳轉畫面（很快就會重定向）
+  if (!isAuthenticated || !currentUser) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
         <div className="text-white text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
           <p>跳轉中...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // 確保有用戶資料才渲染主頁面
-  if (!currentUser) {
-    console.log('⚠️ Index: 已驗證但無用戶資料');
-    return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-          <p>載入用戶資料...</p>
         </div>
       </div>
     );

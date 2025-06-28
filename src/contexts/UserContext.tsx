@@ -95,9 +95,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (staffUser) {
         console.log('✅ 使用 staff 表資料:', staffUser.name, '角色:', staffUser.role);
         setCurrentUser(staffUser);
-        setIsAuthenticated(true);
+        setIsAuthenticated(true); // 明確設置認證狀態
         saveUserToStorage(staffUser);
         setUserError(null);
+        console.log('🔐 認證狀態已設定為 true (staff)');
         return;
       }
 
@@ -116,9 +117,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
         
         setCurrentUser(user);
-        setIsAuthenticated(true);
+        setIsAuthenticated(true); // 明確設置認證狀態
         saveUserToStorage(user);
         setUserError(null);
+        console.log('🔐 認證狀態已設定為 true (auth service)');
         return;
       }
 
@@ -135,9 +137,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       };
       
       setCurrentUser(fallbackUser);
-      setIsAuthenticated(true);
+      setIsAuthenticated(true); // 明確設置認證狀態
       saveUserToStorage(fallbackUser);
       setUserError(null);
+      console.log('🔐 認證狀態已設定為 true (fallback)');
     } catch (error) {
       console.error('❌ 處理用戶登入失敗:', error);
       setUserError('載入用戶資料失敗');
@@ -235,7 +238,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log('👤 UserProvider: 用戶登出，清除所有狀態');
     } else {
       console.log('👤 UserProvider: 用戶登入:', currentUser.name, '權限等級:', currentUser.role);
-      console.log('🔐 認證狀態確認:', isAuthenticated);
+      console.log('🔐 當前認證狀態:', isAuthenticated);
       
       // 將用戶資料存儲到本地存儲
       saveUserToStorage(currentUser);
@@ -244,6 +247,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // 清除權限快取，確保使用最新權限
       const permissionService = UnifiedPermissionService.getInstance();
       permissionService.clearCache();
+      
+      // 確保認證狀態與用戶狀態同步
+      if (!isAuthenticated) {
+        console.log('⚠️ 用戶存在但認證狀態為 false，進行同步');
+        setIsAuthenticated(true);
+      }
     }
   }, [currentUser, isAuthenticated]);
 

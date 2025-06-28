@@ -17,26 +17,16 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData> 
   console.log('🚀 loadUserStaffData: 開始載入用戶資料，用戶ID:', userId);
 
   try {
-    // 修正：使用 user_id 欄位載入員工資料
+    // 從 staff 表載入員工資料
     const { data: staffData, error: staffError } = await supabase
       .from('staff')
       .select('*')
-      .eq('user_id', userId)
+      .eq('id', userId)
       .single();
 
-    if (staffError) {
+    if (staffError || !staffData) {
       console.error('❌ loadUserStaffData: 載入員工資料失敗:', staffError);
-      
-      if (staffError.code === 'PGRST116') {
-        throw new Error('找不到員工資料記錄，請聯繫管理員進行帳號設定');
-      } else {
-        throw new Error(`載入員工資料失敗：${staffError.message}`);
-      }
-    }
-
-    if (!staffData) {
-      console.error('❌ loadUserStaffData: 員工資料為空');
-      throw new Error('員工資料不存在，請聯繫管理員確認帳號設定');
+      throw new Error('找不到員工資料，請聯繫管理員');
     }
 
     console.log('✅ loadUserStaffData: 員工資料載入成功:', staffData);
@@ -70,12 +60,12 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData> 
         else totalAnnualLeaveDays = Math.min(30, 15 + (years - 10));
       }
 
-      // 修正：計算已使用的特休天數 - 使用正確的 user_id 查詢
+      // 計算已使用的特休天數
       const currentYear = new Date().getFullYear();
       const { data: leaveRecords } = await supabase
         .from('leave_requests')
         .select('hours')
-        .eq('user_id', userId)
+        .or(`user_id.eq.${userId},staff_id.eq.${userId}`)
         .eq('leave_type', 'annual')
         .eq('status', 'approved')
         .gte('start_date', `${currentYear}-01-01`)

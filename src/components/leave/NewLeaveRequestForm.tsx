@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
 import { LeaveFormValues, leaveFormSchema } from '@/utils/leaveTypes';
-import { LeaveRequestFormFields } from './LeaveRequestFormFields';
+import { LeaveRequestSimplifiedFormFields } from './LeaveRequestSimplifiedFormFields';
 import { LeaveTypeDetailCard } from './LeaveTypeDetailCard';
 import { LeaveBalanceCard } from './LeaveBalanceCard';
 import { calculateWorkingHours } from '@/utils/workingHoursCalculator';
@@ -60,22 +60,31 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       setIsLoadingStaffData(true);
       
       try {
-        // 從 staff 表取得員工資料
+        // 使用 user_id 欄位查詢員工資料
         const { data: staffData, error: staffError } = await supabase
           .from('staff')
           .select('*')
-          .eq('id', currentUser.id)
+          .eq('user_id', currentUser.id)
           .single();
 
         console.log('📋 查詢員工資料結果:', { staffData, staffError });
 
         if (staffError) {
           console.error('❌ 載入員工資料失敗:', staffError);
-          toast({
-            title: "載入失敗",
-            description: "無法載入員工資料：" + staffError.message,
-            variant: "destructive"
-          });
+          
+          if (staffError.code === 'PGRST116') {
+            toast({
+              title: "員工資料不存在",
+              description: "找不到您的員工資料記錄，請聯繫管理員進行帳號設定",
+              variant: "destructive"
+            });
+          } else {
+            toast({
+              title: "載入失敗",
+              description: "無法載入員工資料：" + staffError.message,
+              variant: "destructive"
+            });
+          }
           setUserStaffData(null);
           return;
         }
@@ -83,8 +92,8 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         if (!staffData) {
           console.log('⚠️ 找不到員工資料');
           toast({
-            title: "找不到資料",
-            description: "找不到您的員工資料，請聯繫管理員",
+            title: "員工資料不存在",
+            description: "找不到您的員工資料記錄，請聯繫管理員確認帳號設定",
             variant: "destructive"
           });
           setUserStaffData(null);
@@ -121,7 +130,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           const { data: leaveRecords, error: leaveError } = await supabase
             .from('leave_requests')
             .select('hours')
-            .or(`user_id.eq.${currentUser.id},staff_id.eq.${currentUser.id}`)
+            .eq('user_id', currentUser.id)
             .eq('leave_type', 'annual')
             .eq('status', 'approved')
             .gte('start_date', `${currentYear}-01-01`)
@@ -158,7 +167,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         console.error('❌ 載入員工資料時發生錯誤:', error);
         toast({
           title: "載入錯誤",
-          description: "載入員工資料時發生錯誤",
+          description: "載入員工資料時發生系統錯誤，請稍後再試或聯繫管理員",
           variant: "destructive"
         });
         setUserStaffData(null);
@@ -328,7 +337,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* 員工資料和特休餘額顯示 */}
+      {/* 員工資料和特休餘額顯示 - 只保留這一個 */}
       <LeaveBalanceCard 
         userStaffData={userStaffData}
         hasHireDate={hasHireDate}
@@ -337,7 +346,8 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          <LeaveRequestFormFields 
+          {/* 使用簡化的表單欄位組件，不重複顯示員工資料 */}
+          <LeaveRequestSimplifiedFormFields 
             form={form}
             calculatedHours={calculatedHours}
             validationError={validationError}

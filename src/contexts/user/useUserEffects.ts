@@ -3,7 +3,8 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UnifiedPermissionService } from '@/services/unifiedPermissionService';
 import { AuthService } from '@/services/authService';
-import { User, AnnualLeaveBalance } from './types';
+import { User } from './types';
+import { AnnualLeaveBalance } from '@/types';
 import { saveUserToStorage } from './userStorageUtils';
 
 interface UseUserEffectsProps {

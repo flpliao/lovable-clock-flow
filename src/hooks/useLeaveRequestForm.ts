@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { loadUserStaffData, UserStaffData } from '@/services/staffDataService';
 import { validateAnnualLeave } from '@/services/leaveValidationService';
 import { submitLeaveRequest, LeaveSubmissionData, getSupervisorHierarchy } from '@/services/leaveSubmissionService';
+import { LeaveRequest } from '@/types';
 
 const leaveFormSchema = z.object({
   leave_type: z.string().min(1, '請選擇請假類型'),

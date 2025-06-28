@@ -1,3 +1,4 @@
+
 import { differenceInDays } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { UserStaffData } from './staffDataService';
@@ -161,7 +162,10 @@ export const submitLeaveRequest = async (
         leave_type: submissionData.leave_type,
         status: 'approved',
         hours: calculatedHours,
-        reason: submissionData.reason
+        reason: submissionData.reason,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        approvals: []
       };
 
       // 直接插入已核准的請假申請
@@ -212,7 +216,10 @@ export const submitLeaveRequest = async (
       hours: calculatedHours,
       reason: submissionData.reason,
       approval_level: 1,
-      current_approver: supervisorHierarchy[0].id
+      current_approver: supervisorHierarchy[0].id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      approvals: []
     };
 
     console.log('📝 準備建立的請假申請:', pendingRequest);

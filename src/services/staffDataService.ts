@@ -17,21 +17,36 @@ export const loadUserStaffData = async (userId: string): Promise<UserStaffData> 
   console.log('🚀 loadUserStaffData: 開始載入用戶資料，用戶ID:', userId);
 
   try {
-    // 修正：使用 user_id 欄位載入員工資料
-    const { data: staffData, error: staffError } = await supabase
+    // 修正：使用 user_id 欄位載入員工資料，如果失敗則嘗試 id 欄位
+    let staffData = null;
+    let staffError = null;
+
+    // 首先嘗試使用 user_id 查詢
+    const { data: staffByUserId, error: userIdError } = await supabase
       .from('staff')
       .select('*')
       .eq('user_id', userId)
       .single();
 
-    if (staffError) {
-      console.error('❌ loadUserStaffData: 載入員工資料失敗:', staffError);
-      
-      if (staffError.code === 'PGRST116') {
+    if (userIdError && userIdError.code !== 'PGRST116') {
+      // 如果是其他錯誤（非找不到記錄），嘗試使用 id 查詢
+      const { data: staffById, error: idError } = await supabase
+        .from('staff')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (idError) {
+        console.error('❌ loadUserStaffData: 載入員工資料失敗 (兩種方式都失敗):', { userIdError, idError });
         throw new Error('找不到員工資料記錄，請聯繫管理員進行帳號設定');
-      } else {
-        throw new Error(`載入員工資料失敗：${staffError.message}`);
       }
+
+      staffData = staffById;
+    } else if (userIdError && userIdError.code === 'PGRST116') {
+      // 找不到記錄的錯誤
+      throw new Error('找不到員工資料記錄，請聯繫管理員進行帳號設定');
+    } else {
+      staffData = staffByUserId;
     }
 
     if (!staffData) {

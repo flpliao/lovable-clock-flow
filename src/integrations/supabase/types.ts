@@ -1871,6 +1871,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_current_user_role_simple: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_overtime_supervisor_hierarchy: {
         Args: { staff_uuid: string }
         Returns: Json

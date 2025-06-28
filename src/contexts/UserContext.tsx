@@ -44,13 +44,29 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (queryError) {
         console.error('❌ 查詢 staff 資料失敗:', queryError);
-        setUserError('⚠️ 查詢員工資料失敗');
-        return;
+        // 如果是權限問題，嘗試查詢 id 欄位
+        const { data: staffByIdRecords, error: idQueryError } = await supabase
+          .from('staff')
+          .select('*')
+          .eq('id', user.id);
+          
+        if (idQueryError) {
+          console.error('❌ 查詢 staff 資料（使用 id）失敗:', idQueryError);
+          setUserError('⚠️ 查詢員工資料失敗');
+          return;
+        }
+        
+        // 使用 id 查詢的結果
+        if (staffByIdRecords && staffByIdRecords.length > 0) {
+          console.log('✅ 使用 id 查詢找到員工資料');
+          return;
+        }
       }
 
-      console.log('📊 查詢到的 staff 資料數量:', staffRecords?.length || 0);
+      const allStaffRecords = staffRecords || [];
+      console.log('📊 查詢到的 staff 資料數量:', allStaffRecords.length);
 
-      if (!staffRecords || staffRecords.length === 0) {
+      if (allStaffRecords.length === 0) {
         // 2️⃣ 若查無資料，自動新增一筆 staff 資料
         console.log('➕ 未找到 staff 資料，開始自動建立...');
         
@@ -81,18 +97,18 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         console.log('✅ 成功自動建立 staff 資料:', newStaffData);
         
-      } else if (staffRecords.length === 1) {
+      } else if (allStaffRecords.length === 1) {
         // 3️⃣ 若查到 1 筆，不處理
         console.log('✅ staff 資料正常，已存在 1 筆記錄');
         
-      } else if (staffRecords.length > 1) {
+      } else if (allStaffRecords.length > 1) {
         // 4️⃣ 若查到多筆，只保留一筆，刪除多餘的資料
         console.log('⚠️ 發現多筆 staff 資料，準備清理重複資料...');
-        console.log('📋 所有 staff 記錄:', staffRecords);
+        console.log('📋 所有 staff 記錄:', allStaffRecords);
         
         // 保留第一筆（通常是最早建立的）
-        const keepRecord = staffRecords[0];
-        const deleteRecords = staffRecords.slice(1);
+        const keepRecord = allStaffRecords[0];
+        const deleteRecords = allStaffRecords.slice(1);
         
         console.log('📌 保留的記錄:', keepRecord.id);
         console.log('🗑️ 準備刪除的記錄:', deleteRecords.map(r => r.id));
@@ -134,13 +150,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // 🧱 自動補綁使用者對應的 staff 資料
       syncUserStaffData(currentUser);
       
-      // 將用戶資料存儲到本地存儲
-      // saveUserToStorage(currentUser); // 暫時註解，避免重複存儲
       setUserError(null);
-      
-      // 清除權限快取，確保使用最新權限
-      // const permissionService = UnifiedPermissionService.getInstance();
-      // permissionService.clearCache();
       
       // 確保認證狀態與用戶狀態同步
       if (!isAuthenticated) {

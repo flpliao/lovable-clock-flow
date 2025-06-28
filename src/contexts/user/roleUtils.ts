@@ -8,10 +8,10 @@ export const createRoleChecker = (currentUser: User | null) => {
     return () => {
       if (!currentUser) return false;
       
-      // 廖俊雄永遠是最高管理員 - 使用正確的 Supabase Auth UID
+      // 廖俊雄永遠是最高管理員 - 使用正確的固定 UUID
       const isLiaoJunxiong = (
         currentUser?.name === '廖俊雄' || 
-        currentUser?.id === '0765138a-6f11-45f4-be07-dab965116a2d' || // 正確的 Supabase Auth UID
+        currentUser?.id === '550e8400-e29b-41d4-a716-446655440001' || // 使用固定的超級管理員 UUID
         currentUser?.email === 'flpliao@gmail.com' // 額外的 email 檢查
       );
       
@@ -53,9 +53,9 @@ export const createRoleChecker = (currentUser: User | null) => {
     return (userId: string): boolean => {
       if (!currentUser) return false;
       
-      // 廖俊雄可以管理所有用戶 - 使用正確的 Supabase Auth UID
+      // 廖俊雄可以管理所有用戶 - 使用固定的超級管理員 UUID
       if (currentUser.name === '廖俊雄' || 
-          currentUser.id === '0765138a-6f11-45f4-be07-dab965116a2d' ||
+          currentUser.id === '550e8400-e29b-41d4-a716-446655440001' ||
           currentUser?.email === 'flpliao@gmail.com') {
         console.log('🔐 廖俊雄最高管理員: 可管理所有用戶');
         return true;

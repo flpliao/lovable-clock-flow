@@ -13,12 +13,12 @@ export const usePermissionUtils = (roles: StaffRole[]) => {
     return roles.find(role => role.id === roleId);
   };
   
-  // 使用統一權限系統進行權限檢查，改回基於 role
+  // 使用統一權限系統進行權限檢查，基於 role
   const hasPermission = (staffList: Staff[], staffId: string, permissionCode: string): boolean => {
     const staff = staffList.find(s => s.id === staffId);
     if (!staff) return false;
     
-    // 使用統一權限服務進行檢查，改回使用 role
+    // 使用統一權限服務進行檢查，基於 role
     const context = {
       currentUser,
       staffData: staff,
@@ -51,7 +51,7 @@ export const usePermissionUtils = (roles: StaffRole[]) => {
           staffId, 
           roleId, 
           type: 'roleAssigned',
-          updatedField: 'role' // 改回指出更新的是 role
+          updatedField: 'role' // 指出更新的是 role
         }
       }));
     }, 100);

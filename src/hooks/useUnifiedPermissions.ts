@@ -38,25 +38,31 @@ export const useUnifiedPermissions = () => {
     loadBackendRoles();
   }, [permissionService]);
 
-  // 獲取當前用戶的員工資料（優先使用 role_id）
+  // 獲取當前用戶的員工資料（改善查找邏輯，基於 user_id）
   const currentStaffData = useMemo(() => {
     if (!currentUser) return undefined;
     
+    // 優先使用 user_id 進行關聯
     const staff = staffList.find(staff => 
-      staff.email === currentUser.name || 
-      staff.name === currentUser.name ||
-      staff.id === currentUser.id
+      staff.user_id === currentUser.id ||
+      staff.email === currentUser.email || 
+      staff.name === currentUser.name
     );
     
     if (staff) {
       console.log('👤 找到當前用戶員工資料:', {
         name: staff.name,
-        roleId: staff.role_id,
-        oldRole: staff.role,
-        currentUserRole: currentUser.role
+        role: staff.role,
+        user_id: staff.user_id,
+        currentUserId: currentUser.id
       });
     } else {
-      console.log('⚠️ 未找到當前用戶員工資料:', currentUser.name);
+      console.log('⚠️ 未找到當前用戶員工資料:', {
+        currentUserName: currentUser.name,
+        currentUserId: currentUser.id,
+        currentUserEmail: currentUser.email,
+        availableStaff: staffList.map(s => ({ name: s.name, user_id: s.user_id, email: s.email }))
+      });
     }
     
     return staff;
@@ -101,9 +107,9 @@ export const useUnifiedPermissions = () => {
   const isAdmin = useCallback((): boolean => {
     if (!currentUser) return false;
     
-    // 廖俊雄特殊處理
+    // 廖俊雄特殊處理 - 使用正確的 Supabase Auth UID
     if (currentUser.name === '廖俊雄' && 
-        currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
+        currentUser.id === '0765138a-6f11-45f4-be07-dab965116a2d') {
       return true;
     }
     

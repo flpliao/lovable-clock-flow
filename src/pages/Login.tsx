@@ -1,27 +1,34 @@
-
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { User } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import LoginForm from '@/components/auth/LoginForm';
+import { useToast } from '@/hooks/use-toast';
 
 const Login = () => {
   const { currentUser, isAuthenticated, isUserLoaded } = useUser();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  console.log('🔍 Login: 檢查認證狀態', {
-    isUserLoaded,
-    isAuthenticated,
-    hasCurrentUser: !!currentUser,
-    pathname: window.location.pathname
-  });
+  // 檢查已登入用戶並重定向
+  useEffect(() => {
+    if (isUserLoaded && isAuthenticated && currentUser && !isRedirecting) {
+      console.log('🔐 用戶已登入，重定向到主頁面:', currentUser.name);
+      setIsRedirecting(true);
+      
+      // 立即重定向
+      navigate('/', { replace: true });
+    }
+  }, [isUserLoaded, isAuthenticated, currentUser, navigate, isRedirecting]);
 
-  // 已登入用戶顯示跳轉中（AuthStateManager 會處理重定向）
-  if (isAuthenticated && currentUser) {
+  // 已登入用戶顯示跳轉中
+  if (isRedirecting || (isAuthenticated && currentUser)) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
         <div className="text-white text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-          <p>正在跳轉到主頁面...</p>
+          <p>正在跳轉...</p>
         </div>
       </div>
     );

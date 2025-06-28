@@ -1,7 +1,5 @@
 
 import React, { useState } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { Navigate } from 'react-router-dom';
 import { Settings, Globe, Shield, Database, CheckCircle2, AlertCircle, Wrench, Languages, Server, Activity, MapPin } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ComprehensiveDiagnostics } from '@/components/company/diagnostics/ComprehensiveDiagnostics';
@@ -11,13 +9,7 @@ import CheckInDistanceSettings from '@/components/company/components/CheckInDist
 import GoogleMapsApiKeySettings from '@/components/company/components/GoogleMapsApiKeySettings';
 
 const SystemSettings = () => {
-  const { currentUser, isAdmin } = useUser();
   const [activeTab, setActiveTab] = useState('general');
-
-  // 權限檢查：只有管理員可以訪問
-  if (!currentUser || !isAdmin()) {
-    return <Navigate to="/login" />;
-  }
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">

@@ -103,15 +103,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // 處理用戶登入的統一函數
   const handleUserLogin = useCallback(async (session: any) => {
-    // 防止重複處理
-    if (isProcessingLogin) {
-      console.log('⚠️ 用戶登入處理中，跳過重複請求');
-      return;
-    }
-
     console.log('🔄 開始處理用戶登入...');
-    setIsProcessingLogin(true);
-
+    
     try {
       // 優先從 staff 表載入用戶資料
       const staffUser = await loadUserFromStaffTable(session.user);
@@ -132,12 +125,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           });
         }
         
-        // 檢查是否在 callback 頁面，如果是則重定向
-        if (window.location.pathname === '/auth/callback') {
-          console.log('🔄 從 callback 頁面重定向到首頁');
-          navigate('/', { replace: true });
-        }
-        
         setIsUserLoaded(true);
         return;
       }
@@ -148,11 +135,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log('📦 恢復已存儲的用戶資料:', storedUser.name, '角色:', storedUser.role);
         setCurrentUser(storedUser);
         setIsUserLoaded(true);
-        
-        if (window.location.pathname === '/auth/callback') {
-          console.log('🔄 從 callback 頁面重定向到首頁');
-          navigate('/', { replace: true });
-        }
         return;
       }
 
@@ -173,11 +155,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setCurrentUser(user);
         saveUserToStorage(user);
         setIsUserLoaded(true);
-        
-        if (window.location.pathname === '/auth/callback') {
-          console.log('🔄 從 callback 頁面重定向到首頁');
-          navigate('/', { replace: true });
-        }
         return;
       } else {
         throw new Error(result.error || '獲取用戶資料失敗');
@@ -197,18 +174,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       };
       
       setCurrentUser(fallbackUser);
-      
-      // 即使發生錯誤也要重定向
-      if (window.location.pathname === '/auth/callback') {
-        console.log('🔄 發生錯誤但仍重定向到首頁');
-        navigate('/', { replace: true });
-      }
     } finally {
       setIsUserLoaded(true);
-      setIsProcessingLogin(false);
       console.log('✅ 用戶登入處理完成');
     }
-  }, [isProcessingLogin, navigate]);
+  }, []);
 
   // 處理用戶登出的統一函數
   const handleUserLogout = useCallback(() => {
@@ -239,9 +209,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (!isUserLoaded) {
         console.log('⚠️ 認證檢查超時，設置為載入完成');
         setIsUserLoaded(true);
-        setIsProcessingLogin(false);
       }
-    }, 3000);
+    }, 2000);
     
     // 設置 Supabase Auth 狀態監聽器
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -254,10 +223,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } else if (event === 'SIGNED_OUT') {
         console.log('🚪 用戶已登出');
         handleUserLogout();
-      } else if (session && !currentUserRef.current) {
-        // 處理 setSession 後可能沒有觸發特定事件的情況
-        console.log('🔄 檢測到會話但無事件，處理登入狀態');
-        await handleUserLogin(session);
       }
     });
 
@@ -285,7 +250,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       subscription.unsubscribe();
       clearTimeout(fallbackTimer);
     };
-  }, [handleUserLogin, handleUserLogout, isUserLoaded]);
+  }, [handleUserLogin, handleUserLogout]);
 
   // 當用戶改變時的處理
   useEffect(() => {

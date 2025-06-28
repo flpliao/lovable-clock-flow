@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User } from 'lucide-react';
@@ -18,12 +17,8 @@ const Login = () => {
       console.log('🔐 用戶已登入，重定向到主頁面:', currentUser.name);
       setIsRedirecting(true);
       
-      // 延遲重定向，確保狀態穩定
-      const redirectTimer = setTimeout(() => {
-        navigate('/', { replace: true });
-      }, 500);
-      
-      return () => clearTimeout(redirectTimer);
+      // 立即重定向
+      navigate('/', { replace: true });
     }
   }, [isUserLoaded, isAuthenticated, currentUser, navigate, isRedirecting]);
 
@@ -39,14 +34,13 @@ const Login = () => {
     );
   }
 
-  // 載入中狀態 - 加上超時保護
+  // 載入中狀態
   if (!isUserLoaded) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
         <div className="text-white text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
           <p>載入中...</p>
-          <p className="text-sm text-white/70 mt-2">如果載入時間過長，請重新整理頁面</p>
         </div>
       </div>
     );

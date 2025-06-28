@@ -29,20 +29,15 @@ const LoginForm: React.FC = () => {
         console.log('🎫 獲得 JWT Token:', authResult.session.access_token.substring(0, 20) + '...');
         console.log('👤 用戶資料:', authResult.user);
         
-        // 將 JWT token 和會話資訊存儲到 localStorage（可選）
-        localStorage.setItem('supabase_session', JSON.stringify(authResult.session));
-        
         // 登入成功提醒
         toast({
           title: '登入成功',
-          description: `歡迎回來，${authResult.user.name}！已獲取認證令牌。`,
+          description: `歡迎回來，${authResult.user.name}！`,
         });
         
-        // 稍微延遲跳轉，讓 UserContext 處理認證狀態
-        setTimeout(() => {
-          console.log('🔄 跳轉到主頁面');
-          navigate('/');
-        }, 1000);
+        // 立即跳轉到主頁面
+        console.log('🔄 立即跳轉到主頁面');
+        navigate('/', { replace: true });
       } else {
         console.log('❌ Supabase Auth 登入失敗:', authResult.error);
         toast({

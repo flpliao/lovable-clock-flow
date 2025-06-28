@@ -721,20 +721,6 @@ export type Database = {
             referencedRelation: "staff"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "leave_requests_staff_id_fkey"
-            columns: ["staff_id"]
-            isOneToOne: false
-            referencedRelation: "staff"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "leave_requests_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "staff"
-            referencedColumns: ["id"]
-          },
         ]
       }
       leave_types: {

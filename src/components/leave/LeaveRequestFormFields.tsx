@@ -9,15 +9,13 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
-import { UserStaffData } from '@/services/staffDataService';
+import { CalendarIcon, Clock, AlertTriangle } from 'lucide-react';
 
 interface LeaveRequestFormFieldsProps {
   form: UseFormReturn<any>;
   calculatedHours: number;
   validationError: string | null;
   hasHireDate: boolean;
-  userStaffData: UserStaffData | null;
 }
 
 const leaveTypes = [
@@ -38,64 +36,12 @@ export function LeaveRequestFormFields({
   form, 
   calculatedHours, 
   validationError,
-  hasHireDate,
-  userStaffData 
+  hasHireDate 
 }: LeaveRequestFormFieldsProps) {
   const watchedLeaveType = form.watch('leave_type');
 
   return (
     <>
-      {/* 員工資料狀態顯示 */}
-      {userStaffData && (
-        <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-          <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">員工資料</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-white">
-              <span>姓名：</span>
-              <span className="font-medium">{userStaffData.name}</span>
-            </div>
-            <div className="flex items-center justify-between text-white">
-              <span>部門：</span>
-              <span className="font-medium">{userStaffData.department}</span>
-            </div>
-            <div className="flex items-center justify-between text-white">
-              <span>職位：</span>
-              <span className="font-medium">{userStaffData.position}</span>
-            </div>
-            <div className="flex items-center justify-between text-white">
-              <span>入職日期：</span>
-              <div className="flex items-center gap-2">
-                {hasHireDate ? (
-                  <>
-                    <CheckCircle className="h-4 w-4 text-green-300" />
-                    <span className="font-medium">{userStaffData.hire_date}</span>
-                  </>
-                ) : (
-                  <>
-                    <AlertTriangle className="h-4 w-4 text-orange-300" />
-                    <span className="text-orange-200">未設定</span>
-                  </>
-                )}
-              </div>
-            </div>
-            {hasHireDate && (
-              <>
-                <div className="flex items-center justify-between text-white">
-                  <span>年資：</span>
-                  <span className="font-medium">{userStaffData.yearsOfService}</span>
-                </div>
-                <div className="flex items-center justify-between text-white">
-                  <span>特休天數：</span>
-                  <span className="font-medium text-green-300">
-                    剩餘 {userStaffData.remainingAnnualLeaveDays} / 總計 {userStaffData.totalAnnualLeaveDays} 天
-                  </span>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* 請假類型選擇 */}
       <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
         <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假類型</h3>
@@ -108,6 +54,7 @@ export function LeaveRequestFormFields({
               <Select 
                 onValueChange={field.onChange} 
                 defaultValue={field.value}
+                disabled={!hasHireDate && field.value === 'annual'}
               >
                 <FormControl>
                   <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60">
@@ -138,19 +85,6 @@ export function LeaveRequestFormFields({
                     <AlertTriangle className="h-4 w-4" />
                     <span className="text-sm font-medium">
                       尚未設定入職日期，無法申請特別休假。請至人員資料設定入職日期。
-                    </span>
-                  </div>
-                </div>
-              )}
-              
-              {/* 特別休假餘額顯示 */}
-              {watchedLeaveType === 'annual' && hasHireDate && userStaffData && (
-                <div className="mt-2 p-3 bg-green-500/20 border border-green-300/30 rounded-lg">
-                  <div className="flex items-center gap-2 text-green-100">
-                    <CheckCircle className="h-4 w-4" />
-                    <span className="text-sm font-medium">
-                      特休餘額：{userStaffData.remainingAnnualLeaveDays} 天 
-                      （總計 {userStaffData.totalAnnualLeaveDays} 天，已使用 {userStaffData.usedAnnualLeaveDays} 天）
                     </span>
                   </div>
                 </div>

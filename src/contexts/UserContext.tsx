@@ -61,35 +61,39 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       if (staffData) {
         console.log('✅ 成功從 staff 表載入用戶資料:', {
-          id: staffData.id,
+          staff_id: staffData.id,
+          user_id: staffData.user_id,
           name: staffData.name,
           email: staffData.email,
           role: staffData.role,
           role_id: staffData.role_id
         });
         
-        // 特別處理廖俊雄的權限
+        // 特別處理廖俊雄的權限 - 確保他獲得 admin 權限
         let finalRole = staffData.role;
         if (staffData.name === '廖俊雄' || staffData.email === 'flpliao@gmail.com') {
           finalRole = 'admin';
           console.log('🔐 �廖俊雄特別權限處理，強制設定為 admin');
         }
         
-        // 轉換為 User 格式，確保使用正確的權限
+        // 轉換為 User 格式，使用 Supabase Auth 的 user ID
         const user: User = {
-          id: staffData.id, // 使用 staff 表格的 ID
+          id: authUser.id, // 使用 Supabase Auth 的 UID (0765138a-6f11-45f4-be07-dab965116a2d)
           name: staffData.name,
           position: staffData.position,
           department: staffData.department,
           onboard_date: staffData.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
           hire_date: staffData.hire_date,
           supervisor_id: staffData.supervisor_id,
-          role: finalRole as 'admin' | 'manager' | 'user'
+          role: finalRole as 'admin' | 'manager' | 'user',
+          email: staffData.email // 加入 email 欄位
         };
         
-        console.log('🔐 用戶權限資料載入完成:', {
-          id: user.id,
+        console.log('🔐 用戶權限資料載入完成 (修正後):', {
+          auth_uid: user.id,
+          staff_id: staffData.id,
           name: user.name,
+          email: user.email,
           role: user.role,
           isAdmin: user.role === 'admin'
         });
@@ -134,8 +138,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // 特別檢查廖俊雄的權限
         if (staffUser.name === '廖俊雄' || session.user.email === 'flpliao@gmail.com') {
           console.log('🔐 廖俊雄登入，確認管理員權限:', {
-            id: staffUser.id,
+            auth_uid: staffUser.id,
             name: staffUser.name,
+            email: staffUser.email,
             role: staffUser.role,
             isAdmin: staffUser.role === 'admin'
           });
@@ -347,6 +352,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } else {
       console.log('👤 UserProvider: 用戶登入:', currentUser.name, '權限等級:', currentUser.role);
       console.log('🆔 UserProvider: Supabase Auth 用戶ID:', currentUser.id);
+      console.log('📧 UserProvider: 用戶 Email:', (currentUser as any)?.email);
       console.log('🔐 UserProvider: 管理員權限檢查:', currentUser.role === 'admin');
       
       // 將用戶資料存儲到本地存儲

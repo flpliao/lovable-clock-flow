@@ -366,19 +366,6 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* 調試資訊 - 僅在開發環境顯示 */}
-      {process.env.NODE_ENV === 'development' && debugInfo && (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>調試資訊:</strong>
-            <pre className="text-xs mt-2 whitespace-pre-wrap">
-              {JSON.stringify(debugInfo, null, 2)}
-            </pre>
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* 認證狀態警告 */}
       {!isAuthenticated && (
         <Alert variant="destructive">

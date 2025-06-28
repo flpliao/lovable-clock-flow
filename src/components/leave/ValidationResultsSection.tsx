@@ -1,68 +1,93 @@
 
 import React from 'react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Info, Loader2, CheckCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Info, Loader2 } from 'lucide-react';
 
 interface ValidationResult {
   isValid: boolean;
   warnings: string[];
   errors: string[];
+  hasHireDate?: boolean;
+  userStaffData?: any;
 }
 
 interface ValidationResultsSectionProps {
-  validationResult: ValidationResult;
   isValidating?: boolean;
+  validationResult: ValidationResult;
 }
 
-export function ValidationResultsSection({ validationResult, isValidating = false }: ValidationResultsSectionProps) {
-  // Show loading state if validating
+export function ValidationResultsSection({ 
+  isValidating = false, 
+  validationResult 
+}: ValidationResultsSectionProps) {
+  
   if (isValidating) {
     return (
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-        <div className="flex items-center justify-center space-x-2 text-white">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>驗證中...</span>
+      <div className="backdrop-blur-xl bg-blue-500/20 border border-blue-300/30 rounded-3xl shadow-xl p-6">
+        <div className="flex items-center gap-3">
+          <Loader2 className="h-5 w-5 text-blue-300 animate-spin" />
+          <div>
+            <h4 className="text-blue-100 font-semibold">驗證中...</h4>
+            <p className="text-blue-200 text-sm mt-1">正在檢查請假申請資料</p>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Don't show anything if no validation results and no errors/warnings
-  if (validationResult.warnings.length === 0 && validationResult.errors.length === 0) {
+  const { errors = [], warnings = [], isValid } = validationResult;
+
+  if (errors.length === 0 && warnings.length === 0) {
     return null;
   }
 
   return (
-    <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-      <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">驗證結果</h3>
-      
-      <div className="space-y-3">
-        {/* 錯誤訊息 */}
-        {validationResult.errors.map((error, index) => (
-          <Alert key={`error-${index}`} className="bg-red-500/20 border-red-300/30 backdrop-blur-sm">
-            <AlertTriangle className="h-4 w-4 text-red-300" />
-            <AlertDescription className="text-red-100 font-medium">{error}</AlertDescription>
-          </Alert>
-        ))}
-        
-        {/* 警告訊息 */}
-        {validationResult.warnings.map((warning, index) => (
-          <Alert key={`warning-${index}`} className="bg-yellow-500/20 border-yellow-300/30 backdrop-blur-sm">
-            <Info className="h-4 w-4 text-yellow-300" />
-            <AlertDescription className="text-yellow-100 font-medium">{warning}</AlertDescription>
-          </Alert>
-        ))}
+    <div className="space-y-4">
+      {/* 錯誤訊息 */}
+      {errors.length > 0 && (
+        <div className="backdrop-blur-xl bg-red-500/20 border border-red-300/30 rounded-3xl shadow-xl p-6">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-300 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="text-red-100 font-semibold">申請驗證失敗</h4>
+              <div className="space-y-1 mt-2">
+                {errors.map((error, index) => (
+                  <p key={index} className="text-red-200 text-sm">• {error}</p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-        {/* 驗證通過提示 */}
-        {validationResult.isValid && validationResult.warnings.length === 0 && validationResult.errors.length === 0 && (
-          <Alert className="bg-green-500/20 border-green-300/30 backdrop-blur-sm">
-            <CheckCircle className="h-4 w-4 text-green-300" />
-            <AlertDescription className="text-green-100 font-medium">
-              申請資料驗證通過
-            </AlertDescription>
-          </Alert>
-        )}
-      </div>
+      {/* 警告訊息 */}
+      {warnings.length > 0 && (
+        <div className="backdrop-blur-xl bg-yellow-500/20 border border-yellow-300/30 rounded-3xl shadow-xl p-6">
+          <div className="flex items-start gap-3">
+            <Info className="h-5 w-5 text-yellow-300 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="text-yellow-100 font-semibold">請注意</h4>
+              <div className="space-y-1 mt-2">
+                {warnings.map((warning, index) => (
+                  <p key={index} className="text-yellow-200 text-sm">• {warning}</p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 驗證通過 */}
+      {isValid && warnings.length > 0 && (
+        <div className="backdrop-blur-xl bg-green-500/20 border border-green-300/30 rounded-3xl shadow-xl p-6">
+          <div className="flex items-center gap-3">
+            <CheckCircle className="h-5 w-5 text-green-300" />
+            <div>
+              <h4 className="text-green-100 font-semibold">申請資料驗證通過</h4>
+              <p className="text-green-200 text-sm mt-1">請確認以上注意事項後提交申請</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

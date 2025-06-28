@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
@@ -76,6 +77,7 @@ export const useLeaveRequests = () => {
 
       if (subordinateRequests) {
         subordinateRequests.forEach(request => {
+          // Fix the TypeScript error: properly access supervisor_id from staff object
           if (request.staff && request.staff.supervisor_id === currentUser.id) {
             if (!allRequests.some(req => req.id === request.id)) {
               allRequests.push(request);

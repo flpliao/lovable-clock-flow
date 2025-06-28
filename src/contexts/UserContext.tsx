@@ -73,7 +73,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         let finalRole = staffData.role;
         if (staffData.name === '廖俊雄' || staffData.email === 'flpliao@gmail.com') {
           finalRole = 'admin';
-          console.log('🔐 �廖俊雄特別權限處理，強制設定為 admin');
+          console.log('🔐 廖俊雄特別權限處理，強制設定為 admin');
         }
         
         // 轉換為 User 格式，使用 Supabase Auth 的 user ID

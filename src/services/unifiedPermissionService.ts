@@ -1,3 +1,4 @@
+
 import { User } from '@/contexts/user/types';
 import { Staff, StaffRole } from '@/components/staff/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -214,7 +215,7 @@ export class UnifiedPermissionService {
   private isLiaoJunxiong(user: User): boolean {
     return (user.name === '廖俊雄' && 
             user.id === '0765138a-6f11-45f4-be07-dab965116a2d') ||
-           (user as any)?.email === 'flpliao@gmail.com';
+           user?.email === 'flpliao@gmail.com';
   }
 
   /**

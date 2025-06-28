@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { SystemSettingsService } from '@/services/systemSettingsService';
-import { Loader2, MapPin, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Loader2, MapPin, AlertTriangle, CheckCircle, ShieldAlert } from 'lucide-react';
 
 const CheckInDistanceSettings = () => {
   const { toast } = useToast();
@@ -27,14 +28,14 @@ const CheckInDistanceSettings = () => {
         console.log('📋 載入打卡距離設定...');
         
         // 測試權限
-        const permissions = await SystemSettingsService.testRLSAndPermissions();
+        const permissions = await SystemSettingsService.checkUserPermissions();
         setPermissionStatus(permissions);
         
         if (!permissions.canRead) {
           console.error('❌ 沒有讀取權限');
           toast({
             title: "權限不足",
-            description: "無法讀取系統設定，請檢查您的權限",
+            description: permissions.error || "無法讀取系統設定，請檢查您的權限",
             variant: "destructive"
           });
           return;
@@ -71,7 +72,7 @@ const CheckInDistanceSettings = () => {
     if (!permissionStatus?.canWrite) {
       toast({
         title: "權限不足",
-        description: "沒有寫入權限，無法儲存設定",
+        description: permissionStatus?.error || "沒有寫入權限，無法儲存設定",
         variant: "destructive"
       });
       return;
@@ -96,12 +97,12 @@ const CheckInDistanceSettings = () => {
       console.error('❌ 儲存打卡距離設定失敗:', error);
       
       // 重新測試權限
-      const permissions = await SystemSettingsService.testRLSAndPermissions();
+      const permissions = await SystemSettingsService.checkUserPermissions();
       setPermissionStatus(permissions);
       
       let errorMessage = "無法儲存打卡距離設定";
       if (error instanceof Error) {
-        errorMessage += `: ${error.message}`;
+        errorMessage = error.message;
       }
       
       toast({
@@ -144,16 +145,32 @@ const CheckInDistanceSettings = () => {
       <CardContent className="space-y-4">
         {/* 權限狀態 */}
         {permissionStatus && (
-          <Alert className={`${permissionStatus.canWrite ? 'bg-green-100/20 border-green-300/50' : 'bg-red-100/20 border-red-300/50'}`}>
+          <Alert className={`${
+            permissionStatus.canWrite 
+              ? 'bg-green-100/20 border-green-300/50' 
+              : permissionStatus.canRead 
+                ? 'bg-yellow-100/20 border-yellow-300/50'
+                : 'bg-red-100/20 border-red-300/50'
+          }`}>
             {permissionStatus.canWrite ? (
               <CheckCircle className="h-4 w-4 text-green-400" />
+            ) : permissionStatus.canRead ? (
+              <ShieldAlert className="h-4 w-4 text-yellow-400" />
             ) : (
               <AlertTriangle className="h-4 w-4 text-red-400" />
             )}
-            <AlertDescription className={`${permissionStatus.canWrite ? 'text-green-100' : 'text-red-100'} text-sm`}>
+            <AlertDescription className={`${
+              permissionStatus.canWrite 
+                ? 'text-green-100' 
+                : permissionStatus.canRead 
+                  ? 'text-yellow-100'
+                  : 'text-red-100'
+            } text-sm`}>
               {permissionStatus.canWrite 
-                ? '權限正常' 
-                : `權限不足：${permissionStatus.error || '無法寫入系統設定'}`
+                ? '✅ 完整權限 - 可以讀取和修改設定' 
+                : permissionStatus.canRead 
+                  ? '⚠️ 僅讀取權限 - 需要管理員或主管權限才能修改'
+                  : `❌ 權限不足：${permissionStatus.error || '無法存取系統設定'}`
               }
             </AlertDescription>
           </Alert>
@@ -173,6 +190,7 @@ const CheckInDistanceSettings = () => {
             onChange={(e) => setDistance(parseInt(e.target.value) || 500)}
             className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
             placeholder="輸入距離限制"
+            disabled={!permissionStatus?.canRead}
           />
           <div className="text-sm text-white/70">
             建議範圍：50-2000 公尺（預設 500 公尺）
@@ -184,7 +202,7 @@ const CheckInDistanceSettings = () => {
           <Button 
             onClick={handleSave} 
             disabled={saving || !permissionStatus?.canWrite}
-            className="flex-1 bg-blue-500/80 hover:bg-blue-600/80 text-white"
+            className="flex-1 bg-blue-500/80 hover:bg-blue-600/80 text-white disabled:opacity-50"
           >
             {saving ? (
               <>
@@ -198,12 +216,25 @@ const CheckInDistanceSettings = () => {
           <Button 
             variant="outline" 
             onClick={handleReset}
-            disabled={saving}
-            className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+            disabled={saving || !permissionStatus?.canRead}
+            className="bg-white/20 border-white/30 text-white hover:bg-white/30 disabled:opacity-50"
           >
             重設
           </Button>
         </div>
+
+        {/* 權限說明 */}
+        {permissionStatus && !permissionStatus.canWrite && (
+          <div className="mt-4 p-3 bg-blue-100/20 border border-blue-300/50 rounded-lg">
+            <div className="flex items-start gap-2">
+              <ShieldAlert className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-blue-100">
+                <p className="font-medium mb-1">需要更高權限</p>
+                <p>若要修改GPS打卡距離設定，請聯繫系統管理員授予您相應權限，或使用管理員帳號登入。</p>
+              </div>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

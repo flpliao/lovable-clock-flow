@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface SystemSetting {
@@ -11,6 +10,77 @@ export interface SystemSetting {
 }
 
 export class SystemSettingsService {
+  /**
+   * 檢查用戶權限
+   */
+  static async checkUserPermissions(): Promise<{ canRead: boolean; canWrite: boolean; error?: string }> {
+    try {
+      console.log('🔐 檢查用戶權限...');
+      
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        return {
+          canRead: false,
+          canWrite: false,
+          error: '用戶未登入'
+        };
+      }
+
+      console.log('👤 當前用戶:', user.id);
+
+      // 檢查是否為廖俊雄（最高管理員）
+      if (user.id === '550e8400-e29b-41d4-a716-446655440001') {
+        console.log('👑 廖俊雄最高管理員 - 完整權限');
+        return { canRead: true, canWrite: true };
+      }
+
+      // 檢查用戶角色
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('role, name')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (staffError) {
+        console.error('❌ 無法取得員工資料:', staffError);
+        return {
+          canRead: false,
+          canWrite: false,
+          error: '無法驗證用戶權限'
+        };
+      }
+
+      if (!staffData) {
+        console.error('❌ 找不到員工資料');
+        return {
+          canRead: false,
+          canWrite: false,
+          error: '找不到員工資料'
+        };
+      }
+
+      console.log('👤 員工資料:', staffData);
+
+      const canWrite = staffData.role === 'admin' || staffData.role === 'manager';
+      const canRead = true; // 所有認證用戶都可以讀取
+
+      return {
+        canRead,
+        canWrite,
+        error: canWrite ? undefined : '沒有寫入權限，需要管理員或主管權限'
+      };
+
+    } catch (error) {
+      console.error('❌ 權限檢查錯誤:', error);
+      return {
+        canRead: false,
+        canWrite: false,
+        error: error instanceof Error ? error.message : '權限檢查失敗'
+      };
+    }
+  }
+
   /**
    * 取得打卡距離限制設定
    */
@@ -50,7 +120,14 @@ export class SystemSettingsService {
     try {
       console.log('💾 嘗試設定打卡距離限制:', distance, '公尺');
       
-      // 先檢查是否已存在設定
+      // 先檢查權限
+      const permissions = await this.checkUserPermissions();
+      if (!permissions.canWrite) {
+        console.error('❌ 沒有寫入權限:', permissions.error);
+        throw new Error(permissions.error || '沒有寫入權限');
+      }
+
+      // 檢查是否已存在設定
       const { data: existingSetting, error: selectError } = await supabase
         .from('system_settings')
         .select('id')
@@ -59,7 +136,7 @@ export class SystemSettingsService {
 
       if (selectError) {
         console.error('❌ 檢查現有設定時發生錯誤:', selectError);
-        return false;
+        throw new Error(`檢查設定失敗: ${selectError.message}`);
       }
 
       let result;
@@ -89,16 +166,14 @@ export class SystemSettingsService {
 
       if (result.error) {
         console.error('❌ 設定打卡距離限制失敗:', result.error);
-        console.error('錯誤詳情:', result.error.message);
-        console.error('錯誤代碼:', result.error.code);
-        return false;
+        throw new Error(`儲存失敗: ${result.error.message}`);
       }
 
       console.log('✅ 打卡距離限制已更新為:', distance, '公尺');
       return true;
     } catch (error) {
       console.error('❌ 設定打卡距離限制時發生錯誤:', error);
-      return false;
+      throw error; // 重新拋出錯誤讓上層處理
     }
   }
 
@@ -197,6 +272,13 @@ export class SystemSettingsService {
     try {
       console.log('🔧 初始化預設系統設定...');
       
+      // 檢查權限
+      const permissions = await this.checkUserPermissions();
+      if (!permissions.canWrite) {
+        console.log('⚠️ 沒有寫入權限，跳過初始化');
+        return;
+      }
+      
       // 檢查是否已存在打卡距離限制設定
       const { data: existing, error: selectError } = await supabase
         .from('system_settings')
@@ -229,58 +311,6 @@ export class SystemSettingsService {
    * 測試 RLS 政策和權限
    */
   static async testRLSAndPermissions(): Promise<{ canRead: boolean; canWrite: boolean; error?: string }> {
-    try {
-      console.log('🧪 測試 RLS 政策和權限...');
-      
-      // 測試讀取權限
-      const { data: readData, error: readError } = await supabase
-        .from('system_settings')
-        .select('*')
-        .limit(1);
-
-      const canRead = !readError;
-      if (readError) {
-        console.error('❌ 讀取權限測試失敗:', readError);
-      } else {
-        console.log('✅ 讀取權限正常');
-      }
-
-      // 測試寫入權限
-      const testKey = `test_${Date.now()}`;
-      const { error: writeError } = await supabase
-        .from('system_settings')
-        .insert({
-          setting_key: testKey,
-          setting_value: 'test_value',
-          description: '測試設定'
-        });
-
-      let canWrite = !writeError;
-      
-      if (writeError) {
-        console.error('❌ 寫入權限測試失敗:', writeError);
-      } else {
-        console.log('✅ 寫入權限正常');
-        
-        // 清理測試資料
-        await supabase
-          .from('system_settings')
-          .delete()
-          .eq('setting_key', testKey);
-      }
-
-      return {
-        canRead,
-        canWrite,
-        error: writeError?.message || readError?.message
-      };
-    } catch (error) {
-      console.error('❌ 權限測試時發生錯誤:', error);
-      return {
-        canRead: false,
-        canWrite: false,
-        error: error instanceof Error ? error.message : '未知錯誤'
-      };
-    }
+    return await this.checkUserPermissions();
   }
 }

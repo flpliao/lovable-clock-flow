@@ -178,6 +178,9 @@ export const useLeaveRequestForm = () => {
           reason: result.leaveRequest.reason,
           approval_level: result.leaveRequest.approval_level,
           current_approver: result.leaveRequest.current_approver,
+          created_at: result.leaveRequest.created_at,
+          updated_at: result.leaveRequest.updated_at,
+          approvals: result.leaveRequest.approvals,
         };
         
         const success = await createLeaveRequest(leaveRequestForCreation);

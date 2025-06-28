@@ -37,7 +37,15 @@ export const useSupabaseLeaveManagement = () => {
       }
 
       console.log('✅ useSupabaseLeaveManagement: 成功載入請假申請:', data?.length || 0, '筆');
-      setLeaveRequests(data || []);
+      
+      // 確保 leave_type 符合聯合類型
+      const typedData = data?.map(item => ({
+        ...item,
+        leave_type: item.leave_type as LeaveRequest['leave_type'],
+        status: item.status as LeaveRequest['status']
+      })) || [];
+      
+      setLeaveRequests(typedData);
     } catch (error) {
       console.error('❌ useSupabaseLeaveManagement: 載入請假申請時發生錯誤:', error);
       toast({
@@ -50,8 +58,59 @@ export const useSupabaseLeaveManagement = () => {
     }
   }, [currentUser?.id, toast]);
 
+  // 載入年假餘額
+  const loadAnnualLeaveBalance = useCallback(async (userId: string) => {
+    try {
+      console.log('🔍 useSupabaseLeaveManagement: 載入年假餘額，用戶ID:', userId);
+      
+      const currentYear = new Date().getFullYear();
+      const { data, error } = await supabase
+        .from('annual_leave_balance')
+        .select('*')
+        .eq('staff_id', userId)
+        .eq('year', currentYear)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error('❌ useSupabaseLeaveManagement: 載入年假餘額失敗:', error);
+        throw error;
+      }
+
+      console.log('✅ useSupabaseLeaveManagement: 年假餘額載入結果:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ useSupabaseLeaveManagement: 載入年假餘額時發生錯誤:', error);
+      return null;
+    }
+  }, []);
+
+  // 初始化年假餘額
+  const initializeAnnualLeaveBalance = useCallback(async (userId: string) => {
+    try {
+      console.log('🚀 useSupabaseLeaveManagement: 初始化年假餘額，用戶ID:', userId);
+      
+      const currentYear = new Date().getFullYear();
+      
+      // 調用 Supabase 函數來初始化年假餘額
+      const { error } = await supabase.rpc('initialize_or_update_annual_leave_balance', {
+        staff_uuid: userId,
+        target_year: currentYear
+      });
+
+      if (error) {
+        console.error('❌ useSupabaseLeaveManagement: 初始化年假餘額失敗:', error);
+        throw error;
+      }
+
+      console.log('✅ useSupabaseLeaveManagement: 年假餘額初始化成功');
+    } catch (error) {
+      console.error('❌ useSupabaseLeaveManagement: 初始化年假餘額時發生錯誤:', error);
+      throw error;
+    }
+  }, []);
+
   // 創建請假申請
-  const createLeaveRequest = useCallback(async (newRequest: LeaveRequest): Promise<boolean> => {
+  const createLeaveRequest = useCallback(async (newRequest: Omit<LeaveRequest, 'id'>): Promise<boolean> => {
     if (!currentUser?.id) {
       console.error('❌ useSupabaseLeaveManagement: 創建請假申請失敗 - 沒有當前用戶');
       toast({
@@ -71,7 +130,6 @@ export const useSupabaseLeaveManagement = () => {
         ...newRequest,
         user_id: currentUser.id,
         staff_id: currentUser.id, // 確保 staff_id 也設定
-        id: undefined, // 讓資料庫自動生成
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -213,6 +271,8 @@ export const useSupabaseLeaveManagement = () => {
     loading,
     createLeaveRequest,
     updateLeaveRequestStatus,
-    refreshData
+    refreshData,
+    loadAnnualLeaveBalance,
+    initializeAnnualLeaveBalance
   };
 };

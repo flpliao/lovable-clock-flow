@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUser } from '@/contexts/UserContext';
@@ -121,6 +120,7 @@ export const useLeaveFormValidation = (request: ValidationRequest): ValidationRe
             department: staffData.department,
             position: staffData.position,
             hire_date: staffData.hire_date,
+            supervisor_id: staffData.supervisor_id,
             yearsOfService,
             totalAnnualLeaveDays,
             usedAnnualLeaveDays,

@@ -1,104 +1,65 @@
 
-import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import React, { useState, useEffect } from 'react';
+import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertTriangle, CheckCircle, Info } from 'lucide-react';
-import { UserStaffData } from '@/services/staffDataService';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { UseFormReturn } from 'react-hook-form';
+import { LeaveFormValues } from '@/utils/leaveTypes';
+import { LeaveTypeService } from '@/services/payroll/leaveTypeService';
+import { AlertTriangle, FileText, DollarSign } from 'lucide-react';
 
-interface LeaveTypeSelectorProps {
-  form: UseFormReturn<any>;
-  selectedLeaveType?: string;
-  calculatedDays?: number;
-  hasHireDate?: boolean;
-  userStaffData?: UserStaffData | null;
+interface LeaveType {
+  id: string;
+  code: string;
+  name_zh: string;
+  name_en: string;
+  is_paid: boolean;
+  max_days_per_year?: number;
+  requires_attachment: boolean;
+  description?: string;
 }
 
-const leaveTypes = [
-  { value: 'annual', label: '特別休假', requiresHireDate: true },
-  { value: 'personal', label: '事假（無薪）', requiresHireDate: false },
-  { value: 'sick', label: '病假（依勞基法）', requiresHireDate: false },
-  { value: 'marriage', label: '婚假', requiresHireDate: false },
-  { value: 'bereavement', label: '喪假', requiresHireDate: false },
-  { value: 'maternity', label: '產假', requiresHireDate: false },
-  { value: 'paternity', label: '陪產假', requiresHireDate: false },
-  { value: 'menstrual', label: '生理假（女性限定）', requiresHireDate: false },
-  { value: 'occupational', label: '公傷病假', requiresHireDate: false },
-  { value: 'parental', label: '育嬰留停（無薪）', requiresHireDate: false },
-  { value: 'other', label: '其他（無薪）', requiresHireDate: false },
-];
+interface LeaveTypeSelectorProps {
+  form: UseFormReturn<LeaveFormValues>;
+  selectedLeaveType: string | null;
+  calculatedDays?: number;
+}
 
-export function LeaveTypeSelector({ 
-  form, 
-  selectedLeaveType,
-  calculatedDays = 0,
-  hasHireDate = false,
-  userStaffData 
-}: LeaveTypeSelectorProps) {
+export function LeaveTypeSelector({ form, selectedLeaveType, calculatedDays = 0 }: LeaveTypeSelectorProps) {
+  const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadLeaveTypes();
+  }, []);
+
+  const loadLeaveTypes = async () => {
+    try {
+      const data = await LeaveTypeService.getActiveLeaveTypes();
+      setLeaveTypes(data || []);
+    } catch (error) {
+      console.error('載入假別失敗:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const currentLeaveType = leaveTypes.find(type => type.code === selectedLeaveType);
   
-  const renderLeaveTypeStatus = (leaveType: string) => {
-    if (leaveType === 'annual') {
-      if (!hasHireDate) {
-        return (
-          <div className="mt-2 p-3 bg-orange-500/20 border border-orange-300/30 rounded-lg">
-            <div className="flex items-start gap-2 text-orange-100">
-              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium">無法申請特別休假</p>
-                <p className="text-xs mt-1 text-orange-200">
-                  尚未設定入職日期，請聯繫管理員在人員資料中設定您的入職日期後再申請特別休假。
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-      } else if (userStaffData) {
-        const remainingDays = userStaffData.remainingAnnualLeaveDays;
-        const totalDays = userStaffData.totalAnnualLeaveDays;
-        const usedDays = userStaffData.usedAnnualLeaveDays;
-        
-        return (
-          <div className="mt-2 space-y-2">
-            <div className="p-3 bg-green-500/20 border border-green-300/30 rounded-lg">
-              <div className="flex items-start gap-2 text-green-100">
-                <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-medium">特別休假可申請</p>
-                  <p className="text-xs mt-1 text-green-200">
-                    年資：{userStaffData.yearsOfService} | 
-                    特休餘額：{remainingDays} 天 | 
-                    年度總計：{totalDays} 天 | 
-                    已使用：{usedDays} 天
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            {calculatedDays > 0 && (
-              <div className="p-3 bg-blue-500/20 border border-blue-300/30 rounded-lg">
-                <div className="flex items-start gap-2 text-blue-100">
-                  <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium">申請天數檢查</p>
-                    <p className="text-xs mt-1 text-blue-200">
-                      本次申請：{calculatedDays} 天
-                      {calculatedDays > remainingDays ? (
-                        <span className="text-red-300 ml-2">（超過餘額 {remainingDays} 天）</span>
-                      ) : (
-                        <span className="text-green-300 ml-2">（餘額充足）</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      }
+  // 驗證假別天數限制
+  const validateDaysLimit = () => {
+    if (!currentLeaveType || !currentLeaveType.max_days_per_year || !calculatedDays) {
+      return null;
+    }
+    
+    if (calculatedDays > currentLeaveType.max_days_per_year) {
+      return `超過該假別年度上限（${currentLeaveType.max_days_per_year}天），請調整申請天數`;
     }
     
     return null;
   };
+
+  const daysLimitError = validateDaysLimit();
 
   return (
     <div className="space-y-4">
@@ -107,40 +68,95 @@ export function LeaveTypeSelector({
         name="leave_type"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-white font-medium">請假類型</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <FormLabel className="text-white font-medium drop-shadow-sm">請假類型</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loading}>
               <FormControl>
-                <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60">
-                  <SelectValue placeholder="請選擇請假類型" />
+                <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60 backdrop-blur-sm">
+                  <SelectValue placeholder={loading ? "載入中..." : "選擇請假類型"} />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent>
-                {leaveTypes.map((type) => {
-                  const isDisabled = type.requiresHireDate && !hasHireDate;
-                  return (
-                    <SelectItem 
-                      key={type.value} 
-                      value={type.value}
-                      disabled={isDisabled}
-                    >
-                      <div className="flex items-center gap-2">
-                        {type.label}
-                        {isDisabled && (
-                          <AlertTriangle className="h-3 w-3 text-orange-500" />
+              <SelectContent className="bg-white/95 backdrop-blur-xl border border-white/40 shadow-xl rounded-xl z-50">
+                {leaveTypes.map((type) => (
+                  <SelectItem 
+                    key={type.id} 
+                    value={type.code}
+                    className="hover:bg-blue-50 focus:bg-blue-50 cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="font-medium text-slate-800">{type.name_zh}</span>
+                      <div className="flex items-center gap-1 ml-2">
+                        {!type.is_paid && (
+                          <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">
+                            無薪
+                          </span>
+                        )}
+                        {type.requires_attachment && (
+                          <FileText className="h-3 w-3 text-blue-600" />
                         )}
                       </div>
-                    </SelectItem>
-                  );
-                })}
+                    </div>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <FormMessage />
+            <FormMessage className="text-red-200" />
           </FormItem>
         )}
       />
-      
-      {/* 顯示選擇的假別狀態 */}
-      {selectedLeaveType && renderLeaveTypeStatus(selectedLeaveType)}
+
+      {/* 假別詳細資訊與提示 */}
+      {currentLeaveType && (
+        <div className="space-y-3">
+          {/* 基本資訊 */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-white font-medium">假別資訊</span>
+              </div>
+              
+              {currentLeaveType.description && (
+                <p className="text-white/80 text-sm">{currentLeaveType.description}</p>
+              )}
+              
+              {currentLeaveType.max_days_per_year && (
+                <p className="text-white/80 text-sm">
+                  年度上限：{currentLeaveType.max_days_per_year} 天
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* 無薪假提示 */}
+          {!currentLeaveType.is_paid && (
+            <Alert className="bg-orange-500/20 border-orange-300/30 backdrop-blur-sm">
+              <DollarSign className="h-4 w-4 text-orange-300" />
+              <AlertDescription className="text-orange-100 font-medium">
+                此為無薪假別，請假期間不給薪
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* 附件需求提示 */}
+          {currentLeaveType.requires_attachment && (
+            <Alert className="bg-blue-500/20 border-blue-300/30 backdrop-blur-sm">
+              <FileText className="h-4 w-4 text-blue-300" />
+              <AlertDescription className="text-blue-100 font-medium">
+                此假別需要上傳相關證明文件
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* 天數超限錯誤提示 */}
+          {daysLimitError && (
+            <Alert className="bg-red-500/20 border-red-300/30 backdrop-blur-sm">
+              <AlertTriangle className="h-4 w-4 text-red-300" />
+              <AlertDescription className="text-red-100 font-medium">
+                {daysLimitError}
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+      )}
     </div>
   );
 }

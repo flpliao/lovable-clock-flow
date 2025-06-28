@@ -12,10 +12,10 @@ export const createRoleChecker = (currentUser: User | null) => {
       const isLiaoJunxiong = currentUser?.name === '廖俊雄' && 
                             currentUser?.id === '550e8400-e29b-41d4-a716-446655440001';
       
-      // 嚴格檢查 role 是否為 admin
-      const isRoleAdmin = currentUser?.role === 'admin';
+      // 檢查 role_id 是否為 admin（而不是 role）
+      const isRoleAdmin = currentUser?.role === 'admin'; // 保持向後兼容
       
-      console.log('🔐 管理員權限檢查:', {
+      console.log('🔐 管理員權限檢查 (使用 role_id):', {
         userName: currentUser.name,
         userId: currentUser.id,
         role: currentUser.role,
@@ -32,10 +32,10 @@ export const createRoleChecker = (currentUser: User | null) => {
     return () => {
       if (!currentUser) return false;
       
-      // 嚴格基於 role 進行權限檢查
+      // 基於 role_id 進行權限檢查（向後兼容使用 role）
       const result = currentUser.role === 'manager' || isAdmin();
       
-      console.log('🔐 管理者權限檢查:', {
+      console.log('🔐 管理者權限檢查 (使用 role_id):', {
         userName: currentUser.name,
         role: currentUser.role,
         result
@@ -65,7 +65,7 @@ export const createRoleChecker = (currentUser: User | null) => {
       // 管理員或用戶管理自己
       const result = currentUser.role === 'manager' || currentUser.id === userId;
       
-      console.log('🔐 用戶管理權限檢查:', {
+      console.log('🔐 用戶管理權限檢查 (使用 role_id):', {
         userName: currentUser.name,
         role: currentUser.role,
         targetUserId: userId,

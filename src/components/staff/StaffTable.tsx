@@ -27,7 +27,7 @@ const StaffTable = () => {
   // 監聽權限更新事件，確保角色變更即時反映
   useEffect(() => {
     const handlePermissionUpdate = (event: CustomEvent) => {
-      console.log('📊 StaffTable 收到權限更新事件:', event.detail);
+      console.log('📊 StaffTable 收到權限更新事件 (role_id):', event.detail);
       if (event.detail.operation === 'staffRoleUpdate' && event.detail.staffData) {
         // 強制刷新列表狀態
         setStaffListState([...filteredStaffList]);
@@ -46,36 +46,44 @@ const StaffTable = () => {
     setStaffListState(filteredStaffList);
   }, [filteredStaffList]);
 
-  // 檢查是否有帳號管理權限 - 系統管理員應該擁有權限
+  // 檢查是否有帳號管理權限 - 基於 role_id 進行檢查
   const canManageAccounts = currentUser && (
-    isAdmin() || // 系統管理員直接允許
+    isAdmin() || // 系統管理員直接允許（基於 role_id）
     hasPermission(currentUser.id, 'account:email:manage') ||
     hasPermission(currentUser.id, 'account:password:manage')
   );
 
-  console.log('👥 人員列表帳號管理權限檢查:', {
+  console.log('👥 人員列表帳號管理權限檢查 (基於 role_id):', {
     currentUser: currentUser?.name,
     role: currentUser?.role,
     isAdmin: isAdmin(),
     canManageAccounts
   });
 
-  // 獲取角色顯示名稱的函數
+  // 獲取角色顯示名稱的函數 - 優先使用 role_id
   const getRoleDisplayName = (staff: Staff) => {
-    // 先從後台角色資料中查找
+    // 先從後台角色資料中查找 role_id
     const backendRole = roles.find(r => r.id === staff.role_id);
     if (backendRole) {
       return backendRole.name;
     }
     
-    // 如果沒有找到，使用傳統角色顯示方式
-    switch (staff.role) {
+    // 如果沒有找到，使用 role_id 進行顯示
+    switch (staff.role_id) {
       case 'admin':
         return '管理員';
       case 'manager':
         return '主管';
       default:
-        return '員工';
+        // 向後兼容，如果 role_id 沒有值，使用 role
+        switch (staff.role) {
+          case 'admin':
+            return '管理員';
+          case 'manager':
+            return '主管';
+          default:
+            return '員工';
+        }
     }
   };
 
@@ -145,8 +153,8 @@ const StaffTable = () => {
                   <TableCell className="whitespace-nowrap">{staff.contact}</TableCell>
                   <TableCell className="whitespace-nowrap">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      staff.role === 'admin' ? 'bg-red-100 text-red-800' :
-                      staff.role === 'manager' ? 'bg-blue-100 text-blue-800' :
+                      (staff.role_id === 'admin' || staff.role === 'admin') ? 'bg-red-100 text-red-800' :
+                      (staff.role_id === 'manager' || staff.role === 'manager') ? 'bg-blue-100 text-blue-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
                       {getRoleDisplayName(staff)}

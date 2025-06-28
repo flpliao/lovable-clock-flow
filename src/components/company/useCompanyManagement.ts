@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Company, Branch, NewBranch, CompanyManagementContextType } from '@/types/company';
 import { useToast } from '@/hooks/use-toast';
@@ -28,7 +27,7 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
   const { toast } = useToast();
   
   // 使用 useCompanyOperations 來獲取公司資料
-  const { company, updateCompany } = useCompanyOperations();
+  const { company, updateCompany, loading, loadCompany, forceSyncFromBackend } = useCompanyOperations();
   
   const {
     branches: branchList,
@@ -170,6 +169,9 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
     handleUpdateCompany,
     openEditBranchDialog,
     getBranchByCode,
-    getActiveBranches
+    getActiveBranches,
+    loading,
+    loadCompany,
+    forceSyncFromBackend
   };
 };

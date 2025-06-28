@@ -1,10 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Company } from '@/types/company';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { useCompanyManagementContext } from '../CompanyManagementContext';
-import { useCompanyOperations } from './useCompanyOperations';
 import { CompanyDataService } from '../services/companyDataService';
 import { useCompanyFormValidation } from '../forms/useCompanyFormValidation';
 
@@ -12,10 +10,10 @@ export const useEditCompanyDialog = () => {
   const {
     isEditCompanyDialogOpen,
     setIsEditCompanyDialogOpen,
-    handleUpdateCompany
+    handleUpdateCompany,
+    company: contextCompany
   } = useCompanyManagementContext();
 
-  const { company: contextCompany } = useCompanyOperations();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editedCompany, setEditedCompany] = useState<Partial<Company>>({
     name: '',

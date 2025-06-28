@@ -1,4 +1,3 @@
-
 export interface Company {
   id: string;
   name: string;
@@ -67,4 +66,7 @@ export interface CompanyManagementContextType {
   openEditBranchDialog: (branch: Branch) => void;
   getBranchByCode: (code: string) => Branch | undefined;
   getActiveBranches: () => Branch[];
+  loading: boolean;
+  loadCompany: () => Promise<void>;
+  forceSyncFromBackend: () => Promise<void>;
 }

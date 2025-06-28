@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnnualLeaveBalance } from '@/types';
@@ -8,6 +7,7 @@ import { createPermissionChecker } from './user/permissionUtils';
 import { getUserFromStorage, saveUserToStorage, clearUserStorage } from './user/userStorageUtils';
 import { UnifiedPermissionService } from '@/services/unifiedPermissionService';
 import { AuthService } from '@/services/authService';
+import { supabase } from '@/integrations/supabase/client';
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -43,6 +43,58 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 檢查是否已驗證登入 - 修正邏輯
   const isAuthenticated = currentUser !== null;
 
+  // 從 staff 表載入用戶完整權限資料
+  const loadUserFromStaffTable = async (authUser: any): Promise<User | null> => {
+    try {
+      console.log('🔄 從 staff 表載入用戶權限資料:', authUser.email);
+      
+      const { data: staffData, error } = await supabase
+        .from('staff')
+        .select('*')
+        .eq('email', authUser.email)
+        .single();
+      
+      if (error) {
+        console.error('❌ 從 staff 表載入用戶失敗:', error);
+        return null;
+      }
+      
+      if (staffData) {
+        console.log('✅ 成功從 staff 表載入用戶資料:', {
+          name: staffData.name,
+          email: staffData.email,
+          role: staffData.role,
+          role_id: staffData.role_id
+        });
+        
+        // 轉換為 User 格式
+        const user: User = {
+          id: staffData.user_id || authUser.id,
+          name: staffData.name,
+          position: staffData.position,
+          department: staffData.department,
+          onboard_date: staffData.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+          hire_date: staffData.hire_date,
+          supervisor_id: staffData.supervisor_id,
+          role: staffData.role as 'admin' | 'manager' | 'user'
+        };
+        
+        console.log('🔐 用戶權限資料載入完成:', {
+          name: user.name,
+          role: user.role,
+          isAdmin: user.role === 'admin'
+        });
+        
+        return user;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('❌ 載入 staff 表資料系統錯誤:', error);
+      return null;
+    }
+  };
+
   // 創建角色檢查器
   const { isAdmin, isManager, canManageUser } = createRoleChecker(currentUser);
   
@@ -60,43 +112,14 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsProcessingLogin(true);
     console.log('🔄 開始處理用戶登入...');
 
-    // 將 AuthUser 轉換為 User 的輔助函數
-    const convertAuthUserToUser = (authUser: any): User => {
-      return {
-        id: authUser.id,
-        name: authUser.name,
-        position: authUser.position,
-        department: authUser.department,
-        onboard_date: new Date().toISOString().split('T')[0], // 默認今天作為入職日期
-        hire_date: authUser.hire_date,
-        supervisor_id: authUser.supervisor_id,
-        role: authUser.role
-      };
-    };
-
     try {
-      // 嘗試從本地存儲恢復用戶資料
-      const storedUser = getUserFromStorage();
-      if (storedUser && storedUser.id === session.user.id) {
-        console.log('📦 恢復已存儲的用戶資料:', storedUser.name, '角色:', storedUser.role);
-        
-        // 強制從資料庫重新載入用戶資料確保最新權限
-        try {
-          const result = await AuthService.getUserFromSession(session.user.email);
-          if (result.success && result.user) {
-            console.log('✅ 從資料庫重新載入用戶資料:', result.user.name, '角色:', result.user.role);
-            const user = convertAuthUserToUser(result.user);
-            setCurrentUser(user);
-            saveUserToStorage(user);
-          } else {
-            console.log('⚠️ 使用本地存儲的用戶資料');
-            setCurrentUser(storedUser);
-          }
-        } catch (error) {
-          console.log('⚠️ 重新載入失敗，使用本地存儲的用戶資料');
-          setCurrentUser(storedUser);
-        }
-        
+      // 優先從 staff 表載入用戶資料
+      const staffUser = await loadUserFromStaffTable(session.user);
+      
+      if (staffUser) {
+        console.log('✅ 使用 staff 表資料:', staffUser.name, '角色:', staffUser.role);
+        setCurrentUser(staffUser);
+        saveUserToStorage(staffUser);
         setIsUserLoaded(true);
         
         // 檢查是否在 callback 頁面，如果是則重定向
@@ -109,17 +132,40 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return;
       }
 
-      // 如果沒有本地存儲資料，使用 AuthService 獲取
+      // 如果 staff 表沒有資料，嘗試從本地存儲恢復
+      const storedUser = getUserFromStorage();
+      if (storedUser && storedUser.id === session.user.id) {
+        console.log('📦 恢復已存儲的用戶資料:', storedUser.name, '角色:', storedUser.role);
+        setCurrentUser(storedUser);
+        setIsUserLoaded(true);
+        
+        if (window.location.pathname === '/auth/callback') {
+          console.log('🔄 從 callback 頁面重定向到首頁');
+          if (navigateRef.current) {
+            navigateRef.current('/', { replace: true });
+          }
+        }
+        return;
+      }
+
+      // 最後使用 AuthService 作為後備
       const result = await AuthService.getUserFromSession(session.user.email);
       if (result.success && result.user) {
-        console.log('✅ 成功獲取用戶資料:', result.user.name, '角色:', result.user.role);
-        // 將 AuthUser 转換為 User
-        const user = convertAuthUserToUser(result.user);
+        console.log('✅ 使用 AuthService 用戶資料:', result.user.name, '角色:', result.user.role);
+        const user: User = {
+          id: result.user.id,
+          name: result.user.name,
+          position: result.user.position,
+          department: result.user.department,
+          onboard_date: new Date().toISOString().split('T')[0],
+          hire_date: result.user.hire_date,
+          supervisor_id: result.user.supervisor_id,
+          role: result.user.role
+        };
         setCurrentUser(user);
         saveUserToStorage(user);
         setIsUserLoaded(true);
         
-        // 檢查是否在 callback 頁面，如果是則重定向
         if (window.location.pathname === '/auth/callback') {
           console.log('🔄 從 callback 頁面重定向到首頁');
           if (navigateRef.current) {
@@ -128,8 +174,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
         return;
       } else {
-        // 如果獲取用戶資料失敗，使用後備方案
-        console.log('⚠️ 獲取用戶資料失敗，使用後備方案:', result.error);
         throw new Error(result.error || '獲取用戶資料失敗');
       }
     } catch (error) {

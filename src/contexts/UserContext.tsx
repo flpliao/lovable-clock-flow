@@ -61,25 +61,34 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       if (staffData) {
         console.log('✅ 成功從 staff 表載入用戶資料:', {
+          id: staffData.id,
           name: staffData.name,
           email: staffData.email,
           role: staffData.role,
           role_id: staffData.role_id
         });
         
-        // 轉換為 User 格式，確保使用 staff 表的 role
+        // 特別處理廖俊雄的權限
+        let finalRole = staffData.role;
+        if (staffData.name === '廖俊雄' || staffData.email === 'flpliao@gmail.com') {
+          finalRole = 'admin';
+          console.log('🔐 �廖俊雄特別權限處理，強制設定為 admin');
+        }
+        
+        // 轉換為 User 格式，確保使用正確的權限
         const user: User = {
-          id: staffData.user_id || authUser.id,
+          id: staffData.id, // 使用 staff 表格的 ID
           name: staffData.name,
           position: staffData.position,
           department: staffData.department,
           onboard_date: staffData.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
           hire_date: staffData.hire_date,
           supervisor_id: staffData.supervisor_id,
-          role: staffData.role as 'admin' | 'manager' | 'user' // 確保使用 staff 表的 role
+          role: finalRole as 'admin' | 'manager' | 'user'
         };
         
         console.log('🔐 用戶權限資料載入完成:', {
+          id: user.id,
           name: user.name,
           role: user.role,
           isAdmin: user.role === 'admin'
@@ -125,6 +134,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // 特別檢查廖俊雄的權限
         if (staffUser.name === '廖俊雄' || session.user.email === 'flpliao@gmail.com') {
           console.log('🔐 廖俊雄登入，確認管理員權限:', {
+            id: staffUser.id,
             name: staffUser.name,
             role: staffUser.role,
             isAdmin: staffUser.role === 'admin'

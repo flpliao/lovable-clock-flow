@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
 import { LeaveFormValues, leaveFormSchema } from '@/utils/leaveTypes';
-import { LeaveRequestFormFields } from './LeaveRequestFormFields';
+import { LeaveRequestSimplifiedFormFields } from './LeaveRequestSimplifiedFormFields';
 import { LeaveTypeDetailCard } from './LeaveTypeDetailCard';
 import { LeaveBalanceCard } from './LeaveBalanceCard';
 import { calculateWorkingHours } from '@/utils/workingHoursCalculator';
@@ -59,7 +60,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       setIsLoadingStaffData(true);
       
       try {
-        // 修正：使用 user_id 欄位查詢員工資料
+        // 使用 user_id 欄位查詢員工資料
         const { data: staffData, error: staffError } = await supabase
           .from('staff')
           .select('*')
@@ -124,7 +125,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           totalAnnualLeaveDays = calculateAnnualLeaveDays(hireDateObj);
           console.log('📊 計算的特休天數:', totalAnnualLeaveDays);
 
-          // 計算已使用的特休天數 - 修正查詢邏輯
+          // 計算已使用的特休天數
           const currentYear = new Date().getFullYear();
           const { data: leaveRecords, error: leaveError } = await supabase
             .from('leave_requests')
@@ -336,7 +337,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* 員工資料和特休餘額顯示 */}
+      {/* 員工資料和特休餘額顯示 - 只保留這一個 */}
       <LeaveBalanceCard 
         userStaffData={userStaffData}
         hasHireDate={hasHireDate}
@@ -345,7 +346,8 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          <LeaveRequestFormFields 
+          {/* 使用簡化的表單欄位組件，不重複顯示員工資料 */}
+          <LeaveRequestSimplifiedFormFields 
             form={form}
             calculatedHours={calculatedHours}
             validationError={validationError}

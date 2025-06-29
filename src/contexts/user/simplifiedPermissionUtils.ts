@@ -12,7 +12,7 @@ export const createSimplifiedPermissionChecker = (currentUser: User | null) => {
     try {
       const result = await permissionService.hasPermission(permission);
       
-      console.log('🔐 UserContext 權限檢查:', {
+      console.log('🔐 UserContext 權限檢查 (RLS 兼容):', {
         user: currentUser.name,
         permission,
         result

@@ -1,12 +1,14 @@
 
-import { optimizedPermissionService } from './optimizedPermissionService';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
- * 簡化權限服務 - 重新導向到優化版本
- * 保持向後兼容性
+ * 簡化權限服務 - 與新的 RLS 政策兼容
  */
-export class SimplifiedPermissionService {
+class SimplifiedPermissionService {
   private static instance: SimplifiedPermissionService;
+  private permissionCache = new Map<string, boolean>();
+  private cacheExpiry = new Map<string, number>();
+  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 分鐘快取
 
   static getInstance(): SimplifiedPermissionService {
     if (!SimplifiedPermissionService.instance) {
@@ -15,40 +17,138 @@ export class SimplifiedPermissionService {
     return SimplifiedPermissionService.instance;
   }
 
+  /**
+   * 檢查當前用戶是否具有指定權限
+   */
   async hasPermission(permissionCode: string): Promise<boolean> {
-    return await optimizedPermissionService.hasPermission(permissionCode);
+    try {
+      const cacheKey = `${permissionCode}`;
+      
+      // 檢查快取
+      if (this.isCacheValid(cacheKey)) {
+        const cachedResult = this.permissionCache.get(cacheKey) || false;
+        console.log('🎯 權限快取檢查:', permissionCode, '結果:', cachedResult);
+        return cachedResult;
+      }
+
+      // 使用新的安全函數進行權限檢查
+      console.log('🔍 資料庫權限檢查:', permissionCode);
+      
+      const { data, error } = await supabase.rpc('is_current_user_admin_safe');
+
+      if (error) {
+        console.error('❌ 權限檢查錯誤:', error);
+        return false;
+      }
+
+      const isAdmin = data || false;
+      
+      // 權限檢查邏輯
+      let result = false;
+      
+      if (isAdmin) {
+        // 管理員擁有所有權限
+        result = true;
+      } else {
+        // 基本用戶權限
+        const basicPermissions = [
+          'staff:view_own',
+          'staff:edit_own',
+          'leave:view_own',
+          'leave:create',
+          'overtime:view_own',
+          'overtime:create',
+          'missed_checkin:view_own',
+          'missed_checkin:create',
+          'announcement:view',
+          'department:view',
+          'company:view'
+        ];
+        
+        result = basicPermissions.includes(permissionCode);
+      }
+      
+      // 更新快取
+      this.updateCache(cacheKey, result);
+      
+      console.log('✅ 權限檢查結果:', {
+        permission: permissionCode,
+        isAdmin,
+        result
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ 權限檢查系統錯誤:', error);
+      return false;
+    }
   }
 
+  /**
+   * 檢查是否為管理員
+   */
   async isAdmin(): Promise<boolean> {
-    // 先檢查特殊用戶
-    const { data: user } = await optimizedPermissionService['supabase'].auth.getUser();
-    if (user.user?.email === 'flpliao@gmail.com') {
-      console.log('🔐 特殊管理員權限檢查通過:', user.user.email);
-      return true;
+    try {
+      const { data, error } = await supabase.rpc('is_current_user_admin_safe');
+      
+      if (error) {
+        console.error('❌ 管理員檢查錯誤:', error);
+        return false;
+      }
+      
+      return data || false;
+    } catch (error) {
+      console.error('❌ 管理員檢查系統錯誤:', error);
+      return false;
     }
-    
-    return await optimizedPermissionService.hasPermission('system:admin');
   }
 
+  /**
+   * 檢查是否為主管
+   */
   async isManager(): Promise<boolean> {
-    // 先檢查特殊用戶
-    const { data: user } = await optimizedPermissionService['supabase'].auth.getUser();
-    if (user.user?.email === 'flpliao@gmail.com') {
-      console.log('🔐 特殊主管權限檢查通過:', user.user.email);
-      return true;
+    try {
+      const { data, error } = await supabase.rpc('is_current_user_manager');
+      
+      if (error) {
+        console.error('❌ 主管檢查錯誤:', error);
+        return false;
+      }
+      
+      return data || false;
+    } catch (error) {
+      console.error('❌ 主管檢查系統錯誤:', error);
+      return false;
     }
-    
-    const hasManagerPermission = await optimizedPermissionService.hasPermission('leave:approve');
-    const isSystemAdmin = await this.isAdmin();
-    return hasManagerPermission || isSystemAdmin;
   }
 
-  async getUserPermissions(): Promise<string[]> {
-    return await optimizedPermissionService.getUserPermissions();
+  /**
+   * 批量權限檢查
+   */
+  async hasAnyPermission(permissions: string[]): Promise<boolean> {
+    const results = await Promise.all(
+      permissions.map(permission => this.hasPermission(permission))
+    );
+    return results.some(result => result);
   }
 
+  /**
+   * 清除權限快取
+   */
   clearCache(): void {
-    optimizedPermissionService.clearCache();
+    console.log('🔄 清除權限快取');
+    this.permissionCache.clear();
+    this.cacheExpiry.clear();
+  }
+
+  private isCacheValid(cacheKey: string): boolean {
+    const expiry = this.cacheExpiry.get(cacheKey);
+    return expiry ? Date.now() < expiry : false;
+  }
+
+  private updateCache(cacheKey: string, result: boolean): void {
+    this.permissionCache.set(cacheKey, result);
+    this.cacheExpiry.set(cacheKey, Date.now() + this.CACHE_DURATION);
   }
 }
 

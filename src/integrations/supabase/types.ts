@@ -2378,6 +2378,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_current_user_admin_safe: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_current_user_manager: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -2401,6 +2405,14 @@ export type Database = {
       sync_users_to_staff: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      test_staff_rls: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          test_name: string
+          result: boolean
+          message: string
+        }[]
       }
       toggle_table_rls: {
         Args: { table_name: string; enabled: boolean }

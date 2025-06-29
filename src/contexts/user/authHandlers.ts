@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthService } from '@/services/authService';
-import { UnifiedPermissionService } from '@/services/unifiedPermissionService';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { User } from './types';
 import { saveUserToStorage, clearUserStorage } from './userStorageUtils';
 
@@ -14,15 +14,15 @@ export const createAuthHandlers = (
 ) => {
   const navigate = useNavigate();
 
-  // 安全載入用戶資料，使用新的資料庫函數
+  // 安全載入用戶資料，與新的 RLS 政策兼容
   const loadUserFromStaffTable = async (authUser: any): Promise<User | null> => {
     try {
-      console.log('🔄 從 staff 表載入用戶權限資料:', {
+      console.log('🔄 從 staff 表載入用戶權限資料 (RLS 兼容):', {
         auth_id: authUser.id,
         email: authUser.email
       });
       
-      // 使用改良的多重策略查詢
+      // 使用改良的多重策略查詢 - 與 RLS 政策兼容
       console.log('📋 開始多重策略查詢 staff 資料');
       
       // 策略1: 透過 user_id 查詢
@@ -66,7 +66,7 @@ export const createAuthHandlers = (
       }
       
       if (staffData) {
-        console.log('✅ 成功從 staff 表載入用戶資料:', {
+        console.log('✅ 成功從 staff 表載入用戶資料 (RLS 兼容):', {
           staff_id: staffData.id,
           auth_user_id: authUser.id,
           staff_user_id: staffData.user_id,
@@ -127,7 +127,7 @@ export const createAuthHandlers = (
           email: staffData.email
         };
         
-        console.log('🔐 用戶權限資料載入完成:', {
+        console.log('🔐 用戶權限資料載入完成 (RLS 兼容):', {
           auth_uid: user.id,
           staff_id: staffData.id,
           name: user.name,
@@ -151,7 +151,7 @@ export const createAuthHandlers = (
 
   // 處理用戶登入，確保正確載入角色資訊
   const handleUserLogin = useCallback(async (session: any) => {
-    console.log('🔄 處理用戶登入流程...', {
+    console.log('🔄 處理用戶登入流程 (RLS 兼容)...', {
       user_id: session.user.id,
       email: session.user.email
     });
@@ -161,7 +161,7 @@ export const createAuthHandlers = (
       const staffUser = await loadUserFromStaffTable(session.user);
       
       if (staffUser) {
-        console.log('✅ 使用 staff 表資料:', {
+        console.log('✅ 使用 staff 表資料 (RLS 兼容):', {
           name: staffUser.name,
           role: staffUser.role,
           department: staffUser.department
@@ -170,7 +170,11 @@ export const createAuthHandlers = (
         setIsAuthenticated(true);
         saveUserToStorage(staffUser);
         setUserError(null);
-        console.log('🔐 認證狀態設為 true (staff 資料)');
+        
+        // 清除權限快取，確保使用最新權限
+        permissionService.clearCache();
+        
+        console.log('🔐 認證狀態設為 true (staff 資料, RLS 兼容)');
         return;
       }
 
@@ -193,6 +197,7 @@ export const createAuthHandlers = (
         setIsAuthenticated(true);
         saveUserToStorage(user);
         setUserError(null);
+        permissionService.clearCache();
         console.log('🔐 認證狀態設為 true (auth service)');
         return;
       }
@@ -213,6 +218,7 @@ export const createAuthHandlers = (
       setIsAuthenticated(true);
       saveUserToStorage(fallbackUser);
       setUserError(null);
+      permissionService.clearCache();
       console.log('🔐 認證狀態設為 true (fallback)');
     } catch (error) {
       console.error('❌ 用戶登入處理失敗:', error);
@@ -223,7 +229,7 @@ export const createAuthHandlers = (
 
   // 處理用戶登出，完整清除所有快取和狀態
   const handleUserLogout = useCallback(async () => {
-    console.log('🚪 開始用戶登出流程');
+    console.log('🚪 開始用戶登出流程 (RLS 兼容)');
     
     try {
       // 1. 清除前端狀態
@@ -235,7 +241,6 @@ export const createAuthHandlers = (
       clearUserStorage();
       
       // 3. 清除權限快取
-      const permissionService = UnifiedPermissionService.getInstance();
       permissionService.clearCache();
       
       // 4. 清除瀏覽器快取 (sessionStorage 和 localStorage)

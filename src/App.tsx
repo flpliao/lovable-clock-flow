@@ -1,97 +1,63 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Toaster } from '@/components/ui/toaster';
 
-import { UserProvider } from '@/contexts/UserContext';
-import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
-import Header from '@/components/Header';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { UserProvider } from "@/contexts/UserContext";
+import { StaffManagementProvider } from "@/contexts/StaffManagementContext";
+import Layout from "@/components/Layout";
+import Index from "./pages/Index";
+import Login from "./pages/Login";
+import LeaveManagement from "./pages/LeaveManagement";
+import PersonnelManagement from "./pages/PersonnelManagement";
+import CompanyManagement from "./pages/CompanyManagement";
+import AnnouncementManagement from "./pages/AnnouncementManagement";
+import CheckInManagement from "./pages/CheckInManagement";
+import MissedCheckInManagement from "./pages/MissedCheckInManagement";
+import OvertimeManagement from "./pages/OvertimeManagement";
+import PayrollManagement from "./pages/PayrollManagement";
+import PositionManagement from "./pages/PositionManagement";
+import StaffDebugPage from "./pages/StaffDebugPage";
 
-// Auth pages
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import MagicLinkLogin from '@/pages/MagicLinkLogin';
-import AuthCallback from '@/pages/AuthCallback';
-import AccountSettings from '@/pages/AccountSettings';
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-// Main pages
-import Index from '@/pages/Index';
-import StaffDashboard from '@/pages/StaffDashboard';
-import PersonalAttendance from '@/pages/PersonalAttendance';
-import LeaveRequest from '@/pages/LeaveRequest';
-import OvertimeRequest from '@/pages/OvertimeRequest';
-import OvertimeHistoryPage from '@/pages/OvertimeHistoryPage';
-
-// Management pages
-import Scheduling from '@/pages/Scheduling';
-import ScheduleStatistics from '@/pages/ScheduleStatistics';
-import PersonnelManagement from '@/pages/PersonnelManagement';
-import CompanyBranchManagement from '@/pages/CompanyBranchManagement';
-import HRManagement from '@/pages/HRManagement';
-import ApprovalCenter from '@/pages/ApprovalCenter';
-import SystemSettings from '@/pages/SystemSettings';
-import HolidayManagement from '@/pages/HolidayManagement';
-import LeaveTypeManagement from '@/pages/LeaveTypeManagement';
-import MissedCheckinManagement from '@/pages/MissedCheckinManagement';
-import OvertimeManagement from '@/pages/OvertimeManagement';
-import OvertimeManagementPage from '@/pages/OvertimeManagementPage';
-import OvertimeRequestPage from '@/pages/OvertimeRequestPage';
-import AnnouncementManagementPage from '@/pages/AnnouncementManagementPage';
-import CompanyAnnouncements from '@/pages/CompanyAnnouncements';
-
-// 404 page
-import NotFound from '@/pages/NotFound';
-
-// Performance monitoring page
-import PerformanceMonitoringPage from '@/pages/PerformanceMonitoringPage';
-
-function App() {
-  return (
-    <Router>
-      <UserProvider>
-        <LeaveManagementProvider>
-          <div className="min-h-screen bg-gray-50">
-            <Header />
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <UserProvider>
+          <StaffManagementProvider>
             <Routes>
-              <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/magic-link" element={<MagicLinkLogin />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/account-settings" element={<AccountSettings />} />
-              <Route path="/staff-dashboard" element={<StaffDashboard />} />
-              <Route path="/personal-attendance" element={<PersonalAttendance />} />
-              <Route path="/leave-request" element={<LeaveRequest />} />
-              <Route path="/overtime-request" element={<OvertimeRequest />} />
-              <Route path="/overtime-history" element={<OvertimeHistoryPage />} />
-              <Route path="/scheduling" element={<Scheduling />} />
-              <Route path="/schedule-statistics" element={<ScheduleStatistics />} />
-              <Route path="/personnel-management" element={<PersonnelManagement />} />
-              <Route path="/company-branch-management" element={<CompanyBranchManagement />} />
-              <Route path="/hr-management" element={<HRManagement />} />
-              <Route path="/approval-center" element={<ApprovalCenter />} />
-              <Route path="/system-settings" element={<SystemSettings />} />
-              <Route path="/holiday-management" element={<HolidayManagement />} />
-              <Route path="/leave-type-management" element={<LeaveTypeManagement />} />
-              <Route path="/missed-checkin-management" element={<MissedCheckinManagement />} />
-              <Route path="/overtime-management" element={<OvertimeManagement />} />
-              <Route path="/overtime-management-page" element={<OvertimeManagementPage />} />
-              <Route path="/overtime-request-page" element={<OvertimeRequestPage />} />
-              <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
-              <Route path="/company-announcements" element={<CompanyAnnouncements />} />
-              <Route path="/auth/reset-password" element={<ResetPassword />} />
-              <Route path="/performance-monitoring" element={<PerformanceMonitoringPage />} />
-              <Route path="*" element={<NotFound />} />
+              <Route path="/debug/staff" element={<StaffDebugPage />} />
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Index />} />
+                <Route path="leave-management" element={<LeaveManagement />} />
+                <Route path="personnel-management" element={<PersonnelManagement />} />
+                <Route path="company-management" element={<CompanyManagement />} />
+                <Route path="announcement-management" element={<AnnouncementManagement />} />
+                <Route path="check-in-management" element={<CheckInManagement />} />
+                <Route path="missed-checkin-management" element={<MissedCheckInManagement />} />
+                <Route path="overtime-management" element={<OvertimeRequest />} />
+                <Route path="payroll-management" element={<PayrollManagement />} />
+                <Route path="position-management" element={<PositionManagement />} />
+              </Route>
             </Routes>
-            <Toaster />
-          </div>
-        </LeaveManagementProvider>
-      </UserProvider>
-    </Router>
-  );
-}
+          </StaffManagementProvider>
+        </UserProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;

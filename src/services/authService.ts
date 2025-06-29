@@ -82,7 +82,7 @@ export class AuthService {
     try {
       console.log('🔍 從會話中獲取用戶資料:', email);
       
-      // 從 staff 表格獲取完整的用戶資料，添加超時保護
+      // 從 staff 表格獲取完整的用戶資料，使用 maybeSingle 避免錯誤
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('數據庫查詢超時')), 8000)
       );
@@ -91,29 +91,20 @@ export class AuthService {
         .from('staff')
         .select('*')
         .eq('email', email)
-        .single();
+        .maybeSingle(); // 修正：使用 maybeSingle 避免多筆或查無資料導致中斷
 
       const { data: staffData, error: staffError } = await Promise.race([staffQueryPromise, timeoutPromise]) as any;
 
-      if (staffError || !staffData) {
-        console.log('⚠️ 無法載入員工資料，使用預設資料');
-        // 獲取當前會話用戶
+      if (staffError) {
+        console.warn('⚠️ 查詢員工資料時發生錯誤:', staffError.message);
+        // 獲取當前會話用戶作為 fallback
         const { data: { user: authUser } } = await supabase.auth.getUser();
         
         if (!authUser) {
           return { success: false, error: '無法獲取用戶資料' };
         }
 
-        const user: AuthUser = {
-          id: authUser.id,
-          email: authUser.email || email,
-          name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || '用戶',
-          position: '員工',
-          department: '一般',
-          role: 'user'
-        };
-
-        return { success: true, user };
+        return { success: true, user: this.createFallbackUser(authUser, email) };
       }
 
       // 獲取當前會話用戶
@@ -122,10 +113,38 @@ export class AuthService {
         return { success: false, error: '無法獲取用戶資料' };
       }
 
-      const user = await this.buildUserFromStaff(authUser, staffData);
-      return { success: true, user };
+      if (staffData) {
+        console.log('✅ 成功載入員工資料:', {
+          name: staffData.name,
+          email: staffData.email,
+          role: staffData.role,
+          department: staffData.department
+        });
+        
+        const user = await this.buildUserFromStaff(authUser, staffData);
+        return { success: true, user };
+      } else {
+        console.warn('⚠️ 未找到對應的員工資料，使用 fallback 並嘗試自動建立');
+        const fallbackUser = this.createFallbackUser(authUser, email);
+        
+        // 嘗試自動建立 staff 紀錄
+        await this.createStaffRecord(authUser, email);
+        
+        return { success: true, user: fallbackUser };
+      }
     } catch (error) {
       console.error('🔥 從會話獲取用戶資料錯誤:', error);
+      
+      // 提供最後的 fallback
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          return { success: true, user: this.createFallbackUser(authUser, email) };
+        }
+      } catch (fallbackError) {
+        console.error('🔥 Fallback 也失敗:', fallbackError);
+      }
+      
       return { success: false, error: '獲取用戶資料失敗' };
     }
   }
@@ -134,43 +153,57 @@ export class AuthService {
    * 從 Supabase Auth 用戶資料建構 AuthUser
    */
   static async buildUserFromAuth(authUser: User, email: string): Promise<AuthUser> {
-    // 從 staff 表格獲取完整的用戶資料
-    const { data: staffData, error: staffError } = await supabase
-      .from('staff')
-      .select('*')
-      .eq('email', email)
-      .single();
+    try {
+      // 從 staff 表格獲取完整的用戶資料，使用 maybeSingle
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('*')
+        .eq('email', email)
+        .maybeSingle();
 
-    if (staffError || !staffData) {
-      console.log('⚠️ 無法載入員工資料，使用預設資料');
-      return {
-        id: authUser.id,
-        email: authUser.email || email,
-        name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || '用戶',
-        position: '員工',
-        department: '一般',
-        role: 'user'
-      };
+      if (staffError) {
+        console.warn('⚠️ 查詢員工資料時發生錯誤:', staffError.message);
+        return this.createFallbackUser(authUser, email);
+      }
+
+      if (staffData) {
+        console.log('✅ 從 Auth 流程載入員工資料:', {
+          name: staffData.name,
+          role: staffData.role,
+          department: staffData.department
+        });
+        return this.buildUserFromStaff(authUser, staffData);
+      } else {
+        console.warn('⚠️ Auth 流程中未找到員工資料，使用 fallback');
+        // 嘗試自動建立 staff 紀錄
+        await this.createStaffRecord(authUser, email);
+        return this.createFallbackUser(authUser, email);
+      }
+    } catch (error) {
+      console.error('🔥 buildUserFromAuth 錯誤:', error);
+      return this.createFallbackUser(authUser, email);
     }
-
-    return this.buildUserFromStaff(authUser, staffData);
   }
 
   /**
    * 從員工資料建構 AuthUser
    */
   static async buildUserFromStaff(authUser: User, staffData: any): Promise<AuthUser> {
-    // 決定用戶權限等級
+    // 優先從 staff.role 判斷使用者權限
     let userRole: 'admin' | 'manager' | 'user' = 'user';
     
-    // 廖俊雄永遠是最高管理員
-    if (staffData.name === '廖俊雄' || staffData.email === 'flpliao@gmail.com') {
+    // 廖俊雄永遠是最高管理員（超級管理員檢查）
+    if (staffData.name === '廖俊雄' || staffData.email === 'flpliao@gmail.com' || authUser.id === '550e8400-e29b-41d4-a716-446655440001') {
       userRole = 'admin';
-      console.log('🔐 廖俊雄最高管理員權限');
+      console.log('🔐 廖俊雄超級管理員權限確認');
     } else if (staffData.role === 'admin') {
       userRole = 'admin';
+      console.log('🔐 管理員權限確認:', staffData.name);
     } else if (staffData.role === 'manager') {
       userRole = 'manager';
+      console.log('🔐 主管權限確認:', staffData.name);
+    } else {
+      console.log('🔐 一般使用者權限:', staffData.name, '角色:', staffData.role);
     }
 
     const user: AuthUser = {
@@ -182,8 +215,65 @@ export class AuthService {
       role: userRole
     };
 
-    console.log('👤 最終用戶資料:', user);
+    console.log('👤 最終用戶資料:', {
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      department: user.department
+    });
+    
     return user;
+  }
+
+  /**
+   * 創建 fallback 用戶資料
+   */
+  static createFallbackUser(authUser: User, email: string): AuthUser {
+    const fallbackUser: AuthUser = {
+      id: authUser.id,
+      email: authUser.email || email,
+      name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || '用戶',
+      position: '員工',
+      department: '一般',
+      role: 'user'
+    };
+
+    console.log('⚠️ 使用 fallback 用戶資料:', fallbackUser);
+    return fallbackUser;
+  }
+
+  /**
+   * 自動建立 staff 紀錄
+   */
+  static async createStaffRecord(authUser: User, email: string): Promise<void> {
+    try {
+      console.log('➕ 嘗試自動建立 staff 紀錄:', email);
+      
+      const newStaffData = {
+        user_id: authUser.id,
+        name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || '新用戶',
+        department: '待分配',
+        position: '員工',
+        email: email,
+        contact: email,
+        role: 'user',
+        role_id: 'user',
+        branch_id: null,
+        branch_name: '總公司'
+      };
+
+      const { error: insertError } = await supabase
+        .from('staff')
+        .insert([newStaffData]);
+
+      if (insertError) {
+        console.warn('⚠️ 自動建立 staff 紀錄失敗:', insertError.message);
+      } else {
+        console.log('✅ 成功自動建立 staff 紀錄');
+      }
+    } catch (error) {
+      console.warn('⚠️ 自動建立 staff 紀錄時發生錯誤:', error);
+    }
   }
 
   /**

@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,14 +16,38 @@ export const createAuthHandlers = (
   // 安全載入用戶資料，優先從 staff 表獲取角色資訊
   const loadUserFromStaffTable = async (authUser: any): Promise<User | null> => {
     try {
-      console.log('🔄 從 staff 表載入用戶權限資料:', authUser.email);
+      console.log('🔄 從 staff 表載入用戶權限資料:', {
+        auth_id: authUser.id,
+        email: authUser.email
+      });
       
-      // 使用 maybeSingle 避免多筆或查無資料導致中斷
-      const { data: staffData, error } = await supabase
+      // 嘗試多種方式查詢 staff 資料
+      console.log('📋 方法1: 透過 user_id 查詢 staff');
+      let { data: staffData, error } = await supabase
         .from('staff')
         .select('*')
-        .eq('email', authUser.email)
+        .eq('user_id', authUser.id)
         .maybeSingle();
+      
+      // 如果透過 user_id 找不到，嘗試透過 email 查詢
+      if (!staffData && !error) {
+        console.log('📋 方法2: 透過 email 查詢 staff');
+        ({ data: staffData, error } = await supabase
+          .from('staff')
+          .select('*')
+          .eq('email', authUser.email)
+          .maybeSingle());
+      }
+      
+      // 最後嘗試透過 staff.id 查詢 (處理舊資料)
+      if (!staffData && !error) {
+        console.log('📋 方法3: 透過 staff.id 查詢');
+        ({ data: staffData, error } = await supabase
+          .from('staff')
+          .select('*')
+          .eq('id', authUser.id)
+          .maybeSingle());
+      }
       
       if (error) {
         console.warn('⚠️ 從 staff 表載入用戶資料失敗:', error.message);
@@ -34,12 +57,27 @@ export const createAuthHandlers = (
       if (staffData) {
         console.log('✅ 成功從 staff 表載入用戶資料:', {
           staff_id: staffData.id,
-          user_id: staffData.user_id,
+          auth_user_id: authUser.id,
+          staff_user_id: staffData.user_id,
           name: staffData.name,
           email: staffData.email,
           role: staffData.role,
           department: staffData.department
         });
+        
+        // 如果 staff.user_id 與 auth.id 不匹配，更新映射關係
+        if (staffData.user_id !== authUser.id) {
+          console.log('🔄 更新 staff 記錄的 user_id 映射關係');
+          try {
+            await supabase
+              .from('staff')
+              .update({ user_id: authUser.id })
+              .eq('id', staffData.id);
+            console.log('✅ 成功更新 user_id 映射');
+          } catch (updateError) {
+            console.warn('⚠️ 更新 user_id 映射失敗:', updateError);
+          }
+        }
         
         // 優先從 staff.role 判斷使用者權限
         let userRole: 'admin' | 'manager' | 'user' = 'user';
@@ -93,7 +131,10 @@ export const createAuthHandlers = (
 
   // 處理用戶登入，確保正確載入角色資訊
   const handleUserLogin = useCallback(async (session: any) => {
-    console.log('🔄 處理用戶登入流程...');
+    console.log('🔄 處理用戶登入流程...', {
+      user_id: session.user.id,
+      email: session.user.email
+    });
     
     try {
       // 優先從 staff 表載入用戶資料

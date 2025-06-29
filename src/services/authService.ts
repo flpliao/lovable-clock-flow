@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
@@ -58,7 +57,10 @@ export class AuthService {
       }
 
       console.log('✅ Supabase Auth 登入成功');
-      console.log('👤 用戶資料:', authData.user.email);
+      console.log('👤 Auth 用戶資料:', {
+        id: authData.user.id,
+        email: authData.user.email
+      });
 
       const user = await this.buildUserFromAuth(authData.user, email);
       return { 
@@ -82,44 +84,36 @@ export class AuthService {
     try {
       console.log('🔍 從會話中獲取用戶資料:', email);
       
-      // 從 staff 表格獲取完整的用戶資料，使用 maybeSingle 避免錯誤
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('數據庫查詢超時')), 8000)
-      );
-      
-      const staffQueryPromise = supabase
-        .from('staff')
-        .select('*')
-        .eq('email', email)
-        .maybeSingle(); // 修正：使用 maybeSingle 避免多筆或查無資料導致中斷
-
-      const { data: staffData, error: staffError } = await Promise.race([staffQueryPromise, timeoutPromise]) as any;
-
-      if (staffError) {
-        console.warn('⚠️ 查詢員工資料時發生錯誤:', staffError.message);
-        // 獲取當前會話用戶作為 fallback
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        
-        if (!authUser) {
-          return { success: false, error: '無法獲取用戶資料' };
-        }
-
-        return { success: true, user: this.createFallbackUser(authUser, email) };
-      }
-
       // 獲取當前會話用戶
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!authUser) {
         return { success: false, error: '無法獲取用戶資料' };
       }
 
+      console.log('👤 當前 Auth 用戶:', {
+        id: authUser.id,
+        email: authUser.email
+      });
+
+      // 嘗試多種方式查詢 staff 資料，解決 ID 不匹配問題
+      const staffData = await this.findStaffRecord(authUser);
+      
       if (staffData) {
-        console.log('✅ 成功載入員工資料:', {
+        console.log('✅ 成功匹配 staff 資料:', {
+          staff_id: staffData.id,
+          auth_user_id: authUser.id,
+          staff_user_id: staffData.user_id,
           name: staffData.name,
           email: staffData.email,
           role: staffData.role,
           department: staffData.department
         });
+        
+        // 如果 staff.user_id 與 auth.id 不匹配，更新 staff 記錄
+        if (staffData.user_id !== authUser.id) {
+          console.log('🔄 更新 staff 記錄的 user_id 以建立正確關聯');
+          await this.updateStaffUserIdMapping(staffData.id, authUser.id);
+        }
         
         const user = await this.buildUserFromStaff(authUser, staffData);
         return { success: true, user };
@@ -150,28 +144,95 @@ export class AuthService {
   }
 
   /**
+   * 嘗試多種方式查找 staff 記錄
+   */
+  static async findStaffRecord(authUser: User): Promise<any | null> {
+    console.log('🔍 嘗試多種方式查找 staff 記錄...');
+    
+    // 方法1: 透過 user_id 查詢
+    console.log('📋 方法1: 透過 user_id 查詢');
+    let { data: staffData, error } = await supabase
+      .from('staff')
+      .select('*')
+      .eq('user_id', authUser.id)
+      .maybeSingle();
+
+    if (!error && staffData) {
+      console.log('✅ 方法1 成功: 透過 user_id 找到 staff 記錄');
+      return staffData;
+    }
+
+    // 方法2: 透過 email 查詢
+    console.log('📋 方法2: 透過 email 查詢');
+    ({ data: staffData, error } = await supabase
+      .from('staff')
+      .select('*')
+      .eq('email', authUser.email)
+      .maybeSingle());
+
+    if (!error && staffData) {
+      console.log('✅ 方法2 成功: 透過 email 找到 staff 記錄');
+      return staffData;
+    }
+
+    // 方法3: 透過 staff.id 查詢 (處理舊資料結構)
+    console.log('📋 方法3: 透過 staff.id 查詢');
+    ({ data: staffData, error } = await supabase
+      .from('staff')
+      .select('*')
+      .eq('id', authUser.id)
+      .maybeSingle());
+
+    if (!error && staffData) {
+      console.log('✅ 方法3 成功: 透過 staff.id 找到 staff 記錄');
+      return staffData;
+    }
+
+    console.log('❌ 所有查詢方法都未找到對應的 staff 記錄');
+    return null;
+  }
+
+  /**
+   * 更新 staff 記錄的 user_id 映射
+   */
+  static async updateStaffUserIdMapping(staffId: string, authUserId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('staff')
+        .update({ user_id: authUserId })
+        .eq('id', staffId);
+
+      if (error) {
+        console.error('❌ 更新 staff user_id 失敗:', error);
+      } else {
+        console.log('✅ 成功更新 staff user_id 映射');
+      }
+    } catch (error) {
+      console.error('🔥 更新 staff user_id 時發生錯誤:', error);
+    }
+  }
+
+  /**
    * 從 Supabase Auth 用戶資料建構 AuthUser
    */
   static async buildUserFromAuth(authUser: User, email: string): Promise<AuthUser> {
     try {
-      // 從 staff 表格獲取完整的用戶資料，使用 maybeSingle
-      const { data: staffData, error: staffError } = await supabase
-        .from('staff')
-        .select('*')
-        .eq('email', email)
-        .maybeSingle();
-
-      if (staffError) {
-        console.warn('⚠️ 查詢員工資料時發生錯誤:', staffError.message);
-        return this.createFallbackUser(authUser, email);
-      }
+      // 嘗試查找 staff 資料
+      const staffData = await this.findStaffRecord(authUser);
 
       if (staffData) {
         console.log('✅ 從 Auth 流程載入員工資料:', {
+          staff_id: staffData.id,
           name: staffData.name,
           role: staffData.role,
           department: staffData.department
         });
+        
+        // 如果需要，更新 user_id 映射
+        if (staffData.user_id !== authUser.id) {
+          await this.updateStaffUserIdMapping(staffData.id, authUser.id);
+        }
+        
         return this.buildUserFromStaff(authUser, staffData);
       } else {
         console.warn('⚠️ Auth 流程中未找到員工資料，使用 fallback');
@@ -192,10 +253,10 @@ export class AuthService {
     // 優先從 staff.role 判斷使用者權限
     let userRole: 'admin' | 'manager' | 'user' = 'user';
     
-    // 廖俊雄永遠是最高管理員（超級管理員檢查）
+    // �廖俊雄永遠是最高管理員（超級管理員檢查）
     if (staffData.name === '廖俊雄' || staffData.email === 'flpliao@gmail.com' || authUser.id === '550e8400-e29b-41d4-a716-446655440001') {
       userRole = 'admin';
-      console.log('🔐 廖俊雄超級管理員權限確認');
+      console.log('🔐 �廖俊雄超級管理員權限確認');
     } else if (staffData.role === 'admin') {
       userRole = 'admin';
       console.log('🔐 管理員權限確認:', staffData.name);
@@ -216,6 +277,8 @@ export class AuthService {
     };
 
     console.log('👤 最終用戶資料:', {
+      auth_id: user.id,
+      staff_id: staffData.id,
       name: user.name,
       email: user.email,
       role: user.role,

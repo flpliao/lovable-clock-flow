@@ -2061,6 +2061,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_detailed_rls_performance_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          table_name: string
+          optimization_status: string
+          performance_impact: string
+          policy_count: number
+          last_optimized: string
+        }[]
+      }
       get_overtime_supervisor_hierarchy: {
         Args: { staff_uuid: string }
         Returns: Json

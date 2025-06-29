@@ -31,43 +31,38 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 創建權限檢查器
   const { hasPermission } = createPermissionChecker(currentUser, isAdmin);
 
-  // 自動補綁使用者對應的 staff 資料
+  // 增強的使用者 staff 資料同步，確保管理員角色正確
   const syncUserStaffData = async (user: User) => {
     console.log('🔄 開始同步使用者 staff 資料:', user.id, user.name);
     
     try {
-      // 1️⃣ 查詢 staff 資料表中是否存在 user_id = currentUser.id 的資料
+      // 查詢當前用戶的 staff 資料
       const { data: staffRecords, error: queryError } = await supabase
         .from('staff')
         .select('*')
-        .eq('user_id', user.id);
+        .or(`user_id.eq.${user.id},id.eq.${user.id},email.eq.${user.email}`)
+        .limit(1);
 
       if (queryError) {
         console.error('❌ 查詢 staff 資料失敗:', queryError);
-        // 如果是權限問題，嘗試查詢 id 欄位
-        const { data: staffByIdRecords, error: idQueryError } = await supabase
-          .from('staff')
-          .select('*')
-          .eq('id', user.id);
-          
-        if (idQueryError) {
-          console.error('❌ 查詢 staff 資料（使用 id）失敗:', idQueryError);
-          setUserError('⚠️ 查詢員工資料失敗');
-          return;
-        }
-        
-        // 使用 id 查詢的結果
-        if (staffByIdRecords && staffByIdRecords.length > 0) {
-          console.log('✅ 使用 id 查詢找到員工資料');
-          return;
-        }
+        setUserError('⚠️ 查詢員工資料失敗');
+        return;
       }
 
-      const allStaffRecords = staffRecords || [];
-      console.log('📊 查詢到的 staff 資料數量:', allStaffRecords.length);
+      console.log('📊 查詢到的 staff 資料:', staffRecords);
 
-      if (allStaffRecords.length === 0) {
-        // 2️⃣ 若查無資料，自動新增一筆 staff 資料
+      if (staffRecords && staffRecords.length > 0) {
+        const staffRecord = staffRecords[0];
+        console.log('✅ 找到員工資料，角色:', staffRecord.role);
+        
+        // 如果當前用戶的角色與資料庫中的不一致，更新 currentUser
+        if (user.role !== staffRecord.role) {
+          console.log('🔄 更新用戶角色:', user.role, '->', staffRecord.role);
+          const updatedUser = { ...user, role: staffRecord.role };
+          setCurrentUser(updatedUser);
+        }
+      } else {
+        // 沒有找到對應的 staff 記錄，創建一個
         console.log('➕ 未找到 staff 資料，開始自動建立...');
         
         const newStaffData = {
@@ -76,7 +71,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           name: user.name || user.email?.split('@')[0] || '未知使用者',
           department: '未指定',
           position: '員工',
-          hire_date: new Date().toISOString().split('T')[0], // 今日日期 YYYY-MM-DD
+          hire_date: new Date().toISOString().split('T')[0],
           contact: user.email || '',
           email: user.email || '',
           role: 'user',
@@ -96,37 +91,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
 
         console.log('✅ 成功自動建立 staff 資料:', newStaffData);
-        
-      } else if (allStaffRecords.length === 1) {
-        // 3️⃣ 若查到 1 筆，不處理
-        console.log('✅ staff 資料正常，已存在 1 筆記錄');
-        
-      } else if (allStaffRecords.length > 1) {
-        // 4️⃣ 若查到多筆，只保留一筆，刪除多餘的資料
-        console.log('⚠️ 發現多筆 staff 資料，準備清理重複資料...');
-        console.log('📋 所有 staff 記錄:', allStaffRecords);
-        
-        // 保留第一筆（通常是最早建立的）
-        const keepRecord = allStaffRecords[0];
-        const deleteRecords = allStaffRecords.slice(1);
-        
-        console.log('📌 保留的記錄:', keepRecord.id);
-        console.log('🗑️ 準備刪除的記錄:', deleteRecords.map(r => r.id));
-        
-        // 刪除多餘的記錄
-        const deleteIds = deleteRecords.map(record => record.id);
-        const { error: deleteError } = await supabase
-          .from('staff')
-          .delete()
-          .in('id', deleteIds);
-
-        if (deleteError) {
-          console.error('❌ 刪除重複 staff 資料失敗:', deleteError);
-          setUserError('⚠️ 清理重複員工資料失敗');
-          return;
-        }
-
-        console.log('✅ 成功清理重複的 staff 資料');
       }
 
       console.log('🎯 使用者 staff 資料同步完成');

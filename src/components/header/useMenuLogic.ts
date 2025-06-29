@@ -17,7 +17,19 @@ export const useMenuLogic = (currentUser: User | null, isAuthenticated: boolean,
       
       for (const item of menuItems) {
         // 檢查管理員權限
-        if (item.adminOnly && currentUser?.role !== 'admin') {
+        if (item.adminOnly) {
+          // 超級管理員直接允許
+          if (currentUser?.id === '550e8400-e29b-41d4-a716-446655440001') {
+            filteredItems.push(item);
+            continue;
+          }
+          
+          // 角色管理員檢查
+          if (currentUser?.role === 'admin') {
+            filteredItems.push(item);
+            continue;
+          }
+          
           // 公告管理特例：HR部門也可以訪問
           if (item.path === '/announcement-management' && currentUser?.department === 'HR') {
             filteredItems.push(item);
@@ -40,6 +52,14 @@ export const useMenuLogic = (currentUser: User | null, isAuthenticated: boolean,
           filteredItems.push(item);
         }
       }
+      
+      console.log('📋 選單權限檢查結果:', {
+        currentUser: currentUser?.name,
+        role: currentUser?.role,
+        isAdmin: currentUser?.role === 'admin' || currentUser?.id === '550e8400-e29b-41d4-a716-446655440001',
+        visibleItemsCount: filteredItems.length,
+        visibleItems: filteredItems.map(item => item.label)
+      });
       
       setVisibleItems(filteredItems);
     };

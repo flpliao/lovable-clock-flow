@@ -1,4 +1,3 @@
-
 import { User } from '@/contexts/user/types';
 import { Staff, StaffRole } from '@/components/staff/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -157,7 +156,13 @@ export class UnifiedPermissionService {
       return false;
     }
 
-    // Role-based permission checking - no hardcoded special users
+    // 超級管理員檢查 - 使用硬編碼 UUID
+    if (currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
+      console.log('🔐 Super admin permission check:', permission, '✅ Allowed (Super Admin)');
+      return true;
+    }
+
+    // Role-based admin permission checking
     if (this.isSystemAdmin(currentUser)) {
       console.log('🔐 System admin permission check:', permission, '✅ Allowed');
       return true;

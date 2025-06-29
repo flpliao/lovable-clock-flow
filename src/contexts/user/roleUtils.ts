@@ -8,18 +8,25 @@ export const createRoleChecker = (currentUser: User | null) => {
     return () => {
       if (!currentUser) return false;
       
-      // Role-based admin check - no hardcoded UUIDs
+      // 超級管理員 UUID 檢查
+      const isSuperAdmin = currentUser.id === '550e8400-e29b-41d4-a716-446655440001';
+      
+      // Role-based admin check
       const isRoleAdmin = currentUser?.role === 'admin';
       
-      console.log('🔐 Admin permission check (secure):', {
+      const result = isSuperAdmin || isRoleAdmin;
+      
+      console.log('🔐 Admin permission check:', {
         userName: currentUser.name,
         userId: currentUser.id,
         email: currentUser?.email,
         role: currentUser.role,
-        result: isRoleAdmin
+        isSuperAdmin,
+        isRoleAdmin,
+        result
       });
       
-      return isRoleAdmin;
+      return result;
     };
   }, [currentUser]);
 
@@ -44,10 +51,11 @@ export const createRoleChecker = (currentUser: User | null) => {
     return (userId: string): boolean => {
       if (!currentUser) return false;
       
-      // Role-based user management check - no hardcoded UUIDs
+      // Role-based user management check
       const result = currentUser.role === 'admin' || 
                     currentUser.role === 'manager' || 
-                    currentUser.id === userId;
+                    currentUser.id === userId ||
+                    currentUser.id === '550e8400-e29b-41d4-a716-446655440001'; // 超級管理員
       
       console.log('🔐 User management permission check:', {
         userName: currentUser.name,

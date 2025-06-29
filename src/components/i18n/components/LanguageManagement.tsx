@@ -24,15 +24,18 @@ export const LanguageManagement: React.FC = () => {
   const selectedLanguageInfo = SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage);
 
   return (
-    <Card>
-      <CardHeader className="pb-2 px-3">
-        <CardTitle className="flex items-center text-base">
-          <Globe className="h-4 w-4 mr-1.5" />
-          多語系管理
-        </CardTitle>
-      </CardHeader>
+    <div className="p-6">
+      <div className="flex items-center gap-4 mb-6">
+        <div className="p-3 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
+          <Globe className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">多語系管理</h3>
+          <p className="text-gray-700 drop-shadow-sm mt-1">設定系統預設語言和地區</p>
+        </div>
+      </div>
       
-      <CardContent className="space-y-2.5 px-3 pb-3">
+      <div className="space-y-6">
         <LanguageForm
           selectedCountry={selectedCountry}
           selectedLanguage={selectedLanguage}
@@ -52,7 +55,7 @@ export const LanguageManagement: React.FC = () => {
           isLoading={isLoading}
           hasChanges={hasChanges}
         />
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

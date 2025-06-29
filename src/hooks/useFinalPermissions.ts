@@ -18,6 +18,12 @@ export const useFinalPermissions = () => {
       return false;
     }
 
+    // 特殊處理 flpliao@gmail.com
+    if (currentUser.email === 'flpliao@gmail.com' || currentUser.name === 'flpliao@gmail.com') {
+      console.log('🔐 特殊用戶快速權限檢查:', permission, '✅ 允許');
+      return true;
+    }
+
     // 超級管理員檢查
     if (currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
       console.log('🔐 超級管理員快速權限檢查:', permission, '✅ 允許');
@@ -55,6 +61,13 @@ export const useFinalPermissions = () => {
 
     try {
       setPermissionsLoading(true);
+      
+      // 特殊處理 flpliao@gmail.com
+      if (currentUser.email === 'flpliao@gmail.com' || currentUser.name === 'flpliao@gmail.com') {
+        console.log('🔐 特殊用戶異步權限檢查:', permission, '✅ 允許');
+        return true;
+      }
+
       const result = await optimizedPermissionService.hasPermission(permission);
       
       console.log('🔐 異步權限檢查結果:', {
@@ -92,12 +105,20 @@ export const useFinalPermissions = () => {
 
   // 角色檢查
   const isAdmin = useCallback((): boolean => {
+    // 特殊處理 flpliao@gmail.com
+    if (currentUser?.email === 'flpliao@gmail.com' || currentUser?.name === 'flpliao@gmail.com') {
+      return true;
+    }
     return contextIsAdmin();
-  }, [contextIsAdmin]);
+  }, [contextIsAdmin, currentUser]);
 
   const isManager = useCallback((): boolean => {
+    // 特殊處理 flpliao@gmail.com
+    if (currentUser?.email === 'flpliao@gmail.com' || currentUser?.name === 'flpliao@gmail.com') {
+      return true;
+    }
     return contextIsManager();
-  }, [contextIsManager]);
+  }, [contextIsManager, currentUser]);
 
   // 清除權限快取
   const clearPermissionCache = useCallback(async () => {

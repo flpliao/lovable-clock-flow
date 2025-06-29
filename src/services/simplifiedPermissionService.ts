@@ -20,10 +20,24 @@ export class SimplifiedPermissionService {
   }
 
   async isAdmin(): Promise<boolean> {
+    // 先檢查特殊用戶
+    const { data: user } = await optimizedPermissionService['supabase'].auth.getUser();
+    if (user.user?.email === 'flpliao@gmail.com') {
+      console.log('🔐 特殊管理員權限檢查通過:', user.user.email);
+      return true;
+    }
+    
     return await optimizedPermissionService.hasPermission('system:admin');
   }
 
   async isManager(): Promise<boolean> {
+    // 先檢查特殊用戶
+    const { data: user } = await optimizedPermissionService['supabase'].auth.getUser();
+    if (user.user?.email === 'flpliao@gmail.com') {
+      console.log('🔐 特殊主管權限檢查通過:', user.user.email);
+      return true;
+    }
+    
     const hasManagerPermission = await optimizedPermissionService.hasPermission('leave:approve');
     const isSystemAdmin = await this.isAdmin();
     return hasManagerPermission || isSystemAdmin;

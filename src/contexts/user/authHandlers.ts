@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +14,7 @@ export const createAuthHandlers = (
 ) => {
   const navigate = useNavigate();
 
-  // 安全載入用戶資料，優先從 staff 表獲取角色資訊
+  // 安全載入用戶資料，重點改善從 staff 表獲取角色資訊的邏輯
   const loadUserFromStaffTable = async (authUser: any): Promise<User | null> => {
     try {
       console.log('🔄 從 staff 表載入用戶權限資料:', {
@@ -21,32 +22,42 @@ export const createAuthHandlers = (
         email: authUser.email
       });
       
-      // 嘗試多種方式查詢 staff 資料
-      console.log('📋 方法1: 透過 user_id 查詢 staff');
+      // 使用改良的多重策略查詢
+      console.log('📋 開始多重策略查詢 staff 資料');
+      
+      // 策略1: 透過 user_id 查詢
       let { data: staffData, error } = await supabase
         .from('staff')
         .select('*')
         .eq('user_id', authUser.id)
         .maybeSingle();
       
-      // 如果透過 user_id 找不到，嘗試透過 email 查詢
-      if (!staffData && !error) {
-        console.log('📋 方法2: 透過 email 查詢 staff');
+      if (!error && staffData) {
+        console.log('✅ 策略1 成功: 透過 user_id 找到 staff 記錄');
+      } else {
+        // 策略2: 透過 email 查詢
+        console.log('📋 策略2: 透過 email 查詢 staff');
         ({ data: staffData, error } = await supabase
           .from('staff')
           .select('*')
           .eq('email', authUser.email)
           .maybeSingle());
-      }
-      
-      // 最後嘗試透過 staff.id 查詢 (處理舊資料)
-      if (!staffData && !error) {
-        console.log('📋 方法3: 透過 staff.id 查詢');
-        ({ data: staffData, error } = await supabase
-          .from('staff')
-          .select('*')
-          .eq('id', authUser.id)
-          .maybeSingle());
+          
+        if (!error && staffData) {
+          console.log('✅ 策略2 成功: 透過 email 找到 staff 記錄');
+        } else {
+          // 策略3: 透過 staff.id 查詢 (處理舊資料)
+          console.log('📋 策略3: 透過 staff.id 查詢');
+          ({ data: staffData, error } = await supabase
+            .from('staff')
+            .select('*')
+            .eq('id', authUser.id)
+            .maybeSingle());
+            
+          if (!error && staffData) {
+            console.log('✅ 策略3 成功: 透過 staff.id 找到 staff 記錄');
+          }
+        }
       }
       
       if (error) {
@@ -62,6 +73,7 @@ export const createAuthHandlers = (
           name: staffData.name,
           email: staffData.email,
           role: staffData.role,
+          role_id: staffData.role_id,
           department: staffData.department
         });
         
@@ -79,7 +91,7 @@ export const createAuthHandlers = (
           }
         }
         
-        // 優先從 staff.role 判斷使用者權限
+        // 優先從 staff.role 判斷使用者權限，如果沒有則使用 role_id
         let userRole: 'admin' | 'manager' | 'user' = 'user';
         
         // 超級管理員檢查（廖俊雄）
@@ -88,12 +100,18 @@ export const createAuthHandlers = (
           console.log('🔐 超級管理員權限確認:', staffData.name);
         } else if (staffData.role === 'admin') {
           userRole = 'admin';
-          console.log('🔐 管理員權限確認:', staffData.name);
+          console.log('🔐 管理員權限確認 (來自 staff.role):', staffData.name);
         } else if (staffData.role === 'manager') {
           userRole = 'manager';
-          console.log('🔐 主管權限確認:', staffData.name);
+          console.log('🔐 主管權限確認 (來自 staff.role):', staffData.name);
+        } else if (staffData.role_id === 'admin') {
+          userRole = 'admin';
+          console.log('🔐 管理員權限確認 (來自 staff.role_id):', staffData.name);
+        } else if (staffData.role_id === 'manager') {
+          userRole = 'manager';
+          console.log('🔐 主管權限確認 (來自 staff.role_id):', staffData.name);
         } else {
-          console.log('🔐 一般使用者權限:', staffData.name, '角色:', staffData.role);
+          console.log('🔐 一般使用者權限:', staffData.name, '角色:', staffData.role || staffData.role_id);
         }
         
         // 轉換為 User 格式，使用 Supabase Auth 的 user ID
@@ -115,7 +133,9 @@ export const createAuthHandlers = (
           name: user.name,
           email: user.email,
           role: user.role,
-          department: user.department
+          department: user.department,
+          staff_role: staffData.role,
+          staff_role_id: staffData.role_id
         });
         
         return user;

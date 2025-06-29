@@ -95,7 +95,7 @@ export class AuthService {
         email: authUser.email
       });
 
-      // 嘗試多種方式查詢 staff 資料，解決 ID 不匹配問題
+      // 嘗試多種方式查詢 staff 資料，重點改善 ID 對應邏輯
       const staffData = await this.findStaffRecord(authUser);
       
       if (staffData) {
@@ -106,6 +106,7 @@ export class AuthService {
           name: staffData.name,
           email: staffData.email,
           role: staffData.role,
+          role_id: staffData.role_id,
           department: staffData.department
         });
         
@@ -144,52 +145,69 @@ export class AuthService {
   }
 
   /**
-   * 嘗試多種方式查找 staff 記錄
+   * 多重策略查找 staff 記錄，重點改善 ID 匹配邏輯
    */
   static async findStaffRecord(authUser: User): Promise<any | null> {
-    console.log('🔍 嘗試多種方式查找 staff 記錄...');
+    console.log('🔍 開始多重策略查找 staff 記錄...');
+    console.log('📋 Auth 用戶資訊:', {
+      id: authUser.id,
+      email: authUser.email
+    });
     
-    // 方法1: 透過 user_id 查詢
-    console.log('📋 方法1: 透過 user_id 查詢');
-    let { data: staffData, error } = await supabase
-      .from('staff')
-      .select('*')
-      .eq('user_id', authUser.id)
-      .maybeSingle();
+    try {
+      // 策略1: 透過 user_id 精確匹配
+      console.log('📋 策略1: 透過 user_id 查詢');
+      let { data: staffData, error } = await supabase
+        .from('staff')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .maybeSingle();
 
-    if (!error && staffData) {
-      console.log('✅ 方法1 成功: 透過 user_id 找到 staff 記錄');
-      return staffData;
+      if (!error && staffData) {
+        console.log('✅ 策略1 成功: 透過 user_id 找到 staff 記錄');
+        return staffData;
+      }
+
+      // 策略2: 透過 email 匹配
+      console.log('📋 策略2: 透過 email 查詢');
+      ({ data: staffData, error } = await supabase
+        .from('staff')
+        .select('*')
+        .eq('email', authUser.email)
+        .maybeSingle());
+
+      if (!error && staffData) {
+        console.log('✅ 策略2 成功: 透過 email 找到 staff 記錄');
+        console.log('📊 找到的 staff 資料:', {
+          staff_id: staffData.id,
+          staff_user_id: staffData.user_id,
+          name: staffData.name,
+          email: staffData.email,
+          role: staffData.role,
+          role_id: staffData.role_id
+        });
+        return staffData;
+      }
+
+      // 策略3: 透過 staff.id 查詢 (處理舊資料結構)
+      console.log('📋 策略3: 透過 staff.id 查詢');
+      ({ data: staffData, error } = await supabase
+        .from('staff')
+        .select('*')
+        .eq('id', authUser.id)
+        .maybeSingle());
+
+      if (!error && staffData) {
+        console.log('✅ 策略3 成功: 透過 staff.id 找到 staff 記錄');
+        return staffData;
+      }
+
+      console.log('❌ 所有查詢策略都未找到對應的 staff 記錄');
+      return null;
+    } catch (error) {
+      console.error('🔥 查找 staff 記錄時發生錯誤:', error);
+      return null;
     }
-
-    // 方法2: 透過 email 查詢
-    console.log('📋 方法2: 透過 email 查詢');
-    ({ data: staffData, error } = await supabase
-      .from('staff')
-      .select('*')
-      .eq('email', authUser.email)
-      .maybeSingle());
-
-    if (!error && staffData) {
-      console.log('✅ 方法2 成功: 透過 email 找到 staff 記錄');
-      return staffData;
-    }
-
-    // 方法3: 透過 staff.id 查詢 (處理舊資料結構)
-    console.log('📋 方法3: 透過 staff.id 查詢');
-    ({ data: staffData, error } = await supabase
-      .from('staff')
-      .select('*')
-      .eq('id', authUser.id)
-      .maybeSingle());
-
-    if (!error && staffData) {
-      console.log('✅ 方法3 成功: 透過 staff.id 找到 staff 記錄');
-      return staffData;
-    }
-
-    console.log('❌ 所有查詢方法都未找到對應的 staff 記錄');
-    return null;
   }
 
   /**
@@ -197,6 +215,11 @@ export class AuthService {
    */
   static async updateStaffUserIdMapping(staffId: string, authUserId: string): Promise<void> {
     try {
+      console.log('🔄 更新 staff 記錄的 user_id 映射:', {
+        staff_id: staffId,
+        new_user_id: authUserId
+      });
+      
       const { error } = await supabase
         .from('staff')
         .update({ user_id: authUserId })
@@ -225,6 +248,7 @@ export class AuthService {
           staff_id: staffData.id,
           name: staffData.name,
           role: staffData.role,
+          role_id: staffData.role_id,
           department: staffData.department
         });
         
@@ -247,24 +271,30 @@ export class AuthService {
   }
 
   /**
-   * 從員工資料建構 AuthUser
+   * 從員工資料建構 AuthUser，優先使用 role 欄位
    */
   static async buildUserFromStaff(authUser: User, staffData: any): Promise<AuthUser> {
-    // 優先從 staff.role 判斷使用者權限
+    // 優先從 staff.role 判斷使用者權限，如果沒有則使用 role_id
     let userRole: 'admin' | 'manager' | 'user' = 'user';
     
-    // �廖俊雄永遠是最高管理員（超級管理員檢查）
+    // 超級管理員檢查（廖俊雄）
     if (staffData.name === '廖俊雄' || staffData.email === 'flpliao@gmail.com' || authUser.id === '550e8400-e29b-41d4-a716-446655440001') {
       userRole = 'admin';
       console.log('🔐 �廖俊雄超級管理員權限確認');
     } else if (staffData.role === 'admin') {
       userRole = 'admin';
-      console.log('🔐 管理員權限確認:', staffData.name);
+      console.log('🔐 管理員權限確認 (來自 staff.role):', staffData.name);
     } else if (staffData.role === 'manager') {
       userRole = 'manager';
-      console.log('🔐 主管權限確認:', staffData.name);
+      console.log('🔐 主管權限確認 (來自 staff.role):', staffData.name);
+    } else if (staffData.role_id === 'admin') {
+      userRole = 'admin';
+      console.log('🔐 管理員權限確認 (來自 staff.role_id):', staffData.name);
+    } else if (staffData.role_id === 'manager') {
+      userRole = 'manager';
+      console.log('🔐 主管權限確認 (來自 staff.role_id):', staffData.name);
     } else {
-      console.log('🔐 一般使用者權限:', staffData.name, '角色:', staffData.role);
+      console.log('🔐 一般使用者權限:', staffData.name, '角色:', staffData.role || staffData.role_id);
     }
 
     const user: AuthUser = {
@@ -282,7 +312,9 @@ export class AuthService {
       name: user.name,
       email: user.email,
       role: user.role,
-      department: user.department
+      department: user.department,
+      staff_role: staffData.role,
+      staff_role_id: staffData.role_id
     });
     
     return user;

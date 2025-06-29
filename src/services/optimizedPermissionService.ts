@@ -91,7 +91,8 @@ export class OptimizedPermissionService {
       
       const { data, error } = await supabase
         .from('user_permissions_cache')
-        .select('*')
+        .select('permissions')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
         .single();
 
       if (error) {
@@ -99,7 +100,7 @@ export class OptimizedPermissionService {
         return [];
       }
 
-      // 修正：確保 data 存在且有 permissions 欄位
+      // 從快取中取得權限陣列
       const permissions = data?.permissions || [];
       console.log('✅ 用戶權限列表載入成功:', permissions);
       return Array.isArray(permissions) ? permissions : [];

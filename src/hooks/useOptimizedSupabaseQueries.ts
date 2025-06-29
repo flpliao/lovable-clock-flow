@@ -95,20 +95,66 @@ export const useOptimizedSupabaseQueries = () => {
     }
   }, []);
 
-  // 手動觸發權限緩存刷新
-  const triggerCacheRefresh = useCallback(async () => {
-    const success = await refreshPermissionsCache();
-    if (success) {
-      console.log('🎯 權限緩存刷新完成，建議重新載入相關資料');
+  // 優化後的審核記錄查詢
+  const getApprovalRecords = useCallback(async (leaveRequestId?: string) => {
+    try {
+      console.log('🔍 使用優化後的 RLS 查詢審核記錄...');
+      
+      let query = supabase
+        .from('approval_records')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (leaveRequestId) {
+        query = query.eq('leave_request_id', leaveRequestId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('❌ 查詢審核記錄失敗:', error);
+        return { data: [], error };
+      }
+
+      console.log('✅ 審核記錄查詢成功 (優化後):', data?.length || 0, '筆');
+      return { data: data || [], error: null };
+      
+    } catch (error) {
+      console.error('❌ 審核記錄查詢時發生錯誤:', error);
+      return { data: [], error };
     }
-    return success;
-  }, [refreshPermissionsCache]);
+  }, []);
+
+  // 獲取權限快取統計
+  const getPermissionsCacheStats = useCallback(async () => {
+    try {
+      console.log('🔍 查詢權限快取統計...');
+      
+      const { data, error } = await supabase
+        .from('user_permissions_cache')
+        .select('*');
+
+      if (error) {
+        console.error('❌ 查詢權限快取統計失敗:', error);
+        return { data: [], error };
+      }
+
+      console.log('✅ 權限快取統計查詢成功:', data?.length || 0, '筆');
+      return { data: data || [], error: null };
+      
+    } catch (error) {
+      console.error('❌ 查詢權限快取統計時發生錯誤:', error);
+      return { data: [], error };
+    }
+  }, []);
 
   return {
-    userContext,
     getStaffData,
     getLeaveRequests,
     getAnnualLeaveBalance,
-    triggerCacheRefresh
+    getApprovalRecords,
+    getPermissionsCacheStats,
+    refreshPermissionsCache,
+    userContext
   };
 };

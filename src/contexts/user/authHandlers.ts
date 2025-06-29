@@ -94,8 +94,8 @@ export const createAuthHandlers = (
         // 優先從 staff.role 判斷使用者權限，如果沒有則使用 role_id
         let userRole: 'admin' | 'manager' | 'user' = 'user';
         
-        // 超級管理員檢查（廖俊雄）
-        if (staffData.name === '廖俊雄' || staffData.email === 'flpliao@gmail.com' || authUser.id === '550e8400-e29b-41d4-a716-446655440001') {
+        // 超級管理員檢查（廖俊雄）- 更新為正確的 UUID
+        if (staffData.name === '廖俊雄' || staffData.email === 'flpliao@gmail.com' || authUser.id === '0765138a-6f11-45f4-be07-dab965116a2d') {
           userRole = 'admin';
           console.log('🔐 超級管理員權限確認:', staffData.name);
         } else if (staffData.role === 'admin') {

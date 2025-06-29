@@ -19,9 +19,9 @@ export const createRoleChecker = (currentUser: User | null) => {
       return true;
     }
 
-    // 廖俊雄特殊處理
+    // 廖俊雄特殊處理 - 更新為正確的 UUID
     if (currentUser.name === '廖俊雄' && 
-        currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
+        currentUser.id === '0765138a-6f11-45f4-be07-dab965116a2d') {
       console.log('🔐 超級管理員檢查通過:', currentUser.name);
       return true;
     }
@@ -57,6 +57,7 @@ export const createRoleChecker = (currentUser: User | null) => {
       return true;
     }
 
+    // 檢查角色
     const isRoleManager = currentUser.role === 'manager';
     
     console.log('🔐 Manager permission check:', {
@@ -75,13 +76,12 @@ export const createRoleChecker = (currentUser: User | null) => {
     // 管理員可以管理所有用戶
     if (isAdmin()) return true;
     
-    // 用戶可以管理自己
+    // 主管可以管理部分用戶（可以根據需要添加更多邏輯）
+    if (isManager()) return true;
+    
+    // 用戶只能管理自己
     return currentUser.id === targetUserId;
   };
 
-  return {
-    isAdmin,
-    isManager,
-    canManageUser
-  };
+  return { isAdmin, isManager, canManageUser };
 };

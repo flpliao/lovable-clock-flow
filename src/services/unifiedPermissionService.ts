@@ -40,8 +40,8 @@ export class UnifiedPermissionService {
       return false;
     }
 
-    // 超級管理員檢查 - 硬編碼 UUID
-    if (currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
+    // 超級管理員檢查 - 更新為正確的 UUID
+    if (currentUser.id === '0765138a-6f11-45f4-be07-dab965116a2d') {
       console.log('🔐 超級管理員權限檢查:', permission, '✅ 允許');
       return true;
     }

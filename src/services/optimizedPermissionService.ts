@@ -91,7 +91,7 @@ export class OptimizedPermissionService {
       
       const { data, error } = await supabase
         .from('user_permissions_cache')
-        .select('permissions')
+        .select('*')
         .single();
 
       if (error) {
@@ -99,9 +99,10 @@ export class OptimizedPermissionService {
         return [];
       }
 
+      // 修正：確保 data 存在且有 permissions 欄位
       const permissions = data?.permissions || [];
       console.log('✅ 用戶權限列表載入成功:', permissions);
-      return permissions;
+      return Array.isArray(permissions) ? permissions : [];
     } catch (error) {
       console.error('❌ 載入用戶權限系統錯誤:', error);
       return [];

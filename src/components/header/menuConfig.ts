@@ -1,5 +1,5 @@
 
-import { Home, Calendar, FileText, Users, Building, Settings, Clock, Briefcase, MessageSquare, Megaphone, CalendarDays, CheckCircle } from 'lucide-react';
+import { Home, Calendar, FileText, Users, Building, Settings, Clock, Briefcase, MessageSquare, Megaphone, CalendarDays, CheckCircle, TrendingUp } from 'lucide-react';
 
 export interface MenuItem {
   path: string;
@@ -23,5 +23,6 @@ export const menuItems: MenuItem[] = [
   { path: '/announcement-management', label: '公告管理', icon: Megaphone, public: false, adminOnly: true },
   { path: '/personnel-management', label: '人員管理', icon: Users, public: false, adminOnly: true },
   { path: '/company-branch-management', label: '公司部門管理', icon: Building, public: false, adminOnly: true },
+  { path: '/performance-monitoring', label: '效能監控', icon: TrendingUp, public: false, adminOnly: true },
   { path: '/system-settings', label: '系統設定', icon: Settings, public: false, adminOnly: true }
 ];

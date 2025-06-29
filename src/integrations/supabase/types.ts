@@ -2276,6 +2276,15 @@ export type Database = {
         Args: { permission_code: string }
         Returns: boolean
       }
+      debug_auth_status: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          current_user_id: string
+          session_exists: boolean
+          staff_count: number
+          matching_staff_count: number
+        }[]
+      }
       get_announcement_read_stats: {
         Args: { announcement_uuid: string }
         Returns: {

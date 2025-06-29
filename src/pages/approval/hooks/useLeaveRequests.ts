@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
-import { useLeaveRequestsData } from './useLeaveRequestsData';
+import { useOptimizedLeaveRequestsData } from './useOptimizedLeaveRequestsData';
 import { useLeaveRequestsActions } from './useLeaveRequestsActions';
 import type { LeaveRequestWithApplicant } from './types';
 
@@ -13,7 +13,8 @@ export const useLeaveRequests = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const { loadPendingRequests } = useLeaveRequestsData({
+  // 使用優化後的資料載入 hook
+  const { loadPendingRequests } = useOptimizedLeaveRequestsData({
     currentUser,
     toast,
     setPendingRequests,

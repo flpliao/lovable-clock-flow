@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Users, Plus, Search } from 'lucide-react';
 import { useSupabaseStaffOperations } from './hooks/useSupabaseStaffOperations';
 import { StaffList } from './StaffList';
-import { AddStaffDialog } from './AddStaffDialog';
+import AddStaffDialog from './AddStaffDialog';
 import { StaffRLSStatus } from './StaffRLSStatus';
 
 const StaffManagement: React.FC = () => {

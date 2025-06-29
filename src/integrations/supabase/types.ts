@@ -2322,6 +2322,18 @@ export type Database = {
         Args: { staff_uuid: string }
         Returns: Json
       }
+      get_rls_policy_summary: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          table_name: string
+          rls_enabled: boolean
+          policy_count: number
+          has_select_policy: boolean
+          has_insert_policy: boolean
+          has_update_policy: boolean
+          has_delete_policy: boolean
+        }[]
+      }
       get_table_rls_status: {
         Args: { table_name: string }
         Returns: boolean

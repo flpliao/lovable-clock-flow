@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -111,7 +112,7 @@ const GoogleMapsApiKeySettings = () => {
 
   if (initialLoading) {
     return (
-      <Card className="backdrop-blur-xl bg-white/25 border border-white/30 rounded-2xl shadow-lg">
+      <Card className="backdrop-blur-2xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl">
         <CardContent className="flex items-center justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-white mr-2" />
           <span className="text-white">載入中...</span>
@@ -121,7 +122,7 @@ const GoogleMapsApiKeySettings = () => {
   }
 
   return (
-    <Card className="backdrop-blur-xl bg-white/25 border border-white/30 rounded-2xl shadow-lg">
+    <Card className="backdrop-blur-2xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl">
       <CardHeader className="pb-4">
         <CardTitle className="text-white flex items-center gap-3 text-lg">
           <MapPin className="h-5 w-5" />
@@ -155,7 +156,7 @@ const GoogleMapsApiKeySettings = () => {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="請輸入您的 Google Maps API 金鑰"
-              className="bg-white/20 border-white/30 text-white placeholder:text-white/60 pr-10"
+              className="bg-white/10 border-white/20 text-white placeholder:text-white/50 pr-10 backdrop-blur-xl"
               disabled={loading}
             />
             <Button
@@ -175,7 +176,7 @@ const GoogleMapsApiKeySettings = () => {
           <Button
             onClick={handleSave}
             disabled={loading || !apiKey.trim()}
-            className="flex-1 bg-blue-500/80 hover:bg-blue-600/80 text-white"
+            className="flex-1 bg-blue-500/80 hover:bg-blue-600/80 text-white backdrop-blur-xl"
           >
             {loading ? (
               <>
@@ -192,7 +193,7 @@ const GoogleMapsApiKeySettings = () => {
               onClick={handleClear}
               disabled={loading}
               variant="outline"
-              className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-xl"
             >
               清除
             </Button>

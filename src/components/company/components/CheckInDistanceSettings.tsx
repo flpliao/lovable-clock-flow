@@ -121,7 +121,7 @@ const CheckInDistanceSettings = () => {
 
   if (loading) {
     return (
-      <Card className="backdrop-blur-xl bg-white/30 border border-white/40 shadow-lg">
+      <Card className="backdrop-blur-2xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl">
         <CardContent className="flex items-center justify-center p-8">
           <Loader2 className="h-6 w-6 animate-spin text-white mr-2" />
           <span className="text-white">載入中...</span>
@@ -131,9 +131,9 @@ const CheckInDistanceSettings = () => {
   }
 
   return (
-    <Card className="backdrop-blur-xl bg-white/30 border border-white/40 shadow-lg">
+    <Card className="backdrop-blur-2xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl">
       <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-3 text-white drop-shadow-sm text-lg">
+        <CardTitle className="flex items-center gap-3 text-white text-lg">
           <MapPin className="h-5 w-5" />
           GPS 打卡距離設定
         </CardTitle>
@@ -145,12 +145,12 @@ const CheckInDistanceSettings = () => {
       <CardContent className="space-y-4">
         {/* 權限狀態 */}
         {permissionStatus && (
-          <Alert className={`${
+          <Alert className={`backdrop-blur-xl ${
             permissionStatus.canWrite 
-              ? 'bg-green-100/20 border-green-300/50' 
+              ? 'bg-green-500/20 border-green-400/30' 
               : permissionStatus.canRead 
-                ? 'bg-yellow-100/20 border-yellow-300/50'
-                : 'bg-red-100/20 border-red-300/50'
+                ? 'bg-yellow-500/20 border-yellow-400/30'
+                : 'bg-red-500/20 border-red-400/30'
           }`}>
             {permissionStatus.canWrite ? (
               <CheckCircle className="h-4 w-4 text-green-400" />
@@ -188,7 +188,7 @@ const CheckInDistanceSettings = () => {
             max="2000"
             value={distance}
             onChange={(e) => setDistance(parseInt(e.target.value) || 500)}
-            className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
+            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 backdrop-blur-xl"
             placeholder="輸入距離限制"
             disabled={!permissionStatus?.canRead}
           />
@@ -202,7 +202,7 @@ const CheckInDistanceSettings = () => {
           <Button 
             onClick={handleSave} 
             disabled={saving || !permissionStatus?.canWrite}
-            className="flex-1 bg-blue-500/80 hover:bg-blue-600/80 text-white disabled:opacity-50"
+            className="flex-1 bg-blue-500/80 hover:bg-blue-600/80 text-white disabled:opacity-50 backdrop-blur-xl"
           >
             {saving ? (
               <>
@@ -217,7 +217,7 @@ const CheckInDistanceSettings = () => {
             variant="outline" 
             onClick={handleReset}
             disabled={saving || !permissionStatus?.canRead}
-            className="bg-white/20 border-white/30 text-white hover:bg-white/30 disabled:opacity-50"
+            className="bg-white/10 border-white/20 text-white hover:bg-white/20 disabled:opacity-50 backdrop-blur-xl"
           >
             重設
           </Button>
@@ -225,7 +225,7 @@ const CheckInDistanceSettings = () => {
 
         {/* 權限說明 */}
         {permissionStatus && !permissionStatus.canWrite && (
-          <div className="mt-4 p-3 bg-blue-100/20 border border-blue-300/50 rounded-lg">
+          <div className="mt-4 p-3 bg-blue-500/20 border border-blue-400/30 rounded-2xl backdrop-blur-xl">
             <div className="flex items-start gap-2">
               <ShieldAlert className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-blue-100">

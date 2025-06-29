@@ -26,12 +26,12 @@ export const LanguageManagement: React.FC = () => {
   return (
     <div className="p-6">
       <div className="flex items-center gap-4 mb-6">
-        <div className="p-3 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
+        <div className="p-3 bg-blue-500/90 rounded-2xl shadow-lg backdrop-blur-xl border border-blue-400/30 text-white">
           <Globe className="h-6 w-6" />
         </div>
         <div>
-          <h3 className="text-2xl font-bold text-gray-900 drop-shadow-sm">多語系管理</h3>
-          <p className="text-gray-700 drop-shadow-sm mt-1">設定系統預設語言和地區</p>
+          <h3 className="text-2xl font-bold text-white">多語系管理</h3>
+          <p className="text-white/80 mt-1">設定系統預設語言和地區</p>
         </div>
       </div>
       

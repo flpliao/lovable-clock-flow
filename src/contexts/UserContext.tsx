@@ -31,6 +31,14 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 創建權限檢查器
   const { hasPermission } = createPermissionChecker(currentUser, isAdmin);
 
+  // 輔助函數：確保角色值符合 TypeScript 類型定義
+  const normalizeRole = (role: string): 'admin' | 'manager' | 'user' => {
+    const normalizedRole = role?.toLowerCase();
+    if (normalizedRole === 'admin') return 'admin';
+    if (normalizedRole === 'manager') return 'manager';
+    return 'user'; // 默認為 user
+  };
+
   // 增強的使用者 staff 資料同步，確保管理員角色正確
   const syncUserStaffData = async (user: User) => {
     console.log('🔄 開始同步使用者 staff 資料:', user.id, user.name);
@@ -55,10 +63,14 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const staffRecord = staffRecords[0];
         console.log('✅ 找到員工資料，角色:', staffRecord.role);
         
-        // 如果當前用戶的角色與資料庫中的不一致，更新 currentUser
-        if (user.role !== staffRecord.role) {
-          console.log('🔄 更新用戶角色:', user.role, '->', staffRecord.role);
-          const updatedUser = { ...user, role: staffRecord.role };
+        // 正規化角色值並檢查是否需要更新
+        const normalizedRole = normalizeRole(staffRecord.role);
+        if (user.role !== normalizedRole) {
+          console.log('🔄 更新用戶角色:', user.role, '->', normalizedRole);
+          const updatedUser: User = { 
+            ...user, 
+            role: normalizedRole 
+          };
           setCurrentUser(updatedUser);
         }
       } else {

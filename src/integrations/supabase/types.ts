@@ -53,6 +53,13 @@ export type Database = {
             referencedRelation: "user_permissions_cache"
             referencedColumns: ["staff_id"]
           },
+          {
+            foreignKeyName: "announcement_reads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
+            referencedColumns: ["staff_id"]
+          },
         ]
       }
       announcements: {
@@ -126,6 +133,13 @@ export type Database = {
             referencedRelation: "user_permissions_cache"
             referencedColumns: ["staff_id"]
           },
+          {
+            foreignKeyName: "announcements_created_by_id_fkey"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
+            referencedColumns: ["staff_id"]
+          },
         ]
       }
       annual_leave_balance: {
@@ -178,6 +192,13 @@ export type Database = {
             referencedColumns: ["staff_id"]
           },
           {
+            foreignKeyName: "annual_leave_balance_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
+            referencedColumns: ["staff_id"]
+          },
+          {
             foreignKeyName: "annual_leave_balance_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -189,6 +210,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "user_permissions_cache"
+            referencedColumns: ["staff_id"]
+          },
+          {
+            foreignKeyName: "annual_leave_balance_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
             referencedColumns: ["staff_id"]
           },
         ]
@@ -243,6 +271,13 @@ export type Database = {
             columns: ["approver_id"]
             isOneToOne: false
             referencedRelation: "user_permissions_cache"
+            referencedColumns: ["staff_id"]
+          },
+          {
+            foreignKeyName: "approval_records_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
             referencedColumns: ["staff_id"]
           },
           {
@@ -322,6 +357,13 @@ export type Database = {
             referencedColumns: ["staff_id"]
           },
           {
+            foreignKeyName: "attendance_exceptions_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
+            referencedColumns: ["staff_id"]
+          },
+          {
             foreignKeyName: "attendance_exceptions_staff_id_fkey"
             columns: ["staff_id"]
             isOneToOne: false
@@ -333,6 +375,13 @@ export type Database = {
             columns: ["staff_id"]
             isOneToOne: false
             referencedRelation: "user_permissions_cache"
+            referencedColumns: ["staff_id"]
+          },
+          {
+            foreignKeyName: "attendance_exceptions_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
             referencedColumns: ["staff_id"]
           },
         ]
@@ -473,6 +522,13 @@ export type Database = {
             columns: ["staff_id"]
             isOneToOne: false
             referencedRelation: "user_permissions_cache"
+            referencedColumns: ["staff_id"]
+          },
+          {
+            foreignKeyName: "check_in_records_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
             referencedColumns: ["staff_id"]
           },
         ]
@@ -784,6 +840,13 @@ export type Database = {
             referencedRelation: "user_permissions_cache"
             referencedColumns: ["staff_id"]
           },
+          {
+            foreignKeyName: "leave_requests_current_approver_fkey"
+            columns: ["current_approver"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
+            referencedColumns: ["staff_id"]
+          },
         ]
       }
       leave_types: {
@@ -961,6 +1024,13 @@ export type Database = {
             referencedRelation: "user_permissions_cache"
             referencedColumns: ["staff_id"]
           },
+          {
+            foreignKeyName: "fk_missed_checkin_requests_staff_id"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
+            referencedColumns: ["staff_id"]
+          },
         ]
       }
       notifications: {
@@ -1030,6 +1100,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "user_permissions_cache"
+            referencedColumns: ["staff_id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
             referencedColumns: ["staff_id"]
           },
         ]
@@ -1174,6 +1251,13 @@ export type Database = {
             referencedColumns: ["staff_id"]
           },
           {
+            foreignKeyName: "fk_overtime_requests_staff_id"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
+            referencedColumns: ["staff_id"]
+          },
+          {
             foreignKeyName: "fk_overtime_requests_user_id"
             columns: ["user_id"]
             isOneToOne: false
@@ -1188,6 +1272,13 @@ export type Database = {
             referencedColumns: ["staff_id"]
           },
           {
+            foreignKeyName: "fk_overtime_requests_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
+            referencedColumns: ["staff_id"]
+          },
+          {
             foreignKeyName: "overtime_requests_approved_by_fkey"
             columns: ["approved_by"]
             isOneToOne: false
@@ -1199,6 +1290,13 @@ export type Database = {
             columns: ["approved_by"]
             isOneToOne: false
             referencedRelation: "user_permissions_cache"
+            referencedColumns: ["staff_id"]
+          },
+          {
+            foreignKeyName: "overtime_requests_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
             referencedColumns: ["staff_id"]
           },
         ]
@@ -1304,6 +1402,13 @@ export type Database = {
             referencedColumns: ["staff_id"]
           },
           {
+            foreignKeyName: "payroll_approvals_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
+            referencedColumns: ["staff_id"]
+          },
+          {
             foreignKeyName: "payroll_approvals_payroll_id_fkey"
             columns: ["payroll_id"]
             isOneToOne: false
@@ -1362,6 +1467,13 @@ export type Database = {
             columns: ["paid_by"]
             isOneToOne: false
             referencedRelation: "user_permissions_cache"
+            referencedColumns: ["staff_id"]
+          },
+          {
+            foreignKeyName: "payroll_payments_paid_by_fkey"
+            columns: ["paid_by"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
             referencedColumns: ["staff_id"]
           },
           {
@@ -1483,6 +1595,13 @@ export type Database = {
             referencedColumns: ["staff_id"]
           },
           {
+            foreignKeyName: "payrolls_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
+            referencedColumns: ["staff_id"]
+          },
+          {
             foreignKeyName: "payrolls_paid_by_fkey"
             columns: ["paid_by"]
             isOneToOne: false
@@ -1494,6 +1613,13 @@ export type Database = {
             columns: ["paid_by"]
             isOneToOne: false
             referencedRelation: "user_permissions_cache"
+            referencedColumns: ["staff_id"]
+          },
+          {
+            foreignKeyName: "payrolls_paid_by_fkey"
+            columns: ["paid_by"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
             referencedColumns: ["staff_id"]
           },
           {
@@ -1515,6 +1641,13 @@ export type Database = {
             columns: ["staff_id"]
             isOneToOne: false
             referencedRelation: "user_permissions_cache"
+            referencedColumns: ["staff_id"]
+          },
+          {
+            foreignKeyName: "payrolls_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
             referencedColumns: ["staff_id"]
           },
         ]
@@ -1644,6 +1777,13 @@ export type Database = {
             referencedRelation: "user_permissions_cache"
             referencedColumns: ["staff_id"]
           },
+          {
+            foreignKeyName: "reminder_settings_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
+            referencedColumns: ["staff_id"]
+          },
         ]
       }
       role_permissions: {
@@ -1673,6 +1813,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "staff_roles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
+            referencedColumns: ["role_id"]
           },
         ]
       }
@@ -1851,7 +1998,74 @@ export type Database = {
             referencedRelation: "user_permissions_cache"
             referencedColumns: ["staff_id"]
           },
+          {
+            foreignKeyName: "staff_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
+            referencedColumns: ["staff_id"]
+          },
         ]
+      }
+      staff_backup: {
+        Row: {
+          branch_id: string | null
+          branch_name: string | null
+          contact: string | null
+          created_at: string | null
+          department: string | null
+          email: string | null
+          hire_date: string | null
+          id: string | null
+          name: string | null
+          password: string | null
+          position: string | null
+          role: string | null
+          role_id: string | null
+          supervisor_id: string | null
+          updated_at: string | null
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          branch_id?: string | null
+          branch_name?: string | null
+          contact?: string | null
+          created_at?: string | null
+          department?: string | null
+          email?: string | null
+          hire_date?: string | null
+          id?: string | null
+          name?: string | null
+          password?: string | null
+          position?: string | null
+          role?: string | null
+          role_id?: string | null
+          supervisor_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          branch_id?: string | null
+          branch_name?: string | null
+          contact?: string | null
+          created_at?: string | null
+          department?: string | null
+          email?: string | null
+          hire_date?: string | null
+          id?: string | null
+          name?: string | null
+          password?: string | null
+          position?: string | null
+          role?: string | null
+          role_id?: string | null
+          supervisor_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: []
       }
       staff_roles: {
         Row: {
@@ -1948,6 +2162,14 @@ export type Database = {
       }
     }
     Views: {
+      permission_summary: {
+        Row: {
+          permission_count: number | null
+          permissions_list: string | null
+          role_name: string | null
+        }
+        Relationships: []
+      }
       rls_performance_summary: {
         Row: {
           optimization_status: string | null
@@ -1989,7 +2211,28 @@ export type Database = {
             referencedRelation: "user_permissions_cache"
             referencedColumns: ["staff_id"]
           },
+          {
+            foreignKeyName: "staff_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "user_permissions_view"
+            referencedColumns: ["staff_id"]
+          },
         ]
+      }
+      user_permissions_view: {
+        Row: {
+          department: string | null
+          email: string | null
+          permissions: string[] | null
+          role_description: string | null
+          role_id: string | null
+          role_name: string | null
+          staff_id: string | null
+          staff_name: string | null
+          user_id: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {
@@ -2028,6 +2271,10 @@ export type Database = {
           p_action_required?: boolean
         }
         Returns: string
+      }
+      current_user_has_permission: {
+        Args: { permission_code: string }
+        Returns: boolean
       }
       get_announcement_read_stats: {
         Args: { announcement_uuid: string }
@@ -2133,6 +2380,10 @@ export type Database = {
       }
       toggle_table_rls: {
         Args: { table_name: string; enabled: boolean }
+        Returns: boolean
+      }
+      user_has_permission: {
+        Args: { user_uuid: string; permission_code: string }
         Returns: boolean
       }
     }

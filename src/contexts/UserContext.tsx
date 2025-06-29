@@ -3,9 +3,10 @@ import React, { createContext, useContext, ReactNode } from 'react';
 import { AnnualLeaveBalance } from '@/types';
 import { User, UserContextType } from './user/types';
 import { createRoleChecker } from './user/roleUtils';
-import { createPermissionChecker } from './user/permissionUtils';
+import { createSimplifiedPermissionChecker } from './user/simplifiedPermissionUtils';
 import { useUserState } from './user/useUserState';
 import { supabase } from '@/integrations/supabase/client';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { v4 as uuidv4 } from 'uuid';
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -25,21 +26,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserError
   } = useUserState();
 
-  // 創建角色檢查器
+  // 創建角色檢查器 - 保持現有邏輯以確保向後兼容
   const { isAdmin, isManager, canManageUser } = createRoleChecker(currentUser);
   
-  // 創建權限檢查器
-  const { hasPermission } = createPermissionChecker(currentUser, isAdmin);
+  // 創建簡化的權限檢查器
+  const { hasPermission } = createSimplifiedPermissionChecker(currentUser);
 
-  // 輔助函數：確保角色值符合 TypeScript 類型定義
-  const normalizeRole = (role: string): 'admin' | 'manager' | 'user' => {
-    const normalizedRole = role?.toLowerCase();
-    if (normalizedRole === 'admin') return 'admin';
-    if (normalizedRole === 'manager') return 'manager';
-    return 'user'; // 默認為 user
-  };
-
-  // 增強的使用者 staff 資料同步，確保管理員角色正確
+  // 增強的使用者 staff 資料同步
   const syncUserStaffData = async (user: User) => {
     console.log('🔄 開始同步使用者 staff 資料:', user.id, user.name);
     
@@ -61,18 +54,24 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (staffRecords && staffRecords.length > 0) {
         const staffRecord = staffRecords[0];
-        console.log('✅ 找到員工資料，角色:', staffRecord.role);
+        console.log('✅ 找到員工資料，角色:', staffRecord.role, 'role_id:', staffRecord.role_id);
         
-        // 正規化角色值並檢查是否需要更新
-        const normalizedRole = normalizeRole(staffRecord.role);
-        if (user.role !== normalizedRole) {
-          console.log('🔄 更新用戶角色:', user.role, '->', normalizedRole);
-          const updatedUser: User = { 
-            ...user, 
-            role: normalizedRole 
-          };
-          setCurrentUser(updatedUser);
+        // 確保 role_id 存在且有效
+        if (!staffRecord.role_id || staffRecord.role_id === '') {
+          console.log('🔄 更新員工的 role_id');
+          const updatedRoleId = staffRecord.role === 'admin' ? 'admin' : 
+                               staffRecord.role === 'manager' ? 'manager' : 'user';
+          
+          await supabase
+            .from('staff')
+            .update({ role_id: updatedRoleId })
+            .eq('id', staffRecord.id);
+          
+          console.log('✅ 成功更新 role_id:', updatedRoleId);
         }
+        
+        // 清除權限快取，確保使用最新權限
+        permissionService.clearCache();
       } else {
         // 沒有找到對應的 staff 記錄，創建一個
         console.log('➕ 未找到 staff 資料，開始自動建立...');
@@ -113,17 +112,20 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // 當使用者改變時的處理 - 加入 staff 資料同步
+  // 當使用者改變時的處理
   React.useEffect(() => {
     if (!currentUser) {
       setAnnualLeaveBalance(null);
       setUserError(null);
       console.log('👤 UserProvider: 用戶登出，清除所有狀態');
+      
+      // 清除權限快取
+      permissionService.clearCache();
     } else {
       console.log('👤 UserProvider: 用戶登入:', currentUser.name, '權限等級:', currentUser.role);
       console.log('🔐 當前認證狀態:', isAuthenticated);
       
-      // 🧱 自動補綁使用者對應的 staff 資料
+      // 自動補綁使用者對應的 staff 資料
       syncUserStaffData(currentUser);
       
       setUserError(null);
@@ -144,7 +146,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setAnnualLeaveBalance,
       isAdmin,
       isManager,
-      hasPermission,
+      hasPermission, // 使用簡化的權限檢查
       canManageUser,
       isUserLoaded,
       userError,
@@ -163,7 +165,7 @@ export const useUser = () => {
   const context = useContext(UserContext);
   if (context === undefined) {
     throw new Error('useUser must be used within a UserProvider');
-  }
+  }  
   return context;
 };
 

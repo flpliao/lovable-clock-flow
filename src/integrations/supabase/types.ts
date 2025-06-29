@@ -2338,6 +2338,13 @@ export type Database = {
         Args: { table_name: string }
         Returns: boolean
       }
+      get_user_permissions_cache: {
+        Args: { target_user_id?: string }
+        Returns: {
+          user_id: string
+          permissions: string[]
+        }[]
+      }
       get_user_role: {
         Args: { user_uuid: string }
         Returns: string

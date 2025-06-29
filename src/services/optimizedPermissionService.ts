@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -82,11 +83,11 @@ export class OptimizedPermissionService {
   }
 
   /**
-   * 獲取當前用戶的所有權限（從權限視圖）
+   * 獲取當前用戶的所有權限（使用安全包裝函數）
    */
   async getUserPermissions(): Promise<string[]> {
     try {
-      console.log('🔍 從權限視圖載入用戶權限列表');
+      console.log('🔍 從安全權限函數載入用戶權限列表');
       
       const { data: user } = await supabase.auth.getUser();
       if (!user.user?.id) {
@@ -94,25 +95,23 @@ export class OptimizedPermissionService {
         return [];
       }
 
-      // 使用 user_permissions_view 而非 user_permissions_cache
-      const { data, error } = await supabase
-        .from('user_permissions_view')
-        .select('permissions')
-        .eq('user_id', user.user.id)
-        .maybeSingle();
+      // 使用新的安全包裝函數而非直接查詢 Materialized View
+      const { data, error } = await supabase.rpc('get_user_permissions_cache', {
+        target_user_id: user.user.id
+      });
 
       if (error) {
         console.error('❌ 載入用戶權限失敗:', error);
         return [];
       }
 
-      if (!data) {
+      if (!data || data.length === 0) {
         console.log('❌ 未找到用戶權限記錄');
         return [];
       }
 
-      // 從視圖中取得權限陣列
-      const permissions = data.permissions || [];
+      // 從安全函數結果中取得權限陣列
+      const permissions = data[0].permissions || [];
       console.log('✅ 用戶權限列表載入成功:', permissions);
       return Array.isArray(permissions) ? permissions : [];
     } catch (error) {
@@ -128,7 +127,7 @@ export class OptimizedPermissionService {
     try {
       console.log('🔄 刷新權限快取');
       
-      // 刷新資料庫 Materialized View
+      // 使用更新後的安全函數刷新資料庫 Materialized View
       const { error } = await supabase.rpc('refresh_user_permissions_cache');
       
       if (error) {

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { CompanyAnnouncement } from '@/types/announcement';
 import { useSupabaseAnnouncements } from '@/hooks/useSupabaseAnnouncements';
-import { useUser } from '@/contexts/UserContext';
+import { useSimplifiedPermissions } from '@/hooks/useSimplifiedPermissions';
 import AnnouncementDetail from './AnnouncementDetail';
 import AnnouncementForm from './AnnouncementForm';
 import AnnouncementSearchFilter from './AnnouncementSearchFilter';
@@ -13,7 +13,7 @@ import AnnouncementListView from './AnnouncementListView';
 
 const AnnouncementManagement: React.FC = () => {
   const { toast } = useToast();
-  const { isAdmin } = useUser();
+  const { hasPermission } = useSimplifiedPermissions();
   const {
     announcements,
     loading,
@@ -30,10 +30,12 @@ const AnnouncementManagement: React.FC = () => {
 
   const categories = ['HR', 'Administration', 'Meeting', 'Official', 'General'];
 
-  // Check admin access
-  const hasAdminAccess = isAdmin();
+  // 檢查公告管理權限
+  const canCreateAnnouncement = hasPermission('announcement:create');
+  const canEditAnnouncement = hasPermission('announcement:edit');
+  const canDeleteAnnouncement = hasPermission('announcement:delete');
 
-  // Filter announcements based on search and category
+  // 過濾公告
   const filteredAnnouncements = announcements.filter(announcement => {
     const matchesSearch = !searchQuery || 
       announcement.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -45,13 +47,13 @@ const AnnouncementManagement: React.FC = () => {
     return matchesSearch && matchesCategory;
   });
 
-  // Handle saving announcement (create or edit)
+  // 處理保存公告
   const handleSaveAnnouncement = async (data: CompanyAnnouncement | Omit<CompanyAnnouncement, 'id' | 'created_at' | 'created_by' | 'company_id'>): Promise<boolean> => {
     try {
       console.log('handleSaveAnnouncement called with:', data);
       
       if ('id' in data) {
-        // Update existing announcement
+        // 更新現有公告
         console.log('Updating announcement with ID:', data.id);
         const success = await updateAnnouncement(data.id, data);
         if (success) {
@@ -61,7 +63,7 @@ const AnnouncementManagement: React.FC = () => {
         }
         return false;
       } else {
-        // Create new announcement
+        // 新增公告
         console.log('Creating new announcement');
         const success = await createAnnouncement(data);
         if (success) {
@@ -86,11 +88,28 @@ const AnnouncementManagement: React.FC = () => {
   };
 
   const handleEditAnnouncement = (announcement: CompanyAnnouncement) => {
+    if (!canEditAnnouncement) {
+      toast({
+        title: "權限不足",
+        description: "您沒有編輯公告的權限",
+        variant: "destructive"
+      });
+      return;
+    }
     setSelectedAnnouncement(announcement);
     setIsFormOpen(true);
   };
 
   const handleDeleteAnnouncement = async (announcementId: string) => {
+    if (!canDeleteAnnouncement) {
+      toast({
+        title: "權限不足",
+        description: "您沒有刪除公告的權限",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const success = await deleteAnnouncement(announcementId);
       if (success) {
@@ -115,7 +134,7 @@ const AnnouncementManagement: React.FC = () => {
     }
   };
 
-  if (!hasAdminAccess) {
+  if (!canCreateAnnouncement) {
     return (
       <div className="text-center py-12">
         <h2 className="text-xl font-semibold mb-2 text-white">無權限訪問</h2>
@@ -139,16 +158,18 @@ const AnnouncementManagement: React.FC = () => {
         <h2 className="text-xl sm:text-2xl font-bold text-white drop-shadow-md">
           公告列表
         </h2>
-        <Button 
-          onClick={() => {
-            setSelectedAnnouncement(null);
-            setIsFormOpen(true);
-          }}
-          className="w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm backdrop-blur-xl bg-white/30 border-white/40 text-white font-semibold shadow-lg hover:bg-white/50 transition-all duration-300 rounded-xl"
-        >
-          <Plus className="h-4 w-4 mr-2 drop-shadow-md" />
-          新增公告
-        </Button>
+        {canCreateAnnouncement && (
+          <Button 
+            onClick={() => {
+              setSelectedAnnouncement(null);
+              setIsFormOpen(true);
+            }}
+            className="w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm backdrop-blur-xl bg-white/30 border-white/40 text-white font-semibold shadow-lg hover:bg-white/50 transition-all duration-300 rounded-xl"
+          >
+            <Plus className="h-4 w-4 mr-2 drop-shadow-md" />
+            新增公告
+          </Button>
+        )}
       </div>
 
       {/* 搜尋和篩選區域 */}
@@ -164,8 +185,8 @@ const AnnouncementManagement: React.FC = () => {
       <AnnouncementListView
         announcements={filteredAnnouncements}
         onView={handleViewAnnouncement}
-        onEdit={handleEditAnnouncement}
-        onDelete={handleDeleteAnnouncement}
+        onEdit={canEditAnnouncement ? handleEditAnnouncement : undefined}
+        onDelete={canDeleteAnnouncement ? handleDeleteAnnouncement : undefined}
       />
 
       {/* Create/Edit Form */}

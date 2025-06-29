@@ -1,3 +1,4 @@
+
 import { useCallback, useMemo, useEffect, useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
@@ -138,12 +139,6 @@ export const useUnifiedPermissions = () => {
     permissionService.clearCache();
   }, [permissionService]);
 
-  const clearCurrentUserCache = useCallback(() => {
-    if (currentUser?.id) {
-      permissionService.clearUserCache(currentUser.id);
-    }
-  }, [currentUser, permissionService]);
-
   const reloadBackendRoles = useCallback(async () => {
     try {
       console.log('🔄 重新載入後台角色資料...');
@@ -159,13 +154,8 @@ export const useUnifiedPermissions = () => {
     }
   }, [permissionService]);
 
+  // 清理不存在的方法呼叫
   useEffect(() => {
-    const removeListener = permissionService.addPermissionUpdateListener(() => {
-      console.log('🔔 權限更新，觸發重新檢查');
-      clearPermissionCache();
-      reloadBackendRoles();
-    });
-
     const handleForceReload = () => {
       console.log('🔄 收到強制重新載入事件');
       clearPermissionCache();
@@ -175,10 +165,9 @@ export const useUnifiedPermissions = () => {
     window.addEventListener('permissionForceReload', handleForceReload);
 
     return () => {
-      removeListener();
       window.removeEventListener('permissionForceReload', handleForceReload);
     };
-  }, [permissionService, clearPermissionCache, reloadBackendRoles]);
+  }, [clearPermissionCache, reloadBackendRoles]);
 
   return {
     hasPermission,
@@ -187,7 +176,6 @@ export const useUnifiedPermissions = () => {
     isAdmin,
     isManager,
     clearPermissionCache,
-    clearCurrentUserCache,
     reloadBackendRoles,
     currentStaffData,
     permissionContext,

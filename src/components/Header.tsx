@@ -14,12 +14,12 @@ import { createAuthHandlers } from '@/contexts/user/authHandlers';
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser, setCurrentUser, setIsAuthenticated, setUserError, isAuthenticated, hasPermission } = useUser();
+  const { currentUser, setCurrentUser, setIsAuthenticated, setUserError, isAuthenticated } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const isLoginPage = location.pathname === '/login';
   
-  const { visibleMenuItems } = useMenuLogic(currentUser, isAuthenticated, hasPermission);
+  const { visibleMenuItems } = useMenuLogic(currentUser, isAuthenticated);
 
   // 創建 auth handlers
   const { handleUserLogout } = createAuthHandlers(

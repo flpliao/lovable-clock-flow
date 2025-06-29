@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useUser } from '@/contexts/UserContext';
+import { useSimplifiedPermissions } from '@/hooks/useSimplifiedPermissions';
 import { CompanyManagementProvider } from '@/components/company/CompanyManagementContext';
 import { DepartmentManagementProvider } from '@/components/departments/DepartmentManagementContext';
 import StaffTable from './StaffTable';
@@ -15,8 +15,21 @@ import { Users, UserCheck, Network, Shield } from 'lucide-react';
 const StaffManagement = () => {
   console.log('🎯 StaffManagement rendering');
   
-  const { isAdmin } = useUser();
+  const { isAdmin, hasPermission } = useSimplifiedPermissions();
   const [activeTab, setActiveTab] = useState('list');
+
+  // 檢查權限
+  const canViewStaff = hasPermission('staff:view_all') || hasPermission('staff:view_own');
+  const canManageRoles = hasPermission('system:admin');
+
+  if (!canViewStaff) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-xl font-semibold mb-2 text-white">無權限訪問</h2>
+        <p className="text-white/70 font-medium drop-shadow-md">您沒有權限查看人員管理</p>
+      </div>
+    );
+  }
 
   return (
     <CompanyManagementProvider>
@@ -53,7 +66,7 @@ const StaffManagement = () => {
                   <Network className="h-4 w-4" />
                   組織圖
                 </TabsTrigger>
-                {isAdmin() && (
+                {canManageRoles && (
                   <TabsTrigger 
                     value="roles" 
                     className="text-gray-800 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-lg font-medium transition-all duration-200 py-2 px-4 flex items-center gap-2"
@@ -73,7 +86,7 @@ const StaffManagement = () => {
                   <OrganizationChart />
                 </TabsContent>
                 
-                {isAdmin() && (
+                {canManageRoles && (
                   <TabsContent value="roles" className="mt-0">
                     <RoleManagement />
                   </TabsContent>

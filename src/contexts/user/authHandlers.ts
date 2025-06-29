@@ -14,7 +14,7 @@ export const createAuthHandlers = (
 ) => {
   const navigate = useNavigate();
 
-  // 安全載入用戶資料，重點改善從 staff 表獲取角色資訊的邏輯
+  // 安全載入用戶資料，使用新的資料庫函數
   const loadUserFromStaffTable = async (authUser: any): Promise<User | null> => {
     try {
       console.log('🔄 從 staff 表載入用戶權限資料:', {
@@ -91,17 +91,17 @@ export const createAuthHandlers = (
           }
         }
         
-        // 優先從 staff.role 判斷使用者權限，如果沒有則使用 role_id
+        // 優先從 staff.role 判斷使用者權限
         let userRole: 'admin' | 'manager' | 'user' = 'user';
         
-        // 超級管理員檢查（廖俊雄）- 更新為正確的 UUID
+        // 超級管理員檢查（廖俊雄）- 使用正確的 UUID
         if (staffData.name === '廖俊雄' || staffData.email === 'flpliao@gmail.com' || authUser.id === '0765138a-6f11-45f4-be07-dab965116a2d') {
           userRole = 'admin';
           console.log('🔐 超級管理員權限確認:', staffData.name);
         } else if (staffData.role === 'admin') {
           userRole = 'admin';
           console.log('🔐 管理員權限確認 (來自 staff.role):', staffData.name);
-        } else if (staffData.role === 'manager') {
+        } else if (staffData.role === 'manager' || staffData.role === 'hr_manager') {
           userRole = 'manager';
           console.log('🔐 主管權限確認 (來自 staff.role):', staffData.name);
         } else if (staffData.role_id === 'admin') {

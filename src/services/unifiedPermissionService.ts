@@ -10,8 +10,7 @@ export interface UnifiedPermissionContext {
 }
 
 /**
- * 統一權限服務 - 重構版
- * 主要透過資料庫函數進行權限檢查，簡化前端邏輯
+ * 統一權限服務 - 重構版，使用新的資料庫函數
  */
 export class UnifiedPermissionService {
   private static instance: UnifiedPermissionService;
@@ -30,7 +29,7 @@ export class UnifiedPermissionService {
   }
 
   /**
-   * 主要權限檢查方法 - 使用資料庫函數
+   * 主要權限檢查方法 - 使用新的資料庫函數
    */
   hasPermission(permission: string, context: UnifiedPermissionContext): boolean {
     const { currentUser } = context;
@@ -40,7 +39,7 @@ export class UnifiedPermissionService {
       return false;
     }
 
-    // 超級管理員檢查 - 更新為正確的 UUID
+    // 超級管理員檢查 - 使用正確的 UUID
     if (currentUser.id === '0765138a-6f11-45f4-be07-dab965116a2d') {
       console.log('🔐 超級管理員權限檢查:', permission, '✅ 允許');
       return true;
@@ -63,7 +62,7 @@ export class UnifiedPermissionService {
   }
 
   /**
-   * 異步權限檢查 - 使用資料庫函數
+   * 異步權限檢查 - 使用新的資料庫函數
    */
   async hasPermissionAsync(permission: string): Promise<boolean> {
     try {
@@ -76,23 +75,41 @@ export class UnifiedPermissionService {
         return cachedResult;
       }
 
-      // 使用資料庫函數進行權限檢查
-      const { data, error } = await supabase.rpc('current_user_has_permission', {
-        permission_code: permission
-      });
-
+      // 使用新的資料庫函數進行權限檢查
+      const { data, error } = await supabase.rpc('is_current_user_admin');
+      
       if (error) {
-        console.error('❌ 權限檢查錯誤:', error);
+        console.error('❌ 管理員權限檢查錯誤:', error);
         return false;
       }
 
-      const result = data || false;
+      const isAdmin = data || false;
+      
+      // 管理員權限檢查
+      if (isAdmin) {
+        this.updateCache(cacheKey, true);
+        console.log('✅ 管理員權限檢查通過:', permission);
+        return true;
+      }
+
+      // 檢查主管權限
+      const { data: isManagerData, error: managerError } = await supabase.rpc('is_current_user_manager');
+      
+      if (managerError) {
+        console.error('❌ 主管權限檢查錯誤:', managerError);
+        return false;
+      }
+
+      const isManager = isManagerData || false;
+      const result = isManager && this.isManagerPermission(permission);
       
       // 更新快取
       this.updateCache(cacheKey, result);
       
       console.log('✅ 異步權限檢查結果:', {
         permission,
+        isAdmin,
+        isManager,
         result
       });
       
@@ -109,7 +126,6 @@ export class UnifiedPermissionService {
 
   private isBasicUserPermission(permission: string): boolean {
     const basicPermissions = [
-      // 基本員工權限
       'staff:view_own',
       'staff:edit_own',
       'leave:view_own',
@@ -126,7 +142,42 @@ export class UnifiedPermissionService {
     return basicPermissions.includes(permission);
   }
 
-  async loadRolesFromBackend(): Promise<StaffRole[]> {
+  private isManagerPermission(permission: string): boolean {
+    const managerPermissions = [
+      'staff:view_all',
+      'leave:approve',
+      'overtime:approve',
+      'missed_checkin:approve',
+      'announcement:create',
+      'notification:send'
+    ];
+    
+    return managerPermissions.includes(permission);
+  }
+
+  private isCacheValid(cacheKey: string): boolean {
+    const expiry = this.cacheExpiry.get(cacheKey);
+    return expiry ? Date.now() < expiry : false;
+  }
+
+  private updateCache(cacheKey: string, result: boolean): void {
+    this.permissionCache.set(cacheKey, result);
+    this.cacheExpiry.set(cacheKey, Date.now() + this.CACHE_DURATION);
+  }
+
+  clearCache(): void {
+    console.log('🔄 清除權限快取');
+    this.permissionCache.clear();
+    this.cacheExpiry.clear();
+  }
+
+  clearRolesCache(): void {
+    console.log('🔄 清除角色快取');
+    this.rolesCache = [];
+    this.rolesCacheExpiry = 0;
+  }
+
+  async getCurrentRoles(): Promise<StaffRole[]> {
     try {
       // 檢查快取是否有效
       if (this.rolesCache.length > 0 && Date.now() < this.rolesCacheExpiry) {
@@ -184,31 +235,5 @@ export class UnifiedPermissionService {
       console.error('❌ 載入角色資料系統錯誤:', error);
       return this.rolesCache;
     }
-  }
-
-  private isCacheValid(cacheKey: string): boolean {
-    const expiry = this.cacheExpiry.get(cacheKey);
-    return expiry ? Date.now() < expiry : false;
-  }
-
-  private updateCache(cacheKey: string, result: boolean): void {
-    this.permissionCache.set(cacheKey, result);
-    this.cacheExpiry.set(cacheKey, Date.now() + this.CACHE_DURATION);
-  }
-
-  clearCache(): void {
-    console.log('🔄 清除權限快取');
-    this.permissionCache.clear();
-    this.cacheExpiry.clear();
-  }
-
-  clearRolesCache(): void {
-    console.log('🔄 清除角色快取');
-    this.rolesCache = [];
-    this.rolesCacheExpiry = 0;
-  }
-
-  async getCurrentRoles(): Promise<StaffRole[]> {
-    return await this.loadRolesFromBackend();
   }
 }

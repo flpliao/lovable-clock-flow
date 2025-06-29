@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Refresh, Database, Zap, Clock } from 'lucide-react';
+import { RefreshCw, Database, Zap, Clock } from 'lucide-react';
 
 interface PerformanceMetrics {
   queryCount: number;
@@ -65,7 +65,7 @@ const PerformanceMonitor: React.FC = () => {
           disabled={isRefreshing}
           className="h-8 px-2"
         >
-          <Refresh className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">

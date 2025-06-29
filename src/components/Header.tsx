@@ -8,6 +8,7 @@ import HeaderLogo from './header/HeaderLogo';
 import UserInfo from './header/UserInfo';
 import DesktopNavigation from './header/DesktopNavigation';
 import MobileNavigation from './header/MobileNavigation';
+import CacheClearButton from './common/CacheClearButton';
 import { useMenuLogic } from './header/useMenuLogic';
 
 const Header: React.FC = () => {
@@ -55,8 +56,11 @@ const Header: React.FC = () => {
             />
           </div>
           
-          {/* User Info - 只在桌面版顯示 */}
-          <UserInfo />
+          {/* User Info and Cache Clear Button */}
+          <div className="flex items-center space-x-2">
+            {isAuthenticated && <CacheClearButton />}
+            <UserInfo />
+          </div>
         </div>
 
         {/* 平板和手機版佈局 */}
@@ -67,16 +71,19 @@ const Header: React.FC = () => {
               <HeaderLogo />
             </div>
             
-            {/* 選單按鈕 */}
-            {isAuthenticated && (
-              <Button
-                onClick={toggleMobileMenu}
-                variant="ghost"
-                className="text-white/80 hover:text-white hover:bg-white/10 p-2 h-10 w-10 flex-shrink-0"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            )}
+            <div className="flex items-center space-x-2">
+              {isAuthenticated && <CacheClearButton />}
+              {/* 選單按鈕 */}
+              {isAuthenticated && (
+                <Button
+                  onClick={toggleMobileMenu}
+                  variant="ghost"
+                  className="text-white/80 hover:text-white hover:bg-white/10 p-2 h-10 w-10 flex-shrink-0"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* 未登入時的登入按鈕 */}

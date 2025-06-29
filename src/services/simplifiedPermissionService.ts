@@ -139,6 +139,44 @@ class SimplifiedPermissionService {
     console.log('🔄 清除權限快取');
     this.permissionCache.clear();
     this.cacheExpiry.clear();
+    
+    // 觸發瀏覽器強制刷新快取
+    if (typeof window !== 'undefined') {
+      // 清除 sessionStorage 中的權限相關快取
+      const keysToRemove = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && (key.includes('permission') || key.includes('role') || key.includes('auth'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => sessionStorage.removeItem(key));
+      
+      // 清除 localStorage 中的權限相關快取
+      const localKeysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes('permission') || key.includes('role'))) {
+          localKeysToRemove.push(key);
+        }
+      }
+      localKeysToRemove.forEach(key => localStorage.removeItem(key));
+      
+      console.log('✅ 瀏覽器快取已清除');
+    }
+  }
+
+  /**
+   * 強制清除所有快取並重新載入
+   */
+  forceRefresh(): void {
+    console.log('🔄 強制刷新權限快取');
+    this.clearCache();
+    
+    // 觸發全域事件通知其他組件
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('permissionCacheCleared'));
+    }
   }
 
   private isCacheValid(cacheKey: string): boolean {

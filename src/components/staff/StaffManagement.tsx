@@ -1,104 +1,102 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useSimplifiedPermissions } from '@/hooks/useSimplifiedPermissions';
-import { CompanyManagementProvider } from '@/components/company/CompanyManagementContext';
-import { DepartmentManagementProvider } from '@/components/departments/DepartmentManagementContext';
-import StaffTable from './StaffTable';
-import OrganizationChart from './OrganizationChart';
-import AddStaffDialog from './AddStaffDialog';
-import EditStaffDialog from './EditStaffDialog';
-import RoleManagement from './RoleManagement';
-import AdminVerificationCard from './AdminVerificationCard';
-import { Users, UserCheck, Network, Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Users, Plus, Search } from 'lucide-react';
+import { useSupabaseStaffOperations } from './hooks/useSupabaseStaffOperations';
+import { StaffList } from './StaffList';
+import { AddStaffDialog } from './AddStaffDialog';
+import { StaffRLSStatus } from './StaffRLSStatus';
 
-const StaffManagement = () => {
+const StaffManagement: React.FC = () => {
   console.log('🎯 StaffManagement rendering');
   
-  const { isAdmin, hasPermission } = useSimplifiedPermissions();
-  const [activeTab, setActiveTab] = useState('list');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  
+  const {
+    staffList,
+    roles,
+    loading,
+    addStaff,
+    updateStaff,
+    deleteStaff,
+    refreshData
+  } = useSupabaseStaffOperations();
 
-  // 檢查權限
-  const canViewStaff = hasPermission('staff:view_all') || hasPermission('staff:view_own');
-  const canManageRoles = hasPermission('system:admin');
-
-  if (!canViewStaff) {
-    return (
-      <div className="text-center py-12">
-        <h2 className="text-xl font-semibold mb-2 text-white">無權限訪問</h2>
-        <p className="text-white/70 font-medium drop-shadow-md">您沒有權限查看人員管理</p>
-      </div>
-    );
-  }
+  // 過濾員工列表
+  const filteredStaff = staffList.filter(staff => 
+    staff.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    staff.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    staff.position?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <CompanyManagementProvider>
-      <DepartmentManagementProvider>
-        <div className="space-y-3">
-          <AdminVerificationCard />
-          
-          {/* 人員管理主區塊 - 半透明設計，減少內部間距 */}
-          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/90 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50">
-                  <Users className="h-5 w-5 text-white" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">人員管理</h2>
+    <div className="space-y-4">
+      {/* RLS 狀態監控 */}
+      <StaffRLSStatus />
+      
+      {/* 主要管理介面 */}
+      <Card className="backdrop-blur-xl bg-white/60 border border-white/40 shadow-lg">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center text-xl text-gray-900 drop-shadow-sm">
+              <div className="p-2 bg-blue-500/90 rounded-lg shadow-md mr-3">
+                <Users className="h-5 w-5 text-white" />
               </div>
-              <AddStaffDialog />
+              員工管理
+            </CardTitle>
+            <Button 
+              onClick={() => setIsAddDialogOpen(true)}
+              className="bg-green-500/90 hover:bg-green-600/90 text-white shadow-md"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              新增員工
+            </Button>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
+          {/* 搜尋區域 */}
+          <div className="flex items-center space-x-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="搜尋員工姓名、部門或職位..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-white/70 border-white/40 backdrop-blur-sm"
+              />
             </div>
-
-            {/* 子標籤 - 減少間距 */}
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3 bg-white/40 backdrop-blur-xl rounded-xl border border-white/30 p-1 mb-4">
-                <TabsTrigger 
-                  value="list" 
-                  className="text-gray-800 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-lg font-medium transition-all duration-200 py-2 px-4 flex items-center gap-2"
-                >
-                  <UserCheck className="h-4 w-4" />
-                  人員列表
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="org-chart" 
-                  className="text-gray-800 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-lg font-medium transition-all duration-200 py-2 px-4 flex items-center gap-2"
-                >
-                  <Network className="h-4 w-4" />
-                  組織圖
-                </TabsTrigger>
-                {canManageRoles && (
-                  <TabsTrigger 
-                    value="roles" 
-                    className="text-gray-800 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-md rounded-lg font-medium transition-all duration-200 py-2 px-4 flex items-center gap-2"
-                  >
-                    <Shield className="h-4 w-4" />
-                    權限
-                  </TabsTrigger>
-                )}
-              </TabsList>
-              
-              <div>
-                <TabsContent value="list" className="mt-0">
-                  <StaffTable />
-                </TabsContent>
-                
-                <TabsContent value="org-chart" className="mt-0">
-                  <OrganizationChart />
-                </TabsContent>
-                
-                {canManageRoles && (
-                  <TabsContent value="roles" className="mt-0">
-                    <RoleManagement />
-                  </TabsContent>
-                )}
-              </div>
-            </Tabs>
+            <Button 
+              variant="outline" 
+              onClick={refreshData}
+              className="bg-white/60 border-white/40 hover:bg-white/80"
+            >
+              重新整理
+            </Button>
           </div>
 
-          <EditStaffDialog />
-        </div>
-      </DepartmentManagementProvider>
-    </CompanyManagementProvider>
+          {/* 員工列表 */}
+          <StaffList
+            staffList={filteredStaff}
+            loading={loading}
+            onUpdateStaff={updateStaff}
+            onDeleteStaff={deleteStaff}
+            roles={roles}
+          />
+        </CardContent>
+      </Card>
+
+      {/* 新增員工對話框 */}
+      <AddStaffDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onAddStaff={addStaff}
+        roles={roles}
+      />
+    </div>
   );
 };
 

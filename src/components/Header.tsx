@@ -9,33 +9,26 @@ import UserInfo from './header/UserInfo';
 import DesktopNavigation from './header/DesktopNavigation';
 import MobileNavigation from './header/MobileNavigation';
 import { useMenuLogic } from './header/useMenuLogic';
-import { createAuthHandlers } from '@/contexts/user/authHandlers';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser, setCurrentUser, setIsAuthenticated, setUserError, isAuthenticated } = useUser();
+  const { currentUser, isAuthenticated, resetUserState } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const isLoginPage = location.pathname === '/login';
   
   const { visibleMenuItems } = useMenuLogic(currentUser, isAuthenticated);
 
-  // 創建 auth handlers
-  const { handleUserLogout } = createAuthHandlers(
-    setCurrentUser,
-    setIsAuthenticated,
-    setUserError
-  );
-
   const handleNavigation = (path: string) => {
     navigate(path);
     setIsMobileMenuOpen(false);
   };
 
-  const handleLogout = () => {
-    handleUserLogout();
+  const handleLogout = async () => {
+    console.log('🚪 Header: 執行登出');
     setIsMobileMenuOpen(false);
+    await resetUserState();
   };
 
   const handleLogin = () => {

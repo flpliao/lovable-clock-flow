@@ -221,22 +221,51 @@ export const createAuthHandlers = (
     }
   }, [setCurrentUser, setIsAuthenticated, setUserError]);
 
-  // 處理用戶登出，適當清理
-  const handleUserLogout = useCallback(() => {
-    console.log('🚪 處理用戶登出');
-    setCurrentUser(null);
-    setIsAuthenticated(false);
-    setUserError(null);
-    clearUserStorage();
+  // 處理用戶登出，完整清除所有快取和狀態
+  const handleUserLogout = useCallback(async () => {
+    console.log('🚪 開始用戶登出流程');
     
-    // 清除權限快取
-    const permissionService = UnifiedPermissionService.getInstance();
-    permissionService.clearCache();
-    
-    // 導向登入頁面
-    console.log('🔄 登出後重定向到登入頁面');
-    navigate('/login', { replace: true });
-  }, [navigate, setCurrentUser, setIsAuthenticated, setUserError]);
+    try {
+      // 1. 清除前端狀態
+      setCurrentUser(null);
+      setIsAuthenticated(false);
+      setUserError(null);
+      
+      // 2. 清除本地存儲
+      clearUserStorage();
+      
+      // 3. 清除權限快取
+      const permissionService = UnifiedPermissionService.getInstance();
+      permissionService.clearCache();
+      
+      // 4. 清除瀏覽器快取 (sessionStorage 和 localStorage)
+      try {
+        sessionStorage.clear();
+        localStorage.removeItem('supabase.auth.token');
+        localStorage.removeItem('sb-skfdbxhlbqnoflbczlfu-auth-token');
+        console.log('✅ 瀏覽器快取已清除');
+      } catch (storageError) {
+        console.warn('⚠️ 清除瀏覽器快取時發生錯誤:', storageError);
+      }
+      
+      // 5. 使用 Supabase Auth 登出
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      if (error) {
+        console.error('❌ Supabase 登出失敗:', error);
+      } else {
+        console.log('✅ Supabase 登出成功');
+      }
+      
+      // 6. 強制重新載入頁面以確保完全清除狀態
+      console.log('🔄 強制重新載入頁面');
+      window.location.href = '/login';
+      
+    } catch (error) {
+      console.error('❌ 登出過程中發生錯誤:', error);
+      // 即使發生錯誤，也要嘗試重定向到登入頁面
+      window.location.href = '/login';
+    }
+  }, [setCurrentUser, setIsAuthenticated, setUserError]);
 
   return {
     handleUserLogin,

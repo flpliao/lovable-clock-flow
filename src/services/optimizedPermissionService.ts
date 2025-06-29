@@ -89,19 +89,30 @@ export class OptimizedPermissionService {
     try {
       console.log('🔍 從權限快取載入用戶權限列表');
       
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user?.id) {
+        console.log('❌ 未找到當前用戶');
+        return [];
+      }
+
       const { data, error } = await supabase
         .from('user_permissions_cache')
-        .select('permissions')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
+        .select('*')
+        .eq('user_id', user.user.id)
+        .maybeSingle();
 
       if (error) {
         console.error('❌ 載入用戶權限失敗:', error);
         return [];
       }
 
+      if (!data) {
+        console.log('❌ 未找到用戶權限快取記錄');
+        return [];
+      }
+
       // 從快取中取得權限陣列
-      const permissions = data?.permissions || [];
+      const permissions = data.permissions || [];
       console.log('✅ 用戶權限列表載入成功:', permissions);
       return Array.isArray(permissions) ? permissions : [];
     } catch (error) {

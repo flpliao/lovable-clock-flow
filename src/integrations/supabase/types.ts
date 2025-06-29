@@ -1948,6 +1948,14 @@ export type Database = {
       }
     }
     Views: {
+      rls_performance_summary: {
+        Row: {
+          optimization_status: string | null
+          performance_impact: string | null
+          table_name: string | null
+        }
+        Relationships: []
+      }
       user_permissions_cache: {
         Row: {
           branch_id: string | null
@@ -2082,6 +2090,14 @@ export type Database = {
         Returns: boolean
       }
       is_current_user_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_current_user_admin_optimized: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_current_user_manager_optimized: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }

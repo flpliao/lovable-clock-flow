@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, Database, Shield, TrendingUp } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
-import LanguageManagement from '@/components/i18n/components/LanguageManagement';
+import { LanguageManagement } from '@/components/i18n/components/LanguageManagement';
 import RLSOptimizationReport from '@/components/performance/RLSOptimizationReport';
 import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
 

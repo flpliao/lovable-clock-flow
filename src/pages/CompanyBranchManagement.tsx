@@ -6,8 +6,24 @@ import { CompanyBranchPermissionGuard } from '@/components/company/components/Co
 import { CompanyBranchLayout } from '@/components/company/components/CompanyBranchLayout';
 import { CompanyBranchHeader } from '@/components/company/components/CompanyBranchHeader';
 import { CompanyBranchTabs } from '@/components/company/components/CompanyBranchTabs';
+import { useUser } from '@/contexts/UserContext';
+import { Loader2 } from 'lucide-react';
 
 const CompanyBranchManagement = () => {
+  const { isUserLoaded, currentUser } = useUser();
+
+  // 如果用戶資料還在載入中，顯示載入畫面
+  if (!isUserLoaded) {
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen flex items-center justify-center">
+        <div className="backdrop-blur-2xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-8 text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-white mx-auto mb-4" />
+          <p className="text-white text-lg">正在載入用戶資料...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
       {/* 動態背景漸層 */}

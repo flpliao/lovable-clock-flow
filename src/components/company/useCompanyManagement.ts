@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { Company, Branch, NewBranch, CompanyManagementContextType } from '@/types/company';
 import { useToast } from '@/hooks/use-toast';
@@ -39,12 +40,15 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
 
   // 同步分支列表
   useEffect(() => {
+    console.log('🔄 useCompanyManagement: 同步分支列表:', branchList?.length || 0);
     setBranches(branchList);
     setFilteredBranches(branchList);
   }, [branchList]);
 
+  // 當公司ID存在時載入分支
   useEffect(() => {
     if (company?.id) {
+      console.log('🏪 useCompanyManagement: 公司ID存在，載入分支資料:', company.id);
       loadBranches();
     }
   }, [company?.id, loadBranches]);
@@ -118,7 +122,6 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
       
       if (success) {
         console.log('✅ useCompanyManagement: 公司資料更新成功');
-        // 移除自動顯示的成功通知，因為 updateCompany 已經有通知了
         return true;
       } else {
         console.log('❌ useCompanyManagement: 公司資料更新失敗');

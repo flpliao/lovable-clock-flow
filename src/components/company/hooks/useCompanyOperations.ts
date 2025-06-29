@@ -10,16 +10,21 @@ import { CompanyDataService } from '../services/companyDataService';
 
 export const useCompanyOperations = () => {
   const [company, setCompany] = useState<Company | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { currentUser } = useUser();
+  const { currentUser, isUserLoaded } = useUser();
 
-  // 在組件掛載時載入公司資料
+  // 在用戶載入完成後載入公司資料
   useEffect(() => {
-    console.log('🚀 useCompanyOperations: 開始載入依美琦股份有限公司資料');
+    console.log('🚀 useCompanyOperations: useEffect 觸發');
+    console.log('👤 useCompanyOperations: 用戶載入狀態:', isUserLoaded);
     console.log('👤 useCompanyOperations: 當前用戶:', currentUser?.name);
-    loadCompany();
-  }, []);
+    
+    if (isUserLoaded) {
+      console.log('✅ useCompanyOperations: 用戶載入完成，開始載入公司資料');
+      loadCompany();
+    }
+  }, [isUserLoaded]);
 
   // 設定即時監聽
   useEffect(() => {
@@ -34,7 +39,7 @@ export const useCompanyOperations = () => {
     };
   }, []);
 
-  // 載入公司資料 - 移除成功時的 toast 通知
+  // 載入公司資料
   const loadCompany = async () => {
     console.log('🔍 useCompanyOperations: 開始載入依美琦股份有限公司資料...');
     setLoading(true);
@@ -50,8 +55,6 @@ export const useCompanyOperations = () => {
         console.log('✅ useCompanyOperations: 成功載入依美琦股份有限公司資料:', data.name);
         console.log('🆔 useCompanyOperations: 公司ID:', data.id);
         console.log('🏢 useCompanyOperations: 統一編號:', data.registration_number);
-        
-        // 移除成功載入的 toast 通知
       } else {
         console.log('⚠️ useCompanyOperations: 無法載入依美琦股份有限公司資料');
         toast({
@@ -79,7 +82,7 @@ export const useCompanyOperations = () => {
     }
   };
 
-  // 強制從後台同步資料 - 只在成功時顯示同步通知
+  // 強制從後台同步資料
   const forceSyncFromBackend = async () => {
     console.log('🔄 useCompanyOperations: 開始強制從後台同步資料...');
     setLoading(true);
@@ -97,7 +100,6 @@ export const useCompanyOperations = () => {
         setCompany(syncedCompany);
         console.log('✅ useCompanyOperations: 強制同步成功:', syncedCompany.name);
         
-        // 只有手動同步時才顯示成功通知
         toast({
           title: "同步成功",
           description: `已成功同步${syncedCompany.name}資料`,
@@ -123,7 +125,7 @@ export const useCompanyOperations = () => {
     }
   };
 
-  // 更新公司資料 - 簡化流程，直接更新本地狀態
+  // 更新公司資料
   const updateCompany = async (updatedCompany: Company): Promise<boolean> => {
     console.log('🔄 useCompanyOperations: 開始更新公司資料');
     console.log('📋 useCompanyOperations: 當前用戶:', currentUser?.name);

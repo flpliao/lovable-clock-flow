@@ -32,6 +32,16 @@ const StaffManagement: React.FC = () => {
     staff.position?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Wrapper functions to match expected signatures
+  const handleUpdateStaff = async (id: string, data: Partial<any>): Promise<void> => {
+    const staffToUpdate = { ...staffList.find(s => s.id === id), ...data };
+    await updateStaff(staffToUpdate);
+  };
+
+  const handleDeleteStaff = async (id: string): Promise<void> => {
+    await deleteStaff(id);
+  };
+
   return (
     <div className="space-y-4">
       {/* RLS 狀態監控 */}
@@ -82,20 +92,17 @@ const StaffManagement: React.FC = () => {
           <StaffList
             staffList={filteredStaff}
             loading={loading}
-            onUpdateStaff={updateStaff}
-            onDeleteStaff={deleteStaff}
+            onUpdateStaff={handleUpdateStaff}
+            onDeleteStaff={handleDeleteStaff}
             roles={roles}
           />
         </CardContent>
       </Card>
 
-      {/* 新增員工對話框 */}
-      <AddStaffDialog
-        open={isAddDialogOpen}
-        onOpenChange={setIsAddDialogOpen}
-        onAddStaff={addStaff}
-        roles={roles}
-      />
+      {/* 新增員工對話框 - 只在對話框開啟時才渲染 */}
+      {isAddDialogOpen && (
+        <AddStaffDialog />
+      )}
     </div>
   );
 };

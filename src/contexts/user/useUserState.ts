@@ -77,7 +77,7 @@ export const useUserState = () => {
         
         if (session) {
           console.log('📦 發現現有會話，載入用戶資料');
-          await handleUserLogin(session);
+          await handleUserLogin(session as SupabaseSession);
         } else {
           console.log('❌ 未發現現有會話');
           setIsAuthenticated(false);
@@ -107,7 +107,7 @@ export const useUserState = () => {
       setUserError(null);
       console.log('👤 UserProvider: 用戶登出，清除所有狀態');
     } else {
-      console.log('👤 UserProvider: 用戶登入:', currentUser.name, '權限等級:', currentUser.role);
+      console.log('👤 UserProvider: 用戶登入:', currentUser.name, '權限等級:', currentUser.role_id);
       console.log('🔐 當前認證狀態:', isAuthenticated);
       
       // 將用戶資料存儲到本地存儲

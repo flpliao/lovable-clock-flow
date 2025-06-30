@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { Staff } from './types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserRound, ChevronDown, Users } from 'lucide-react';
+import { ROLE_ID_MAP } from './constants/roleIdMap';
 
 const OrganizationChart: React.FC = () => {
   const {
@@ -30,7 +30,7 @@ const OrganizationChart: React.FC = () => {
           <div className="flex items-center whitespace-nowrap">
             <div className={`
               h-12 w-12 rounded-full flex items-center justify-center mr-4 shadow-sm flex-shrink-0
-              ${staff.role === 'admin' ? 'bg-blue-600 text-white' : 'bg-gray-600 text-white'}
+              ${staff.role_id === 'admin' ? 'bg-blue-600 text-white' : 'bg-gray-600 text-white'}
             `}>
               <UserRound className="h-6 w-6" />
             </div>

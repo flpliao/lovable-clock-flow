@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Trash2, Edit } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { ROLE_ID_MAP } from './constants/roleIdMap';
 
 interface Staff {
   id: string;
@@ -63,7 +63,7 @@ export const StaffList: React.FC<StaffListProps> = ({
                   <div>部門: {staff.department || '未設定'}</div>
                   <div>職位: {staff.position || '未設定'}</div>
                   <div>Email: {staff.email || '未設定'}</div>
-                  <div>角色: {staff.role || '未設定'}</div>
+                  <div>角色: {ROLE_ID_MAP[staff.role_id] || '未設定'}</div>
                 </div>
               </div>
               <div className="flex space-x-2">

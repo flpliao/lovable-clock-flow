@@ -1,8 +1,7 @@
-
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { AuthService } from '@/services/authService';
+import { AuthService, AuthUser } from '@/services/authService';
 import { permissionService } from '@/services/simplifiedPermissionService';
 import { User } from './types';
 import { saveUserToStorage, clearUserStorage } from './userStorageUtils';
@@ -12,10 +11,8 @@ export const createAuthHandlers = (
   setIsAuthenticated: (auth: boolean) => void,
   setUserError: (error: string | null) => void
 ) => {
-  const navigate = useNavigate();
-
   // 安全載入用戶資料，與新的 RLS 政策兼容
-  const loadUserFromStaffTable = async (authUser: any): Promise<User | null> => {
+  const loadUserFromStaffTable = async (authUser: AuthUser): Promise<User | null> => {
     try {
       console.log('🔄 從 staff 表載入用戶權限資料 (RLS 兼容):', {
         auth_id: authUser.id,
@@ -123,7 +120,7 @@ export const createAuthHandlers = (
           onboard_date: staffData.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
           hire_date: staffData.hire_date,
           supervisor_id: staffData.supervisor_id,
-          role: userRole,
+          role_id: staffData.role_id,
           email: staffData.email
         };
         
@@ -132,7 +129,7 @@ export const createAuthHandlers = (
           staff_id: staffData.id,
           name: user.name,
           email: user.email,
-          role: user.role,
+          role: user.role_id,
           department: user.department,
           staff_role: staffData.role,
           staff_role_id: staffData.role_id
@@ -150,22 +147,18 @@ export const createAuthHandlers = (
   };
 
   // 處理用戶登入，確保正確載入角色資訊
-  const handleUserLogin = useCallback(async (session: any) => {
-    console.log('🔄 處理用戶登入流程 (RLS 兼容)...', {
-      user_id: session.user.id,
-      email: session.user.email
-    });
-    
+  // session 型別明確化
+  interface SupabaseSession {
+    user: AuthUser & {
+      user_metadata?: { name?: string };
+      email?: string;
+      id: string;
+    };
+  }
+  const handleUserLogin = async (session: SupabaseSession) => {    
     try {
-      // 優先從 staff 表載入用戶資料
       const staffUser = await loadUserFromStaffTable(session.user);
-      
       if (staffUser) {
-        console.log('✅ 使用 staff 表資料 (RLS 兼容):', {
-          name: staffUser.name,
-          role: staffUser.role,
-          department: staffUser.department
-        });
         setCurrentUser(staffUser);
         setIsAuthenticated(true);
         saveUserToStorage(staffUser);
@@ -173,62 +166,22 @@ export const createAuthHandlers = (
         
         // 清除權限快取，確保使用最新權限
         permissionService.clearCache();
-        
-        console.log('🔐 認證狀態設為 true (staff 資料, RLS 兼容)');
         return;
       }
 
-      // 若 staff 表無資料，回退到 AuthService
-      console.warn('⚠️ staff 表無對應資料，嘗試使用 AuthService');
-      const result = await AuthService.getUserFromSession(session.user.email);
-      if (result.success && result.user) {
-        console.log('✅ 使用 AuthService 用戶資料:', result.user.name);
-        const user: User = {
-          id: result.user.id,
-          name: result.user.name,
-          position: result.user.position,
-          department: result.user.department,
-          onboard_date: new Date().toISOString().split('T')[0],
-          role: result.user.role,
-          email: result.user.email
-        };
-        
-        setCurrentUser(user);
-        setIsAuthenticated(true);
-        saveUserToStorage(user);
-        setUserError(null);
-        permissionService.clearCache();
-        console.log('🔐 認證狀態設為 true (auth service)');
-        return;
-      }
-
-      // 最終 fallback 到會話基本資料
-      console.warn('⚠️ 使用會話基本資料作為最終 fallback');
-      const fallbackUser: User = {
-        id: session.user.id,
-        name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '用戶',
-        position: '員工',
-        department: '一般',
-        onboard_date: new Date().toISOString().split('T')[0],
-        role: 'user',
-        email: session.user.email
-      };
+      // 登入失敗，throw error
+      throw new Error('用戶登入失敗');
       
-      setCurrentUser(fallbackUser);
-      setIsAuthenticated(true);
-      saveUserToStorage(fallbackUser);
-      setUserError(null);
-      permissionService.clearCache();
-      console.log('🔐 認證狀態設為 true (fallback)');
     } catch (error) {
       console.error('❌ 用戶登入處理失敗:', error);
       setUserError('載入用戶資料失敗');
       setIsAuthenticated(false);
+      window.location.href = '/login';
     }
-  }, [setCurrentUser, setIsAuthenticated, setUserError]);
+  };
 
   // 處理用戶登出，完整清除所有快取和狀態
-  const handleUserLogout = useCallback(async () => {
+  const handleUserLogout = async () => {
     console.log('🚪 開始用戶登出流程 (RLS 兼容)');
     
     try {
@@ -270,7 +223,7 @@ export const createAuthHandlers = (
       // 即使發生錯誤，也要嘗試重定向到登入頁面
       window.location.href = '/login';
     }
-  }, [setCurrentUser, setIsAuthenticated, setUserError]);
+  };
 
   return {
     handleUserLogin,

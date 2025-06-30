@@ -1,4 +1,3 @@
-
 import { AnnualLeaveBalance } from '@/types';
 
 export interface User {
@@ -9,7 +8,7 @@ export interface User {
   onboard_date: string;
   hire_date?: string; // 新增入職日期欄位
   supervisor_id?: string; // 新增主管ID欄位
-  role: 'admin' | 'manager' | 'user';
+  role_id: string; // 只保留 role_id
   email?: string; // 新增 email 欄位
 }
 

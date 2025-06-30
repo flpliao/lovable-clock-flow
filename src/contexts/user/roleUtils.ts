@@ -1,4 +1,3 @@
-
 import { User } from './types';
 
 export const createRoleChecker = (currentUser: User | null) => {
@@ -8,42 +7,8 @@ export const createRoleChecker = (currentUser: User | null) => {
       console.log('🔐 用戶未登入，Admin 檢查失敗');
       return false;
     }
-
-    // 超級管理員檢查 - 使用正確的 UUID
-    if (currentUser.id === '0765138a-6f11-45f4-be07-dab965116a2d') {
-      console.log('🔐 超級管理員檢查通過:', currentUser.name);
-      return true;
-    }
-
-    // 特殊處理：flpliao@gmail.com 設為管理員
-    if (currentUser.email === 'flpliao@gmail.com' || currentUser.name === 'flpliao@gmail.com') {
-      console.log('🔐 特殊管理員檢查:', {
-        email: currentUser.email,
-        name: currentUser.name,
-        result: true
-      });
-      return true;
-    }
-
-    // 廖俊雄特殊處理
-    if (currentUser.name === '廖俊雄') {
-      console.log('🔐 廖俊雄管理員檢查通過:', currentUser.name);
-      return true;
-    }
-
-    // 檢查角色
-    const isRoleAdmin = currentUser.role === 'admin';
     
-    console.log('🔐 Admin permission check (RLS 兼容):', {
-      userName: currentUser.name,
-      userId: currentUser.id,
-      email: currentUser.email,
-      role: currentUser.role,
-      isRoleAdmin,
-      result: isRoleAdmin
-    });
-    
-    return isRoleAdmin;
+    return currentUser.role_id === 'admin';
   };
 
   const isManager = (): boolean => {
@@ -57,22 +22,7 @@ export const createRoleChecker = (currentUser: User | null) => {
       return true;
     }
 
-    // 特殊處理：flpliao@gmail.com 設為主管
-    if (currentUser.email === 'flpliao@gmail.com' || currentUser.name === 'flpliao@gmail.com') {
-      return true;
-    }
-
-    // 檢查角色
-    const isRoleManager = currentUser.role === 'manager';
-    
-    console.log('🔐 Manager permission check (RLS 兼容):', {
-      userName: currentUser.name,
-      role: currentUser.role,
-      isRoleManager,
-      result: isRoleManager
-    });
-    
-    return isRoleManager;
+    return currentUser.role_id === 'manager';
   };
 
   const canManageUser = (targetUserId: string): boolean => {

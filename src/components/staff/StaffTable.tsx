@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { Staff } from './types';
 import { useUser } from '@/contexts/UserContext';
 import CredentialManagementDialog from './CredentialManagementDialog';
+import { ROLE_ID_MAP } from './constants/roleIdMap';
 
 const StaffTable = () => {
   const { 
@@ -60,31 +60,9 @@ const StaffTable = () => {
     canManageAccounts
   });
 
-  // 獲取角色顯示名稱的函數 - 改回優先使用 role
+  // 角色顯示名稱直接用 ROLE_ID_MAP
   const getRoleDisplayName = (staff: Staff) => {
-    // 先從後台角色資料中查找 role
-    const backendRole = roles.find(r => r.id === staff.role);
-    if (backendRole) {
-      return backendRole.name;
-    }
-    
-    // 如果沒有找到，使用 role 進行顯示
-    switch (staff.role) {
-      case 'admin':
-        return '管理員';
-      case 'manager':
-        return '主管';
-      default:
-        // 向後兼容，如果 role 沒有值，使用 role_id
-        switch (staff.role_id) {
-          case 'admin':
-            return '管理員';
-          case 'manager':
-            return '主管';
-          default:
-            return '員工';
-        }
-    }
+    return ROLE_ID_MAP[staff.role_id] || '員工';
   };
 
   const handleCredentialManagement = (staff: Staff) => {
@@ -153,8 +131,8 @@ const StaffTable = () => {
                   <TableCell className="whitespace-nowrap">{staff.contact}</TableCell>
                   <TableCell className="whitespace-nowrap">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      staff.role === 'admin' ? 'bg-red-100 text-red-800' :
-                      staff.role === 'manager' ? 'bg-blue-100 text-blue-800' :
+                      staff.role_id === 'admin' ? 'bg-red-100 text-red-800' :
+                      staff.role_id === 'manager' ? 'bg-blue-100 text-blue-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
                       {getRoleDisplayName(staff)}

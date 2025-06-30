@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, ReactNode } from 'react';
 import { AnnualLeaveBalance } from '@/types';
 import { User, UserContextType } from './user/types';
@@ -112,32 +111,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // 當使用者改變時的處理
-  React.useEffect(() => {
-    if (!currentUser) {
-      setAnnualLeaveBalance(null);
-      setUserError(null);
-      console.log('👤 UserProvider: 用戶登出，清除所有狀態');
-      
-      // 清除權限快取
-      permissionService.clearCache();
-    } else {
-      console.log('👤 UserProvider: 用戶登入:', currentUser.name, '權限等級:', currentUser.role);
-      console.log('🔐 當前認證狀態:', isAuthenticated);
-      
-      // 自動補綁使用者對應的 staff 資料
-      syncUserStaffData(currentUser);
-      
-      setUserError(null);
-      
-      // 確保認證狀態與用戶狀態同步
-      if (!isAuthenticated) {
-        console.log('⚠️ 用戶存在但認證狀態為 false，進行同步');
-        setIsAuthenticated(true);
-      }
-    }
-  }, [currentUser, isAuthenticated, setIsAuthenticated, setUserError]);
-
   return (
     <UserContext.Provider value={{
       currentUser,
@@ -154,7 +127,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       resetUserState,
       isAuthenticated,
       setIsAuthenticated,
-      setUserError
+      setUserError,
     }}>
       {children}
     </UserContext.Provider>

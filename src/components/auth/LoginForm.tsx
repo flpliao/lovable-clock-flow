@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import { AuthService } from '@/services/authService';
-import { useUser } from '@/contexts/UserContext';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -14,7 +14,7 @@ const LoginForm: React.FC = () => {
   
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setCurrentUser } = useUser();
+  const { setCurrentUser, setIsAuthenticated } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,23 +35,24 @@ const LoginForm: React.FC = () => {
       // 使用 Supabase Auth Service
       const authResult = await AuthService.authenticate(email, password);
       
-      if (authResult.success && authResult.user && authResult.session) {
+      if (authResult.success && authResult.user) {
         console.log('✅ 登入成功:', authResult.user.name);
-        console.log('📄 會話資料:', authResult.session.user.id);
         
         // 直接將用戶資料寫入 UserContext
         const userForContext = {
-          id: authResult.session.user.id,
-          name: authResult.user.name,
-          position: authResult.user.position,
-          department: authResult.user.department,
-          onboard_date: new Date().toISOString().split('T')[0],
-          role: authResult.user.role,
+          id: authResult.user.id,
+          name: authResult.user.name || '用戶',
+          position: authResult.user.position || '員工',
+          department: authResult.user.department || '未指定',
+          onboard_date: authResult.user.onboard_date || new Date().toISOString().split('T')[0],
+          role: authResult.user.role || 'user',
+          role_id: authResult.user.role_id || authResult.user.role || 'user',
           email: authResult.user.email
         };
         
         console.log('📝 寫入 UserContext 的用戶資料:', userForContext);
         setCurrentUser(userForContext);
+        setIsAuthenticated(true);
         
         toast({
           title: '登入成功',

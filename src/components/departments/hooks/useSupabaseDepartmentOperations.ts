@@ -18,21 +18,13 @@ export const useSupabaseDepartmentOperations = () => {
 
   const fetchDepartments = async (): Promise<Department[]> => {
     try {
-      console.log('🔄 廖俊雄開始載入後台部門資料...');
-      console.log('🎯 特別檢查部門 ID: 56727091-50b7-4ef4-93f7-c3d09c91d537');
       setLoading(true);
-      
       const transformedData = await baseFetchDepartments();
-      console.log('📥 廖俊雄從後台載入的部門資料:', transformedData);
-      
-      // 檢查目標部門是否存在
-      const targetExists = transformedData.some(dept => dept.id === '56727091-50b7-4ef4-93f7-c3d09c91d537');
-      console.log('🎯 目標部門是否存在於載入結果:', targetExists);
       
       setDepartments(transformedData);
       return transformedData;
     } catch (error) {
-      console.error('❌ 廖俊雄載入後台部門資料失敗:', error);
+      console.error('❌ 載入後台部門資料失敗:', error);
       setDepartments([]);
       return [];
     } finally {
@@ -41,10 +33,6 @@ export const useSupabaseDepartmentOperations = () => {
   };
 
   const refreshDepartments = async (): Promise<void> => {
-    console.log('🔄 廖俊雄觸發重新載入後台部門資料');
-    console.log('🎯 強制重新檢查部門 ID: 56727091-50b7-4ef4-93f7-c3d09c91d537');
-    
-    // 先清空現有資料，強制重新載入
     setDepartments([]);
     await fetchDepartments();
   };
@@ -52,9 +40,7 @@ export const useSupabaseDepartmentOperations = () => {
   // 初始化時載入資料
   useEffect(() => {
     if (!isInitialized) {
-      console.log('🚀 廖俊雄初始化部門資料載入');
       
-      // 設定較短的超時時間，避免永遠載入
       const timeoutId = setTimeout(() => {
         if (loading) {
           console.log('⏰ 載入超時，廖俊雄管理員強制結束載入狀態');
@@ -66,7 +52,7 @@ export const useSupabaseDepartmentOperations = () => {
       fetchDepartments().then((loadedDepartments) => {
         setIsInitialized(true);
         clearTimeout(timeoutId);
-        console.log('✅ 廖俊雄部門資料初始化完成，載入部門數:', loadedDepartments.length);
+        console.log('✅ 部門資料初始化完成，載入部門數:', loadedDepartments.length);
         
         // 最終檢查目標部門
         const targetDepartment = loadedDepartments.find(dept => dept.id === '56727091-50b7-4ef4-93f7-c3d09c91d537');
@@ -76,7 +62,7 @@ export const useSupabaseDepartmentOperations = () => {
           console.log('⚠️ 注意：目標部門未出現在前台，需要檢查 RLS 政策或資料權限');
         }
       }).catch((error) => {
-        console.log('❌ 廖俊雄初始化失敗，但系統繼續運作:', error);
+        console.log('❌ 初始化失敗，但系統繼續運作:', error);
         setIsInitialized(true);
         setLoading(false);
         clearTimeout(timeoutId);

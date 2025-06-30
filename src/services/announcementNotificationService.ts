@@ -45,7 +45,7 @@ export class AnnouncementNotificationService {
       console.log('正在獲取所有員工列表...');
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
-        .select('id, name, role, email, department, position')
+        .select('id, name, role_id, email, department, position')
         .order('name');
 
       if (staffError) {
@@ -120,7 +120,7 @@ export class AnnouncementNotificationService {
             userId: staff.id, 
             notificationId: notification.id, 
             userName: staff.name, 
-            userRole: staff.role 
+            userRole: staff.role_id
           };
         } catch (error) {
           console.error(`為員工 ${staff.name} 創建通知異常:`, error);

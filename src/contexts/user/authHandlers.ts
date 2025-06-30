@@ -88,30 +88,6 @@ export const createAuthHandlers = (
           }
         }
         
-        // 優先從 staff.role 判斷使用者權限
-        let userRole: 'admin' | 'manager' | 'user' = 'user';
-        
-        // 超級管理員檢查（廖俊雄）- 使用正確的 UUID
-        if (staffData.name === '廖俊雄' || staffData.email === 'flpliao@gmail.com' || authUser.id === '0765138a-6f11-45f4-be07-dab965116a2d') {
-          userRole = 'admin';
-          console.log('🔐 超級管理員權限確認:', staffData.name);
-        } else if (staffData.role === 'admin') {
-          userRole = 'admin';
-          console.log('🔐 管理員權限確認 (來自 staff.role):', staffData.name);
-        } else if (staffData.role === 'manager' || staffData.role === 'hr_manager') {
-          userRole = 'manager';
-          console.log('🔐 主管權限確認 (來自 staff.role):', staffData.name);
-        } else if (staffData.role_id === 'admin') {
-          userRole = 'admin';
-          console.log('🔐 管理員權限確認 (來自 staff.role_id):', staffData.name);
-        } else if (staffData.role_id === 'manager') {
-          userRole = 'manager';
-          console.log('🔐 主管權限確認 (來自 staff.role_id):', staffData.name);
-        } else {
-          console.log('🔐 一般使用者權限:', staffData.name, '角色:', staffData.role || staffData.role_id);
-        }
-        
-        // 轉換為 User 格式，使用 Supabase Auth 的 user ID
         const user: User = {
           id: authUser.id,
           name: staffData.name,
@@ -123,17 +99,6 @@ export const createAuthHandlers = (
           role_id: staffData.role_id,
           email: staffData.email
         };
-        
-        console.log('🔐 用戶權限資料載入完成 (RLS 兼容):', {
-          auth_uid: user.id,
-          staff_id: staffData.id,
-          name: user.name,
-          email: user.email,
-          role: user.role_id,
-          department: user.department,
-          staff_role: staffData.role,
-          staff_role_id: staffData.role_id
-        });
         
         return user;
       }

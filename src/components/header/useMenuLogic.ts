@@ -22,18 +22,13 @@ export const useMenuLogic = (currentUser: User | null, isAuthenticated: boolean)
         // 檢查管理員權限
         if (item.adminOnly) {
           // 超級管理員直接允許
-          if (currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
+          if (currentUser.role_id === 'admin') {
             filteredItems.push(item);
             continue;
           }
           
           // 使用權限服務檢查系統管理權限
           try {
-            const hasSystemAdmin = await permissionService.hasPermission('system:admin');
-            if (hasSystemAdmin) {
-              filteredItems.push(item);
-              continue;
-            }
             
             // 公告管理特例：檢查公告管理權限
             if (item.path === '/announcement-management') {
@@ -55,13 +50,6 @@ export const useMenuLogic = (currentUser: User | null, isAuthenticated: boolean)
           filteredItems.push(item);
         }
       }
-      
-      console.log('📋 選單權限檢查結果:', {
-        currentUser: currentUser?.name,
-        role: currentUser?.role,
-        visibleItemsCount: filteredItems.length,
-        visibleItems: filteredItems.map(item => item.label)
-      });
       
       setVisibleItems(filteredItems);
     };

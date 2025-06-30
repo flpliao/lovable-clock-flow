@@ -68,7 +68,7 @@ export const useUserState = () => {
     const initializeAuth = async () => {
       try {
         console.log('🔍 檢查現有會話...');
-        console.log('🔄 開始調用 supabase.auth.getSession()');
+        console.log(window.location.href);
         
         const { data: { session }, error } = await supabase.auth.getSession();
         

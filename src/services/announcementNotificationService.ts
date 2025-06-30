@@ -1,5 +1,16 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+
+// Define User interface for this service
+interface User {
+  id: string;
+  name: string;
+  role: string;
+  email: string;
+  department: string;
+  position: string;
+}
 
 export class AnnouncementNotificationService {
   /**
@@ -56,7 +67,7 @@ export class AnnouncementNotificationService {
       console.log('所有員工詳細資訊:', staffData?.map(s => ({ 
         id: s.id, 
         name: s.name, 
-        role: s.role,
+        role: s.role_id,
         email: s.email,
         department: s.department,
         position: s.position

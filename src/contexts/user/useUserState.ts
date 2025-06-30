@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { AnnualLeaveBalance } from '@/types';
 import type { Session } from '@supabase/supabase-js';
@@ -46,23 +45,26 @@ export const useUserState = () => {
     setUserError(null);
     
     // 設置 Supabase Auth 監聽器
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('🔄 Auth 狀態變化:', event, '會話存在:', !!session);
       
-      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
-        console.log(session);
-        console.log('✅ 用戶已登入 - 事件:', event);
-        await handleUserLogin(session as Session);
-      } else if (event === 'SIGNED_OUT') {
-        console.log('🚪 用戶已登出');
-        setCurrentUser(null);
-        setIsAuthenticated(false);
-        setUserError(null);
-        clearUserStorage();
-      }
-      
-      // 標記用戶狀態已載入
-      setIsUserLoaded(true);
+      // 使用 setTimeout 將 async 操作移出回調，避免死鎖
+      setTimeout(() => {
+        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
+          console.log(session);
+          console.log('✅ 用戶已登入 - 事件:', event);
+          handleUserLogin(session as Session);
+        } else if (event === 'SIGNED_OUT') {
+          console.log('🚪 用戶已登出');
+          setCurrentUser(null);
+          setIsAuthenticated(false);
+          setUserError(null);
+          clearUserStorage();
+        }
+        
+        // 標記用戶狀態已載入
+        setIsUserLoaded(true);
+      }, 0);
     });
 
     // 立即檢查現有會話

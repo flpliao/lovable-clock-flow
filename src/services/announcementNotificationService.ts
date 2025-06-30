@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -227,3 +226,32 @@ export class AnnouncementNotificationService {
     }
   }
 }
+
+/**
+ * 獲取所有需要接收通知的用戶
+ */
+const getAllUsers = async (): Promise<User[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('staff')
+      .select('id, name, role_id, email, department, position')
+      .not('email', 'is', null);
+
+    if (error) {
+      console.error('❌ 獲取用戶列表失敗:', error);
+      return [];
+    }
+
+    return (data || []).map(staff => ({
+      id: staff.id,
+      name: staff.name || 'Unknown',
+      role: staff.role_id || 'user', // Use role_id instead of role
+      email: staff.email || '',
+      department: staff.department || 'Unknown',
+      position: staff.position || 'Unknown'
+    }));
+  } catch (error) {
+    console.error('❌ 獲取用戶列表時發生錯誤:', error);
+    return [];
+  }
+};

@@ -9,7 +9,7 @@ interface StaffBasicFieldsProps {
   setNewStaff: (staff: NewStaff) => void;
 }
 
-const StaffBasicFields: React.FC<StaffBasicFieldsProps> = ({ newStaff, setNewStaff }) => {
+export const StaffBasicFields: React.FC<StaffBasicFieldsProps> = ({ newStaff, setNewStaff }) => {
   return (
     <>
       <div className="grid grid-cols-4 items-center gap-3">
@@ -111,4 +111,5 @@ const StaffBasicFields: React.FC<StaffBasicFieldsProps> = ({ newStaff, setNewSta
   );
 };
 
+// Default export for backward compatibility
 export default StaffBasicFields;

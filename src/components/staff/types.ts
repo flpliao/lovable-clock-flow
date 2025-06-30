@@ -64,3 +64,33 @@ export interface StaffPermission {
   description?: string;
   category: string;
 }
+
+// Context type for staff management
+export interface StaffManagementContextType {
+  staffList: Staff[];
+  filteredStaffList: Staff[];
+  loading: boolean;
+  isAddDialogOpen: boolean;
+  setIsAddDialogOpen: (open: boolean) => void;
+  isEditDialogOpen: boolean;
+  setIsEditDialogOpen: (open: boolean) => void;
+  currentStaff: Staff | null;
+  setCurrentStaff: (staff: Staff | null) => void;
+  newStaff: NewStaff;
+  setNewStaff: (staff: NewStaff) => void;
+  handleAddStaff: () => Promise<boolean>;
+  handleEditStaff: () => Promise<boolean>;
+  handleDeleteStaff: (id: string) => Promise<void>;
+  openEditDialog: (staff: Staff) => void;
+  getSupervisorName: (supervisorId?: string) => string;
+  getSubordinates: (staffId: string) => Staff[];
+  refreshData: () => Promise<void>;
+  performFullSync: () => Promise<any>;
+  roles: StaffRole[];
+  addRole: (newRole: Omit<StaffRole, 'id'>) => Promise<boolean>;
+  updateRole: (updatedRole: StaffRole) => Promise<boolean>;
+  deleteRole: (roleId: string) => Promise<boolean>;
+  getRole: (roleId?: string) => StaffRole | undefined;
+  hasPermission: (staffId: string, permissionCode: string) => boolean;
+  assignRoleToStaff: (staffId: string, roleId: string) => Promise<boolean>;
+}

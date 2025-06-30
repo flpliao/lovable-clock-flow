@@ -1,6 +1,10 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { User as AuthUser } from '@/types/index';
+
+// Export the AuthUser type for use in other files
+export { AuthUser };
 
 export class AuthService {
   /**
@@ -270,7 +274,7 @@ export class AuthService {
       department: typeof staffData.department === 'string' ? staffData.department : undefined,
       role: staffData.role as string,
       role_id: staffData.role as string,
-      onboard_date: typeof staffData.onboard_date === 'string' ? staffData.onboard_date : undefined
+      onboard_date: typeof staffData.onboard_date === 'string' ? staffData.onboard_date : new Date().toISOString().split('T')[0]
     };
 
     console.log('👤 最終用戶資料:', {
@@ -303,7 +307,8 @@ export class AuthService {
       position: '員工',
       department: '一般',
       role: 'user',
-      role_id: 'user'
+      role_id: 'user',
+      onboard_date: new Date().toISOString().split('T')[0]
     };
 
     console.log('⚠️ 使用 fallback 用戶資料:', fallbackUser);

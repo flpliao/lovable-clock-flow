@@ -8,6 +8,7 @@ import { AnnualLeaveBalance } from '@/types';
 import { User } from './types';
 import { saveUserToStorage, clearUserStorage } from './userStorageUtils';
 import { createAuthHandlers } from './authHandlers';
+import type { Session } from '@supabase/supabase-js';
 
 export const useUserState = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -50,7 +51,7 @@ export const useUserState = () => {
       
       if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
         console.log('✅ 用戶已登入 - 事件:', event);
-        await handleUserLogin(session);
+        await handleUserLogin(session as Session);
       } else if (event === 'SIGNED_OUT') {
         console.log('🚪 用戶已登出');
         setCurrentUser(null);
@@ -77,7 +78,7 @@ export const useUserState = () => {
         
         if (session) {
           console.log('📦 發現現有會話，載入用戶資料');
-          await handleUserLogin(session as SupabaseSession);
+          await handleUserLogin(session as Session);
         } else {
           console.log('❌ 未發現現有會話');
           setIsAuthenticated(false);
@@ -99,7 +100,6 @@ export const useUserState = () => {
       subscription.unsubscribe();
     };
   }, [handleUserLogin, handleUserLogout]);
-
 
   const clearUserError = () => {
     setUserError(null);

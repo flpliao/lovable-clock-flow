@@ -1,14 +1,12 @@
 
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { AuthService } from '@/services/authService';
-import { UnifiedPermissionService } from '@/services/unifiedPermissionService';
 import { AnnualLeaveBalance } from '@/types';
-import { User } from './types';
-import { saveUserToStorage, clearUserStorage } from './userStorageUtils';
-import { createAuthHandlers } from './authHandlers';
 import type { Session } from '@supabase/supabase-js';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { createAuthHandlers } from './authHandlers';
+import { User } from './types';
+import { clearUserStorage } from './userStorageUtils';
 
 export const useUserState = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -19,10 +17,12 @@ export const useUserState = () => {
   const initializationRef = useRef(false);
   const navigate = useNavigate();
 
-  const { handleUserLogin, handleUserLogout } = createAuthHandlers(
-    setCurrentUser,
-    setIsAuthenticated,
-    setUserError
+  const { handleUserLogin, handleUserLogout } = useMemo(() => 
+    createAuthHandlers(
+      setCurrentUser,
+      setIsAuthenticated,
+      setUserError
+    ), []
   );
 
   // 強制登出功能
@@ -68,7 +68,15 @@ export const useUserState = () => {
     const initializeAuth = async () => {
       try {
         console.log('🔍 檢查現有會話...');
+        console.log('🔄 開始調用 supabase.auth.getSession()');
+        
         const { data: { session }, error } = await supabase.auth.getSession();
+        
+        console.log('✅ supabase.auth.getSession() 完成', { 
+          hasSession: !!session, 
+          hasError: !!error,
+          sessionUserId: session?.user?.id 
+        });
         
         if (error) {
           console.error('❌ 獲取會話失敗:', error);
@@ -78,7 +86,9 @@ export const useUserState = () => {
         
         if (session) {
           console.log('📦 發現現有會話，載入用戶資料');
+          console.log('🔄 開始調用 handleUserLogin');
           await handleUserLogin(session as Session);
+          console.log('✅ handleUserLogin 完成');
         } else {
           console.log('❌ 未發現現有會話');
           setIsAuthenticated(false);
@@ -88,6 +98,7 @@ export const useUserState = () => {
         setUserError('初始化認證失敗');
         setIsAuthenticated(false);
       } finally {
+        console.log('🏁 initializeAuth finally 塊執行');
         setIsUserLoaded(true);
       }
     };
@@ -99,7 +110,7 @@ export const useUserState = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [handleUserLogin, handleUserLogout]);
+  }, []);
 
   const clearUserError = () => {
     setUserError(null);

@@ -46,7 +46,7 @@ export const createAuthHandlers = (
         setIsAuthenticated(false);
       }
     } catch (error) {
-      console.log('❌ 用戶登入處理錯誤:', error);
+      console.error('❌ 用戶登入處理錯誤:', error);
       setUserError('登入處理失敗');
       setIsAuthenticated(false);
     }

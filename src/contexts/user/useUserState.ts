@@ -51,7 +51,6 @@ export const useUserState = () => {
       // 使用 setTimeout 將 async 操作移出回調，避免死鎖
       setTimeout(() => {
         if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
-          console.log(session);
           console.log('✅ 用戶已登入 - 事件:', event);
           handleUserLogin(session as Session);
         } else if (event === 'SIGNED_OUT') {
@@ -97,11 +96,11 @@ export const useUserState = () => {
           setIsAuthenticated(false);
         }
       } catch (error) {
-        console.log('❌ 初始化認證狀態失敗:', error);
+        console.error('❌ 初始化認證狀態失敗:', error);
         setUserError('初始化認證失敗');
         setIsAuthenticated(false);
       } finally {
-        console.log('🏁 initializeAuth finally 塊執行');
+        console.error('🏁 initializeAuth finally 塊執行');
         setIsUserLoaded(true);
       }
     };

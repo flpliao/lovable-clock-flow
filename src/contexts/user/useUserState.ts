@@ -50,6 +50,7 @@ export const useUserState = () => {
       console.log('🔄 Auth 狀態變化:', event, '會話存在:', !!session);
       
       if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
+        console.log(session);
         console.log('✅ 用戶已登入 - 事件:', event);
         await handleUserLogin(session as Session);
       } else if (event === 'SIGNED_OUT') {
@@ -94,7 +95,7 @@ export const useUserState = () => {
           setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error('❌ 初始化認證狀態失敗:', error);
+        console.log('❌ 初始化認證狀態失敗:', error);
         setUserError('初始化認證失敗');
         setIsAuthenticated(false);
       } finally {

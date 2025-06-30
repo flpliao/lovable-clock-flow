@@ -27,13 +27,6 @@ export const usePermissionUtils = (roles: StaffRole[]) => {
     
     const result = permissionService.hasPermission(permissionCode, context);
     
-    console.log('🔐 Staff 權限檢查 (基於 role):', {
-      staff: staff.name,
-      role: staff.role,
-      permission: permissionCode,
-      result
-    });
-    
     return result;
   };
   

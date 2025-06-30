@@ -19,7 +19,7 @@ const StaffRoleFields: React.FC<StaffRoleFieldsProps> = ({ newStaff, setNewStaff
         角色
       </Label>
       <Select 
-        value={newStaff.role_id || newStaff.role} 
+        value={newStaff.role_id} 
         onValueChange={(value) => {
           if (value === 'admin' || value === 'user') {
             setNewStaff({...newStaff, role: value, role_id: value});

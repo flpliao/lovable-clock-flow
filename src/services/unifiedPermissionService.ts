@@ -39,12 +39,6 @@ export class UnifiedPermissionService {
       return false;
     }
 
-    // 超級管理員檢查 - 使用正確的 UUID
-    if (currentUser.id === '0765138a-6f11-45f4-be07-dab965116a2d') {
-      console.log('🔐 超級管理員權限檢查:', permission, '✅ 允許');
-      return true;
-    }
-
     // 系統管理員權限檢查
     if (this.isSystemAdmin(currentUser)) {
       console.log('🔐 系統管理員權限檢查:', permission, '✅ 允許');
@@ -121,7 +115,7 @@ export class UnifiedPermissionService {
   }
 
   private isSystemAdmin(user: User): boolean {
-    return user.role === 'admin';
+    return user.role_id === 'admin';
   }
 
   private isBasicUserPermission(permission: string): boolean {

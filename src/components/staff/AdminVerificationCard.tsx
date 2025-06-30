@@ -5,15 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Shield, CheckCircle } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
-import { useStaffInitializer } from './hooks/useStaffInitializer';
 
 const AdminVerificationCard = () => {
   const { currentUser, isAdmin } = useUser();
-  const { verifyAdminAccess } = useStaffInitializer();
-
-  const handleVerifyAdmin = () => {
-    verifyAdminAccess();
-  };
 
   return (
     <Card className="mb-2 border-blue-200 bg-blue-50">
@@ -39,14 +33,6 @@ const AdminVerificationCard = () => {
               <Badge variant="secondary">一般用戶</Badge>
             )}
           </div>
-          
-          <Button 
-            onClick={handleVerifyAdmin}
-            variant="outline"
-            size="sm"
-          >
-            重新驗證
-          </Button>
         </div>
         
         {isAdmin() && (

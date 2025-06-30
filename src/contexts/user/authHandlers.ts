@@ -1,8 +1,8 @@
 
-import { User } from './types';
-import { AuthService, AuthUser } from '@/services/authService';
-import { saveUserToStorage } from './userStorageUtils';
+import { AuthService } from '@/services/authService';
 import type { Session } from '@supabase/supabase-js';
+import { User } from './types';
+import { saveUserToStorage } from './userStorageUtils';
 
 export const createAuthHandlers = (
   setCurrentUser: (user: User | null) => void,
@@ -41,12 +41,12 @@ export const createAuthHandlers = (
         // 保存到本地存儲
         saveUserToStorage(userForContext);
       } else {
-        console.error('❌ 獲取用戶資料失敗:', result.error);
+        console.log('❌ 獲取用戶資料失敗:', result.error);
         setUserError(result.error || '獲取用戶資料失敗');
         setIsAuthenticated(false);
       }
     } catch (error) {
-      console.error('❌ 用戶登入處理錯誤:', error);
+      console.log('❌ 用戶登入處理錯誤:', error);
       setUserError('登入處理失敗');
       setIsAuthenticated(false);
     }

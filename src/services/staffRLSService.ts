@@ -1,23 +1,24 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { securityService } from './securityService';
 
 /**
  * Staff RLS 相關服務
- * 配合新的簡化 RLS 政策
+ * 使用新的安全 RLS 政策
  */
 export class StaffRLSService {
   /**
    * 檢查當前用戶是否為超級管理員
    */
   static async isSuperAdmin(): Promise<boolean> {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const SUPER_ADMIN_UUID = '550e8400-e29b-41d4-a716-446655440001';
-      return user?.id === SUPER_ADMIN_UUID;
-    } catch (error) {
-      console.error('檢查超級管理員權限時發生錯誤:', error);
-      return false;
-    }
+    return await securityService.isSuperAdmin();
+  }
+
+  /**
+   * 檢查當前用戶是否為管理員
+   */
+  static async isAdmin(): Promise<boolean> {
+    return await securityService.isAdmin();
   }
 
   /**
@@ -25,7 +26,7 @@ export class StaffRLSService {
    */
   static async getAccessibleStaff() {
     try {
-      console.log('📋 使用新的 RLS 政策載入員工資料...');
+      console.log('📋 使用安全 RLS 政策載入員工資料...');
       
       const { data, error } = await supabase
         .from('staff')
@@ -34,13 +35,17 @@ export class StaffRLSService {
 
       if (error) {
         console.error('❌ 載入員工資料失敗:', error);
+        await securityService.logSecurityEvent('staff_data_load_failed', { error });
         throw error;
       }
 
       console.log('✅ 員工資料載入成功，筆數:', data?.length || 0);
+      await securityService.logSecurityEvent('staff_data_loaded', { count: data?.length || 0 });
+      
       return data || [];
     } catch (error) {
       console.error('❌ 獲取員工資料時發生錯誤:', error);
+      await securityService.logSecurityEvent('staff_data_access_error', { error });
       throw error;
     }
   }
@@ -52,10 +57,20 @@ export class StaffRLSService {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) return false;
+      if (!user) {
+        await securityService.logSecurityEvent('staff_edit_check_no_user', { staffId });
+        return false;
+      }
       
       // 超級管理員可以編輯所有資料
       if (await this.isSuperAdmin()) {
+        await securityService.logSecurityEvent('staff_edit_granted_super_admin', { staffId });
+        return true;
+      }
+      
+      // 管理員可以編輯所有資料
+      if (await this.isAdmin()) {
+        await securityService.logSecurityEvent('staff_edit_granted_admin', { staffId });
         return true;
       }
       
@@ -66,9 +81,17 @@ export class StaffRLSService {
         .eq('id', staffId)
         .single();
       
-      return staffData?.user_id === user.id || staffData?.id === user.id;
+      const canEdit = staffData?.user_id === user.id || staffData?.id === user.id;
+      
+      await securityService.logSecurityEvent(
+        canEdit ? 'staff_edit_granted_self' : 'staff_edit_denied',
+        { staffId, userId: user.id }
+      );
+      
+      return canEdit;
     } catch (error) {
       console.error('檢查編輯權限時發生錯誤:', error);
+      await securityService.logSecurityEvent('staff_edit_check_error', { staffId, error });
       return false;
     }
   }
@@ -82,14 +105,13 @@ export class StaffRLSService {
     details?: any;
   }> {
     try {
-      console.log('🔍 驗證 RLS 政策...');
+      console.log('🔍 驗證安全 RLS 政策...');
       
-      // 嘗試查詢員工資料（移除 limit 限制）
-      const { data, error } = await supabase
-        .from('staff')
-        .select('id, name, role');
-
+      // 測試 RLS 政策
+      const { data: testData, error } = await supabase.rpc('test_staff_rls');
+      
       if (error) {
+        await securityService.logSecurityEvent('rls_validation_failed', { error });
         return {
           success: false,
           message: `RLS 政策驗證失敗: ${error.message}`,
@@ -97,19 +119,41 @@ export class StaffRLSService {
         };
       }
 
+      // 嘗試查詢員工資料
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('id, name, role')
+        .limit(10);
+
+      if (staffError) {
+        await securityService.logSecurityEvent('staff_query_failed', { error: staffError });
+        return {
+          success: false,
+          message: `員工資料查詢失敗: ${staffError.message}`,
+          details: staffError
+        };
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       const isSuper = await this.isSuperAdmin();
+      const isAdmin = await this.isAdmin();
 
-      return {
+      const result = {
         success: true,
-        message: `RLS 政策驗證成功。當前用戶: ${user?.email}, 超級管理員: ${isSuper}, 可訪問員工數: ${data.length}`,
+        message: `RLS 政策驗證成功。當前用戶: ${user?.email}, 超級管理員: ${isSuper}, 管理員: ${isAdmin}, 可訪問員工數: ${staffData?.length || 0}`,
         details: {
           userEmail: user?.email,
           isSuperAdmin: isSuper,
-          accessibleStaffCount: data.length
+          isAdmin: isAdmin,
+          accessibleStaffCount: staffData?.length || 0,
+          testResults: testData
         }
       };
+
+      await securityService.logSecurityEvent('rls_validation_success', result.details);
+      return result;
     } catch (error) {
+      await securityService.logSecurityEvent('rls_validation_error', { error });
       return {
         success: false,
         message: `RLS 政策驗證時發生錯誤: ${error}`,

@@ -1,6 +1,6 @@
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { saveUserToStorage } from '@/contexts/user/userStorageUtils';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import { AuthService } from '@/services/authService';
@@ -14,7 +14,7 @@ const LoginForm: React.FC = () => {
   
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setCurrentUser, setIsAuthenticated, setUserLoaded } = useUser();
+  const { setCurrentUser, setIsAuthenticated } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,11 +53,6 @@ const LoginForm: React.FC = () => {
         console.log('📝 寫入 UserContext 的用戶資料:', userForContext);
         setCurrentUser(userForContext);
         setIsAuthenticated(true);
-        setUserLoaded(true);
-        
-        // 保存到 localStorage
-        saveUserToStorage(userForContext);
-        console.log('💾 用戶資料已保存到 localStorage');
         
         toast({
           title: '登入成功',

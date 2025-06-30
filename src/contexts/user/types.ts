@@ -1,4 +1,3 @@
-
 import { AnnualLeaveBalance } from '@/types';
 
 export interface User {
@@ -30,4 +29,5 @@ export interface UserContextType {
   isAuthenticated: boolean;
   setIsAuthenticated: (auth: boolean) => void;
   setUserError: (error: string | null) => void;
+  setUserLoaded: (loaded: boolean) => void;
 }

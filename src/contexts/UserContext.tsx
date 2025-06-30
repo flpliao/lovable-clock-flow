@@ -1,12 +1,11 @@
-import React, { createContext, useContext, ReactNode } from 'react';
-import { AnnualLeaveBalance } from '@/types';
-import { User, UserContextType } from './user/types';
-import { createRoleChecker } from './user/roleUtils';
-import { createSimplifiedPermissionChecker } from './user/simplifiedPermissionUtils';
-import { useUserState } from './user/useUserState';
 import { supabase } from '@/integrations/supabase/client';
 import { permissionService } from '@/services/simplifiedPermissionService';
+import React, { createContext, ReactNode, useContext } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { createRoleChecker } from './user/roleUtils';
+import { createSimplifiedPermissionChecker } from './user/simplifiedPermissionUtils';
+import { User, UserContextType } from './user/types';
+import { useUserState } from './user/useUserState';
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -17,6 +16,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     annualLeaveBalance,
     setAnnualLeaveBalance,
     isUserLoaded,
+    setIsUserLoaded,
     userError,
     clearUserError,
     resetUserState,
@@ -128,6 +128,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       isAuthenticated,
       setIsAuthenticated,
       setUserError,
+      setUserLoaded: setIsUserLoaded,
     }}>
       {children}
     </UserContext.Provider>
@@ -144,3 +145,4 @@ export const useUser = () => {
 
 // Re-export types for backward compatibility
 export type { User, UserContextType };
+

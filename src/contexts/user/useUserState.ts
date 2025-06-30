@@ -168,13 +168,24 @@ export const useUserState = () => {
       
       // 只處理特定的認證事件，避免與手動登入衝突
       if (event === 'SIGNED_IN' && session) {
-        // 檢查是否是 magic link 或其他外部認證流程
-        const isExternalAuth = session.user?.app_metadata?.provider !== 'email' || 
-                               window.location.hash.includes('access_token') ||
-                               window.location.search.includes('code=');
+        // 檢查是否是外部認證流程（Magic Link、OAuth 等）
+        const isFromAuthCallback = window.location.pathname === '/auth/callback';
+        const hasUrlAuthParams = window.location.hash.includes('access_token') ||
+                                 window.location.search.includes('code=') ||
+                                 window.location.hash.includes('type=magiclink') ||
+                                 window.location.hash.includes('type=recovery');
+        
+        // 檢查是否為非密碼登入（Magic Link、OAuth 等）
+        const isExternalAuth = isFromAuthCallback || hasUrlAuthParams || 
+                               !currentUser; // 如果當前沒有用戶但有會話，可能是外部認證
         
         if (isExternalAuth) {
-          console.log('✅ 檢測到外部認證（Magic Link 等）:', session.user?.email);
+          console.log('✅ 檢測到外部認證流程:', {
+            email: session.user?.email,
+            isFromCallback: isFromAuthCallback,
+            hasUrlParams: hasUrlAuthParams,
+            userExists: !!currentUser
+          });
           
           try {
             // 使用 AuthService 獲取完整用戶資料
@@ -194,7 +205,7 @@ export const useUserState = () => {
                 email: result.user.email
               };
               
-              console.log('✅ Magic Link 登入成功:', userForContext.name);
+              console.log('✅ 外部認證登入成功:', userForContext.name);
               setCurrentUser(userForContext);
               setIsAuthenticated(true);
               setUserError(null);
@@ -203,15 +214,20 @@ export const useUserState = () => {
               // 保存到 localStorage
               localStorage.setItem('currentUser', JSON.stringify(userForContext));
               
-              // 清理 URL 中的認證參數
-              if (window.location.hash.includes('access_token')) {
+              // 清理 URL 中的認證參數（但不在 callback 頁面執行，讓 AuthCallback 處理）
+              if (hasUrlAuthParams && !isFromAuthCallback) {
                 window.history.replaceState({}, document.title, window.location.pathname);
               }
+            } else {
+              console.error('❌ 外部認證處理失敗:', result.error);
+              setUserError('認證處理失敗');
             }
           } catch (error) {
-            console.error('❌ Magic Link 認證處理失敗:', error);
+            console.error('❌ 外部認證處理錯誤:', error);
             setUserError('認證處理失敗');
           }
+        } else {
+          console.log('ℹ️ 檢測到手動登入流程，跳過狀態監聽器處理');
         }
       } else if (event === 'SIGNED_OUT') {
         console.log('🚪 用戶已登出');
@@ -219,6 +235,32 @@ export const useUserState = () => {
         setIsAuthenticated(false);
         setUserError(null);
         localStorage.removeItem('currentUser');
+      } else if (event === 'TOKEN_REFRESHED' && session && !currentUser) {
+        // 處理 token 刷新但沒有用戶資料的情況（可能是頁面重新載入後的狀態恢復）
+        console.log('🔄 Token 已刷新，但無用戶資料，嘗試恢復');
+        try {
+          const result = await AuthService.getUserFromSession(session.user?.email || '');
+          if (result.success && result.user) {
+            const userForContext: User = {
+              id: result.user.id,
+              name: result.user.name || '未知用戶',
+              position: result.user.position || '員工',
+              department: result.user.department || '未分配',
+              onboard_date: result.user.onboard_date || new Date().toISOString().split('T')[0],
+              hire_date: result.user.hire_date,
+              supervisor_id: result.user.supervisor_id,
+              role: result.user.role || 'user',
+              role_id: result.user.role_id || 'user',
+              email: result.user.email
+            };
+            
+            setCurrentUser(userForContext);
+            setIsAuthenticated(true);
+            localStorage.setItem('currentUser', JSON.stringify(userForContext));
+          }
+        } catch (error) {
+          console.error('❌ Token 刷新後恢復用戶失敗:', error);
+        }
       }
     });
 

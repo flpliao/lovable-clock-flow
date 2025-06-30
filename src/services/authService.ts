@@ -83,8 +83,10 @@ export class AuthService {
       // 獲取當前會話用戶
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!authUser) {
+        console.log('❌ 無法獲取用戶資料');
         return { success: false, error: '無法獲取用戶資料' };
       }
+      console.log(authUser);
 
       console.log('👤 當前 Supabase Auth 用戶:', {
         id: authUser.id,
@@ -116,7 +118,7 @@ export class AuthService {
         const user = await this.buildUserFromStaff(authUser, staffData);
         return { success: true, user };
       } else {
-        console.warn('⚠️ 未找到對應的員工資料，使用 fallback 並嘗試自動建立');
+        console.log('⚠️ 未找到對應的員工資料，使用 fallback 並嘗試自動建立');
         const fallbackUser = this.createFallbackUser(authUser, email);
         
         // 嘗試自動建立 staff 紀錄
@@ -125,7 +127,7 @@ export class AuthService {
         return { success: true, user: fallbackUser };
       }
     } catch (error) {
-      console.error('🔥 從會話獲取用戶資料錯誤:', error);
+      console.log('🔥 從會話獲取用戶資料錯誤:', error);
       
       // 提供最後的 fallback
       try {
@@ -134,7 +136,7 @@ export class AuthService {
           return { success: true, user: this.createFallbackUser(authUser, email) };
         }
       } catch (fallbackError) {
-        console.error('🔥 Fallback 也失敗:', fallbackError);
+        console.log('🔥 Fallback 也失敗:', fallbackError);
       }
       
       return { success: false, error: '獲取用戶資料失敗' };

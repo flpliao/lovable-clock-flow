@@ -84,11 +84,10 @@ export class StaffRLSService {
     try {
       console.log('🔍 驗證 RLS 政策...');
       
-      // 嘗試查詢員工資料
+      // 嘗試查詢員工資料（移除 limit 限制）
       const { data, error } = await supabase
         .from('staff')
-        .select('id, name, role')
-        .limit(5);
+        .select('id, name, role');
 
       if (error) {
         return {

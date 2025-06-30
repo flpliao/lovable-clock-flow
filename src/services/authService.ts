@@ -273,7 +273,7 @@ export class AuthService {
       position: typeof staffData.position === 'string' ? staffData.position : undefined,
       department: typeof staffData.department === 'string' ? staffData.department : undefined,
       role: staffData.role as string,
-      role_id: staffData.role as string,
+      role_id: staffData.role_id as string,
       onboard_date: typeof staffData.onboard_date === 'string' ? staffData.onboard_date : new Date().toISOString().split('T')[0]
     };
 

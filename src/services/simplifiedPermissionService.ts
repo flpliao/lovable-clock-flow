@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -18,11 +17,11 @@ class SimplifiedPermissionService {
   }
 
   /**
-   * 檢查當前用戶是否具有指定權限
+   * 檢查當前用戶是否具有指定權限（改為根據 currentUser.role_id）
    */
-  async hasPermission(permissionCode: string): Promise<boolean> {
+  async hasPermission(permissionCode: string, currentUser?: { role_id: string }): Promise<boolean> {
     try {
-      const cacheKey = `${permissionCode}`;
+      const cacheKey = `${currentUser?.role_id || 'guest'}:${permissionCode}`;
       
       // 檢查快取
       if (this.isCacheValid(cacheKey)) {
@@ -31,52 +30,57 @@ class SimplifiedPermissionService {
         return cachedResult;
       }
 
-      // 使用新的安全函數進行權限檢查
-      console.log('🔍 資料庫權限檢查:', permissionCode);
-      
-      const { data, error } = await supabase.rpc('is_current_user_admin_safe');
-
-      if (error) {
-        console.error('❌ 權限檢查錯誤:', error);
-        return false;
-      }
-
-      const isAdmin = data || false;
-      
-      // 權限檢查邏輯
+      // 根據 role_id 決定權限
       let result = false;
+      let isAdmin = false;
+      const roleId = currentUser?.role_id;
       
-      if (isAdmin) {
-        // 管理員擁有所有權限
-        result = true;
+      // 角色權限對照表
+      const rolePermissionsMap: Record<string, string[]> = {
+        admin: [
+          'staff:view', 'staff:create', 'staff:edit', 'staff:delete', 'staff:manage',
+          'leave:approve', 'leave:view',
+          'announcement:create', 'announcement:edit', 'announcement:delete', 'announcement:publish',
+          'holiday:manage',
+          'schedule:view_all', 'schedule:create', 'schedule:edit', 'schedule:delete', 'schedule:manage',
+        ],
+        hr_manager: [
+          'staff:view',
+          'leave:approve', 'leave:view',
+          'announcement:create', 'announcement:edit', 'announcement:delete', 'announcement:publish',
+          'schedule:view_all', 'schedule:create', 'schedule:edit', 'schedule:delete',
+        ],
+        department_manager: [
+          'staff:view',
+          'leave:approve', 'leave:view',
+          'schedule:view_own',
+        ],
+        user: [
+          'leave:view',
+          'schedule:view_own',
+        ],
+      };
+
+      if (roleId === 'admin') {
+        isAdmin = true;
+        result = true; // 管理員擁有所有權限
+      } else if (roleId && rolePermissionsMap[roleId]) {
+        result = rolePermissionsMap[roleId].includes(permissionCode);
       } else {
-        // 基本用戶權限
-        const basicPermissions = [
-          'staff:view_own',
-          'staff:edit_own',
-          'leave:view_own',
-          'leave:create',
-          'overtime:view_own',
-          'overtime:create',
-          'missed_checkin:view_own',
-          'missed_checkin:create',
-          'announcement:view',
-          'department:view',
-          'company:view'
-        ];
-        
-        result = basicPermissions.includes(permissionCode);
+        // 未登入或未知角色
+        result = false;
       }
-      
+
       // 更新快取
       this.updateCache(cacheKey, result);
-      
+
       console.log('✅ 權限檢查結果:', {
         permission: permissionCode,
+        roleId,
         isAdmin,
         result
       });
-      
+
       return result;
     } catch (error) {
       console.error('❌ 權限檢查系統錯誤:', error);

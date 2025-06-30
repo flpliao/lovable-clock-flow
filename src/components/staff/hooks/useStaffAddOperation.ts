@@ -43,7 +43,7 @@ export const useStaffAddOperation = (
     }
 
     // 確保必要欄位有預設值，並清理資料
-    const staffData = {
+    const staffData: NewStaff = {
       name: newStaff.name.trim(),
       position: newStaff.position,
       department: newStaff.department,

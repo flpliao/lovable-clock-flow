@@ -7,11 +7,11 @@ export interface User {
   position: string;
   department: string;
   onboard_date: string;
-  hire_date?: string; // 新增入職日期欄位
-  supervisor_id?: string; // 新增主管ID欄位
-  role: string; // 添加 role 屬性以保持兼容性
-  role_id: string; // 只保留 role_id
-  email?: string; // 新增 email 欄位
+  hire_date?: string;
+  supervisor_id?: string;
+  role: string;
+  role_id: string;
+  email?: string;
 }
 
 export interface UserContextType {
@@ -21,7 +21,7 @@ export interface UserContextType {
   setAnnualLeaveBalance: (balance: AnnualLeaveBalance | null) => void;
   isAdmin: () => boolean;
   isManager: () => boolean;
-  hasPermission: (permission: string) => Promise<boolean>; // 更新為 async 版本
+  hasPermission: (permission: string) => Promise<boolean>;
   canManageUser: (userId: string) => boolean;
   isUserLoaded: boolean;
   userError: string | null;

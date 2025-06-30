@@ -1,19 +1,17 @@
-
 export interface User {
   id: string;
   name: string;
   position: string;
   department: string;
   onboard_date: string;
-  hire_date?: string; // 新增入職日期欄位
-  supervisor_id?: string; // 新增主管ID欄位
+  hire_date?: string;
+  supervisor_id?: string;
   role: string;
   role_id: string;
-  gender?: 'male' | 'female'; // 新增性別欄位用於生理假驗證
-  email?: string; // 新增 email 欄位
-  // 年資相關欄位（前端計算顯示用）
+  gender?: 'male' | 'female';
+  email?: string;
   years_of_service?: number;
-  annual_leave_entitlement?: number; // 特休總天數
+  annual_leave_entitlement?: number;
 }
 
 export interface AnnualLeaveBalance {

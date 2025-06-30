@@ -12,7 +12,7 @@ export class StaffRLSService {
   static async isSuperAdmin(): Promise<boolean> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const SUPER_ADMIN_UUID = '0765138a-6f11-45f4-be07-dab965116a2d';
+      const SUPER_ADMIN_UUID = '550e8400-e29b-41d4-a716-446655440001';
       return user?.id === SUPER_ADMIN_UUID;
     } catch (error) {
       console.error('檢查超級管理員權限時發生錯誤:', error);
@@ -74,7 +74,7 @@ export class StaffRLSService {
   }
 
   /**
-   * 驗證 RLS 政策是否正常工作 - 使用安全的方式避免遞迴
+   * 驗證 RLS 政策是否正常工作
    */
   static async validateRLSPolicies(): Promise<{
     success: boolean;
@@ -84,58 +84,32 @@ export class StaffRLSService {
     try {
       console.log('🔍 驗證 RLS 政策...');
       
-      // 使用資料庫函數來檢查 RLS 狀態，避免直接查詢觸發遞迴
-      const { data: debugData, error: debugError } = await supabase.rpc('debug_auth_status');
-      
-      if (debugError) {
-        console.error('❌ 執行 debug_auth_status 失敗:', debugError);
-        return {
-          success: false,
-          message: `RLS 政策驗證失敗: ${debugError.message}`,
-          details: debugError
-        };
-      }
+      // 嘗試查詢員工資料（移除 limit 限制）
+      const { data, error } = await supabase
+        .from('staff')
+        .select('id, name, role');
 
-      // 檢查管理員權限函數
-      const { data: isAdmin, error: adminError } = await supabase.rpc('is_current_user_admin_safe');
-      
-      if (adminError) {
-        console.error('❌ 檢查管理員權限失敗:', adminError);
+      if (error) {
         return {
           success: false,
-          message: `管理員權限檢查失敗: ${adminError.message}`,
-          details: adminError
-        };
-      }
-
-      // 測試 RLS 政策函數
-      const { data: rlsTest, error: rlsTestError } = await supabase.rpc('test_staff_rls');
-      
-      if (rlsTestError) {
-        console.error('❌ RLS 測試失敗:', rlsTestError);
-        return {
-          success: false,
-          message: `RLS 測試失敗: ${rlsTestError.message}`,
-          details: rlsTestError
+          message: `RLS 政策驗證失敗: ${error.message}`,
+          details: error
         };
       }
 
       const { data: { user } } = await supabase.auth.getUser();
-      
+      const isSuper = await this.isSuperAdmin();
+
       return {
         success: true,
-        message: `RLS 政策驗證成功。當前用戶: ${user?.email}, 超級管理員: ${isAdmin}, 認證狀態正常`,
+        message: `RLS 政策驗證成功。當前用戶: ${user?.email}, 超級管理員: ${isSuper}, 可訪問員工數: ${data.length}`,
         details: {
           userEmail: user?.email,
-          userId: user?.id,
-          isSuperAdmin: isAdmin,
-          debugInfo: debugData,
-          rlsTestResults: rlsTest,
-          authStatus: 'verified'
+          isSuperAdmin: isSuper,
+          accessibleStaffCount: data.length
         }
       };
     } catch (error) {
-      console.error('❌ RLS 政策驗證系統錯誤:', error);
       return {
         success: false,
         message: `RLS 政策驗證時發生錯誤: ${error}`,

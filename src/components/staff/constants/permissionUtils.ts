@@ -1,24 +1,30 @@
 
 import { Permission } from '../types';
-import { ALL_PERMISSIONS } from './permissions/index';
+import { ALL_PERMISSIONS } from './permissions';
 
-// Get permission categories for grouping in the UI
 export const getPermissionCategories = (): string[] => {
   const categories = new Set<string>();
-  ALL_PERMISSIONS.forEach(p => categories.add(p.category));
-  return Array.from(categories);
+  ALL_PERMISSIONS.forEach(permission => {
+    categories.add(permission.category);
+  });
+  return Array.from(categories).sort();
 };
 
-// Group permissions by category
 export const getPermissionsByCategory = (): Record<string, Permission[]> => {
-  const groupedPermissions: Record<string, Permission[]> = {};
+  const categorized: Record<string, Permission[]> = {};
   
   ALL_PERMISSIONS.forEach(permission => {
-    if (!groupedPermissions[permission.category]) {
-      groupedPermissions[permission.category] = [];
+    const category = permission.category || 'general';
+    if (!categorized[category]) {
+      categorized[category] = [];
     }
-    groupedPermissions[permission.category].push(permission);
+    categorized[category].push(permission);
   });
   
-  return groupedPermissions;
+  // Sort permissions within each category
+  Object.keys(categorized).forEach(category => {
+    categorized[category].sort((a, b) => a.name.localeCompare(b.name));
+  });
+  
+  return categorized;
 };

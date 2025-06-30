@@ -27,19 +27,34 @@ export interface NewStaff {
   contact: string;
   email?: string;
   username?: string;
+  hire_date?: string;
   supervisor_id?: string;
   role: string;
   role_id: string;
+}
+
+export interface Permission {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  category: string;
 }
 
 export interface StaffRole {
   id: string;
   name: string;
   description?: string;
-  permissions: string[];
+  permissions: Permission[];
   is_system_role?: boolean;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface NewStaffRole {
+  name: string;
+  description?: string;
+  permissions: Permission[];
 }
 
 export interface StaffPermission {

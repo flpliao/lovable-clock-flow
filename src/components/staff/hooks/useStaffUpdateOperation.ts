@@ -54,7 +54,6 @@ export const useStaffUpdateOperation = (
         branch_id: updatedStaff.branch_id,
         branch_name: updatedStaff.branch_name || '',
         contact: updatedStaff.contact.trim(),
-        role: updatedStaff.role || 'user',
         role_id: updatedStaff.role_id || 'user',
         supervisor_id: updatedStaff.supervisor_id || null,
         username: updatedStaff.username || null,

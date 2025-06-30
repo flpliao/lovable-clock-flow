@@ -53,8 +53,7 @@ export const useUnifiedPermissions = () => {
       console.log('👤 找到當前用戶員工資料:', {
         name: staff.name,
         roleId: staff.role_id,
-        oldRole: staff.role,
-        currentUserRole: currentUser.role
+        currentUserRole: currentUser.role_id
       });
     } else {
       console.log('⚠️ 未找到當前用戶員工資料:', currentUser.name);

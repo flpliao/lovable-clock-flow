@@ -2362,6 +2362,10 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: string
       }
+      has_role: {
+        Args: { target_role: string }
+        Returns: boolean
+      }
       initialize_annual_leave_balance: {
         Args: { staff_uuid: string; target_year: number }
         Returns: undefined
@@ -2370,7 +2374,7 @@ export type Database = {
         Args: { staff_uuid: string; target_year?: number }
         Returns: undefined
       }
-      is_admin_user: {
+      is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
@@ -2383,6 +2387,14 @@ export type Database = {
         Returns: boolean
       }
       is_current_user_manager: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_manager: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_user: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }

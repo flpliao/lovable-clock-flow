@@ -1,4 +1,4 @@
-
+import { useCallback } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { AnnouncementReadService } from '@/services/announcementReadService';
 
@@ -6,7 +6,7 @@ export const useAnnouncementReads = () => {
   const { currentUser } = useUser();
 
   // Mark announcement as read
-  const markAnnouncementAsRead = async (announcementId: string): Promise<void> => {
+  const markAnnouncementAsRead = useCallback(async (announcementId: string): Promise<void> => {
     if (!currentUser) {
       console.warn('無法標記已讀：用戶未登入');
       return;
@@ -20,10 +20,10 @@ export const useAnnouncementReads = () => {
       console.error('標記公告已讀時發生錯誤:', error);
       throw error;
     }
-  };
+  }, [currentUser]);
 
   // Check if announcement is read - 確保返回 Promise<boolean>
-  const checkAnnouncementRead = async (announcementId: string): Promise<boolean> => {
+  const checkAnnouncementRead = useCallback(async (announcementId: string): Promise<boolean> => {
     if (!currentUser) {
       console.warn('無法檢查已讀狀態：用戶未登入');
       return false;
@@ -39,7 +39,7 @@ export const useAnnouncementReads = () => {
       console.error('檢查公告已讀狀態時發生錯誤:', error);
       return false;
     }
-  };
+  }, [currentUser]);
 
   return {
     markAnnouncementAsRead,

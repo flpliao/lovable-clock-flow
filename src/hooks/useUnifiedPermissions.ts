@@ -97,22 +97,16 @@ export const useUnifiedPermissions = () => {
     return permissions.every(permission => hasPermission(permission));
   }, [hasPermission]);
 
-  // 角色檢查（嚴格基於 currentUser.role）
+  // 角色檢查（嚴格基於 currentUser?.role_id）
   const isAdmin = useCallback((): boolean => {
     if (!currentUser) return false;
     
-    // 廖俊雄特殊處理
-    if (currentUser.name === '廖俊雄' && 
-        currentUser.id === '550e8400-e29b-41d4-a716-446655440001') {
-      return true;
-    }
-    
-    // 嚴格檢查 currentUser.role 是否為 admin
-    const result = currentUser.role === 'admin';
+    // 嚴格檢查 currentUser?.role_id 是否為 admin
+    const result = currentUser?.role_id === 'admin';
     
     console.log('🔐 統一權限系統 - Admin 檢查:', {
       user: currentUser.name,
-      role: currentUser.role,
+      role_id: currentUser?.role_id,
       result
     });
     
@@ -122,12 +116,12 @@ export const useUnifiedPermissions = () => {
   const isManager = useCallback((): boolean => {
     if (!currentUser) return false;
     
-    // 嚴格基於 currentUser.role 進行權限檢查
-    const result = currentUser.role === 'manager' || isAdmin();
+    // 嚴格基於 currentUser?.role_id 進行權限檢查
+    const result = currentUser?.role_id === 'manager' || isAdmin();
     
     console.log('🔐 統一權限系統 - Manager 檢查:', {
       user: currentUser.name,
-      role: currentUser.role,
+      role: currentUser?.role_id,
       result
     });
     

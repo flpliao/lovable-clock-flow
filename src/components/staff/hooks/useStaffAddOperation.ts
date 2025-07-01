@@ -50,7 +50,6 @@ export const useStaffAddOperation = (
       branch_id: newStaff.branch_id,
       branch_name: newStaff.branch_name.trim(),
       contact: newStaff.contact.trim(),
-      role: newStaff.role || 'user',
       role_id: newStaff.role_id || 'user',
       supervisor_id: newStaff.supervisor_id && newStaff.supervisor_id !== '' ? newStaff.supervisor_id : undefined,
       username: newStaff.username?.trim() || undefined,

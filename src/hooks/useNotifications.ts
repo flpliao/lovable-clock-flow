@@ -27,7 +27,7 @@ export const useNotifications = () => {
     }
 
     console.log('=== 開始載入通知 ===');
-    console.log('Loading notifications for user:', currentUser.id, 'Name:', currentUser.name, 'Role:', currentUser.role);
+    console.log('Loading notifications for user:', currentUser.id, 'Name:', currentUser.name, 'Role:', currentUser?.role_id);
     
     loadingRef.current = true;
     setIsLoading(true);
@@ -42,7 +42,7 @@ export const useNotifications = () => {
       setNotifications(formattedNotifications);
       setUnreadCount(unread);
       lastRefreshRef.current = now;
-      console.log(`通知載入完成 - 用戶: ${currentUser.name} (${currentUser.role}), 總計: ${formattedNotifications.length}, 未讀: ${unread}`);
+      console.log(`通知載入完成 - 用戶: ${currentUser.name} (${currentUser?.role_id}), 總計: ${formattedNotifications.length}, 未讀: ${unread}`);
       
     } catch (error) {
       console.error('Error loading notifications:', error);
@@ -55,7 +55,7 @@ export const useNotifications = () => {
   // Load notifications when user changes - only once
   useEffect(() => {
     if (currentUser) {
-      console.log('User changed, loading notifications for:', currentUser.id, currentUser.name, currentUser.role);
+      console.log('User changed, loading notifications for:', currentUser.id, currentUser.name, currentUser?.role_id);
       loadNotifications();
     } else {
       console.log('No user, clearing notifications');
@@ -70,12 +70,12 @@ export const useNotifications = () => {
       return;
     }
 
-    console.log('Setting up real-time subscription for user:', currentUser.id, currentUser.name, currentUser.role);
+    console.log('Setting up real-time subscription for user:', currentUser.id, currentUser.name, currentUser?.role_id);
     
     const cleanup = NotificationRealtimeService.setupRealtimeSubscription(
       currentUser.id,
       () => {
-        console.log(`Real-time event triggered for ${currentUser.name} (${currentUser.role}), reloading notifications`);
+        console.log(`Real-time event triggered for ${currentUser.name} (${currentUser?.role_id}), reloading notifications`);
         loadNotifications();
       }
     );
@@ -88,7 +88,7 @@ export const useNotifications = () => {
     if (!currentUser) return;
 
     const handleNotificationUpdate = (event: CustomEvent) => {
-      console.log(`收到通知更新事件 for ${currentUser.name} (${currentUser.role}):`, event.detail);
+      console.log(`收到通知更新事件 for ${currentUser.name} (${currentUser?.role_id}):`, event.detail);
       
       // 檢查是否需要刷新（防止頻繁刷新）
       const now = new Date();

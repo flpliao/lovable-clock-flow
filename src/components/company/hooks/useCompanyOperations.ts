@@ -133,7 +133,7 @@ export const useCompanyOperations = () => {
     
     try {
       // 驗證用戶權限
-      if (!CompanyApiService.validateUserPermission(currentUser?.name || '')) {
+      if (!CompanyApiService.validateUserPermission(currentUser?.role_id || '')) {
         throw new Error('您沒有權限編輯公司資料');
       }
 

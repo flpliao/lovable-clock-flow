@@ -20,9 +20,9 @@ export class CompanyApiService {
   };
 
   // 驗證用戶權限
-  static validateUserPermission(userName: string): boolean {
-    console.log('🔑 CompanyApiService: 驗證用戶權限:', userName);
-    return userName === '廖俊雄' || userName === 'admin';
+  static validateUserPermission(role_id: string): boolean {
+    console.log('🔑 CompanyApiService: 驗證用戶權限:', role_id);
+    return role_id === 'admin';
   }
 
   // 更新或創建公司資料

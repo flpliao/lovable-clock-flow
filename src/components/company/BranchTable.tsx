@@ -16,7 +16,7 @@ const BranchTable = () => {
   const { currentUser } = useUser();
   const isMobile = useIsMobile();
 
-  const canManageBranches = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
+  const canManageBranches = currentUser?.role_id === 'admin';
 
   const getTypeLabel = (type: string) => {
     switch (type) {

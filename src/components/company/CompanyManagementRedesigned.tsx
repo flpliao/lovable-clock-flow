@@ -24,8 +24,7 @@ const CompanyManagementRedesigned = () => {
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('company');
   
-  // 允許廖俊雄和管理員管理營業處和部門
-  const canManageBranches = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
+  const canManageBranches = currentUser?.role_id === 'admin';
 
   const handleAddBranch = () => {
     setIsAddBranchDialogOpen(true);

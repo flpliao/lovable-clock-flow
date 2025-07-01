@@ -12,7 +12,6 @@ export interface Staff {
   hire_date?: string;
   supervisor_id?: string;
   user_id?: string;
-  role: string;
   role_id: string;
   created_at?: string;
   updated_at?: string;
@@ -29,7 +28,6 @@ export interface NewStaff {
   username?: string;
   hire_date?: string;
   supervisor_id?: string;
-  role: string;
   role_id: string;
 }
 

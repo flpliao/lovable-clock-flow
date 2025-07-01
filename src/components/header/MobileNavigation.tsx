@@ -49,8 +49,8 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                     {currentUser.name}
                   </div>
                   <div className="text-gray-600 text-xs font-medium">
-                    {currentUser.role === 'admin' ? '管理員' : 
-                     currentUser.role === 'manager' ? '主管' : '員工'}
+                    {currentUser.role_id === 'admin' ? '管理員' : 
+                     currentUser.role_id === 'manager' ? '主管' : '員工'}
                   </div>
                 </div>
               </div>

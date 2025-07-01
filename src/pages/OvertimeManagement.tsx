@@ -18,7 +18,7 @@ const OvertimeManagement: React.FC = () => {
   };
 
   // 檢查用戶是否有管理權限 - 修正角色檢查
-  const isManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
+  const isManager = currentUser?.role_id === 'admin' || currentUser?.role_id === 'manager';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36">

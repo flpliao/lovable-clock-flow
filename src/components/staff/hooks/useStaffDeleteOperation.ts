@@ -15,7 +15,7 @@ export const useStaffDeleteOperation = (
 
   const deleteStaff = async (id: string): Promise<boolean> => {
     // 檢查權限
-    if (!isAdmin() && currentUser?.name !== '廖俊雄') {
+    if (!isAdmin() ) {
       toast({
         title: "權限不足",
         description: "只有管理員可以刪除員工資料",

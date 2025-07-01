@@ -1,8 +1,20 @@
-
 import { CheckInRecord } from '@/types';
 import { getCurrentPosition, calculateDistance, COMPANY_LOCATION, ALLOWED_DISTANCE } from '../geolocation';
 import { validateCheckInLocationSync, getDepartmentForCheckIn } from '../departmentCheckInUtils';
 import { Department } from '@/components/departments/types';
+
+interface GPSComparisonResult {
+  comparisonType: string;
+  departmentName: string;
+  departmentGPS: { lat: number; lng: number };
+  userGPS: { lat: number; lng: number };
+  distance: number;
+  allowedRadius: number;
+  gpsStatus: string;
+  isValid: boolean;
+  message: string;
+  timestamp: string;
+}
 
 // 位置打卡的函數 - 支援部門GPS驗證，使用調整後的距離限制
 export const handleLocationCheckIn = async (
@@ -12,7 +24,8 @@ export const handleLocationCheckIn = async (
   onError: (error: string) => void,
   setDistance?: (distance: number) => void,
   departments?: Department[],
-  employeeDepartment?: string
+  employeeDepartment?: string,
+  isAdmin?: boolean
 ) => {
   try {
     const position = await getCurrentPosition();
@@ -23,10 +36,7 @@ export const handleLocationCheckIn = async (
     let locationName: string;
     let isValidLocation = false;
     let departmentGPS: { lat: number; lng: number } | null = null;
-    let gpsComparisonResult: any = {};
-    
-    // 檢查是否為管理員（簡單的開發模式檢查）
-    const isAdmin = userId === '550e8400-e29b-41d4-a716-446655440001'; // 廖俊雄的ID
+    let gpsComparisonResult: Partial<GPSComparisonResult> = {};
     
     console.log('🔍 開始位置打卡驗證:', {
       userId,

@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 interface UserContext {
   user_id: string;
   staff_id: string;
-  role: string;
+  role_id: string;
   department: string;
   branch_id: string;
   supervisor_id: string;
@@ -76,13 +76,13 @@ export const useOptimizedPermissions = () => {
 
   // 檢查是否為管理員
   const isAdmin = useCallback((): boolean => {
-    return userContext?.role === 'admin' || currentUser?.role === 'admin';
+    return userContext?.role_id === 'admin' || currentUser?.role_id === 'admin';
   }, [userContext, currentUser]);
 
   // 檢查是否為主管
   const isManager = useCallback((): boolean => {
-    return userContext?.role === 'manager' || userContext?.role === 'admin' || 
-           currentUser?.role === 'manager' || currentUser?.role === 'admin';
+    return userContext?.role_id === 'manager' || userContext?.role_id === 'admin' || 
+           currentUser?.role_id === 'manager' || currentUser?.role_id === 'admin';
   }, [userContext, currentUser]);
 
   // 檢查是否可以管理特定用戶

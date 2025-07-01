@@ -32,12 +32,12 @@ const NotificationCenter: React.FC = () => {
   // Debug logging - 減少 log 頻率
   useEffect(() => {
     if (currentUser && notifications.length > 0) {
-      console.log(`NotificationCenter 狀態更新 - 用戶: ${currentUser.name} (${currentUser.role}), 通知數量: ${notifications.length}, 未讀: ${unreadCount}`);
+      console.log(`NotificationCenter 狀態更新 - 用戶: ${currentUser.name} (${currentUser.role_id}), 通知數量: ${notifications.length}, 未讀: ${unreadCount}`);
     }
   }, [notifications.length, unreadCount, currentUser?.name]); // 減少依賴
   
   const handleNotificationClick = (notification: Notification) => {
-    console.log(`通知點擊 by ${currentUser?.name} (${currentUser?.role}):`, notification);
+    console.log(`通知點擊 by ${currentUser?.name} (${currentUser?.role_id}):`, notification);
     markAsRead(notification.id);
     setOpen(false);
     
@@ -52,17 +52,17 @@ const NotificationCenter: React.FC = () => {
       // 導航到核准中心，並設置為加班審核標籤
       navigate('/approval-center?tab=overtime');
     } else if (notification.type === 'announcement' || notification.type === 'system') {
-      console.log(`公告通知點擊 by ${currentUser?.name} (${currentUser?.role})，觸發刷新`);
+      console.log(`公告通知點擊 by ${currentUser?.name} (${currentUser?.role_id})，觸發刷新`);
       
       // 觸發公告頁面刷新事件
       window.dispatchEvent(new CustomEvent('refreshAnnouncements'));
       window.dispatchEvent(new CustomEvent('announcementDataUpdated', { 
-        detail: { type: 'refresh', source: 'notification_click', user: currentUser?.name, role: currentUser?.role }
+        detail: { type: 'refresh', source: 'notification_click', user: currentUser?.name, role: currentUser?.role_id }
       }));
       
       // Navigate to company announcements page
       if (location.pathname !== '/company-announcements') {
-        console.log(`導航到公告頁面 for ${currentUser?.name} (${currentUser?.role})`);
+        console.log(`導航到公告頁面 for ${currentUser?.name} (${currentUser?.role_id})`);
         navigate('/company-announcements');
       }
     }
@@ -155,7 +155,7 @@ const NotificationCenter: React.FC = () => {
         <div className="border-t p-2 text-xs text-gray-500 text-center">
           {currentUser && (
             <>
-              用戶: {currentUser.name} ({currentUser.role})
+              用戶: {currentUser.name} ({currentUser.role_id})
             </>
           )}
         </div>

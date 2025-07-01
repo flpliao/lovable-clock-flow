@@ -6,7 +6,6 @@ import { toast } from '@/hooks/use-toast';
 interface User {
   id: string;
   name: string;
-  role: string;
   email: string;
   department: string;
   position: string;

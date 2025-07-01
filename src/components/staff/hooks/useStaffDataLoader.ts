@@ -69,7 +69,6 @@ export const useStaffDataLoader = () => {
         branch_id: item.branch_id || '',
         branch_name: item.branch_name || '',
         contact: item.contact || '',
-        role: item.role as 'admin' | 'user' | string,
         role_id: item.role_id || 'user',
         supervisor_id: item.supervisor_id,
         username: item.username,

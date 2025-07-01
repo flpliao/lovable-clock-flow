@@ -32,8 +32,7 @@ export const useEditCompanyDialog = () => {
   const { currentUser } = useUser();
   const { validateForm } = useCompanyFormValidation();
   
-  // 允許廖俊雄和管理員操作
-  const hasPermission = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
+  const hasPermission = currentUser?.role_id === 'admin';
 
   console.log('useEditCompanyDialog - 對話框狀態:', { 
     isEditCompanyDialogOpen, 

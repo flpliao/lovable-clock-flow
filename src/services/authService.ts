@@ -102,7 +102,6 @@ export class AuthService {
           staff_user_id: staffData.user_id,
           name: staffData.name,
           email: staffData.email,
-          role: staffData.role,
           role_id: staffData.role_id,
           department: staffData.department
         });
@@ -175,7 +174,6 @@ export class AuthService {
           staff_user_id: staffData.user_id,
           name: staffData.name,
           email: staffData.email,
-          role: staffData.role,
           role_id: staffData.role_id
         });
         return staffData;
@@ -239,7 +237,6 @@ export class AuthService {
         console.log('✅ 從 Auth 流程載入員工資料:', {
           staff_id: staffData.id,
           name: staffData.name,
-          role: staffData.role,
           role_id: staffData.role_id,
           department: staffData.department
         });
@@ -272,7 +269,6 @@ export class AuthService {
       name: typeof staffData.name === 'string' ? staffData.name : undefined,
       position: typeof staffData.position === 'string' ? staffData.position : undefined,
       department: typeof staffData.department === 'string' ? staffData.department : undefined,
-      role: staffData.role as string,
       role_id: staffData.role_id as string,
       onboard_date: typeof staffData.onboard_date === 'string' ? staffData.onboard_date : new Date().toISOString().split('T')[0]
     };

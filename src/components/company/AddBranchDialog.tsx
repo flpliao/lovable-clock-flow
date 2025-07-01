@@ -21,8 +21,7 @@ const AddBranchDialog = () => {
   const { currentUser } = useUser();
   const { toast } = useToast();
 
-  // 允許廖俊雄和管理員新增營業處
-  const canAddBranch = currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
+  const canAddBranch = currentUser?.role_id === 'admin';
 
   console.log('AddBranchDialog - 對話框狀態:', { 
     isAddBranchDialogOpen, 

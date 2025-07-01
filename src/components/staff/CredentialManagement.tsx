@@ -42,7 +42,7 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
 
   console.log('🔐 帳號管理權限檢查:', {
     currentUser: currentUser?.name,
-    currentUserRole: currentUser?.role,
+    currentUserRole: currentUser?.role_id,
     isSystemAdmin,
     managingOwnAccount,
     targetUserId,
@@ -64,7 +64,7 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
             您沒有權限管理此帳號設定。請聯繫系統管理員。
           </p>
           <div className="mt-2 text-xs text-red-500">
-            調試資訊: 當前用戶角色 = {currentUser?.role}, 系統管理員 = {isSystemAdmin ? '是' : '否'}
+            調試資訊: 當前用戶角色 = {currentUser?.role_id}, 系統管理員 = {isSystemAdmin ? '是' : '否'}
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
+import { ROLE_ID_MAP } from '@/components/staff/constants/roleIdMap';
 
 interface WelcomeSectionProps {
   userName: string;
@@ -11,7 +11,7 @@ const WelcomeSection = ({
   userName
 }: WelcomeSectionProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { isAdmin } = useUser();
+  const { currentUser } = useUser();
 
   // 每秒更新時間
   useEffect(() => {
@@ -37,11 +37,36 @@ const WelcomeSection = ({
   // 確保顯示實際的用戶名稱，改善判斷邏輯
   const displayName = userName && userName !== 'User' && userName !== '訪客' && !userName.includes('-') && !userName.startsWith('User ') && !userName.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i) ? userName : '訪客';
   
-  // 獲取用戶角色顯示
+  // 優化的角色顯示函數
   const getUserRoleDisplay = () => {
-    if (isAdmin()) {
+    if (!currentUser) {
+      return '訪客';
+    }
+
+    // 優先使用 role_id，如果存在且在 ROLE_ID_MAP 中有對應的顯示名稱
+    if (currentUser.role_id && ROLE_ID_MAP[currentUser.role_id]) {
+      return ROLE_ID_MAP[currentUser.role_id];
+    }
+
+    // 回退到 role 字段
+    if (currentUser.role && ROLE_ID_MAP[currentUser.role]) {
+      return ROLE_ID_MAP[currentUser.role];
+    }
+
+    // 最後的回退邏輯：基於原有的 role 或 role_id 進行基本判斷
+    const roleToCheck = currentUser.role_id || currentUser.role || '';
+    
+    if (roleToCheck.includes('admin')) {
       return '管理員';
     }
+    if (roleToCheck.includes('manager')) {
+      return '主管';
+    }
+    if (roleToCheck.includes('hr')) {
+      return 'HR人員';
+    }
+    
+    // 預設為員工
     return '員工';
   };
 

@@ -1,10 +1,10 @@
-
 import { Home, Calendar, FileText, Users, Building, Settings, Clock, Briefcase, MessageSquare, Megaphone, CalendarDays, CheckCircle, TrendingUp } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 
 export interface MenuItem {
   path: string;
   label: string;
-  icon: any;
+  icon: LucideIcon;
   public: boolean;
   adminOnly?: boolean;
 }

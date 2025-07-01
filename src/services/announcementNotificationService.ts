@@ -34,7 +34,7 @@ export class AnnouncementNotificationService {
   static async getUnreadAnnouncementsAsNotifications(userId: string): Promise<Notification[]> {
     try {
       console.log('獲取未讀公告作為通知 for user:', userId);
-      
+
       // 使用更簡單的方法：先獲取所有活躍公告，再過濾未讀的
       const { data: allAnnouncements, error: announcementError } = await supabase
         .from('announcements')
@@ -131,8 +131,8 @@ export class AnnouncementNotificationService {
 
       if (!data || data.length === 0) {
         return [];
-      }
-
+          }
+          
       // 轉換為通知格式
       const notifications: Notification[] = data.map((announcement: AnnouncementWithReads) => {
         // 檢查是否有該用戶的已讀記錄
@@ -158,10 +158,10 @@ export class AnnouncementNotificationService {
 
       console.log(`成功獲取 ${notifications.length} 筆公告通知（優化版本）`);
       return notifications;
-    } catch (error) {
+        } catch (error) {
       console.error('獲取公告通知失敗（優化版本）:', error);
       return [];
-    }
+        }
   }
 
   /**
@@ -188,8 +188,8 @@ export class AnnouncementNotificationService {
       console.error('標記公告通知已讀失敗:', error);
       return false;
     }
-  }
-
+      }
+      
   /**
    * 標記所有公告為已讀
    */

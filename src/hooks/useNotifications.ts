@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Notification } from '@/components/notifications/NotificationItem';
 import { useUser } from '@/contexts/UserContext';
-import { AnnouncementNotificationService } from '@/services/announcementNotificationService';
+import { NotificationDatabaseOperations } from '@/services/notifications';
+import { NotificationRealtimeService } from '@/services/notificationRealtimeService';
 import { useNotificationActions } from '@/hooks/useNotificationActions';
 
 export const useNotifications = () => {
@@ -33,7 +34,7 @@ export const useNotifications = () => {
     setIsLoading(true);
 
     try {
-      const formattedNotifications = await AnnouncementNotificationService.getAllAnnouncementsAsNotificationsOptimized(currentUser.id);
+      const formattedNotifications = await NotificationDatabaseOperations.loadNotifications(currentUser.id);
       const unread = formattedNotifications.filter(n => !n.isRead).length;
       
       console.log('Raw loaded notifications:', formattedNotifications.length);
@@ -67,27 +68,23 @@ export const useNotifications = () => {
     }
   }, [currentUser?.id, loadNotifications]);
 
-  // Set up real-time subscription for announcements - reuse existing announcement events
+  // Set up real-time subscription for notifications - only once
   useEffect(() => {
     if (!currentUser) {
       return;
     }
 
-    console.log('Setting up announcement event listeners for user:', currentUser.id, currentUser.name, currentUser?.role_id);
+    console.log('Setting up real-time subscription for user:', currentUser.id, currentUser.name, currentUser?.role_id);
     
-    const handleAnnouncementUpdate = () => {
-      console.log(`Announcement event triggered for ${currentUser.name} (${currentUser?.role_id}), reloading notifications`);
-      loadNotifications();
-    };
+    const cleanup = NotificationRealtimeService.setupRealtimeSubscription(
+      currentUser.id,
+      () => {
+        console.log(`Real-time event triggered for ${currentUser.name} (${currentUser?.role_id}), reloading notifications`);
+        loadNotifications();
+      }
+    );
 
-    // 監聽公告相關的事件
-    window.addEventListener('refreshAnnouncements', handleAnnouncementUpdate);
-    window.addEventListener('announcementDataUpdated', handleAnnouncementUpdate);
-    
-    return () => {
-      window.removeEventListener('refreshAnnouncements', handleAnnouncementUpdate);
-      window.removeEventListener('announcementDataUpdated', handleAnnouncementUpdate);
-    };
+    return cleanup;
   }, [currentUser?.id, loadNotifications]);
 
   // 監聽通知更新事件 - 減少事件監聽器數量

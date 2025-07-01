@@ -21,7 +21,7 @@ export const useFinalPermissions = () => {
     }
 
     // 系統管理員權限檢查
-    if (user.role === 'admin') {
+    if (user.role_id === 'admin') {
       console.log('🔐 系統管理員權限檢查:', permission, '✅ 允許');
       return true;
     }
@@ -81,12 +81,12 @@ export const useFinalPermissions = () => {
     }
 
     // 檢查角色
-    const isRoleAdmin = user.role === 'admin';
+    const isRoleAdmin = user.role_id === 'admin';
     
     console.log('🔐 Admin permission check:', {
       userName: user.name,
       userId: user.id,
-      role: user.role,
+      role: user.role_id,
       isRoleAdmin,
       result: isRoleAdmin
     });
@@ -106,11 +106,11 @@ export const useFinalPermissions = () => {
     }
 
     // 檢查角色 - 修正類型問題
-    const isRoleManager = user.role === 'manager';
+    const isRoleManager = user.role_id === 'manager';
     
     console.log('🔐 Manager permission check:', {
       userName: user.name,
-      role: user.role,
+      role: user.role_id,
       isRoleManager,
       result: isRoleManager
     });

@@ -11,9 +11,8 @@ export const useCompanySyncManager = () => {
   const { toast } = useToast();
   const { currentUser } = useUser();
 
-  // 檢查是否為廖俊雄或管理員
   const hasAdminPermission = useCallback(() => {
-    return currentUser?.name === '廖俊雄' || currentUser?.role === 'admin';
+    return currentUser?.role_id === 'admin';
   }, [currentUser]);
 
   // 載入公司資料 - 增強錯誤處理

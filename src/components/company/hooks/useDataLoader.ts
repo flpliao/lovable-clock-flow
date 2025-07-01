@@ -26,7 +26,7 @@ export const useDataLoader = () => {
     
     try {
       // 驗證用戶權限
-      if (currentUser?.id && !CompanyApiService.validateUserPermission(currentUser.id)) {
+      if (currentUser?.id && !CompanyApiService.validateUserPermission(currentUser?.role_id)) {
         console.warn('⚠️ useDataLoader: 用戶無權限訪問公司資料');
         setLoading(false);
         return;

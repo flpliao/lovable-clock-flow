@@ -99,7 +99,7 @@ const MissedCheckinManagementContent = () => {
         // 審核權限：可以看到需要審核的申請
         if (canApproveMissedCheckin) {
           // 管理員可以看到所有申請
-          if (currentUser.role === 'admin') {
+          if (currentUser?.role_id === 'admin') {
             return true;
           }
           // 直屬主管可以看到下屬的申請
@@ -166,7 +166,7 @@ const MissedCheckinManagementContent = () => {
     // 審核權限
     if (canApproveMissedCheckin) {
       // 管理員可以審核所有申請
-      if (currentUser?.role === 'admin') {
+      if (currentUser?.role_id === 'admin') {
         return true;
       }
       // 直屬主管可以審核下屬的申請

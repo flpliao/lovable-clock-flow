@@ -27,7 +27,6 @@ export const createAuthHandlers = (
           onboard_date: result.user.onboard_date || new Date().toISOString().split('T')[0],
           hire_date: result.user.hire_date,
           supervisor_id: result.user.supervisor_id,
-          role: result.user.role || 'user',
           role_id: result.user.role_id || 'user',
           email: result.user.email
         };

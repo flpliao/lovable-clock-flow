@@ -55,7 +55,7 @@ const StaffTable = () => {
 
   console.log('👥 人員列表帳號管理權限檢查 (基於 role):', {
     currentUser: currentUser?.name,
-    role: currentUser?.role,
+    role: currentUser?.role_id,
     isAdmin: isAdmin(),
     canManageAccounts
   });

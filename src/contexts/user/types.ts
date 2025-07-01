@@ -9,7 +9,6 @@ export interface User {
   onboard_date: string;
   hire_date?: string;
   supervisor_id?: string;
-  role: string;
   role_id: string;
   email?: string;
 }

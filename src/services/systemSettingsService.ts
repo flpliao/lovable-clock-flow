@@ -29,12 +29,6 @@ export class SystemSettingsService {
 
       console.log('👤 當前用戶:', user.id);
 
-      // 檢查是否為廖俊雄（最高管理員）
-      if (user.id === '550e8400-e29b-41d4-a716-446655440001') {
-        console.log('👑 廖俊雄最高管理員 - 完整權限');
-        return { canRead: true, canWrite: true };
-      }
-
       // 檢查用戶角色
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
@@ -62,7 +56,7 @@ export class SystemSettingsService {
 
       console.log('👤 員工資料:', staffData);
 
-      const canWrite = staffData.role === 'admin' || staffData.role === 'manager';
+      const canWrite = staffData.role_id === 'admin' || staffData.role_id === 'manager';
       const canRead = true; // 所有認證用戶都可以讀取
 
       return {

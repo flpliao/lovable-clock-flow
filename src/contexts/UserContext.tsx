@@ -53,13 +53,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (staffRecords && staffRecords.length > 0) {
         const staffRecord = staffRecords[0];
-        console.log('✅ 找到員工資料，角色:', staffRecord.role, 'role_id:', staffRecord.role_id);
+        console.log('✅ 找到員工資料，角色:', staffRecord.role_id, 'role_id:', staffRecord.role_id);
         
         // 確保 role_id 存在且有效
         if (!staffRecord.role_id || staffRecord.role_id === '') {
           console.log('🔄 更新員工的 role_id');
-          const updatedRoleId = staffRecord.role === 'admin' ? 'admin' : 
-                               staffRecord.role === 'manager' ? 'manager' : 'user';
+          const updatedRoleId = staffRecord.role_id === 'admin' ? 'admin' : 
+                               staffRecord.role_id === 'manager' ? 'manager' : 'user';
           
           await supabase
             .from('staff')

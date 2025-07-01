@@ -14,8 +14,7 @@ const CompanyInfoCard = () => {
   console.log('CompanyInfoCard - 當前用戶:', currentUser?.name);
   console.log('CompanyInfoCard - 公司資料載入狀態:', { company: company?.name, loading });
 
-  // 允許廖俊雄和管理員編輯公司資料
-  const canEdit = currentUser?.name === '廖俊雄' || isAdmin();
+  const canEdit =  isAdmin();
 
   // 強制重新載入
   const handleForceReload = async () => {

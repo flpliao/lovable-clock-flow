@@ -50,7 +50,7 @@ export const overtimeValidationService = {
       }
 
       // 根據角色判斷權限
-      const role = staffData.role || staffData.role_id;
+      const role = staffData.role_id ;
       
       // 管理員和 HR 擁有所有權限
       if (role === 'admin' || role === 'hr_manager') {

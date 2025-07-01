@@ -20,7 +20,6 @@ export class StaffApiService {
       branch_id: staffData.branch_id,
       branch_name: staffData.branch_name,
       contact: staffData.contact,
-      role: staffData.role || 'user',
       role_id: staffData.role_id || 'user',
       supervisor_id: staffData.supervisor_id || null,
       username: staffData.username || null,

@@ -45,7 +45,6 @@ const LoginForm: React.FC = () => {
           position: authResult.user.position || '員工',
           department: authResult.user.department || '未指定',
           onboard_date: authResult.user.onboard_date || new Date().toISOString().split('T')[0],
-          role: authResult.user.role,
           role_id: authResult.user.role_id,
           email: authResult.user.email
         };

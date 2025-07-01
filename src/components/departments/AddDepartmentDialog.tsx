@@ -28,8 +28,7 @@ const AddDepartmentDialog = () => {
     currentUser
   } = useUser();
 
-  // 檢查權限：管理員或廖俊雄可以新增部門
-  const canAddDepartment = isAdmin() || currentUser?.name === '廖俊雄';
+  const canAddDepartment = isAdmin();
   if (!canAddDepartment) {
     return null;
   }

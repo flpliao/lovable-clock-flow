@@ -1,6 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { Notification } from '@/components/notifications/NotificationItem';
 
 // Define User interface for this service
 interface User {
@@ -11,229 +11,260 @@ interface User {
   position: string;
 }
 
+// 定義關聯查詢返回的資料結構
+interface AnnouncementWithReads {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  created_at: string;
+  created_by_name: string;
+  is_pinned: boolean;
+  announcement_reads: Array<{
+    user_id: string;
+    read_at: string;
+  }> | null;
+}
+
 export class AnnouncementNotificationService {
   /**
-   * Creates notifications for all users when a new announcement is published
+   * 獲取用戶的未讀公告作為通知
+   * 查詢 announcements 表，左連接 announcement_reads 表，找出用戶未讀的公告
    */
-  static async createAnnouncementNotifications(
-    announcementId: string, 
-    announcementTitle: string, 
-    currentUserId?: string
-  ): Promise<void> {
+  static async getUnreadAnnouncementsAsNotifications(userId: string): Promise<Notification[]> {
     try {
-      console.log('=== 開始創建公告通知 ===');
-      console.log('公告ID:', announcementId);
-      console.log('公告標題:', announcementTitle);
-      console.log('當前用戶ID:', currentUserId);
-
-      // 首先檢查公告是否為啟用狀態
-      console.log('檢查公告狀態...');
-      const { data: announcementData, error: announcementError } = await supabase
+      console.log('獲取未讀公告作為通知 for user:', userId);
+      
+      // 使用更簡單的方法：先獲取所有活躍公告，再過濾未讀的
+      const { data: allAnnouncements, error: announcementError } = await supabase
         .from('announcements')
-        .select('is_active, title')
-        .eq('id', announcementId)
-        .single();
+        .select('id, title, content, category, created_at, created_by_name, is_pinned')
+        .eq('is_active', true)
+        .order('is_pinned', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (announcementError) {
-        console.error('無法獲取公告資料:', announcementError);
-        throw announcementError;
+        console.error('獲取公告失敗:', announcementError);
+        return [];
       }
 
-      console.log('公告資料:', announcementData);
-
-      if (!announcementData || !announcementData.is_active) {
-        console.log('公告未啟用，跳過通知發送');
-        toast({
-          title: "提醒",
-          description: "公告未啟用，不會發送通知",
-        });
-        return;
+      if (!allAnnouncements || allAnnouncements.length === 0) {
+        return [];
       }
 
-      // 獲取所有員工，不過濾任何條件，確保包含所有人
-      console.log('正在獲取所有員工列表...');
-      const { data: staffData, error: staffError } = await supabase
-        .from('staff')
-        .select('id, name, role_id, email, department, position')
-        .order('name');
+      // 獲取用戶的已讀記錄
+      const { data: readRecords, error: readError } = await supabase
+        .from('announcement_reads')
+        .select('announcement_id')
+        .eq('user_id', userId);
 
-      if (staffError) {
-        console.error('Error fetching staff for notifications:', staffError);
-        throw staffError;
+      if (readError) {
+        console.error('獲取已讀記錄失敗:', readError);
+        return [];
       }
 
-      console.log('Staff query result:', staffData);
-      console.log('所有員工詳細資訊:', staffData?.map(s => ({ 
-        id: s.id, 
-        name: s.name, 
-        role: s.role_id,
-        email: s.email,
-        department: s.department,
-        position: s.position
-      })));
+      const readAnnouncementIds = new Set(readRecords?.map(r => r.announcement_id) || []);
 
-      if (!staffData || staffData.length === 0) {
-        console.log('沒有找到任何員工');
-        toast({
-          title: "提醒",
-          description: "沒有找到任何員工",
-        });
-        return;
-      }
-
-      console.log(`找到 ${staffData.length} 位員工需要通知`);
-
-      // 特別檢查王小明是否在員工列表中
-      const wangXiaoMing = staffData.find(staff => staff.name === '王小明' || staff.id === '550e8400-e29b-41d4-a716-446655440002');
-      if (wangXiaoMing) {
-        console.log('✅ 王小明在員工列表中:', wangXiaoMing);
-      } else {
-        console.log('❌ 王小明不在員工列表中');
-        console.log('檢查是否有類似姓名的員工:', staffData.filter(s => s.name.includes('王') || s.name.includes('小明')));
-      }
-
-      // 為每個員工創建通知
-      console.log('開始為所有員工創建通知...');
-      const notificationPromises = staffData.map(async (staff) => {
-        try {
-          console.log(`為員工 ${staff.name} (${staff.id}) 創建通知...`);
-          
-          // 檢查用戶ID是否有效
-          if (!staff.id || staff.id.trim() === '') {
-            console.error(`員工 ${staff.name} 的ID無效:`, staff.id);
-            return null;
-          }
-          
-          // 直接插入通知表
-          const { data: notification, error: insertError } = await supabase
-            .from('notifications')
-            .insert({
-              user_id: staff.id,
-              title: '新公告發布',
-              message: `新公告已發布: ${announcementTitle}`,
-              type: 'announcement',
-              announcement_id: announcementId,
-              action_required: false,
-              is_read: false
-            })
-            .select('id')
-            .single();
-
-          if (insertError) {
-            console.error(`為員工 ${staff.name} (${staff.id}) 創建通知失敗:`, insertError);
-            return null;
-          }
-
-          console.log(`✅ 為員工 ${staff.name} 創建通知成功，通知ID: ${notification.id}`);
-          return { 
-            userId: staff.id, 
-            notificationId: notification.id, 
-            userName: staff.name, 
-            userRole: staff.role_id
-          };
-        } catch (error) {
-          console.error(`為員工 ${staff.name} 創建通知異常:`, error);
-          return null;
-        }
-      });
-
-      const results = await Promise.all(notificationPromises);
-      const successResults = results.filter(result => result !== null);
-      const successCount = successResults.length;
-
-      console.log(`通知創建完成，成功創建 ${successCount}/${staffData.length} 條通知`);
-      console.log('成功的通知:', successResults);
-      
-      // 特別檢查王小明的通知是否創建成功
-      const wangNotification = successResults.find(result => 
-        result && (result.userName === '王小明' || result.userId === '550e8400-e29b-41d4-a716-446655440002')
+      // 過濾出未讀的公告
+      const unreadAnnouncements = allAnnouncements.filter(announcement => 
+        !readAnnouncementIds.has(announcement.id)
       );
-      if (wangNotification) {
-        console.log('✅ 王小明的通知創建成功:', wangNotification);
-      } else {
-        console.log('❌ 王小明的通知創建失敗');
-      }
-      
-      // Show success message
-      toast({
-        title: "通知已發送",
-        description: `已為 ${successCount} 位用戶創建公告通知`,
-      });
 
-      // 立即觸發多重實時更新事件
-      console.log('觸發實時更新事件...');
-      
-      const triggerUpdateEvents = () => {
-        // 為每個成功創建通知的用戶觸發個別更新事件
-        successResults.forEach(result => {
-          if (result) {
-            console.log(`觸發用戶 ${result.userName} (${result.userId}) 的通知更新事件`);
-            
-            // 用戶專屬通知事件
-            window.dispatchEvent(new CustomEvent('userNotificationUpdated', { 
-              detail: { 
-                userId: result.userId,
-                notificationId: result.notificationId,
-                type: 'announcement_created',
-                announcementId: announcementId,
-                timestamp: new Date().toISOString()
-              }
-            }));
-            
-            // 針對特定用戶觸發強制刷新
-            window.dispatchEvent(new CustomEvent(`forceNotificationRefresh-${result.userId}`, {
-              detail: { 
-                reason: 'announcement_created',
-                announcementId,
-                timestamp: new Date().toISOString()
-              }
-            }));
-          }
-        });
+      // 轉換為通知格式
+      const notifications: Notification[] = unreadAnnouncements.map((announcement) => ({
+        id: announcement.id,
+        title: announcement.title,
+        message: announcement.content.length > 100 
+          ? announcement.content.substring(0, 100) + '...' 
+          : announcement.content,
+        type: 'announcement' as const,
+        createdAt: announcement.created_at,
+        isRead: false, // 這些都是未讀的公告
+        data: {
+          announcementId: announcement.id,
+          actionRequired: false
+        }
+      }));
 
-        // 觸發全域通知更新事件
-        window.dispatchEvent(new CustomEvent('notificationUpdated', { 
-          detail: { 
-            type: 'announcement_created',
-            announcementId: announcementId,
-            timestamp: new Date().toISOString(),
-            count: successCount,
-            affectedUsers: successResults.map(r => ({ id: r?.userId, name: r?.userName, role: r?.userRole }))
-          }
-        }));
-        
-        // 強制刷新通知
-        window.dispatchEvent(new CustomEvent('forceNotificationRefresh', {
-          detail: { 
-            reason: 'announcement_created', 
-            announcementId,
-            timestamp: new Date().toISOString(),
-            userCount: successCount
-          }
-        }));
-        
-        console.log('實時更新事件已觸發');
-      };
-
-      // 立即觸發
-      triggerUpdateEvents();
-      
-      // 延遲觸發確保資料庫操作完成和不同組件都能收到
-      setTimeout(triggerUpdateEvents, 100);
-      setTimeout(triggerUpdateEvents, 500);
-      setTimeout(triggerUpdateEvents, 1000);
-      setTimeout(triggerUpdateEvents, 2000);
-
-      console.log('=== 公告通知創建完成 ===');
+      console.log(`成功獲取 ${notifications.length} 筆未讀公告通知`);
+      return notifications;
     } catch (error) {
-      console.error('Error in createAnnouncementNotifications:', error);
-      toast({
-        title: "通知發送失敗",
-        description: `無法為用戶創建通知: ${error instanceof Error ? error.message : '未知錯誤'}`,
-        variant: "destructive"
-      });
-      throw error;
+      console.error('獲取未讀公告通知失敗:', error);
+      return [];
     }
+  }
+
+  /**
+   * 獲取用戶的所有公告通知（包括已讀和未讀）
+   * 使用關聯查詢一次性獲取公告和已讀狀態 - 優化版本
+   */
+  static async getAllAnnouncementsAsNotificationsOptimized(userId: string): Promise<Notification[]> {
+    try {
+      console.log('獲取所有公告作為通知（優化版本）for user:', userId);
+      
+      // 使用關聯查詢，但在 SELECT 中過濾特定用戶的已讀記錄
+      const { data, error } = await supabase
+        .from('announcements')
+        .select(`
+          id,
+          title,
+          content,
+          category,
+          created_at,
+          created_by_name,
+          is_pinned,
+          announcement_reads!left (
+            user_id,
+            read_at
+          )
+        `)
+        .eq('is_active', true)
+        .order('is_pinned', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) {
+        console.error('獲取公告通知失敗:', error);
+        return [];
+      }
+
+      if (!data || data.length === 0) {
+        return [];
+      }
+
+      // 轉換為通知格式
+      const notifications: Notification[] = data.map((announcement: AnnouncementWithReads) => {
+        // 檢查是否有該用戶的已讀記錄
+        // 過濾出該用戶的已讀記錄
+        const userReadRecord = announcement.announcement_reads?.find(read => read.user_id === userId);
+        const hasReadRecord = !!userReadRecord;
+
+        return {
+          id: announcement.id,
+          title: announcement.title,
+          message: announcement.content.length > 100 
+            ? announcement.content.substring(0, 100) + '...' 
+            : announcement.content,
+          type: 'announcement' as const,
+          createdAt: announcement.created_at,
+          isRead: hasReadRecord,
+          data: {
+            announcementId: announcement.id,
+            actionRequired: false
+          }
+        };
+      });
+
+      console.log(`成功獲取 ${notifications.length} 筆公告通知（優化版本）`);
+      return notifications;
+    } catch (error) {
+      console.error('獲取公告通知失敗（優化版本）:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 標記公告為已讀（使用現有的 announcement_reads 表）
+   */
+  static async markAnnouncementAsRead(announcementId: string, userId: string): Promise<boolean> {
+    try {
+      console.log('標記公告通知為已讀:', { announcementId, userId });
+      
+      // 使用現有的 RPC 函數
+      const { error } = await supabase.rpc('mark_announcement_as_read', {
+        user_uuid: userId,
+        announcement_uuid: announcementId
+      });
+
+      if (error) {
+        console.error('標記公告通知已讀失敗:', error);
+        return false;
+      }
+
+      console.log('公告通知已成功標記為已讀');
+      return true;
+    } catch (error) {
+      console.error('標記公告通知已讀失敗:', error);
+      return false;
+    }
+  }
+
+  /**
+   * 標記所有公告為已讀
+   */
+  static async markAllAnnouncementsAsRead(userId: string): Promise<boolean> {
+    try {
+      console.log('標記所有公告通知為已讀 for user:', userId);
+      
+      // 獲取所有未讀的公告ID
+      const { data: allAnnouncements, error: fetchError } = await supabase
+        .from('announcements')
+        .select('id')
+        .eq('is_active', true);
+
+      if (fetchError) {
+        console.error('獲取公告失敗:', fetchError);
+        return false;
+      }
+
+      if (!allAnnouncements || allAnnouncements.length === 0) {
+        return true;
+      }
+
+      // 獲取用戶的已讀記錄
+      const { data: readRecords, error: readError } = await supabase
+        .from('announcement_reads')
+        .select('announcement_id')
+        .eq('user_id', userId);
+
+      if (readError) {
+        console.error('獲取已讀記錄失敗:', readError);
+        return false;
+      }
+
+      const readAnnouncementIds = new Set(readRecords?.map(r => r.announcement_id) || []);
+
+      // 找出未讀的公告
+      const unreadAnnouncementIds = allAnnouncements
+        .filter(announcement => !readAnnouncementIds.has(announcement.id))
+        .map(announcement => announcement.id);
+
+      if (unreadAnnouncementIds.length === 0) {
+        console.log('沒有未讀公告需要標記');
+        return true;
+      }
+
+      // 為每個未讀公告創建已讀記錄
+      const readRecordsToInsert = unreadAnnouncementIds.map(announcementId => ({
+        user_id: userId,
+        announcement_id: announcementId,
+        read_at: new Date().toISOString()
+      }));
+
+      const { error: insertError } = await supabase
+        .from('announcement_reads')
+        .insert(readRecordsToInsert);
+
+      if (insertError) {
+        console.error('批量標記已讀失敗:', insertError);
+        return false;
+      }
+
+      console.log('所有公告通知已成功標記為已讀');
+      return true;
+    } catch (error) {
+      console.error('標記所有公告通知已讀失敗:', error);
+      return false;
+    }
+  }
+
+  /**
+   * 清空所有通知（實際上是標記所有公告為已讀）
+   */
+  static async clearAllNotifications(userId: string): Promise<boolean> {
+    // 對於基於公告的通知系統，"清空"等同於"標記所有為已讀"
+    return this.markAllAnnouncementsAsRead(userId);
   }
 }
 

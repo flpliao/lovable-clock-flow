@@ -1,9 +1,7 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Notification } from '@/components/notifications/NotificationItem';
 import { useUser } from '@/contexts/UserContext';
-import { NotificationDatabaseOperations } from '@/services/notifications';
-import { NotificationRealtimeService } from '@/services/notificationRealtimeService';
+import { AnnouncementNotificationService } from '@/services/announcementNotificationService';
 import { useNotificationActions } from '@/hooks/useNotificationActions';
 
 export const useNotifications = () => {
@@ -13,16 +11,18 @@ export const useNotifications = () => {
   const [isLoading, setIsLoading] = useState(false);
   const lastRefreshRef = useRef<Date>(new Date());
   const loadingRef = useRef(false);
+  const hasInitialLoadRef = useRef(false);
 
   // Load notifications from database with debouncing
-  const loadNotifications = useCallback(async () => {
+  const loadNotifications = useCallback(async (forceLoad = false) => {
     if (!currentUser || loadingRef.current) {
       return;
     }
 
     const now = new Date();
-    // 防止頻繁刷新 - 至少間隔 2 秒
-    if (now.getTime() - lastRefreshRef.current.getTime() < 2000) {
+    // 防止頻繁刷新 - 至少間隔 2 秒，但首次載入或強制載入時不受限制
+    if (!forceLoad && hasInitialLoadRef.current && now.getTime() - lastRefreshRef.current.getTime() < 2000) {
+      console.log('跳過載入通知（時間間隔未達）');
       return;
     }
 
@@ -33,7 +33,7 @@ export const useNotifications = () => {
     setIsLoading(true);
 
     try {
-      const formattedNotifications = await NotificationDatabaseOperations.loadNotifications(currentUser.id);
+      const formattedNotifications = await AnnouncementNotificationService.getAllAnnouncementsAsNotificationsOptimized(currentUser.id);
       const unread = formattedNotifications.filter(n => !n.isRead).length;
       
       console.log('Raw loaded notifications:', formattedNotifications.length);
@@ -42,6 +42,7 @@ export const useNotifications = () => {
       setNotifications(formattedNotifications);
       setUnreadCount(unread);
       lastRefreshRef.current = now;
+      hasInitialLoadRef.current = true;
       console.log(`通知載入完成 - 用戶: ${currentUser.name} (${currentUser?.role_id}), 總計: ${formattedNotifications.length}, 未讀: ${unread}`);
       
     } catch (error) {
@@ -56,32 +57,38 @@ export const useNotifications = () => {
   useEffect(() => {
     if (currentUser) {
       console.log('User changed, loading notifications for:', currentUser.id, currentUser.name, currentUser?.role_id);
-      loadNotifications();
+      hasInitialLoadRef.current = false;
+      loadNotifications(true);
     } else {
       console.log('No user, clearing notifications');
       setNotifications([]);
       setUnreadCount(0);
+      hasInitialLoadRef.current = false;
     }
-  }, [currentUser?.id]); // 只依賴 currentUser.id
+  }, [currentUser?.id, loadNotifications]);
 
-  // Set up real-time subscription for notifications - only once
+  // Set up real-time subscription for announcements - reuse existing announcement events
   useEffect(() => {
     if (!currentUser) {
       return;
     }
 
-    console.log('Setting up real-time subscription for user:', currentUser.id, currentUser.name, currentUser?.role_id);
+    console.log('Setting up announcement event listeners for user:', currentUser.id, currentUser.name, currentUser?.role_id);
     
-    const cleanup = NotificationRealtimeService.setupRealtimeSubscription(
-      currentUser.id,
-      () => {
-        console.log(`Real-time event triggered for ${currentUser.name} (${currentUser?.role_id}), reloading notifications`);
-        loadNotifications();
-      }
-    );
+    const handleAnnouncementUpdate = () => {
+      console.log(`Announcement event triggered for ${currentUser.name} (${currentUser?.role_id}), reloading notifications`);
+      loadNotifications();
+    };
 
-    return cleanup;
-  }, [currentUser?.id]); // 只依賴 currentUser.id
+    // 監聽公告相關的事件
+    window.addEventListener('refreshAnnouncements', handleAnnouncementUpdate);
+    window.addEventListener('announcementDataUpdated', handleAnnouncementUpdate);
+    
+    return () => {
+      window.removeEventListener('refreshAnnouncements', handleAnnouncementUpdate);
+      window.removeEventListener('announcementDataUpdated', handleAnnouncementUpdate);
+    };
+  }, [currentUser?.id, loadNotifications]);
 
   // 監聽通知更新事件 - 減少事件監聽器數量
   useEffect(() => {
@@ -106,9 +113,6 @@ export const useNotifications = () => {
       window.removeEventListener('forceNotificationRefresh', handleNotificationUpdate as EventListener);
     };
   }, [currentUser?.id, loadNotifications]);
-
-  // 移除定期自動刷新 - 依賴實時更新即可
-  // 移除路由變更時的刷新 - 不必要
 
   // Get notification actions
   const actions = useNotificationActions(

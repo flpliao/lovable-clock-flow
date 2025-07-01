@@ -1,13 +1,13 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu } from 'lucide-react';
+import { Menu, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/contexts/UserContext';
 import HeaderLogo from './header/HeaderLogo';
 import UserInfo from './header/UserInfo';
 import DesktopNavigation from './header/DesktopNavigation';
 import MobileNavigation from './header/MobileNavigation';
+import NotificationCenter from './notifications/NotificationCenter';
 import { useMenuLogic } from './header/useMenuLogic';
 
 const Header: React.FC = () => {
@@ -39,6 +39,13 @@ const Header: React.FC = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // 調試信息
+  console.log('Header 渲染狀態:', { 
+    isAuthenticated, 
+    currentUser: currentUser?.name, 
+    hasUser: !!currentUser 
+  });
+
   return (
     <header className="bg-gradient-to-r from-blue-600/50 via-blue-700/50 to-blue-800/50 shadow-lg border-b border-blue-500/20">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
@@ -55,21 +62,34 @@ const Header: React.FC = () => {
             />
           </div>
           
-          {/* User Info and Cache Clear Button */}
-          <div className="flex items-center space-x-2">
+          {/* 通知中心和用戶信息 */}
+          <div className="flex items-center space-x-4">
+            {/* 總是顯示通知中心進行測試 */}
+            <div className="relative">
+              {isAuthenticated && (
+                <NotificationCenter />
+              ) }
+            </div>
             <UserInfo />
           </div>
         </div>
 
         {/* 平板和手機版佈局 */}
         <div className="lg:hidden">
-          {/* 單一行：Logo 和選單按鈕 */}
+          {/* 單一行：Logo、通知中心和選單按鈕 */}
           <div className="flex items-center justify-between h-14 py-2">
             <div className="flex-shrink-0">
               <HeaderLogo />
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
+              {/* 通知中心 */}
+              <div className="relative">
+                {isAuthenticated && (
+                  <NotificationCenter />
+                )}
+              </div>
+              
               {/* 選單按鈕 */}
               {isAuthenticated && (
                 <Button

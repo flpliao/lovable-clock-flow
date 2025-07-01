@@ -20,11 +20,23 @@ export class NotificationDatabaseOperations {
         throw error;
       }
 
-      const formattedNotifications: Notification[] = (data || []).map((notification: any) => ({
+      interface DbNotification {
+        id: string;
+        title: string;
+        message: string;
+        type: string;
+        created_at: string;
+        is_read: boolean;
+        leave_request_id?: string;
+        announcement_id?: string;
+        action_required?: boolean;
+      }
+
+      const formattedNotifications: Notification[] = (data || []).map((notification: DbNotification) => ({
         id: notification.id,
         title: notification.title,
         message: notification.message,
-        type: notification.type,
+        type: notification.type as Notification['type'],
         createdAt: notification.created_at,
         isRead: notification.is_read,
         data: {

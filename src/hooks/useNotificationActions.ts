@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Notification } from '@/components/notifications/NotificationItem';
-import { NotificationDatabaseOperations } from '@/services/notifications';
+import { AnnouncementNotificationService } from '@/services/announcementNotificationService';
 import { toast } from '@/hooks/use-toast';
 
 export const useNotificationActions = (
@@ -16,7 +16,7 @@ export const useNotificationActions = (
 
     console.log('Marking notification as read with user ID:', currentUserId);
 
-    const success = await NotificationDatabaseOperations.markNotificationAsRead(id, currentUserId);
+    const success = await AnnouncementNotificationService.markAnnouncementAsRead(id, currentUserId);
     if (success) {
       // Update local state immediately
       setNotifications(prev => 
@@ -35,7 +35,7 @@ export const useNotificationActions = (
 
     console.log('Marking all notifications as read with user ID:', currentUserId);
 
-    const success = await NotificationDatabaseOperations.markAllNotificationsAsRead(currentUserId);
+    const success = await AnnouncementNotificationService.markAllAnnouncementsAsRead(currentUserId);
     if (success) {
       // Update local state
       setNotifications(prev => 
@@ -53,7 +53,7 @@ export const useNotificationActions = (
 
     console.log('Clearing all notifications with user ID:', currentUserId);
 
-    const success = await NotificationDatabaseOperations.clearAllNotifications(currentUserId);
+    const success = await AnnouncementNotificationService.clearAllNotifications(currentUserId);
     if (success) {
       setNotifications([]);
       setUnreadCount(0);
@@ -70,7 +70,9 @@ export const useNotificationActions = (
 
     console.log('Adding notification with user ID:', currentUserId);
 
-    const notificationId = await NotificationDatabaseOperations.addNotification(currentUserId, notification);
+    // 對於基於公告的通知系統，添加通知意味著創建新公告
+    // 這裡暫時返回空字符串，因為添加通知的邏輯需要重新設計
+    const notificationId = '';
     
     if (notificationId) {
       // Reload notifications to get the latest data

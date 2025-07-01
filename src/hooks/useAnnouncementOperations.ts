@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { CompanyAnnouncement } from '@/types/announcement';
@@ -9,7 +10,7 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
   const { currentUser, isAdmin } = useUser();
 
   // Create announcement with notifications
-  const createAnnouncement = async (newAnnouncement: Omit<CompanyAnnouncement, 'id' | 'created_at' | 'created_by' | 'company_id'>) => {
+  const createAnnouncement = useCallback(async (newAnnouncement: Omit<CompanyAnnouncement, 'id' | 'created_at' | 'created_by' | 'company_id'>) => {
     if (!isAdmin()) {
       toast({
         title: "權限不足",
@@ -119,10 +120,10 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
       });
       return false;
     }
-  };
+  }, [isAdmin, currentUser, toast, refreshData]);
 
   // Update announcement
-  const updateAnnouncement = async (id: string, updatedAnnouncement: Partial<CompanyAnnouncement>) => {
+  const updateAnnouncement = useCallback(async (id: string, updatedAnnouncement: Partial<CompanyAnnouncement>) => {
     if (!isAdmin()) {
       toast({
         title: "權限不足",
@@ -142,10 +143,10 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
       console.error('Error updating announcement:', error);
       return false;
     }
-  };
+  }, [isAdmin, toast, refreshData]);
 
   // Delete announcement
-  const deleteAnnouncement = async (id: string) => {
+  const deleteAnnouncement = useCallback(async (id: string) => {
     if (!isAdmin()) {
       toast({
         title: "權限不足",
@@ -165,7 +166,7 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
       console.error('Error deleting announcement:', error);
       return false;
     }
-  };
+  }, [isAdmin, toast, refreshData]);
 
   return {
     createAnnouncement,

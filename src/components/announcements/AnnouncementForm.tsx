@@ -1,30 +1,30 @@
 
-import React, { useState, useEffect } from 'react';
-import { Upload, Calendar, Trash2, Save, X } from 'lucide-react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/hooks/use-toast';
-import { CompanyAnnouncement, AnnouncementCategory } from '@/types/announcement';
-import { useUser } from '@/contexts/UserContext';
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { useUser } from '@/contexts/UserContext';
+import { useToast } from '@/hooks/use-toast';
+import { AnnouncementCategory, CompanyAnnouncement } from '@/types/announcement';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Calendar, Save, Upload, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 const announcementSchema = z.object({
   title: z.string().min(1, '標題不能為空'),
@@ -63,6 +63,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
     handleSubmit,
     control,
     reset,
+    watch,
     formState: { errors }
   } = useForm<FormData>({
     resolver: zodResolver(announcementSchema),
@@ -336,22 +337,41 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
           </div>
 
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Controller
-                name="is_pinned"
-                control={control}
-                render={({ field }) => (
-                  <Switch
-                    id="is_pinned"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    disabled={isLoading}
-                  />
-                )}
-              />
-              <label htmlFor="is_pinned" className="text-sm font-medium">
-                置頂公告
-              </label>
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <Controller
+                  name="is_pinned"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      id="is_pinned"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={isLoading}
+                    />
+                  )}
+                />
+                <label htmlFor="is_pinned" className="text-sm font-medium">
+                  置頂公告
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Controller
+                  name="is_active"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      id="is_active"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={isLoading}
+                    />
+                  )}
+                />
+                <label htmlFor="is_active" className="text-sm font-medium">
+                  公告狀態
+                </label>
+              </div>
             </div>
             <div className="text-sm text-gray-500 flex items-center">
               <Calendar className="h-4 w-4 mr-1" />

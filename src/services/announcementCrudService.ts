@@ -190,16 +190,13 @@ export class AnnouncementCrudService {
   }
 
   /**
-   * Delete an announcement (set is_active to false)
+   * Delete an announcement (permanently remove from database)
    */
   static async deleteAnnouncement(id: string): Promise<boolean> {
     try {
       const { error } = await supabase
         .from('announcements')
-        .update({ 
-          is_active: false,
-          updated_at: new Date().toISOString()
-        })
+        .delete()
         .eq('id', id);
 
       if (error) {
@@ -209,7 +206,7 @@ export class AnnouncementCrudService {
 
       toast({
         title: "刪除成功",
-        description: "公告已成功刪除",
+        description: "公告已永久刪除",
       });
       
       return true;

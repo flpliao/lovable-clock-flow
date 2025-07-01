@@ -1,15 +1,11 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, Database, Shield, TrendingUp, Globe, MapPin } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { LanguageManagement } from '@/components/i18n/components/LanguageManagement';
-import RLSOptimizationReport from '@/components/performance/RLSOptimizationReport';
-import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
 import CheckInDistanceSettings from '@/components/company/components/CheckInDistanceSettings';
 import GoogleMapsApiKeySettings from '@/components/company/components/GoogleMapsApiKeySettings';
-import { RLSSettingsCard } from '@/components/company/components/RLSSettingsCard';
 
 const SystemSettings = () => {
   const { isAdmin } = useUser();
@@ -53,18 +49,6 @@ const SystemSettings = () => {
       label: '語言設定',
       icon: Globe,
       description: '多語系管理'
-    },
-    {
-      id: 'performance',
-      label: '效能監控',
-      icon: TrendingUp,
-      description: '系統效能分析'
-    },
-    {
-      id: 'security',
-      label: '安全設定',
-      icon: Shield,
-      description: 'RLS 和權限管理'
     }
   ];
 
@@ -100,21 +84,6 @@ const SystemSettings = () => {
           </div>
         );
       
-      case 'performance':
-        return (
-          <div className="space-y-6">
-            <PerformanceMonitor />
-            <RLSOptimizationReport />
-          </div>
-        );
-      
-      case 'security':
-        return (
-          <div className="space-y-6">
-            <RLSSettingsCard />
-          </div>
-        );
-      
       default:
         return null;
     }
@@ -130,7 +99,7 @@ const SystemSettings = () => {
         {/* 頁面標題 */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-white mb-4">系統設定</h1>
-          <p className="text-xl text-white/80">管理系統配置和安全設定</p>
+          <p className="text-xl text-white/80">管理系統配置和設定</p>
         </div>
 
         {/* 主要內容區域 */}

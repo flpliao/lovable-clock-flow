@@ -1,9 +1,7 @@
-
 import React, { useState } from 'react';
 import CompanyManagementHeader from './components/CompanyManagementHeader';
 import CompanyInfoCard from './CompanyInfoCard';
 import BranchTable from './BranchTable';
-import { RLSSettingsCard } from './components/RLSSettingsCard';
 import CheckInDistanceSettings from './components/CheckInDistanceSettings';
 import { CompanyManagementProvider } from './CompanyManagementContext';
 
@@ -16,8 +14,6 @@ const CompanyManagement = () => {
         return <CompanyInfoCard />;
       case 'branches':
         return <BranchTable />;
-      case 'settings':
-        return <RLSSettingsCard />;
       case 'checkin':
         return <CheckInDistanceSettings />;
       default:

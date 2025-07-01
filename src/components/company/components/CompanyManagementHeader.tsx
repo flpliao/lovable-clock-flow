@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Building2, Users, Settings, MapPin } from 'lucide-react';
 
@@ -25,12 +24,6 @@ const CompanyManagementHeader: React.FC<CompanyManagementHeaderProps> = ({
       description: '管理分店與分部'
     },
     {
-      id: 'settings',
-      label: '系統設定',
-      icon: Settings,
-      description: '系統參數設定'
-    },
-    {
       id: 'checkin',
       label: '打卡設定',
       icon: MapPin,
@@ -43,7 +36,7 @@ const CompanyManagementHeader: React.FC<CompanyManagementHeaderProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">公司管理</h1>
-          <p className="text-gray-600 mt-1">管理公司資訊、分店和系統設定</p>
+          <p className="text-gray-600 mt-1">管理公司資訊、分店和打卡設定</p>
         </div>
       </div>
       

@@ -8,7 +8,6 @@ import HeaderLogo from './header/HeaderLogo';
 import UserInfo from './header/UserInfo';
 import DesktopNavigation from './header/DesktopNavigation';
 import MobileNavigation from './header/MobileNavigation';
-import CacheClearButton from './common/CacheClearButton';
 import { useMenuLogic } from './header/useMenuLogic';
 
 const Header: React.FC = () => {
@@ -58,7 +57,6 @@ const Header: React.FC = () => {
           
           {/* User Info and Cache Clear Button */}
           <div className="flex items-center space-x-2">
-            {isAuthenticated && <CacheClearButton />}
             <UserInfo />
           </div>
         </div>
@@ -72,7 +70,6 @@ const Header: React.FC = () => {
             </div>
             
             <div className="flex items-center space-x-2">
-              {isAuthenticated && <CacheClearButton />}
               {/* 選單按鈕 */}
               {isAuthenticated && (
                 <Button

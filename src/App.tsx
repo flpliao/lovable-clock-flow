@@ -43,9 +43,6 @@ import CompanyAnnouncements from '@/pages/CompanyAnnouncements';
 // 404 page
 import NotFound from '@/pages/NotFound';
 
-// Performance monitoring page
-import PerformanceMonitoringPage from '@/pages/PerformanceMonitoringPage';
-
 function App() {
   return (
     <Router>
@@ -83,7 +80,6 @@ function App() {
               <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
               <Route path="/company-announcements" element={<CompanyAnnouncements />} />
               <Route path="/auth/reset-password" element={<ResetPassword />} />
-              <Route path="/performance-monitoring" element={<PerformanceMonitoringPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />

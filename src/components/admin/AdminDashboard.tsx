@@ -1,14 +1,12 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFinalPermissions } from '@/hooks/useFinalPermissions';
-import RLSPerformanceMonitor from './RLSPerformanceMonitor';
 import PermissionTestPanel from './PermissionTestPanel';
-import { Settings, TestTube, Database, BarChart3 } from 'lucide-react';
+import { Settings, TestTube, Database } from 'lucide-react';
 
 const AdminDashboard = () => {
   const { isAdmin } = useFinalPermissions();
-  const [activeTab, setActiveTab] = useState('performance');
+  const [activeTab, setActiveTab] = useState('testing');
 
   if (!isAdmin()) {
     return (
@@ -27,15 +25,7 @@ const AdminDashboard = () => {
 
       <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-white/20 backdrop-blur-xl border border-white/30">
-            <TabsTrigger
-              value="performance"
-              className="flex items-center gap-2 text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/30"
-            >
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">效能監控</span>
-              <span className="sm:hidden">效能</span>
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 bg-white/20 backdrop-blur-xl border border-white/30">
             <TabsTrigger
               value="testing"
               className="flex items-center gap-2 text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/30"
@@ -55,16 +45,6 @@ const AdminDashboard = () => {
           </TabsList>
 
           <div className="mt-6">
-            <TabsContent value="performance" className="mt-0">
-              <div className="space-y-6">
-                <div className="text-center mb-6">
-                  <h2 className="text-xl font-bold text-white mb-2">RLS 效能監控</h2>
-                  <p className="text-white/80">監控資料庫行級安全性政策的效能狀況</p>
-                </div>
-                <RLSPerformanceMonitor />
-              </div>
-            </TabsContent>
-
             <TabsContent value="testing" className="mt-0">
               <div className="space-y-6">
                 <div className="text-center mb-6">

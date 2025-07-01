@@ -1,6 +1,6 @@
 
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { CompanyAnnouncement } from '@/types/announcement';
 
 export class AnnouncementCrudService {
@@ -13,7 +13,6 @@ export class AnnouncementCrudService {
       const { data, error } = await supabase
         .from('announcements')
         .select('*')
-        .eq('is_active', true)
         .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false });
 

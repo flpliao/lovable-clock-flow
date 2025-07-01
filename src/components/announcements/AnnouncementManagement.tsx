@@ -1,15 +1,15 @@
 
-import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { CompanyAnnouncement } from '@/types/announcement';
-import { useSupabaseAnnouncements } from '@/hooks/useSupabaseAnnouncements';
 import { useSimplifiedPermissions } from '@/hooks/useSimplifiedPermissions';
+import { useSupabaseAnnouncements } from '@/hooks/useSupabaseAnnouncements';
+import { CompanyAnnouncement } from '@/types/announcement';
+import { Plus } from 'lucide-react';
+import React, { useState } from 'react';
 import AnnouncementDetail from './AnnouncementDetail';
 import AnnouncementForm from './AnnouncementForm';
-import AnnouncementSearchFilter from './AnnouncementSearchFilter';
 import AnnouncementListView from './AnnouncementListView';
+import AnnouncementSearchFilter from './AnnouncementSearchFilter';
 
 const AnnouncementManagement: React.FC = () => {
   const { toast } = useToast();
@@ -20,7 +20,7 @@ const AnnouncementManagement: React.FC = () => {
     createAnnouncement,
     updateAnnouncement,
     deleteAnnouncement
-  } = useSupabaseAnnouncements();
+  } = useSupabaseAnnouncements(true); // 載入所有公告，包括已停用的
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');

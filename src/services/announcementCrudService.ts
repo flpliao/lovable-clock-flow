@@ -3,16 +3,42 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { CompanyAnnouncement } from '@/types/announcement';
 
+// 定義資料庫回傳的公告資料結構類型
+interface DatabaseAnnouncement {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  file_url?: string | null;
+  file_name?: string | null;
+  file_type?: string | null;
+  created_at: string;
+  created_by_id?: string | null;
+  created_by_name?: string | null;
+  company_id?: string | null;
+  is_pinned: boolean;
+  is_active: boolean;
+}
+
 export class AnnouncementCrudService {
   /**
-   * Load all active announcements from the database
+   * Load announcements from the database
+   * @param includeInactive - 是否包含已停用的公告，預設為 false（只載入活躍公告）
    */
-  static async loadAnnouncements(): Promise<CompanyAnnouncement[]> {
+  static async loadAnnouncements(includeInactive: boolean = false): Promise<CompanyAnnouncement[]> {
     try {
-      console.log('Loading announcements from Supabase database');
-      const { data, error } = await supabase
+      console.log('Loading announcements from Supabase database, includeInactive:', includeInactive);
+      
+      let query = supabase
         .from('announcements')
-        .select('*')
+        .select('*');
+      
+      // 如果不包含已停用的公告，則篩選只載入活躍的
+      if (!includeInactive) {
+        query = query.eq('is_active', true);
+      }
+      
+      const { data, error } = await query
         .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false });
 
@@ -21,7 +47,7 @@ export class AnnouncementCrudService {
         return [];
       }
 
-      const formattedAnnouncements = (data || []).map((announcement: any) => ({
+      const formattedAnnouncements = (data || []).map((announcement: DatabaseAnnouncement) => ({
         id: announcement.id,
         title: announcement.title,
         content: announcement.content,
@@ -60,7 +86,7 @@ export class AnnouncementCrudService {
     announcement: Omit<CompanyAnnouncement, 'id' | 'created_at' | 'created_by' | 'company_id'>,
     currentUserId: string,
     currentUserName: string
-  ): Promise<{ success: boolean; data?: any }> {
+  ): Promise<{ success: boolean; data?: DatabaseAnnouncement }> {
     try {
       console.log('Creating announcement for user:', currentUserId);
       console.log('Announcement data:', announcement);

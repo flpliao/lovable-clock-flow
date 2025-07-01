@@ -1,18 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
-import { CompanyAnnouncement } from '@/types/announcement';
 import { AnnouncementCrudService } from '@/services/announcementCrudService';
+import { CompanyAnnouncement } from '@/types/announcement';
+import { useCallback, useEffect, useState } from 'react';
 
-export const useAnnouncementData = () => {
+export const useAnnouncementData = (includeInactive: boolean = false) => {
   const [announcements, setAnnouncements] = useState<CompanyAnnouncement[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Load announcements
   const loadAnnouncements = useCallback(async () => {
     try {
-      console.log('Loading announcements...');
       setLoading(true);
-      const data = await AnnouncementCrudService.loadAnnouncements();
-      console.log('Loaded announcements:', data.length);
+      const data = await AnnouncementCrudService.loadAnnouncements(includeInactive);
       setAnnouncements(data);
     } catch (error) {
       console.error('Error loading announcements:', error);
@@ -20,7 +18,7 @@ export const useAnnouncementData = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [includeInactive]);
 
   // 強制刷新函數
   const forceRefresh = useCallback(async () => {

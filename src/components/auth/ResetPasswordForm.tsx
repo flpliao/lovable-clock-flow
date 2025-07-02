@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -18,47 +17,69 @@ const ResetPasswordForm: React.FC = () => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const validateToken = async () => {
-      console.log('🔐 開始驗證重設密碼 token');
+    const checkAuthStatus = async () => {
+      console.log('🔐 檢查用戶驗證狀態');
       
-      // 從 URL 取得 token 參數
-      const token = searchParams.get('token') || searchParams.get('access_token');
-      const type = searchParams.get('type');
-      
-      console.log('🔑 Token 參數:', { token: token?.substring(0, 10) + '...', type });
-      
-      if (!token || type !== 'recovery') {
-        console.log('❌ 缺少必要的 token 參數');
-        toast({
-          variant: 'destructive',
-          title: '無效的重設連結',
-          description: '請從電子郵件中的連結進入此頁面。',
-        });
-        setTimeout(() => navigate('/forgot-password'), 2000);
-        setIsValidatingToken(false);
-        return;
-      }
-
       try {
-        // 使用 verifyOtp 驗證 recovery token
-        console.log('🔐 驗證 recovery token...');
-        const { data, error } = await supabase.auth.verifyOtp({
-          token_hash: token,
-          type: 'recovery'
+        // 檢查 URL hash 中的參數
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        let accessToken = hashParams.get('access_token');
+        let refreshToken = hashParams.get('refresh_token');
+        let type = hashParams.get('type');
+        
+        // 如果 hash 中沒有，檢查查詢參數
+        if (!accessToken) {
+          accessToken = searchParams.get('access_token');
+          refreshToken = searchParams.get('refresh_token');
+          type = searchParams.get('type');
+        }
+        
+        console.log('🔑 驗證參數:', { 
+          hasAccessToken: !!accessToken, 
+          hasRefreshToken: !!refreshToken, 
+          type,
+          source: hashParams.get('access_token') ? 'hash' : 'query'
         });
+
+        // 如果有 recovery 類型的驗證參數，設置會話
+        if (accessToken && refreshToken && type === 'recovery') {
+          console.log('🔐 發現 recovery 驗證參數，設置會話...');
+          
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+
+          if (error) {
+            console.error('❌ 設置會話失敗:', error);
+            throw error;
+          }
+
+          if (data.session && data.user) {
+            console.log('✅ 會話設置成功，用戶已登入:', data.user.email);
+            setHasValidToken(true);
+            
+            toast({
+              title: '驗證成功',
+              description: '請設定您的新密碼。',
+            });
+            
+            // 清理 URL
+            window.history.replaceState(null, '', window.location.pathname);
+            return;
+          }
+        }
+
+        // 檢查當前用戶是否已登入
+        const { data: { user }, error } = await supabase.auth.getUser();
 
         if (error) {
-          console.error('❌ Token 驗證失敗:', error);
-          toast({
-            variant: 'destructive',
-            title: '連結無效或已過期',
-            description: '重設密碼連結無效或已過期，請重新申請。',
-          });
-          setTimeout(() => navigate('/forgot-password'), 2000);
-          setHasValidToken(false);
-        } else if (data.user) {
-          console.log('✅ Token 驗證成功');
-          console.log('👤 用戶資訊:', data.user.email);
+          console.error('❌ 獲取用戶資訊失敗:', error);
+          throw error;
+        }
+
+        if (user) {
+          console.log('✅ 用戶已通過驗證並登入:', user.email);
           setHasValidToken(true);
           
           toast({
@@ -66,17 +87,17 @@ const ResetPasswordForm: React.FC = () => {
             description: '請設定您的新密碼。',
           });
         } else {
-          console.log('❌ Token 驗證失敗 - 無用戶資訊');
+          console.log('❌ 用戶未登入或驗證失敗');
           toast({
             variant: 'destructive',
             title: '驗證失敗',
-            description: '無法驗證您的身份，請重新申請重設密碼。',
+            description: '重設密碼連結無效或已過期，請重新申請。',
           });
           setTimeout(() => navigate('/forgot-password'), 2000);
           setHasValidToken(false);
         }
       } catch (error) {
-        console.error('🔥 Token 驗證錯誤:', error);
+        console.error('🔥 檢查驗證狀態錯誤:', error);
         toast({
           variant: 'destructive',
           title: '驗證失敗',
@@ -89,8 +110,8 @@ const ResetPasswordForm: React.FC = () => {
       }
     };
 
-    validateToken();
-  }, [searchParams, navigate, toast]);
+    checkAuthStatus();
+  }, [navigate, toast, searchParams]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();

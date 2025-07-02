@@ -1,42 +1,13 @@
 
-import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
-import { useUser } from '@/contexts/UserContext';
+import React from 'react';
 import { Lock } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useUser } from '@/contexts/UserContext';
+import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
 
 const ResetPassword = () => {
-  const { currentUser, isAuthenticated, isUserLoaded } = useUser();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [isRedirecting, setIsRedirecting] = useState(false);
+  const { isUserLoaded } = useUser();
 
-  // 檢查是否有重設密碼的 token 或已驗證標記
-  const hasResetToken = searchParams.get('token') || searchParams.get('access_token');
-  const isVerified = searchParams.get('verified') === 'true';
 
-  // 檢查已登入用戶並重定向（但如果有重設 token 或已驗證則允許繼續）
-  useEffect(() => {
-    if (isUserLoaded && isAuthenticated && currentUser && !hasResetToken && !isVerified && !isRedirecting) {
-      console.log('🔐 用戶已登入且無重設 token，重定向到主頁面:', currentUser.name);
-      setIsRedirecting(true);
-      setTimeout(() => {
-        navigate('/account-settings', { replace: true });
-      }, 100);
-    }
-  }, [isUserLoaded, isAuthenticated, currentUser, hasResetToken, isVerified, navigate, isRedirecting]);
-
-  // 已登入用戶顯示跳轉中（僅在沒有重設 token 且未驗證時）
-  if (isRedirecting || (isAuthenticated && currentUser && !hasResetToken && !isVerified)) {
-    return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-          <p>正在跳轉...</p>
-        </div>
-      </div>
-    );
-  }
 
   // 載入中狀態
   if (!isUserLoaded) {

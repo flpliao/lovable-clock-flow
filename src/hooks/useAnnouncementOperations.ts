@@ -3,7 +3,30 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { CompanyAnnouncement } from '@/types/announcement';
 import { AnnouncementCrudService } from '@/services/announcementCrudService';
-import { AnnouncementNotificationService } from '@/services/announcementNotificationService';
+import { NotificationBulkOperations } from '@/services/notifications/notificationBulkOperations';
+import { supabase } from '@/integrations/supabase/client';
+
+/**
+ * 獲取所有需要接收公告通知的用戶
+ */
+const getAllStaffUsers = async (): Promise<string[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('staff')
+      .select('id')
+      .not('email', 'is', null);
+
+    if (error) {
+      console.error('❌ 獲取用戶列表失敗:', error);
+      return [];
+    }
+
+    return (data || []).map(staff => staff.id);
+  } catch (error) {
+    console.error('❌ 獲取用戶列表時發生錯誤:', error);
+    return [];
+  }
+};
 
 export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
   const { toast } = useToast();
@@ -57,15 +80,34 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
         console.log('重新載入公告列表...');
         await refreshData();
         
-        // 為所有用戶創建通知（包含管理者）
+        // 為所有用戶創建通知
         console.log('開始為所有用戶創建通知...');
         try {
-          await AnnouncementNotificationService.createAnnouncementNotifications(
-            result.data.id, 
-            announcementToCreate.title, 
-            currentUser.id
-          );
-          console.log('通知創建流程完成');
+          // 獲取所有需要接收通知的用戶
+          const userIds = await getAllStaffUsers();
+          console.log(`獲取到 ${userIds.length} 個用戶需要接收通知`);
+          
+          if (userIds.length > 0) {
+            // 使用批量通知服務創建通知
+            const notificationSuccess = await NotificationBulkOperations.createBulkNotifications(
+              userIds,
+              {
+                title: '新公告發布',
+                message: `新公告「${announcementToCreate.title}」已發布，請查看`,
+                type: 'announcement',
+                data: {
+                  announcementId: result.data.id,
+                  actionRequired: false
+                }
+              }
+            );
+            
+            if (notificationSuccess) {
+              console.log('批量通知創建成功');
+            } else {
+              console.error('批量通知創建失敗');
+            }
+          }
           
           // 觸發全域公告更新事件
           const triggerEvents = () => {

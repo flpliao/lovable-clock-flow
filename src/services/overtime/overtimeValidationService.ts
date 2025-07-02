@@ -40,7 +40,7 @@ export const overtimeValidationService = {
       // 獲取用戶角色資訊
       const { data: staffData, error } = await supabase
         .from('staff')
-        .select('role, role_id')
+        .select('role_id')
         .or(`user_id.eq.${userId},id.eq.${userId}`)
         .single();
 
@@ -101,7 +101,7 @@ export const overtimeValidationService = {
             updated_at
           )
         `)
-        .eq('current_approver', userId)
+        // .eq('current_approver', userId)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 

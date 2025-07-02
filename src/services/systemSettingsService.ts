@@ -32,7 +32,7 @@ export class SystemSettingsService {
       // 檢查用戶角色
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
-        .select('role, name')
+        .select(' name')
         .eq('user_id', user.id)
         .maybeSingle();
 

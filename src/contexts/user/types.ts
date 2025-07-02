@@ -1,4 +1,3 @@
-
 import { AnnualLeaveBalance } from '@/types';
 
 export interface User {
@@ -21,12 +20,9 @@ export interface UserContextType {
   isAdmin: () => boolean;
   isManager: () => boolean;
   hasPermission: (permission: string) => Promise<boolean>;
-  canManageUser: (userId: string) => boolean;
+  canManageUser: (targetUserId: string) => boolean;
   isUserLoaded: boolean;
-  userError: string | null;
-  clearUserError: () => void;
-  resetUserState: () => void;
+  resetUserState: () => Promise<void>;
   isAuthenticated: boolean;
   setIsAuthenticated: (auth: boolean) => void;
-  setUserError: (error: string | null) => void;
 }

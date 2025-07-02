@@ -1,32 +1,30 @@
-
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChevronDown, User, Settings, LogOut } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { createAuthHandlers } from '@/contexts/user/authHandlers';
+import { useUser } from '@/contexts/UserContext';
+import { ChevronDown, LogOut, Settings, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const UserInfo: React.FC = () => {
-  const { currentUser, setCurrentUser, setIsAuthenticated, setUserError } = useUser();
+  const { currentUser, setCurrentUser, setIsAuthenticated } = useUser();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   // 創建 auth handlers
   const { handleUserLogout } = createAuthHandlers(
     setCurrentUser,
-    setIsAuthenticated,
-    setUserError
+    setIsAuthenticated
   );
 
   const handleLogout = async () => {
-    handleUserLogout();
+    await handleUserLogout();
   };
 
   const handleAccountSettings = () => {

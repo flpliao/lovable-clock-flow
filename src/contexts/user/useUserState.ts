@@ -11,7 +11,6 @@ export const useUserState = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [annualLeaveBalance, setAnnualLeaveBalance] = useState<AnnualLeaveBalance | null>(null);
   const [isUserLoaded, setIsUserLoaded] = useState(false);
-  const [userError, setUserError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const initializationRef = useRef(false);
   const navigate = useNavigate();
@@ -19,8 +18,7 @@ export const useUserState = () => {
   const { handleUserLogin, handleUserLogout } = useMemo(() => 
     createAuthHandlers(
       setCurrentUser,
-      setIsAuthenticated,
-      setUserError
+      setIsAuthenticated
     ), []
   );
 
@@ -42,7 +40,6 @@ export const useUserState = () => {
     // 清除可能的舊狀態
     setCurrentUser(null);
     setIsAuthenticated(false);
-    setUserError(null);
     
     // 設置 Supabase Auth 監聽器
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -57,7 +54,6 @@ export const useUserState = () => {
           console.log('🚪 用戶已登出');
           setCurrentUser(null);
           setIsAuthenticated(false);
-          setUserError(null);
           clearUserStorage();
         }
         
@@ -97,7 +93,6 @@ export const useUserState = () => {
         }
       } catch (error) {
         console.error('❌ 初始化認證狀態失敗:', error);
-        setUserError('初始化認證失敗');
         setIsAuthenticated(false);
       } finally {
         console.error('🏁 initializeAuth finally 塊執行');
@@ -114,10 +109,6 @@ export const useUserState = () => {
     };
   }, []);
 
-  const clearUserError = () => {
-    setUserError(null);
-  };
-
   const resetUserState = async () => {
     console.log('🔄 UserProvider: 重置用戶狀態 - 強制登出');
     await forceLogout();
@@ -129,12 +120,9 @@ export const useUserState = () => {
     annualLeaveBalance,
     setAnnualLeaveBalance,
     isUserLoaded,
-    userError,
-    clearUserError,
     resetUserState,
     isAuthenticated,
     setIsAuthenticated,
-    setUserError,
     forceLogout
   };
 };

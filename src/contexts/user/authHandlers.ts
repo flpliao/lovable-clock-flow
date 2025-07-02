@@ -1,4 +1,3 @@
-
 import { AuthService } from '@/services/authService';
 import type { Session } from '@supabase/supabase-js';
 import { User } from './types';
@@ -6,8 +5,7 @@ import { saveUserToStorage } from './userStorageUtils';
 
 export const createAuthHandlers = (
   setCurrentUser: (user: User | null) => void,
-  setIsAuthenticated: (auth: boolean) => void,
-  setUserError: (error: string | null) => void
+  setIsAuthenticated: (auth: boolean) => void
 ) => {
   
   const handleUserLogin = async (session: Session) => {
@@ -35,18 +33,15 @@ export const createAuthHandlers = (
         
         setCurrentUser(userForContext);
         setIsAuthenticated(true);
-        setUserError(null);
         
         // 保存到本地存儲
         saveUserToStorage(userForContext);
       } else {
         console.log('❌ 獲取用戶資料失敗:', result.error);
-        setUserError(result.error || '獲取用戶資料失敗');
         setIsAuthenticated(false);
       }
     } catch (error) {
       console.error('❌ 用戶登入處理錯誤:', error);
-      setUserError('登入處理失敗');
       setIsAuthenticated(false);
     }
   };
@@ -60,15 +55,12 @@ export const createAuthHandlers = (
       if (result.success) {
         setCurrentUser(null);
         setIsAuthenticated(false);
-        setUserError(null);
         console.log('✅ 用戶登出成功');
       } else {
         console.error('❌ 登出失敗:', result.error);
-        setUserError(result.error || '登出失敗');
       }
     } catch (error) {
       console.error('❌ 登出處理錯誤:', error);
-      setUserError('登出處理失敗');
     }
   };
 

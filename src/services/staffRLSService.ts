@@ -87,7 +87,7 @@ export class StaffRLSService {
       // 嘗試查詢員工資料（移除 limit 限制）
       const { data, error } = await supabase
         .from('staff')
-        .select('id, name, role');
+        .select('id, name');
 
       if (error) {
         return {

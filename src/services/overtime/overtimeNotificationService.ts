@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export const overtimeNotificationService = {
@@ -23,12 +22,11 @@ export const overtimeNotificationService = {
         targetUserId = user.id;
       }
 
-      const { error } = await supabase.rpc('create_overtime_notification', {
+      const { error } = await supabase.rpc('create_notification', {
         p_user_id: targetUserId,
         p_title: title,
         p_message: message,
-        p_type: 'overtime_notification',
-        p_overtime_request_id: requestId,
+        p_type: 'overtime_status',
         p_action_required: false
       });
 

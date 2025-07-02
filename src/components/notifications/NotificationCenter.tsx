@@ -38,7 +38,7 @@ const NotificationCenter: React.FC = () => {
   
   const handleNotificationClick = (notification: Notification) => {
     console.log(`通知點擊 by ${currentUser?.name} (${currentUser?.role_id}):`, notification);
-    markAsRead(notification.id);
+    markAsRead(notification.id);// 在此處標記已讀
     setOpen(false);
     
     // Handle different notification types with proper navigation
@@ -86,9 +86,9 @@ const NotificationCenter: React.FC = () => {
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button className="relative">
-          <Bell className={`w-6 h-6 ${isLoading ? 'text-blue-400 animate-pulse' : unreadCount > 0 ? 'text-red-500' : 'text-white'}`} />
+          <Bell className={`w-4 h-4 ${isLoading ? 'text-blue-400 animate-pulse' : unreadCount > 0 ? 'text-red-500' : 'text-white'}`} />
           {unreadCount > 0 && (
-            <Badge className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white text-xs px-1.5 py-0.5 min-w-[1.5rem] flex items-center justify-center rounded-full animate-pulse">
+            <Badge className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white text-[8px] px-1 py-0.5 min-w-[1rem] h-[1rem] flex items-center justify-center rounded-full animate-pulse">
               {unreadCount}
             </Badge>
           )}

@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Lock } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
 import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
+import { useUser } from '@/contexts/UserContext';
+import { Lock } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const ResetPassword = () => {
   const { currentUser, isAuthenticated, isUserLoaded } = useUser();
@@ -21,7 +21,7 @@ const ResetPassword = () => {
       console.log('🔐 用戶已登入且無重設 token，重定向到主頁面:', currentUser.name);
       setIsRedirecting(true);
       setTimeout(() => {
-        navigate('/', { replace: true });
+        navigate('/account-settings', { replace: true });
       }, 100);
     }
   }, [isUserLoaded, isAuthenticated, currentUser, hasResetToken, isVerified, navigate, isRedirecting]);

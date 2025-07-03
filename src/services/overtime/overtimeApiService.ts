@@ -317,7 +317,7 @@ export const overtimeApiService = {
       
       const { data, error } = await supabase
         .from('staff')
-        .select('id, name, role, role_id, department, position, supervisor_id')
+        .select('id, name, role_id, department, position, supervisor_id')
         .eq('id', userId)
         .single();
 

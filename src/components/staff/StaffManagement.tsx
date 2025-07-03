@@ -1,29 +1,28 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Users, Plus, Search } from 'lucide-react';
-import { useSupabaseStaffOperations } from './hooks/useSupabaseStaffOperations';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { StaffList } from './StaffList';
 import AddStaffDialog from './AddStaffDialog';
+import EditStaffDialog from './EditStaffDialog';
 import { StaffRLSStatus } from './StaffRLSStatus';
 
 const StaffManagement: React.FC = () => {
   console.log('🎯 StaffManagement rendering');
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   
   const {
     staffList,
     roles,
     loading,
-    addStaff,
-    updateStaff,
-    deleteStaff,
+    setIsAddDialogOpen,
+    handleDeleteStaff,
+    openEditDialog,
     refreshData
-  } = useSupabaseStaffOperations();
+  } = useStaffManagementContext();
 
   // 過濾員工列表
   const filteredStaff = staffList.filter(staff => 
@@ -31,16 +30,6 @@ const StaffManagement: React.FC = () => {
     staff.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     staff.position?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  // Wrapper functions to match expected signatures
-  const handleUpdateStaff = async (id: string, data: Partial<any>): Promise<void> => {
-    const staffToUpdate = { ...staffList.find(s => s.id === id), ...data };
-    await updateStaff(staffToUpdate);
-  };
-
-  const handleDeleteStaff = async (id: string): Promise<void> => {
-    await deleteStaff(id);
-  };
 
   return (
     <div className="space-y-4">
@@ -92,17 +81,16 @@ const StaffManagement: React.FC = () => {
           <StaffList
             staffList={filteredStaff}
             loading={loading}
-            onUpdateStaff={handleUpdateStaff}
+            onEditStaff={openEditDialog}
             onDeleteStaff={handleDeleteStaff}
             roles={roles}
           />
         </CardContent>
       </Card>
 
-      {/* 新增員工對話框 - 只在對話框開啟時才渲染 */}
-      {isAddDialogOpen && (
-        <AddStaffDialog />
-      )}
+      {/* 新增和編輯員工對話框 */}
+      <AddStaffDialog />
+      <EditStaffDialog />
     </div>
   );
 };

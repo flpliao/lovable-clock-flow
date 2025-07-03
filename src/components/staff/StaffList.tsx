@@ -1,37 +1,22 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Trash2, Edit } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ROLE_ID_MAP } from './constants/roleIdMap';
-
-interface Staff {
-  id: string;
-  name?: string;
-  department?: string;
-  position?: string;
-  email?: string;
-  role?: string;
-  role_id?: string;
-}
-
-interface Role {
-  id: string;
-  name: string;
-}
+import { Staff, StaffRole } from './types';
 
 interface StaffListProps {
   staffList: Staff[];
   loading: boolean;
-  onUpdateStaff: (id: string, data: Partial<Staff>) => Promise<void>;
+  onEditStaff: (staff: Staff) => void;
   onDeleteStaff: (id: string) => Promise<void>;
-  roles: Role[];
+  roles: StaffRole[];
 }
 
 export const StaffList: React.FC<StaffListProps> = ({
   staffList,
   loading,
-  onUpdateStaff,
+  onEditStaff,
   onDeleteStaff,
   roles
 }) => {
@@ -72,10 +57,8 @@ export const StaffList: React.FC<StaffListProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    // TODO: Implement edit functionality
-                    console.log('編輯員工:', staff.id);
-                  }}
+                  onClick={() => onEditStaff(staff)}
+                  className="bg-white/60 border-white/40 hover:bg-white/80 text-gray-700"
                 >
                   <Edit className="h-4 w-4" />
                 </Button>

@@ -7,10 +7,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { roleService } from '@/services/roleService';
 import { useEffect, useState } from 'react';
 import { SYSTEM_ROLES } from './constants/systemRoles';
 import { EditStaffFormContent } from './forms/EditStaffFormContent';
-import { RoleApiService } from './services/roleApiService';
 import { Staff, StaffRole } from './types';
 
 interface EditStaffDialogProps {
@@ -29,7 +29,7 @@ const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDial
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const data = await RoleApiService.loadRoles();
+        const data = await roleService.loadRoles();
         setRoles(data);
       } catch (error) {
         console.error('載入角色失敗，使用預設系統角色:', error);

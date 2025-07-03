@@ -1,7 +1,7 @@
+import { NewStaff, Staff } from '@/components/staff/types';
 import { supabase } from '@/integrations/supabase/client';
-import { NewStaff, Staff } from '../types';
 
-export class StaffApiService {
+export class staffService {
   static async loadStaffList(): Promise<Staff[]> {
     console.log('📝 StaffApiService: 載入員工列表');
 
@@ -13,7 +13,7 @@ export class StaffApiService {
         throw new Error(`載入員工列表失敗: ${error.message}`);
       }
 
-      console.log(`✅ StaffApiService: 載入成功，共 ${data?.length} 筆資料`);
+      console.log(`✅ StaffApiService: 載入成功，共 ${data?.length || 0} 筆資料`);
       return data || [];
     } catch (error) {
       console.error('❌ StaffApiService: 系統錯誤:', error);
@@ -24,7 +24,6 @@ export class StaffApiService {
   static async addStaff(staffData: NewStaff): Promise<Staff> {
     console.log('📝 StaffApiService: 準備新增員工', staffData);
 
-    // 驗證營業處 ID 格式
     if (
       !staffData.branch_id ||
       staffData.branch_id === 'placeholder-value' ||
@@ -33,7 +32,6 @@ export class StaffApiService {
       throw new Error('營業處 ID 格式無效，請重新選擇營業處');
     }
 
-    // 確保必要欄位都有值
     const insertData = {
       name: staffData.name,
       position: staffData.position,
@@ -55,7 +53,6 @@ export class StaffApiService {
       if (error) {
         console.error('❌ StaffApiService: Supabase 新增錯誤:', error);
 
-        // 特別處理 UUID 格式錯誤
         if (error.message.includes('invalid input syntax for type uuid')) {
           throw new Error('營業處資料格式錯誤，請重新選擇營業處');
         } else if (error.message.includes('foreign key')) {

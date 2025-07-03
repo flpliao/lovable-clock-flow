@@ -2,11 +2,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { staffService } from '@/services/staffService';
 import { Plus, Search, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import AddStaffDialog from './AddStaffDialog';
 import EditStaffDialog from './EditStaffDialog';
-import { StaffApiService } from './services/staffApiService';
 import { StaffList } from './StaffList';
 import { NewStaff, Staff } from './types';
 
@@ -23,7 +23,7 @@ const StaffManagement = () => {
   const loadStaffList = async () => {
     try {
       setLoading(true);
-      const data = await StaffApiService.loadStaffList();
+      const data = await staffService.loadStaffList();
       setStaffList(data);
     } catch (error) {
       console.error('載入員工列表失敗:', error);
@@ -58,7 +58,7 @@ const StaffManagement = () => {
   const handleDeleteStaff = async (id: string) => {
     try {
       setLoading(true);
-      await StaffApiService.deleteStaff(id);
+      await staffService.deleteStaff(id);
       toast({
         title: '刪除成功',
         description: '員工資料已刪除',
@@ -79,7 +79,7 @@ const StaffManagement = () => {
   const handleAddSuccess = async (newStaff: NewStaff) => {
     try {
       setLoading(true);
-      await StaffApiService.addStaff(newStaff);
+      await staffService.addStaff(newStaff);
       toast({
         title: '新增成功',
         description: `員工 ${newStaff.name} 已新增`,
@@ -101,7 +101,7 @@ const StaffManagement = () => {
   const handleEditSuccess = async (updatedStaff: Staff) => {
     try {
       setLoading(true);
-      await StaffApiService.updateStaff(updatedStaff.id, updatedStaff);
+      await staffService.updateStaff(updatedStaff.id, updatedStaff);
       toast({
         title: '更新成功',
         description: `員工 ${updatedStaff.name} 資料已更新`,

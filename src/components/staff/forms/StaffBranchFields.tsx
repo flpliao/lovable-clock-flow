@@ -6,9 +6,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { branchService } from '@/services/branchService';
 import { Branch } from '@/types/company';
 import React, { useEffect, useState } from 'react';
-import { BranchApiService } from '../services/branchApiService';
 import { NewStaff } from '../types';
 
 interface StaffBranchFieldsProps {
@@ -22,7 +22,7 @@ const StaffBranchFields: React.FC<StaffBranchFieldsProps> = ({ newStaff, setNewS
   useEffect(() => {
     const fetchBranches = async () => {
       try {
-        const data = await BranchApiService.loadBranches();
+        const data = await branchService.loadBranches();
         setBranches(data);
       } catch (error) {
         console.error('載入營業處失敗:', error);

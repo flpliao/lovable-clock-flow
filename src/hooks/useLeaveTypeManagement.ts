@@ -1,7 +1,6 @@
-
-import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { LeaveTypeService } from '@/services/payroll/leaveTypeService';
+import { useEffect, useState } from 'react';
 
 interface LeaveType {
   id: string;
@@ -20,7 +19,6 @@ interface LeaveType {
 
 export function useLeaveTypeManagement() {
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const loadLeaveTypes = async () => {
@@ -30,38 +28,36 @@ export function useLeaveTypeManagement() {
     } catch (error) {
       console.error('載入假別失敗:', error);
       toast({
-        title: "載入失敗",
-        description: "無法載入假别資料",
-        variant: "destructive"
+        title: '載入失敗',
+        description: '無法載入假别資料',
+        variant: 'destructive',
       });
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleSave = async (data: any, selectedLeaveType: LeaveType | null) => {
+  const handleSave = async (data: Partial<LeaveType>, selectedLeaveType: LeaveType | null) => {
     try {
       if (selectedLeaveType) {
         await LeaveTypeService.updateLeaveType(selectedLeaveType.id, data);
         toast({
-          title: "更新成功",
-          description: "假別已更新"
+          title: '更新成功',
+          description: '假別已更新',
         });
       } else {
         await LeaveTypeService.createLeaveType(data);
         toast({
-          title: "新增成功",
-          description: "假別已新增"
+          title: '新增成功',
+          description: '假別已新增',
         });
       }
       loadLeaveTypes();
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('儲存假別失敗:', error);
       toast({
-        title: "儲存失敗",
-        description: error.message || "無法儲存假別資料",
-        variant: "destructive"
+        title: '儲存失敗',
+        description: '無法儲存假別資料',
+        variant: 'destructive',
       });
       return false;
     }
@@ -70,9 +66,9 @@ export function useLeaveTypeManagement() {
   const handleDelete = async (leaveType: LeaveType) => {
     if (leaveType.is_system_default) {
       toast({
-        title: "無法刪除",
-        description: "系統預設假別無法刪除，但可以停用",
-        variant: "destructive"
+        title: '無法刪除',
+        description: '系統預設假別無法刪除，但可以停用',
+        variant: 'destructive',
       });
       return false;
     }
@@ -80,17 +76,17 @@ export function useLeaveTypeManagement() {
     try {
       await LeaveTypeService.deleteLeaveType(leaveType.id);
       toast({
-        title: "刪除成功",
-        description: "假別已刪除"
+        title: '刪除成功',
+        description: '假別已刪除',
       });
       loadLeaveTypes();
       return true;
     } catch (error) {
       console.error('刪除假別失敗:', error);
       toast({
-        title: "刪除失敗",
-        description: "無法刪除假別",
-        variant: "destructive"
+        title: '刪除失敗',
+        description: '無法刪除假別',
+        variant: 'destructive',
       });
       return false;
     }
@@ -102,9 +98,8 @@ export function useLeaveTypeManagement() {
 
   return {
     leaveTypes,
-    loading,
     loadLeaveTypes,
     handleSave,
-    handleDelete
+    handleDelete,
   };
 }

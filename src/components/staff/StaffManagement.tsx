@@ -1,3 +1,4 @@
+import { CompanyManagementProvider } from '@/components/company/CompanyManagementContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,7 +9,7 @@ import AddStaffDialog from './AddStaffDialog';
 import EditStaffDialog from './EditStaffDialog';
 import { StaffList } from './StaffList';
 
-const StaffManagement = () => {
+const StaffManagementContent = () => {
   console.log('🎯 StaffManagement rendering');
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -81,6 +82,14 @@ const StaffManagement = () => {
       <AddStaffDialog />
       <EditStaffDialog />
     </div>
+  );
+};
+
+const StaffManagement = () => {
+  return (
+    <CompanyManagementProvider>
+      <StaffManagementContent />
+    </CompanyManagementProvider>
   );
 };
 

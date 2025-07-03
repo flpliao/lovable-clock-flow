@@ -1,12 +1,11 @@
-
-import { useCallback, useMemo, useEffect, useState } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { UnifiedPermissionService, UnifiedPermissionContext } from '@/services/unifiedPermissionService';
 import { StaffRole } from '@/components/staff/types';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useCurrentUser } from '@/hooks/useStores';
+import { UnifiedPermissionContext, UnifiedPermissionService } from '@/services/unifiedPermissionService';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export const useUnifiedPermissions = () => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { staffList } = useStaffManagementContext();
   const [backendRoles, setBackendRoles] = useState<StaffRole[]>([]);
   const [rolesLoading, setRolesLoading] = useState(true);

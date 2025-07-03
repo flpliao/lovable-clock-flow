@@ -1,13 +1,14 @@
-
-import { useState, useCallback } from 'react';
-import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
-import { useOptimizedLeaveRequestsData } from './useOptimizedLeaveRequestsData';
-import { useLeaveRequestsActions } from './useLeaveRequestsActions';
+import { useCurrentUser } from '@/hooks/useStores';
+import { useState } from 'react';
 import type { LeaveRequestWithApplicant } from './types';
+import { useLeaveRequestsActions } from './useLeaveRequestsActions';
+import { useOptimizedLeaveRequestsData } from './useOptimizedLeaveRequestsData';
 
 export const useLeaveRequests = () => {
-  const { currentUser } = useUser();
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+  
   const { toast } = useToast();
   const [pendingRequests, setPendingRequests] = useState<LeaveRequestWithApplicant[]>([]);
   const [isLoading, setIsLoading] = useState(true);

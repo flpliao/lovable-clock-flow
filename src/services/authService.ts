@@ -1,7 +1,8 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { User as AuthUser } from '@/types/index';
-import type { User } from '@supabase/supabase-js';
+
+// 從 supabase client 獲取 User 類型，而不是直接從 @supabase/supabase-js 導入
+type SupabaseUser = NonNullable<Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user']>;
 
 // Export the AuthUser type for use in other files
 export type { AuthUser };
@@ -14,9 +15,8 @@ export class AuthService {
     try {
       console.log('🔐 使用 Supabase Auth 登入:', email);
       
-      // 如果沒有密碼，說明是從已有會話中獲取用戶資料
       if (!password) {
-        return await this.getUserFromSession(email);
+        return { success: false, error: '密碼不能為空' };
       }
       
       // 使用 Supabase Auth 登入
@@ -58,7 +58,7 @@ export class AuthService {
         email: authData.user.email
       });
 
-      const user = await this.buildUserFromAuth(authData.user, email);
+      const user = await this.buildUserFromSession(authData.user, email);
       return { 
         success: true, 
         user,
@@ -74,25 +74,12 @@ export class AuthService {
   }
 
   /**
-   * 從已有會話中獲取用戶資料
+   * 🚨 新方法：直接從 session 建構用戶資料，避免額外 API 調用
    */
-  static async getUserFromSession(email: string): Promise<{ success: boolean; user?: AuthUser; error?: string }> {
+  static async buildUserFromSession(authUser: SupabaseUser, email: string): Promise<AuthUser> {
     try {
-      console.log('🔍 從會話中獲取用戶資料:', email);
+      console.log('🔍 從 session 建構用戶資料:', email);
       
-      // 獲取當前會話用戶
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) {
-        return { success: false, error: '無法獲取用戶資料' };
-      }
-
-      console.log('👤 當前 Supabase Auth 用戶:', {
-        id: authUser.id,
-        email: authUser.email,
-        role: authUser.role
-      });
-
-      // 嘗試多種方式查詢 staff 資料，重點改善 ID 對應邏輯
       const staffData = await this.findStaffRecord(authUser);
       
       if (staffData) {
@@ -106,36 +93,38 @@ export class AuthService {
           department: staffData.department
         });
         
-        // 如果 staff.user_id 與 auth.id 不匹配，更新 staff 記錄
         if (staffData.user_id !== authUser.id) {
           console.log('🔄 更新 staff 記錄的 user_id 以建立正確關聯');
           await this.updateStaffUserIdMapping(staffData.id as string, authUser.id);
         }
         
-        const user = await this.buildUserFromStaff(authUser, staffData);
-        return { success: true, user };
+        const user = this.buildUserFromStaff(authUser, staffData);
+        return user;
       } else {
-        console.warn('⚠️ 未找到對應的員工資料，使用 fallback 並嘗試自動建立');
+        console.warn('⚠️ 未找到對應的員工資料，使用 fallback');
         const fallbackUser = this.createFallbackUser(authUser, email);
         
-        // 嘗試自動建立 staff 紀錄
         await this.createStaffRecord(authUser, email);
         
-        return { success: true, user: fallbackUser };
+        return fallbackUser;
       }
     } catch (error) {
+      console.error('🔥 從 session 建構用戶資料錯誤:', error);
+      return this.createFallbackUser(authUser, email);
+    }
+  }
+
+  /**
+   * 從已有會話中獲取用戶資料 - 保留此方法以支援舊代碼
+   * 🚨 注意：此方法已棄用，建議使用 buildUserFromSession
+   */
+  static async getUserFromSession(email: string): Promise<{ success: boolean; user?: AuthUser; error?: string }> {
+    try {
+      console.log('⚠️ [已棄用] 從會話中獲取用戶資料:', email);
+      
+      return { success: false, error: '此方法已棄用，請使用 authStore 的新流程' };
+    } catch (error) {
       console.error('🔥 從會話獲取用戶資料錯誤:', error);
-      
-      // 提供最後的 fallback
-      try {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (authUser) {
-          return { success: true, user: this.createFallbackUser(authUser, email) };
-        }
-      } catch (fallbackError) {
-        console.error('🔥 Fallback 也失敗:', fallbackError);
-      }
-      
       return { success: false, error: '獲取用戶資料失敗' };
     }
   }
@@ -143,7 +132,7 @@ export class AuthService {
   /**
    * 多重策略查找 staff 記錄，重點改善 ID 匹配邏輯
    */
-  static async findStaffRecord(authUser: User): Promise<Record<string, unknown> | null> {
+  static async findStaffRecord(authUser: SupabaseUser): Promise<Record<string, unknown> | null> {
       
     try {
       // 策略1: 透過 user_id 精確匹配
@@ -226,43 +215,17 @@ export class AuthService {
   }
 
   /**
-   * 從 Supabase Auth 用戶資料建構 AuthUser
+   * 從 Supabase Auth 用戶資料建構 AuthUser - 已重構為 buildUserFromSession
    */
-  static async buildUserFromAuth(authUser: User, email: string): Promise<AuthUser> {
-    try {
-      // 嘗試查找 staff 資料
-      const staffData = await this.findStaffRecord(authUser);
-
-      if (staffData) {
-        console.log('✅ 從 Auth 流程載入員工資料:', {
-          staff_id: staffData.id,
-          name: staffData.name,
-          role_id: staffData.role_id,
-          department: staffData.department
-        });
-        
-        // 如果需要，更新 user_id 映射
-        if (staffData.user_id !== authUser.id) {
-          await this.updateStaffUserIdMapping(staffData.id as string, authUser.id);
-        }
-        
-        return this.buildUserFromStaff(authUser, staffData);
-      } else {
-        console.warn('⚠️ Auth 流程中未找到員工資料，使用 fallback');
-        // 嘗試自動建立 staff 紀錄
-        await this.createStaffRecord(authUser, email);
-        return this.createFallbackUser(authUser, email);
-      }
-    } catch (error) {
-      console.error('🔥 buildUserFromAuth 錯誤:', error);
-      return this.createFallbackUser(authUser, email);
-    }
+  static async buildUserFromAuth(authUser: SupabaseUser, email: string): Promise<AuthUser> {
+    console.log('⚠️ [已棄用] buildUserFromAuth，請使用 buildUserFromSession');
+    return await this.buildUserFromSession(authUser, email);
   }
 
   /**
    * 從員工資料建構 AuthUser，優先使用 role 欄位
    */
-  static async buildUserFromStaff(authUser: User, staffData: Record<string, unknown>): Promise<AuthUser> {
+  static buildUserFromStaff(authUser: SupabaseUser, staffData: Record<string, unknown>): AuthUser {
     const user: AuthUser = {
       id: authUser.id, // 使用 Supabase Auth 的用戶 ID
       email: authUser.email || (typeof staffData.email === 'string' ? staffData.email : undefined),
@@ -287,7 +250,7 @@ export class AuthService {
   /**
    * 創建 fallback 用戶資料
    */
-  static createFallbackUser(authUser: User, email: string): AuthUser {
+  static createFallbackUser(authUser: SupabaseUser, email: string): AuthUser {
     let userName = '';
     if (typeof (authUser as { user_metadata?: unknown }).user_metadata === 'object' && authUser && (authUser as { user_metadata?: { name?: unknown } }).user_metadata?.name && typeof (authUser as { user_metadata?: { name?: unknown } }).user_metadata?.name === 'string') {
       userName = (authUser as { user_metadata?: { name?: unknown } }).user_metadata?.name as string;
@@ -302,7 +265,6 @@ export class AuthService {
       name: userName,
       position: '員工',
       department: '一般',
-      role: 'user',
       role_id: 'user',
       onboard_date: new Date().toISOString().split('T')[0]
     };
@@ -314,7 +276,7 @@ export class AuthService {
   /**
    * 自動建立 staff 紀錄
    */
-  static async createStaffRecord(authUser: User, email: string): Promise<void> {
+  static async createStaffRecord(authUser: SupabaseUser, email: string): Promise<void> {
     try {
       console.log('➕ 嘗試自動建立 staff 紀錄:', email);
       let userName = '';

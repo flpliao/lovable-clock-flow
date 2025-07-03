@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Edit, Trash2, Settings, Key } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { Staff } from './types';
-import { useUser } from '@/contexts/UserContext';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import { Edit, Key, MoreHorizontal, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import CredentialManagementDialog from './CredentialManagementDialog';
 import { ROLE_ID_MAP } from './constants/roleIdMap';
+import { Staff } from './types';
 
 const StaffTable = () => {
   const { 
@@ -19,7 +19,8 @@ const StaffTable = () => {
     getSupervisorName,
     roles
   } = useStaffManagementContext();
-  const { currentUser, isAdmin } = useUser();
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
   const [selectedStaffForCredentials, setSelectedStaffForCredentials] = useState<Staff | null>(null);
   const [isCredentialDialogOpen, setIsCredentialDialogOpen] = useState(false);
   const [staffListState, setStaffListState] = useState(filteredStaffList);
@@ -48,7 +49,7 @@ const StaffTable = () => {
 
   // 檢查是否有帳號管理權限 - 基於 role 進行檢查
   const canManageAccounts = currentUser && (
-    isAdmin() || // 系統管理員直接允許（基於 role）
+    isAdmin || // 系統管理員直接允許（基於 role）
     hasPermission(currentUser.id, 'account:email:manage') ||
     hasPermission(currentUser.id, 'account:password:manage')
   );
@@ -56,7 +57,7 @@ const StaffTable = () => {
   console.log('👥 人員列表帳號管理權限檢查 (基於 role):', {
     currentUser: currentUser?.name,
     role: currentUser?.role_id,
-    isAdmin: isAdmin(),
+    isAdmin,
     canManageAccounts
   });
 

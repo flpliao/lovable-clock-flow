@@ -1,8 +1,7 @@
-
 import { useToast } from '@/components/ui/use-toast';
-import { useUser } from '@/contexts/UserContext';
-import { StaffRole, NewStaffRole, Staff } from '../types';
+import { useIsAdmin } from '@/hooks/useStores';
 import { UnifiedPermissionService } from '@/services/unifiedPermissionService';
+import { NewStaffRole, Staff, StaffRole } from '../types';
 
 export const useRoleOperations = (
   roles: StaffRole[], 
@@ -10,7 +9,7 @@ export const useRoleOperations = (
   staffList: Staff[]
 ) => {
   const { toast } = useToast();
-  const { isAdmin } = useUser();
+  const isAdmin = useIsAdmin();
   const permissionService = UnifiedPermissionService.getInstance();
   
   // 觸發全域權限同步的助手函數
@@ -85,7 +84,7 @@ export const useRoleOperations = (
     let roleToUpdate = { ...updatedRole };
     
     // For system roles, allow admin to edit everything
-    if (existingRole.is_system_role && !isAdmin()) {
+    if (existingRole.is_system_role && !isAdmin) {
       roleToUpdate = {
         ...roleToUpdate,
         name: existingRole.name,
@@ -113,7 +112,7 @@ export const useRoleOperations = (
     
     toast({
       title: "編輯成功",
-      description: `已成功更新 ${roleToUpdate.name} 角色${existingRole.is_system_role && !isAdmin() ? '權限' : ''}`
+      description: `已成功更新 ${roleToUpdate.name} 角色${existingRole.is_system_role && !isAdmin ? '權限' : ''}`
     });
     
     return true;
@@ -132,7 +131,7 @@ export const useRoleOperations = (
     }
     
     // Only admin can delete system roles
-    if (roleToDelete.is_system_role && !isAdmin()) {
+    if (roleToDelete.is_system_role && !isAdmin) {
       toast({
         title: "權限不足",
         description: "只有系統管理員可以刪除系統預設角色",

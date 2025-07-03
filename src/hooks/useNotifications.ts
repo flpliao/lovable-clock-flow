@@ -1,12 +1,14 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
 import { Notification } from '@/components/notifications/NotificationItem';
-import { useUser } from '@/contexts/UserContext';
-import { NotificationDatabaseOperations } from '@/services/notifications';
-import { NotificationRealtimeService } from '@/services/notificationRealtimeService';
 import { useNotificationActions } from '@/hooks/useNotificationActions';
+import { useCurrentUser } from '@/hooks/useStores';
+import { NotificationRealtimeService } from '@/services/notificationRealtimeService';
+import { NotificationDatabaseOperations } from '@/services/notifications';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export const useNotifications = () => {
-  const { currentUser } = useUser();
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+  
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);

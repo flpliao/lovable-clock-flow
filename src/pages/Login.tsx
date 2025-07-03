@@ -1,12 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { User } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
 import LoginForm from '@/components/auth/LoginForm';
 import { useToast } from '@/hooks/use-toast';
+import { useAuthenticated, useAutoInitAuth, useCurrentUser, useUserLoaded } from '@/hooks/useStores';
+import { User } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  const { currentUser, isAuthenticated, isUserLoaded } = useUser();
+  // 自動初始化認證系統
+  useAutoInitAuth();
+  
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+  const isAuthenticated = useAuthenticated();
+  const isUserLoaded = useUserLoaded();
+  
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);

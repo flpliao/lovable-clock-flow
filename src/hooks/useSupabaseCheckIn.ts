@@ -1,14 +1,15 @@
-
-import { useEffect, useCallback, useRef } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { useCheckInRecords } from './useCheckInRecords';
-import { useCheckInCreator } from './useCheckInCreator';
-import { useTodayCheckInRecords } from './useTodayCheckInRecords';
-import { CheckInRecord } from '@/types';
+import { useCurrentUser } from '@/hooks/useStores';
 import { supabase } from '@/integrations/supabase/client';
+import { CheckInRecord } from '@/types';
+import { useCallback, useEffect, useRef } from 'react';
+import { useCheckInCreator } from './useCheckInCreator';
+import { useCheckInRecords } from './useCheckInRecords';
+import { useTodayCheckInRecords } from './useTodayCheckInRecords';
 
 export const useSupabaseCheckIn = () => {
-  const { currentUser } = useUser();
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+  
   const { checkInRecords, loading, loadCheckInRecords } = useCheckInRecords();
   const { createCheckInRecord: createRecord } = useCheckInCreator();
   const { getTodayCheckInRecords } = useTodayCheckInRecords();

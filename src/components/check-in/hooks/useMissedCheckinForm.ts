@@ -1,9 +1,8 @@
-
-import { useState } from 'react';
-import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrentUser } from '@/hooks/useStores';
 import { supabase } from '@/integrations/supabase/client';
 import { NotificationDatabaseOperations } from '@/services/notifications';
+import { useState } from 'react';
 
 interface MissedCheckinFormData {
   request_date: string;
@@ -13,8 +12,27 @@ interface MissedCheckinFormData {
   reason: string;
 }
 
+interface MissedCheckinSubmitData {
+  staff_id: string;
+  request_date: string;
+  missed_type: 'check_in' | 'check_out' | 'both';
+  reason: string;
+  requested_check_in_time?: string;
+  requested_check_out_time?: string;
+}
+
+interface MissedCheckinRequestData {
+  id: string;
+  staff_id: string;
+  request_date: string;
+  missed_type: 'check_in' | 'check_out' | 'both';
+  reason: string;
+  requested_check_in_time?: string;
+  requested_check_out_time?: string;
+}
+
 export const useMissedCheckinForm = (onSuccess: () => void) => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<MissedCheckinFormData>({
@@ -44,7 +62,7 @@ export const useMissedCheckinForm = (onSuccess: () => void) => {
 
     setLoading(true);
     try {
-      const submitData: any = {
+      const submitData: MissedCheckinSubmitData = {
         staff_id: currentUser.id,
         request_date: formData.request_date,
         missed_type: formData.missed_type,
@@ -73,7 +91,7 @@ export const useMissedCheckinForm = (onSuccess: () => void) => {
       if (error) throw error;
 
       // 創建通知給主管
-      await createManagerNotification(insertedData);
+      await createManagerNotification(insertedData as MissedCheckinRequestData);
 
       toast({
         title: "申請已提交",
@@ -94,7 +112,7 @@ export const useMissedCheckinForm = (onSuccess: () => void) => {
     }
   };
 
-  const createManagerNotification = async (requestData: any) => {
+  const createManagerNotification = async (requestData: MissedCheckinRequestData) => {
     try {
       // 查詢所有主管和管理員
       const { data: managers, error } = await supabase

@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { useUser } from '@/contexts/UserContext';
-import { StaffRole } from './types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { EditRoleDialogHeader } from './dialogs/EditRoleDialogHeader';
-import { EditRoleBasicInfoTab } from './dialogs/EditRoleBasicInfoTab';
-import { EditRolePermissionsTab } from './dialogs/EditRolePermissionsTab';
-import { EditRoleDialogFooter } from './dialogs/EditRoleDialogFooter';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { useToast } from '@/hooks/use-toast';
+import { useIsAdmin } from '@/hooks/useStores';
+import { useEffect, useState } from 'react';
+import { EditRoleBasicInfoTab } from './dialogs/EditRoleBasicInfoTab';
+import { EditRoleDialogFooter } from './dialogs/EditRoleDialogFooter';
+import { EditRoleDialogHeader } from './dialogs/EditRoleDialogHeader';
+import { EditRolePermissionsTab } from './dialogs/EditRolePermissionsTab';
+import { StaffRole } from './types';
 
 interface EditRoleDialogProps {
   open: boolean;
@@ -21,7 +21,7 @@ interface EditRoleDialogProps {
 
 const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
   const { updateRole } = useStaffManagementContext();
-  const { isAdmin } = useUser();
+  const isAdmin = useIsAdmin();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<string>('基本資料');
   const [editedRole, setEditedRole] = useState<StaffRole>({...role});
@@ -128,7 +128,7 @@ const EditRoleDialog = ({ open, onOpenChange, role }: EditRoleDialogProps) => {
   };
   
   // System roles can only be fully edited by admins
-  const canEditBasicInfo = !editedRole.is_system_role || isAdmin();
+  const canEditBasicInfo = !editedRole.is_system_role || isAdmin;
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

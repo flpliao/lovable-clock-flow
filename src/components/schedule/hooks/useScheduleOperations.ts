@@ -1,14 +1,13 @@
-
 import { useScheduling } from '@/contexts/SchedulingContext';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrentUser } from '@/hooks/useStores';
 import { useUnifiedPermissions } from '@/hooks/useUnifiedPermissions';
 
 export const useScheduleOperations = () => {
   const { schedules, removeSchedule } = useScheduling();
   const { staffList, getSubordinates } = useStaffManagementContext();
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { toast } = useToast();
   const { hasPermission } = useUnifiedPermissions();
 

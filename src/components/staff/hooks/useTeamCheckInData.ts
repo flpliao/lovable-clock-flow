@@ -1,10 +1,9 @@
-
-import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useUser } from '@/contexts/UserContext';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { CheckInRecord } from '@/types';
-import { Staff } from '../types';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
 import { supabase } from '@/integrations/supabase/client';
+import { CheckInRecord } from '@/types';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Staff } from '../types';
 
 export interface TeamMemberCheckInData {
   staff: Staff;
@@ -14,7 +13,8 @@ export interface TeamMemberCheckInData {
 }
 
 export const useTeamCheckInData = () => {
-  const { currentUser, isAdmin } = useUser();
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
   const { staffList } = useStaffManagementContext();
   const [filter, setFilter] = useState<'today' | 'week' | 'month'>('today');
   const [departmentFilter, setDepartmentFilter] = useState('all');
@@ -22,7 +22,7 @@ export const useTeamCheckInData = () => {
 
   // 穩定化 hasPermission 檢查
   const hasPermission = useMemo(() => {
-    return isAdmin();
+    return isAdmin;
   }, [isAdmin]);
 
   // 使用 useCallback 穩定化載入函數

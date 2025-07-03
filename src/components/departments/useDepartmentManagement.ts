@@ -1,13 +1,16 @@
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import { DataSyncManager } from '@/utils/dataSync';
 import { useState } from 'react';
-import { Department, NewDepartment, DepartmentManagementContextType } from './types';
 import { useDepartmentDialogs } from './hooks/useDepartmentDialogs';
 import { useSupabaseDepartmentOperations } from './hooks/useSupabaseDepartmentOperations';
-import { useUser } from '@/contexts/UserContext';
-import { DataSyncManager } from '@/utils/dataSync';
 import { DepartmentGeocodingService } from './services/departmentGeocodingService';
+import { DepartmentManagementContextType } from './types';
 
 export const useDepartmentManagement = (): DepartmentManagementContextType => {
-  const { isAdmin, currentUser } = useUser();
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
+  
   const [searchFilter, setSearchFilter] = useState('');
 
   // 使用 Supabase 操作 hooks
@@ -45,7 +48,7 @@ export const useDepartmentManagement = (): DepartmentManagementContextType => {
 
   // 新增部門處理
   const handleAddDepartment = async (): Promise<boolean> => {
-    if (!isAdmin()) {
+    if (!isAdmin) {
       console.warn('⚠️ 非管理員用戶嘗試新增部門');
       return false;
     }
@@ -66,7 +69,7 @@ export const useDepartmentManagement = (): DepartmentManagementContextType => {
 
   // 編輯部門處理
   const handleEditDepartment = async (): Promise<boolean> => {
-    if (!isAdmin()) {
+    if (!isAdmin) {
       console.warn('⚠️ 非管理員用戶嘗試編輯部門');
       return false;
     }
@@ -91,7 +94,7 @@ export const useDepartmentManagement = (): DepartmentManagementContextType => {
 
   // 刪除部門處理
   const handleDeleteDepartment = async (id: string) => {
-    if (!isAdmin()) {
+    if (!isAdmin) {
       console.warn('⚠️ 非管理員用戶嘗試刪除部門');
       return;
     }
@@ -116,7 +119,7 @@ export const useDepartmentManagement = (): DepartmentManagementContextType => {
 
   // 新增地址轉GPS功能 - 增強版本
   const convertAddressToGPS = async (departmentId: string, address: string): Promise<boolean> => {
-    if (!isAdmin()) {
+    if (!isAdmin) {
       console.warn('⚠️ 非管理員用戶嘗試轉換地址');
       return false;
     }
@@ -167,7 +170,7 @@ export const useDepartmentManagement = (): DepartmentManagementContextType => {
     convertAddressToGPS, // 增強版的GPS轉換功能
 
     // 權限檢查
-    canManage: isAdmin(),
+    canManage: isAdmin,
     currentUser
   };
 };

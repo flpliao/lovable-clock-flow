@@ -1,25 +1,27 @@
-
-import React, { useState, useEffect } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LeaveApprovalDetail from '@/components/leave/LeaveApprovalDetail';
-import { useApprovalStats } from './approval/hooks/useApprovalStats';
-import { useLeaveRequests } from './approval/hooks/useLeaveRequests';
-import { useMissedCheckinRequests } from './approval/hooks/useMissedCheckinRequests';
-import { useOvertimeRequests } from './approval/hooks/useOvertimeRequests';
-import { useMyApplications } from './approval/hooks/useMyApplications';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useCurrentUser } from '@/hooks/useStores';
+import type { MyApplication } from '@/types/myApplication';
+import { useEffect, useState } from 'react';
 import ApprovalHeader from './approval/components/ApprovalHeader';
 import ApprovalStats from './approval/components/ApprovalStats';
 import LeaveApprovalTab from './approval/components/LeaveApprovalTab';
 import MissedCheckinApprovalTab from './approval/components/MissedCheckinApprovalTab';
-import OvertimeApprovalTab from './approval/components/OvertimeApprovalTab';
 import MyApplicationsTab from './approval/components/MyApplicationsTab';
-import type { MyApplication } from '@/types/myApplication';
+import OvertimeApprovalTab from './approval/components/OvertimeApprovalTab';
+import { useApprovalStats } from './approval/hooks/useApprovalStats';
+import { useLeaveRequests } from './approval/hooks/useLeaveRequests';
+import { useMissedCheckinRequests } from './approval/hooks/useMissedCheckinRequests';
+import { useMyApplications } from './approval/hooks/useMyApplications';
+import { useOvertimeRequests } from './approval/hooks/useOvertimeRequests';
 
 const ApprovalCenter = () => {
-  const { currentUser } = useUser();
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+  
   const [activeTab, setActiveTab] = useState<string>('my-applications');
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  // 使用通用類型，因為需要處理多種不同的審核請求類型
+  const [selectedRequest, setSelectedRequest] = useState<Record<string, unknown> | null>(null);
 
   // Custom hooks for data management
   const { approvalStats, loadApprovalStats } = useApprovalStats();
@@ -58,7 +60,8 @@ const ApprovalCenter = () => {
     }
   }, [currentUser?.id, loadPendingRequests, loadMissedCheckinRequests, loadOvertimeRequests, loadApprovalStats, loadMyApplications]);
 
-  const handleViewDetail = (request: any) => {
+  // 使用通用類型處理不同的請求類型
+  const handleViewDetail = (request: Record<string, unknown>) => {
     setSelectedRequest(request);
   };
 
@@ -82,7 +85,7 @@ const ApprovalCenter = () => {
 
   // If viewing detail page, show detailed approval page
   if (selectedRequest) {
-    return <LeaveApprovalDetail request={selectedRequest} onBack={handleBackToList} onApprovalComplete={handleApprovalComplete} />;
+    return <LeaveApprovalDetail request={selectedRequest as Record<string, unknown>} onBack={handleBackToList} onApprovalComplete={handleApprovalComplete} />;
   }
 
   if (!currentUser) {

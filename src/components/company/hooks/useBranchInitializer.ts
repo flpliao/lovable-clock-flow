@@ -1,10 +1,9 @@
-
-import { useEffect } from 'react';
+import { useCurrentUser } from '@/hooks/useStores';
 import { supabase } from '@/integrations/supabase/client';
-import { useUser } from '@/contexts/UserContext';
+import { useEffect } from 'react';
 
 export const useBranchInitializer = () => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
 
   const initializeDefaultBranch = async () => {
     try {

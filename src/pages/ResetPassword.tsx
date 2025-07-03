@@ -1,12 +1,13 @@
-
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Lock } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
 import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
+import { useAuthenticated, useCurrentUser, useUserLoaded } from '@/hooks/useStores';
+import { Lock } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const ResetPassword = () => {
-  const { currentUser, isAuthenticated, isUserLoaded } = useUser();
+  const currentUser = useCurrentUser();
+  const isAuthenticated = useAuthenticated();
+  const isUserLoaded = useUserLoaded();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);

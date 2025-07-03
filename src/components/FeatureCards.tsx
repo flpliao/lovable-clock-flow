@@ -1,24 +1,32 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, FileText, Calendar, Bell } from 'lucide-react';
+import { useIsAdmin, useIsManager } from '@/hooks/useStores';
+import { Bell, Calendar, Clock, FileText, LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useUser } from '@/contexts/UserContext';
+
 interface FeatureCardsProps {
   abnormalCount: number;
   annualLeaveBalance: number;
 }
+
+interface Feature {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  link: string;
+  iconBg: string;
+  iconColor: string;
+  badge?: string | null;
+}
+
 const FeatureCards = ({
   abnormalCount,
   annualLeaveBalance
 }: FeatureCardsProps) => {
-  const {
-    isAdmin,
-    isManager
-  } = useUser();
+  const isAdmin = useIsAdmin(); // 使用新的 Zustand hook
+  const isManager = useIsManager(); // 使用新的 Zustand hook
 
   // 主要功能卡片
-  const mainFeatures = [{
+  const mainFeatures: Feature[] = [{
     title: '個人出勤',
     description: '查看出勤記錄',
     icon: Clock,
@@ -48,11 +56,13 @@ const FeatureCards = ({
     iconBg: 'bg-orange-100',
     iconColor: 'text-orange-600'
   }];
+
   const FeatureCard = ({
     feature
   }: {
-    feature: any;
-  }) => <div className="group rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative w-full">
+    feature: Feature;
+  }) => (
+    <div className="group rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative w-full">
       <Link to={feature.link} className="block">
         <div className="p-5 sm:p-6 relative overflow-hidden h-full bg-white/80 backdrop-blur-xl border border-white/40">
           <div className="relative z-10 h-full flex flex-col">
@@ -70,23 +80,32 @@ const FeatureCards = ({
               </div>
             </div>
             
-            {feature.badge && <div className="mt-auto">
+            {feature.badge && (
+              <div className="mt-auto">
                 <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
                   {feature.badge}
                 </Badge>
-              </div>}
+              </div>
+            )}
           </div>
         </div>
       </Link>
-    </div>;
-  return <div className="space-y-6">
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
       {/* 主要功能區 */}
       <div className="px-[20px] py-[40px]">
         <h2 className="text-2xl font-bold text-white mb-6 text-center drop-shadow-lg py-0">主要功能</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {mainFeatures.map((feature, index) => <FeatureCard key={index} feature={feature} />)}
+          {mainFeatures.map((feature, index) => (
+            <FeatureCard key={index} feature={feature} />
+          ))}
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default FeatureCards;

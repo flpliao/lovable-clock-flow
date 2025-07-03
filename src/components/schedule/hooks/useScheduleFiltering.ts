@@ -1,30 +1,33 @@
-
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { useUser } from '@/contexts/UserContext';
 import { useScheduling } from '@/contexts/SchedulingContext';
+import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useCurrentUser, usePermissionChecker } from '@/hooks/useStores';
 import { format } from 'date-fns';
+import { useEffect, useState } from 'react';
 
 export const useScheduleFiltering = (viewMode: 'self' | 'subordinates' | 'all') => {
   const { getSubordinates, staffList } = useStaffManagementContext();
-  const { currentUser, hasPermission } = useUser();
+  const currentUser = useCurrentUser();
+  const { hasPermission } = usePermissionChecker();
   const { getSchedulesForDate } = useScheduling();
+  const [viewableStaffIds, setViewableStaffIds] = useState<string[]>([]);
 
   // 獲取可查看的員工ID列表
-  const getViewableStaffIds = () => {
+  const getViewableStaffIds = async () => {
     if (!currentUser) return [];
     
     const viewableIds = [];
     
     // 如果有查看所有排班權限
-    if (hasPermission('schedule:view_all')) {
+    if (await hasPermission('schedule:view_all')) {
       switch (viewMode) {
         case 'self':
           viewableIds.push(currentUser.id);
           break;
-        case 'subordinates':
+        case 'subordinates': {
           const subordinates = getSubordinates(currentUser.id);
           viewableIds.push(...subordinates.map(s => s.id));
           break;
+        }
         case 'all':
           // 返回所有員工ID
           viewableIds.push(...staffList.map(s => s.id));
@@ -44,7 +47,13 @@ export const useScheduleFiltering = (viewMode: 'self' | 'subordinates' | 'all') 
     return viewableIds;
   };
 
-  const viewableStaffIds = getViewableStaffIds();
+  useEffect(() => {
+    const loadViewableStaffIds = async () => {
+      const ids = await getViewableStaffIds();
+      setViewableStaffIds(ids);
+    };
+    loadViewableStaffIds();
+  }, [currentUser, viewMode, staffList]);
   
   // 過濾排班記錄
   const getFilteredSchedulesForDate = (date: Date) => {

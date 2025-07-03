@@ -1,14 +1,21 @@
-import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrentUser } from '@/hooks/useStores';
 import { supabase } from '@/integrations/supabase/client';
-import { LeaveRequest, ApprovalRecord } from '@/types';
-import { useUser } from '@/contexts/UserContext';
+import { ApprovalRecord, LeaveRequest } from '@/types';
+import { useCallback, useEffect, useState } from 'react';
+
+interface UpdateLeaveRequestData {
+  status: 'approved' | 'rejected';
+  updated_at: string;
+  approval_comment?: string;
+  rejection_reason?: string;
+}
 
 export const useSupabaseLeaveManagement = () => {
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser(); // 使用新的 Zustand hook
 
   // Load leave request data with secure logging
   const loadLeaveRequests = useCallback(async () => {
@@ -42,7 +49,7 @@ export const useSupabaseLeaveManagement = () => {
         ...item,
         leave_type: item.leave_type as LeaveRequest['leave_type'],
         status: item.status as LeaveRequest['status'],
-        approvals: item.approvals?.map((approval: any) => ({
+        approvals: item.approvals?.map((approval: Partial<ApprovalRecord> & Record<string, unknown>) => ({
           ...approval,
           status: approval.status as ApprovalRecord['status']
         })) || []
@@ -141,22 +148,24 @@ export const useSupabaseLeaveManagement = () => {
         updated_at: new Date().toISOString()
       };
 
-      // Remove unnecessary fields
-      delete (requestData as any).approvals;
-      delete (requestData as any).id;
+      // Remove unnecessary fields using proper typing
+      const { approvals, id, ...cleanRequestData } = requestData as typeof requestData & { 
+        approvals?: ApprovalRecord[]; 
+        id?: string; 
+      };
 
       console.log('📝 useSupabaseLeaveManagement: Prepared data for insertion:', {
-        user_id: requestData.user_id,
-        staff_id: requestData.staff_id,
-        leave_type: requestData.leave_type,
-        start_date: requestData.start_date,
-        end_date: requestData.end_date
+        user_id: cleanRequestData.user_id,
+        staff_id: cleanRequestData.staff_id,
+        leave_type: cleanRequestData.leave_type,
+        start_date: cleanRequestData.start_date,
+        end_date: cleanRequestData.end_date
       });
 
       // Insert leave request
       const { data, error } = await supabase
         .from('leave_requests')
-        .insert([requestData])
+        .insert([cleanRequestData])
         .select()
         .single();
 
@@ -300,7 +309,7 @@ export const useSupabaseLeaveManagement = () => {
     try {
       console.log('🔄 useSupabaseLeaveManagement: Updating leave request status');
 
-      const updateData: any = {
+      const updateData: UpdateLeaveRequestData = {
         status,
         updated_at: new Date().toISOString()
       };

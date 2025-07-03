@@ -1,18 +1,17 @@
-
-import React, { useState, useEffect } from 'react';
-import { Bell, Check, X, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import NotificationItem, { Notification } from './NotificationItem';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from '@/hooks/useNotifications';
-import { useUser } from '@/contexts/UserContext';
+import { useCurrentUser } from '@/hooks/useStores';
+import { Bell, Check, RefreshCw, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import NotificationItem, { Notification } from './NotificationItem';
 
 const NotificationCenter: React.FC = () => {
   const { 
@@ -24,7 +23,10 @@ const NotificationCenter: React.FC = () => {
     clearNotifications,
     refreshNotifications
   } = useNotifications();
-  const { currentUser } = useUser();
+  
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+  
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);

@@ -1,8 +1,7 @@
-
-import React, { createContext, useContext, useEffect, ReactNode } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { SchedulingContextType } from './types';
+import { useCurrentUser } from '@/hooks/useStores';
+import React, { createContext, ReactNode, useContext, useEffect } from 'react';
 import { useScheduleOperations } from './hooks/useScheduleOperations';
+import { SchedulingContextType } from './types';
 
 const SchedulingContext = createContext<SchedulingContextType | undefined>(undefined);
 
@@ -19,7 +18,7 @@ interface SchedulingProviderProps {
 }
 
 export const SchedulingProvider: React.FC<SchedulingProviderProps> = ({ children }) => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const {
     schedules,
     loading,

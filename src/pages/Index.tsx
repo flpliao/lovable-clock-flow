@@ -2,17 +2,26 @@ import { DepartmentManagementProvider } from '@/components/departments/Departmen
 import FeatureCards from '@/components/FeatureCards';
 import LocationCheckIn from '@/components/LocationCheckIn';
 import WelcomeSection from '@/components/WelcomeSection';
-import { useUser } from '@/contexts/UserContext';
+import {
+  useAnnualLeaveBalance,
+  useAuthenticated,
+  useAutoInitAuth,
+  useCurrentUser,
+  useUserLoaded
+} from '@/hooks/useStores';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
-  const {
-    currentUser,
-    annualLeaveBalance,
-    isUserLoaded,
-    isAuthenticated
-  } = useUser();
+  // 自動初始化認證系統
+  useAutoInitAuth();
+  
+  // 使用新的 Zustand hooks - 精確訂閱
+  const currentUser = useCurrentUser();
+  const isAuthenticated = useAuthenticated();
+  const isUserLoaded = useUserLoaded();
+  const annualLeaveBalance = useAnnualLeaveBalance();
+  
   const navigate = useNavigate();
 
   // 檢查登入狀態，若未登入則重定向到登入頁

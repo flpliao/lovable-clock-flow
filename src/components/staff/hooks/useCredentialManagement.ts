@@ -1,15 +1,13 @@
-
-import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
-import { Staff } from '../types';
+import { useCanManageUser } from '@/hooks/useStores';
+import { useState } from 'react';
 
 export const useCredentialManagement = () => {
   const [isManagingCredentials, setIsManagingCredentials] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   
   const { toast } = useToast();
-  const { canManageUser } = useUser();
+  const canManageUser = useCanManageUser();
 
   const openCredentialManagement = (userId: string) => {
     // Check if user has permission to manage this user's credentials

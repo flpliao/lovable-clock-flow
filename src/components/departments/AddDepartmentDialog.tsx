@@ -1,21 +1,28 @@
-import React from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus } from 'lucide-react';
+import { useIsAdmin } from '@/hooks/useStores';
 import { useDepartmentManagementContext } from './DepartmentManagementContext';
-import { useUser } from '@/contexts/UserContext';
+
 const AddDepartmentDialog = () => {
-  // 確保組件在正確的上下文中使用
-  let departmentContext;
-  try {
-    departmentContext = useDepartmentManagementContext();
-  } catch (error) {
-    console.error('AddDepartmentDialog: Context not available:', error);
-    return null; // 如果上下文不可用，不渲染組件
+  const isAdmin = useIsAdmin();
+  
+  // 嘗試獲取上下文，但不在條件語句中調用
+  const departmentContext = useDepartmentManagementContext();
+  
+  // 如果沒有權限，直接返回 null
+  if (!isAdmin) {
+    return null;
   }
+  
+  // 如果上下文不可用，返回 null
+  if (!departmentContext) {
+    console.error('AddDepartmentDialog: Context not available');
+    return null;
+  }
+  
   const {
     isAddDialogOpen,
     setIsAddDialogOpen,
@@ -23,15 +30,7 @@ const AddDepartmentDialog = () => {
     setNewDepartment,
     handleAddDepartment
   } = departmentContext;
-  const {
-    isAdmin,
-    currentUser
-  } = useUser();
 
-  const canAddDepartment = isAdmin();
-  if (!canAddDepartment) {
-    return null;
-  }
   const handleSubmit = async () => {
     console.log('🚀 提交新增部門:', newDepartment);
     await handleAddDepartment();

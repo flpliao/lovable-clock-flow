@@ -1,11 +1,11 @@
-
-import { useUser } from '@/contexts/UserContext';
-import { useNotifications } from '@/hooks/useNotifications';
-import { LeaveRequest } from '@/types';
 import { toast } from '@/components/ui/use-toast';
+import { useNotifications } from '@/hooks/useNotifications';
+import { useAnnualLeaveBalance, useUserActions } from '@/hooks/useStores';
+import { LeaveRequest } from '@/types';
 
 export const useLeaveApproval = () => {
-  const { annualLeaveBalance, setAnnualLeaveBalance } = useUser();
+  const annualLeaveBalance = useAnnualLeaveBalance();
+  const { setAnnualLeaveBalance } = useUserActions();
   const { addNotification } = useNotifications();
   
   // Handle approve action

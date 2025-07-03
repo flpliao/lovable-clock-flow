@@ -1,5 +1,5 @@
-
-import React from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -8,12 +8,10 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Edit2, Trash2, Shield, Lock } from 'lucide-react';
-import { StaffRole } from './types';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { useUser } from '@/contexts/UserContext';
-import { Badge } from '@/components/ui/badge';
+import { useIsAdmin } from '@/hooks/useStores';
+import { Edit2, Shield, Trash2 } from 'lucide-react';
+import { StaffRole } from './types';
 
 interface RoleTableProps {
   roles: StaffRole[];
@@ -22,7 +20,7 @@ interface RoleTableProps {
 
 const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
   const { deleteRole } = useStaffManagementContext();
-  const { isAdmin } = useUser();
+  const isAdmin = useIsAdmin();
   
   // 根據權限數量判斷角色類型
   const getRoleType = (role: StaffRole) => {
@@ -112,7 +110,7 @@ const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
                           variant="ghost"
                           size="icon"
                           onClick={() => deleteRole(role.id)}
-                          disabled={role.is_system_role && !isAdmin()}
+                          disabled={role.is_system_role && !isAdmin}
                           title={role.is_system_role ? "系統管理員可刪除系統角色" : "刪除角色"}
                           className="h-8 w-8 flex-shrink-0"
                         >

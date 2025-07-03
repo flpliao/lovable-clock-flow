@@ -1,22 +1,22 @@
-
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
-import { Staff } from '../types';
-import { StaffApiService } from '../services/staffApiService';
-import { useStaffValidation } from './useStaffValidation';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
 import { UnifiedPermissionService } from '@/services/unifiedPermissionService';
+import { StaffApiService } from '../services/staffApiService';
+import { Staff } from '../types';
+import { useStaffValidation } from './useStaffValidation';
 
 export const useStaffUpdateOperation = (
   staffList: Staff[],
   setStaffList: (staffList: Staff[]) => void
 ) => {
   const { toast } = useToast();
-  const { isAdmin, currentUser } = useUser();
+  const isAdmin = useIsAdmin();
+  const currentUser = useCurrentUser();
   const { validateStaffUpdate, getErrorMessage } = useStaffValidation();
   const permissionService = UnifiedPermissionService.getInstance();
 
   const updateStaff = async (updatedStaff: Staff): Promise<boolean> => {
-    if (!isAdmin()) {
+    if (!isAdmin) {
       toast({
         title: "權限不足",
         description: "只有管理員可以編輯員工資料",

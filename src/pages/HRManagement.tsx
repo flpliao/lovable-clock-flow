@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, DollarSign } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
 import PayrollManagement from '@/components/hr/PayrollManagement';
 import SalaryStructureManagement from '@/components/hr/SalaryStructureManagement';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useIsAdmin } from '@/hooks/useStores';
+import { DollarSign, Users } from 'lucide-react';
+import { useState } from 'react';
 
 const HRManagement = () => {
-  const { isAdmin } = useUser();
+  const isAdmin = useIsAdmin();
   const [activeTab, setActiveTab] = useState('payroll');
 
-  if (!isAdmin()) {
+  if (!isAdmin) {
     return (
       <div className="text-center py-12">
         <h2 className="text-xl font-semibold mb-2 text-white">無權限訪問</h2>

@@ -1,9 +1,9 @@
-import { useCallback } from 'react';
-import { useUser } from '@/contexts/UserContext';
+import { useCurrentUser } from '@/hooks/useStores';
 import { AnnouncementReadService } from '@/services/announcementReadService';
+import { useCallback } from 'react';
 
 export const useAnnouncementReads = () => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
 
   // Mark announcement as read
   const markAnnouncementAsRead = useCallback(async (announcementId: string): Promise<void> => {

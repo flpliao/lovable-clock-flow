@@ -1,21 +1,19 @@
-
-import { useSupabaseCheckIn } from './useSupabaseCheckIn';
-import { useUser } from '@/contexts/UserContext';
-import { toast } from './use-toast';
-import { getCurrentPosition } from '@/utils/geolocationUtils';
-import { 
-  getDepartmentForCheckIn, 
-  isWithinCheckInRange 
-} from '@/utils/departmentCheckInUtils';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useState } from 'react';
-import { CheckInRecord } from '@/types';
 import { Department } from '@/components/departments/types';
+import { useCurrentUser } from '@/hooks/useStores';
+import { supabase } from '@/integrations/supabase/client';
+import { CheckInRecord } from '@/types';
+import {
+    isWithinCheckInRange
+} from '@/utils/departmentCheckInUtils';
+import { getCurrentPosition } from '@/utils/geolocationUtils';
+import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { toast } from './use-toast';
+import { useSupabaseCheckIn } from './useSupabaseCheckIn';
 
 export const useLocationCheckIn = (userId: string, actionType: 'check-in' | 'check-out') => {
   const { createCheckInRecord } = useSupabaseCheckIn();
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const [distance, setDistance] = useState<number | null>(null);
 
   // 查詢部門資料

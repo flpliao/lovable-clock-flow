@@ -1,8 +1,7 @@
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import { useUserActions } from '@/hooks/useStores';
 import { AuthService } from '@/services/authService';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +13,9 @@ const LoginForm: React.FC = () => {
   
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setCurrentUser, setIsAuthenticated } = useUser();
+  
+  // 使用新的 Zustand hooks
+  const { setCurrentUser, setIsAuthenticated } = useUserActions();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +39,7 @@ const LoginForm: React.FC = () => {
       if (authResult.success && authResult.user) {
         console.log('✅ 登入成功:', authResult.user.name);
         
-        // 直接將用戶資料寫入 UserContext
+        // 直接將用戶資料寫入 Zustand store
         const userForContext = {
           id: authResult.user.id,
           name: authResult.user.name || '用戶',
@@ -49,7 +50,7 @@ const LoginForm: React.FC = () => {
           email: authResult.user.email
         };
         
-        console.log('📝 寫入 UserContext 的用戶資料:', userForContext);
+        console.log('📝 寫入 Zustand store 的用戶資料:', userForContext);
         setCurrentUser(userForContext);
         setIsAuthenticated(true);
         
@@ -58,7 +59,7 @@ const LoginForm: React.FC = () => {
           description: `歡迎回來，${authResult.user.name}！`,
         });
         
-        // 給 UserContext 更多時間處理用戶狀態變化
+        // 給 Zustand store 更多時間處理用戶狀態變化
         setTimeout(() => {
           console.log('🔄 準備跳轉到主頁面');
           navigate('/', { replace: true });

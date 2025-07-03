@@ -1,11 +1,10 @@
-
-import React from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Clock } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
+import { useIsAdmin } from '@/hooks/useStores';
+import { Clock, Edit, Trash2 } from 'lucide-react';
+import React from 'react';
 
 interface ScheduleDetailsProps {
   selectedDate: Date;
@@ -21,7 +20,7 @@ const ScheduleDetails: React.FC<ScheduleDetailsProps> = ({
   onRemoveSchedule,
 }) => {
   const { toast } = useToast();
-  const { isAdmin } = useUser();
+  const isAdmin = useIsAdmin();
 
   const handleScheduleDelete = async (scheduleId: string) => {
     try {
@@ -67,7 +66,7 @@ const ScheduleDetails: React.FC<ScheduleDetailsProps> = ({
                   <div className="text-white/60 text-xs mt-1">{shift.notes}</div>
                 )}
               </div>
-              {isAdmin() && canDeleteSchedule(shift) && (
+              {isAdmin && canDeleteSchedule(shift) && (
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"

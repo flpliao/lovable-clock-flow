@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useCurrentUser } from '@/hooks/useStores';
 import { supabase } from '@/integrations/supabase/client';
-import { useUser } from '@/contexts/UserContext';
+import { useEffect, useState } from 'react';
 
 interface StaffData {
   name: string;
@@ -14,7 +14,7 @@ interface StaffData {
 }
 
 export const useSupabaseStaffData = () => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const [staffData, setStaffData] = useState<StaffData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -1,19 +1,19 @@
-
-import React, { useState } from 'react';
 import StaffAnalyticsDashboard from '@/components/staff/StaffAnalyticsDashboard';
 import TeamCheckInManagement from '@/components/staff/TeamCheckInManagement';
-import { useUser } from '@/contexts/UserContext';
-import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
-import { BarChart3, Clock, Users, Activity } from 'lucide-react';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import { Activity, BarChart3, Clock, Users } from 'lucide-react';
+import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 
 const StaffDashboard = () => {
-  const { currentUser, isAdmin } = useUser();
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
   const [activeTab, setActiveTab] = useState('analytics');
   
   // Allow admin users to access this page
-  if (!currentUser || !isAdmin()) {
+  if (!currentUser || !isAdmin) {
     return <Navigate to="/login" />;
   }
 

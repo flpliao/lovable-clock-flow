@@ -1,8 +1,7 @@
-
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
-import { Staff } from '../types';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
 import { StaffApiService } from '../services/staffApiService';
+import { Staff } from '../types';
 import { useStaffValidation } from './useStaffValidation';
 
 export const useStaffDeleteOperation = (
@@ -10,12 +9,13 @@ export const useStaffDeleteOperation = (
   setStaffList: (staffList: Staff[]) => void
 ) => {
   const { toast } = useToast();
-  const { isAdmin, currentUser } = useUser();
+  const isAdmin = useIsAdmin();
+  const currentUser = useCurrentUser();
   const { getErrorMessage } = useStaffValidation();
 
   const deleteStaff = async (id: string): Promise<boolean> => {
     // 檢查權限
-    if (!isAdmin() ) {
+    if (!isAdmin ) {
       toast({
         title: "權限不足",
         description: "只有管理員可以刪除員工資料",

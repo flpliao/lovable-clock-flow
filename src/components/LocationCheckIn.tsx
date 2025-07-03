@@ -1,23 +1,22 @@
-
-import React, { useState, useEffect } from 'react';
-import { useCheckIn } from '@/hooks/useCheckIn';
-import { useUser } from '@/contexts/UserContext';
 import { useDepartmentManagementContext } from '@/components/departments/DepartmentManagementContext';
+import { useCheckIn } from '@/hooks/useCheckIn';
+import { useCurrentUser } from '@/hooks/useStores';
 import { isDepartmentReadyForCheckIn } from '@/utils/departmentCheckInUtils';
+import { useEffect, useState } from 'react';
 
 // Import the new smaller components
-import CheckInCompletedStatus from '@/components/check-in/CheckInCompletedStatus';
-import CheckInStatusInfo from '@/components/check-in/CheckInStatusInfo';
 import CheckInButton from '@/components/check-in/CheckInButton';
-import LocationCheckInHeader from '@/components/check-in/LocationCheckInHeader';
-import DepartmentLocationSelector from '@/components/check-in/DepartmentLocationSelector';
+import CheckInCompletedStatus from '@/components/check-in/CheckInCompletedStatus';
 import CheckInMethodSelector from '@/components/check-in/CheckInMethodSelector';
-import CheckInWarning from '@/components/check-in/CheckInWarning';
 import CheckInStatusDisplay from '@/components/check-in/CheckInStatusDisplay';
+import CheckInStatusInfo from '@/components/check-in/CheckInStatusInfo';
+import CheckInWarning from '@/components/check-in/CheckInWarning';
+import DepartmentLocationSelector from '@/components/check-in/DepartmentLocationSelector';
+import LocationCheckInHeader from '@/components/check-in/LocationCheckInHeader';
 import MissedCheckinDialog from '@/components/check-in/MissedCheckinDialog';
 
 const LocationCheckIn = () => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser(); // 使用新的 Zustand hook
   const [selectedDepartmentId, setSelectedDepartmentId] = useState<string | null>(null);
   
   // Use defensive context access with fallback

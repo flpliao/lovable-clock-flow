@@ -1,12 +1,12 @@
-
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useUser } from '@/contexts/UserContext';
 import { useNotifications } from '@/hooks/useNotifications';
-import { CompanyAnnouncement, AnnouncementCategory } from '@/types/announcement';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
 import { useSupabaseAnnouncements } from '@/hooks/useSupabaseAnnouncements';
+import { AnnouncementCategory, CompanyAnnouncement } from '@/types/announcement';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export const useAnnouncements = (adminMode: boolean = false) => {
-  const { currentUser, isAdmin } = useUser();
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
   const { addNotification } = useNotifications();
   const {
     announcements: supabaseAnnouncements,
@@ -26,7 +26,7 @@ export const useAnnouncements = (adminMode: boolean = false) => {
   
   // Check if user has admin access
   const hasAdminAccess = useMemo(() => {
-    return isAdmin() || (currentUser?.department === 'HR');
+    return isAdmin || (currentUser?.department === 'HR');
   }, [currentUser, isAdmin]);
 
   // Load read status for announcements

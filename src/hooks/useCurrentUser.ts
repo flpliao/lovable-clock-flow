@@ -1,7 +1,7 @@
-import { useUser } from '@/contexts/UserContext';
+import { useUserStore } from '@/stores/userStore';
 
 export const useCurrentUser = () => {
-  const { currentUser } = useUser();
+  const currentUser = useUserStore((state) => state.currentUser);
 
   return {
     currentUser,

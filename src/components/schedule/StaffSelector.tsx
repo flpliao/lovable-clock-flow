@@ -1,25 +1,25 @@
-
-import React from 'react';
 import { FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Control } from 'react-hook-form';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { useUser } from '@/contexts/UserContext';
+import { useCurrentUser, usePermissionChecker } from '@/hooks/useStores';
+import React from 'react';
+import { Control } from 'react-hook-form';
 
 interface StaffSelectorProps {
-  control: Control<any>;
+  control: Control<{ userId: string }>;
 }
 
 const StaffSelector = ({ control }: StaffSelectorProps) => {
   const { staffList } = useStaffManagementContext();
-  const { currentUser, hasPermission } = useUser();
+  const currentUser = useCurrentUser();
+  const { hasPermission } = usePermissionChecker();
 
   // 根據權限過濾可選員工
-  const getSelectableStaff = () => {
+  const getSelectableStaff = async () => {
     if (!currentUser) return [];
     
     // 有創建排班權限的用戶可以選擇所有員工
-    if (hasPermission('schedule:create')) {
+    if (await hasPermission('schedule:create')) {
       return staffList;
     }
     
@@ -27,7 +27,15 @@ const StaffSelector = ({ control }: StaffSelectorProps) => {
     return staffList.filter(staff => staff.id === currentUser.id);
   };
 
-  const selectableStaff = getSelectableStaff();
+  const [selectableStaff, setSelectableStaff] = React.useState<Staff[]>([]);
+
+  React.useEffect(() => {
+    const loadSelectableStaff = async () => {
+      const staff = await getSelectableStaff();
+      setSelectableStaff(staff);
+    };
+    loadSelectableStaff();
+  }, [currentUser, staffList]);
 
   return (
     <FormField

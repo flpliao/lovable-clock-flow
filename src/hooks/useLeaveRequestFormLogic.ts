@@ -1,17 +1,15 @@
-
-import { useState, useMemo, useCallback, useRef } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useUser } from '@/contexts/UserContext';
-import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
-import { leaveFormSchema, LeaveFormValues } from '@/utils/leaveTypes';
-import { LeaveValidationService, ValidationResult, LeaveUsage } from '@/services/leaveValidationService';
-import { getApprovers } from '@/services/leaveRequestService';
 import { toast } from '@/components/ui/use-toast';
-import React from 'react';
+import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
+import { useCurrentUser } from '@/hooks/useStores';
+import { getApprovers } from '@/services/leaveRequestService';
+import { LeaveUsage, LeaveValidationService, ValidationResult } from '@/services/leaveValidationService';
+import { leaveFormSchema, LeaveFormValues } from '@/utils/leaveTypes';
+import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 export function useLeaveRequestFormLogic(onSubmit?: () => void) {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { createLeaveRequest } = useLeaveManagementContext();
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
@@ -147,7 +145,7 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
         user_id: currentUser.id,
         start_date: data.start_date.toISOString().split('T')[0],
         end_date: data.end_date.toISOString().split('T')[0],
-        leave_type: data.leave_type as any,
+        leave_type: data.leave_type as 'annual' | 'sick' | 'personal' | 'marriage' | 'bereavement' | 'maternity' | 'paternity' | 'parental' | 'occupational' | 'menstrual' | 'other',
         status: 'pending' as const,
         hours: calculatedHours,
         reason: data.reason,

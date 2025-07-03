@@ -1,16 +1,15 @@
-
-import React from 'react';
 import { CompanyManagementProvider } from '@/components/company/CompanyManagementContext';
-import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
-import { CompanyBranchPermissionGuard } from '@/components/company/components/CompanyBranchPermissionGuard';
-import { CompanyBranchLayout } from '@/components/company/components/CompanyBranchLayout';
 import { CompanyBranchHeader } from '@/components/company/components/CompanyBranchHeader';
+import { CompanyBranchLayout } from '@/components/company/components/CompanyBranchLayout';
+import { CompanyBranchPermissionGuard } from '@/components/company/components/CompanyBranchPermissionGuard';
 import { CompanyBranchTabs } from '@/components/company/components/CompanyBranchTabs';
-import { useUser } from '@/contexts/UserContext';
+import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
+import { useCurrentUser, useUserLoaded } from '@/hooks/useStores';
 import { Loader2 } from 'lucide-react';
 
 const CompanyBranchManagement = () => {
-  const { isUserLoaded, currentUser } = useUser();
+  const isUserLoaded = useUserLoaded();
+  const currentUser = useCurrentUser();
 
   // 如果用戶資料還在載入中，顯示載入畫面
   if (!isUserLoaded) {

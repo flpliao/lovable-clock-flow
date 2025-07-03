@@ -1,7 +1,6 @@
-
-import React from 'react';
-import { useUser } from '@/contexts/UserContext';
 import { useCredentials } from '@/hooks/useCredentials';
+import { useCurrentUser, useIsAdmin, usePermissionChecker } from '@/hooks/useStores';
+import React from 'react';
 import EmailManagementCard from './credentials/EmailManagementCard';
 import PasswordManagementCard from './credentials/PasswordManagementCard';
 
@@ -14,14 +13,16 @@ const CredentialManagement: React.FC<CredentialManagementProps> = ({
   userId,
   onSuccess 
 }) => {
-  const { currentUser, isAdmin, canManageUser } = useUser();
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
+  const { canManageUser } = usePermissionChecker();
   
   // Determine if this is admin managing someone else or user managing own account
   const managingOwnAccount = !userId || userId === currentUser?.id;
   const targetUserId = userId || currentUser?.id;
   
   // 系統管理員和用戶本人都可以修改密碼
-  const isSystemAdmin = isAdmin();
+  const isSystemAdmin = isAdmin;
   const canManageEmail = managingOwnAccount; // 只有用戶本人可以修改 email（需要驗證）
   const canManagePassword = managingOwnAccount; // 只有用戶本人可以修改密碼（需要當前密碼驗證）
   

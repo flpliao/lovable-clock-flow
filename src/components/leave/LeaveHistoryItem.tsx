@@ -1,13 +1,3 @@
-import React, { useState } from 'react';
-import { LeaveRequest } from '@/types';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { getStatusBadgeVariant, getStatusText, getLeaveTypeText } from '@/utils/leaveUtils';
-import { Calendar, Clock, User, FileText, CheckCircle, XCircle, AlertCircle, Edit, Trash2 } from 'lucide-react';
-import { formatLeaveRecordDate } from '@/utils/dateUtils';
-import { useUser } from '@/contexts/UserContext';
-import { useLeaveRecordCrud } from '@/hooks/useLeaveRecordCrud';
-import { EditLeaveRecordDialog } from './EditLeaveRecordDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +9,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useLeaveRecordCrud } from '@/hooks/useLeaveRecordCrud';
+import { useIsAdmin } from '@/hooks/useStores';
+import { LeaveRequest } from '@/types';
+import { formatLeaveRecordDate } from '@/utils/dateUtils';
+import { getLeaveTypeText, getStatusBadgeVariant, getStatusText } from '@/utils/leaveUtils';
+import { AlertCircle, Calendar, CheckCircle, Clock, Edit, FileText, Trash2, XCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { EditLeaveRecordDialog } from './EditLeaveRecordDialog';
 
 interface LeaveHistoryItemProps {
   leave: LeaveRequest;
@@ -29,7 +29,7 @@ export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({
   leave,
   onClick
 }) => {
-  const { isAdmin } = useUser();
+  const isAdmin = useIsAdmin();
   const { deleteLeaveRecord, updateLeaveRecord, loading } = useLeaveRecordCrud();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -157,7 +157,7 @@ export const LeaveHistoryItem: React.FC<LeaveHistoryItemProps> = ({
               {getStatusText(leave.status)}
             </Badge>
             {/* 管理員操作按鈕 */}
-            {isAdmin() && (
+            {isAdmin && (
               <div className="flex gap-1 ml-2">
                 <Button
                   size="sm"

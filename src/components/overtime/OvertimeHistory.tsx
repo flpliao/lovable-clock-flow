@@ -1,18 +1,17 @@
-
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Clock, Search, Filter } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
+import { useCurrentUser } from '@/hooks/useStores';
 import { overtimeService } from '@/services/overtimeService';
 import type { OvertimeRequest } from '@/types/overtime';
+import { Calendar, Clock, Filter, Search } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const OvertimeHistory: React.FC = () => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const [requests, setRequests] = useState<OvertimeRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<OvertimeRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);

@@ -1,12 +1,13 @@
-
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { KeyRound } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
+import { useAuthenticated, useCurrentUser, useUserLoaded } from '@/hooks/useStores';
+import { KeyRound } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const ForgotPassword = () => {
-  const { currentUser, isAuthenticated, isUserLoaded } = useUser();
+  const currentUser = useCurrentUser();
+  const isAuthenticated = useAuthenticated();
+  const isUserLoaded = useUserLoaded();
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);
 

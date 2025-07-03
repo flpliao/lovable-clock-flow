@@ -1,30 +1,27 @@
-
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Plus, Building, MapPin } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
-import { useCompanyManagementContext } from './CompanyManagementContext';
-import { useDepartmentManagementContext } from '@/components/departments/DepartmentManagementContext';
-import { useIsMobile } from '@/hooks/use-mobile';
-import CompanyInfoCard from './CompanyInfoCard';
-import BranchTable from './BranchTable';
-import DepartmentTable from '@/components/departments/DepartmentTable';
-import AddBranchDialog from './AddBranchDialog';
 import AddDepartmentDialog from '@/components/departments/AddDepartmentDialog';
-import EditBranchDialog from './EditBranchDialog';
+import { useDepartmentManagementContext } from '@/components/departments/DepartmentManagementContext';
+import DepartmentTable from '@/components/departments/DepartmentTable';
 import EditDepartmentDialog from '@/components/departments/EditDepartmentDialog';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useIsAdmin } from '@/hooks/useStores';
+import { Building, Building2, MapPin, Plus } from 'lucide-react';
+import { useState } from 'react';
+import AddBranchDialog from './AddBranchDialog';
+import BranchTable from './BranchTable';
+import CompanyInfoCard from './CompanyInfoCard';
+import { useCompanyManagementContext } from './CompanyManagementContext';
+import EditBranchDialog from './EditBranchDialog';
 import EditCompanyDialog from './EditCompanyDialog';
 import CheckInDistanceSettings from './components/CheckInDistanceSettings';
 
 const CompanyManagementRedesigned = () => {
-  const { currentUser } = useUser();
+  const isAdmin = useIsAdmin();
   const { setIsAddBranchDialogOpen, branches } = useCompanyManagementContext();
   const { setIsAddDialogOpen, departments } = useDepartmentManagementContext();
-  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('company');
   
-  const canManageBranches = currentUser?.role_id === 'admin';
+  const canManageBranches = isAdmin;
 
   const handleAddBranch = () => {
     setIsAddBranchDialogOpen(true);

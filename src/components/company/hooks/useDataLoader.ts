@@ -1,15 +1,15 @@
-
-import { useState, useEffect } from 'react';
-import { useCompanyOperations } from './useCompanyOperations';
-import { useBranchOperations } from './useBranchOperations';
+import { useCurrentUser, useUserLoaded } from '@/hooks/useStores';
+import { useEffect, useState } from 'react';
 import { CompanyApiService } from '../services/companyApiService';
-import { useUser } from '@/contexts/UserContext';
+import { useBranchOperations } from './useBranchOperations';
+import { useCompanyOperations } from './useCompanyOperations';
 
 export const useDataLoader = () => {
   const [loading, setLoading] = useState(false);
   const { loadCompany, company } = useCompanyOperations();
   const { loadBranches } = useBranchOperations(company?.id || '');
-  const { currentUser, isUserLoaded } = useUser();
+  const currentUser = useCurrentUser();
+  const isUserLoaded = useUserLoaded();
 
   const loadAllData = async () => {
     console.log('🔄 useDataLoader: 開始載入所有資料...');

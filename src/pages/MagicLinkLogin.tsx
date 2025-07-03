@@ -1,12 +1,13 @@
-
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Mail } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
 import MagicLinkForm from '@/components/auth/MagicLinkForm';
+import { useAuthenticated, useCurrentUser, useUserLoaded } from '@/hooks/useStores';
+import { Mail } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const MagicLinkLogin = () => {
-  const { currentUser, isAuthenticated, isUserLoaded } = useUser();
+  const currentUser = useCurrentUser();
+  const isAuthenticated = useAuthenticated();
+  const isUserLoaded = useUserLoaded();
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);
 

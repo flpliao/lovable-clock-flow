@@ -1,52 +1,62 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
+import React from 'react';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
-import { UserProvider } from '@/contexts/UserContext';
-import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
+// 不再需要 UserProvider！
 import Header from '@/components/Header';
+import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
+import { useAutoInitAuth } from '@/hooks/useStores'; // 自動初始化認證
 
 // Auth pages
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import MagicLinkLogin from '@/pages/MagicLinkLogin';
-import AuthCallback from '@/pages/AuthCallback';
 import AccountSettings from '@/pages/AccountSettings';
+import AuthCallback from '@/pages/AuthCallback';
+import ForgotPassword from '@/pages/ForgotPassword';
+import Login from '@/pages/Login';
+import MagicLinkLogin from '@/pages/MagicLinkLogin';
+import Register from '@/pages/Register';
+import ResetPassword from '@/pages/ResetPassword';
 
 // Main pages
 import Index from '@/pages/Index';
-import StaffDashboard from '@/pages/StaffDashboard';
-import PersonalAttendance from '@/pages/PersonalAttendance';
 import LeaveRequest from '@/pages/LeaveRequest';
-import OvertimeRequest from '@/pages/OvertimeRequest';
 import OvertimeHistoryPage from '@/pages/OvertimeHistoryPage';
+import OvertimeRequest from '@/pages/OvertimeRequest';
+import PersonalAttendance from '@/pages/PersonalAttendance';
+import StaffDashboard from '@/pages/StaffDashboard';
 
 // Management pages
-import Scheduling from '@/pages/Scheduling';
-import ScheduleStatistics from '@/pages/ScheduleStatistics';
-import PersonnelManagement from '@/pages/PersonnelManagement';
-import CompanyBranchManagement from '@/pages/CompanyBranchManagement';
-import HRManagement from '@/pages/HRManagement';
+import AnnouncementManagementPage from '@/pages/AnnouncementManagementPage';
 import ApprovalCenter from '@/pages/ApprovalCenter';
-import SystemSettings from '@/pages/SystemSettings';
+import CompanyAnnouncements from '@/pages/CompanyAnnouncements';
+import CompanyBranchManagement from '@/pages/CompanyBranchManagement';
 import HolidayManagement from '@/pages/HolidayManagement';
+import HRManagement from '@/pages/HRManagement';
 import LeaveTypeManagement from '@/pages/LeaveTypeManagement';
 import MissedCheckinManagement from '@/pages/MissedCheckinManagement';
 import OvertimeManagement from '@/pages/OvertimeManagement';
 import OvertimeManagementPage from '@/pages/OvertimeManagementPage';
 import OvertimeRequestPage from '@/pages/OvertimeRequestPage';
-import AnnouncementManagementPage from '@/pages/AnnouncementManagementPage';
-import CompanyAnnouncements from '@/pages/CompanyAnnouncements';
+import PersonnelManagement from '@/pages/PersonnelManagement';
+import ScheduleStatistics from '@/pages/ScheduleStatistics';
+import Scheduling from '@/pages/Scheduling';
+import SystemSettings from '@/pages/SystemSettings';
 
 // 404 page
 import NotFound from '@/pages/NotFound';
 
+// 認證初始化組件（替代 UserProvider）
+const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // 自動初始化認證系統
+  useAutoInitAuth();
+  
+  return <>{children}</>;
+};
+
 function App() {
   return (
     <Router>
-      <UserProvider>
+      {/* 🎉 不再需要 UserProvider！ */}
+      <AuthInitializer>
         <LeaveManagementProvider>
           <div className="min-h-screen bg-gray-50">
             <Header />
@@ -85,9 +95,9 @@ function App() {
             <Toaster />
           </div>
         </LeaveManagementProvider>
-      </UserProvider>
+      </AuthInitializer>
     </Router>
   );
 }
 
-export default App;
+export default App; 

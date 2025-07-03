@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Company } from '@/types/company';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
+import { useCurrentUser } from '@/hooks/useStores';
+import { Company } from '@/types/company';
+import { useEffect, useState } from 'react';
 import { useCompanyManagementContext } from '../CompanyManagementContext';
-import { CompanyDataService } from '../services/companyDataService';
 import { useCompanyFormValidation } from '../forms/useCompanyFormValidation';
+import { CompanyDataService } from '../services/companyDataService';
 
 export const useEditCompanyDialog = () => {
   const {
@@ -29,7 +29,7 @@ export const useEditCompanyDialog = () => {
   });
 
   const { toast } = useToast();
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { validateForm } = useCompanyFormValidation();
   
   const hasPermission = currentUser?.role_id === 'admin';

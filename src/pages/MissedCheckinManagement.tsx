@@ -21,8 +21,7 @@ const MissedCheckinManagementContent = () => {
   const { toast } = useToast();
   const [requests, setRequests] = useState<MissedCheckinRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState<MissedCheckinRequest | null>(null);
-  const [approvalComment, setApprovalComment] = useState('');
+  const [approvalComment] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
   // 按照請假申請邏輯檢查忘記打卡權限
@@ -38,7 +37,7 @@ const MissedCheckinManagementContent = () => {
     canCreateMissedCheckin,
     canViewAllMissedCheckin,
     canApproveMissedCheckin,
-    canManageMissedCheckin
+    canManageMissedCheckin,
   });
 
   const loadRequests = async () => {
@@ -51,10 +50,11 @@ const MissedCheckinManagementContent = () => {
     try {
       setLoading(true);
       console.log('開始載入忘記打卡申請，用戶:', currentUser.name);
-      
+
       const { data, error } = await supabase
         .from('missed_checkin_requests')
-        .select(`
+        .select(
+          `
           *,
           staff:staff_id (
             name,
@@ -63,7 +63,8 @@ const MissedCheckinManagementContent = () => {
             branch_name,
             supervisor_id
           )
-        `)
+        `
+        )
         .order('created_at', { ascending: false });
 
       console.log('Supabase 查詢結果:', { data, error });
@@ -71,9 +72,9 @@ const MissedCheckinManagementContent = () => {
       if (error) {
         console.error('載入申請失敗:', error);
         toast({
-          title: "載入失敗",
+          title: '載入失敗',
           description: `無法載入忘記打卡申請: ${error.message}`,
-          variant: "destructive"
+          variant: 'destructive',
         });
         setRequests([]);
         return;
@@ -82,17 +83,17 @@ const MissedCheckinManagementContent = () => {
       // 過濾權限：按照請假申請邏輯
       const filteredData = (data || []).filter(item => {
         const staff = Array.isArray(item.staff) ? item.staff[0] : item.staff;
-        
+
         // 完整管理權限：可以看到所有申請
         if (canManageMissedCheckin) {
           return true;
         }
-        
+
         // 查看所有權限：可以看到所有申請
         if (canViewAllMissedCheckin) {
           return true;
         }
-        
+
         // 審核權限：可以看到需要審核的申請
         if (canApproveMissedCheckin) {
           // 管理員可以看到所有申請
@@ -104,12 +105,12 @@ const MissedCheckinManagementContent = () => {
             return true;
           }
         }
-        
+
         // 查看自己權限：只能看到自己的申請
         if (canViewOwnMissedCheckin && item.staff_id === currentUser.id) {
           return true;
         }
-        
+
         return false;
       });
 
@@ -117,18 +118,17 @@ const MissedCheckinManagementContent = () => {
         ...item,
         missed_type: item.missed_type as 'check_in' | 'check_out' | 'both',
         status: item.status as 'pending' | 'approved' | 'rejected',
-        staff: Array.isArray(item.staff) ? item.staff[0] : item.staff
+        staff: Array.isArray(item.staff) ? item.staff[0] : item.staff,
       }));
 
       console.log('格式化後的資料:', formattedData);
       setRequests(formattedData);
-      
     } catch (error) {
       console.error('載入申請時發生錯誤:', error);
       toast({
-        title: "載入失敗",
-        description: "載入忘記打卡申請時發生錯誤",
-        variant: "destructive"
+        title: '載入失敗',
+        description: '載入忘記打卡申請時發生錯誤',
+        variant: 'destructive',
       });
       setRequests([]);
     } finally {
@@ -139,27 +139,37 @@ const MissedCheckinManagementContent = () => {
   useEffect(() => {
     console.log('MissedCheckinManagement useEffect:', {
       currentUser: currentUser?.name,
-      hasAnyPermission: canViewOwnMissedCheckin || canViewAllMissedCheckin || canApproveMissedCheckin || canManageMissedCheckin
+      hasAnyPermission:
+        canViewOwnMissedCheckin ||
+        canViewAllMissedCheckin ||
+        canApproveMissedCheckin ||
+        canManageMissedCheckin,
     });
-    
+
     if (currentUser) {
       loadRequests();
     } else {
       setLoading(false);
     }
-  }, [currentUser, canViewOwnMissedCheckin, canViewAllMissedCheckin, canApproveMissedCheckin, canManageMissedCheckin]);
+  }, [
+    currentUser,
+    canViewOwnMissedCheckin,
+    canViewAllMissedCheckin,
+    canApproveMissedCheckin,
+    canManageMissedCheckin,
+  ]);
 
   const canApproveRequest = (request: MissedCheckinRequest) => {
     // 申請人不能審核自己的申請
     if (request.staff_id === currentUser?.id) {
       return false;
     }
-    
+
     // 完整管理權限
     if (canManageMissedCheckin) {
       return true;
     }
-    
+
     // 審核權限
     if (canApproveMissedCheckin) {
       // 管理員可以審核所有申請
@@ -170,13 +180,13 @@ const MissedCheckinManagementContent = () => {
       const staff = Array.isArray(request.staff) ? request.staff[0] : request.staff;
       return staff?.supervisor_id === currentUser?.id;
     }
-    
+
     return false;
   };
 
   const handleApproval = async (requestId: string, action: 'approved' | 'rejected') => {
     if (!currentUser) return;
-    
+
     setActionLoading(true);
     try {
       const { data: updatedRequest, error } = await supabase
@@ -187,10 +197,11 @@ const MissedCheckinManagementContent = () => {
           approved_by_name: currentUser.name,
           approval_comment: approvalComment,
           approval_date: new Date().toISOString(),
-          rejection_reason: action === 'rejected' ? approvalComment : null
+          rejection_reason: action === 'rejected' ? approvalComment : null,
         })
         .eq('id', requestId)
-        .select(`
+        .select(
+          `
           *,
           staff:staff_id (
             name,
@@ -198,40 +209,42 @@ const MissedCheckinManagementContent = () => {
             position,
             branch_name
           )
-        `)
+        `
+        )
         .single();
 
       if (error) throw error;
 
       // 發送通知給申請人
-      await createApplicantNotification(updatedRequest, action);
+      await createApplicantNotification(updatedRequest as unknown as MissedCheckinRequest, action);
 
       toast({
-        title: action === 'approved' ? "申請已核准" : "申請已拒絕",
-        description: `忘記打卡申請已${action === 'approved' ? '核准' : '拒絕'}`
+        title: action === 'approved' ? '申請已核准' : '申請已拒絕',
+        description: `忘記打卡申請已${action === 'approved' ? '核准' : '拒絕'}`,
       });
 
       // 重新載入申請列表
       loadRequests();
-      setSelectedRequest(null);
-      setApprovalComment('');
     } catch (error) {
       console.error('審核失敗:', error);
       toast({
-        title: "審核失敗",
-        description: "無法處理申請，請稍後重試",
-        variant: "destructive"
+        title: '審核失敗',
+        description: '無法處理申請，請稍後重試',
+        variant: 'destructive',
       });
     } finally {
       setActionLoading(false);
     }
   };
 
-  const createApplicantNotification = async (requestData: MissedCheckinRequest, action: 'approved' | 'rejected') => {
+  const createApplicantNotification = async (
+    requestData: MissedCheckinRequest,
+    action: 'approved' | 'rejected'
+  ) => {
     try {
       const staffInfo = Array.isArray(requestData.staff) ? requestData.staff[0] : requestData.staff;
       const actionText = action === 'approved' ? '已核准' : '已被退回';
-      
+
       await NotificationDatabaseOperations.addNotification(requestData.staff_id, {
         title: '忘記打卡申請結果',
         message: `您的忘記打卡申請${actionText} (${requestData.request_date})`,
@@ -241,8 +254,8 @@ const MissedCheckinManagementContent = () => {
           actionRequired: false,
           applicantName: staffInfo?.name,
           requestDate: requestData.request_date,
-          missedType: requestData.missed_type
-        }
+          missedType: requestData.missed_type,
+        },
       });
 
       console.log(`已發送忘記打卡申請結果通知給 ${staffInfo?.name}`);
@@ -267,11 +280,19 @@ const MissedCheckinManagementContent = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">待審核</Badge>;
+        return (
+          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+            待審核
+          </Badge>
+        );
       case 'approved':
         return <Badge className="bg-green-50 text-green-700 border-green-200">已核准</Badge>;
       case 'rejected':
-        return <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-200">已退回</Badge>;
+        return (
+          <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-200">
+            已退回
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -282,22 +303,13 @@ const MissedCheckinManagementContent = () => {
     return format(new Date(timeString), 'HH:mm', { locale: zhTW });
   };
 
-  // 權限檢查
-  if (!currentUser) {
-    return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardContent className="text-center p-6">
-            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">請先登入以查看此頁面</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   // 檢查是否有任何權限
-  if (!canViewOwnMissedCheckin && !canViewAllMissedCheckin && !canApproveMissedCheckin && !canManageMissedCheckin) {
+  if (
+    !canViewOwnMissedCheckin &&
+    !canViewAllMissedCheckin &&
+    !canApproveMissedCheckin &&
+    !canManageMissedCheckin
+  ) {
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
@@ -315,7 +327,7 @@ const MissedCheckinManagementContent = () => {
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden">
       {/* 背景層 */}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
-      
+
       <div className="relative z-10 w-full min-h-screen pt-20 pb-6">
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto py-6">
           {/* 標題區域 */}
@@ -346,8 +358,11 @@ const MissedCheckinManagementContent = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {requests.map((request) => (
-                <Card key={request.id} className="bg-white/95 backdrop-blur-xl border border-white/30 shadow-xl rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300">
+              {requests.map(request => (
+                <Card
+                  key={request.id}
+                  className="bg-white/95 backdrop-blur-xl border border-white/30 shadow-xl rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300"
+                >
                   <CardContent className="p-6">
                     {/* 申請狀態和員工信息 */}
                     <div className="flex items-start justify-between mb-4">
@@ -370,7 +385,9 @@ const MissedCheckinManagementContent = () => {
                       <div className="flex flex-col items-end gap-2">
                         {getStatusBadge(request.status)}
                         <span className="text-xs text-gray-500">
-                          {format(new Date(request.created_at), 'yyyy/MM/dd HH:mm', { locale: zhTW })}
+                          {format(new Date(request.created_at), 'yyyy/MM/dd HH:mm', {
+                            locale: zhTW,
+                          })}
                         </span>
                       </div>
                     </div>
@@ -390,13 +407,17 @@ const MissedCheckinManagementContent = () => {
                       {request.requested_check_in_time && (
                         <div>
                           <span className="text-sm text-gray-500">上班時間</span>
-                          <p className="font-medium">{formatTime(request.requested_check_in_time)}</p>
+                          <p className="font-medium">
+                            {formatTime(request.requested_check_in_time)}
+                          </p>
                         </div>
                       )}
                       {request.requested_check_out_time && (
                         <div>
                           <span className="text-sm text-gray-500">下班時間</span>
-                          <p className="font-medium">{formatTime(request.requested_check_out_time)}</p>
+                          <p className="font-medium">
+                            {formatTime(request.requested_check_out_time)}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -444,13 +465,15 @@ const MissedCheckinManagementContent = () => {
                     )}
 
                     {/* 無權限提示 */}
-                    {request.status === 'pending' && !canApproveRequest(request) && request.staff_id !== currentUser?.id && (
-                      <div className="pt-4 border-t">
-                        <p className="text-sm text-gray-500 text-center">
-                          您沒有權限審核此申請（需要直屬主管審核）
-                        </p>
-                      </div>
-                    )}
+                    {request.status === 'pending' &&
+                      !canApproveRequest(request) &&
+                      request.staff_id !== currentUser?.id && (
+                        <div className="pt-4 border-t">
+                          <p className="text-sm text-gray-500 text-center">
+                            您沒有權限審核此申請（需要直屬主管審核）
+                          </p>
+                        </div>
+                      )}
 
                     {/* 自己的申請提示 */}
                     {request.staff_id === currentUser?.id && request.status === 'pending' && (

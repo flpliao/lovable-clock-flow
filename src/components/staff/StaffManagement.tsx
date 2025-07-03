@@ -13,15 +13,8 @@ const StaffManagement = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  const {
-    staffList,
-    roles,
-    loading,
-    setIsAddDialogOpen,
-    handleDeleteStaff,
-    openEditDialog,
-    refreshData,
-  } = useStaffManagementContext();
+  const { staffList, loading, setIsAddDialogOpen, handleDeleteStaff, openEditDialog, refreshData } =
+    useStaffManagementContext();
 
   // 過濾員工列表
   const filteredStaff = staffList.filter(
@@ -80,7 +73,6 @@ const StaffManagement = () => {
             loading={loading}
             onEditStaff={openEditDialog}
             onDeleteStaff={handleDeleteStaff}
-            roles={roles}
           />
         </CardContent>
       </Card>

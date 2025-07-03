@@ -1,19 +1,18 @@
-import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Users, Plus, Search } from 'lucide-react';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { StaffList } from './StaffList';
+import { Plus, Search, Users } from 'lucide-react';
+import { useState } from 'react';
 import AddStaffDialog from './AddStaffDialog';
 import EditStaffDialog from './EditStaffDialog';
-import { StaffRLSStatus } from './StaffRLSStatus';
+import { StaffList } from './StaffList';
 
-const StaffManagement: React.FC = () => {
+const StaffManagement = () => {
   console.log('🎯 StaffManagement rendering');
-  
+
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   const {
     staffList,
     roles,
@@ -21,21 +20,19 @@ const StaffManagement: React.FC = () => {
     setIsAddDialogOpen,
     handleDeleteStaff,
     openEditDialog,
-    refreshData
+    refreshData,
   } = useStaffManagementContext();
 
   // 過濾員工列表
-  const filteredStaff = staffList.filter(staff => 
-    staff.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    staff.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    staff.position?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredStaff = staffList.filter(
+    staff =>
+      staff.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      staff.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      staff.position?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="space-y-4">
-      {/* RLS 狀態監控 */}
-      <StaffRLSStatus />
-      
       {/* 主要管理介面 */}
       <Card className="backdrop-blur-xl bg-white/60 border border-white/40 shadow-lg">
         <CardHeader className="pb-4">
@@ -46,7 +43,7 @@ const StaffManagement: React.FC = () => {
               </div>
               員工管理
             </CardTitle>
-            <Button 
+            <Button
               onClick={() => setIsAddDialogOpen(true)}
               className="bg-green-500/90 hover:bg-green-600/90 text-white shadow-md"
             >
@@ -55,7 +52,7 @@ const StaffManagement: React.FC = () => {
             </Button>
           </div>
         </CardHeader>
-        
+
         <CardContent className="space-y-4">
           {/* 搜尋區域 */}
           <div className="flex items-center space-x-2">
@@ -64,12 +61,12 @@ const StaffManagement: React.FC = () => {
               <Input
                 placeholder="搜尋員工姓名、部門或職位..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="pl-10 bg-white/70 border-white/40 backdrop-blur-sm"
               />
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={refreshData}
               className="bg-white/60 border-white/40 hover:bg-white/80"
             >

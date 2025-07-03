@@ -1,9 +1,15 @@
-
-import React from 'react';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { branchService } from '@/services/branchService';
+import { Branch } from '@/types/company';
+import React, { useEffect, useState } from 'react';
 import { Staff } from '../types';
-import { useBranches } from '../hooks/useBranches';
 
 interface EditStaffBranchFieldProps {
   currentStaff: Staff;
@@ -12,24 +18,35 @@ interface EditStaffBranchFieldProps {
 
 export const EditStaffBranchField: React.FC<EditStaffBranchFieldProps> = ({
   currentStaff,
-  setCurrentStaff
+  setCurrentStaff,
 }) => {
-  const { getBranchOptions } = useBranches();
-  const branches = getBranchOptions();
+  const [branches, setBranches] = useState<Branch[]>([]);
+
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        const data = await branchService.loadBranches();
+        setBranches(data);
+      } catch (error) {
+        console.error('載入營業處失敗:', error);
+      }
+    };
+    fetchBranches();
+  }, []);
 
   return (
     <div className="grid grid-cols-4 items-center gap-4">
       <Label htmlFor="branch" className="text-right">
         分店 <span className="text-red-500">*</span>
       </Label>
-      <Select 
-        value={currentStaff.branch_id || ''} 
-        onValueChange={(value) => {
-          const selectedBranch = branches.find(b => b.value === value);
+      <Select
+        value={currentStaff.branch_id || ''}
+        onValueChange={value => {
+          const selectedBranch = branches.find(b => b.id === value);
           setCurrentStaff({
-            ...currentStaff, 
+            ...currentStaff,
             branch_id: value,
-            branch_name: selectedBranch?.label || ''
+            branch_name: selectedBranch?.name || '',
           });
         }}
       >
@@ -38,15 +55,16 @@ export const EditStaffBranchField: React.FC<EditStaffBranchFieldProps> = ({
         </SelectTrigger>
         <SelectContent>
           {/* 如果當前員工的分店不在標準列表中，先顯示當前分店 */}
-          {currentStaff.branch_name && currentStaff.branch_id && 
-           !branches.find(b => b.value === currentStaff.branch_id) && (
-            <SelectItem value={currentStaff.branch_id}>
-              {currentStaff.branch_name} (當前設定)
-            </SelectItem>
-          )}
-          {branches.map((branch) => (
-            <SelectItem key={branch.value} value={branch.value}>
-              {branch.label}
+          {currentStaff.branch_name &&
+            currentStaff.branch_id &&
+            !branches.find(b => b.id === currentStaff.branch_id) && (
+              <SelectItem value={currentStaff.branch_id}>
+                {currentStaff.branch_name} (當前設定)
+              </SelectItem>
+            )}
+          {branches.map(branch => (
+            <SelectItem key={branch.id} value={branch.id}>
+              {branch.name}
             </SelectItem>
           ))}
         </SelectContent>

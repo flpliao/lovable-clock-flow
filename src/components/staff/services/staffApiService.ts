@@ -1,14 +1,35 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Staff, NewStaff } from '../types';
+import { NewStaff, Staff } from '../types';
 
 export class StaffApiService {
+  static async loadStaffList(): Promise<Staff[]> {
+    console.log('📝 StaffApiService: 載入員工列表');
+
+    try {
+      const { data, error } = await supabase.from('staff').select('*').order('name');
+
+      if (error) {
+        console.error('❌ StaffApiService: 載入失敗:', error);
+        throw new Error(`載入員工列表失敗: ${error.message}`);
+      }
+
+      console.log(`✅ StaffApiService: 載入成功，共 ${data?.length} 筆資料`);
+      return data || [];
+    } catch (error) {
+      console.error('❌ StaffApiService: 系統錯誤:', error);
+      throw error;
+    }
+  }
+
   static async addStaff(staffData: NewStaff): Promise<Staff> {
     console.log('📝 StaffApiService: 準備新增員工', staffData);
-    
+
     // 驗證營業處 ID 格式
-    if (!staffData.branch_id || 
-        staffData.branch_id === 'placeholder-value' || 
-        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(staffData.branch_id)) {
+    if (
+      !staffData.branch_id ||
+      staffData.branch_id === 'placeholder-value' ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(staffData.branch_id)
+    ) {
       throw new Error('營業處 ID 格式無效，請重新選擇營業處');
     }
 
@@ -23,21 +44,17 @@ export class StaffApiService {
       role_id: staffData.role_id || 'user',
       supervisor_id: staffData.supervisor_id || null,
       username: staffData.username || null,
-      email: staffData.email || null
+      email: staffData.email || null,
     };
 
     console.log('📝 StaffApiService: 實際插入資料', insertData);
 
     try {
-      const { data, error } = await supabase
-        .from('staff')
-        .insert(insertData)
-        .select()
-        .single();
+      const { data, error } = await supabase.from('staff').insert(insertData).select().single();
 
       if (error) {
         console.error('❌ StaffApiService: Supabase 新增錯誤:', error);
-        
+
         // 特別處理 UUID 格式錯誤
         if (error.message.includes('invalid input syntax for type uuid')) {
           throw new Error('營業處資料格式錯誤，請重新選擇營業處');
@@ -46,7 +63,7 @@ export class StaffApiService {
         } else if (error.message.includes('not null')) {
           throw new Error('必填欄位不能為空，請檢查所有必要資訊');
         }
-        
+
         throw new Error(`新增員工失敗: ${error.message}`);
       }
 
@@ -60,13 +77,13 @@ export class StaffApiService {
 
   static async updateStaff(id: string, updateData: Partial<Staff>): Promise<Staff> {
     console.log('📝 StaffApiService: 準備更新員工', { id, updateData });
-    
+
     try {
       const { data, error } = await supabase
         .from('staff')
         .update({
           ...updateData,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', id)
         .select()
@@ -87,12 +104,9 @@ export class StaffApiService {
 
   static async deleteStaff(id: string): Promise<void> {
     console.log('🗑️ StaffApiService: 刪除員工，ID:', id);
-    
+
     try {
-      const { error } = await supabase
-        .from('staff')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('staff').delete().eq('id', id);
 
       if (error) {
         console.error('❌ StaffApiService: 刪除失敗:', error);

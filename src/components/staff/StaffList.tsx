@@ -15,8 +15,8 @@ import { Staff } from './types';
 interface StaffListProps {
   staffList: Staff[];
   loading: boolean;
-  onEditStaff: () => void;
-  onDeleteStaff: () => Promise<void>;
+  onEditStaff: (staff: Staff) => void;
+  onDeleteStaff: (id: string) => Promise<void>;
 }
 
 export const StaffList: React.FC<StaffListProps> = ({

@@ -1,21 +1,46 @@
-import { CompanyManagementProvider } from '@/components/company/CompanyManagementContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useToast } from '@/hooks/use-toast';
 import { Plus, Search, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AddStaffDialog from './AddStaffDialog';
 import EditStaffDialog from './EditStaffDialog';
+import { StaffApiService } from './services/staffApiService';
 import { StaffList } from './StaffList';
+import { NewStaff, Staff } from './types';
 
-const StaffManagementContent = () => {
-  console.log('🎯 StaffManagement rendering');
-
+const StaffManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
+  const [staffList, setStaffList] = useState<Staff[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
-  const { staffList, loading, setIsAddDialogOpen, handleDeleteStaff, openEditDialog, refreshData } =
-    useStaffManagementContext();
+  // 載入員工列表
+  const loadStaffList = async () => {
+    try {
+      setLoading(true);
+      const data = await StaffApiService.loadStaffList();
+      setStaffList(data);
+    } catch (error) {
+      console.error('載入員工列表失敗:', error);
+      toast({
+        title: '載入失敗',
+        description: error instanceof Error ? error.message : '無法載入員工列表',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 初始載入
+  useEffect(() => {
+    loadStaffList();
+  }, []);
 
   // 過濾員工列表
   const filteredStaff = staffList.filter(
@@ -24,6 +49,76 @@ const StaffManagementContent = () => {
       staff.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       staff.position?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleEditStaff = (staff: Staff) => {
+    setSelectedStaff(staff);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteStaff = async (id: string) => {
+    try {
+      setLoading(true);
+      await StaffApiService.deleteStaff(id);
+      toast({
+        title: '刪除成功',
+        description: '員工資料已刪除',
+      });
+      await loadStaffList();
+    } catch (error) {
+      console.error('刪除員工失敗:', error);
+      toast({
+        title: '刪除失敗',
+        description: error instanceof Error ? error.message : '無法刪除員工資料',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddSuccess = async (newStaff: NewStaff) => {
+    try {
+      setLoading(true);
+      await StaffApiService.addStaff(newStaff);
+      toast({
+        title: '新增成功',
+        description: `員工 ${newStaff.name} 已新增`,
+      });
+      setIsAddDialogOpen(false);
+      await loadStaffList();
+    } catch (error) {
+      console.error('新增員工失敗:', error);
+      toast({
+        title: '新增失敗',
+        description: error instanceof Error ? error.message : '無法新增員工',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditSuccess = async (updatedStaff: Staff) => {
+    try {
+      setLoading(true);
+      await StaffApiService.updateStaff(updatedStaff.id, updatedStaff);
+      toast({
+        title: '更新成功',
+        description: `員工 ${updatedStaff.name} 資料已更新`,
+      });
+      setIsEditDialogOpen(false);
+      await loadStaffList();
+    } catch (error) {
+      console.error('更新員工失敗:', error);
+      toast({
+        title: '更新失敗',
+        description: error instanceof Error ? error.message : '無法更新員工資料',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -61,7 +156,7 @@ const StaffManagementContent = () => {
             </div>
             <Button
               variant="outline"
-              onClick={refreshData}
+              onClick={loadStaffList}
               className="bg-white/60 border-white/40 hover:bg-white/80"
             >
               重新整理
@@ -72,24 +167,25 @@ const StaffManagementContent = () => {
           <StaffList
             staffList={filteredStaff}
             loading={loading}
-            onEditStaff={openEditDialog}
+            onEditStaff={handleEditStaff}
             onDeleteStaff={handleDeleteStaff}
           />
         </CardContent>
       </Card>
 
       {/* 新增和編輯員工對話框 */}
-      <AddStaffDialog />
-      <EditStaffDialog />
+      <AddStaffDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onSuccess={handleAddSuccess}
+      />
+      <EditStaffDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        staff={selectedStaff}
+        onSuccess={handleEditSuccess}
+      />
     </div>
-  );
-};
-
-const StaffManagement = () => {
-  return (
-    <CompanyManagementProvider>
-      <StaffManagementContent />
-    </CompanyManagementProvider>
   );
 };
 

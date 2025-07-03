@@ -1,9 +1,15 @@
-
-import React from 'react';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Branch } from '@/types/company';
+import React, { useEffect, useState } from 'react';
+import { BranchApiService } from '../services/branchApiService';
 import { NewStaff } from '../types';
-import { useCompanyManagementContext } from '@/components/company/CompanyManagementContext';
 
 interface StaffBranchFieldsProps {
   newStaff: NewStaff;
@@ -11,21 +17,33 @@ interface StaffBranchFieldsProps {
 }
 
 const StaffBranchFields: React.FC<StaffBranchFieldsProps> = ({ newStaff, setNewStaff }) => {
-  const { branches } = useCompanyManagementContext();
-  
+  const [branches, setBranches] = useState<Branch[]>([]);
+
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        const data = await BranchApiService.loadBranches();
+        setBranches(data);
+      } catch (error) {
+        console.error('載入營業處失敗:', error);
+      }
+    };
+    fetchBranches();
+  }, []);
+
   return (
     <div className="grid grid-cols-4 items-center gap-3">
       <Label htmlFor="branch" className="text-right text-xs">
         營業處
       </Label>
-      <Select 
-        value={newStaff.branch_id || ''} 
-        onValueChange={(value) => {
+      <Select
+        value={newStaff.branch_id || ''}
+        onValueChange={value => {
           const selectedBranch = branches.find(b => b.id === value);
           setNewStaff({
-            ...newStaff, 
+            ...newStaff,
             branch_id: value,
-            branch_name: selectedBranch?.name
+            branch_name: selectedBranch?.name || '',
           });
         }}
       >
@@ -33,7 +51,7 @@ const StaffBranchFields: React.FC<StaffBranchFieldsProps> = ({ newStaff, setNewS
           <SelectValue placeholder="選擇營業處" />
         </SelectTrigger>
         <SelectContent>
-          {branches.map((branch) => (
+          {branches.map(branch => (
             <SelectItem key={branch.id} value={branch.id} className="text-xs">
               {branch.name}
             </SelectItem>

@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { User as UserType } from '@/stores/userStore';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, Settings, User } from 'lucide-react';
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { MenuItem } from './menuConfig';
@@ -26,7 +26,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
   visibleMenuItems,
   onNavigation,
   onLogout,
-  onLogin
+  onLogin,
 }) => {
   const location = useLocation();
 
@@ -39,25 +39,36 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
           <div className="p-4 space-y-4">
             {/* 用戶資訊卡片 */}
             <div className="bg-gray-100 rounded-lg p-4 mb-4 border border-gray-200">
-              <div className="flex items-center space-x-3">
-                <div className="bg-gray-200 rounded-full p-2">
-                  <User className="h-5 w-5 text-gray-700" />
-                </div>
-                <div>
-                  <div className="text-gray-900 font-semibold text-sm">
-                    {currentUser.name}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-gray-200 rounded-full p-2">
+                    <User className="h-5 w-5 text-gray-700" />
                   </div>
-                  <div className="text-gray-600 text-xs font-medium">
-                    {currentUser.role_id === 'admin' ? '管理員' : 
-                     currentUser.role_id === 'manager' ? '主管' : '員工'}
+                  <div>
+                    <div className="text-gray-900 font-semibold text-sm">{currentUser.name}</div>
+                    <div className="text-gray-600 text-xs font-medium">
+                      {currentUser.role_id === 'admin'
+                        ? '管理員'
+                        : currentUser.role_id === 'manager'
+                          ? '主管'
+                          : '員工'}
+                    </div>
                   </div>
                 </div>
+                <Button
+                  onClick={() => onNavigation('/account-settings')}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-600 hover:text-gray-800 hover:bg-gray-200 p-2"
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-            
+
             {/* 導航選單 - 可滑動區域 */}
             <div className="space-y-1 max-h-[40vh] overflow-y-auto">
-              {visibleMenuItems.map((item) => (
+              {visibleMenuItems.map(item => (
                 <Button
                   key={item.path}
                   onClick={() => onNavigation(item.path)}
@@ -73,9 +84,9 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                 </Button>
               ))}
             </div>
-            
+
             <Separator className="bg-gray-300 my-4" />
-            
+
             {/* 登出按鈕 */}
             <Button
               onClick={onLogout}

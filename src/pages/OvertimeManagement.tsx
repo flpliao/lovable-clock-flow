@@ -1,16 +1,15 @@
-
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import OvertimeHistory from '@/components/overtime/OvertimeHistory';
+import OvertimeRequestForm from '@/components/overtime/OvertimeRequestForm';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Plus, History, Users } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
-import OvertimeRequestForm from '@/components/overtime/OvertimeRequestForm';
-import OvertimeHistory from '@/components/overtime/OvertimeHistory';
+import { useCurrentUser } from '@/hooks/useStores';
+import { ArrowLeft, History, Plus, Users } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const OvertimeManagement: React.FC = () => {
   const navigate = useNavigate();
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const [activeTab, setActiveTab] = useState('request');
 
   const handleFormSuccess = () => {

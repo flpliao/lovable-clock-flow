@@ -1,8 +1,7 @@
-
-import { useState, useEffect, useCallback } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrentUser } from '@/hooks/useStores';
+import { supabase } from '@/integrations/supabase/client';
+import { useCallback, useEffect, useState } from 'react';
 
 interface UserContext {
   user_id: string;
@@ -13,8 +12,18 @@ interface UserContext {
   supervisor_id: string;
 }
 
+interface DatabaseUserContext {
+  user_id: string;
+  staff_id: string;
+  role_id?: string;
+  role?: string;
+  department: string;
+  branch_id: string;
+  supervisor_id: string;
+}
+
 export const useOptimizedPermissions = () => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { toast } = useToast();
   const [userContext, setUserContext] = useState<UserContext | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,8 +52,19 @@ export const useOptimizedPermissions = () => {
       }
 
       if (data && data.length > 0) {
-        setUserContext(data[0]);
-        console.log('✅ 用戶權限上下文載入成功:', data[0]);
+        // 處理資料欄位匹配問題
+        const contextData = data[0] as DatabaseUserContext;
+        const userContextData: UserContext = {
+          user_id: contextData.user_id,
+          staff_id: contextData.staff_id,
+          role_id: contextData.role_id || contextData.role || '', // 處理欄位名稱差異
+          department: contextData.department,
+          branch_id: contextData.branch_id,
+          supervisor_id: contextData.supervisor_id
+        };
+        
+        setUserContext(userContextData);
+        console.log('✅ 用戶權限上下文載入成功:', userContextData);
       }
     } catch (error) {
       console.error('❌ 載入用戶上下文時發生錯誤:', error);

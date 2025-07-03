@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrentUser } from '@/hooks/useStores';
+import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 import { supabase } from '@/integrations/supabase/client';
 import { Bell, Clock } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface Schedule {
   id: string;
@@ -23,11 +23,14 @@ interface ReminderSettings {
   is_active: boolean;
   notification_method: string[];
   message_template: string;
-  trigger_condition: any;
+  trigger_condition: {
+    max_reminders: number;
+    reminder_interval_minutes: number;
+  };
 }
 
 const CheckInReminderSystem: React.FC = () => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { getTodayCheckInRecords } = useSupabaseCheckIn();
   const { toast } = useToast();
   const [todaySchedule, setTodaySchedule] = useState<Schedule | null>(null);

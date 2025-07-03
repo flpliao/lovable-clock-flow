@@ -1,25 +1,22 @@
-
-import React, { useState, useEffect } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { supabase } from '@/integrations/supabase/client';
-import { MissedCheckinRequest } from '@/types/missedCheckin';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import MissedCheckinApprovalProcess from '@/components/check-in/components/MissedCheckinApprovalProcess';
+import { MISSED_CHECKIN_PERMISSIONS } from '@/components/staff/constants/permissions/missedCheckinPermissions';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Calendar, Clock, User, CheckCircle, XCircle, Building2, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrentUser } from '@/hooks/useStores';
+import { useUnifiedPermissions } from '@/hooks/useUnifiedPermissions';
+import { supabase } from '@/integrations/supabase/client';
+import { NotificationDatabaseOperations } from '@/services/notifications';
+import { MissedCheckinRequest } from '@/types/missedCheckin';
 import { format } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
-import { NotificationDatabaseOperations } from '@/services/notifications';
-import MissedCheckinApprovalProcess from '@/components/check-in/components/MissedCheckinApprovalProcess';
-import { useUnifiedPermissions } from '@/hooks/useUnifiedPermissions';
-import { MISSED_CHECKIN_PERMISSIONS } from '@/components/staff/constants/permissions/missedCheckinPermissions';
-import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
+import { AlertCircle, CheckCircle, Clock, User, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const MissedCheckinManagementContent = () => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { hasPermission } = useUnifiedPermissions();
   const { toast } = useToast();
   const [requests, setRequests] = useState<MissedCheckinRequest[]>([]);
@@ -230,7 +227,7 @@ const MissedCheckinManagementContent = () => {
     }
   };
 
-  const createApplicantNotification = async (requestData: any, action: 'approved' | 'rejected') => {
+  const createApplicantNotification = async (requestData: MissedCheckinRequest, action: 'approved' | 'rejected') => {
     try {
       const staffInfo = Array.isArray(requestData.staff) ? requestData.staff[0] : requestData.staff;
       const actionText = action === 'approved' ? '已核准' : '已被退回';

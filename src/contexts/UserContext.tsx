@@ -1,12 +1,11 @@
-import React, { createContext, useContext, ReactNode } from 'react';
-import { AnnualLeaveBalance } from '@/types';
-import { User, UserContextType } from './user/types';
-import { createRoleChecker } from './user/roleUtils';
-import { createSimplifiedPermissionChecker } from './user/simplifiedPermissionUtils';
-import { useUserState } from './user/useUserState';
 import { supabase } from '@/integrations/supabase/client';
 import { permissionService } from '@/services/simplifiedPermissionService';
+import React, { createContext, ReactNode, useContext } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { createRoleChecker } from './user/roleUtils';
+import { createSimplifiedPermissionChecker } from './user/simplifiedPermissionUtils';
+import { User, UserContextType } from './user/types';
+import { useUserState } from './user/useUserState';
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -17,12 +16,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     annualLeaveBalance,
     setAnnualLeaveBalance,
     isUserLoaded,
-    userError,
-    clearUserError,
     resetUserState,
     isAuthenticated,
-    setIsAuthenticated,
-    setUserError
+    setIsAuthenticated
   } = useUserState();
 
   // 創建角色檢查器 - 保持現有邏輯以確保向後兼容
@@ -45,7 +41,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (queryError) {
         console.error('❌ 查詢 staff 資料失敗:', queryError);
-        setUserError('⚠️ 查詢員工資料失敗');
         return;
       }
 
@@ -96,7 +91,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         if (insertError) {
           console.error('❌ 新增 staff 資料失敗:', insertError);
-          setUserError('⚠️ 自動建立員工資料失敗');
           return;
         }
 
@@ -107,7 +101,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
     } catch (error) {
       console.error('❌ 同步 staff 資料時發生未預期錯誤:', error);
-      setUserError('⚠️ 自動建立員工資料失敗');
     }
   };
 
@@ -122,12 +115,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       hasPermission, // 使用簡化的權限檢查
       canManageUser,
       isUserLoaded,
-      userError,
-      clearUserError,
       resetUserState,
       isAuthenticated,
       setIsAuthenticated,
-      setUserError,
     }}>
       {children}
     </UserContext.Provider>

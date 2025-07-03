@@ -1,17 +1,15 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, Database, Shield, TrendingUp, Globe, MapPin } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
-import { LanguageManagement } from '@/components/i18n/components/LanguageManagement';
 import CheckInDistanceSettings from '@/components/company/components/CheckInDistanceSettings';
 import GoogleMapsApiKeySettings from '@/components/company/components/GoogleMapsApiKeySettings';
+import { LanguageManagement } from '@/components/i18n/components/LanguageManagement';
+import { useIsAdmin } from '@/hooks/useStores';
+import { Globe, MapPin, Settings, Shield } from 'lucide-react';
+import { useState } from 'react';
 
 const SystemSettings = () => {
-  const { isAdmin } = useUser();
+  const isAdmin = useIsAdmin();
   const [activeTab, setActiveTab] = useState('general');
 
-  if (!isAdmin()) {
+  if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-500 to-blue-500 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent"></div>

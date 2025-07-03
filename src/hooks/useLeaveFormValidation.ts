@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useCurrentUser } from '@/hooks/useStores';
 import { supabase } from '@/integrations/supabase/client';
-import { useUser } from '@/contexts/UserContext';
 import { UserStaffData } from '@/services/staffDataService';
+import { useEffect, useState } from 'react';
 
 interface ValidationRequest {
   leave_type: string;
@@ -19,7 +19,7 @@ interface ValidationResult {
 }
 
 export const useLeaveFormValidation = (request: ValidationRequest): ValidationResult => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const [validationResult, setValidationResult] = useState<ValidationResult>({
     isValid: false,
     errors: [],

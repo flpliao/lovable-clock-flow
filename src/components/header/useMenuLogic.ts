@@ -1,8 +1,7 @@
-
-import { useMemo, useEffect, useState } from 'react';
-import { User } from '@/contexts/UserContext';
-import { menuItems, MenuItem } from './menuConfig';
 import { permissionService } from '@/services/simplifiedPermissionService';
+import { User } from '@/stores/userStore';
+import { useEffect, useState } from 'react';
+import { MenuItem, menuItems } from './menuConfig';
 
 export const useMenuLogic = (currentUser: User | null, isAuthenticated: boolean) => {
   const [visibleItems, setVisibleItems] = useState<MenuItem[]>([]);

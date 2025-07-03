@@ -1,13 +1,12 @@
-
-import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCompanyManagementContext } from './CompanyManagementContext';
-import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import React from 'react';
+import { useCompanyManagementContext } from './CompanyManagementContext';
 
 const AddBranchDialog = () => {
   const {
@@ -18,10 +17,11 @@ const AddBranchDialog = () => {
     handleAddBranch
   } = useCompanyManagementContext();
   
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
   const { toast } = useToast();
 
-  const canAddBranch = currentUser?.role_id === 'admin';
+  const canAddBranch = isAdmin;
 
   console.log('AddBranchDialog - 對話框狀態:', { 
     isAddBranchDialogOpen, 

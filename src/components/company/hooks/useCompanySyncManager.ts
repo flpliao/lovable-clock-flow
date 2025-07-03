@@ -1,15 +1,14 @@
-
-import { useState, useCallback } from 'react';
-import { Company } from '@/types/company';
-import { CompanyDataService } from '../services/companyDataService';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
+import { useCurrentUser } from '@/hooks/useStores';
+import { Company } from '@/types/company';
+import { useCallback, useState } from 'react';
+import { CompanyDataService } from '../services/companyDataService';
 
 export const useCompanySyncManager = () => {
   const [loading, setLoading] = useState(false);
   const [company, setCompany] = useState<Company | null>(null);
   const { toast } = useToast();
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
 
   const hasAdminPermission = useCallback(() => {
     return currentUser?.role_id === 'admin';

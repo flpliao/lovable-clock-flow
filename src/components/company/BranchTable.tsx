@@ -1,10 +1,8 @@
-
-import React from 'react';
-import { useCompanyManagementContext } from './CompanyManagementContext';
-import { useUser } from '@/contexts/UserContext';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Building, MapPin, Phone, User, Edit, Trash2, Badge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsAdmin } from '@/hooks/useStores';
+import { Badge, Building, Edit, MapPin, Phone, Trash2, User } from 'lucide-react';
+import { useCompanyManagementContext } from './CompanyManagementContext';
 
 const BranchTable = () => {
   const { 
@@ -13,10 +11,10 @@ const BranchTable = () => {
     openEditBranchDialog
   } = useCompanyManagementContext();
   
-  const { currentUser } = useUser();
+  const isAdmin = useIsAdmin();
   const isMobile = useIsMobile();
 
-  const canManageBranches = currentUser?.role_id === 'admin';
+  const canManageBranches = isAdmin;
 
   const getTypeLabel = (type: string) => {
     switch (type) {

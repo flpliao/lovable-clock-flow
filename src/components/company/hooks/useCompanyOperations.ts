@@ -1,10 +1,7 @@
-
-import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
+import { useCurrentUser, useUserLoaded } from '@/hooks/useStores';
 import { Company } from '@/types/company';
-import { CompanyValidationService } from '../services/companyValidationService';
-import { CompanyDataPreparer } from '../services/companyDataPreparer';
+import { useEffect, useState } from 'react';
 import { CompanyApiService } from '../services/companyApiService';
 import { CompanyDataService } from '../services/companyDataService';
 
@@ -12,7 +9,8 @@ export const useCompanyOperations = () => {
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { currentUser, isUserLoaded } = useUser();
+  const currentUser = useCurrentUser();
+  const isUserLoaded = useUserLoaded();
 
   // 在用戶載入完成後載入公司資料
   useEffect(() => {

@@ -1,14 +1,14 @@
-
-import { useStaffHierarchy } from './useStaffHierarchy';
-import { useStaffDialogs } from './useStaffDialogs';
-import { useRoleManagement } from './useRoleManagement';
-import { useSupabaseStaffOperations } from './useSupabaseStaffOperations';
-import { useEffect } from 'react';
-import { useUser } from '@/contexts/UserContext';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
 import { DataSyncManager } from '@/utils/dataSync';
+import { useEffect } from 'react';
+import { useRoleManagement } from './useRoleManagement';
+import { useStaffDialogs } from './useStaffDialogs';
+import { useStaffHierarchy } from './useStaffHierarchy';
+import { useSupabaseStaffOperations } from './useSupabaseStaffOperations';
 
 export const useStaffManagement = () => {
-  const { currentUser, isAdmin } = useUser();
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
 
   // Always call hooks - never conditionally
   const {
@@ -54,7 +54,7 @@ export const useStaffManagement = () => {
     const initializeWithSync = async () => {
       console.log('🚀 員工管理系統初始化 - 開始資料同步');
       console.log('👤 當前用戶:', currentUser?.name);
-      console.log('🔐 管理員權限:', isAdmin());
+      console.log('🔐 管理員權限:', isAdmin);
       
       // 執行完整資料同步
       const syncResult = await DataSyncManager.performFullSync();

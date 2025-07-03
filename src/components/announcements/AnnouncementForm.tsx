@@ -1,24 +1,23 @@
-
 import { Button } from '@/components/ui/button';
 import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrentUser } from '@/hooks/useStores';
 import { AnnouncementCategory, CompanyAnnouncement } from '@/types/announcement';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Calendar, Save, Upload, X } from 'lucide-react';
@@ -51,7 +50,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
   onSave
 }) => {
   const { toast } = useToast();
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const [fileName, setFileName] = useState<string>('');
   const [existingFile, setExistingFile] = useState<{url: string, name: string, type: string} | null>(null);
   const [newFile, setNewFile] = useState<File | null>(null);
@@ -151,7 +150,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({
       
       console.log('Submitting announcement data:', announcementData);
       
-      const success = await onSave(announcementData as any);
+      const success = await onSave(announcementData as CompanyAnnouncement);
       
       if (success) {
         toast({

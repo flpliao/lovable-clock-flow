@@ -1,14 +1,13 @@
-
-import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
-import { timeSlotService, TimeSlot, CreateTimeSlot } from '@/services/timeSlotService';
+import { useCurrentUser } from '@/hooks/useStores';
+import { CreateTimeSlot, TimeSlot, timeSlotService } from '@/services/timeSlotService';
+import { useEffect, useState } from 'react';
 
 export const useTimeSlotOperations = () => {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
 
   const loadTimeSlots = async () => {
     try {

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Bell } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
+import { useCurrentUser } from '@/hooks/useStores';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
+import { CheckInRecord } from '@/types';
+import { Bell } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 // Mock shift data for simulation purposes
 // In a real app, this would come from an API or database
@@ -24,13 +25,18 @@ interface Shift {
   endTime: string;
 }
 
+interface TodayRecords {
+  checkIn?: CheckInRecord;
+  checkOut?: CheckInRecord;
+}
+
 const ShiftReminder: React.FC = () => {
   const { toast } = useToast();
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { getTodayCheckInRecords } = useSupabaseCheckIn();
   const [todayShift, setTodayShift] = useState<Shift | null>(null);
   const [hasShown, setHasShown] = useState(false);
-  const [todayRecords, setTodayRecords] = useState<{ checkIn?: any, checkOut?: any }>({});
+  const [todayRecords, setTodayRecords] = useState<TodayRecords>({});
 
   // 檢查今日打卡記錄
   useEffect(() => {
@@ -43,7 +49,7 @@ const ShiftReminder: React.FC = () => {
     };
 
     checkTodayRecords();
-  }, [currentUser?.id]);
+  }, [currentUser?.id, getTodayCheckInRecords]);
 
   useEffect(() => {
     // 只有在沒有顯示過提醒且使用者已登入的情況下才檢查

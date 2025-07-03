@@ -1,9 +1,7 @@
-
-import { useState, useEffect } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { useSupabaseCheckIn } from './useSupabaseCheckIn';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useCurrentUser } from '@/hooks/useStores';
+import { useEffect, useState } from 'react';
+import { useSupabaseCheckIn } from './useSupabaseCheckIn';
 
 interface ReminderState {
   isActive: boolean;
@@ -14,7 +12,7 @@ interface ReminderState {
 }
 
 export const useCheckInReminder = () => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { getTodayCheckInRecords } = useSupabaseCheckIn();
   const { toast } = useToast();
   const [reminderState, setReminderState] = useState<ReminderState>({

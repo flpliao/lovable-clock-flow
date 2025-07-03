@@ -1,11 +1,12 @@
-
-import { useState, useCallback } from 'react';
-import { useUser } from '@/contexts/UserContext';
+import { useCurrentUser } from '@/hooks/useStores';
 import { supabase } from '@/integrations/supabase/client';
 import type { MyApplication } from '@/types/myApplication';
+import { useCallback, useState } from 'react';
 
 export const useMyApplications = () => {
-  const { currentUser } = useUser();
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+  
   const [myApplications, setMyApplications] = useState<MyApplication[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 

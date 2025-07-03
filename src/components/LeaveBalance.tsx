@@ -1,13 +1,13 @@
-
-import React, { useState, useEffect } from 'react';
-import { useUser } from '@/contexts/UserContext';
+import { useCurrentUser } from '@/hooks/useStores';
 import { useSupabaseLeaveManagement } from '@/hooks/useSupabaseLeaveManagement';
+import { AnnualLeaveBalance } from '@/types';
 import { calculateAnnualLeaveDays, formatYearsOfService } from '@/utils/annualLeaveCalculator';
+import React, { useEffect, useState } from 'react';
 
 const LeaveBalance: React.FC = () => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { loadAnnualLeaveBalance, initializeAnnualLeaveBalance } = useSupabaseLeaveManagement();
-  const [balance, setBalance] = useState<any>(null);
+  const [balance, setBalance] = useState<AnnualLeaveBalance | null>(null);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -58,7 +58,7 @@ const LeaveBalance: React.FC = () => {
   // 使用資料庫資料或計算值
   const totalDays = balance?.total_days || calculatedEntitlement;
   const usedDays = balance?.used_days || 0;
-  const remainingDays = balance?.remaining_days || (totalDays - usedDays);
+  const remainingDays = totalDays - usedDays;
   
   // Convert to hours (8 hours per day)
   const totalHours = totalDays * 8;

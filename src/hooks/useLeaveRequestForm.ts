@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { differenceInDays } from 'date-fns';
-import { useUser } from '@/contexts/UserContext';
-import { useSupabaseLeaveManagement } from '@/hooks/useSupabaseLeaveManagement';
 import { useToast } from '@/hooks/use-toast';
-import { loadUserStaffData, UserStaffData } from '@/services/staffDataService';
+import { useCurrentUser } from '@/hooks/useStores';
+import { useSupabaseLeaveManagement } from '@/hooks/useSupabaseLeaveManagement';
+import { getSupervisorHierarchy, LeaveSubmissionData, submitLeaveRequest } from '@/services/leaveSubmissionService';
 import { validateAnnualLeave } from '@/services/leaveValidationService';
-import { submitLeaveRequest, LeaveSubmissionData, getSupervisorHierarchy } from '@/services/leaveSubmissionService';
+import { loadUserStaffData, UserStaffData } from '@/services/staffDataService';
 import { LeaveRequest } from '@/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { differenceInDays } from 'date-fns';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 
 const leaveFormSchema = z.object({
   leave_type: z.string().min(1, '請選擇請假類型'),
@@ -30,7 +30,7 @@ const leaveFormSchema = z.object({
 type LeaveFormValues = z.infer<typeof leaveFormSchema>;
 
 export const useLeaveRequestForm = () => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { toast } = useToast();
   const { createLeaveRequest, refreshData } = useSupabaseLeaveManagement();
   

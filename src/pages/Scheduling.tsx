@@ -1,20 +1,17 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, Calendar, UserPlus, Clock, Users, Shield } from 'lucide-react';
 import ScheduleCalendar from '@/components/ScheduleCalendar';
 import ScheduleForm from '@/components/ScheduleForm';
 import TimeSlotManagement from '@/components/TimeSlotManagement';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 import { SchedulingProvider } from '@/contexts/SchedulingContext';
-import { useUser } from '@/contexts/UserContext';
+import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
+import { useCurrentUser, usePermissionChecker } from '@/hooks/useStores';
+import { Calendar, ChevronLeft, Clock, Shield, UserPlus, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 const Scheduling = () => {
   const navigate = useNavigate();
-  const {
-    currentUser,
-    hasPermission
-  } = useUser();
+  const currentUser = useCurrentUser();
+  const { hasPermission } = usePermissionChecker();
 
   // 檢查排班管理權限
   const canManageSchedules = hasPermission('schedule:manage') || hasPermission('schedule:create');

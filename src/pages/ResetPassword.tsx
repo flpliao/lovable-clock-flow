@@ -1,13 +1,9 @@
-
-import React from 'react';
-import { Lock } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
 import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
+import { useUserLoaded } from '@/hooks/useStores';
+import { Lock } from 'lucide-react';
 
 const ResetPassword = () => {
-  const { isUserLoaded } = useUser();
-
-
+  const isUserLoaded = useUserLoaded();
 
   // 載入中狀態
   if (!isUserLoaded) {

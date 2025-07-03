@@ -1,20 +1,20 @@
-import React from 'react';
-import { useCompanyManagementContext } from './CompanyManagementContext';
-import { useUser } from '@/contexts/UserContext';
-import { CompanyApiService } from './services/companyApiService';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Building2, Phone, Mail, MapPin, Calendar, Users, Edit, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import { Building2, Calendar, Edit, Mail, MapPin, Phone, RefreshCw, Users } from 'lucide-react';
+import { useCompanyManagementContext } from './CompanyManagementContext';
+import { CompanyApiService } from './services/companyApiService';
 
 const CompanyInfoCard = () => {
   const { setIsEditCompanyDialogOpen, company, loading, loadCompany, forceSyncFromBackend } = useCompanyManagementContext();
-  const { isAdmin, currentUser } = useUser();
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
   const isMobile = useIsMobile();
 
   console.log('CompanyInfoCard - 當前用戶:', currentUser?.name);
   console.log('CompanyInfoCard - 公司資料載入狀態:', { company: company?.name, loading });
 
-  const canEdit =  isAdmin();
+  const canEdit = isAdmin;
 
   // 強制重新載入
   const handleForceReload = async () => {

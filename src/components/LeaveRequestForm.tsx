@@ -1,31 +1,29 @@
-
-import React from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { useUser } from '@/contexts/UserContext';
-import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
-import { Form } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { leaveFormSchema, LeaveFormValues } from '@/utils/leaveTypes';
-import { useLeaveFormCalculations } from '@/hooks/useLeaveFormCalculations';
-import { LeaveDateSelector } from '@/components/leave/LeaveDateSelector';
-import { LeaveTypeSelector } from '@/components/leave/LeaveTypeSelector';
-import { LeaveFormDetails } from '@/components/leave/LeaveFormDetails';
 import { LeaveApprovalWorkflow } from '@/components/leave/LeaveApprovalWorkflow';
-import { LeaveTypeDetailCard } from '@/components/leave/LeaveTypeDetailCard';
 import { LeaveBalanceCard } from '@/components/leave/LeaveBalanceCard';
-import { getApprovers } from '@/services/leaveRequestService';
-import { Send } from 'lucide-react';
-import { useLeaveFormValidation } from '@/hooks/useLeaveFormValidation';
+import { LeaveDateSelector } from '@/components/leave/LeaveDateSelector';
+import { LeaveFormDetails } from '@/components/leave/LeaveFormDetails';
+import { LeaveTypeDetailCard } from '@/components/leave/LeaveTypeDetailCard';
+import { LeaveTypeSelector } from '@/components/leave/LeaveTypeSelector';
 import { ValidationResultsSection } from '@/components/leave/ValidationResultsSection';
-import { formatDateForDatabase, ensureLocalDate, datePickerToDatabase } from '@/utils/dateUtils';
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
+import { useLeaveFormCalculations } from '@/hooks/useLeaveFormCalculations';
+import { useLeaveFormValidation } from '@/hooks/useLeaveFormValidation';
+import { useCurrentUser } from '@/hooks/useStores';
+import { getApprovers } from '@/services/leaveRequestService';
+import { datePickerToDatabase } from '@/utils/dateUtils';
+import { leaveFormSchema, LeaveFormValues } from '@/utils/leaveTypes';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Send } from 'lucide-react';
+import { useForm } from 'react-hook-form';
 
 interface LeaveRequestFormProps {
   onSubmit?: () => void;
 }
 
 export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { createLeaveRequest } = useLeaveManagementContext();
   const approvers = getApprovers();
   
@@ -79,7 +77,7 @@ export function LeaveRequestForm({ onSubmit }: LeaveRequestFormProps) {
       user_id: currentUser.id,
       start_date: localStartDate,
       end_date: localEndDate,
-      leave_type: data.leave_type as any,
+      leave_type: data.leave_type as 'annual' | 'sick' | 'personal' | 'marriage' | 'bereavement' | 'maternity' | 'paternity' | 'parental' | 'occupational' | 'menstrual' | 'other',
       status: 'pending' as const,
       hours: calculatedHours,
       reason: data.reason,

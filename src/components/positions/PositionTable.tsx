@@ -1,12 +1,10 @@
-
-import React from 'react';
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Pencil, Trash2, Briefcase } from 'lucide-react';
-import { usePositionManagementContext } from './PositionManagementContext';
-import { useUser } from '@/contexts/UserContext';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useIsAdmin } from '@/hooks/useStores';
+import { Briefcase, Pencil, Trash2 } from 'lucide-react';
 import AddPositionDialog from './AddPositionDialog';
+import { usePositionManagementContext } from './PositionManagementContext';
 
 const PositionTable = () => {
   const { 
@@ -15,7 +13,7 @@ const PositionTable = () => {
     handleDeletePosition 
   } = usePositionManagementContext();
   
-  const { isAdmin } = useUser();
+  const isAdmin = useIsAdmin();
 
   const getLevelColor = (level: number) => {
     if (level >= 8) return 'bg-purple-100/70 text-purple-800 border-purple-200/50';
@@ -50,7 +48,7 @@ const PositionTable = () => {
                 <TableHead className="text-gray-900 font-semibold py-4 px-6 min-w-[120px] whitespace-nowrap">職位名稱</TableHead>
                 <TableHead className="text-gray-900 font-semibold py-4 px-6 min-w-[80px] whitespace-nowrap">職級</TableHead>
                 <TableHead className="text-gray-900 font-semibold py-4 px-6 hidden sm:table-cell min-w-[150px] whitespace-nowrap">說明</TableHead>
-                {isAdmin() && <TableHead className="text-gray-900 font-semibold py-4 px-6 text-center min-w-[100px] whitespace-nowrap">操作</TableHead>}
+                {isAdmin && <TableHead className="text-gray-900 font-semibold py-4 px-6 text-center min-w-[100px] whitespace-nowrap">操作</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -79,7 +77,7 @@ const PositionTable = () => {
                       {position.description || '無說明'}
                     </span>
                   </TableCell>
-                  {isAdmin() && (
+                  {isAdmin && (
                     <TableCell className="py-4 px-6 whitespace-nowrap">
                       <div className="flex items-center justify-center gap-2">
                         <Button 

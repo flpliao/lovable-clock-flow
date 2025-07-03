@@ -1,10 +1,8 @@
-import { useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
-import { CompanyAnnouncement } from '@/types/announcement';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import { supabase } from '@/integrations/supabase/client';
 import { AnnouncementCrudService } from '@/services/announcementCrudService';
 import { NotificationBulkOperations } from '@/services/notifications/notificationBulkOperations';
-import { supabase } from '@/integrations/supabase/client';
 
 /**
  * 獲取所有需要接收公告通知的用戶
@@ -30,11 +28,12 @@ const getAllStaffUsers = async (): Promise<string[]> => {
 
 export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
   const { toast } = useToast();
-  const { currentUser, isAdmin } = useUser();
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
 
   // Create announcement with notifications
   const createAnnouncement = useCallback(async (newAnnouncement: Omit<CompanyAnnouncement, 'id' | 'created_at' | 'created_by' | 'company_id'>) => {
-    if (!isAdmin()) {
+    if (!isAdmin) {
       toast({
         title: "權限不足",
         description: "只有管理員可以建立公告",
@@ -131,7 +130,7 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
           
           toast({
             title: "公告已發布",
-            description: `公告「${announcementToCreate.title}」已成功發布並通知所有用戶`,
+            description: `公告「${announcementToCreate.title}」已成功發布`,
           });
         } catch (notificationError) {
           console.error('通知創建失敗:', notificationError);
@@ -166,7 +165,7 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
 
   // Update announcement
   const updateAnnouncement = useCallback(async (id: string, updatedAnnouncement: Partial<CompanyAnnouncement>) => {
-    if (!isAdmin()) {
+    if (!isAdmin) {
       toast({
         title: "權限不足",
         description: "只有管理員可以編輯公告",
@@ -189,7 +188,7 @@ export const useAnnouncementOperations = (refreshData: () => Promise<void>) => {
 
   // Delete announcement
   const deleteAnnouncement = useCallback(async (id: string) => {
-    if (!isAdmin()) {
+    if (!isAdmin) {
       toast({
         title: "權限不足",
         description: "只有管理員可以刪除公告",

@@ -1,15 +1,14 @@
-
-import React, { useState, useEffect } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { LeaveRequest } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle, XCircle, User, Calendar, Clock, FileText, ArrowLeft } from 'lucide-react';
-import { format } from 'date-fns';
-import { getLeaveTypeText } from '@/utils/leaveUtils';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrentUser } from '@/hooks/useStores';
+import { supabase } from '@/integrations/supabase/client';
 import { sendLeaveStatusNotification } from '@/services/leaveNotificationService';
+import { LeaveRequest } from '@/types';
+import { getLeaveTypeText } from '@/utils/leaveUtils';
+import { format } from 'date-fns';
+import { ArrowLeft, Calendar, CheckCircle, Clock, FileText, User, XCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 interface LeaveApprovalDetailProps {
   request: LeaveRequest;
@@ -22,9 +21,15 @@ const LeaveApprovalDetail: React.FC<LeaveApprovalDetailProps> = ({
   onBack,
   onApprovalComplete
 }) => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { toast } = useToast();
-  const [applicantInfo, setApplicantInfo] = useState<any>(null);
+  const [applicantInfo, setApplicantInfo] = useState<{
+    id: string;
+    name: string;
+    department: string;
+    position: string;
+    contact: string;
+  } | null>(null);
   const [approvalComment, setApprovalComment] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);

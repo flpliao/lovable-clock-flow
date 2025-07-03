@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { useAttendanceRecords } from '@/hooks/useAttendanceRecords';
 import AttendanceLoginPrompt from '@/components/attendance/AttendanceLoginPrompt';
 import AttendanceTabsContainer from '@/components/attendance/AttendanceTabsContainer';
+import { useAttendanceRecords } from '@/hooks/useAttendanceRecords';
+import { useCurrentUser } from '@/hooks/useStores';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const PersonalAttendance = () => {
-  const { currentUser } = useUser();
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+  
   const [activeTab, setActiveTab] = useState('history');
   const {
     date,

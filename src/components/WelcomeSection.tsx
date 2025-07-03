@@ -1,7 +1,6 @@
-
-import React, { useState, useEffect } from 'react';
+import { useIsAdmin } from '@/hooks/useStores';
 import { Calendar, Clock } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
+import { useEffect, useState } from 'react';
 
 interface WelcomeSectionProps {
   userName: string;
@@ -11,7 +10,7 @@ const WelcomeSection = ({
   userName
 }: WelcomeSectionProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { isAdmin } = useUser();
+  const isAdmin = useIsAdmin();
 
   // 每秒更新時間
   useEffect(() => {
@@ -39,7 +38,7 @@ const WelcomeSection = ({
   
   // 獲取用戶角色顯示
   const getUserRoleDisplay = () => {
-    if (isAdmin()) {
+    if (isAdmin) {
       return '管理員';
     }
     return '員工';

@@ -1,14 +1,13 @@
-
 import { useToast } from '@/components/ui/use-toast';
-import { useUser } from '@/contexts/UserContext';
+import { useIsAdmin } from '@/hooks/useStores';
 import { Department } from '../types';
 
 export const useDepartmentOperations = () => {
   const { toast } = useToast();
-  const { isAdmin } = useUser();
+  const isAdmin = useIsAdmin();
 
   const checkEditPermission = (department: Department): boolean => {
-    if (!isAdmin()) {
+    if (!isAdmin) {
       toast({
         title: "權限不足",
         description: "只有管理員可以編輯部門/門市",

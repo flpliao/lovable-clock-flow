@@ -1,7 +1,6 @@
-
-import React, { useState, useEffect } from 'react';
+import { useCurrentUser } from '@/hooks/useStores';
 import { permissionService } from '@/services/simplifiedPermissionService';
-import { useUser } from '@/contexts/UserContext';
+import React, { useEffect, useState } from 'react';
 
 interface PermissionGuardProps {
   permission: string;
@@ -17,7 +16,7 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   loading = <div>檢查權限中...</div>
 }) => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
 
   useEffect(() => {
     const checkPermission = async () => {
@@ -53,7 +52,7 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
 export const usePermission = (permission: string) => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
 
   useEffect(() => {
     const checkPermission = async () => {

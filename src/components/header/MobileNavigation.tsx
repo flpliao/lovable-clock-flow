@@ -1,12 +1,11 @@
-
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { User as UserType } from '@/stores/userStore';
+import { LogOut, User } from 'lucide-react';
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { User, LogOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { User as UserType } from '@/contexts/UserContext';
 import { MenuItem } from './menuConfig';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface MobileNavigationProps {
   isOpen: boolean;

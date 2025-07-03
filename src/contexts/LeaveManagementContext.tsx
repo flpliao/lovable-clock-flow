@@ -1,8 +1,7 @@
-
-import React, { createContext, useContext, ReactNode } from 'react';
-import { LeaveRequest } from '@/types';
+import { useCurrentUser } from '@/hooks/useStores';
 import { useSupabaseLeaveManagement } from '@/hooks/useSupabaseLeaveManagement';
-import { useUser } from '@/contexts/UserContext';
+import { LeaveRequest } from '@/types';
+import React, { createContext, ReactNode, useContext } from 'react';
 
 interface LeaveManagementContextType {
   leaveRequests: LeaveRequest[];
@@ -39,7 +38,7 @@ export const LeaveManagementProvider: React.FC<LeaveManagementProviderProps> = (
     updateLeaveRequestStatus,
     refreshData 
   } = useSupabaseLeaveManagement();
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
 
   // 取得當前進行中的請假申請
   const currentLeaveRequest = leaveRequests.find(

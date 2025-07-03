@@ -1,11 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { format } from 'date-fns';
-import { useUser } from '@/contexts/UserContext';
+import { useCurrentUser } from '@/hooks/useStores';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 import { CheckInRecord } from '@/types';
+import { format } from 'date-fns';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export const useAttendanceRecords = () => {
-  const { currentUser } = useUser();
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+  
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedDateRecords, setSelectedDateRecords] = useState<{
     checkIn?: CheckInRecord;

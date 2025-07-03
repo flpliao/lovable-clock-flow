@@ -1,36 +1,56 @@
-
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Form } from '@/components/ui/form';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
+import { Form } from '@/components/ui/form';
 import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
+import { useToast } from '@/hooks/use-toast';
+import { useAuthenticated, useCurrentUser } from '@/hooks/useStores';
+import { supabase } from '@/integrations/supabase/client';
+import { calculateAnnualLeaveDays } from '@/utils/annualLeaveCalculator';
+import { datePickerToDatabase } from '@/utils/dateUtils';
 import { LeaveFormValues, leaveFormSchema } from '@/utils/leaveTypes';
+import { validateLeaveRequest } from '@/utils/leaveValidation';
+import { calculateWorkingHours } from '@/utils/workingHoursCalculator';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { LeaveBalanceCard } from './LeaveBalanceCard';
 import { LeaveRequestSimplifiedFormFields } from './LeaveRequestSimplifiedFormFields';
 import { LeaveTypeDetailCard } from './LeaveTypeDetailCard';
-import { LeaveBalanceCard } from './LeaveBalanceCard';
-import { calculateWorkingHours } from '@/utils/workingHoursCalculator';
-import { validateLeaveRequest } from '@/utils/leaveValidation';
-import { datePickerToDatabase } from '@/utils/dateUtils';
-import { calculateAnnualLeaveDays } from '@/utils/annualLeaveCalculator';
-import { Loader2, AlertCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface NewLeaveRequestFormProps {
   onSubmit?: () => void;
 }
 
+// 定義員工資料類型
+interface StaffData {
+  id: string;
+  user_id?: string;
+  name: string;
+  department: string;
+  position: string;
+  hire_date: string;
+  supervisor_id: string | null;
+  yearsOfService: string;
+  totalAnnualLeaveDays: number;
+  usedAnnualLeaveDays: number;
+  remainingAnnualLeaveDays: number;
+}
+
+// 定義請假類型
+type LeaveType = 'annual' | 'sick' | 'personal' | 'marriage' | 'bereavement' | 'maternity' | 'paternity' | 'menstrual' | 'occupational' | 'parental' | 'other';
+
 export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
   const { toast } = useToast();
-  const { currentUser, isAuthenticated } = useUser();
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+  const isAuthenticated = useAuthenticated();
+  
   const { createLeaveRequest } = useLeaveManagementContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [calculatedHours, setCalculatedHours] = useState<number>(0);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [userStaffData, setUserStaffData] = useState<any>(null);
+  const [userStaffData, setUserStaffData] = useState<StaffData | null>(null);
   const [isLoadingStaffData, setIsLoadingStaffData] = useState(true);
   const [staffValidationError, setStaffValidationError] = useState<string | null>(null);
 
@@ -172,8 +192,9 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         }
 
         // Set complete staff data
-        const completeStaffData = {
+        const completeStaffData: StaffData = {
           id: staff.id, // Ensure staff.id is included
+          user_id: staff.user_id,
           name: staff.name,
           department: staff.department,
           position: staff.position,
@@ -334,7 +355,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         staff_id: userStaffData.id, // Use validated staff.id
         start_date: startDateStr,
         end_date: endDateStr,
-        leave_type: data.leave_type as any,
+        leave_type: data.leave_type as LeaveType,
         status: 'pending' as const,
         hours: calculatedHours,
         reason: data.reason,

@@ -1,15 +1,14 @@
-
-import React from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { useSupabaseStaffData } from '@/hooks/useSupabaseStaffData';
+import CredentialManagement from '@/components/staff/CredentialManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { User, Calendar, MapPin, Phone, Mail } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import CredentialManagement from '@/components/staff/CredentialManagement';
+import { useCurrentUser } from '@/hooks/useStores';
+import { useSupabaseStaffData } from '@/hooks/useSupabaseStaffData';
+import { Calendar, MapPin, User } from 'lucide-react';
+import React from 'react';
 
 const AccountSettings: React.FC = () => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const { staffData, isLoading, error } = useSupabaseStaffData();
 
   if (!currentUser) {

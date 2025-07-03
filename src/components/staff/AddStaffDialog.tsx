@@ -1,5 +1,4 @@
-
-import React from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,24 +8,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { useUser } from '@/contexts/UserContext';
+import { useIsAdmin } from '@/hooks/useStores';
+import { Plus } from 'lucide-react';
 import AddStaffForm from './forms/AddStaffForm';
 
 const AddStaffDialog = () => {
   console.log('🎯 AddStaffDialog rendering');
   
-  const { isAdmin } = useUser();
+  const isAdmin = useIsAdmin();
   
   // Add error boundary for context usage
-  let staffManagementContext;
-  try {
-    staffManagementContext = useStaffManagementContext();
-    console.log('✅ Successfully got staff management context');
-  } catch (error) {
-    console.error('❌ Failed to get staff management context:', error);
+  const staffManagementContext = useStaffManagementContext();
+  
+  if (!staffManagementContext) {
+    console.error('❌ Failed to get staff management context');
     return null; // Return null if context is not available
   }
   
@@ -38,7 +34,7 @@ const AddStaffDialog = () => {
     handleAddStaff
   } = staffManagementContext;
   
-  if (!isAdmin()) {
+  if (!isAdmin) {
     console.log('🚫 User is not admin, hiding AddStaffDialog');
     return null;
   }

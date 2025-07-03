@@ -1,31 +1,39 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { MapPin, Wifi, RefreshCw, AlertCircle, ChevronLeft, ChevronRight, Trash2, Users, User, Globe } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
+import { useCheckInRecordManager } from '@/hooks/useCheckInRecordManager';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 import { CheckInRecord } from '@/types';
 import { formatDate, formatTime } from '@/utils/checkInUtils';
-import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
-import { useCheckInRecordManager } from '@/hooks/useCheckInRecordManager';
+import { AlertCircle, ChevronLeft, ChevronRight, Globe, MapPin, RefreshCw, Trash2, User, Users, Wifi } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 const ITEMS_PER_PAGE = 10;
 
 type RecordViewType = 'my' | 'subordinates' | 'all';
 
+// 擴展 CheckInRecord 類型以包含員工姓名
+interface ExtendedCheckInRecord extends CheckInRecord {
+  staff_name?: string;
+}
+
 const CheckInHistory: React.FC = () => {
-  const { currentUser, isAdmin } = useUser();
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
+  
   const { checkInRecords, loadCheckInRecords, loading } = useSupabaseCheckIn();
   const { deleteCheckInRecord, loadAllRecords, loadSubordinateRecords } = useCheckInRecordManager();
   const [refreshing, setRefreshing] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeView, setActiveView] = useState<RecordViewType>('my');
-  const [viewRecords, setViewRecords] = useState<CheckInRecord[]>([]);
+  const [viewRecords, setViewRecords] = useState<ExtendedCheckInRecord[]>([]);
   const [deleting, setDeleting] = useState<string | null>(null);
   const { toast } = useToast();
   
@@ -39,7 +47,7 @@ const CheckInHistory: React.FC = () => {
     if (!currentUser?.id) return;
     
     try {
-      let records: CheckInRecord[] = [];
+      let records: ExtendedCheckInRecord[] = [];
       
       switch (view) {
         case 'my':
@@ -47,13 +55,13 @@ const CheckInHistory: React.FC = () => {
           // 不直接使用 checkInRecords，而是等待 loadCheckInRecords 完成後再更新
           break;
         case 'subordinates':
-          if (isAdmin()) {
+          if (isAdmin) {
             records = await loadSubordinateRecords(currentUser.id);
             setViewRecords(records);
           }
           break;
         case 'all':
-          if (isAdmin()) {
+          if (isAdmin) {
             records = await loadAllRecords();
             setViewRecords(records);
           }
@@ -110,7 +118,7 @@ const CheckInHistory: React.FC = () => {
   }, [currentUser?.id, refreshing, loading, loadRecordsByView, activeView, viewRecords.length, toast]);
 
   const handleDeleteRecord = useCallback(async (recordId: string) => {
-    if (!isAdmin()) {
+    if (!isAdmin) {
       toast({
         title: "權限不足",
         description: "只有系統管理員可以刪除打卡記錄",
@@ -189,7 +197,7 @@ const CheckInHistory: React.FC = () => {
     currentPage,
     totalPages,
     activeView,
-    isAdmin: isAdmin()
+    isAdmin
   });
   
   if (!currentUser) {
@@ -215,7 +223,7 @@ const CheckInHistory: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 系統管理員才顯示切換標籤 */}
-      {isAdmin() ? (
+      {isAdmin ? (
         <Tabs value={activeView} onValueChange={(value) => handleViewChange(value as RecordViewType)} className="w-full">
           <div className="flex items-center justify-between mb-4">
             <TabsList className="bg-white/20 backdrop-blur-xl border-white/30">
@@ -322,11 +330,11 @@ const CheckInHistory: React.FC = () => {
                               <TableHead className="text-white/90 font-semibold min-w-[60px] whitespace-nowrap">狀態</TableHead>
                               <TableHead className="text-white/90 font-semibold min-w-[120px] whitespace-nowrap">詳情</TableHead>
                               {activeView !== 'my' && <TableHead className="text-white/90 font-semibold min-w-[80px] whitespace-nowrap">員工</TableHead>}
-                              {isAdmin() && <TableHead className="text-white/90 font-semibold min-w-[60px] whitespace-nowrap">操作</TableHead>}
+                              {isAdmin && <TableHead className="text-white/90 font-semibold min-w-[60px] whitespace-nowrap">操作</TableHead>}
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {currentRecords.map((record: CheckInRecord) => (
+                            {currentRecords.map((record: ExtendedCheckInRecord) => (
                               <TableRow key={record.id} className="border-white/20 hover:bg-white/5 transition-colors duration-200">
                                 <TableCell className="text-white/90 font-medium whitespace-nowrap">{formatDate(record.timestamp)}</TableCell>
                                 <TableCell className="text-white/90 font-medium whitespace-nowrap">{formatTime(record.timestamp)}</TableCell>
@@ -366,10 +374,10 @@ const CheckInHistory: React.FC = () => {
                                 </TableCell>
                                 {activeView !== 'my' && (
                                   <TableCell className="text-white/80 whitespace-nowrap">
-                                    {(record as any).staff_name || '未知員工'}
+                                    {record.staff_name || '未知員工'}
                                   </TableCell>
                                 )}
-                                {isAdmin() && (
+                                {isAdmin && (
                                   <TableCell className="whitespace-nowrap">
                                     <AlertDialog>
                                       <AlertDialogTrigger asChild>
@@ -507,7 +515,7 @@ const CheckInHistory: React.FC = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {currentRecords.map((record: CheckInRecord) => (
+                          {currentRecords.map((record: ExtendedCheckInRecord) => (
                             <TableRow key={record.id} className="border-white/20 hover:bg-white/5 transition-colors duration-200">
                               <TableCell className="text-white/90 font-medium whitespace-nowrap">{formatDate(record.timestamp)}</TableCell>
                               <TableCell className="text-white/90 font-medium whitespace-nowrap">{formatTime(record.timestamp)}</TableCell>

@@ -1,8 +1,7 @@
-
-import { useState, useEffect } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { useToast } from '@/hooks/use-toast';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useToast } from '@/hooks/use-toast';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import { useEffect, useState } from 'react';
 
 type ScheduleViewType = 'my' | 'subordinates' | 'all';
 
@@ -14,7 +13,8 @@ interface UseScheduleListLogicProps {
 }
 
 export const useScheduleListLogic = ({ schedules, onRemoveSchedule }: UseScheduleListLogicProps) => {
-  const { currentUser, isAdmin } = useUser();
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
   const { getSubordinates } = useStaffManagementContext();
   const { toast } = useToast();
   const [refreshing, setRefreshing] = useState(false);
@@ -40,7 +40,7 @@ export const useScheduleListLogic = ({ schedules, onRemoveSchedule }: UseSchedul
       case 'subordinates':
         return schedules.filter(schedule => subordinateIds.includes(schedule.userId));
       case 'all':
-        if (isAdmin()) {
+        if (isAdmin) {
           return schedules;
         } else {
           // 非管理員可以看到自己和下屬的排班
@@ -90,7 +90,7 @@ export const useScheduleListLogic = ({ schedules, onRemoveSchedule }: UseSchedul
     if (!schedule) return;
     
     const subordinates = getSubordinates(currentUser?.id || '');
-    const canDelete = isAdmin() || 
+    const canDelete = isAdmin || 
                      schedule.userId === currentUser?.id || 
                      subordinates.some(s => s.id === schedule.userId);
     
@@ -149,7 +149,7 @@ export const useScheduleListLogic = ({ schedules, onRemoveSchedule }: UseSchedul
     currentSchedules,
     totalPages,
     currentUser,
-    isAdmin: isAdmin(),
+    isAdmin,
     handleRefresh,
     handleScheduleDelete,
     handleViewChange,

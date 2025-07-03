@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { LeaveRequest } from '@/types';
-import { useUser } from '@/contexts/UserContext';
-import { useNotifications } from '@/hooks/useNotifications';
 import { toast } from '@/components/ui/use-toast';
+import { useNotifications } from '@/hooks/useNotifications';
+import { useAnnualLeaveBalance, useCurrentUser, useUserActions } from '@/hooks/useStores';
+import { LeaveRequest } from '@/types';
+import { useEffect, useState } from 'react';
 
 // Mock data - in a real app this would come from API
 const mockLeaveRequests: LeaveRequest[] = [
@@ -88,7 +88,9 @@ const mockLeaveRequests: LeaveRequest[] = [
 export const useLeaveManagement = () => {
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(mockLeaveRequests);
   const [currentLeaveRequest, setCurrentLeaveRequest] = useState<LeaveRequest | null>(null);
-  const { currentUser, annualLeaveBalance, setAnnualLeaveBalance } = useUser();
+  const currentUser = useCurrentUser();
+  const annualLeaveBalance = useAnnualLeaveBalance();
+  const { setAnnualLeaveBalance } = useUserActions();
   const { addNotification } = useNotifications();
 
   // Initialize current leave request (pending one)

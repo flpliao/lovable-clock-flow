@@ -1,6 +1,5 @@
-
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
 import React, { ReactNode } from 'react';
-import { useUser } from '@/contexts/UserContext';
 import { Navigate } from 'react-router-dom';
 
 interface CompanyBranchPermissionGuardProps {
@@ -8,10 +7,11 @@ interface CompanyBranchPermissionGuardProps {
 }
 
 export const CompanyBranchPermissionGuard: React.FC<CompanyBranchPermissionGuardProps> = ({ children }) => {
-  const { currentUser, isAdmin } = useUser();
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
   
   // Only allow admin users or HR department to access this page
-  if (!currentUser || !(isAdmin() || currentUser.department === 'HR')) {
+  if (!currentUser || !(isAdmin || currentUser.department === 'HR')) {
     return <Navigate to="/login" />;
   }
 

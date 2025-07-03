@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useUser } from '@/contexts/UserContext';
-import HeaderLogo from './header/HeaderLogo';
-import UserInfo from './header/UserInfo';
+import { useAuthenticated, useCurrentUser, useUserActions } from '@/hooks/useStores';
+import { Menu } from 'lucide-react';
+import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import DesktopNavigation from './header/DesktopNavigation';
+import HeaderLogo from './header/HeaderLogo';
 import MobileNavigation from './header/MobileNavigation';
-import NotificationCenter from './notifications/NotificationCenter';
 import { useMenuLogic } from './header/useMenuLogic';
+import UserInfo from './header/UserInfo';
+import NotificationCenter from './notifications/NotificationCenter';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser, isAuthenticated, resetUserState } = useUser();
+  
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+  const isAuthenticated = useAuthenticated();
+  const { forceLogout } = useUserActions();
+  
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const isLoginPage = location.pathname === '/login';
@@ -28,7 +33,7 @@ const Header: React.FC = () => {
   const handleLogout = async () => {
     console.log('🚪 Header: 執行登出');
     setIsMobileMenuOpen(false);
-    await resetUserState();
+    await forceLogout();
   };
 
   const handleLogin = () => {

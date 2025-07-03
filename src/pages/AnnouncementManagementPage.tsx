@@ -1,18 +1,17 @@
-
-import React from 'react';
 import AnnouncementManagement from '@/components/announcements/AnnouncementManagement';
-import { useUser } from '@/contexts/UserContext';
-import { Navigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import { ArrowLeft } from 'lucide-react';
+import React from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const AnnouncementManagementPage: React.FC = () => {
-  const { currentUser, isAdmin } = useUser();
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
   const navigate = useNavigate();
   
   // Only allow admin users or HR department to access this page
-  if (!currentUser || !(isAdmin() || currentUser.department === 'HR')) {
+  if (!currentUser || !(isAdmin || currentUser.department === 'HR')) {
     return <Navigate to="/login" />;
   }
 

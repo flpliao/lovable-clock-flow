@@ -1,10 +1,9 @@
-
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useToast } from '@/hooks/use-toast';
 import { useScheduling } from '@/contexts/SchedulingContext';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { useUser } from '@/contexts/UserContext';
+import { useToast } from '@/hooks/use-toast';
+import { useCurrentUser, usePermissionChecker } from '@/hooks/useStores';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { timeOptions } from '../constants';
 
 type FormValues = {
@@ -19,7 +18,8 @@ export const useScheduleFormLogic = () => {
   const { toast } = useToast();
   const { addSchedules, loading, error } = useScheduling();
   const { staffList, getSubordinates } = useStaffManagementContext();
-  const { currentUser, hasPermission } = useUser();
+  const currentUser = useCurrentUser();
+  const { hasPermission } = usePermissionChecker();
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   
@@ -60,16 +60,19 @@ export const useScheduleFormLogic = () => {
     // 根據權限獲取可用員工列表
     let availableStaff = [];
     
-    if (hasPermission('schedule:create')) {
-      // 有創建權限可以選擇所有員工
-      availableStaff = staffList;
-    } else {
-      // 否則只能選擇自己（雖然一般用戶不應該看到創建表單）
-      const selfStaff = staffList.find(staff => staff.id === currentUser?.id);
-      if (selfStaff) {
-        availableStaff.push(selfStaff);
+    // 使用 Promise 來處理異步權限檢查
+    hasPermission('schedule:create').then(hasCreatePermission => {
+      if (hasCreatePermission) {
+        // 有創建權限可以選擇所有員工
+        availableStaff = staffList;
+      } else {
+        // 否則只能選擇自己（雖然一般用戶不應該看到創建表單）
+        const selfStaff = staffList.find(staff => staff.id === currentUser?.id);
+        if (selfStaff) {
+          availableStaff.push(selfStaff);
+        }
       }
-    }
+    });
     
     const user = availableStaff.find(u => u.id === userId);
     return user ? user.name : '未知員工';
@@ -77,7 +80,7 @@ export const useScheduleFormLogic = () => {
 
   const onSubmit = async (data: FormValues) => {
     // 檢查創建權限
-    if (!hasPermission('schedule:create')) {
+    if (!(await hasPermission('schedule:create'))) {
       toast({
         title: "權限不足",
         description: "您沒有權限創建排班",

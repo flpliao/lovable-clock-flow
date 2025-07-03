@@ -1,29 +1,22 @@
-
-import React, { useState, useEffect } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { Navigate } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import StaffManagement from '@/components/staff/StaffManagement';
 import PositionManagement from '@/components/positions/PositionManagement';
-import { Users, Briefcase, UserCheck, Settings, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import StaffManagement from '@/components/staff/StaffManagement';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
 import { DataSyncManager } from '@/utils/dataSync';
+import { AlertCircle, Briefcase, CheckCircle, RefreshCw, UserCheck, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 
 const PersonnelManagement = () => {
   console.log('🎯 PersonnelManagement rendering');
-  const {
-    currentUser,
-    isAdmin
-  } = useUser();
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
   const [activeTab, setActiveTab] = useState('staff');
   const [syncStatus, setSyncStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
   const [lastSyncTime, setLastSyncTime] = useState<string>('');
   
-  if (!currentUser || !(isAdmin() || currentUser.department === 'HR')) {
-    return <Navigate to="/login" />;
-  }
-
   // 檢查系統同步狀態
   useEffect(() => {
     const checkSyncStatus = async () => {
@@ -39,6 +32,10 @@ const PersonnelManagement = () => {
     };
     checkSyncStatus();
   }, []);
+  
+  if (!currentUser || !(isAdmin || currentUser.department === 'HR')) {
+    return <Navigate to="/login" />;
+  }
 
   // 手動同步資料
   const handleManualSync = async () => {

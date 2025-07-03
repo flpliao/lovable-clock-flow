@@ -1,21 +1,23 @@
-import React, { useState } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { Navigate } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, BarChart3, Settings, Timer, MapPin } from 'lucide-react';
 import HolidayCalendar from '@/components/holiday/HolidayCalendar';
-import WorkHoursAnalytics from '@/components/holiday/WorkHoursAnalytics';
 import HolidaySettings from '@/components/holiday/HolidaySettings';
+import WorkHoursAnalytics from '@/components/holiday/WorkHoursAnalytics';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import { BarChart3, Calendar, MapPin, Settings, Timer } from 'lucide-react';
+import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
+
 const HolidayManagement = () => {
-  const {
-    currentUser,
-    isAdmin
-  } = useUser();
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
   const [activeTab, setActiveTab] = useState('calendar');
+  
   if (!currentUser) {
     return <Navigate to="/login" />;
   }
-  return <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
+  
+  return (
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
       {/* 動態背景漸層 */}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
@@ -23,15 +25,9 @@ const HolidayManagement = () => {
       
       {/* 浮動光點效果 */}
       <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-white/30 rounded-full animate-pulse"></div>
-      <div className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{
-      animationDelay: '2s'
-    }}></div>
-      <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{
-      animationDelay: '4s'
-    }}></div>
-      <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{
-      animationDelay: '6s'
-    }}></div>
+      <div className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
+      <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
       
       <div className="relative z-10 w-full">
         {/* 頁面標題區域 */}
@@ -67,7 +63,7 @@ const HolidayManagement = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className={`grid w-full ${isAdmin() ? 'grid-cols-3' : 'grid-cols-2'} bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14`}>
+            <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'} bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14`}>
               <TabsTrigger value="calendar" className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 <span className="hidden sm:inline">假日行事曆</span>
@@ -78,11 +74,13 @@ const HolidayManagement = () => {
                 <span className="hidden sm:inline">工時統計</span>
                 <span className="sm:hidden">統計</span>
               </TabsTrigger>
-              {isAdmin() && <TabsTrigger value="settings" className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2">
+              {isAdmin && (
+                <TabsTrigger value="settings" className="text-gray-800 data-[state=active]:bg-white/50 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2">
                   <Settings className="h-4 w-4" />
                   <span className="hidden sm:inline">假日設定</span>
                   <span className="sm:hidden">設定</span>
-                </TabsTrigger>}
+                </TabsTrigger>
+              )}
             </TabsList>
             
             <div className="mt-8">
@@ -94,13 +92,16 @@ const HolidayManagement = () => {
                 <WorkHoursAnalytics />
               </TabsContent>
               
-              {isAdmin() && <TabsContent value="settings" className="mt-0">
+              {isAdmin && (
+                <TabsContent value="settings" className="mt-0">
                   <HolidaySettings />
-                </TabsContent>}
+                </TabsContent>
+              )}
             </div>
           </Tabs>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
 export default HolidayManagement;

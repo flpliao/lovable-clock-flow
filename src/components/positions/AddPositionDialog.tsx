@@ -1,5 +1,5 @@
 
-import React from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,13 +9,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useIsAdmin } from '@/hooks/useStores';
 import { Plus } from 'lucide-react';
 import { usePositionManagementContext } from './PositionManagementContext';
-import { useUser } from '@/contexts/UserContext';
 
 const AddPositionDialog = () => {
   const { 
@@ -26,9 +25,9 @@ const AddPositionDialog = () => {
     handleAddPosition
   } = usePositionManagementContext();
   
-  const { isAdmin } = useUser();
+  const isAdmin = useIsAdmin();
   
-  if (!isAdmin()) return null;
+  if (!isAdmin) return null;
 
   const handleSave = async () => {
     const success = await handleAddPosition();

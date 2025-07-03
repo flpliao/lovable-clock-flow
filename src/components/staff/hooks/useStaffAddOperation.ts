@@ -1,8 +1,7 @@
-
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
-import { Staff, NewStaff } from '../types';
+import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
 import { StaffApiService } from '../services/staffApiService';
+import { NewStaff, Staff } from '../types';
 import { useStaffValidation } from './useStaffValidation';
 
 export const useStaffAddOperation = (
@@ -10,7 +9,8 @@ export const useStaffAddOperation = (
   setStaffList: (staffList: Staff[]) => void
 ) => {
   const { toast } = useToast();
-  const { isAdmin, currentUser } = useUser();
+  const isAdmin = useIsAdmin();
+  const currentUser = useCurrentUser();
   const { validateNewStaff, getErrorMessage } = useStaffValidation();
 
   const addStaff = async (newStaff: NewStaff): Promise<boolean> => {

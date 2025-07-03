@@ -1,10 +1,9 @@
-
-import { StaffRole, Staff } from '../types';
+import { useCurrentUser } from '@/hooks/useStores';
 import { UnifiedPermissionService } from '@/services/unifiedPermissionService';
-import { useUser } from '@/contexts/UserContext';
+import { Staff, StaffRole } from '../types';
 
 export const usePermissionUtils = (roles: StaffRole[]) => {
-  const { currentUser } = useUser();
+  const currentUser = useCurrentUser();
   const permissionService = UnifiedPermissionService.getInstance();
 
   // Get a role by ID

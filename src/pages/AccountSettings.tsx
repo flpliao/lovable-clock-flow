@@ -11,19 +11,6 @@ const AccountSettings: React.FC = () => {
   const currentUser = useCurrentUser();
   const { staffData, isLoading, error } = useSupabaseStaffData();
 
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 flex items-center justify-center p-4">
-        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8 text-center">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-xl border border-white/30 shadow-lg">
-            <User className="h-8 w-8 text-white" />
-          </div>
-          <p className="text-lg font-medium text-white drop-shadow-lg mb-4">請先登入</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -40,9 +27,7 @@ const AccountSettings: React.FC = () => {
                 <User className="mr-2 h-5 w-5 text-gray-500" />
                 <CardTitle>個人資料</CardTitle>
               </div>
-              <CardDescription>
-                您的基本資料和工作資訊
-              </CardDescription>
+              <CardDescription>您的基本資料和工作資訊</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -62,9 +47,9 @@ const AccountSettings: React.FC = () => {
                       <p className="text-sm text-gray-500">{staffData.position}</p>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="flex items-center space-x-3">
                     <MapPin className="h-4 w-4 text-gray-400" />
                     <div>
@@ -72,7 +57,7 @@ const AccountSettings: React.FC = () => {
                       <p className="text-sm text-gray-500">{staffData.department}</p>
                     </div>
                   </div>
-                  
+
                   {staffData.hire_date && (
                     <>
                       <Separator />
@@ -85,22 +70,28 @@ const AccountSettings: React.FC = () => {
                       </div>
                     </>
                   )}
-                  
+
                   <Separator />
-                  
+
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h4 className="text-sm font-medium text-blue-900 mb-2">年假資訊</h4>
                     <div className="grid grid-cols-3 gap-4 text-center">
                       <div>
-                        <p className="text-lg font-semibold text-blue-600">{staffData.totalAnnualLeaveDays}</p>
+                        <p className="text-lg font-semibold text-blue-600">
+                          {staffData.totalAnnualLeaveDays}
+                        </p>
                         <p className="text-xs text-blue-500">總天數</p>
                       </div>
                       <div>
-                        <p className="text-lg font-semibold text-orange-600">{staffData.usedAnnualLeaveDays}</p>
+                        <p className="text-lg font-semibold text-orange-600">
+                          {staffData.usedAnnualLeaveDays}
+                        </p>
                         <p className="text-xs text-orange-500">已使用</p>
                       </div>
                       <div>
-                        <p className="text-lg font-semibold text-green-600">{staffData.remainingAnnualLeaveDays}</p>
+                        <p className="text-lg font-semibold text-green-600">
+                          {staffData.remainingAnnualLeaveDays}
+                        </p>
                         <p className="text-xs text-green-500">剩餘</p>
                       </div>
                     </div>
@@ -114,7 +105,7 @@ const AccountSettings: React.FC = () => {
 
           {/* 帳號安全設定 */}
           <div>
-            <CredentialManagement 
+            <CredentialManagement
               userId={currentUser.id}
               onSuccess={() => {
                 console.log('帳號設定更新成功');

@@ -44,11 +44,14 @@ import SystemSettings from '@/pages/SystemSettings';
 // 404 page
 import NotFound from '@/pages/NotFound';
 
+// Route protection
+import ProtectedRoute from '@/components/common/ProtectedRoute';
+
 // 認證初始化組件（替代 UserProvider）
 const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // 自動初始化認證系統
   useAutoInitAuth();
-  
+
   return <>{children}</>;
 };
 
@@ -61,34 +64,191 @@ function App() {
           <div className="min-h-screen bg-gray-50">
             <Header />
             <Routes>
-              <Route path="/" element={<Index />} />
+              {/* 公開路由 */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/magic-link" element={<MagicLinkLogin />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/account-settings" element={<AccountSettings />} />
-              <Route path="/staff-dashboard" element={<StaffDashboard />} />
-              <Route path="/personal-attendance" element={<PersonalAttendance />} />
-              <Route path="/leave-request" element={<LeaveRequest />} />
-              <Route path="/overtime-request" element={<OvertimeRequest />} />
-              <Route path="/overtime-history" element={<OvertimeHistoryPage />} />
-              <Route path="/scheduling" element={<Scheduling />} />
-              <Route path="/schedule-statistics" element={<ScheduleStatistics />} />
-              <Route path="/personnel-management" element={<PersonnelManagement />} />
-              <Route path="/company-branch-management" element={<CompanyBranchManagement />} />
-              <Route path="/hr-management" element={<HRManagement />} />
-              <Route path="/approval-center" element={<ApprovalCenter />} />
-              <Route path="/system-settings" element={<SystemSettings />} />
-              <Route path="/holiday-management" element={<HolidayManagement />} />
-              <Route path="/leave-type-management" element={<LeaveTypeManagement />} />
-              <Route path="/missed-checkin-management" element={<MissedCheckinManagement />} />
-              <Route path="/overtime-management" element={<OvertimeManagement />} />
-              <Route path="/overtime-management-page" element={<OvertimeManagementPage />} />
-              <Route path="/overtime-request-page" element={<OvertimeRequestPage />} />
-              <Route path="/announcement-management" element={<AnnouncementManagementPage />} />
-              <Route path="/company-announcements" element={<CompanyAnnouncements />} />
+
+              {/* 受保護的路由 */}
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Index />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/account-settings"
+                element={
+                  <ProtectedRoute>
+                    <AccountSettings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/staff-dashboard"
+                element={
+                  <ProtectedRoute>
+                    <StaffDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/personal-attendance"
+                element={
+                  <ProtectedRoute>
+                    <PersonalAttendance />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/leave-request"
+                element={
+                  <ProtectedRoute>
+                    <LeaveRequest />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/overtime-request"
+                element={
+                  <ProtectedRoute>
+                    <OvertimeRequest />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/overtime-history"
+                element={
+                  <ProtectedRoute>
+                    <OvertimeHistoryPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/scheduling"
+                element={
+                  <ProtectedRoute>
+                    <Scheduling />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/schedule-statistics"
+                element={
+                  <ProtectedRoute>
+                    <ScheduleStatistics />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/personnel-management"
+                element={
+                  <ProtectedRoute>
+                    <PersonnelManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/company-branch-management"
+                element={
+                  <ProtectedRoute>
+                    <CompanyBranchManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/hr-management"
+                element={
+                  <ProtectedRoute>
+                    <HRManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/approval-center"
+                element={
+                  <ProtectedRoute>
+                    <ApprovalCenter />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/system-settings"
+                element={
+                  <ProtectedRoute>
+                    <SystemSettings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/holiday-management"
+                element={
+                  <ProtectedRoute>
+                    <HolidayManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/leave-type-management"
+                element={
+                  <ProtectedRoute>
+                    <LeaveTypeManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/missed-checkin-management"
+                element={
+                  <ProtectedRoute>
+                    <MissedCheckinManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/overtime-management"
+                element={
+                  <ProtectedRoute>
+                    <OvertimeManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/overtime-management-page"
+                element={
+                  <ProtectedRoute>
+                    <OvertimeManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/overtime-request-page"
+                element={
+                  <ProtectedRoute>
+                    <OvertimeRequestPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/announcement-management"
+                element={
+                  <ProtectedRoute>
+                    <AnnouncementManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/company-announcements"
+                element={
+                  <ProtectedRoute>
+                    <CompanyAnnouncements />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />
@@ -99,4 +259,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;

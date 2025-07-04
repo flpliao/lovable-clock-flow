@@ -1,12 +1,27 @@
 import { FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { useCurrentUser, usePermissionChecker } from '@/hooks/useStores';
 import React from 'react';
 import { Control } from 'react-hook-form';
+import { Staff } from '@/components/staff/types';
+
+type FormValues = {
+  userId: string;
+  selectedYear: string;
+  selectedMonth: string;
+  selectedDates: string[];
+  selectedTimeSlots: string[];
+};
 
 interface StaffSelectorProps {
-  control: Control<{ userId: string }>;
+  control: Control<FormValues>;
 }
 
 const StaffSelector = ({ control }: StaffSelectorProps) => {
@@ -17,12 +32,12 @@ const StaffSelector = ({ control }: StaffSelectorProps) => {
   // 根據權限過濾可選員工
   const getSelectableStaff = async () => {
     if (!currentUser) return [];
-    
+
     // 有創建排班權限的用戶可以選擇所有員工
     if (await hasPermission('schedule:create')) {
       return staffList;
     }
-    
+
     // 一般用戶只能選擇自己（雖然他們不應該看到這個表單）
     return staffList.filter(staff => staff.id === currentUser.id);
   };
@@ -50,9 +65,9 @@ const StaffSelector = ({ control }: StaffSelectorProps) => {
                 <SelectValue placeholder="請選擇要排班的員工" />
               </SelectTrigger>
               <SelectContent className="bg-white border border-gray-300 rounded-2xl shadow-xl z-50">
-                {selectableStaff.map((staffMember) => (
-                  <SelectItem 
-                    key={staffMember.id} 
+                {selectableStaff.map(staffMember => (
+                  <SelectItem
+                    key={staffMember.id}
                     value={staffMember.id}
                     className="py-4 px-6 text-lg hover:bg-gray-50 rounded-xl text-black"
                   >

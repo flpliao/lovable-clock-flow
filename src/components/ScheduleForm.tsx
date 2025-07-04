@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Form } from '@/components/ui/form';
 import { UserPlus, Users, Calendar, Clock, Eye, CheckCircle } from 'lucide-react';
@@ -22,24 +21,25 @@ const ScheduleForm = () => {
     setSelectedYear,
     setSelectedMonth,
     handleDateToggle,
+    handleSelectAllMonth,
+    handleClearSelection,
     handleTimeSlotToggle,
     onSubmit,
   } = useScheduleFormLogic();
 
   // 表單驗證：需要選擇員工、日期和時間段
-  const isFormValid = form.watch('userId') && selectedDates.length > 0 && selectedTimeSlots.length > 0;
+  const isFormValid =
+    form.watch('userId') && selectedDates.length > 0 && selectedTimeSlots.length > 0;
 
   return (
     <div className="space-y-8 px-4">
       {/* 錯誤提示 */}
       {error && (
         <div className="bg-red-500/20 backdrop-blur-xl border border-red-300/30 rounded-3xl p-6 shadow-xl">
-          <div className="text-red-100 font-medium">
-            錯誤：{error}
-          </div>
+          <div className="text-red-100 font-medium">錯誤：{error}</div>
         </div>
       )}
-      
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           {/* 員工選擇 */}
@@ -82,6 +82,8 @@ const ScheduleForm = () => {
               selectedMonth={selectedMonth}
               selectedDates={selectedDates}
               onDateToggle={handleDateToggle}
+              onSelectAllMonth={handleSelectAllMonth}
+              onClearSelection={handleClearSelection}
             />
           </div>
 
@@ -93,9 +95,7 @@ const ScheduleForm = () => {
               </div>
               <h3 className="text-2xl font-bold text-white drop-shadow-lg">選擇時間段</h3>
               {selectedTimeSlots.length === 0 && (
-                <div className="text-yellow-300 text-sm ml-2">
-                  (請選擇一個時間段)
-                </div>
+                <div className="text-yellow-300 text-sm ml-2">(請選擇一個時間段)</div>
               )}
             </div>
             <TimeSlotSelector
@@ -130,10 +130,7 @@ const ScheduleForm = () => {
               </div>
               <h3 className="text-2xl font-bold text-white drop-shadow-lg">提交排班</h3>
             </div>
-            <ScheduleFormActions
-              loading={loading}
-              disabled={!isFormValid}
-            />
+            <ScheduleFormActions loading={loading} disabled={!isFormValid} />
           </div>
         </form>
       </Form>

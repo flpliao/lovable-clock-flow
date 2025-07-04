@@ -2,9 +2,10 @@ import { useScheduling } from '@/contexts/SchedulingContext';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser, usePermissionChecker } from '@/hooks/useStores';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { timeOptions } from '../constants';
+import { generateDaysInMonth } from '../utils/dateUtils';
 
 type FormValues = {
   userId: string;
@@ -22,12 +23,12 @@ export const useScheduleFormLogic = () => {
   const { hasPermission } = usePermissionChecker();
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
-  
+
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
   const [selectedMonth, setSelectedMonth] = useState(currentMonth.toString());
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
-  
+
   const form = useForm<FormValues>({
     defaultValues: {
       userId: '',
@@ -38,12 +39,55 @@ export const useScheduleFormLogic = () => {
     },
   });
 
+  // 初始化時自動全選當前月份
+  useEffect(() => {
+    const daysInMonth = generateDaysInMonth(selectedYear, selectedMonth);
+    const allDates = daysInMonth
+      .filter(day => day !== null) // 過濾掉空白格子
+      .map(day => day.value);
+    setSelectedDates(allDates);
+  }, []); // 只在組件初始化時執行一次
+
   const handleDateToggle = (date: string) => {
-    setSelectedDates(prev => 
-      prev.includes(date) 
-        ? prev.filter(d => d !== date)
-        : [...prev, date]
+    setSelectedDates(prev =>
+      prev.includes(date) ? prev.filter(d => d !== date) : [...prev, date]
     );
+  };
+
+  const handleSelectAllMonth = () => {
+    const daysInMonth = generateDaysInMonth(selectedYear, selectedMonth);
+    const allDates = daysInMonth
+      .filter(day => day !== null) // 過濾掉空白格子
+      .map(day => day.value);
+    setSelectedDates(allDates);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedDates([]);
+  };
+
+  const handleMonthChange = (month: string) => {
+    setSelectedMonth(month);
+    // 延遲執行全選，確保 selectedMonth 狀態已更新
+    setTimeout(() => {
+      const daysInMonth = generateDaysInMonth(selectedYear, month);
+      const allDates = daysInMonth
+        .filter(day => day !== null) // 過濾掉空白格子
+        .map(day => day.value);
+      setSelectedDates(allDates);
+    }, 0);
+  };
+
+  const handleYearChange = (year: string) => {
+    setSelectedYear(year);
+    // 年份改變時也自動全選
+    setTimeout(() => {
+      const daysInMonth = generateDaysInMonth(year, selectedMonth);
+      const allDates = daysInMonth
+        .filter(day => day !== null) // 過濾掉空白格子
+        .map(day => day.value);
+      setSelectedDates(allDates);
+    }, 0);
   };
 
   const handleTimeSlotToggle = (timeSlot: string) => {
@@ -59,7 +103,7 @@ export const useScheduleFormLogic = () => {
   const getUserName = (userId: string) => {
     // 根據權限獲取可用員工列表
     let availableStaff = [];
-    
+
     // 使用 Promise 來處理異步權限檢查
     hasPermission('schedule:create').then(hasCreatePermission => {
       if (hasCreatePermission) {
@@ -73,7 +117,7 @@ export const useScheduleFormLogic = () => {
         }
       }
     });
-    
+
     const user = availableStaff.find(u => u.id === userId);
     return user ? user.name : '未知員工';
   };
@@ -82,15 +126,15 @@ export const useScheduleFormLogic = () => {
     // 檢查創建權限
     if (!(await hasPermission('schedule:create'))) {
       toast({
-        title: "權限不足",
-        description: "您沒有權限創建排班",
-        variant: "destructive",
+        title: '權限不足',
+        description: '您沒有權限創建排班',
+        variant: 'destructive',
       });
       return;
     }
 
     try {
-      const scheduleData = selectedDates.flatMap(date => 
+      const scheduleData = selectedDates.flatMap(date =>
         selectedTimeSlots.map(timeSlot => {
           const timeOption = timeOptions.find(opt => opt.value === timeSlot);
           return {
@@ -104,26 +148,26 @@ export const useScheduleFormLogic = () => {
       );
 
       console.log('提交排班數據：', scheduleData);
-      
+
       await addSchedules(scheduleData);
-      
+
       const isForSelf = data.userId === currentUser?.id;
       const staffName = getUserName(data.userId);
-      
+
       toast({
-        title: "排班成功",
+        title: '排班成功',
         description: `已為 ${staffName} 在 ${selectedYear}年${selectedMonth}月 安排 ${selectedDates.length} 天班次，共 ${selectedDates.length * selectedTimeSlots.length} 個時段。${isForSelf ? '' : '（代為排班）'}`,
       });
-      
+
       setSelectedDates([]);
       setSelectedTimeSlots([]);
       form.reset();
     } catch (err) {
       console.error('排班提交失敗:', err);
       toast({
-        title: "排班失敗",
-        description: err instanceof Error ? err.message : "發生未知錯誤，請稍後重試",
-        variant: "destructive",
+        title: '排班失敗',
+        description: err instanceof Error ? err.message : '發生未知錯誤，請稍後重試',
+        variant: 'destructive',
       });
     }
   };
@@ -136,9 +180,11 @@ export const useScheduleFormLogic = () => {
     selectedTimeSlots,
     loading,
     error,
-    setSelectedYear,
-    setSelectedMonth,
+    setSelectedYear: handleYearChange,
+    setSelectedMonth: handleMonthChange,
     handleDateToggle,
+    handleSelectAllMonth,
+    handleClearSelection,
     handleTimeSlotToggle,
     onSubmit,
   };

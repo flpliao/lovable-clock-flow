@@ -1,8 +1,13 @@
-
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -13,7 +18,12 @@ import { CalendarIcon, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 import { UserStaffData } from '@/services/staffDataService';
 
 interface LeaveRequestSimplifiedFormFieldsProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<{
+    leave_type: string;
+    start_date: Date;
+    end_date: Date;
+    reason: string;
+  }>;
   calculatedHours: number;
   validationError: string | null;
   hasHireDate: boolean;
@@ -34,12 +44,12 @@ const leaveTypes = [
   { value: 'other', label: '其他（無薪）' },
 ];
 
-export function LeaveRequestSimplifiedFormFields({ 
-  form, 
-  calculatedHours, 
+export function LeaveRequestSimplifiedFormFields({
+  form,
+  calculatedHours,
   validationError,
   hasHireDate,
-  userStaffData 
+  userStaffData,
 }: LeaveRequestSimplifiedFormFieldsProps) {
   const watchedLeaveType = form.watch('leave_type');
 
@@ -54,19 +64,16 @@ export function LeaveRequestSimplifiedFormFields({
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-white font-medium">假別</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value}
-              >
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60">
                     <SelectValue placeholder="請選擇請假類型" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {leaveTypes.map((type) => (
-                    <SelectItem 
-                      key={type.value} 
+                  {leaveTypes.map(type => (
+                    <SelectItem
+                      key={type.value}
                       value={type.value}
                       disabled={!hasHireDate && type.value === 'annual'}
                     >
@@ -79,7 +86,7 @@ export function LeaveRequestSimplifiedFormFields({
                 </SelectContent>
               </Select>
               <FormMessage />
-              
+
               {/* 特別休假選擇但未設定入職日期的警告 */}
               {watchedLeaveType === 'annual' && !hasHireDate && (
                 <div className="mt-2 p-3 bg-orange-500/20 border border-orange-300/30 rounded-lg">
@@ -91,15 +98,16 @@ export function LeaveRequestSimplifiedFormFields({
                   </div>
                 </div>
               )}
-              
+
               {/* 特別休假餘額顯示 */}
               {watchedLeaveType === 'annual' && hasHireDate && userStaffData && (
                 <div className="mt-2 p-3 bg-green-500/20 border border-green-300/30 rounded-lg">
                   <div className="flex items-center gap-2 text-green-100">
                     <CheckCircle className="h-4 w-4" />
                     <span className="text-sm font-medium">
-                      特休餘額：{userStaffData.remainingAnnualLeaveDays} 天 
-                      （總計 {userStaffData.totalAnnualLeaveDays} 天，已使用 {userStaffData.usedAnnualLeaveDays} 天）
+                      特休餘額：{userStaffData.remainingAnnualLeaveDays} 天 （總計{' '}
+                      {userStaffData.totalAnnualLeaveDays} 天，已使用{' '}
+                      {userStaffData.usedAnnualLeaveDays} 天）
                     </span>
                   </div>
                 </div>
@@ -125,12 +133,12 @@ export function LeaveRequestSimplifiedFormFields({
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full pl-3 text-left font-normal bg-white/20 border-white/30 text-white hover:bg-white/30",
-                          !field.value && "text-white/60"
+                          'w-full pl-3 text-left font-normal bg-white/20 border-white/30 text-white hover:bg-white/30',
+                          !field.value && 'text-white/60'
                         )}
                       >
                         {field.value ? (
-                          format(field.value, "yyyy/MM/dd")
+                          format(field.value, 'yyyy/MM/dd')
                         ) : (
                           <span>選擇開始日期</span>
                         )}
@@ -143,11 +151,21 @@ export function LeaveRequestSimplifiedFormFields({
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) =>
-                        date < new Date(new Date().setHours(0, 0, 0, 0))
-                      }
+                      disabled={date => {
+                        // 計算6個月前的日期作為最早可選日期
+                        const sixMonthsAgo = new Date();
+                        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                        sixMonthsAgo.setHours(0, 0, 0, 0);
+
+                        // 計算1年後的日期作為最晚可選日期
+                        const oneYearLater = new Date();
+                        oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+                        oneYearLater.setHours(23, 59, 59, 999);
+
+                        return date < sixMonthsAgo || date > oneYearLater;
+                      }}
                       initialFocus
-                      className={cn("p-3 pointer-events-auto")}
+                      className={cn('p-3 pointer-events-auto')}
                     />
                   </PopoverContent>
                 </Popover>
@@ -168,12 +186,12 @@ export function LeaveRequestSimplifiedFormFields({
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full pl-3 text-left font-normal bg-white/20 border-white/30 text-white hover:bg-white/30",
-                          !field.value && "text-white/60"
+                          'w-full pl-3 text-left font-normal bg-white/20 border-white/30 text-white hover:bg-white/30',
+                          !field.value && 'text-white/60'
                         )}
                       >
                         {field.value ? (
-                          format(field.value, "yyyy/MM/dd")
+                          format(field.value, 'yyyy/MM/dd')
                         ) : (
                           <span>選擇結束日期</span>
                         )}
@@ -186,11 +204,21 @@ export function LeaveRequestSimplifiedFormFields({
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) =>
-                        date < new Date(new Date().setHours(0, 0, 0, 0))
-                      }
+                      disabled={date => {
+                        // 計算6個月前的日期作為最早可選日期
+                        const sixMonthsAgo = new Date();
+                        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                        sixMonthsAgo.setHours(0, 0, 0, 0);
+
+                        // 計算1年後的日期作為最晚可選日期
+                        const oneYearLater = new Date();
+                        oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+                        oneYearLater.setHours(23, 59, 59, 999);
+
+                        return date < sixMonthsAgo || date > oneYearLater;
+                      }}
                       initialFocus
-                      className={cn("p-3 pointer-events-auto")}
+                      className={cn('p-3 pointer-events-auto')}
                     />
                   </PopoverContent>
                 </Popover>
@@ -199,7 +227,7 @@ export function LeaveRequestSimplifiedFormFields({
             )}
           />
         </div>
-        
+
         {/* 計算時數顯示 */}
         {calculatedHours > 0 && (
           <div className="mt-4 p-4 bg-white/10 rounded-2xl">

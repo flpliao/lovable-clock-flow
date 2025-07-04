@@ -4,137 +4,93 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { useUserStore } from './userStore';
 
 interface PermissionState {
-  // 狀態
-  permissionCache: Map<string, boolean>;
-  isLoadingPermission: boolean;
-
-  // 計算屬性 getters
+  // 動作
+  loadUserPermissions: (userId: string, roleId: string) => Promise<void>;
+  clearPermissions: () => void;
+  hasPermission: (permission: string) => boolean;
   isAdmin: () => boolean;
   isManager: () => boolean;
-  canManageUser: (targetUserId: string) => boolean;
-
-  // 動作
-  hasPermission: (permission: string) => Promise<boolean>;
-  clearPermissionCache: () => void;
-  refreshPermissions: () => void;
 }
 
 export const usePermissionStore = create<PermissionState>()(
-  subscribeWithSelector(set => ({
-    // 初始狀態
-    permissionCache: new Map(),
-    isLoadingPermission: false,
+  subscribeWithSelector(() => ({
+    // 動作
+    loadUserPermissions: async (userId: string, roleId: string) => {
+      console.log('🔑 PermissionStore: 載入用戶權限', { userId, roleId });
+      try {
+        await permissionService.loadUserPermissions({ id: userId, role_id: roleId });
+        console.log('✅ PermissionStore: 用戶權限載入完成');
+      } catch (error) {
+        console.error('❌ PermissionStore: 載入用戶權限失敗:', error);
+        throw error; // 向上傳遞錯誤，讓調用者決定如何處理
+      }
+    },
 
-    // 計算屬性 - 使用新的權限服務
+    clearPermissions: () => {
+      console.log('🧹 PermissionStore: 清除權限');
+      try {
+        permissionService.clearUserPermissions();
+        console.log('✅ PermissionStore: 權限已清除');
+      } catch (error) {
+        console.error('❌ PermissionStore: 清除權限失敗:', error);
+        throw error; // 向上傳遞錯誤，讓調用者決定如何處理
+      }
+    },
+
+    hasPermission: (permission: string) => {
+      console.log('🔐 PermissionStore: 檢查權限', permission);
+      try {
+        const result = permissionService.hasPermission(permission);
+        console.log('✅ PermissionStore: 權限檢查結果', { permission, result });
+        return result;
+      } catch (error) {
+        console.error('❌ PermissionStore: 權限檢查失敗:', error);
+        return false; // 如果檢查失敗，預設拒絕訪問
+      }
+    },
+
     isAdmin: () => {
-      return permissionService.isAdmin();
+      try {
+        return permissionService.isAdmin();
+      } catch (error) {
+        console.error('❌ PermissionStore: 管理員檢查失敗:', error);
+        return false;
+      }
     },
 
     isManager: () => {
-      return permissionService.isManager();
-    },
-
-    canManageUser: (targetUserId: string) => {
-      const { currentUser } = useUserStore.getState();
-      if (!currentUser) return false;
-
-      // 管理員可以管理所有用戶
-      if (permissionService.isAdmin()) return true;
-
-      // 用戶可以管理自己
-      const result = currentUser.id === targetUserId;
-      console.log('🔐 PermissionStore: 用戶管理檢查', {
-        currentUserId: currentUser.id,
-        targetUserId,
-        result,
-      });
-
-      return result;
-    },
-
-    // 權限檢查方法 - 優先使用新的同步權限服務
-    hasPermission: async (permission: string) => {
-      const { currentUser } = useUserStore.getState();
-      if (!currentUser) {
-        console.log('🔐 PermissionStore: 用戶未登入，權限檢查失敗');
-        return false;
-      }
-
-      // 🆕 如果權限已載入，使用同步檢查
-      if (permissionService.isPermissionsLoaded()) {
-        try {
-          const result = permissionService.hasPermission(permission);
-          console.log('🔐 PermissionStore: 同步權限檢查完成', {
-            user: currentUser.name,
-            permission,
-            result,
-          });
-          return result;
-        } catch (error) {
-          console.error('❌ PermissionStore: 同步權限檢查錯誤', error);
-          return false;
-        }
-      }
-
-      // 備用方案：嘗試載入權限然後檢查
       try {
-        console.log('⚠️ PermissionStore: 權限未載入，嘗試載入...');
-        await permissionService.loadUserPermissions({
-          id: currentUser.id,
-          role_id: currentUser.role_id,
-        });
-
-        const result = permissionService.hasPermission(permission);
-        console.log('🔐 PermissionStore: 權限載入後檢查完成', {
-          user: currentUser.name,
-          permission,
-          result,
-        });
-        return result;
+        return permissionService.isManager();
       } catch (error) {
-        console.error('❌ PermissionStore: 權限檢查錯誤', error);
+        console.error('❌ PermissionStore: 經理檢查失敗:', error);
         return false;
-      }
-    },
-
-    // 清除權限快取
-    clearPermissionCache: () => {
-      console.log('🧹 PermissionStore: 清除權限快取');
-      set({ permissionCache: new Map() });
-
-      // 🆕 同時清除新權限服務的快取
-      permissionService.clearUserPermissions();
-    },
-
-    // 刷新權限 - 重新載入當前用戶權限
-    refreshPermissions: () => {
-      console.log('🔄 PermissionStore: 刷新權限');
-      const { currentUser } = useUserStore.getState();
-
-      if (currentUser) {
-        // 🆕 重新載入當前用戶權限
-        permissionService.reloadCurrentUserPermissions(currentUser.id, currentUser.role_id);
-      }
-
-      // 觸發全域事件，通知其他組件權限已更新
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('permissionRefreshed', {
-            detail: { timestamp: Date.now() },
-          })
-        );
       }
     },
   }))
 );
 
-// 監聽用戶變化，自動清除權限快取
+// 訂閱用戶狀態變化，自動處理權限
 useUserStore.subscribe(
   state => state.currentUser,
-  (currentUser, previousUser) => {
-    if (currentUser?.id !== previousUser?.id) {
-      console.log('👤 PermissionStore: 用戶變化，清除權限快取');
-      usePermissionStore.getState().clearPermissionCache();
+  async currentUser => {
+    if (currentUser) {
+      // 用戶登入時載入權限
+      try {
+        await usePermissionStore
+          .getState()
+          .loadUserPermissions(currentUser.id, currentUser.role_id);
+      } catch (error) {
+        // 這裡可以選擇忽略錯誤，因為權限載入失敗不應影響用戶登入
+        console.warn('⚠️ PermissionStore: 權限載入失敗，但用戶仍可繼續使用');
+      }
+    } else {
+      // 用戶登出時清除權限
+      try {
+        usePermissionStore.getState().clearPermissions();
+      } catch (error) {
+        // 這裡可以選擇忽略錯誤，因為權限清除失敗不應影響用戶登出
+        console.warn('⚠️ PermissionStore: 權限清除失敗，但用戶仍可繼續登出');
+      }
     }
   }
 );

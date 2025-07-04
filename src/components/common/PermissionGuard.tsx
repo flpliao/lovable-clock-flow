@@ -13,20 +13,21 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   permission,
   children,
   fallback = null,
-  loading = <div>檢查權限中...</div>
+  loading = <div>檢查權限中...</div>,
 }) => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const currentUser = useCurrentUser();
 
   useEffect(() => {
-    const checkPermission = async () => {
+    const checkPermission = () => {
       if (!currentUser) {
         setHasPermission(false);
         return;
       }
 
       try {
-        const result = await permissionService.hasPermission(permission);
+        // 🆕 使用同步權限檢查
+        const result = permissionService.hasPermission(permission);
         setHasPermission(result);
       } catch (error) {
         console.error('權限檢查失敗:', error);
@@ -55,7 +56,7 @@ export const usePermission = (permission: string) => {
   const currentUser = useCurrentUser();
 
   useEffect(() => {
-    const checkPermission = async () => {
+    const checkPermission = () => {
       if (!currentUser) {
         setHasPermission(false);
         setLoading(false);
@@ -64,7 +65,8 @@ export const usePermission = (permission: string) => {
 
       try {
         setLoading(true);
-        const result = await permissionService.hasPermission(permission);
+        // 🆕 使用同步權限檢查
+        const result = permissionService.hasPermission(permission);
         setHasPermission(result);
       } catch (error) {
         console.error('權限檢查失敗:', error);

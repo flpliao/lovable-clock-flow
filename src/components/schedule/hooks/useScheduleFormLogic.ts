@@ -18,9 +18,9 @@ type FormValues = {
 export const useScheduleFormLogic = () => {
   const { toast } = useToast();
   const { addSchedules, loading, error } = useScheduling();
-  const { staffList, getSubordinates } = useStaffManagementContext();
+  const { staffList } = useStaffManagementContext();
   const currentUser = useCurrentUser();
-  const { hasPermission } = usePermissionChecker();
+  const { hasPermissionSync } = usePermissionChecker();
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
 
@@ -46,7 +46,7 @@ export const useScheduleFormLogic = () => {
       .filter(day => day !== null) // 過濾掉空白格子
       .map(day => day.value);
     setSelectedDates(allDates);
-  }, []); // 只在組件初始化時執行一次
+  }, [selectedYear, selectedMonth]); // 當年份或月份改變時重新計算
 
   const handleDateToggle = (date: string) => {
     setSelectedDates(prev =>
@@ -104,27 +104,39 @@ export const useScheduleFormLogic = () => {
     // 根據權限獲取可用員工列表
     let availableStaff = [];
 
-    // 使用 Promise 來處理異步權限檢查
-    hasPermission('schedule:create').then(hasCreatePermission => {
-      if (hasCreatePermission) {
-        // 有創建權限可以選擇所有員工
-        availableStaff = staffList;
-      } else {
-        // 否則只能選擇自己（雖然一般用戶不應該看到創建表單）
-        const selfStaff = staffList.find(staff => staff.id === currentUser?.id);
-        if (selfStaff) {
-          availableStaff.push(selfStaff);
-        }
+    // 🆕 使用同步權限檢查
+    const hasCreatePermission = hasPermissionSync('schedule:create');
+    if (hasCreatePermission) {
+      // 有創建權限可以選擇所有員工
+      availableStaff = staffList;
+    } else {
+      // 否則只能選擇自己（雖然一般用戶不應該看到創建表單）
+      const selfStaff = staffList.find(staff => staff.id === currentUser?.id);
+      if (selfStaff) {
+        availableStaff.push(selfStaff);
       }
-    });
+    }
 
     const user = availableStaff.find(u => u.id === userId);
     return user ? user.name : '未知員工';
   };
 
+  // 🔧 添加清除快取功能
+  const clearPermissionCache = () => {
+    // 清除權限快取
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('permissionRefreshed'));
+    }
+
+    // 強制重新載入權限
+    setTimeout(() => {
+      console.log('🔄 權限快取已清除，重新檢查權限');
+    }, 100);
+  };
+
   const onSubmit = async (data: FormValues) => {
-    // 檢查創建權限
-    if (!(await hasPermission('schedule:create'))) {
+    // 🆕 使用同步權限檢查
+    if (!hasPermissionSync('schedule:create')) {
       toast({
         title: '權限不足',
         description: '您沒有權限創建排班',
@@ -187,5 +199,6 @@ export const useScheduleFormLogic = () => {
     handleClearSelection,
     handleTimeSlotToggle,
     onSubmit,
+    clearPermissionCache,
   };
 };

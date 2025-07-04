@@ -2,6 +2,7 @@ import { ensureAuthInitialized, useAuthStore } from '@/stores/authStore';
 import { usePermissionStore } from '@/stores/permissionStore';
 import { useUserStore } from '@/stores/userStore';
 import { useEffect } from 'react';
+import { permissionService } from '@/services/simplifiedPermissionService';
 
 /**
  * 便利的 hooks 來直接使用各個 stores
@@ -42,7 +43,16 @@ export const usePermissionChecker = () => {
   const hasPermission = usePermissionStore(state => state.hasPermission);
   const isLoadingPermission = usePermissionStore(state => state.isLoadingPermission);
 
-  return { hasPermission, isLoadingPermission };
+  // 🆕 添加同步權限檢查方法
+  const hasPermissionSync = (permission: string): boolean => {
+    return permissionService.hasPermission(permission);
+  };
+
+  return {
+    hasPermission,
+    hasPermissionSync, // 🆕 同步權限檢查
+    isLoadingPermission,
+  };
 };
 
 export const useCanManageUser = () => {

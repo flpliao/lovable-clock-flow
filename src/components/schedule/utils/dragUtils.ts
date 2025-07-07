@@ -1,6 +1,3 @@
-
-import { format } from 'date-fns';
-
 export interface DragScheduleItem {
   id: string;
   userId: string;
@@ -8,6 +5,7 @@ export interface DragScheduleItem {
   timeSlot: string;
   startTime: string;
   endTime: string;
+  [key: string]: unknown;
 }
 
 export interface DragValidationResult {
@@ -22,7 +20,7 @@ export const validateDragOperation = (
 ): DragValidationResult => {
   // 移除所有限制，允許自由拖動
   return {
-    isValid: true
+    isValid: true,
   };
 };
 

@@ -1,25 +1,36 @@
-
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Users, Calendar, Eye } from 'lucide-react';
-import { format } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Calendar, Eye, Users } from 'lucide-react';
+
+interface Staff {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
+
 interface StaffMonthSelectorProps {
-  availableStaff: any[];
+  availableStaff: Staff[];
   selectedStaffId?: string;
   selectedDate: Date;
   onStaffChange: (staffId: string | undefined) => void;
   onDateChange: (date: Date) => void;
   getUserRelation: (userId: string) => string;
 }
+
 const StaffMonthSelector = ({
   availableStaff,
   selectedStaffId,
   selectedDate,
   onStaffChange,
   onDateChange,
-  getUserRelation
+  getUserRelation,
 }: StaffMonthSelectorProps) => {
   const currentYear = new Date().getFullYear();
 
@@ -32,12 +43,15 @@ const StaffMonthSelector = ({
     return years;
   };
   const generateMonthOptions = () => {
-    return Array.from({
-      length: 12
-    }, (_, i) => ({
-      value: i,
-      label: `${i + 1}月`
-    }));
+    return Array.from(
+      {
+        length: 12,
+      },
+      (_, i) => ({
+        value: i,
+        label: `${i + 1}月`,
+      })
+    );
   };
   const handleYearChange = (year: string) => {
     const newDate = new Date(parseInt(year), selectedDate.getMonth(), 1);
@@ -55,7 +69,8 @@ const StaffMonthSelector = ({
     onDateChange(previousMonth);
   };
 
-  return <Card className="bg-cyan-200">
+  return (
+    <Card className="bg-cyan-200">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Eye className="h-5 w-5" />
@@ -70,15 +85,23 @@ const StaffMonthSelector = ({
             選擇員工
           </label>
           <div className="flex gap-2">
-            <Select value={selectedStaffId || 'all'} onValueChange={value => onStaffChange(value === 'all' ? undefined : value)}>
+            <Select
+              value={selectedStaffId || 'all'}
+              onValueChange={value => onStaffChange(value === 'all' ? undefined : value)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">查看所有員工</SelectItem>
-                {availableStaff.map(staff => <SelectItem key={staff.id} value={staff.id}>
-                    {staff.name} {getUserRelation(staff.id)}
-                  </SelectItem>)}
+                {availableStaff.map(staff => (
+                  <SelectItem key={staff.id} value={staff.id}>
+                    {staff.name}{' '}
+                    {getUserRelation && typeof getUserRelation === 'function'
+                      ? getUserRelation(staff.id)
+                      : ''}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -96,20 +119,24 @@ const StaffMonthSelector = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {generateYearOptions().map(year => <SelectItem key={year} value={year.toString()}>
+                {generateYearOptions().map(year => (
+                  <SelectItem key={year} value={year.toString()}>
                     {year}年
-                  </SelectItem>)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            
+
             <Select value={selectedDate.getMonth().toString()} onValueChange={handleMonthChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {generateMonthOptions().map(month => <SelectItem key={month.value} value={month.value.toString()}>
+                {generateMonthOptions().map(month => (
+                  <SelectItem key={month.value} value={month.value.toString()}>
                     {month.label}
-                  </SelectItem>)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -123,15 +150,20 @@ const StaffMonthSelector = ({
           <Button variant="outline" size="sm" onClick={() => onDateChange(new Date())}>
             本月
           </Button>
-          <Button variant="outline" size="sm" onClick={() => {
-          const nextMonth = new Date(selectedDate);
-          nextMonth.setMonth(nextMonth.getMonth() + 1);
-          onDateChange(nextMonth);
-        }}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const nextMonth = new Date(selectedDate);
+              nextMonth.setMonth(nextMonth.getMonth() + 1);
+              onDateChange(nextMonth);
+            }}
+          >
             下月
           </Button>
         </div>
       </CardContent>
-    </Card>;
+    </Card>
+  );
 };
 export default StaffMonthSelector;

@@ -1,8 +1,8 @@
-import { useScheduling } from '@/contexts/SchedulingContext';
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { Staff } from '@/components/staff/types';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser, usePermissionChecker } from '@/hooks/useStores';
-import { useState, useEffect } from 'react';
+import { scheduleService } from '@/services/scheduleService';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { timeOptions } from '../constants';
 import { generateDaysInMonth } from '../utils/dateUtils';
@@ -15,12 +15,21 @@ type FormValues = {
   selectedTimeSlots: string[];
 };
 
-export const useScheduleFormLogic = () => {
+interface UseScheduleFormLogicProps {
+  staffList: Staff[];
+  onScheduleCreated?: () => void;
+}
+
+export const useScheduleFormLogic = ({
+  staffList,
+  onScheduleCreated,
+}: UseScheduleFormLogicProps) => {
   const { toast } = useToast();
-  const { addSchedules, loading, error } = useScheduling();
-  const { staffList } = useStaffManagementContext();
   const currentUser = useCurrentUser();
   const { hasPermissionSync } = usePermissionChecker();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const now = new Date();
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   const nextMonthYear = nextMonth.getFullYear();
@@ -148,22 +157,27 @@ export const useScheduleFormLogic = () => {
     }
 
     try {
+      setLoading(true);
+      setError(null);
+
       const scheduleData = selectedDates.flatMap(date =>
         selectedTimeSlots.map(timeSlot => {
           const timeOption = timeOptions.find(opt => opt.value === timeSlot);
           return {
-            userId: data.userId,
-            workDate: `${selectedYear}-${selectedMonth.padStart(2, '0')}-${date.padStart(2, '0')}`,
-            startTime: timeOption?.start || '09:30',
-            endTime: timeOption?.end || '17:30',
-            timeSlot: timeSlot,
+            user_id: data.userId,
+            work_date: `${selectedYear}-${selectedMonth.padStart(2, '0')}-${date.padStart(2, '0')}`,
+            start_time: timeOption?.start || '09:30',
+            end_time: timeOption?.end || '17:30',
+            time_slot: timeSlot,
+            created_by: currentUser?.id || '',
           };
         })
       );
 
       console.log('提交排班數據：', scheduleData);
 
-      await addSchedules(scheduleData);
+      // 直接使用 scheduleService 創建排班
+      await scheduleService.createSchedules(scheduleData);
 
       const isForSelf = data.userId === currentUser?.id;
       const staffName = getUserName(data.userId);
@@ -176,13 +190,21 @@ export const useScheduleFormLogic = () => {
       setSelectedDates([]);
       setSelectedTimeSlots([]);
       form.reset();
+
+      // 通知父組件重新載入資料
+      if (onScheduleCreated) {
+        onScheduleCreated();
+      }
     } catch (err) {
       console.error('排班提交失敗:', err);
+      setError(err instanceof Error ? err.message : '發生未知錯誤，請稍後重試');
       toast({
         title: '排班失敗',
         description: err instanceof Error ? err.message : '發生未知錯誤，請稍後重試',
         variant: 'destructive',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -200,7 +222,8 @@ export const useScheduleFormLogic = () => {
     handleSelectAllMonth,
     handleClearSelection,
     handleTimeSlotToggle,
-    onSubmit,
+    getUserName,
     clearPermissionCache,
+    onSubmit,
   };
 };

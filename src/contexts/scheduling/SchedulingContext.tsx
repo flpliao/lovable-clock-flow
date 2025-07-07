@@ -1,5 +1,12 @@
 import { useCurrentUser } from '@/hooks/useStores';
-import React, { createContext, ReactNode, useContext, useEffect } from 'react';
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+} from 'react';
 import { useScheduleOperations } from './hooks/useScheduleOperations';
 import { SchedulingContextType } from './types';
 
@@ -31,13 +38,19 @@ export const SchedulingProvider: React.FC<SchedulingProviderProps> = ({ children
     refreshSchedules,
   } = useScheduleOperations(currentUser?.id);
 
-  // 初始載入
-  useEffect(() => {
+  // 穩定化 loadSchedules 函數
+  const stableLoadSchedules = useCallback(() => {
     loadSchedules();
-  }, []);
+  }, [loadSchedules]);
 
-  return (
-    <SchedulingContext.Provider value={{
+  // 初始載入 - 只執行一次
+  useEffect(() => {
+    stableLoadSchedules();
+  }, [stableLoadSchedules]);
+
+  // Memoize context value 以避免不必要的重新渲染
+  const contextValue = useMemo(
+    () => ({
       schedules,
       loading,
       error,
@@ -46,8 +59,18 @@ export const SchedulingProvider: React.FC<SchedulingProviderProps> = ({ children
       removeSchedule,
       updateSchedule,
       refreshSchedules,
-    }}>
-      {children}
-    </SchedulingContext.Provider>
+    }),
+    [
+      schedules,
+      loading,
+      error,
+      addSchedules,
+      getSchedulesForDate,
+      removeSchedule,
+      updateSchedule,
+      refreshSchedules,
+    ]
   );
+
+  return <SchedulingContext.Provider value={contextValue}>{children}</SchedulingContext.Provider>;
 };

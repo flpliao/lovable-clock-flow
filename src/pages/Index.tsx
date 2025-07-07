@@ -104,7 +104,7 @@ const Index = () => {
         }}
       ></div>
 
-      <div className="relative z-10 w-full min-h-screen pb-safe pt-12 md:pt-20 py-0">
+      <div className="relative z-10 w-full min-h-screen pb-safe pt-8 md:pt-12 py-0">
         {/* 歡迎區塊 */}
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <WelcomeSection userName={currentUser.name} />
@@ -112,7 +112,7 @@ const Index = () => {
 
         {/* 打卡區塊（壓縮下邊距） - 用 DepartmentManagementProvider 包裹 */}
         <DepartmentManagementProvider>
-          <div className="w-full sm:px-6 lg:px-8 max-w-7xl mx-auto mb-[-4px] sm:mb-0 py-[20px] px-[15px]">
+          <div className="w-full sm:px-6 lg:px-8 max-w-7xl mx-auto mb-[-8px] sm:mb-0 py-[10px] px-[15px]">
             <LocationCheckIn />
           </div>
         </DepartmentManagementProvider>

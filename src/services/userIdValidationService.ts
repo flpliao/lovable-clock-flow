@@ -1,10 +1,7 @@
-
 /**
  * 用戶 ID 驗證服務 - 更新為使用正確的 UUID
  */
 export class UserIdValidationService {
-  private static readonly SUPER_ADMIN_UUID = '0765138a-6f11-45f4-be07-dab965116a2d';
-  
   /**
    * 驗證用戶 ID 是否有效
    */
@@ -23,19 +20,5 @@ export class UserIdValidationService {
 
     console.log('✅ 用戶 ID 驗證通過:', userId);
     return userId;
-  }
-
-  /**
-   * 檢查是否為超級管理員
-   */
-  static isSuperAdmin(userId: string): boolean {
-    return userId === this.SUPER_ADMIN_UUID;
-  }
-
-  /**
-   * 獲取超級管理員 UUID
-   */
-  static getSuperAdminUUID(): string {
-    return this.SUPER_ADMIN_UUID;
   }
 }

@@ -1,23 +1,16 @@
-
-import { useCurrentUser } from './useCurrentUser';
 import { UnifiedPermissionService } from '@/services/unifiedPermissionService';
+import { useCurrentUser } from './useCurrentUser';
 
 /**
  * 最終版權限 Hook - 使用新的資料庫函數
  */
 export const useFinalPermissions = () => {
-  const { userId, user } = useCurrentUser();
-  
+  const { currentUser: user } = useCurrentUser();
+
   const hasPermission = (permission: string): boolean => {
     if (!user) {
       console.log('🔐 用戶未登入，權限檢查失敗');
       return false;
-    }
-
-    // 超級管理員檢查 - 使用正確的 UUID
-    if (user.id === '0765138a-6f11-45f4-be07-dab965116a2d') {
-      console.log('🔐 超級管理員權限檢查:', permission, '✅ 允許');
-      return true;
     }
 
     // 系統管理員權限檢查
@@ -38,9 +31,9 @@ export const useFinalPermissions = () => {
       'missed_checkin:create',
       'announcement:view',
       'department:view',
-      'company:view'
+      'company:view',
     ];
-    
+
     if (basicPermissions.includes(permission)) {
       console.log('🔐 基本用戶權限檢查:', user.name, permission, '✅ 允許');
       return true;
@@ -74,23 +67,17 @@ export const useFinalPermissions = () => {
       return false;
     }
 
-    // 超級管理員檢查 - 使用正確的 UUID
-    if (user.id === '0765138a-6f11-45f4-be07-dab965116a2d') {
-      console.log('🔐 超級管理員檢查通過:', user.name);
-      return true;
-    }
-
     // 檢查角色
     const isRoleAdmin = user.role_id === 'admin';
-    
+
     console.log('🔐 Admin permission check:', {
       userName: user.name,
       userId: user.id,
       role: user.role_id,
       isRoleAdmin,
-      result: isRoleAdmin
+      result: isRoleAdmin,
     });
-    
+
     return isRoleAdmin;
   };
 
@@ -107,49 +94,15 @@ export const useFinalPermissions = () => {
 
     // 檢查角色 - 修正類型問題
     const isRoleManager = user.role_id === 'manager';
-    
+
     console.log('🔐 Manager permission check:', {
       userName: user.name,
       role: user.role_id,
       isRoleManager,
-      result: isRoleManager
+      result: isRoleManager,
     });
-    
-    return isRoleManager;
-  };
 
-  const getRLSStats = async (): Promise<any[]> => {
-    try {
-      // 模擬 RLS 統計數據，因為實際的統計視圖可能還未建立
-      const mockStats = [
-        {
-          table_name: 'staff',
-          optimization_status: 'optimized',
-          performance_impact: 'low'
-        },
-        {
-          table_name: 'leave_requests',
-          optimization_status: 'optimized',
-          performance_impact: 'medium'
-        },
-        {
-          table_name: 'approval_records',
-          optimization_status: 'optimized',
-          performance_impact: 'low'
-        },
-        {
-          table_name: 'annual_leave_balance',
-          optimization_status: 'optimized',
-          performance_impact: 'minimal'
-        }
-      ];
-      
-      console.log('✅ RLS 統計數據載入:', mockStats);
-      return mockStats;
-    } catch (error) {
-      console.error('❌ 載入 RLS 統計失敗:', error);
-      return [];
-    }
+    return isRoleManager;
   };
 
   const clearPermissionCache = () => {
@@ -164,8 +117,7 @@ export const useFinalPermissions = () => {
     hasPermissionAsync,
     isAdmin,
     isManager,
-    getRLSStats,
     clearPermissionCache,
-    currentUser: user
+    currentUser: user,
   };
 };

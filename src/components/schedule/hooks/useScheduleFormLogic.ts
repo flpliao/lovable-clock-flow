@@ -21,19 +21,21 @@ export const useScheduleFormLogic = () => {
   const { staffList } = useStaffManagementContext();
   const currentUser = useCurrentUser();
   const { hasPermissionSync } = usePermissionChecker();
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth() + 1;
+  const now = new Date();
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const nextMonthYear = nextMonth.getFullYear();
+  const nextMonthValue = (nextMonth.getMonth() + 1).toString().padStart(2, '0');
 
-  const [selectedYear, setSelectedYear] = useState(currentYear.toString());
-  const [selectedMonth, setSelectedMonth] = useState(currentMonth.toString());
+  const [selectedYear, setSelectedYear] = useState(nextMonthYear.toString());
+  const [selectedMonth, setSelectedMonth] = useState(nextMonthValue);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
 
   const form = useForm<FormValues>({
     defaultValues: {
       userId: '',
-      selectedYear: currentYear.toString(),
-      selectedMonth: currentMonth.toString(),
+      selectedYear: nextMonthYear.toString(),
+      selectedMonth: nextMonthValue,
       selectedDates: [],
       selectedTimeSlots: [],
     },

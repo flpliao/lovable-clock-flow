@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -12,13 +11,13 @@ const RegisterForm: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // 基本驗證
     if (password !== confirmPassword) {
       toast({
@@ -39,11 +38,8 @@ const RegisterForm: React.FC = () => {
     }
 
     setIsLoading(true);
-    
-    console.log('🔐 開始 Supabase Auth 註冊流程');
-    
+
     try {
-      // 使用 Supabase Auth 註冊
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -51,15 +47,13 @@ const RegisterForm: React.FC = () => {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
             name: name || email.split('@')[0], // 如果沒有輸入姓名，使用 email 前綴
-          }
-        }
+          },
+        },
       });
 
       if (error) {
-        console.error('❌ Supabase Auth 註冊失敗:', error);
-        
         let errorMessage = '註冊失敗，請稍後再試';
-        
+
         if (error.message.includes('User already registered')) {
           errorMessage = '此電子郵件已經註冊過，請直接登入';
         } else if (error.message.includes('Invalid email')) {
@@ -67,7 +61,7 @@ const RegisterForm: React.FC = () => {
         } else if (error.message.includes('Password should be at least')) {
           errorMessage = '密碼長度至少需要6個字符';
         }
-        
+
         toast({
           variant: 'destructive',
           title: '註冊失敗',
@@ -77,15 +71,11 @@ const RegisterForm: React.FC = () => {
       }
 
       if (data.user && data.session) {
-        console.log('✅ Supabase Auth 註冊成功');
-        console.log('🎫 獲得 JWT Token:', data.session.access_token.substring(0, 20) + '...');
-        console.log('👤 用戶資料:', data.user);
-        
         toast({
           title: '註冊成功',
           description: '歡迎加入！您的帳號已建立完成。',
         });
-        
+
         // 稍微延遲跳轉到主頁面
         setTimeout(() => {
           console.log('🔄 跳轉到主頁面');
@@ -94,12 +84,12 @@ const RegisterForm: React.FC = () => {
       } else if (data.user && !data.session) {
         // 用戶註冊成功但需要確認電子郵件
         console.log('📧 註冊成功，等待電子郵件確認');
-        
+
         toast({
           title: '註冊成功',
           description: '請檢查您的電子郵件並點擊確認連結來啟用帳號。',
         });
-        
+
         // 跳轉到登入頁面
         setTimeout(() => {
           navigate('/login');
@@ -128,7 +118,7 @@ const RegisterForm: React.FC = () => {
           type="text"
           placeholder="請輸入您的姓名"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={e => setName(e.target.value)}
           className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60"
         />
       </div>
@@ -142,12 +132,12 @@ const RegisterForm: React.FC = () => {
           type="email"
           placeholder="email@example.com"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={e => setEmail(e.target.value)}
           required
           className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60"
         />
       </div>
-      
+
       <div className="space-y-2">
         <label htmlFor="password" className="block text-sm font-medium text-white">
           密碼
@@ -157,7 +147,7 @@ const RegisterForm: React.FC = () => {
           type="password"
           placeholder="請輸入密碼 (至少6個字符)"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={e => setPassword(e.target.value)}
           required
           minLength={6}
           className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60"
@@ -173,13 +163,13 @@ const RegisterForm: React.FC = () => {
           type="password"
           placeholder="請再次輸入密碼"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          onChange={e => setConfirmPassword(e.target.value)}
           required
           minLength={6}
           className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60"
         />
       </div>
-      
+
       <Button
         type="submit"
         className="w-full bg-green-600/80 hover:bg-green-700/80 text-white"
@@ -189,16 +179,9 @@ const RegisterForm: React.FC = () => {
       </Button>
 
       <div className="text-center">
-        <Link 
-          to="/login" 
-          className="text-sm text-white/80 hover:text-white underline"
-        >
+        <Link to="/login" className="text-sm text-white/80 hover:text-white underline">
           已有帳號？立即登入
         </Link>
-      </div>
-      
-      <div className="text-center text-sm text-white/80">
-        使用 Supabase Auth 系統進行安全註冊
       </div>
     </form>
   );

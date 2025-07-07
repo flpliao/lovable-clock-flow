@@ -11,7 +11,7 @@ const ResetPasswordForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isValidatingToken, setIsValidatingToken] = useState(true);
   const [hasValidToken, setHasValidToken] = useState(false);
-  
+
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -19,35 +19,35 @@ const ResetPasswordForm: React.FC = () => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       console.log('🔐 檢查用戶驗證狀態');
-      
+
       try {
         // 檢查 URL hash 中的參數
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         let accessToken = hashParams.get('access_token');
         let refreshToken = hashParams.get('refresh_token');
         let type = hashParams.get('type');
-        
+
         // 如果 hash 中沒有，檢查查詢參數
         if (!accessToken) {
           accessToken = searchParams.get('access_token');
           refreshToken = searchParams.get('refresh_token');
           type = searchParams.get('type');
         }
-        
-        console.log('🔑 驗證參數:', { 
-          hasAccessToken: !!accessToken, 
-          hasRefreshToken: !!refreshToken, 
+
+        console.log('🔑 驗證參數:', {
+          hasAccessToken: !!accessToken,
+          hasRefreshToken: !!refreshToken,
           type,
-          source: hashParams.get('access_token') ? 'hash' : 'query'
+          source: hashParams.get('access_token') ? 'hash' : 'query',
         });
 
         // 如果有 recovery 類型的驗證參數，設置會話
         if (accessToken && refreshToken && type === 'recovery') {
           console.log('🔐 發現 recovery 驗證參數，設置會話...');
-          
+
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
-            refresh_token: refreshToken
+            refresh_token: refreshToken,
           });
 
           if (error) {
@@ -58,12 +58,12 @@ const ResetPasswordForm: React.FC = () => {
           if (data.session && data.user) {
             console.log('✅ 會話設置成功，用戶已登入:', data.user.email);
             setHasValidToken(true);
-            
+
             toast({
               title: '驗證成功',
               description: '請設定您的新密碼。',
             });
-            
+
             // 清理 URL
             window.history.replaceState(null, '', window.location.pathname);
             return;
@@ -71,7 +71,10 @@ const ResetPasswordForm: React.FC = () => {
         }
 
         // 檢查當前用戶是否已登入
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
 
         if (error) {
           console.error('❌ 獲取用戶資訊失敗:', error);
@@ -81,7 +84,7 @@ const ResetPasswordForm: React.FC = () => {
         if (user) {
           console.log('✅ 用戶已通過驗證並登入:', user.email);
           setHasValidToken(true);
-          
+
           toast({
             title: '驗證成功',
             description: '請設定您的新密碼。',
@@ -115,7 +118,7 @@ const ResetPasswordForm: React.FC = () => {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // 基本驗證
     if (password !== confirmPassword) {
       toast({
@@ -136,19 +139,19 @@ const ResetPasswordForm: React.FC = () => {
     }
 
     setIsLoading(true);
-    
+
     console.log('🔐 開始更新密碼');
-    
+
     try {
       const { error } = await supabase.auth.updateUser({
-        password: password
+        password: password,
       });
 
       if (error) {
         console.error('❌ 密碼更新失敗:', error);
-        
+
         let errorMessage = '密碼更新失敗，請稍後再試';
-        
+
         if (error.message.includes('New password should be different')) {
           errorMessage = '新密碼不能與舊密碼相同';
         } else if (error.message.includes('Password should be at least')) {
@@ -156,13 +159,13 @@ const ResetPasswordForm: React.FC = () => {
         } else if (error.message.includes('session_not_found')) {
           errorMessage = '會話已過期，請重新申請重設密碼';
         }
-        
+
         toast({
           variant: 'destructive',
           title: '更新失敗',
           description: errorMessage,
         });
-        
+
         // 如果是會話過期，重定向到忘記密碼頁面
         if (error.message.includes('session_not_found')) {
           setTimeout(() => navigate('/forgot-password'), 2000);
@@ -171,20 +174,19 @@ const ResetPasswordForm: React.FC = () => {
       }
 
       console.log('✅ 密碼更新成功');
-      
+
       toast({
         title: '密碼更新成功',
         description: '您的密碼已成功更新，正在跳轉到登入頁面。',
       });
-      
+
       // 登出用戶，讓他們使用新密碼登入
       await supabase.auth.signOut();
-      
+
       setTimeout(() => {
         console.log('🔄 跳轉到登入頁面');
         navigate('/login');
       }, 2000);
-      
     } catch (error) {
       console.error('🔥 密碼重設錯誤:', error);
       toast({
@@ -233,7 +235,7 @@ const ResetPasswordForm: React.FC = () => {
           type="password"
           placeholder="請輸入新密碼 (至少6個字符)"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={e => setPassword(e.target.value)}
           required
           minLength={6}
           className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60"
@@ -249,13 +251,13 @@ const ResetPasswordForm: React.FC = () => {
           type="password"
           placeholder="請再次輸入新密碼"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          onChange={e => setConfirmPassword(e.target.value)}
           required
           minLength={6}
           className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60"
         />
       </div>
-      
+
       <Button
         type="submit"
         className="w-full bg-green-600/80 hover:bg-green-700/80 text-white"
@@ -263,12 +265,9 @@ const ResetPasswordForm: React.FC = () => {
       >
         {isLoading ? '更新中...' : '更新密碼'}
       </Button>
-      
+
       <div className="text-center text-sm text-white/80 space-y-2">
-        <p>使用 Supabase Auth 系統進行安全的密碼更新</p>
-        <p className="text-xs text-white/60">
-          更新成功後將自動登出，請使用新密碼重新登入
-        </p>
+        <p className="text-xs text-white/60">更新成功後將自動登出，請使用新密碼重新登入</p>
       </div>
     </form>
   );

@@ -101,7 +101,6 @@ describe('RegisterForm', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText('使用 Supabase Auth 系統進行安全註冊')).toBeInTheDocument();
       expect(screen.getByText('已有帳號？立即登入')).toBeInTheDocument();
 
       const loginLink = screen.getByText('已有帳號？立即登入');

@@ -9,13 +9,13 @@ const ForgotPasswordForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  
+
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email) {
       toast({
         variant: 'destructive',
@@ -26,26 +26,21 @@ const ForgotPasswordForm: React.FC = () => {
     }
 
     setIsLoading(true);
-    
-    console.log('🔐 開始 Supabase Auth 密碼重設流程');
-    console.log('📧 目標郵件:', email);
-    console.log('🔗 重定向 URL:', `${window.location.origin}/reset-password`);
-    
+
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) {
-        console.error('❌ Supabase Auth 密碼重設失敗:', error);
         console.error('錯誤詳情:', {
           message: error.message,
           status: error.status,
-          name: error.name
+          name: error.name,
         });
-        
+
         let errorMessage = '發送重設郵件失敗，請稍後再試';
-        
+
         if (error.message.includes('Invalid email')) {
           errorMessage = '請輸入有效的電子郵件地址';
         } else if (error.message.includes('Email not confirmed')) {
@@ -55,7 +50,7 @@ const ForgotPasswordForm: React.FC = () => {
         } else if (error.message.includes('rate limit')) {
           errorMessage = '請求過於頻繁，請稍後再試';
         }
-        
+
         toast({
           variant: 'destructive',
           title: '發送失敗',
@@ -64,15 +59,12 @@ const ForgotPasswordForm: React.FC = () => {
         return;
       }
 
-      console.log('✅ Supabase Auth 密碼重設郵件發送成功');
-      
       setIsSuccess(true);
-      
+
       toast({
         title: '郵件已發送',
         description: '請檢查您的電子郵件，點擊重設密碼連結來更新您的密碼。',
       });
-      
     } catch (error) {
       console.error('🔥 密碼重設錯誤:', error);
       toast({
@@ -90,12 +82,8 @@ const ForgotPasswordForm: React.FC = () => {
       <div className="text-center space-y-4">
         <div className="text-white/90 space-y-2">
           <p className="text-lg font-medium">郵件已發送！</p>
-          <p className="text-sm">
-            我們已將重設密碼的連結發送到：
-          </p>
-          <p className="text-white font-medium break-all">
-            {email}
-          </p>
+          <p className="text-sm">我們已將重設密碼的連結發送到：</p>
+          <p className="text-white font-medium break-all">{email}</p>
           <p className="text-sm text-white/80 mt-4">
             請檢查您的郵箱（包括垃圾郵件資料夾），並點擊連結重設密碼。
           </p>
@@ -109,7 +97,7 @@ const ForgotPasswordForm: React.FC = () => {
             </ul>
           </div>
         </div>
-        
+
         <Button
           onClick={() => {
             setIsSuccess(false);
@@ -134,12 +122,12 @@ const ForgotPasswordForm: React.FC = () => {
           type="email"
           placeholder="email@example.com"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={e => setEmail(e.target.value)}
           required
           className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60"
         />
       </div>
-      
+
       <Button
         type="submit"
         className="w-full bg-purple-600/80 hover:bg-purple-700/80 text-white"
@@ -147,9 +135,8 @@ const ForgotPasswordForm: React.FC = () => {
       >
         {isLoading ? '發送中...' : '發送重設郵件'}
       </Button>
-      
+
       <div className="text-center text-sm text-white/80 space-y-2">
-        <p>使用 Supabase Auth 系統進行安全的密碼重設</p>
         <p className="text-xs text-white/60">
           如果您未收到郵件，請檢查垃圾郵件資料夾或聯繫系統管理員
         </p>

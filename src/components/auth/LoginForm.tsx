@@ -33,7 +33,6 @@ const LoginForm: React.FC = () => {
     console.log('🔐 開始登入流程:', email);
 
     try {
-      // 使用 Supabase Auth Service
       const authResult = await AuthService.authenticate(email, password);
 
       if (authResult.success && authResult.user) {

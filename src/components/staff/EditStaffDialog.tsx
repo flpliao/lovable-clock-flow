@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import { SYSTEM_ROLES } from './constants/systemRoles';
 import { EditStaffFormContent } from './forms/EditStaffFormContent';
 import { Staff, StaffRole } from './types';
+import { useSupervisorFilter } from './hooks/useSupervisorFilter';
 
 interface EditStaffDialogProps {
   open: boolean;
@@ -22,8 +23,10 @@ interface EditStaffDialogProps {
 
 const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDialogProps) => {
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
-
   const [roles, setRoles] = useState<StaffRole[]>([]);
+
+  // 使用 hook 來篩選可選的主管
+  const potentialSupervisors = useSupervisorFilter(editingStaff);
 
   // 載入角色
   useEffect(() => {
@@ -69,7 +72,7 @@ const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDial
         <EditStaffFormContent
           currentStaff={editingStaff}
           setCurrentStaff={setEditingStaff}
-          potentialSupervisors={[]}
+          potentialSupervisors={potentialSupervisors}
           roles={roles}
           onHireDateChange={() => {}}
         />

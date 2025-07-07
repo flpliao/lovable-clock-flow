@@ -5,7 +5,6 @@ import TimeSlotManagement from '@/components/TimeSlotManagement';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SchedulingProvider } from '@/contexts/SchedulingContext';
-import { useCurrentUser } from '@/hooks/useStores';
 import { permissionService } from '@/services/simplifiedPermissionService';
 import { staffService } from '@/services/staffService';
 import { Calendar, ChevronLeft, Clock, Shield, UserPlus, Users } from 'lucide-react';
@@ -102,7 +101,6 @@ const ScheduleFormWithStaff = () => {
 
 const Scheduling = () => {
   const navigate = useNavigate();
-  const currentUser = useCurrentUser();
 
   // 檢查排班管理權限 - 使用 SimplifiedPermissionService
   const canManageSchedules =

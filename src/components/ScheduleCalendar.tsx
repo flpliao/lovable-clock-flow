@@ -1,9 +1,11 @@
 import { Staff } from '@/components/staff/types';
-import { Tabs } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Schedule } from '@/contexts/scheduling/types';
 import { useCallback, useMemo } from 'react';
+import CalendarViewSection from './schedule/components/CalendarViewSection';
+import DailyTabContent from './schedule/components/DailyTabContent';
+import ListViewSection from './schedule/components/ListViewSection';
 import ScheduleHeader from './schedule/components/ScheduleHeader';
-import ScheduleTabsContent from './schedule/components/ScheduleTabsContent';
 import { useDateNavigation } from './schedule/hooks/useDateNavigation';
 import { useScheduleFiltering } from './schedule/hooks/useScheduleFiltering';
 import { useScheduleOperations } from './schedule/hooks/useScheduleOperations';
@@ -83,7 +85,7 @@ const ScheduleCalendar = ({ staffList, getSubordinates }: ScheduleCalendarProps)
   // 包裝 generateDaysInMonth，只有在月份或快取變動時重新計算
   const daysInMonth = useMemo(
     () => generateDaysInMonth(getScheduleCountForDate),
-    [selectedYear, selectedMonth, scheduleCountMap, generateDaysInMonth, getScheduleCountForDate]
+    [generateDaysInMonth, getScheduleCountForDate]
   );
 
   // 由快取取得選擇日期的班表，避免重複 filter
@@ -117,38 +119,62 @@ const ScheduleCalendar = ({ staffList, getSubordinates }: ScheduleCalendarProps)
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           hasSubordinates={hasSubordinates}
-          viewType={viewType}
-          onViewTypeChange={setViewType}
         />
 
         {/* 主要內容 */}
-        <ScheduleTabsContent
-          viewType={viewType}
-          availableStaff={availableStaff}
-          selectedStaffId={selectedStaffId}
-          selectedDate={selectedDate}
-          onStaffChange={setSelectedStaffId}
-          onDateChange={setSelectedDate}
-          getUserRelation={getUserRelation}
-          schedules={schedules}
-          getUserName={getUserName}
-          viewableStaffIds={viewableStaffIds}
-          selectedYear={selectedYear}
-          selectedMonth={selectedMonth}
-          selectedDateNav={dateNavSelectedDate}
-          daysInMonth={daysInMonth}
-          onYearChange={setSelectedYear}
-          onMonthChange={setSelectedMonth}
-          onDateClick={handleDateClick}
-          generateYears={generateYears}
-          generateMonths={generateMonths}
-          shiftsForSelectedDate={shiftsForSelectedDate}
-          canDeleteSchedule={canDeleteSchedule}
-          onRemoveSchedule={wrappedHandleRemoveSchedule}
-          currentUser={currentUser}
-          setSelectedDateNav={setDateNavSelectedDate}
-          getScheduleCountForDate={getScheduleCountForDate}
-        />
+        <TabsContent value="monthly">
+          <ListViewSection
+            availableStaff={availableStaff}
+            selectedStaffId={selectedStaffId}
+            selectedDate={selectedDate}
+            onStaffChange={setSelectedStaffId}
+            onDateChange={setSelectedDate}
+            getUserRelation={getUserRelation}
+            schedules={schedules}
+            getUserName={getUserName}
+            viewableStaffIds={viewableStaffIds}
+          />
+        </TabsContent>
+
+        <TabsContent value="calendar">
+          <CalendarViewSection
+            selectedYear={selectedYear}
+            selectedMonth={selectedMonth}
+            selectedDate={dateNavSelectedDate}
+            daysInMonth={daysInMonth}
+            onYearChange={setSelectedYear}
+            onMonthChange={setSelectedMonth}
+            onDateClick={handleDateClick}
+            generateYears={generateYears}
+            generateMonths={generateMonths}
+            shiftsForSelectedDate={shiftsForSelectedDate}
+            canDeleteSchedule={canDeleteSchedule}
+            onRemoveSchedule={wrappedHandleRemoveSchedule}
+            currentUser={currentUser}
+            setSelectedDate={setDateNavSelectedDate}
+            getScheduleCountForDate={getScheduleCountForDate}
+          />
+        </TabsContent>
+
+        <TabsContent value="daily">
+          <DailyTabContent
+            availableStaff={availableStaff}
+            selectedStaffId={selectedStaffId}
+            selectedDate={selectedDate}
+            onStaffChange={setSelectedStaffId}
+            onDateChange={setSelectedDate}
+            schedules={schedules}
+            getUserName={getUserName}
+            getUserRelation={getUserRelation}
+            viewableStaffIds={viewableStaffIds}
+            selectedYear={selectedYear}
+            selectedMonth={selectedMonth}
+            onYearChange={setSelectedYear}
+            onMonthChange={setSelectedMonth}
+            generateYears={generateYears}
+            generateMonths={generateMonths}
+          />
+        </TabsContent>
       </Tabs>
     </div>
   );

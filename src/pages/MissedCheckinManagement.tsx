@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useStores';
-import { useUnifiedPermissions } from '@/hooks/useUnifiedPermissions';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { supabase } from '@/integrations/supabase/client';
 import { NotificationDatabaseOperations } from '@/services/notifications';
 import { MissedCheckinRequest } from '@/types/missedCheckin';
@@ -17,19 +17,28 @@ import { useEffect, useState } from 'react';
 
 const MissedCheckinManagementContent = () => {
   const currentUser = useCurrentUser();
-  const { hasPermission } = useUnifiedPermissions();
   const { toast } = useToast();
   const [requests, setRequests] = useState<MissedCheckinRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [approvalComment] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
-  // 按照請假申請邏輯檢查忘記打卡權限
-  const canViewOwnMissedCheckin = hasPermission(MISSED_CHECKIN_PERMISSIONS.VIEW_OWN_MISSED_CHECKIN);
-  const canCreateMissedCheckin = hasPermission(MISSED_CHECKIN_PERMISSIONS.CREATE_MISSED_CHECKIN);
-  const canViewAllMissedCheckin = hasPermission(MISSED_CHECKIN_PERMISSIONS.VIEW_ALL_MISSED_CHECKIN);
-  const canApproveMissedCheckin = hasPermission(MISSED_CHECKIN_PERMISSIONS.APPROVE_MISSED_CHECKIN);
-  const canManageMissedCheckin = hasPermission(MISSED_CHECKIN_PERMISSIONS.MANAGE_MISSED_CHECKIN);
+  // 按照請假申請邏輯檢查忘記打卡權限 - 使用 SimplifiedPermissionService
+  const canViewOwnMissedCheckin = permissionService.hasPermission(
+    MISSED_CHECKIN_PERMISSIONS.VIEW_OWN_MISSED_CHECKIN
+  );
+  const canCreateMissedCheckin = permissionService.hasPermission(
+    MISSED_CHECKIN_PERMISSIONS.CREATE_MISSED_CHECKIN
+  );
+  const canViewAllMissedCheckin = permissionService.hasPermission(
+    MISSED_CHECKIN_PERMISSIONS.VIEW_ALL_MISSED_CHECKIN
+  );
+  const canApproveMissedCheckin = permissionService.hasPermission(
+    MISSED_CHECKIN_PERMISSIONS.APPROVE_MISSED_CHECKIN
+  );
+  const canManageMissedCheckin = permissionService.hasPermission(
+    MISSED_CHECKIN_PERMISSIONS.MANAGE_MISSED_CHECKIN
+  );
 
   console.log('🔐 忘記打卡權限檢查:', {
     user: currentUser?.name,

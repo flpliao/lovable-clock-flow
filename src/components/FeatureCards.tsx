@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import { useIsAdmin, useIsManager } from '@/hooks/useStores';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { Bell, Calendar, Clock, FileText, LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -19,8 +19,8 @@ interface Feature {
 }
 
 const FeatureCards = ({ abnormalCount, annualLeaveBalance }: FeatureCardsProps) => {
-  const isAdmin = useIsAdmin(); // 使用新的 Zustand hook
-  const isManager = useIsManager(); // 使用新的 Zustand hook
+  const isAdmin = permissionService.isAdmin();
+  const isManager = permissionService.isManager();
 
   // 主要功能卡片
   const mainFeatures: Feature[] = [

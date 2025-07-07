@@ -2,36 +2,35 @@ import { useScheduling } from '@/contexts/SchedulingContext';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useStores';
-import { useUnifiedPermissions } from '@/hooks/useUnifiedPermissions';
+import { permissionService } from '@/services/simplifiedPermissionService';
 
 export const useScheduleOperations = () => {
   const { schedules, removeSchedule } = useScheduling();
   const { staffList, getSubordinates } = useStaffManagementContext();
   const currentUser = useCurrentUser();
   const { toast } = useToast();
-  const { hasPermission } = useUnifiedPermissions();
 
   // 獲取可查看的員工列表
   const getAvailableStaff = () => {
     if (!currentUser) return [];
-    
+
     const availableStaff = [];
-    
+
     // 如果有查看所有排班權限，返回所有員工
-    if (hasPermission('schedule:view_all')) {
+    if (permissionService.hasPermission('schedule:view_all')) {
       return staffList;
     }
-    
+
     // 否則返回自己和下屬
     const selfStaff = staffList.find(staff => staff.id === currentUser.id);
     if (selfStaff) {
       availableStaff.push(selfStaff);
     }
-    
+
     // 加入下屬員工
     const subordinates = getSubordinates(currentUser.id);
     availableStaff.push(...subordinates);
-    
+
     return availableStaff;
   };
 
@@ -45,27 +44,27 @@ export const useScheduleOperations = () => {
   const getUserRelation = (userId: string) => {
     if (!currentUser) return '';
     if (userId === currentUser.id) return '（自己）';
-    
+
     const subordinates = getSubordinates(currentUser.id);
     if (subordinates.some(s => s.id === userId)) {
       return '（下屬）';
     }
-    
-    if (hasPermission('schedule:view_all')) {
+
+    if (permissionService.hasPermission('schedule:view_all')) {
       return '';
     }
-    
+
     return '';
   };
 
   // 刪除排班
   const handleRemoveSchedule = async (scheduleId: string) => {
     // 檢查刪除權限
-    if (!hasPermission('schedule:delete')) {
+    if (!permissionService.hasPermission('schedule:delete')) {
       toast({
         title: '權限不足',
         description: '您沒有權限刪除排班記錄',
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
@@ -78,32 +77,36 @@ export const useScheduleOperations = () => {
   };
 
   // 檢查是否可以刪除排班 - 改為同步函數
-  const canDeleteSchedule = (schedule: any): boolean => {
+  const canDeleteSchedule = (schedule: { userId: string }): boolean => {
     if (!currentUser) return false;
-    
+
     // 系統管理員可以刪除所有排班
-    if (hasPermission('schedule:delete')) {
+    if (permissionService.hasPermission('schedule:delete')) {
       return true;
     }
-    
+
     // 主管可以刪除下屬的排班
     const subordinates = getSubordinates(currentUser.id);
     if (subordinates.some(s => s.id === schedule.userId)) {
       return true;
     }
-    
+
     // 可以刪除自己的排班（如果有相應權限）
     if (schedule.userId === currentUser.id) {
       return true;
     }
-    
+
     return false;
   };
 
   // 檢查權限
-  const canCreateSchedule = hasPermission('schedule:create') || getSubordinates(currentUser?.id || '').length > 0;
-  const canEditSchedule = hasPermission('schedule:edit') || getSubordinates(currentUser?.id || '').length > 0;
-  const canViewAllSchedules = hasPermission('schedule:view_all');
+  const canCreateSchedule =
+    permissionService.hasPermission('schedule:create') ||
+    getSubordinates(currentUser?.id || '').length > 0;
+  const canEditSchedule =
+    permissionService.hasPermission('schedule:edit') ||
+    getSubordinates(currentUser?.id || '').length > 0;
+  const canViewAllSchedules = permissionService.hasPermission('schedule:view_all');
   const hasSubordinates = getSubordinates(currentUser?.id || '').length > 0;
 
   return {

@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useIsAdmin } from '@/hooks/useStores';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { roleService } from '@/services/roleService';
 import { useEffect, useState } from 'react';
 import { SYSTEM_ROLES } from './constants/systemRoles';
@@ -32,7 +32,7 @@ const AddStaffDialog = ({ open, onOpenChange, onSuccess }: AddStaffDialogProps) 
     contact: '',
   });
 
-  const isAdmin = useIsAdmin();
+  const isAdmin = permissionService.isAdmin();
 
   // 角色列表
   const [roles, setRoles] = useState<StaffRole[]>([]);

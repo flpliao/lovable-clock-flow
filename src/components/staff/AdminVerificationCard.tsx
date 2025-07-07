@@ -1,11 +1,12 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import { useCurrentUser } from '@/hooks/useStores';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { CheckCircle, Shield } from 'lucide-react';
 
 const AdminVerificationCard = () => {
   const currentUser = useCurrentUser();
-  const isAdmin = useIsAdmin();
+  const isAdmin = permissionService.isAdmin();
 
   return (
     <Card className="mb-2 border-blue-200 bg-blue-50">
@@ -14,9 +15,7 @@ const AdminVerificationCard = () => {
           <Shield className="h-5 w-5 mr-2 text-blue-600" />
           管理者身份確認
         </CardTitle>
-        <CardDescription>
-          目前登入用戶：{currentUser?.name || '未知'}
-        </CardDescription>
+        <CardDescription>目前登入用戶：{currentUser?.name || '未知'}</CardDescription>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex items-center justify-between">
@@ -32,7 +31,7 @@ const AdminVerificationCard = () => {
             )}
           </div>
         </div>
-        
+
         {isAdmin && (
           <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
             <p className="text-sm text-green-700 flex items-center">

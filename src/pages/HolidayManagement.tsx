@@ -2,12 +2,12 @@ import HolidayCalendar from '@/components/holiday/HolidayCalendar';
 import HolidaySettings from '@/components/holiday/HolidaySettings';
 import WorkHoursAnalytics from '@/components/holiday/WorkHoursAnalytics';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useIsAdmin } from '@/hooks/useStores';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { BarChart3, Calendar, MapPin, Settings, Timer } from 'lucide-react';
 import { useState } from 'react';
 
 const HolidayManagement = () => {
-  const isAdmin = useIsAdmin();
+  const isAdmin = permissionService.isAdmin();
   const [activeTab, setActiveTab] = useState('calendar');
 
   return (

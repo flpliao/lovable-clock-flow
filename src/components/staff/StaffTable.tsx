@@ -1,8 +1,21 @@
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import { useCurrentUser } from '@/hooks/useStores';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { Edit, Key, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import CredentialManagementDialog from './CredentialManagementDialog';
@@ -10,18 +23,19 @@ import { ROLE_ID_MAP } from './constants/roleIdMap';
 import { Staff } from './types';
 
 const StaffTable = () => {
-  const { 
-    filteredStaffList, 
-    loading, 
-    openEditDialog, 
+  const {
+    filteredStaffList,
+    loading,
+    openEditDialog,
     handleDeleteStaff,
     hasPermission,
     getSupervisorName,
-    roles
+    roles,
   } = useStaffManagementContext();
   const currentUser = useCurrentUser();
-  const isAdmin = useIsAdmin();
-  const [selectedStaffForCredentials, setSelectedStaffForCredentials] = useState<Staff | null>(null);
+  const [selectedStaffForCredentials, setSelectedStaffForCredentials] = useState<Staff | null>(
+    null
+  );
   const [isCredentialDialogOpen, setIsCredentialDialogOpen] = useState(false);
   const [staffListState, setStaffListState] = useState(filteredStaffList);
 
@@ -35,10 +49,13 @@ const StaffTable = () => {
       }
     };
 
-    window.addEventListener('permissionUpdated', handlePermissionUpdate as EventListener);
-    
+    window.addEventListener('permissionUpdated', handlePermissionUpdate as (event: Event) => void);
+
     return () => {
-      window.removeEventListener('permissionUpdated', handlePermissionUpdate as EventListener);
+      window.removeEventListener(
+        'permissionUpdated',
+        handlePermissionUpdate as (event: Event) => void
+      );
     };
   }, [filteredStaffList]);
 
@@ -47,18 +64,18 @@ const StaffTable = () => {
     setStaffListState(filteredStaffList);
   }, [filteredStaffList]);
 
-  // 檢查是否有帳號管理權限 - 基於 role 進行檢查
-  const canManageAccounts = currentUser && (
-    isAdmin || // 系統管理員直接允許（基於 role）
-    hasPermission(currentUser.id, 'account:email:manage') ||
-    hasPermission(currentUser.id, 'account:password:manage')
-  );
+  // 檢查是否有帳號管理權限 - 使用 SimplifiedPermissionService
+  const canManageAccounts =
+    currentUser &&
+    (permissionService.isAdmin() || // 使用 SimplifiedPermissionService 檢查管理員
+      hasPermission(currentUser.id, 'account:email:manage') ||
+      hasPermission(currentUser.id, 'account:password:manage'));
 
   console.log('👥 人員列表帳號管理權限檢查 (基於 role):', {
     currentUser: currentUser?.name,
     role: currentUser?.role_id,
-    isAdmin,
-    canManageAccounts
+    isAdmin: permissionService.isAdmin(),
+    canManageAccounts,
   });
 
   // 角色顯示名稱直接用 ROLE_ID_MAP
@@ -116,26 +133,32 @@ const StaffTable = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {staffListState.map((staff) => (
+              {staffListState.map(staff => (
                 <TableRow key={staff.id}>
                   <TableCell className="font-medium whitespace-nowrap">{staff.name}</TableCell>
                   <TableCell className="whitespace-nowrap">{staff.position}</TableCell>
                   <TableCell className="whitespace-nowrap">{staff.department}</TableCell>
                   <TableCell className="whitespace-nowrap">{staff.branch_name}</TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <span className={`text-sm ${
-                      staff.supervisor_id ? 'text-gray-900' : 'text-gray-500 italic'
-                    }`}>
+                    <span
+                      className={`text-sm ${
+                        staff.supervisor_id ? 'text-gray-900' : 'text-gray-500 italic'
+                      }`}
+                    >
                       {getSupervisorName(staff.supervisor_id)}
                     </span>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">{staff.contact}</TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      staff.role_id === 'admin' ? 'bg-red-100 text-red-800' :
-                      staff.role_id === 'manager' ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        staff.role_id === 'admin'
+                          ? 'bg-red-100 text-red-800'
+                          : staff.role_id === 'manager'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
                       {getRoleDisplayName(staff)}
                     </span>
                   </TableCell>
@@ -157,7 +180,7 @@ const StaffTable = () => {
                             帳號設定
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => handleDeleteStaff(staff.id)}
                           className="text-red-600"
                         >

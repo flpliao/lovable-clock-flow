@@ -1,14 +1,16 @@
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import { useCurrentUser } from '@/hooks/useStores';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { Building2, Calendar, Edit, Mail, MapPin, Phone, RefreshCw, Users } from 'lucide-react';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 import { CompanyApiService } from './services/companyApiService';
 
 const CompanyInfoCard = () => {
-  const { setIsEditCompanyDialogOpen, company, loading, loadCompany, forceSyncFromBackend } = useCompanyManagementContext();
+  const { setIsEditCompanyDialogOpen, company, loading, loadCompany, forceSyncFromBackend } =
+    useCompanyManagementContext();
   const currentUser = useCurrentUser();
-  const isAdmin = useIsAdmin();
+  const isAdmin = permissionService.isAdmin();
   const isMobile = useIsMobile();
 
   console.log('CompanyInfoCard - 當前用戶:', currentUser?.name);
@@ -33,7 +35,7 @@ const CompanyInfoCard = () => {
 
   const handleEdit = () => {
     console.log('🖊️ CompanyInfoCard: 開啟編輯公司資料對話框');
-    
+
     if (!canEdit) {
       console.warn('⚠️ 用戶沒有編輯權限');
       return;
@@ -48,7 +50,7 @@ const CompanyInfoCard = () => {
       console.error('❌ setIsEditCompanyDialogOpen 不是一個函數');
       return;
     }
-    
+
     console.log('✅ 正在開啟編輯對話框...');
     setIsEditCompanyDialogOpen(true);
   };
@@ -75,7 +77,7 @@ const CompanyInfoCard = () => {
             <p className="text-white/80 text-sm mt-1">未找到公司資料</p>
           </div>
         </div>
-        
+
         {canEdit && (
           <div className="flex flex-wrap gap-2 mb-4">
             <Button
@@ -103,10 +105,8 @@ const CompanyInfoCard = () => {
             </Button>
           </div>
         )}
-        
-        <div className="text-center py-4 text-white/70">
-          請使用上方按鈕載入或同步公司資料
-        </div>
+
+        <div className="text-center py-4 text-white/70">請使用上方按鈕載入或同步公司資料</div>
       </div>
     );
   }
@@ -124,7 +124,7 @@ const CompanyInfoCard = () => {
             <p className="text-white/80 text-sm mt-1">依美琦股份有限公司</p>
           </div>
         </div>
-        
+
         {canEdit && (
           <div className="flex gap-2">
             <Button
@@ -148,7 +148,7 @@ const CompanyInfoCard = () => {
               <div className="text-white font-medium">{company.name}</div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <Users className="h-4 w-4 text-white/70" />
             <div>
@@ -156,7 +156,7 @@ const CompanyInfoCard = () => {
               <div className="text-white font-medium">{company.registration_number}</div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <MapPin className="h-4 w-4 text-white/70" />
             <div>
@@ -165,7 +165,7 @@ const CompanyInfoCard = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <Phone className="h-4 w-4 text-white/70" />
@@ -174,7 +174,7 @@ const CompanyInfoCard = () => {
               <div className="text-white font-medium">{company.phone}</div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <Mail className="h-4 w-4 text-white/70" />
             <div>
@@ -182,7 +182,7 @@ const CompanyInfoCard = () => {
               <div className="text-white font-medium">{company.email}</div>
             </div>
           </div>
-          
+
           {company.established_date && (
             <div className="flex items-center gap-3">
               <Calendar className="h-4 w-4 text-white/70" />

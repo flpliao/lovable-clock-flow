@@ -6,10 +6,10 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from '@/components/ui/table';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { useIsAdmin } from '@/hooks/useStores';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { Edit2, Shield, Trash2 } from 'lucide-react';
 import { StaffRole } from './types';
 
@@ -20,12 +20,12 @@ interface RoleTableProps {
 
 const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
   const { deleteRole } = useStaffManagementContext();
-  const isAdmin = useIsAdmin();
-  
+  const isAdmin = permissionService.isAdmin();
+
   // 根據權限數量判斷角色類型
   const getRoleType = (role: StaffRole) => {
     const permissionCount = role.permissions.length;
-    
+
     if (role.is_system_role) {
       // 系統角色根據權限數量動態判斷
       if (permissionCount >= 20) {
@@ -46,7 +46,7 @@ const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
       }
     }
   };
-  
+
   return (
     /* 添加水平滾動容器 */
     <div className="w-full overflow-x-auto">
@@ -69,14 +69,16 @@ const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
                 </TableCell>
               </TableRow>
             ) : (
-              roles.map((role) => {
+              roles.map(role => {
                 const roleType = getRoleType(role);
-                
+
                 return (
                   <TableRow key={role.id}>
                     <TableCell className="font-medium whitespace-nowrap">
                       <div className="flex items-center">
-                        {role.is_system_role && <Shield className="h-3.5 w-3.5 mr-2 text-blue-500 flex-shrink-0" />}
+                        {role.is_system_role && (
+                          <Shield className="h-3.5 w-3.5 mr-2 text-blue-500 flex-shrink-0" />
+                        )}
                         <span className="truncate">{role.name}</span>
                       </div>
                     </TableCell>
@@ -86,9 +88,7 @@ const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
                       </span>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
-                      <Badge variant="secondary">
-                        {role.permissions.length} 個權限
-                      </Badge>
+                      <Badge variant="secondary">{role.permissions.length} 個權限</Badge>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       <Badge variant="outline" className={roleType.color}>
@@ -101,7 +101,7 @@ const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
                           variant="ghost"
                           size="icon"
                           onClick={() => onEdit(role)}
-                          title={role.is_system_role ? "編輯系統角色權限" : "編輯角色"}
+                          title={role.is_system_role ? '編輯系統角色權限' : '編輯角色'}
                           className="h-8 w-8 flex-shrink-0"
                         >
                           <Edit2 className="h-4 w-4" />
@@ -111,7 +111,7 @@ const RoleTable = ({ roles, onEdit }: RoleTableProps) => {
                           size="icon"
                           onClick={() => deleteRole(role.id)}
                           disabled={role.is_system_role && !isAdmin}
-                          title={role.is_system_role ? "系統管理員可刪除系統角色" : "刪除角色"}
+                          title={role.is_system_role ? '系統管理員可刪除系統角色' : '刪除角色'}
                           className="h-8 w-8 flex-shrink-0"
                         >
                           <Trash2 className="h-4 w-4" />

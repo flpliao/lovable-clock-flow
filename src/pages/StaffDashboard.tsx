@@ -2,16 +2,17 @@ import StaffAnalyticsDashboard from '@/components/staff/StaffAnalyticsDashboard'
 import TeamCheckInManagement from '@/components/staff/TeamCheckInManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
-import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import { useCurrentUser } from '@/hooks/useStores';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { Activity, BarChart3, Clock, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 
 const StaffDashboard = () => {
   const currentUser = useCurrentUser();
-  const isAdmin = useIsAdmin();
+  const isAdmin = permissionService.isAdmin();
   const [activeTab, setActiveTab] = useState('analytics');
-  
+
   // Allow admin users to access this page
   if (!currentUser || !isAdmin) {
     return <Navigate to="/login" />;
@@ -23,12 +24,21 @@ const StaffDashboard = () => {
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-purple-400/20 via-transparent to-transparent"></div>
-      
+
       {/* 浮動光點效果 */}
       <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-white/30 rounded-full animate-pulse"></div>
-      <div className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
-      <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
-      <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
+      <div
+        className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse"
+        style={{ animationDelay: '2s' }}
+      ></div>
+      <div
+        className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse"
+        style={{ animationDelay: '4s' }}
+      ></div>
+      <div
+        className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse"
+        style={{ animationDelay: '6s' }}
+      ></div>
 
       <StaffManagementProvider>
         <div className="relative z-10 w-full">
@@ -40,10 +50,10 @@ const StaffDashboard = () => {
                   <BarChart3 className="h-6 w-6" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-white drop-shadow-md">
-                    員工考勤儀表板
-                  </h1>
-                  <p className="text-white/80 font-medium drop-shadow-sm text-sm mt-1">管理所有員工考勤數據及分析</p>
+                  <h1 className="text-2xl font-bold text-white drop-shadow-md">員工考勤儀表板</h1>
+                  <p className="text-white/80 font-medium drop-shadow-sm text-sm mt-1">
+                    管理所有員工考勤數據及分析
+                  </p>
                 </div>
               </div>
               <div className="hidden md:flex items-center gap-3">
@@ -61,28 +71,28 @@ const StaffDashboard = () => {
           <div className="w-full px-4 lg:px-8 pb-8">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/40 p-1 shadow-lg h-14">
-                <TabsTrigger 
-                  value="analytics" 
+                <TabsTrigger
+                  value="analytics"
                   className="text-gray-800 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
                 >
                   <BarChart3 className="h-4 w-4" />
                   數據分析
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="check-ins" 
+                <TabsTrigger
+                  value="check-ins"
                   className="text-gray-800 data-[state=active]:bg-white/70 data-[state=active]:text-gray-900 data-[state=active]:shadow-lg rounded-xl font-semibold transition-all duration-300 py-3 px-6 text-base data-[state=active]:backdrop-blur-xl flex items-center gap-2"
                 >
                   <Clock className="h-4 w-4" />
                   打卡管理
                 </TabsTrigger>
               </TabsList>
-              
+
               {/* 內容區域 - 直接顯示在淡藍色背景上，無額外卡片包裝 */}
               <div className="mt-8">
                 <TabsContent value="analytics" className="mt-0">
                   <StaffAnalyticsDashboard />
                 </TabsContent>
-                
+
                 <TabsContent value="check-ins" className="mt-0">
                   <TeamCheckInManagement />
                 </TabsContent>

@@ -10,16 +10,16 @@ const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   // 使用新的 Zustand hooks
   const { setCurrentUser, setIsAuthenticated } = useUserActions();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast({
         variant: 'destructive',
@@ -28,17 +28,17 @@ const LoginForm: React.FC = () => {
       });
       return;
     }
-    
+
     setIsLoading(true);
     console.log('🔐 開始登入流程:', email);
-    
+
     try {
       // 使用 Supabase Auth Service
       const authResult = await AuthService.authenticate(email, password);
-      
+
       if (authResult.success && authResult.user) {
         console.log('✅ 登入成功:', authResult.user.name);
-        
+
         // 直接將用戶資料寫入 Zustand store
         const userForContext = {
           id: authResult.user.id,
@@ -47,18 +47,18 @@ const LoginForm: React.FC = () => {
           department: authResult.user.department || '未指定',
           onboard_date: authResult.user.onboard_date || new Date().toISOString().split('T')[0],
           role_id: authResult.user.role_id,
-          email: authResult.user.email
+          email: authResult.user.email,
         };
-        
+
         console.log('📝 寫入 Zustand store 的用戶資料:', userForContext);
         setCurrentUser(userForContext);
         setIsAuthenticated(true);
-        
+
         toast({
           title: '登入成功',
           description: `歡迎回來，${authResult.user.name}！`,
         });
-        
+
         // 給 Zustand store 更多時間處理用戶狀態變化
         setTimeout(() => {
           console.log('🔄 準備跳轉到主頁面');
@@ -66,7 +66,7 @@ const LoginForm: React.FC = () => {
         }, 1500);
       } else {
         console.log('❌ 登入失敗:', authResult.error);
-        
+
         // 根據錯誤類型顯示不同訊息
         let errorMessage = '登入失敗';
         if (authResult.error?.includes('Invalid login credentials')) {
@@ -76,7 +76,7 @@ const LoginForm: React.FC = () => {
         } else if (authResult.error) {
           errorMessage = authResult.error;
         }
-        
+
         toast({
           variant: 'destructive',
           title: '登入失敗',
@@ -106,13 +106,13 @@ const LoginForm: React.FC = () => {
           type="email"
           placeholder="email@example.com"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={e => setEmail(e.target.value)}
           required
           disabled={isLoading}
           className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60 disabled:opacity-50"
         />
       </div>
-      
+
       <div className="space-y-2">
         <label htmlFor="password" className="block text-sm font-medium text-white">
           密碼
@@ -122,13 +122,13 @@ const LoginForm: React.FC = () => {
           type="password"
           placeholder="請輸入密碼"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={e => setPassword(e.target.value)}
           required
           disabled={isLoading}
           className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60 disabled:opacity-50"
         />
       </div>
-      
+
       <Button
         type="submit"
         className="w-full bg-blue-600/80 hover:bg-blue-700/80 text-white disabled:opacity-50 disabled:cursor-not-allowed"
@@ -143,10 +143,6 @@ const LoginForm: React.FC = () => {
           '登入'
         )}
       </Button>
-      
-      <div className="text-center text-sm text-white/80">
-        使用 Supabase Auth 系統進行安全認證
-      </div>
     </form>
   );
 };

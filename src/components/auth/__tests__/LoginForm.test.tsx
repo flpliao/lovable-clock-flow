@@ -66,12 +66,6 @@ describe('LoginForm', () => {
       expect(passwordInput).toHaveAttribute('placeholder', '請輸入密碼');
       expect(passwordInput).toHaveAttribute('required');
     });
-
-    it('shows authentication information', () => {
-      render(<LoginForm />);
-
-      expect(screen.getByText('使用 Supabase Auth 系統進行安全認證')).toBeInTheDocument();
-    });
   });
 
   describe('User Interactions', () => {

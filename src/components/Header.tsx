@@ -13,16 +13,16 @@ import NotificationCenter from './notifications/NotificationCenter';
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // 使用新的 Zustand hooks
   const currentUser = useCurrentUser();
   const isAuthenticated = useAuthenticated();
   const { forceLogout } = useUserActions();
-  
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   const isLoginPage = location.pathname === '/login';
-  
+
   const { visibleMenuItems } = useMenuLogic(currentUser, isAuthenticated);
 
   const handleNavigation = (path: string) => {
@@ -45,10 +45,10 @@ const Header: React.FC = () => {
   };
 
   // 調試信息
-  console.log('Header 渲染狀態:', { 
-    isAuthenticated, 
-    currentUser: currentUser?.name, 
-    hasUser: !!currentUser 
+  console.log('Header 渲染狀態:', {
+    isAuthenticated,
+    currentUser: currentUser?.name,
+    hasUser: !!currentUser,
   });
 
   return (
@@ -58,23 +58,19 @@ const Header: React.FC = () => {
         <div className="hidden lg:flex lg:justify-between lg:items-center lg:h-16">
           {/* Logo */}
           <HeaderLogo />
-          
+
           {/* Desktop Navigation */}
           <div className="flex items-center space-x-8">
-            <DesktopNavigation 
+            <DesktopNavigation
               visibleMenuItems={visibleMenuItems}
               onNavigation={handleNavigation}
             />
           </div>
-          
+
           {/* 通知中心和用戶信息 */}
           <div className="flex items-center space-x-4">
             {/* 總是顯示通知中心進行測試 */}
-            <div className="relative">
-              {isAuthenticated && (
-                <NotificationCenter />
-              ) }
-            </div>
+            <div className="relative">{isAuthenticated && <NotificationCenter />}</div>
             <UserInfo />
           </div>
         </div>
@@ -86,15 +82,11 @@ const Header: React.FC = () => {
             <div className="flex-shrink-0">
               <HeaderLogo />
             </div>
-            
+
             <div className="flex items-center space-x-3">
               {/* 通知中心 */}
-              <div className="relative">
-                {isAuthenticated && (
-                  <NotificationCenter />
-                )}
-              </div>
-              
+              <div className="relative">{isAuthenticated && <NotificationCenter />}</div>
+
               {/* 選單按鈕 */}
               {isAuthenticated && (
                 <Button
@@ -122,7 +114,7 @@ const Header: React.FC = () => {
           )}
         </div>
       </div>
-      
+
       {/* Mobile Navigation */}
       <MobileNavigation
         isOpen={isMobileMenuOpen}
@@ -133,6 +125,7 @@ const Header: React.FC = () => {
         onNavigation={handleNavigation}
         onLogout={handleLogout}
         onLogin={handleLogin}
+        onClose={() => setIsMobileMenuOpen(false)}
       />
     </header>
   );

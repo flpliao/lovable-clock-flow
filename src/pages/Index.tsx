@@ -5,23 +5,21 @@ import WelcomeSection from '@/components/WelcomeSection';
 import {
   useAnnualLeaveBalance,
   useAuthenticated,
-  useAutoInitAuth,
   useCurrentUser,
-  useUserLoaded
+  useUserLoaded,
 } from '@/hooks/useStores';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
-  // 自動初始化認證系統
-  useAutoInitAuth();
-  
+  // 認證系統已在 App.tsx 中初始化，此處不需要重複初始化
+
   // 使用新的 Zustand hooks - 精確訂閱
   const currentUser = useCurrentUser();
   const isAuthenticated = useAuthenticated();
   const isUserLoaded = useUserLoaded();
   const annualLeaveBalance = useAnnualLeaveBalance();
-  
+
   const navigate = useNavigate();
 
   // 檢查登入狀態，若未登入則重定向到登入頁
@@ -34,16 +32,16 @@ const Index = () => {
     console.log('🔍 Index: 檢查認證狀態', {
       isUserLoaded,
       isAuthenticated,
-      hasCurrentUser: !!currentUser
+      hasCurrentUser: !!currentUser,
     });
-    
+
     // 如果確實未登入，立即重定向
     if (!isAuthenticated || !currentUser) {
       console.log('🚫 Index: 用戶未登入，立即重定向到登入頁面');
       navigate('/login', { replace: true });
       return;
     }
-    
+
     console.log('✅ Index: 用戶已登入，顯示主頁面');
   }, [isUserLoaded, isAuthenticated, currentUser, navigate]);
 
@@ -71,10 +69,12 @@ const Index = () => {
       </div>
     );
   }
-  
+
   console.log('✅ Index: 用戶已登入，顯示主頁面:', currentUser.name);
-  
-  const leaveHours = annualLeaveBalance ? (annualLeaveBalance.total_days - annualLeaveBalance.used_days) * 8 : 0;
+
+  const leaveHours = annualLeaveBalance
+    ? (annualLeaveBalance.total_days - annualLeaveBalance.used_days) * 8
+    : 0;
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
@@ -85,15 +85,24 @@ const Index = () => {
 
       {/* 漂浮光點 */}
       <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-white/30 rounded-full animate-pulse"></div>
-      <div className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{
-        animationDelay: '2s'
-      }}></div>
-      <div className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{
-        animationDelay: '4s'
-      }}></div>
-      <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse" style={{
-        animationDelay: '6s'
-      }}></div>
+      <div
+        className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse"
+        style={{
+          animationDelay: '2s',
+        }}
+      ></div>
+      <div
+        className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse"
+        style={{
+          animationDelay: '4s',
+        }}
+      ></div>
+      <div
+        className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse"
+        style={{
+          animationDelay: '6s',
+        }}
+      ></div>
 
       <div className="relative z-10 w-full min-h-screen pb-safe pt-12 md:pt-20 py-0">
         {/* 歡迎區塊 */}

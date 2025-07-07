@@ -2,7 +2,6 @@ import LoginForm from '@/components/auth/LoginForm';
 import {
   useAuthenticated,
   useAuthInitializing,
-  useAutoInitAuth,
   useCurrentUser,
   useUserLoaded,
 } from '@/hooks/useStores';
@@ -11,8 +10,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  // 自動初始化認證系統
-  useAutoInitAuth();
+  // 認證系統已在 App.tsx 中初始化，此處不需要重複初始化
 
   // 使用新的 Zustand hooks
   const currentUser = useCurrentUser();

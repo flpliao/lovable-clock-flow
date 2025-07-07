@@ -196,6 +196,8 @@ export const useAuthStore = create<AuthState>()(
                   session: null,
                   authError: null,
                 });
+                // 確保登出後載入狀態正確（clearUserData 已經設置 isUserLoaded: true）
+                console.log('✅ AuthStore: 登出完成，用戶資料載入狀態已更新');
               }
 
               // 只在初始化階段設置載入完成狀態

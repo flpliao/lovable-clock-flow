@@ -55,7 +55,7 @@ export const useUserStore = create<UserState>()(
       set({
         currentUser: null,
         annualLeaveBalance: null,
-        isUserLoaded: false,
+        isUserLoaded: true, // 載入完成，但用戶為空（已登出）
       });
     },
   }))

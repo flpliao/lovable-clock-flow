@@ -1,36 +1,37 @@
-
-import React from 'react';
 import { Button } from '@/components/ui/button';
-import { User, Users, Globe } from 'lucide-react';
-import { visionProStyles } from '@/utils/visionProStyles';
+import { Globe, User, Users } from 'lucide-react';
 
 interface ViewModeSelectorProps {
-  viewMode: 'self' | 'subordinates' | 'all';
-  onViewModeChange: (value: 'self' | 'subordinates' | 'all') => void;
+  viewMode: 'own' | 'subordinates' | 'all';
+  onViewModeChange: (value: 'own' | 'subordinates' | 'all') => void;
   hasSubordinates: boolean;
 }
 
-const ViewModeSelector = ({ viewMode, onViewModeChange, hasSubordinates }: ViewModeSelectorProps) => {
+const ViewModeSelector = ({
+  viewMode,
+  onViewModeChange,
+  hasSubordinates,
+}: ViewModeSelectorProps) => {
   const modes = [
-    { 
-      value: 'self' as const, 
-      label: '我的排班', 
+    {
+      value: 'own' as const,
+      label: '我的排班',
       icon: User,
-      color: 'green'
+      color: 'green',
     },
-    { 
-      value: 'subordinates' as const, 
-      label: '下屬排班', 
+    {
+      value: 'subordinates' as const,
+      label: '下屬排班',
       icon: Users,
       color: 'blue',
-      disabled: !hasSubordinates
+      disabled: !hasSubordinates,
     },
-    { 
-      value: 'all' as const, 
-      label: '全部排班', 
+    {
+      value: 'all' as const,
+      label: '全部排班',
       icon: Globe,
-      color: 'purple'
-    }
+      color: 'purple',
+    },
   ];
 
   return (
@@ -38,7 +39,7 @@ const ViewModeSelector = ({ viewMode, onViewModeChange, hasSubordinates }: ViewM
       {modes.map(({ value, label, icon: Icon, color, disabled }) => (
         <Button
           key={value}
-          variant={viewMode === value ? "default" : "outline"}
+          variant={viewMode === value ? 'default' : 'outline'}
           onClick={() => onViewModeChange(value)}
           disabled={disabled}
           className={`h-16 p-4 rounded-2xl border-2 transition-all duration-300 ${
@@ -48,14 +49,8 @@ const ViewModeSelector = ({ viewMode, onViewModeChange, hasSubordinates }: ViewM
           } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-xl ${
-              viewMode === value 
-                ? 'bg-white/20' 
-                : 'bg-gray-100'
-            }`}>
-              <Icon className={`h-5 w-5 ${
-                viewMode === value ? 'text-white' : 'text-gray-600'
-              }`} />
+            <div className={`p-2 rounded-xl ${viewMode === value ? 'bg-white/20' : 'bg-gray-100'}`}>
+              <Icon className={`h-5 w-5 ${viewMode === value ? 'text-white' : 'text-gray-600'}`} />
             </div>
             <span className="font-semibold text-base">{label}</span>
           </div>

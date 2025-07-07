@@ -2,8 +2,8 @@ import { Eye } from 'lucide-react';
 import ViewModeSelector from './ViewModeSelector';
 
 interface ScheduleHeaderProps {
-  viewMode: 'self' | 'subordinates' | 'all';
-  onViewModeChange: (value: 'self' | 'subordinates' | 'all') => void;
+  viewMode: 'own' | 'subordinates' | 'all';
+  onViewModeChange: (value: 'own' | 'subordinates' | 'all') => void;
   hasSubordinates: boolean;
 }
 

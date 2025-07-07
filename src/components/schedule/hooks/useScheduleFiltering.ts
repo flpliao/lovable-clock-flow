@@ -1,75 +1,60 @@
 import { Staff } from '@/components/staff/types';
-import { useScheduling } from '@/contexts/SchedulingContext';
-import { useCurrentUser, usePermissionChecker } from '@/hooks/useStores';
-import { format } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { Schedule } from '@/contexts/scheduling/types';
+import { useCurrentUser } from '@/hooks/useStores';
+import { permissionService } from '@/services/simplifiedPermissionService';
+import { useMemo } from 'react';
 
 interface UseScheduleFilteringProps {
-  viewMode: 'self' | 'subordinates' | 'all';
+  viewMode: 'all' | 'own' | 'subordinates';
   staffList: Staff[];
   getSubordinates: (userId: string) => Staff[];
+  schedules: Schedule[];
 }
 
 export const useScheduleFiltering = ({
   viewMode,
   staffList,
   getSubordinates,
+  schedules,
 }: UseScheduleFilteringProps) => {
   const currentUser = useCurrentUser();
-  const { hasPermission } = usePermissionChecker();
-  const { getSchedulesForDate } = useScheduling();
-  const [viewableStaffIds, setViewableStaffIds] = useState<string[]>([]);
 
-  useEffect(() => {
-    const getViewableStaffIds = async () => {
-      if (!currentUser) return [];
+  // 計算可查看的員工ID列表
+  const viewableStaffIds = useMemo(() => {
+    if (!currentUser) return [];
 
-      const viewableIds = [];
+    const canViewAllSchedules = permissionService.hasPermission('schedule:view_all');
+    const canViewOwnSchedules = permissionService.hasPermission('schedule:view_own');
 
-      // 如果有查看所有排班權限
-      if (await hasPermission('schedule:view_all')) {
-        switch (viewMode) {
-          case 'self':
-            viewableIds.push(currentUser.id);
-            break;
-          case 'subordinates': {
-            const subordinates = getSubordinates(currentUser.id);
-            viewableIds.push(...subordinates.map(s => s.id));
-            break;
-          }
-          case 'all':
-            // 返回所有員工ID
-            viewableIds.push(...staffList.map(s => s.id));
-            break;
-        }
-      } else {
-        // 一般用戶可以查看自己的排班
-        viewableIds.push(currentUser.id);
-
-        // 如果是主管，也可以查看下屬的排班
-        const subordinates = getSubordinates(currentUser.id);
-        if (subordinates.length > 0) {
-          viewableIds.push(...subordinates.map(s => s.id));
-        }
+    if (canViewAllSchedules) {
+      // 有查看所有排班權限
+      switch (viewMode) {
+        case 'all':
+          return staffList.map(staff => staff.id);
+        case 'own':
+          return [currentUser.id];
+        case 'subordinates':
+          return getSubordinates(currentUser.id).map(staff => staff.id);
+        default:
+          return staffList.map(staff => staff.id);
       }
+    } else if (canViewOwnSchedules) {
+      // 只有查看自己排班權限
+      const ownIds = [currentUser.id];
+      const subordinateIds = getSubordinates(currentUser.id).map(staff => staff.id);
+      return [...ownIds, ...subordinateIds];
+    } else {
+      // 沒有權限
+      return [];
+    }
+  }, [currentUser, viewMode, staffList, getSubordinates]);
 
-      return viewableIds;
-    };
-
-    const loadViewableStaffIds = async () => {
-      const ids = await getViewableStaffIds();
-      setViewableStaffIds(ids);
-    };
-    loadViewableStaffIds();
-  }, [currentUser, viewMode, staffList, hasPermission, getSubordinates]);
-
-  // 過濾排班記錄
+  // 取得指定日期的排班記錄
   const getFilteredSchedulesForDate = (date: Date) => {
-    const dateString = format(date, 'yyyy-MM-dd');
-    const allSchedules = getSchedulesForDate(dateString);
-
-    // 根據權限過濾排班記錄
-    return allSchedules.filter(schedule => viewableStaffIds.includes(schedule.userId));
+    const dateString = date.toISOString().split('T')[0];
+    return schedules.filter(
+      schedule => schedule.workDate === dateString && viewableStaffIds.includes(schedule.userId)
+    );
   };
 
   return {

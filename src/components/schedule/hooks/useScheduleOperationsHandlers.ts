@@ -1,48 +1,59 @@
-
-import { useScheduling } from '@/contexts/SchedulingContext';
 import { useToast } from '@/hooks/use-toast';
+import { CreateSchedule, scheduleService } from '@/services/scheduleService';
 
-export const useScheduleOperationsHandlers = () => {
-  const { updateSchedule, removeSchedule } = useScheduling();
+interface UseScheduleOperationsHandlersProps {
+  onScheduleUpdated?: () => void;
+  onScheduleRemoved?: () => void;
+}
+
+export const useScheduleOperationsHandlers = ({
+  onScheduleUpdated,
+  onScheduleRemoved,
+}: UseScheduleOperationsHandlersProps = {}) => {
   const { toast } = useToast();
 
-  const handleUpdateSchedule = async (id: string, updates: any) => {
+  const handleUpdateSchedule = async (scheduleId: string, updates: Partial<CreateSchedule>) => {
     try {
-      console.log('useScheduleOperationsHandlers - Updating schedule:', { id, updates });
-      
-      // 確保更新包含所有必要的欄位
-      const updateData: any = {};
-      
-      if (updates.timeSlot) updateData.timeSlot = updates.timeSlot;
-      if (updates.startTime) updateData.startTime = updates.startTime;
-      if (updates.endTime) updateData.endTime = updates.endTime;
-      if (updates.workDate) updateData.workDate = updates.workDate;
-      if (updates.userId) updateData.userId = updates.userId;
-
-      console.log('useScheduleOperationsHandlers - Final update data:', updateData);
-      
-      await updateSchedule(id, updateData);
-      
-      console.log('useScheduleOperationsHandlers - Schedule updated successfully');
+      await scheduleService.updateSchedule(scheduleId, updates);
+      toast({
+        title: '更新成功',
+        description: '排班記錄已更新',
+      });
+      if (onScheduleUpdated) {
+        onScheduleUpdated();
+      }
     } catch (error) {
-      console.error('useScheduleOperationsHandlers - Update failed:', error);
-      throw error;
+      console.error('Failed to update schedule:', error);
+      toast({
+        title: '更新失敗',
+        description: '無法更新排班記錄',
+        variant: 'destructive',
+      });
     }
   };
 
-  const handleDeleteSchedule = async (id: string) => {
+  const handleRemoveSchedule = async (scheduleId: string) => {
     try {
-      console.log('useScheduleOperationsHandlers - Deleting schedule:', id);
-      await removeSchedule(id);
-      console.log('useScheduleOperationsHandlers - Schedule deleted successfully');
+      await scheduleService.deleteSchedule(scheduleId);
+      toast({
+        title: '刪除成功',
+        description: '排班記錄已刪除',
+      });
+      if (onScheduleRemoved) {
+        onScheduleRemoved();
+      }
     } catch (error) {
-      console.error('useScheduleOperationsHandlers - Delete failed:', error);
-      throw error;
+      console.error('Failed to remove schedule:', error);
+      toast({
+        title: '刪除失敗',
+        description: '無法刪除排班記錄',
+        variant: 'destructive',
+      });
     }
   };
 
   return {
     handleUpdateSchedule,
-    handleDeleteSchedule
+    handleRemoveSchedule,
   };
 };

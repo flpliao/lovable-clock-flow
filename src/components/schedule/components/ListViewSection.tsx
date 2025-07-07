@@ -1,7 +1,9 @@
 import { Schedule } from '@/contexts/scheduling/types';
+import { CreateSchedule } from '@/services/scheduleService';
 import { User } from 'lucide-react';
 import MonthlyScheduleView from './MonthlyScheduleView';
 import StaffMonthSelector from './StaffMonthSelector';
+
 interface Staff {
   id: string;
   name: string;
@@ -18,7 +20,9 @@ interface ListViewSectionProps {
   schedules: Schedule[];
   getUserName: (userId: string) => string;
   viewableStaffIds: string[];
+  onRefreshSchedules?: () => Promise<void>;
 }
+
 const ListViewSection = ({
   availableStaff,
   selectedStaffId,
@@ -29,6 +33,7 @@ const ListViewSection = ({
   schedules,
   getUserName,
   viewableStaffIds,
+  onRefreshSchedules,
 }: ListViewSectionProps) => {
   // Mock time slots for the monthly view
   const mockTimeSlots = [
@@ -53,12 +58,14 @@ const ListViewSection = ({
   ];
 
   // Mock update and delete handlers
-  const handleUpdateSchedule = async (id: string, updates: Partial<Schedule>) => {
+  const handleUpdateSchedule = async (id: string, updates: Partial<CreateSchedule>) => {
     console.log('Update schedule:', id, updates);
   };
+
   const handleDeleteSchedule = async (id: string) => {
     console.log('Delete schedule:', id);
   };
+
   return (
     <div className="space-y-8">
       {/* 員工月份選擇器 */}
@@ -90,9 +97,11 @@ const ListViewSection = ({
           onUpdateSchedule={handleUpdateSchedule}
           onDeleteSchedule={handleDeleteSchedule}
           timeSlots={mockTimeSlots}
+          onRefreshSchedules={onRefreshSchedules}
         />
       </div>
     </div>
   );
 };
+
 export default ListViewSection;

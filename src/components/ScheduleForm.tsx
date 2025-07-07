@@ -11,9 +11,10 @@ import YearMonthSelector from './schedule/YearMonthSelector';
 
 interface ScheduleFormProps {
   staffList: Staff[];
+  onScheduleCreated?: () => void;
 }
 
-const ScheduleForm = ({ staffList }: ScheduleFormProps) => {
+const ScheduleForm = ({ staffList, onScheduleCreated }: ScheduleFormProps) => {
   const {
     form,
     selectedYear,
@@ -29,7 +30,7 @@ const ScheduleForm = ({ staffList }: ScheduleFormProps) => {
     handleClearSelection,
     handleTimeSlotToggle,
     onSubmit,
-  } = useScheduleFormLogic({ staffList });
+  } = useScheduleFormLogic({ staffList, onScheduleCreated });
 
   // 表單驗證：需要選擇員工、日期和時間段
   const isFormValid =

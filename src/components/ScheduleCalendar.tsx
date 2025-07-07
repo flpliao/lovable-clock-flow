@@ -29,12 +29,14 @@ const ScheduleCalendar = ({ staffList, getSubordinates }: ScheduleCalendarProps)
     handleRemoveSchedule,
     canDeleteSchedule,
     hasSubordinates,
+    refreshSchedules,
   } = useScheduleOperations({ staffList, getSubordinates });
 
   const { viewableStaffIds, getFilteredSchedulesForDate } = useScheduleFiltering({
     viewMode,
     staffList,
     getSubordinates,
+    schedules,
   });
   const {
     selectedYear,
@@ -133,6 +135,7 @@ const ScheduleCalendar = ({ staffList, getSubordinates }: ScheduleCalendarProps)
             schedules={schedules}
             getUserName={getUserName}
             viewableStaffIds={viewableStaffIds}
+            onRefreshSchedules={refreshSchedules}
           />
         </TabsContent>
 

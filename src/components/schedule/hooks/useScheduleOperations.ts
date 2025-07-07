@@ -1,8 +1,11 @@
 import { Staff } from '@/components/staff/types';
-import { useScheduling } from '@/contexts/SchedulingContext';
+import { transformFromSupabase } from '@/contexts/scheduling/transformUtils';
+import { Schedule } from '@/contexts/scheduling/types';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useStores';
+import { scheduleService } from '@/services/scheduleService';
 import { permissionService } from '@/services/simplifiedPermissionService';
+import { useCallback, useEffect, useState } from 'react';
 
 interface UseScheduleOperationsProps {
   staffList: Staff[];
@@ -13,9 +16,36 @@ export const useScheduleOperations = ({
   staffList,
   getSubordinates,
 }: UseScheduleOperationsProps) => {
-  const { schedules, removeSchedule } = useScheduling();
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [loading, setLoading] = useState(false);
   const currentUser = useCurrentUser();
   const { toast } = useToast();
+
+  // 載入排班資料
+  const loadSchedules = useCallback(async () => {
+    try {
+      setLoading(true);
+      console.log('useScheduleOperations - Loading schedules...');
+      const supabaseSchedules = await scheduleService.getAllSchedules();
+      const transformedSchedules = supabaseSchedules.map(transformFromSupabase);
+      console.log('useScheduleOperations - Loaded schedules:', transformedSchedules);
+      setSchedules(transformedSchedules);
+    } catch (error) {
+      console.error('useScheduleOperations - Failed to load schedules:', error);
+      toast({
+        title: '載入失敗',
+        description: '無法載入排班資料',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  // 初始載入
+  useEffect(() => {
+    loadSchedules();
+  }, [loadSchedules]);
 
   // 獲取可查看的員工列表
   const getAvailableStaff = () => {
@@ -48,20 +78,26 @@ export const useScheduleOperations = ({
   };
 
   // 獲取用戶關係標記
-  const getUserRelation = (userId: string) => {
-    if (!currentUser) return '';
-    if (userId === currentUser.id) return '（自己）';
+  const getUserRelation = (userId: string): string => {
+    try {
+      if (!currentUser) return '';
+      if (!userId) return '';
+      if (userId === currentUser.id) return '（自己）';
 
-    const subordinates = getSubordinates(currentUser.id);
-    if (subordinates.some(s => s.id === userId)) {
-      return '（下屬）';
-    }
+      const subordinates = getSubordinates(currentUser.id);
+      if (subordinates && subordinates.some(s => s.id === userId)) {
+        return '（下屬）';
+      }
 
-    if (permissionService.hasPermission('schedule:view_all')) {
+      if (permissionService.hasPermission('schedule:view_all')) {
+        return '';
+      }
+
+      return '';
+    } catch (error) {
+      console.error('getUserRelation error:', error);
       return '';
     }
-
-    return '';
   };
 
   // 刪除排班
@@ -76,11 +112,21 @@ export const useScheduleOperations = ({
       return;
     }
 
-    removeSchedule(scheduleId);
-    toast({
-      title: '刪除成功',
-      description: '排班記錄已刪除',
-    });
+    try {
+      await scheduleService.deleteSchedule(scheduleId);
+      setSchedules(prev => prev.filter(schedule => schedule.id !== scheduleId));
+      toast({
+        title: '刪除成功',
+        description: '排班記錄已刪除',
+      });
+    } catch (error) {
+      console.error('Failed to delete schedule:', error);
+      toast({
+        title: '刪除失敗',
+        description: '無法刪除排班記錄',
+        variant: 'destructive',
+      });
+    }
   };
 
   // 檢查是否可以刪除排班 - 改為同步函數
@@ -118,6 +164,7 @@ export const useScheduleOperations = ({
 
   return {
     schedules,
+    loading,
     currentUser,
     getAvailableStaff,
     getUserName,
@@ -128,5 +175,6 @@ export const useScheduleOperations = ({
     canCreateSchedule,
     canEditSchedule,
     canViewAllSchedules,
+    refreshSchedules: loadSchedules,
   };
 };

@@ -1,12 +1,19 @@
+import { Staff } from '@/components/staff/types';
 import { useScheduling } from '@/contexts/SchedulingContext';
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useStores';
 import { permissionService } from '@/services/simplifiedPermissionService';
 
-export const useScheduleOperations = () => {
+interface UseScheduleOperationsProps {
+  staffList: Staff[];
+  getSubordinates: (userId: string) => Staff[];
+}
+
+export const useScheduleOperations = ({
+  staffList,
+  getSubordinates,
+}: UseScheduleOperationsProps) => {
   const { schedules, removeSchedule } = useScheduling();
-  const { staffList, getSubordinates } = useStaffManagementContext();
   const currentUser = useCurrentUser();
   const { toast } = useToast();
 

@@ -1,19 +1,29 @@
-
-import React from 'react';
-import { Users, Calendar, List } from 'lucide-react';
-import ListViewSection from './ListViewSection';
-import StaffSelectorCard from './StaffSelectorCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Schedule } from '@/contexts/scheduling/types';
+import { Calendar, Users } from 'lucide-react';
+import StaffSelectorCard from './StaffSelectorCard';
+
+interface Staff {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
 
 interface DailyTabContentProps {
-  availableStaff: any[];
+  availableStaff: Staff[];
   selectedStaffId?: string;
   selectedDate: Date;
   onStaffChange: (staffId: string | undefined) => void;
   onDateChange: (date: Date) => void;
   getUserRelation: (userId: string) => string;
-  schedules: any[];
+  schedules: Schedule[];
   getUserName: (userId: string) => string;
   viewableStaffIds: string[];
   selectedYear: number;
@@ -39,7 +49,7 @@ const DailyTabContent = ({
   onYearChange,
   onMonthChange,
   generateYears,
-  generateMonths
+  generateMonths,
 }: DailyTabContentProps) => {
   // Simple date picker component for DailyTabContent
   const SimpleDatePicker = () => {
@@ -73,25 +83,31 @@ const DailyTabContent = ({
       <div>
         {/* Year and Month selectors */}
         <div className="flex gap-2 mb-4">
-          <Select value={selectedYear.toString()} onValueChange={(value) => onYearChange(parseInt(value))}>
+          <Select
+            value={selectedYear.toString()}
+            onValueChange={value => onYearChange(parseInt(value))}
+          >
             <SelectTrigger className="flex-1">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {generateYears().map((year) => (
+              {generateYears().map(year => (
                 <SelectItem key={year} value={year.toString()}>
                   {year}年
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          
-          <Select value={selectedMonth.toString()} onValueChange={(value) => onMonthChange(parseInt(value))}>
+
+          <Select
+            value={selectedMonth.toString()}
+            onValueChange={value => onMonthChange(parseInt(value))}
+          >
             <SelectTrigger className="flex-1">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {generateMonths().map((month) => (
+              {generateMonths().map(month => (
                 <SelectItem key={month.value} value={month.value.toString()}>
                   {month.label}
                 </SelectItem>
@@ -105,8 +121,8 @@ const DailyTabContent = ({
           {/* Week day headers */}
           <div className="grid grid-cols-7 border-b border-white/20">
             {['日', '一', '二', '三', '四', '五', '六'].map((day, index) => (
-              <div 
-                key={day} 
+              <div
+                key={day}
                 className={`text-center text-sm font-medium py-3 text-white/90 ${
                   index === 0 || index === 6 ? 'text-red-300' : ''
                 }`}
@@ -115,7 +131,7 @@ const DailyTabContent = ({
               </div>
             ))}
           </div>
-          
+
           {/* Calendar days */}
           <div className="grid grid-cols-7">
             {days.map((day, index) => (
@@ -145,6 +161,15 @@ const DailyTabContent = ({
     );
   };
 
+  // Filter schedules for selected date and staff
+  const selectedDateSchedules = schedules.filter(schedule => {
+    const scheduleDate = new Date(schedule.workDate);
+    const isDateMatch = scheduleDate.toDateString() === selectedDate.toDateString();
+    const isStaffMatch = !selectedStaffId || selectedStaffId === schedule.userId;
+    const isViewable = viewableStaffIds.includes(schedule.userId);
+    return isDateMatch && isStaffMatch && isViewable;
+  });
+
   return (
     <div className="space-y-6">
       {/* 選擇員工 Card */}
@@ -170,26 +195,47 @@ const DailyTabContent = ({
         </CardContent>
       </Card>
 
-      {/* 排班表 Card */}
+      {/* 當日排班資訊 Card */}
       <Card className="bg-white/90 backdrop-blur-xl border border-white/30 shadow-xl">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center space-x-2 text-base sm:text-lg text-gray-800">
-            <List className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-            <span>排班表</span>
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+            <span>當日排班資訊</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ListViewSection
-            availableStaff={availableStaff}
-            selectedStaffId={selectedStaffId || 'all'}
-            selectedDate={selectedDate}
-            onStaffChange={(staffId) => onStaffChange(staffId === 'all' ? undefined : staffId)}
-            onDateChange={onDateChange}
-            getUserRelation={getUserRelation}
-            schedules={schedules}
-            getUserName={getUserName}
-            viewableStaffIds={viewableStaffIds}
-          />
+          {selectedDateSchedules.length > 0 ? (
+            <div className="space-y-3">
+              {selectedDateSchedules.map((schedule, index) => (
+                <div
+                  key={schedule.id || index}
+                  className="p-4 bg-white/60 backdrop-blur-sm rounded-lg border border-white/40 shadow-sm"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-800">{getUserName(schedule.userId)}</h4>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {schedule.timeSlot || '排班資訊'}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {schedule.startTime} - {schedule.endTime}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-gray-700">
+                        {new Date(schedule.workDate).toLocaleDateString('zh-TW')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <Calendar className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+              <p>此日期沒有排班資訊</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -1,8 +1,8 @@
+import { Staff } from '@/components/staff/types';
 import { useScheduling } from '@/contexts/SchedulingContext';
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser, usePermissionChecker } from '@/hooks/useStores';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { timeOptions } from '../constants';
 import { generateDaysInMonth } from '../utils/dateUtils';
@@ -15,10 +15,13 @@ type FormValues = {
   selectedTimeSlots: string[];
 };
 
-export const useScheduleFormLogic = () => {
+interface UseScheduleFormLogicProps {
+  staffList: Staff[];
+}
+
+export const useScheduleFormLogic = ({ staffList }: UseScheduleFormLogicProps) => {
   const { toast } = useToast();
   const { addSchedules, loading, error } = useScheduling();
-  const { staffList } = useStaffManagementContext();
   const currentUser = useCurrentUser();
   const { hasPermissionSync } = usePermissionChecker();
   const now = new Date();

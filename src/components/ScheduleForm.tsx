@@ -1,15 +1,19 @@
-import React from 'react';
+import { Staff } from '@/components/staff/types';
 import { Form } from '@/components/ui/form';
-import { UserPlus, Users, Calendar, Clock, Eye, CheckCircle } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, Eye, Users } from 'lucide-react';
 import { useScheduleFormLogic } from './schedule/hooks/useScheduleFormLogic';
-import StaffSelector from './schedule/StaffSelector';
 import ScheduleCalendar from './schedule/ScheduleCalendar';
-import TimeSlotSelector from './schedule/TimeSlotSelector';
-import SchedulePreview from './schedule/SchedulePreview';
-import YearMonthSelector from './schedule/YearMonthSelector';
 import ScheduleFormActions from './schedule/ScheduleFormActions';
+import SchedulePreview from './schedule/SchedulePreview';
+import StaffSelector from './schedule/StaffSelector';
+import TimeSlotSelector from './schedule/TimeSlotSelector';
+import YearMonthSelector from './schedule/YearMonthSelector';
 
-const ScheduleForm = () => {
+interface ScheduleFormProps {
+  staffList: Staff[];
+}
+
+const ScheduleForm = ({ staffList }: ScheduleFormProps) => {
   const {
     form,
     selectedYear,
@@ -25,7 +29,7 @@ const ScheduleForm = () => {
     handleClearSelection,
     handleTimeSlotToggle,
     onSubmit,
-  } = useScheduleFormLogic();
+  } = useScheduleFormLogic({ staffList });
 
   // 表單驗證：需要選擇員工、日期和時間段
   const isFormValid =
@@ -50,7 +54,7 @@ const ScheduleForm = () => {
               </div>
               <h3 className="text-2xl font-bold text-white drop-shadow-lg">選擇員工</h3>
             </div>
-            <StaffSelector control={form.control} />
+            <StaffSelector control={form.control} staffList={staffList} />
           </div>
 
           {/* 年月選擇 */}

@@ -1,3 +1,4 @@
+import { Staff } from '@/components/staff/types';
 import { FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import {
   Select,
@@ -6,12 +7,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
 import { useCurrentUser } from '@/hooks/useStores';
 import { permissionService } from '@/services/simplifiedPermissionService';
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { Control } from 'react-hook-form';
-import { Staff } from '@/components/staff/types';
 
 type FormValues = {
   userId: string;
@@ -23,30 +22,28 @@ type FormValues = {
 
 interface StaffSelectorProps {
   control: Control<FormValues>;
+  staffList: Staff[];
 }
 
-const StaffSelector = ({ control }: StaffSelectorProps) => {
-  const { staffList } = useStaffManagementContext();
+const StaffSelector = ({ control, staffList }: StaffSelectorProps) => {
   const currentUser = useCurrentUser();
+  const [selectableStaff, setSelectableStaff] = useState<Staff[]>([]);
 
   // 根據權限過濾可選員工 - 使用 SimplifiedPermissionService
-  const getSelectableStaff = () => {
-    if (!currentUser) return [];
+  useEffect(() => {
+    const getSelectableStaff = () => {
+      if (!currentUser) return [];
 
-    // 有創建排班權限的用戶可以選擇所有員工
-    if (permissionService.hasPermission('schedule:create')) {
-      return staffList;
-    }
+      // 有創建排班權限的用戶可以選擇所有員工
+      if (permissionService.hasPermission('schedule:create')) {
+        return staffList;
+      }
 
-    // 一般用戶只能選擇自己（雖然他們不應該看到這個表單）
-    return staffList.filter(staff => staff.id === currentUser.id);
-  };
+      // 一般用戶只能選擇自己（雖然他們不應該看到這個表單）
+      return staffList.filter(staff => staff.id === currentUser.id);
+    };
 
-  const [selectableStaff, setSelectableStaff] = React.useState<Staff[]>([]);
-
-  React.useEffect(() => {
-    const staff = getSelectableStaff();
-    setSelectableStaff(staff);
+    setSelectableStaff(getSelectableStaff());
   }, [currentUser, staffList]);
 
   return (

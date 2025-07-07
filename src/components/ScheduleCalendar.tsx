@@ -1,17 +1,23 @@
-
-import React from 'react';
+import { Staff } from '@/components/staff/types';
 import { Tabs } from '@/components/ui/tabs';
-import { useScheduleFiltering } from './schedule/hooks/useScheduleFiltering';
-import { useDateNavigation } from './schedule/hooks/useDateNavigation';
-import { useScheduleViewState } from './schedule/hooks/useScheduleViewState';
-import { useSchedulePageState } from './schedule/hooks/useSchedulePageState';
-import { useScheduleOperations } from './schedule/hooks/useScheduleOperations';
+import { Schedule } from '@/contexts/scheduling/types';
+import { useCallback, useMemo } from 'react';
 import ScheduleHeader from './schedule/components/ScheduleHeader';
 import ScheduleTabsContent from './schedule/components/ScheduleTabsContent';
+import { useDateNavigation } from './schedule/hooks/useDateNavigation';
+import { useScheduleFiltering } from './schedule/hooks/useScheduleFiltering';
+import { useScheduleOperations } from './schedule/hooks/useScheduleOperations';
+import { useSchedulePageState } from './schedule/hooks/useSchedulePageState';
+import { useScheduleViewState } from './schedule/hooks/useScheduleViewState';
 
-const ScheduleCalendar = () => {
+interface ScheduleCalendarProps {
+  staffList: Staff[];
+  getSubordinates: (userId: string) => Staff[];
+}
+
+const ScheduleCalendar = ({ staffList, getSubordinates }: ScheduleCalendarProps) => {
   const { viewMode, setViewMode } = useSchedulePageState();
-  
+
   const {
     schedules,
     currentUser,
@@ -21,9 +27,13 @@ const ScheduleCalendar = () => {
     handleRemoveSchedule,
     canDeleteSchedule,
     hasSubordinates,
-  } = useScheduleOperations();
-  
-  const { viewableStaffIds, getFilteredSchedulesForDate } = useScheduleFiltering(viewMode);
+  } = useScheduleOperations({ staffList, getSubordinates });
+
+  const { viewableStaffIds, getFilteredSchedulesForDate } = useScheduleFiltering({
+    viewMode,
+    staffList,
+    getSubordinates,
+  });
   const {
     selectedYear,
     selectedMonth,
@@ -46,19 +56,43 @@ const ScheduleCalendar = () => {
   } = useScheduleViewState();
 
   console.log('ScheduleCalendar - All schedules:', schedules);
-  
-  const shiftsForSelectedDate = getFilteredSchedulesForDate(dateNavSelectedDate);
-  
-  console.log('ScheduleCalendar - Filtered shifts for selected date:', shiftsForSelectedDate);
 
-  const getScheduleCountForDate = (date: Date) => {
-    const filteredSchedules = getFilteredSchedulesForDate(date);
-    const count = filteredSchedules.length;
-    console.log(`ScheduleCalendar - Date ${date.toISOString().split('T')[0]} has ${count} filtered schedules`);
-    return count;
-  };
+  // 建立每天排班數量快取
+  const scheduleCountMap = useMemo(() => {
+    const map = new Map<string, number>();
+    // 將 viewableStaffIds 轉成 Set 以加速 includes 檢查
+    const visibleSet = new Set(viewableStaffIds);
+    schedules.forEach((sch: Schedule) => {
+      if (!visibleSet.has(sch.userId)) return;
+      const key = sch.workDate || '';
+      if (!key) return;
+      map.set(key, (map.get(key) || 0) + 1);
+    });
+    return map;
+  }, [schedules, viewableStaffIds]);
 
-  const handleDateClick = (day: any) => {
+  // 取得指定日期的排班數量（已快取）
+  const getScheduleCountForDate = useCallback(
+    (date: Date) => {
+      const key = date.toISOString().split('T')[0];
+      return scheduleCountMap.get(key) ?? 0;
+    },
+    [scheduleCountMap]
+  );
+
+  // 包裝 generateDaysInMonth，只有在月份或快取變動時重新計算
+  const daysInMonth = useMemo(
+    () => generateDaysInMonth(getScheduleCountForDate),
+    [selectedYear, selectedMonth, scheduleCountMap, generateDaysInMonth, getScheduleCountForDate]
+  );
+
+  // 由快取取得選擇日期的班表，避免重複 filter
+  const shiftsForSelectedDate = useMemo(
+    () => getFilteredSchedulesForDate(dateNavSelectedDate),
+    [getFilteredSchedulesForDate, dateNavSelectedDate]
+  );
+
+  const handleDateClick = (day: { date?: Date }) => {
     if (day && day.date) {
       setDateNavSelectedDate(day.date);
     }
@@ -69,12 +103,15 @@ const ScheduleCalendar = () => {
     await handleRemoveSchedule(scheduleId);
   };
 
-  const daysInMonth = generateDaysInMonth(getScheduleCountForDate);
   const availableStaff = getAvailableStaff();
 
   return (
     <div className="space-y-6">
-      <Tabs value={viewType} onValueChange={(value: any) => setViewType(value)} className="w-full space-y-6">
+      <Tabs
+        value={viewType}
+        onValueChange={(value: 'daily' | 'monthly') => setViewType(value)}
+        className="w-full space-y-6"
+      >
         {/* 簡化的查看模式選擇器 */}
         <ScheduleHeader
           viewMode={viewMode}

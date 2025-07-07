@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { User as UserType } from '@/stores/userStore';
-import { LogOut, Settings, User } from 'lucide-react';
+import { LogOut, Settings, User, X } from 'lucide-react';
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { MenuItem } from './menuConfig';
@@ -16,6 +16,7 @@ interface MobileNavigationProps {
   onNavigation: (path: string) => void;
   onLogout: () => void;
   onLogin: () => void;
+  onClose: () => void;
 }
 
 const MobileNavigation: React.FC<MobileNavigationProps> = ({
@@ -27,92 +28,151 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
   onNavigation,
   onLogout,
   onLogin,
+  onClose,
 }) => {
   const location = useLocation();
 
-  if (!isOpen) return null;
-
   return (
-    <div className="lg:hidden border-t border-white/20 bg-white/95 backdrop-blur-xl max-h-[70vh]">
-      <ScrollArea className="h-full">
-        {isAuthenticated && currentUser ? (
-          <div className="p-4 space-y-4">
-            {/* 用戶資訊卡片 */}
-            <div className="bg-gray-100 rounded-lg p-4 mb-4 border border-gray-200">
-              <div className="flex items-center justify-between">
+    <>
+      {/* 遮罩層 */}
+      <div
+        className={`fixed inset-0 bg-black/50 transition-opacity duration-300 z-40 lg:hidden ${
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={onClose}
+      />
+
+      {/* 側邊選單 */}
+      <div
+        className={`
+        fixed top-0 right-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 z-50 lg:hidden
+        ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+      `}
+      >
+        <ScrollArea className="h-full">
+          {isAuthenticated && currentUser ? (
+            <div className="p-4 space-y-4">
+              {/* 頂部用戶資訊和關閉按鈕 */}
+              <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-3">
-                  <div className="bg-gray-200 rounded-full p-2">
-                    <User className="h-5 w-5 text-gray-700" />
+                  <div className="bg-blue-100 rounded-full p-2">
+                    <User className="h-6 w-6 text-blue-600" />
                   </div>
                   <div>
                     <div className="text-gray-900 font-semibold text-sm">{currentUser.name}</div>
-                    <div className="text-gray-600 text-xs font-medium">
-                      {currentUser.role_id === 'admin'
-                        ? '管理員'
-                        : currentUser.role_id === 'manager'
-                          ? '主管'
-                          : '員工'}
-                    </div>
+                    <div className="text-gray-600 text-xs">{currentUser.email}</div>
                   </div>
                 </div>
                 <Button
-                  onClick={() => onNavigation('/account-settings')}
+                  onClick={onClose}
                   variant="ghost"
                   size="sm"
                   className="text-gray-600 hover:text-gray-800 hover:bg-gray-200 p-2"
                 >
-                  <Settings className="h-4 w-4" />
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+
+              {/* 功能選單 - 格子佈局 */}
+              <div className="space-y-4">
+                <h3 className="text-gray-800 font-semibold text-base mb-3">功能選單</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  {visibleMenuItems.map(item => (
+                    <button
+                      key={item.path}
+                      onClick={() => {
+                        onNavigation(item.path);
+                        onClose();
+                      }}
+                      className={`
+                        flex flex-col items-center justify-center p-4 rounded-lg
+                        transition-all duration-200 hover:bg-blue-50 hover:shadow-md
+                        ${location.pathname === item.path ? 'bg-blue-100 shadow-md' : 'bg-gray-50'}
+                      `}
+                    >
+                      <div
+                        className={`
+                        p-3 rounded-full mb-2 transition-colors duration-200
+                        ${location.pathname === item.path ? 'bg-blue-500 text-white' : 'bg-white text-blue-600'}
+                      `}
+                      >
+                        <item.icon className="h-6 w-6" />
+                      </div>
+                      <span
+                        className={`
+                        text-xs font-medium text-center leading-tight
+                        ${location.pathname === item.path ? 'text-blue-700' : 'text-gray-700'}
+                      `}
+                      >
+                        {item.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <Separator className="bg-gray-300 my-6" />
+
+              {/* 底部功能 */}
+              <div className="space-y-3">
+                {/* 個人設定 */}
+                <Button
+                  onClick={() => {
+                    onNavigation('/account-settings');
+                    onClose();
+                  }}
+                  variant="ghost"
+                  className="w-full justify-start text-gray-800 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 p-4 rounded-lg text-base font-medium"
+                >
+                  <Settings className="h-5 w-5 mr-3 text-gray-700" />
+                  <span>個人設定</span>
+                </Button>
+
+                {/* 登出按鈕 */}
+                <Button
+                  onClick={() => {
+                    onLogout();
+                    onClose();
+                  }}
+                  variant="ghost"
+                  className="w-full justify-start text-red-700 font-medium hover:text-red-800 hover:bg-red-50 transition-all duration-200 p-4 rounded-lg text-base border border-red-200"
+                >
+                  <LogOut className="h-5 w-5 mr-3 text-red-600" />
+                  <span>登出</span>
                 </Button>
               </div>
             </div>
-
-            {/* 導航選單 - 可滑動區域 */}
-            <div className="space-y-1 max-h-[40vh] overflow-y-auto">
-              {visibleMenuItems.map(item => (
+          ) : (
+            !isLoginPage && (
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-gray-800 font-semibold text-lg">請登入</h3>
+                  <Button
+                    onClick={onClose}
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-200 p-2"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
                 <Button
-                  key={item.path}
-                  onClick={() => onNavigation(item.path)}
+                  onClick={() => {
+                    onLogin();
+                    onClose();
+                  }}
                   variant="ghost"
-                  className={`
-                    w-full justify-start text-gray-800 hover:text-gray-900 hover:bg-gray-100 
-                    transition-all duration-200 p-4 rounded-lg text-base font-semibold
-                    ${location.pathname === item.path ? 'bg-gray-200 text-gray-900 shadow-sm' : ''}
-                  `}
+                  className="w-full justify-start text-gray-800 font-semibold hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 p-4 rounded-lg text-base"
                 >
-                  <item.icon className="h-5 w-5 mr-3 text-gray-700" />
-                  <span>{item.label}</span>
+                  <User className="h-5 w-5 mr-3 text-gray-700" />
+                  <span>登入</span>
                 </Button>
-              ))}
-            </div>
-
-            <Separator className="bg-gray-300 my-4" />
-
-            {/* 登出按鈕 */}
-            <Button
-              onClick={onLogout}
-              variant="ghost"
-              className="w-full justify-start text-red-700 font-semibold hover:text-red-800 hover:bg-red-50 transition-all duration-200 p-4 rounded-lg text-base border border-red-200"
-            >
-              <LogOut className="h-5 w-5 mr-3 text-red-600" />
-              <span>登出</span>
-            </Button>
-          </div>
-        ) : (
-          !isLoginPage && (
-            <div className="p-4">
-              <Button
-                onClick={onLogin}
-                variant="ghost"
-                className="w-full justify-start text-gray-800 font-semibold hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 p-4 rounded-lg text-base"
-              >
-                <User className="h-5 w-5 mr-3 text-gray-700" />
-                <span>登入</span>
-              </Button>
-            </div>
-          )
-        )}
-      </ScrollArea>
-    </div>
+              </div>
+            )
+          )}
+        </ScrollArea>
+      </div>
+    </>
   );
 };
 

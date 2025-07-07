@@ -51,11 +51,11 @@ const WelcomeSection = ({ userName }: WelcomeSectionProps) => {
   };
 
   return (
-    <div className="px-[10px] py-[5px]">
-      <div className="space-y-3">
-        {/* 問候語 */}
-        <div className="text-center px-[10px]">
-          <h1 className="text-xl sm:text-3xl font-bold mb-2 text-white drop-shadow-lg py-[5px] my-[10px]">
+    <div className="px-[10px] py-[8px]">
+      <div className="space-y-2">
+        {/* 第一行：問候語 + 角色標籤 */}
+        <div className="flex items-center justify-center gap-3">
+          <h1 className="text-lg sm:text-xl font-bold text-white drop-shadow-lg">
             您好，{displayName}
           </h1>
           <div className="inline-block px-2 py-1 bg-white/20 rounded-full backdrop-blur-xl border border-white/30">
@@ -63,22 +63,22 @@ const WelcomeSection = ({ userName }: WelcomeSectionProps) => {
           </div>
         </div>
 
-        {/* 時間資訊 */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center sm:gap-6 gap-2 mt-4">
-          <div className="flex items-center justify-center sm:justify-start space-x-3 p-2">
-            <div className="p-2 bg-blue-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
-              <Clock className="h-4 w-4" />
+        {/* 第二行：時間 + 日期 */}
+        <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center space-x-2">
+            <div className="p-1.5 bg-blue-500/80 rounded-lg shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
+              <Clock className="h-3 w-3" />
             </div>
-            <span className="text-xl sm:text-2xl font-mono font-bold text-white drop-shadow-lg">
+            <span className="text-base sm:text-lg font-mono font-bold text-white drop-shadow-lg">
               {timeString}
             </span>
           </div>
 
-          <div className="flex items-center justify-center sm:justify-end space-x-3 p-2">
-            <div className="p-2 bg-green-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-green-400/50 text-white">
-              <Calendar className="h-4 w-4" />
+          <div className="flex items-center space-x-2">
+            <div className="p-1.5 bg-green-500/80 rounded-lg shadow-lg backdrop-blur-xl border border-green-400/50 text-white">
+              <Calendar className="h-3 w-3" />
             </div>
-            <span className="text-sm sm:text-base font-semibold text-white drop-shadow-lg">
+            <span className="text-xs sm:text-sm font-semibold text-white drop-shadow-lg">
               {dateString}
             </span>
           </div>

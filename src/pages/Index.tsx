@@ -104,7 +104,7 @@ const Index = () => {
         }}
       ></div>
 
-      <div className="relative z-10 w-full min-h-screen pb-safe pt-8 md:pt-12 py-0">
+      <div className="relative z-10 w-full min-h-screen pb-safe md:pt-12 py-0">
         {/* 歡迎區塊 */}
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <WelcomeSection userName={currentUser.name} />

@@ -76,62 +76,202 @@ const StaffManagement = () => {
     { value: 'ends_with', label: '結尾為' },
   ];
 
-  // 多條件搜尋 state
-  const [conditions, setConditions] = useState([
-    { field: 'name', operator: 'contains', value: '' },
+  // 多條件搜尋 state - 支援分組邏輯
+  const [conditionGroups, setConditionGroups] = useState([
+    {
+      id: 'group-1',
+      groupLogic: 'AND' as 'AND' | 'OR', // 組間邏輯運算子
+      conditions: [
+        { field: 'name', operator: 'contains', value: '', logic: 'AND' as 'AND' | 'OR' },
+      ],
+    },
   ]);
-  const [logic, setLogic] = useState<'AND' | 'OR'>('AND');
 
-  // 新增條件
-  const addCondition = () => {
-    setConditions([...conditions, { field: 'name', operator: 'contains', value: '' }]);
+  // 新增條件組
+  const addConditionGroup = () => {
+    const newGroupId = `group-${Date.now()}`;
+    setConditionGroups([
+      ...conditionGroups,
+      {
+        id: newGroupId,
+        groupLogic: 'AND', // 新組的組間邏輯運算子
+        conditions: [{ field: 'name', operator: 'contains', value: '', logic: 'AND' }],
+      },
+    ]);
   };
+
+  // 刪除條件組
+  const removeConditionGroup = (groupId: string) => {
+    if (conditionGroups.length > 1) {
+      setConditionGroups(conditionGroups.filter(g => g.id !== groupId));
+    }
+  };
+
+  // 新增條件到組
+  const addConditionToGroup = (groupId: string) => {
+    setConditionGroups(
+      conditionGroups.map(group =>
+        group.id === groupId
+          ? {
+              ...group,
+              conditions: [
+                ...group.conditions,
+                { field: 'name', operator: 'contains', value: '', logic: 'AND' },
+              ],
+            }
+          : group
+      )
+    );
+  };
+
   // 刪除條件
-  const removeCondition = (idx: number) => {
-    setConditions(conditions.filter((_, i) => i !== idx));
+  const removeCondition = (groupId: string, conditionIdx: number) => {
+    setConditionGroups(
+      conditionGroups.map(group =>
+        group.id === groupId
+          ? {
+              ...group,
+              conditions: group.conditions.filter((_, i) => i !== conditionIdx),
+            }
+          : group
+      )
+    );
   };
+
   // 更新條件
-  const updateCondition = (idx: number, key: string, val: string) => {
-    setConditions(conditions.map((c, i) => (i === idx ? { ...c, [key]: val } : c)));
+  const updateCondition = (groupId: string, conditionIdx: number, key: string, val: string) => {
+    setConditionGroups(
+      conditionGroups.map(group =>
+        group.id === groupId
+          ? {
+              ...group,
+              conditions: group.conditions.map((cond, i) =>
+                i === conditionIdx ? { ...cond, [key]: val } : cond
+              ),
+            }
+          : group
+      )
+    );
   };
+
+  // 更新條件邏輯
+  const updateConditionLogic = (groupId: string, conditionIdx: number, logic: 'AND' | 'OR') => {
+    setConditionGroups(
+      conditionGroups.map(group =>
+        group.id === groupId
+          ? {
+              ...group,
+              conditions: group.conditions.map((cond, i) =>
+                i === conditionIdx ? { ...cond, logic } : cond
+              ),
+            }
+          : group
+      )
+    );
+  };
+
+  // 更新組間邏輯
+  const updateGroupLogic = (groupId: string, groupLogic: 'AND' | 'OR') => {
+    setConditionGroups(
+      conditionGroups.map(group => (group.id === groupId ? { ...group, groupLogic } : group))
+    );
+  };
+
   // 清除全部條件
   const clearAllConditions = () => {
-    setConditions([{ field: 'name', operator: 'contains', value: '' }]);
+    setConditionGroups([
+      {
+        id: 'group-1',
+        groupLogic: 'AND',
+        conditions: [{ field: 'name', operator: 'contains', value: '', logic: 'AND' }],
+      },
+    ]);
   };
-  // 計算已套用條件數
-  const appliedConditionCount = conditions.filter(c => c.value.trim() !== '').length;
 
-  // 多條件組合 filter function
+  // 計算已套用條件數
+  const appliedConditionCount = conditionGroups.reduce(
+    (total, group) => total + group.conditions.filter(c => c.value.trim() !== '').length,
+    0
+  );
+
+  // 多條件組合 filter function - 支援分組邏輯
   const applyMultiConditionFilter = (staff: Staff) => {
     // 若所有條件皆為空，直接通過
-    if (conditions.every(c => !c.value.trim())) return true;
-    // 依據 AND/OR 決定邏輯
-    const results = conditions.map(cond => {
-      const val = cond.value.trim().toLowerCase();
-      let target = '';
-      if (cond.field === 'role') {
-        target = (ROLE_ID_MAP[staff.role_id || ''] || '').toLowerCase();
-      } else {
-        target = (staff[cond.field as keyof Staff] || '').toString().toLowerCase();
+    if (conditionGroups.every(group => group.conditions.every(c => !c.value.trim()))) {
+      return true;
+    }
+
+    // 評估每個條件組
+    const groupResults = conditionGroups.map(group => {
+      const validConditions = group.conditions.filter(c => c.value.trim() !== '');
+      if (validConditions.length === 0) return true;
+
+      // 逐個條件評估，並根據邏輯運算子組合
+      let result = true;
+
+      for (let i = 0; i < validConditions.length; i++) {
+        const cond = validConditions[i];
+        const val = cond.value.trim().toLowerCase();
+        let target = '';
+        if (cond.field === 'role') {
+          target = (ROLE_ID_MAP[staff.role_id || ''] || '').toLowerCase();
+        } else {
+          target = (staff[cond.field as keyof Staff] || '').toString().toLowerCase();
+        }
+
+        let conditionResult = false;
+        switch (cond.operator) {
+          case 'contains':
+            conditionResult = target.includes(val);
+            break;
+          case 'not_contains':
+            conditionResult = !target.includes(val);
+            break;
+          case 'equals':
+            conditionResult = target === val;
+            break;
+          case 'not_equals':
+            conditionResult = target !== val;
+            break;
+          case 'starts_with':
+            conditionResult = target.startsWith(val);
+            break;
+          case 'ends_with':
+            conditionResult = target.endsWith(val);
+            break;
+          default:
+            conditionResult = true;
+        }
+
+        // 根據邏輯運算子組合結果
+        if (i === 0) {
+          result = conditionResult;
+        } else {
+          if (cond.logic === 'AND') {
+            result = result && conditionResult;
+          } else {
+            // OR
+            result = result || conditionResult;
+          }
+        }
       }
-      switch (cond.operator) {
-        case 'contains':
-          return target.includes(val);
-        case 'not_contains':
-          return !target.includes(val);
-        case 'equals':
-          return target === val;
-        case 'not_equals':
-          return target !== val;
-        case 'starts_with':
-          return target.startsWith(val);
-        case 'ends_with':
-          return target.endsWith(val);
-        default:
-          return true;
-      }
+
+      return result;
     });
-    return logic === 'AND' ? results.every(Boolean) : results.some(Boolean);
+
+    // 組合所有組的結果，根據組間邏輯運算子
+    let finalResult = groupResults[0];
+    for (let i = 1; i < groupResults.length; i++) {
+      const groupLogic = conditionGroups[i].groupLogic;
+      if (groupLogic === 'AND') {
+        finalResult = finalResult && groupResults[i];
+      } else {
+        // OR
+        finalResult = finalResult || groupResults[i];
+      }
+    }
+
+    return finalResult;
   };
 
   // 取得所有部門列表
@@ -388,75 +528,148 @@ const StaffManagement = () => {
                 </div>
 
                 {/* 多條件組合搜尋 UI */}
-                <div className="space-y-2 mb-3">
-                  {conditions.map((cond, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      {/* 欄位選擇 */}
-                      <Select
-                        value={cond.field}
-                        onValueChange={val => updateCondition(idx, 'field', val)}
-                      >
-                        <SelectTrigger className="w-28 bg-white/70 border-white/40 backdrop-blur-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SEARCH_FIELDS.map(f => (
-                            <SelectItem key={f.value} value={f.value}>
-                              {f.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {/* 運算子選擇 */}
-                      <Select
-                        value={cond.operator}
-                        onValueChange={val => updateCondition(idx, 'operator', val)}
-                      >
-                        <SelectTrigger className="w-24 bg-white/70 border-white/40 backdrop-blur-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {OPERATORS.map(op => (
-                            <SelectItem key={op.value} value={op.value}>
-                              {op.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {/* 值輸入 */}
-                      <Input
-                        value={cond.value}
-                        onChange={e => updateCondition(idx, 'value', e.target.value)}
-                        className="w-40 bg-white/70 border-white/40 backdrop-blur-sm"
-                        placeholder="請輸入內容"
-                      />
-                      {/* 移除條件 */}
-                      {conditions.length > 1 && (
+                <div className="space-y-3 mb-3">
+                  {conditionGroups.map((group, groupIdx) => (
+                    <div
+                      key={group.id}
+                      className="border border-gray-200/50 rounded-lg p-3 bg-white/30"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-gray-700">
+                            條件組 {groupIdx + 1}
+                          </span>
+                          {/* 組間邏輯選擇 */}
+                          {groupIdx > 0 && (
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-gray-500">與前組</span>
+                              <Button
+                                variant={group.groupLogic === 'AND' ? 'outline' : 'secondary'}
+                                size="sm"
+                                onClick={() =>
+                                  updateGroupLogic(
+                                    group.id,
+                                    group.groupLogic === 'AND' ? 'OR' : 'AND'
+                                  )
+                                }
+                                className="w-12 bg-white/70 border-white/40 hover:bg-white/80"
+                              >
+                                {group.groupLogic}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                        {/* 移除組 */}
+                        {conditionGroups.length > 1 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeConditionGroup(group.id)}
+                            className="text-red-500 h-6 px-2"
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            移除組
+                          </Button>
+                        )}
+                      </div>
+                      {/* 組內條件 */}
+                      <div className="space-y-2">
+                        {group.conditions.map((cond, condIdx) => (
+                          <div key={condIdx} className="flex items-center gap-2">
+                            {/* 邏輯選擇（第一個條件顯示為 "-"） */}
+                            {condIdx === 0 ? (
+                              <div className="w-12 text-center text-xs text-gray-500 bg-gray-100/70 rounded-md py-2 px-1">
+                                -
+                              </div>
+                            ) : (
+                              <Button
+                                variant={cond.logic === 'AND' ? 'outline' : 'secondary'}
+                                size="sm"
+                                onClick={() =>
+                                  updateConditionLogic(
+                                    group.id,
+                                    condIdx,
+                                    cond.logic === 'AND' ? 'OR' : 'AND'
+                                  )
+                                }
+                                className="w-12 bg-white/70 border-white/40 hover:bg-white/80"
+                              >
+                                {cond.logic}
+                              </Button>
+                            )}
+                            {/* 欄位選擇 */}
+                            <Select
+                              value={cond.field}
+                              onValueChange={val =>
+                                updateCondition(group.id, condIdx, 'field', val)
+                              }
+                            >
+                              <SelectTrigger className="w-28 bg-white/70 border-white/40 backdrop-blur-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {SEARCH_FIELDS.map(f => (
+                                  <SelectItem key={f.value} value={f.value}>
+                                    {f.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {/* 運算子選擇 */}
+                            <Select
+                              value={cond.operator}
+                              onValueChange={val =>
+                                updateCondition(group.id, condIdx, 'operator', val)
+                              }
+                            >
+                              <SelectTrigger className="w-24 bg-white/70 border-white/40 backdrop-blur-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {OPERATORS.map(op => (
+                                  <SelectItem key={op.value} value={op.value}>
+                                    {op.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {/* 值輸入 */}
+                            <Input
+                              value={cond.value}
+                              onChange={e =>
+                                updateCondition(group.id, condIdx, 'value', e.target.value)
+                              }
+                              className="w-40 bg-white/70 border-white/40 backdrop-blur-sm"
+                              placeholder="請輸入內容"
+                            />
+                            {/* 移除條件 */}
+                            {group.conditions.length > 1 && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeCondition(group.id, condIdx)}
+                                className="text-red-500"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                        {/* 新增條件到組 */}
                         <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeCondition(idx)}
-                          className="text-red-500"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {/* AND/OR 切換（僅第一條件不顯示） */}
-                      {idx > 0 && (
-                        <Button
-                          variant={logic === 'AND' ? 'outline' : 'secondary'}
+                          variant="outline"
                           size="sm"
-                          onClick={() => setLogic(logic === 'AND' ? 'OR' : 'AND')}
-                          className="ml-2"
+                          onClick={() => addConditionToGroup(group.id)}
+                          className="mt-2"
                         >
-                          {logic}
+                          + 新增條件
                         </Button>
-                      )}
+                      </div>
                     </div>
                   ))}
-                  {/* 新增條件 */}
-                  <Button variant="outline" size="sm" onClick={addCondition} className="mt-1">
-                    + 新增條件
+                  {/* 新增條件組 */}
+                  <Button variant="outline" size="sm" onClick={addConditionGroup} className="mt-2">
+                    + 新增條件組
                   </Button>
                 </div>
 

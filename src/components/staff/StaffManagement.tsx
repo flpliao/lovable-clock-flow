@@ -9,6 +9,7 @@ import AddStaffDialog from './AddStaffDialog';
 import EditStaffDialog from './EditStaffDialog';
 import { StaffList } from './StaffList';
 import { NewStaff, Staff } from './types';
+import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
 
 const StaffManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,6 +18,8 @@ const StaffManagement = () => {
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [staffToDelete, setStaffToDelete] = useState<Staff | null>(null);
   const { toast } = useToast();
 
   // 載入員工列表
@@ -55,13 +58,20 @@ const StaffManagement = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleDeleteStaff = async (id: string) => {
+  const handleDeleteClick = (staff: Staff) => {
+    setStaffToDelete(staff);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!staffToDelete) return;
+
     try {
       setLoading(true);
-      await staffService.deleteStaff(id);
+      await staffService.deleteStaff(staffToDelete.id);
       toast({
         title: '刪除成功',
-        description: '員工資料已刪除',
+        description: `員工「${staffToDelete.name}」資料已刪除`,
       });
       await loadStaffList();
     } catch (error) {
@@ -73,6 +83,8 @@ const StaffManagement = () => {
       });
     } finally {
       setLoading(false);
+      setIsDeleteDialogOpen(false);
+      setStaffToDelete(null);
     }
   };
 
@@ -168,7 +180,7 @@ const StaffManagement = () => {
             staffList={filteredStaff}
             loading={loading}
             onEditStaff={handleEditStaff}
-            onDeleteStaff={handleDeleteStaff}
+            onDeleteStaff={handleDeleteClick}
           />
         </CardContent>
       </Card>
@@ -184,6 +196,15 @@ const StaffManagement = () => {
         onOpenChange={setIsEditDialogOpen}
         staff={selectedStaff}
         onSuccess={handleEditSuccess}
+      />
+
+      {/* 刪除確認對話框 */}
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="確認刪除員工"
+        description={`確定要刪除員工「${staffToDelete?.name}」嗎？此操作無法復原，將永久刪除該員工的所有資料。`}
       />
     </div>
   );

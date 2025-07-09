@@ -1,30 +1,25 @@
 import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
 import { DataSyncManager } from '@/utils/dataSync';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRoleManagement } from './useRoleManagement';
 import { useStaffDialogs } from './useStaffDialogs';
 import { useStaffHierarchy } from './useStaffHierarchy';
 import { useSupabaseStaffOperations } from './useSupabaseStaffOperations';
+import { Staff } from '../types';
 
 export const useStaffManagement = () => {
   const currentUser = useCurrentUser();
   const isAdmin = useIsAdmin();
 
-  // Always call hooks - never conditionally
-  const {
-    staffList,
-    loading,
-    addStaff,
-    updateStaff,
-    deleteStaff,
-    refreshData,
-    forceReload
-  } = useSupabaseStaffOperations();
+  // 刪除確認對話框狀態
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [staffToDelete, setStaffToDelete] = useState<Staff | null>(null);
 
-  const {
-    getSupervisorName,
-    getSubordinates
-  } = useStaffHierarchy(staffList);
+  // Always call hooks - never conditionally
+  const { staffList, loading, addStaff, updateStaff, deleteStaff, refreshData, forceReload } =
+    useSupabaseStaffOperations();
+
+  const { getSupervisorName, getSubordinates } = useStaffHierarchy(staffList);
 
   const {
     isAddDialogOpen,
@@ -36,18 +31,11 @@ export const useStaffManagement = () => {
     newStaff,
     setNewStaff,
     openEditDialog,
-    resetNewStaff
+    resetNewStaff,
   } = useStaffDialogs();
-  
-  const {
-    roles,
-    addRole,
-    updateRole,
-    deleteRole,
-    getRole,
-    hasPermission,
-    assignRoleToStaff
-  } = useRoleManagement(staffList);
+
+  const { roles, addRole, updateRole, deleteRole, getRole, hasPermission, assignRoleToStaff } =
+    useRoleManagement(staffList);
 
   // 初始化時執行完整資料同步
   useEffect(() => {
@@ -55,10 +43,10 @@ export const useStaffManagement = () => {
       console.log('🚀 員工管理系統初始化 - 開始資料同步');
       console.log('👤 當前用戶:', currentUser?.name);
       console.log('🔐 管理員權限:', isAdmin);
-      
+
       // 執行完整資料同步
       const syncResult = await DataSyncManager.performFullSync();
-      
+
       if (syncResult.connectionStatus) {
         console.log('✅ 後台連線正常，資料同步完成');
         if (syncResult.staffData.length === 0) {
@@ -67,7 +55,7 @@ export const useStaffManagement = () => {
       } else {
         console.error('❌ 後台連線失敗，請檢查系統設定');
       }
-      
+
       // 觸發本地資料載入
       await refreshData();
     };
@@ -103,22 +91,34 @@ export const useStaffManagement = () => {
     return false;
   };
 
-  // Handle delete staff
-  const handleDeleteStaff = async (id: string) => {
-    await deleteStaff(id);
+  // Handle delete staff click - 顯示確認對話框
+  const handleDeleteClick = (staff: Staff) => {
+    setStaffToDelete(staff);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Handle delete staff confirmation - 實際執行刪除
+  const handleDeleteConfirm = async () => {
+    if (!staffToDelete) return;
+
+    await deleteStaff(staffToDelete.id);
     // 刪除成功後重新同步資料
     console.log('📊 員工刪除成功，重新同步後台資料');
     await refreshData();
+
+    // 關閉對話框並清除狀態
+    setIsDeleteDialogOpen(false);
+    setStaffToDelete(null);
   };
 
   // 手動觸發完整同步
   const performFullSync = async () => {
     console.log('🔄 手動觸發完整系統資料同步');
     const syncResult = await DataSyncManager.performFullSync();
-    
+
     // 使用強制重新載入確保獲取最新資料
     await forceReload();
-    
+
     return syncResult;
   };
 
@@ -137,13 +137,17 @@ export const useStaffManagement = () => {
     setNewStaff,
     handleAddStaff,
     handleEditStaff,
-    handleDeleteStaff,
+    handleDeleteStaff: handleDeleteClick, // 改為使用確認對話框版本
+    handleDeleteConfirm, // 新增確認刪除功能
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
+    staffToDelete,
     openEditDialog,
     getSupervisorName,
     getSubordinates,
     refreshData,
     performFullSync, // 新增完整同步功能
-    
+
     // Role management
     roles,
     addRole,
@@ -151,6 +155,6 @@ export const useStaffManagement = () => {
     deleteRole,
     getRole,
     hasPermission,
-    assignRoleToStaff
+    assignRoleToStaff,
   };
 };

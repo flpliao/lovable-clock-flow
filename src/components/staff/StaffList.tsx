@@ -16,7 +16,7 @@ interface StaffListProps {
   staffList: Staff[];
   loading: boolean;
   onEditStaff: (staff: Staff) => void;
-  onDeleteStaff: (id: string) => Promise<void>;
+  onDeleteStaff: (staff: Staff) => void;
 }
 
 export const StaffList: React.FC<StaffListProps> = ({
@@ -72,7 +72,7 @@ export const StaffList: React.FC<StaffListProps> = ({
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={() => onDeleteStaff(staff.id)}>
+                  <Button variant="destructive" size="sm" onClick={() => onDeleteStaff(staff)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

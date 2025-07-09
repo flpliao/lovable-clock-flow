@@ -1,3 +1,5 @@
+import { FilterGroup } from '@/components/common/AdvancedFilter/types';
+
 export interface Department {
   id: string;
   name: string;
@@ -34,6 +36,15 @@ export interface DepartmentManagementContextType {
   loading: boolean;
   searchFilter: string;
   setSearchFilter: (filter: string) => void;
+
+  // 篩選相關
+  conditionGroups: FilterGroup[];
+  setConditionGroups: (groups: FilterGroup[]) => void;
+  showAdvancedFilters: boolean;
+  setShowAdvancedFilters: (show: boolean) => void;
+  clearAllConditions: () => void;
+  appliedConditionCount: number;
+
   isAddDialogOpen: boolean;
   setIsAddDialogOpen: (isOpen: boolean) => void;
   isEditDialogOpen: boolean;
@@ -47,8 +58,8 @@ export interface DepartmentManagementContextType {
   handleDeleteDepartment: (id: string) => void;
   openEditDialog: (department: Department) => void;
   refreshDepartments: () => Promise<void>;
-  performFullSync: () => Promise<any>;
+  performFullSync: () => Promise<unknown>;
   canManage: boolean;
-  currentUser: any;
+  currentUser: unknown;
   convertAddressToGPS: (departmentId: string, address: string) => Promise<boolean>;
 }

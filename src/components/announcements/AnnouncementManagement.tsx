@@ -8,40 +8,67 @@ import React, { useState } from 'react';
 import AnnouncementDetail from './AnnouncementDetail';
 import AnnouncementForm from './AnnouncementForm';
 import AnnouncementListView from './AnnouncementListView';
-import AnnouncementSearchFilter from './AnnouncementSearchFilter';
+import {
+  AdvancedFilter,
+  useAdvancedFilter,
+  applyMultiConditionFilter,
+  DEFAULT_OPERATORS,
+  SearchField,
+  FilterGroup,
+} from '@/components/common/AdvancedFilter';
 
 const AnnouncementManagement: React.FC = () => {
   const { toast } = useToast();
   const { announcements, loading, createAnnouncement, updateAnnouncement, deleteAnnouncement } =
     useSupabaseAnnouncements(true); // 載入所有公告，包括已停用的
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<CompanyAnnouncement | null>(
     null
   );
   const [viewAnnouncement, setViewAnnouncement] = useState<CompanyAnnouncement | null>(null);
 
-  const categories = ['HR', 'Administration', 'Meeting', 'Official', 'General'];
+  // 定義搜尋欄位
+  const SEARCH_FIELDS: SearchField[] = [
+    { value: 'title', label: '標題' },
+    { value: 'content', label: '內容' },
+    { value: 'category', label: '分類' },
+    { value: 'created_by_name', label: '發布者' },
+  ];
+
+  // 篩選函數
+  const applyAnnouncementFilter = (
+    announcement: CompanyAnnouncement,
+    conditionGroups: FilterGroup[]
+  ) => {
+    return applyMultiConditionFilter(announcement, conditionGroups, (item, field) => {
+      if (field === 'created_by_name') {
+        return item.created_by?.name || '';
+      }
+      return (item[field as keyof CompanyAnnouncement] || '').toString();
+    });
+  };
+
+  // 使用通用篩選 Hook
+  const {
+    conditionGroups,
+    filteredData: filteredAnnouncements,
+    appliedConditionCount,
+    showAdvancedFilters,
+    setConditionGroups,
+    setShowAdvancedFilters,
+    clearAllConditions,
+  } = useAdvancedFilter({
+    data: announcements,
+    searchFields: SEARCH_FIELDS,
+    operators: DEFAULT_OPERATORS,
+    applyFilter: applyAnnouncementFilter,
+  });
 
   // 檢查公告管理權限 - 使用 SimplifiedPermissionService
   const canCreateAnnouncement = permissionService.hasPermission('announcement:create');
   const canEditAnnouncement = permissionService.hasPermission('announcement:edit');
   const canDeleteAnnouncement = permissionService.hasPermission('announcement:delete');
-
-  // 過濾公告
-  const filteredAnnouncements = announcements.filter(announcement => {
-    const matchesSearch =
-      !searchQuery ||
-      announcement.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      announcement.content.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesCategory =
-      selectedCategory === 'all' || announcement.category === selectedCategory;
-
-    return matchesSearch && matchesCategory;
-  });
 
   // 處理保存公告
   const handleSaveAnnouncement = async (
@@ -172,13 +199,19 @@ const AnnouncementManagement: React.FC = () => {
         )}
       </div>
 
-      {/* 搜尋和篩選區域 */}
-      <AnnouncementSearchFilter
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        categories={categories}
+      {/* 使用通用篩選組件 */}
+      <AdvancedFilter
+        searchFields={SEARCH_FIELDS}
+        operators={DEFAULT_OPERATORS}
+        conditionGroups={conditionGroups}
+        onConditionGroupsChange={setConditionGroups}
+        data={announcements}
+        filteredData={filteredAnnouncements}
+        applyFilter={applyAnnouncementFilter}
+        title="公告篩選"
+        showAdvancedFilters={showAdvancedFilters}
+        onShowAdvancedFiltersChange={setShowAdvancedFilters}
+        onClearAll={clearAllConditions}
       />
 
       {/* 公告顯示區域 */}

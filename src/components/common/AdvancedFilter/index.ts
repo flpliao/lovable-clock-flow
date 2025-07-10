@@ -9,4 +9,8 @@ export type {
   AdvancedFilterProps,
   UseAdvancedFilterOptions,
   UseAdvancedFilterReturn,
+  ApiFilterRequest,
+  ApiFilterResponse,
+  FilterApiService,
+  PaginationConfig,
 } from './types';

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Filter, X, Search, RefreshCw } from 'lucide-react';
+import { Filter, X, Search, RefreshCw, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { AdvancedFilterProps } from './types';
 
 export function AdvancedFilter<T>({
@@ -16,8 +16,12 @@ export function AdvancedFilter<T>({
   operators,
   conditionGroups,
   onConditionGroupsChange,
-  data,
-  filteredData,
+  data = [],
+  filteredData = [],
+  apiService,
+  loading = false,
+  pagination,
+  onPaginationChange,
   title = '進階篩選',
   showAdvancedFilters,
   onShowAdvancedFiltersChange,
@@ -25,6 +29,8 @@ export function AdvancedFilter<T>({
   onRefresh,
   className = '',
 }: AdvancedFilterProps<T>) {
+  // 混合模式狀態管理
+  const [mixedModeStates, setMixedModeStates] = useState<Record<string, 'select' | 'input'>>({});
   // 新增條件組
   const addConditionGroup = () => {
     const newGroupId = `group-${Date.now()}`;
@@ -182,9 +188,14 @@ export function AdvancedFilter<T>({
           <Button
             variant="outline"
             onClick={onRefresh}
+            disabled={loading}
             className="bg-white/60 border-white/40 hover:bg-white/80"
           >
-            <RefreshCw className="h-4 w-4" />
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
           </Button>
         )}
       </div>
@@ -305,12 +316,114 @@ export function AdvancedFilter<T>({
                         </SelectContent>
                       </Select>
                       {/* 值輸入 */}
-                      <Input
-                        value={cond.value}
-                        onChange={e => updateCondition(group.id, condIdx, 'value', e.target.value)}
-                        className="w-40 bg-white/70 border-white/40 backdrop-blur-sm"
-                        placeholder="請輸入內容"
-                      />
+                      {(() => {
+                        const currentField = searchFields.find(f => f.value === cond.field);
+                        const fieldType = currentField?.type || 'input';
+                        const currentMode = mixedModeStates[`${group.id}-${condIdx}`] || 'select';
+
+                        // 混合模式：用戶可以切換下拉選單和輸入框
+                        if (fieldType === 'mixed' && currentField?.options) {
+                          return (
+                            <div className="flex items-center gap-1">
+                              <div className="relative">
+                                {currentMode === 'select' ? (
+                                  <Select
+                                    value={cond.value}
+                                    onValueChange={val =>
+                                      updateCondition(group.id, condIdx, 'value', val)
+                                    }
+                                  >
+                                    <SelectTrigger className="w-36 bg-white/70 border-white/40 backdrop-blur-sm">
+                                      <SelectValue
+                                        placeholder={currentField?.placeholder || '請選擇'}
+                                      />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {currentField.options.map(option => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                          {option.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                ) : (
+                                  <Input
+                                    value={cond.value}
+                                    onChange={e =>
+                                      updateCondition(group.id, condIdx, 'value', e.target.value)
+                                    }
+                                    className="w-36 bg-white/70 border-white/40 backdrop-blur-sm"
+                                    placeholder={currentField?.placeholder || '請輸入內容'}
+                                  />
+                                )}
+                              </div>
+
+                              {/* 切換按鈕 */}
+                              {currentField.allowCustomInput !== false && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newMode = currentMode === 'select' ? 'input' : 'select';
+                                    setMixedModeStates(prev => ({
+                                      ...prev,
+                                      [`${group.id}-${condIdx}`]: newMode,
+                                    }));
+                                    // 切換模式時清空值
+                                    updateCondition(group.id, condIdx, 'value', '');
+                                  }}
+                                  className="h-8 w-8 p-0 bg-white/50 border-white/30 hover:bg-white/70"
+                                  title={
+                                    currentMode === 'select' ? '切換為輸入模式' : '切換為選擇模式'
+                                  }
+                                >
+                                  {currentMode === 'select' ? (
+                                    <ChevronDown className="h-3 w-3" />
+                                  ) : (
+                                    <ChevronUp className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        // 純下拉選單模式
+                        if (fieldType === 'select' && currentField?.options) {
+                          return (
+                            <Select
+                              value={cond.value}
+                              onValueChange={val =>
+                                updateCondition(group.id, condIdx, 'value', val)
+                              }
+                            >
+                              <SelectTrigger className="w-40 bg-white/70 border-white/40 backdrop-blur-sm">
+                                <SelectValue placeholder={currentField?.placeholder || '請選擇'} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {currentField.options.map(option => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          );
+                        }
+
+                        // 純輸入框模式
+                        return (
+                          <Input
+                            value={cond.value}
+                            onChange={e =>
+                              updateCondition(group.id, condIdx, 'value', e.target.value)
+                            }
+                            className="w-40 bg-white/70 border-white/40 backdrop-blur-sm"
+                            placeholder={currentField?.placeholder || '請輸入內容'}
+                          />
+                        );
+                      })()}
                       {/* 移除條件 */}
                       {group.conditions.length > 1 && (
                         <Button
@@ -345,15 +458,73 @@ export function AdvancedFilter<T>({
           {/* 篩選結果統計 */}
           <div className="mt-3 pt-3 border-t border-white/30">
             <div className="flex items-center justify-between text-xs text-gray-600">
-              <span>
-                搜尋結果：{filteredData.length} / {data.length} 筆資料
-              </span>
-              {appliedConditionCount > 0 && (
+              {loading ? (
+                <div className="flex items-center">
+                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  <span>載入中...</span>
+                </div>
+              ) : pagination ? (
+                <span>
+                  搜尋結果：第 {pagination.page} 頁，共 {pagination.total} 筆資料
+                  {pagination.totalPages > 1 && ` (共 ${pagination.totalPages} 頁)`}
+                </span>
+              ) : (
+                <span>
+                  搜尋結果：{filteredData.length} / {data.length} 筆資料
+                </span>
+              )}
+              {appliedConditionCount > 0 && !loading && (
                 <span className="text-blue-600 font-medium">
                   已套用 {appliedConditionCount} 個條件
                 </span>
               )}
             </div>
+
+            {/* 分頁控制 */}
+            {pagination && pagination.totalPages > 1 && onPaginationChange && (
+              <div className="flex items-center justify-center mt-3 space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPaginationChange(pagination.page - 1, pagination.pageSize)}
+                  disabled={pagination.page <= 1 || loading}
+                  className="bg-white/70 border-white/40 hover:bg-white/80"
+                >
+                  上一頁
+                </Button>
+
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    const startPage = Math.max(1, pagination.page - 2);
+                    const pageNumber = startPage + i;
+                    if (pageNumber > pagination.totalPages) return null;
+
+                    return (
+                      <Button
+                        key={pageNumber}
+                        variant={pageNumber === pagination.page ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => onPaginationChange(pageNumber, pagination.pageSize)}
+                        disabled={loading}
+                        className="w-8 h-8 p-0 bg-white/70 border-white/40 hover:bg-white/80"
+                      >
+                        {pageNumber}
+                      </Button>
+                    );
+                  })}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPaginationChange(pagination.page + 1, pagination.pageSize)}
+                  disabled={pagination.page >= pagination.totalPages || loading}
+                  className="bg-white/70 border-white/40 hover:bg-white/80"
+                >
+                  下一頁
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}

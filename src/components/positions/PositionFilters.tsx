@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Select,
   SelectContent,
@@ -19,6 +19,73 @@ import {
 } from '@/components/common/AdvancedFilter';
 import { Position } from './types';
 
+// 職位 API 篩選服務
+class PositionApiFilterService {
+  async filter(request: {
+    conditionGroups: FilterGroup[];
+    page?: number;
+    pageSize?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<{
+    data: Position[];
+    total: number;
+    totalPages: number;
+    page: number;
+    pageSize: number;
+  }> {
+    try {
+      const { conditionGroups, page = 1, pageSize = 10 } = request;
+
+      // 這裡可以實作真正的 API 呼叫
+      // 目前先使用本地篩選作為示範
+      const { positionApiService } = await import('./services/positionApiService');
+      const allPositions = await positionApiService.getPositions();
+
+      // 應用篩選條件
+      const filteredData = allPositions.filter(position =>
+        applyMultiConditionFilter(position, conditionGroups, (item, field) => {
+          return (item[field as keyof Position] || '').toString();
+        })
+      );
+
+      // 分頁處理
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedData = filteredData.slice(startIndex, endIndex);
+
+      return {
+        data: paginatedData,
+        total: filteredData.length,
+        totalPages: Math.ceil(filteredData.length / pageSize),
+        page,
+        pageSize,
+      };
+    } catch (error) {
+      console.error('篩選職位失敗:', error);
+      throw error;
+    }
+  }
+
+  // 獲取職級選項
+  getLevelOptions() {
+    return [
+      { value: '1', label: '職級 1' },
+      { value: '2', label: '職級 2' },
+      { value: '3', label: '職級 3' },
+      { value: '4', label: '職級 4' },
+      { value: '5', label: '職級 5' },
+      { value: '6', label: '職級 6' },
+      { value: '7', label: '職級 7' },
+      { value: '8', label: '職級 8' },
+      { value: '9', label: '職級 9' },
+      { value: '10', label: '職級 10' },
+    ];
+  }
+}
+
+const positionApiFilterService = new PositionApiFilterService();
+
 const PositionFilters = () => {
   const {
     positions,
@@ -35,19 +102,31 @@ const PositionFilters = () => {
     refreshPositions,
   } = usePositionManagementContext();
 
-  // 定義搜尋欄位
-  const SEARCH_FIELDS: SearchField[] = [
-    { value: 'name', label: '職位名稱' },
-    { value: 'description', label: '說明' },
-    { value: 'level', label: '職級' },
-  ];
-
-  // 篩選函數
-  const applyPositionFilter = (position: Position, conditionGroups: FilterGroup[]) => {
-    return applyMultiConditionFilter(position, conditionGroups, (item, field) => {
-      return (item[field as keyof Position] || '').toString();
-    });
-  };
+  // 定義搜尋欄位（包含下拉選單配置）
+  const SEARCH_FIELDS: SearchField[] = useMemo(
+    () => [
+      {
+        value: 'name',
+        label: '職位名稱',
+        type: 'input',
+        placeholder: '請輸入職位名稱',
+      },
+      {
+        value: 'description',
+        label: '說明',
+        type: 'input',
+        placeholder: '請輸入說明',
+      },
+      {
+        value: 'level',
+        label: '職級',
+        type: 'select',
+        options: positionApiFilterService.getLevelOptions(),
+        placeholder: '請選擇職級',
+      },
+    ],
+    []
+  );
 
   const toggleSortOrder = () => {
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -63,7 +142,7 @@ const PositionFilters = () => {
 
   return (
     <div className="space-y-4">
-      {/* 使用通用篩選組件 */}
+      {/* 使用通用篩選組件（API 模式） */}
       <AdvancedFilter
         searchFields={SEARCH_FIELDS}
         operators={DEFAULT_OPERATORS}
@@ -71,7 +150,7 @@ const PositionFilters = () => {
         onConditionGroupsChange={setConditionGroups}
         data={positions}
         filteredData={filteredPositions}
-        applyFilter={applyPositionFilter}
+        apiService={positionApiFilterService}
         title="職位篩選"
         showAdvancedFilters={showAdvancedFilters}
         onShowAdvancedFiltersChange={setShowAdvancedFilters}

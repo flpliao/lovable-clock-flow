@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +27,83 @@ import SalaryStructureQuickAddDialog from './salary/SalaryStructureQuickAddDialo
 import { Skeleton } from '@/components/ui/skeleton';
 import { SalaryStructure } from '@/types/hr';
 
+// 薪資結構 API 篩選服務
+class SalaryStructureApiFilterService {
+  async filter(request: {
+    conditionGroups: FilterGroup[];
+    page?: number;
+    pageSize?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<{
+    data: SalaryStructure[];
+    total: number;
+    totalPages: number;
+    page: number;
+    pageSize: number;
+  }> {
+    try {
+      const { conditionGroups, page = 1, pageSize = 10 } = request;
+
+      // 這裡可以實作真正的 API 呼叫
+      // 目前先使用本地篩選作為示範
+      const { usePayrollManagement } = await import('@/hooks/usePayrollManagement');
+      // 注意：這裡需要從實際的資料來源獲取資料
+      // 由於 usePayrollManagement 是 Hook，我們需要其他方式獲取資料
+
+      // 暫時返回空資料，實際實作時需要從 API 獲取
+      return {
+        data: [],
+        total: 0,
+        totalPages: 0,
+        page,
+        pageSize,
+      };
+    } catch (error) {
+      console.error('篩選薪資結構失敗:', error);
+      throw error;
+    }
+  }
+
+  // 獲取職級選項
+  getLevelOptions() {
+    return [
+      { value: '1', label: '職級 1' },
+      { value: '2', label: '職級 2' },
+      { value: '3', label: '職級 3' },
+      { value: '4', label: '職級 4' },
+      { value: '5', label: '職級 5' },
+      { value: '6', label: '職級 6' },
+      { value: '7', label: '職級 7' },
+      { value: '8', label: '職級 8' },
+      { value: '9', label: '職級 9' },
+      { value: '10', label: '職級 10' },
+    ];
+  }
+
+  // 獲取狀態選項
+  getStatusOptions() {
+    return [
+      { value: '啟用', label: '啟用' },
+      { value: '停用', label: '停用' },
+    ];
+  }
+
+  // 獲取部門選項（這裡可以從 API 獲取）
+  getDepartmentOptions() {
+    return [
+      { value: 'IT', label: '資訊技術部' },
+      { value: 'HR', label: '人力資源部' },
+      { value: 'Finance', label: '財務部' },
+      { value: 'Marketing', label: '行銷部' },
+      { value: 'Sales', label: '業務部' },
+      { value: 'Operations', label: '營運部' },
+    ];
+  }
+}
+
+const salaryStructureApiFilterService = new SalaryStructureApiFilterService();
+
 const SalaryStructureManagement: React.FC = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showQuickAddDialog, setShowQuickAddDialog] = useState(false);
@@ -42,27 +119,53 @@ const SalaryStructureManagement: React.FC = () => {
     refresh,
   } = usePayrollManagement();
 
-  // 定義搜尋欄位
-  const SEARCH_FIELDS: SearchField[] = [
-    { value: 'position', label: '職位名稱' },
-    { value: 'department', label: '部門' },
-    { value: 'level', label: '職級' },
-    { value: 'base_salary', label: '基本薪資' },
-    { value: 'effective_date', label: '生效日期' },
-    { value: 'is_active', label: '狀態' },
-  ];
+  // 定義搜尋欄位（包含下拉選單配置）
+  const SEARCH_FIELDS: SearchField[] = useMemo(
+    () => [
+      {
+        value: 'position',
+        label: '職位名稱',
+        type: 'input',
+        placeholder: '請輸入職位名稱',
+      },
+      {
+        value: 'department',
+        label: '部門',
+        type: 'select',
+        options: salaryStructureApiFilterService.getDepartmentOptions(),
+        placeholder: '請選擇部門',
+      },
+      {
+        value: 'level',
+        label: '職級',
+        type: 'select',
+        options: salaryStructureApiFilterService.getLevelOptions(),
+        placeholder: '請選擇職級',
+      },
+      {
+        value: 'base_salary',
+        label: '基本薪資',
+        type: 'input',
+        placeholder: '請輸入薪資金額',
+      },
+      {
+        value: 'effective_date',
+        label: '生效日期',
+        type: 'input',
+        placeholder: '請輸入日期 (YYYY-MM-DD)',
+      },
+      {
+        value: 'is_active',
+        label: '狀態',
+        type: 'select',
+        options: salaryStructureApiFilterService.getStatusOptions(),
+        placeholder: '請選擇狀態',
+      },
+    ],
+    []
+  );
 
-  // 篩選函數
-  const applyStructureFilter = (structure: SalaryStructure, conditionGroups: FilterGroup[]) => {
-    return applyMultiConditionFilter(structure, conditionGroups, (item, field) => {
-      if (field === 'is_active') {
-        return item.is_active ? '啟用' : '停用';
-      }
-      return (item[field as keyof SalaryStructure] || '').toString();
-    });
-  };
-
-  // 使用通用篩選 Hook
+  // 使用通用篩選 Hook（API 模式）
   const {
     conditionGroups,
     filteredData: filteredStructures,
@@ -71,11 +174,13 @@ const SalaryStructureManagement: React.FC = () => {
     setConditionGroups,
     setShowAdvancedFilters,
     clearAllConditions,
+    loading: filterLoading,
   } = useAdvancedFilter({
     data: salaryStructures,
     searchFields: SEARCH_FIELDS,
     operators: DEFAULT_OPERATORS,
-    applyFilter: applyStructureFilter,
+    applyFilter: () => true, // API 模式下不需要本地篩選
+    apiService: salaryStructureApiFilterService,
   });
 
   const calculateTotalAllowances = (allowances: Record<string, number>): number => {
@@ -168,7 +273,7 @@ const SalaryStructureManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* 使用通用篩選組件 */}
+      {/* 使用通用篩選組件（API 模式） */}
       <AdvancedFilter
         searchFields={SEARCH_FIELDS}
         operators={DEFAULT_OPERATORS}
@@ -176,7 +281,8 @@ const SalaryStructureManagement: React.FC = () => {
         onConditionGroupsChange={setConditionGroups}
         data={salaryStructures}
         filteredData={filteredStructures}
-        applyFilter={applyStructureFilter}
+        apiService={salaryStructureApiFilterService}
+        loading={filterLoading}
         title="薪資結構篩選"
         showAdvancedFilters={showAdvancedFilters}
         onShowAdvancedFiltersChange={setShowAdvancedFilters}

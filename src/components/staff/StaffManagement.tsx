@@ -112,7 +112,7 @@ const StaffManagement = () => {
     operators: DEFAULT_OPERATORS,
     applyFilter: applyStaffFilter,
     // 啟用API模式
-    apiService: staffFilterApiService,
+    serviceType: 'staff',
     initialPageSize: 20,
     enablePagination: true,
   });

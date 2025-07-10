@@ -5,8 +5,10 @@ import {
   UseAdvancedFilterOptions,
   UseAdvancedFilterReturn,
   ApiFilterRequest,
+  ApiFilterResponse,
   PaginationConfig,
 } from './types';
+import { filterServiceInstances } from '@/services/filter';
 
 export function useAdvancedFilter<T>({
   data = [],
@@ -15,6 +17,7 @@ export function useAdvancedFilter<T>({
   applyFilter,
   onDataChange,
   apiService,
+  serviceType,
   initialPageSize = 50,
   enablePagination = false,
 }: UseAdvancedFilterOptions<T>): UseAdvancedFilterReturn<T> {
@@ -47,7 +50,7 @@ export function useAdvancedFilter<T>({
   });
 
   // 判斷是否為API模式
-  const isApiMode = Boolean(apiService);
+  const isApiMode = Boolean(apiService || serviceType);
 
   // 計算已套用條件數
   const appliedConditionCount = useMemo(() => {
@@ -60,7 +63,7 @@ export function useAdvancedFilter<T>({
   // API請求函數
   const fetchData = useCallback(
     async (groups?: FilterGroup[], page?: number, pageSize?: number) => {
-      if (!isApiMode || !apiService) return;
+      if (!isApiMode) return;
 
       setLoading(true);
       try {
@@ -71,7 +74,19 @@ export function useAdvancedFilter<T>({
         };
 
         console.log('🔍 useAdvancedFilter: 執行API篩選請求', request);
-        const response = await apiService.filter(request);
+
+        let response: ApiFilterResponse<T>;
+
+        if (apiService) {
+          // 使用直接傳入的服務
+          response = await apiService.filter(request);
+        } else if (serviceType) {
+          // 使用服務類型動態載入服務
+          const serviceInstance = await filterServiceInstances[serviceType]();
+          response = (await serviceInstance.filter(request)) as ApiFilterResponse<T>;
+        } else {
+          throw new Error('未提供API服務或服務類型');
+        }
 
         setApiData(response.data);
         setPagination({
@@ -99,7 +114,15 @@ export function useAdvancedFilter<T>({
         setLoading(false);
       }
     },
-    [isApiMode, apiService, conditionGroups, pagination.page, pagination.pageSize, initialPageSize]
+    [
+      isApiMode,
+      apiService,
+      serviceType,
+      conditionGroups,
+      pagination.page,
+      pagination.pageSize,
+      initialPageSize,
+    ]
   );
 
   // 計算篩選後的資料

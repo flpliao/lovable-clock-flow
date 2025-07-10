@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Plus } from 'lucide-react';
@@ -23,6 +23,91 @@ interface AttendanceExceptionWithStaff extends AttendanceException {
   staff_department?: string;
   staff_position?: string;
 }
+
+// 出勤異常 API 篩選服務
+class AttendanceExceptionApiFilterService {
+  async filter(request: {
+    conditionGroups: FilterGroup[];
+    page?: number;
+    pageSize?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<{
+    data: AttendanceExceptionWithStaff[];
+    total: number;
+    totalPages: number;
+    page: number;
+    pageSize: number;
+  }> {
+    try {
+      const { conditionGroups, page = 1, pageSize = 10 } = request;
+
+      // 這裡可以實作真正的 API 呼叫
+      // 目前先使用本地篩選作為示範
+      // 注意：實際實作時需要從 API 獲取資料
+
+      // 暫時返回空資料，實際實作時需要從 API 獲取
+      return {
+        data: [],
+        total: 0,
+        totalPages: 0,
+        page,
+        pageSize,
+      };
+    } catch (error) {
+      console.error('篩選出勤異常失敗:', error);
+      throw error;
+    }
+  }
+
+  // 獲取異常類型選項
+  getExceptionTypeOptions() {
+    return [
+      { value: 'missing_check_in', label: '忘記打卡' },
+      { value: 'late_check_in', label: '遲到' },
+      { value: 'early_check_out', label: '早退' },
+      { value: 'missing_check_out', label: '忘記下班打卡' },
+      { value: 'overtime', label: '加班' },
+      { value: 'business_trip', label: '出差' },
+      { value: 'leave', label: '請假' },
+    ];
+  }
+
+  // 獲取狀態選項
+  getStatusOptions() {
+    return [
+      { value: 'pending', label: '待審核' },
+      { value: 'approved', label: '已核准' },
+      { value: 'rejected', label: '已拒絕' },
+      { value: 'cancelled', label: '已取消' },
+    ];
+  }
+
+  // 獲取部門選項
+  getDepartmentOptions() {
+    return [
+      { value: 'IT', label: '資訊技術部' },
+      { value: 'HR', label: '人力資源部' },
+      { value: 'Finance', label: '財務部' },
+      { value: 'Marketing', label: '行銷部' },
+      { value: 'Sales', label: '業務部' },
+      { value: 'Operations', label: '營運部' },
+    ];
+  }
+
+  // 獲取職位選項
+  getPositionOptions() {
+    return [
+      { value: 'manager', label: '經理' },
+      { value: 'senior', label: '資深專員' },
+      { value: 'specialist', label: '專員' },
+      { value: 'assistant', label: '助理' },
+      { value: 'intern', label: '實習生' },
+    ];
+  }
+}
+
+const attendanceExceptionApiFilterService = new AttendanceExceptionApiFilterService();
 
 const AttendanceExceptionManagement: React.FC = () => {
   // 使用真實的員工資料
@@ -61,43 +146,60 @@ const AttendanceExceptionManagement: React.FC = () => {
         ]
       : [];
 
-  // 定義搜尋欄位
-  const SEARCH_FIELDS: SearchField[] = [
-    { value: 'staff_name', label: '員工姓名' },
-    { value: 'staff_department', label: '部門' },
-    { value: 'staff_position', label: '職位' },
-    { value: 'exception_type', label: '異常類型' },
-    { value: 'status', label: '狀態' },
-    { value: 'exception_date', label: '異常日期' },
-    { value: 'reason', label: '異常原因' },
-  ];
+  // 定義搜尋欄位（包含下拉選單配置）
+  const SEARCH_FIELDS: SearchField[] = useMemo(
+    () => [
+      {
+        value: 'staff_name',
+        label: '員工姓名',
+        type: 'input',
+        placeholder: '請輸入員工姓名',
+      },
+      {
+        value: 'staff_department',
+        label: '部門',
+        type: 'select',
+        options: attendanceExceptionApiFilterService.getDepartmentOptions(),
+        placeholder: '請選擇部門',
+      },
+      {
+        value: 'staff_position',
+        label: '職位',
+        type: 'select',
+        options: attendanceExceptionApiFilterService.getPositionOptions(),
+        placeholder: '請選擇職位',
+      },
+      {
+        value: 'exception_type',
+        label: '異常類型',
+        type: 'select',
+        options: attendanceExceptionApiFilterService.getExceptionTypeOptions(),
+        placeholder: '請選擇異常類型',
+      },
+      {
+        value: 'status',
+        label: '狀態',
+        type: 'select',
+        options: attendanceExceptionApiFilterService.getStatusOptions(),
+        placeholder: '請選擇狀態',
+      },
+      {
+        value: 'exception_date',
+        label: '異常日期',
+        type: 'input',
+        placeholder: '請輸入日期 (YYYY-MM-DD)',
+      },
+      {
+        value: 'reason',
+        label: '異常原因',
+        type: 'input',
+        placeholder: '請輸入異常原因',
+      },
+    ],
+    []
+  );
 
-  // 篩選函數
-  const applyExceptionFilter = (
-    exception: AttendanceExceptionWithStaff,
-    conditionGroups: FilterGroup[]
-  ) => {
-    return applyMultiConditionFilter(exception, conditionGroups, (item, field) => {
-      if (field === 'staff_name') {
-        return item.staff_name || '';
-      }
-      if (field === 'staff_department') {
-        return item.staff_department || '';
-      }
-      if (field === 'staff_position') {
-        return item.staff_position || '';
-      }
-      if (field === 'exception_type') {
-        return getExceptionTypeText(item.exception_type);
-      }
-      if (field === 'status') {
-        return getExceptionStatusText(item.status);
-      }
-      return (item[field as keyof AttendanceExceptionWithStaff] || '').toString();
-    });
-  };
-
-  // 使用通用篩選 Hook
+  // 使用通用篩選 Hook（API 模式）
   const {
     conditionGroups,
     filteredData: filteredExceptions,
@@ -106,11 +208,13 @@ const AttendanceExceptionManagement: React.FC = () => {
     setConditionGroups,
     setShowAdvancedFilters,
     clearAllConditions,
+    loading: filterLoading,
   } = useAdvancedFilter({
     data: exceptions,
     searchFields: SEARCH_FIELDS,
     operators: DEFAULT_OPERATORS,
-    applyFilter: applyExceptionFilter,
+    applyFilter: () => true, // API 模式下不需要本地篩選
+    apiService: attendanceExceptionApiFilterService,
   });
 
   return (
@@ -126,7 +230,7 @@ const AttendanceExceptionManagement: React.FC = () => {
         </Button>
       </div>
 
-      {/* 使用通用篩選組件 */}
+      {/* 使用通用篩選組件（API 模式） */}
       <AdvancedFilter
         searchFields={SEARCH_FIELDS}
         operators={DEFAULT_OPERATORS}
@@ -134,7 +238,8 @@ const AttendanceExceptionManagement: React.FC = () => {
         onConditionGroupsChange={setConditionGroups}
         data={exceptions}
         filteredData={filteredExceptions}
-        applyFilter={applyExceptionFilter}
+        apiService={attendanceExceptionApiFilterService}
+        loading={filterLoading}
         title="出勤異常篩選"
         showAdvancedFilters={showAdvancedFilters}
         onShowAdvancedFiltersChange={setShowAdvancedFilters}

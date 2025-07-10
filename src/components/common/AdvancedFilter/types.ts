@@ -102,6 +102,7 @@ export interface UseAdvancedFilterOptions<T> {
 
   // 新增：API模式選項
   apiService?: FilterApiService<T>;
+  serviceType?: 'staff' | 'overtime' | 'position' | 'announcement';
   initialPageSize?: number;
   enablePagination?: boolean;
 }

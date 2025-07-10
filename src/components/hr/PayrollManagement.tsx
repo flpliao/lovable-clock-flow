@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { DollarSign, Plus, Calculator, RefreshCw, TrendingUp, Users, FileText } from 'lucide-react';
 import {
@@ -24,6 +24,79 @@ interface PayrollWithStaff extends Payroll {
   };
 }
 
+// 薪資管理 API 篩選服務
+class PayrollApiFilterService {
+  async filter(request: {
+    conditionGroups: FilterGroup[];
+    page?: number;
+    pageSize?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<{
+    data: PayrollWithStaff[];
+    total: number;
+    totalPages: number;
+    page: number;
+    pageSize: number;
+  }> {
+    try {
+      const { conditionGroups, page = 1, pageSize = 10 } = request;
+
+      // 這裡可以實作真正的 API 呼叫
+      // 目前先使用本地篩選作為示範
+      // 注意：實際實作時需要從 API 獲取資料
+
+      // 暫時返回空資料，實際實作時需要從 API 獲取
+      return {
+        data: [],
+        total: 0,
+        totalPages: 0,
+        page,
+        pageSize,
+      };
+    } catch (error) {
+      console.error('篩選薪資記錄失敗:', error);
+      throw error;
+    }
+  }
+
+  // 獲取狀態選項
+  getStatusOptions() {
+    return [
+      { value: 'pending', label: '待審核' },
+      { value: 'approved', label: '已核准' },
+      { value: 'rejected', label: '已拒絕' },
+      { value: 'paid', label: '已發放' },
+      { value: 'cancelled', label: '已取消' },
+    ];
+  }
+
+  // 獲取部門選項
+  getDepartmentOptions() {
+    return [
+      { value: 'IT', label: '資訊技術部' },
+      { value: 'HR', label: '人力資源部' },
+      { value: 'Finance', label: '財務部' },
+      { value: 'Marketing', label: '行銷部' },
+      { value: 'Sales', label: '業務部' },
+      { value: 'Operations', label: '營運部' },
+    ];
+  }
+
+  // 獲取職位選項
+  getPositionOptions() {
+    return [
+      { value: 'manager', label: '經理' },
+      { value: 'senior', label: '資深專員' },
+      { value: 'specialist', label: '專員' },
+      { value: 'assistant', label: '助理' },
+      { value: 'intern', label: '實習生' },
+    ];
+  }
+}
+
+const payrollApiFilterService = new PayrollApiFilterService();
+
 const PayrollManagement: React.FC = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingPayroll, setEditingPayroll] = useState<PayrollWithStaff | null>(null);
@@ -41,33 +114,53 @@ const PayrollManagement: React.FC = () => {
     refresh,
   } = usePayrollManagement();
 
-  // 定義搜尋欄位
-  const SEARCH_FIELDS: SearchField[] = [
-    { value: 'staff_name', label: '員工姓名' },
-    { value: 'staff_position', label: '職位' },
-    { value: 'staff_department', label: '部門' },
-    { value: 'status', label: '狀態' },
-    { value: 'pay_period_start', label: '薪資期間開始' },
-    { value: 'pay_period_end', label: '薪資期間結束' },
-  ];
+  // 定義搜尋欄位（包含下拉選單配置）
+  const SEARCH_FIELDS: SearchField[] = useMemo(
+    () => [
+      {
+        value: 'staff_name',
+        label: '員工姓名',
+        type: 'input',
+        placeholder: '請輸入員工姓名',
+      },
+      {
+        value: 'staff_position',
+        label: '職位',
+        type: 'select',
+        options: payrollApiFilterService.getPositionOptions(),
+        placeholder: '請選擇職位',
+      },
+      {
+        value: 'staff_department',
+        label: '部門',
+        type: 'select',
+        options: payrollApiFilterService.getDepartmentOptions(),
+        placeholder: '請選擇部門',
+      },
+      {
+        value: 'status',
+        label: '狀態',
+        type: 'select',
+        options: payrollApiFilterService.getStatusOptions(),
+        placeholder: '請選擇狀態',
+      },
+      {
+        value: 'pay_period_start',
+        label: '薪資期間開始',
+        type: 'input',
+        placeholder: '請輸入開始日期 (YYYY-MM-DD)',
+      },
+      {
+        value: 'pay_period_end',
+        label: '薪資期間結束',
+        type: 'input',
+        placeholder: '請輸入結束日期 (YYYY-MM-DD)',
+      },
+    ],
+    []
+  );
 
-  // 篩選函數
-  const applyPayrollFilter = (payroll: PayrollWithStaff, conditionGroups: FilterGroup[]) => {
-    return applyMultiConditionFilter(payroll, conditionGroups, (item, field) => {
-      if (field === 'staff_name') {
-        return item.staff?.name || '';
-      }
-      if (field === 'staff_position') {
-        return item.staff?.position || '';
-      }
-      if (field === 'staff_department') {
-        return item.staff?.department || '';
-      }
-      return (item[field as keyof PayrollWithStaff] || '').toString();
-    });
-  };
-
-  // 使用通用篩選 Hook
+  // 使用通用篩選 Hook（API 模式）
   const {
     conditionGroups,
     filteredData: filteredPayrolls,
@@ -76,11 +169,13 @@ const PayrollManagement: React.FC = () => {
     setConditionGroups,
     setShowAdvancedFilters,
     clearAllConditions,
+    loading: filterLoading,
   } = useAdvancedFilter({
     data: payrolls as PayrollWithStaff[],
     searchFields: SEARCH_FIELDS,
     operators: DEFAULT_OPERATORS,
-    applyFilter: applyPayrollFilter,
+    applyFilter: () => true, // API 模式下不需要本地篩選
+    apiService: payrollApiFilterService,
   });
 
   const handleCreatePayroll = async (payrollData: Partial<Payroll>) => {
@@ -161,7 +256,7 @@ const PayrollManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* 使用通用篩選組件 */}
+      {/* 使用通用篩選組件（API 模式） */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-purple-500/70 rounded-xl shadow-lg">
@@ -176,7 +271,8 @@ const PayrollManagement: React.FC = () => {
           onConditionGroupsChange={setConditionGroups}
           data={payrolls as PayrollWithStaff[]}
           filteredData={filteredPayrolls}
-          applyFilter={applyPayrollFilter}
+          apiService={payrollApiFilterService}
+          loading={filterLoading}
           title="薪資記錄篩選"
           showAdvancedFilters={showAdvancedFilters}
           onShowAdvancedFiltersChange={setShowAdvancedFilters}

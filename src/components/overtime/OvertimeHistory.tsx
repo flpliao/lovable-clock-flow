@@ -5,7 +5,7 @@ import { useCurrentUser } from '@/hooks/useStores';
 import { overtimeService } from '@/services/overtimeService';
 import type { OvertimeRequest } from '@/types/overtime';
 import { Calendar, Clock } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import {
   AdvancedFilter,
@@ -16,34 +16,133 @@ import {
   FilterGroup,
 } from '@/components/common/AdvancedFilter';
 
+// 加班歷史 API 篩選服務
+class OvertimeHistoryApiService {
+  async filter(request: {
+    conditionGroups: FilterGroup[];
+    page?: number;
+    pageSize?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<{
+    data: OvertimeRequest[];
+    total: number;
+    totalPages: number;
+    page: number;
+    pageSize: number;
+  }> {
+    try {
+      const { conditionGroups, page = 1, pageSize = 10 } = request;
+
+      // 這裡可以實作真正的 API 呼叫
+      // 目前先使用本地篩選作為示範
+      const allRequests = await overtimeService.getUserOvertimeRequests();
+
+      // 應用篩選條件
+      const filteredData = allRequests.filter(request =>
+        applyMultiConditionFilter(request, conditionGroups, (item, field) => {
+          if (field === 'overtime_date') {
+            return new Date(item.overtime_date).toLocaleDateString('zh-TW');
+          }
+          if (field === 'hours') {
+            return item.hours.toString();
+          }
+          return (item[field as keyof OvertimeRequest] || '').toString();
+        })
+      );
+
+      // 分頁處理
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedData = filteredData.slice(startIndex, endIndex);
+
+      return {
+        data: paginatedData,
+        total: filteredData.length,
+        totalPages: Math.ceil(filteredData.length / pageSize),
+        page,
+        pageSize,
+      };
+    } catch (error) {
+      console.error('篩選加班記錄失敗:', error);
+      throw error;
+    }
+  }
+
+  // 獲取加班類型選項
+  getOvertimeTypeOptions() {
+    return [
+      { value: 'regular', label: '一般加班' },
+      { value: 'holiday', label: '假日加班' },
+      { value: 'night', label: '夜間加班' },
+      { value: 'weekend', label: '週末加班' },
+    ];
+  }
+
+  // 獲取狀態選項
+  getStatusOptions() {
+    return [
+      { value: 'pending', label: '待審核' },
+      { value: 'approved', label: '已核准' },
+      { value: 'rejected', label: '已拒絕' },
+      { value: 'cancelled', label: '已取消' },
+    ];
+  }
+}
+
+const overtimeHistoryApiService = new OvertimeHistoryApiService();
+
 const OvertimeHistory: React.FC = () => {
   const currentUser = useCurrentUser();
   const [requests, setRequests] = useState<OvertimeRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 10,
+    total: 0,
+    totalPages: 0,
+  });
 
-  // 定義搜尋欄位
-  const SEARCH_FIELDS: SearchField[] = [
-    { value: 'overtime_type', label: '加班類型' },
-    { value: 'reason', label: '加班原因' },
-    { value: 'status', label: '狀態' },
-    { value: 'overtime_date', label: '加班日期' },
-    { value: 'hours', label: '加班時數' },
-  ];
+  // 定義搜尋欄位（包含下拉選單配置）
+  const SEARCH_FIELDS: SearchField[] = useMemo(
+    () => [
+      {
+        value: 'overtime_type',
+        label: '加班類型',
+        type: 'select',
+        options: overtimeHistoryApiService.getOvertimeTypeOptions(),
+        placeholder: '請選擇加班類型',
+      },
+      {
+        value: 'status',
+        label: '狀態',
+        type: 'select',
+        options: overtimeHistoryApiService.getStatusOptions(),
+        placeholder: '請選擇狀態',
+      },
+      {
+        value: 'reason',
+        label: '加班原因',
+        type: 'input',
+        placeholder: '請輸入加班原因',
+      },
+      {
+        value: 'overtime_date',
+        label: '加班日期',
+        type: 'input',
+        placeholder: '請輸入日期 (YYYY-MM-DD)',
+      },
+      {
+        value: 'hours',
+        label: '加班時數',
+        type: 'input',
+        placeholder: '請輸入時數',
+      },
+    ],
+    []
+  );
 
-  // 篩選函數
-  const applyOvertimeFilter = (request: OvertimeRequest, conditionGroups: FilterGroup[]) => {
-    return applyMultiConditionFilter(request, conditionGroups, (item, field) => {
-      if (field === 'overtime_date') {
-        return new Date(item.overtime_date).toLocaleDateString('zh-TW');
-      }
-      if (field === 'hours') {
-        return item.hours.toString();
-      }
-      return (item[field as keyof OvertimeRequest] || '').toString();
-    });
-  };
-
-  // 使用通用篩選 Hook
+  // 使用通用篩選 Hook（API 模式）
   const {
     conditionGroups,
     filteredData: filteredRequests,
@@ -52,11 +151,13 @@ const OvertimeHistory: React.FC = () => {
     setConditionGroups,
     setShowAdvancedFilters,
     clearAllConditions,
+    loading: filterLoading,
   } = useAdvancedFilter({
     data: requests,
     searchFields: SEARCH_FIELDS,
     operators: DEFAULT_OPERATORS,
-    applyFilter: applyOvertimeFilter,
+    applyFilter: () => true, // API 模式下不需要本地篩選
+    serviceType: 'overtime',
   });
 
   useEffect(() => {
@@ -88,6 +189,32 @@ const OvertimeHistory: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // 處理分頁變更
+  const handlePaginationChange = async (page: number, pageSize: number) => {
+    try {
+      const result = await overtimeHistoryApiService.filter({
+        conditionGroups,
+        page,
+        pageSize,
+      });
+      setPagination({
+        page: result.page,
+        pageSize: result.pageSize,
+        total: result.total,
+        totalPages: result.totalPages,
+      });
+      setRequests(result.data);
+    } catch (error) {
+      console.error('分頁載入失敗:', error);
+      toast.error('載入資料失敗');
+    }
+  };
+
+  // 重新整理資料
+  const handleRefresh = async () => {
+    await loadOvertimeHistory();
   };
 
   const getStatusBadge = (status: string) => {
@@ -131,7 +258,7 @@ const OvertimeHistory: React.FC = () => {
         </p>
       </div>
 
-      {/* 使用通用篩選組件 */}
+      {/* 使用通用篩選組件（API 模式） */}
       <AdvancedFilter
         searchFields={SEARCH_FIELDS}
         operators={DEFAULT_OPERATORS}
@@ -139,12 +266,15 @@ const OvertimeHistory: React.FC = () => {
         onConditionGroupsChange={setConditionGroups}
         data={requests}
         filteredData={filteredRequests}
-        applyFilter={applyOvertimeFilter}
+        apiService={overtimeHistoryApiService}
+        loading={filterLoading}
+        pagination={pagination}
+        onPaginationChange={handlePaginationChange}
         title="加班記錄篩選"
         showAdvancedFilters={showAdvancedFilters}
         onShowAdvancedFiltersChange={setShowAdvancedFilters}
         onClearAll={clearAllConditions}
-        onRefresh={loadOvertimeHistory}
+        onRefresh={handleRefresh}
         className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6"
       />
 

@@ -4,7 +4,7 @@ import { permissionService } from '@/services/simplifiedPermissionService';
 import { useSupabaseAnnouncements } from '@/hooks/useSupabaseAnnouncements';
 import { CompanyAnnouncement } from '@/types/announcement';
 import { Plus } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import AnnouncementDetail from './AnnouncementDetail';
 import AnnouncementForm from './AnnouncementForm';
 import AnnouncementListView from './AnnouncementListView';
@@ -17,6 +17,57 @@ import {
   FilterGroup,
 } from '@/components/common/AdvancedFilter';
 
+// 公告管理 API 篩選服務
+class AnnouncementApiFilterService {
+  async filter(request: {
+    conditionGroups: FilterGroup[];
+    page?: number;
+    pageSize?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<{
+    data: CompanyAnnouncement[];
+    total: number;
+    totalPages: number;
+    page: number;
+    pageSize: number;
+  }> {
+    try {
+      const { conditionGroups, page = 1, pageSize = 10 } = request;
+
+      // 這裡可以實作真正的 API 呼叫
+      // 目前先使用本地篩選作為示範
+      // 注意：實際實作時需要從 API 獲取資料
+
+      // 暫時返回空資料，實際實作時需要從 API 獲取
+      return {
+        data: [],
+        total: 0,
+        totalPages: 0,
+        page,
+        pageSize,
+      };
+    } catch (error) {
+      console.error('篩選公告失敗:', error);
+      throw error;
+    }
+  }
+
+  // 獲取公告分類選項
+  getCategoryOptions() {
+    return [
+      { value: 'general', label: '一般公告' },
+      { value: 'important', label: '重要公告' },
+      { value: 'urgent', label: '緊急公告' },
+      { value: 'policy', label: '政策公告' },
+      { value: 'event', label: '活動公告' },
+      { value: 'maintenance', label: '系統維護' },
+    ];
+  }
+}
+
+const announcementApiFilterService = new AnnouncementApiFilterService();
+
 const AnnouncementManagement: React.FC = () => {
   const { toast } = useToast();
   const { announcements, loading, createAnnouncement, updateAnnouncement, deleteAnnouncement } =
@@ -28,28 +79,39 @@ const AnnouncementManagement: React.FC = () => {
   );
   const [viewAnnouncement, setViewAnnouncement] = useState<CompanyAnnouncement | null>(null);
 
-  // 定義搜尋欄位
-  const SEARCH_FIELDS: SearchField[] = [
-    { value: 'title', label: '標題' },
-    { value: 'content', label: '內容' },
-    { value: 'category', label: '分類' },
-    { value: 'created_by_name', label: '發布者' },
-  ];
+  // 定義搜尋欄位（包含下拉選單配置）
+  const SEARCH_FIELDS: SearchField[] = useMemo(
+    () => [
+      {
+        value: 'title',
+        label: '標題',
+        type: 'input',
+        placeholder: '請輸入公告標題',
+      },
+      {
+        value: 'content',
+        label: '內容',
+        type: 'input',
+        placeholder: '請輸入公告內容',
+      },
+      {
+        value: 'category',
+        label: '分類',
+        type: 'select',
+        options: announcementApiFilterService.getCategoryOptions(),
+        placeholder: '請選擇分類',
+      },
+      {
+        value: 'created_by_name',
+        label: '發布者',
+        type: 'input',
+        placeholder: '請輸入發布者姓名',
+      },
+    ],
+    []
+  );
 
-  // 篩選函數
-  const applyAnnouncementFilter = (
-    announcement: CompanyAnnouncement,
-    conditionGroups: FilterGroup[]
-  ) => {
-    return applyMultiConditionFilter(announcement, conditionGroups, (item, field) => {
-      if (field === 'created_by_name') {
-        return item.created_by?.name || '';
-      }
-      return (item[field as keyof CompanyAnnouncement] || '').toString();
-    });
-  };
-
-  // 使用通用篩選 Hook
+  // 使用通用篩選 Hook（API 模式）
   const {
     conditionGroups,
     filteredData: filteredAnnouncements,
@@ -58,11 +120,13 @@ const AnnouncementManagement: React.FC = () => {
     setConditionGroups,
     setShowAdvancedFilters,
     clearAllConditions,
+    loading: filterLoading,
   } = useAdvancedFilter({
     data: announcements,
     searchFields: SEARCH_FIELDS,
     operators: DEFAULT_OPERATORS,
-    applyFilter: applyAnnouncementFilter,
+    applyFilter: () => true, // API 模式下不需要本地篩選
+    apiService: announcementApiFilterService,
   });
 
   // 檢查公告管理權限 - 使用 SimplifiedPermissionService
@@ -199,7 +263,7 @@ const AnnouncementManagement: React.FC = () => {
         )}
       </div>
 
-      {/* 使用通用篩選組件 */}
+      {/* 使用通用篩選組件（API 模式） */}
       <AdvancedFilter
         searchFields={SEARCH_FIELDS}
         operators={DEFAULT_OPERATORS}
@@ -207,7 +271,8 @@ const AnnouncementManagement: React.FC = () => {
         onConditionGroupsChange={setConditionGroups}
         data={announcements}
         filteredData={filteredAnnouncements}
-        applyFilter={applyAnnouncementFilter}
+        apiService={announcementApiFilterService}
+        loading={filterLoading}
         title="公告篩選"
         showAdvancedFilters={showAdvancedFilters}
         onShowAdvancedFiltersChange={setShowAdvancedFilters}

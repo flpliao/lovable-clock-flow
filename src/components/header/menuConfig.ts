@@ -1,4 +1,18 @@
-import { Home, Calendar, FileText, Users, Building, Settings, Clock, Briefcase, MessageSquare, Megaphone, CalendarDays, CheckCircle, LucideIcon } from 'lucide-react';
+import {
+  Briefcase,
+  Building,
+  Calendar,
+  CalendarDays,
+  CheckCircle,
+  Clock,
+  FileText,
+  Home,
+  LucideIcon,
+  Megaphone,
+  MessageSquare,
+  Settings,
+  Users,
+} from 'lucide-react';
 
 export interface MenuItem {
   path: string;
@@ -15,12 +29,37 @@ export const menuItems: MenuItem[] = [
   { path: '/approval-center', label: '核准中心', icon: CheckCircle, public: false },
   { path: '/scheduling', label: '排班管理', icon: Calendar, public: false },
   { path: '/overtime-management', label: '加班管理', icon: Briefcase, public: false },
-  { path: '/holiday-management', label: '假日管理', icon: CalendarDays, public: false, adminOnly: true },
-  { path: '/leave-type-management', label: '請假假別管理', icon: FileText, public: false, adminOnly: true },
+  {
+    path: '/holiday-management',
+    label: '假日管理',
+    icon: CalendarDays,
+    public: false,
+    adminOnly: true,
+  },
+  {
+    path: '/leave-type-management',
+    label: '請假假別管理',
+    icon: FileText,
+    public: false,
+    adminOnly: true,
+  },
   { path: '/hr-management', label: 'HR管理', icon: Users, public: false, adminOnly: true },
   { path: '/company-announcements', label: '公司公告', icon: MessageSquare, public: false },
-  { path: '/announcement-management', label: '公告管理', icon: Megaphone, public: false, adminOnly: true },
+  {
+    path: '/announcement-management',
+    label: '公告管理',
+    icon: Megaphone,
+    public: false,
+    adminOnly: true,
+  },
   { path: '/personnel-management', label: '人員管理', icon: Users, public: false, adminOnly: true },
-  { path: '/company-branch-management', label: '公司部門管理', icon: Building, public: false, adminOnly: true },
-  { path: '/system-settings', label: '系統設定', icon: Settings, public: false, adminOnly: true }
+  { path: '/role-management', label: '職位管理', icon: Briefcase, public: false, adminOnly: true },
+  {
+    path: '/company-branch-management',
+    label: '公司部門管理',
+    icon: Building,
+    public: false,
+    adminOnly: true,
+  },
+  { path: '/system-settings', label: '系統設定', icon: Settings, public: false, adminOnly: true },
 ];

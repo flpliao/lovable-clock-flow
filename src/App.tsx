@@ -37,6 +37,7 @@ import OvertimeManagement from '@/pages/OvertimeManagement';
 import OvertimeManagementPage from '@/pages/OvertimeManagementPage';
 import OvertimeRequestPage from '@/pages/OvertimeRequestPage';
 import PersonnelManagement from '@/pages/PersonnelManagement';
+import RoleManagement from '@/pages/RoleManagement';
 import ScheduleStatistics from '@/pages/ScheduleStatistics';
 import Scheduling from '@/pages/Scheduling';
 import SystemSettings from '@/pages/SystemSettings';
@@ -150,6 +151,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <PersonnelManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/role-management"
+                element={
+                  <ProtectedRoute>
+                    <RoleManagement />
                   </ProtectedRoute>
                 }
               />

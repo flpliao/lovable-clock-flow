@@ -1,10 +1,7 @@
-import StaffManagement from '@/components/staff/StaffManagement';
-import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
-import { Users } from 'lucide-react';
+import PositionManagement from '@/components/positions/PositionManagement';
+import { Briefcase } from 'lucide-react';
 
-const PersonnelManagement = () => {
-  console.log('🎯 PersonnelManagement rendering');
-
+const RoleManagement = () => {
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
       {/* 動態背景漸層 */}
@@ -38,24 +35,22 @@ const PersonnelManagement = () => {
         <div className="w-full px-4 lg:px-8 pt-24 md:pt-28 pb-4">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-purple-500/70 rounded-2xl shadow-lg backdrop-blur-xl border border-purple-400/30">
-              <Users className="h-6 w-6 text-white" />
+              <Briefcase className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white drop-shadow-md">人員管理</h1>
-              <p className="text-white/80 text-sm mt-1">管理人員資料與組織架構</p>
+              <h1 className="text-2xl font-bold text-white drop-shadow-md">職位管理</h1>
+              <p className="text-white/80 text-sm mt-1">管理職位與權限設定</p>
             </div>
           </div>
         </div>
 
         {/* 內容區域 */}
         <div className="w-full px-4 lg:px-8 pb-8">
-          <StaffManagementProvider>
-            <StaffManagement />
-          </StaffManagementProvider>
+          <PositionManagement />
         </div>
       </div>
     </div>
   );
 };
 
-export default PersonnelManagement;
+export default RoleManagement;

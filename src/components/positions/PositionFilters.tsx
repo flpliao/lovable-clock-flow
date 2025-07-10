@@ -1,21 +1,11 @@
-
-import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowDown, ArrowUp, Search } from 'lucide-react';
 import { usePositionManagementContext } from './PositionManagementContext';
 
 const PositionFilters = () => {
-  const { 
-    searchTerm, 
-    setSearchTerm, 
-    sortBy, 
-    setSortBy, 
-    sortOrder, 
-    setSortOrder 
-  } = usePositionManagementContext();
+  const { searchTerm, setSearchTerm, sortOrder, setSortOrder } = usePositionManagementContext();
 
   const toggleSortOrder = () => {
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -38,26 +28,17 @@ const PositionFilters = () => {
           <Input
             placeholder="搜尋職位名稱或說明..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
             className="pl-10 bg-white/60 border-white/40 text-gray-900 placeholder:text-gray-600 focus:bg-white/70 focus:border-white/60"
           />
         </div>
-        
+
         {/* 排序控制 */}
-        <div className="flex gap-2">
-          <Select value={sortBy} onValueChange={(value: 'name' | 'level') => setSortBy(value)}>
-            <SelectTrigger className="w-32 bg-white/60 border-white/40 text-gray-900">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-white/95 border-white/60">
-              <SelectItem value="name">按名稱</SelectItem>
-              <SelectItem value="level">按職級</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
+        <div className="flex gap-2 items-center">
+          <span className="text-sm text-gray-700 font-medium">按名稱</span>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={toggleSortOrder}
             className="px-3 bg-white/60 border-white/40 text-gray-900 hover:bg-white/70"
           >

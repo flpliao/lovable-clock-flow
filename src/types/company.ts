@@ -19,7 +19,6 @@ export interface Branch {
   company_id: string;
   name: string;
   code: string; // 單位代碼
-  type: 'headquarters' | 'branch' | 'store'; // 總公司 | 分公司 | 門市
   address: string;
   phone: string;
   email?: string;
@@ -35,7 +34,6 @@ export interface Branch {
 export interface NewBranch {
   name: string;
   code: string;
-  type: 'headquarters' | 'branch' | 'store';
   address: string;
   phone: string;
   email?: string;

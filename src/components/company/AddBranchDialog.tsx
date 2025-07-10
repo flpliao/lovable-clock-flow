@@ -2,13 +2,6 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
 import React from 'react';
@@ -103,7 +96,6 @@ const AddBranchDialog = () => {
     setNewBranch({
       name: '',
       code: '',
-      type: 'branch',
       address: '',
       phone: '',
       email: '',
@@ -142,25 +134,6 @@ const AddBranchDialog = () => {
                 required
               />
             </div>
-          </div>
-
-          <div>
-            <Label htmlFor="type">類型</Label>
-            <Select
-              value={newBranch.type}
-              onValueChange={(value: 'headquarters' | 'branch' | 'store') =>
-                setNewBranch({ ...newBranch, type: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="選擇單位類型" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="headquarters">總公司</SelectItem>
-                <SelectItem value="branch">分公司</SelectItem>
-                <SelectItem value="store">門市</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           <div>

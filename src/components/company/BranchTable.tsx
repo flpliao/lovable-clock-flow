@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useIsAdmin } from '@/hooks/useStores';
-import { Badge, Building, Edit, MapPin, Phone, Trash2, User } from 'lucide-react';
+import { Building, Edit, MapPin, Phone, Trash2, User } from 'lucide-react';
 import { useCompanyManagementContext } from './CompanyManagementContext';
 
 const BranchTable = () => {
@@ -12,32 +12,6 @@ const BranchTable = () => {
   const isMobile = useIsMobile();
 
   const canManageBranches = isAdmin;
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'headquarters':
-        return '總公司';
-      case 'branch':
-        return '分公司';
-      case 'store':
-        return '門市';
-      default:
-        return type;
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'headquarters':
-        return 'bg-blue-500/70 text-white';
-      case 'branch':
-        return 'bg-green-500/70 text-white';
-      case 'store':
-        return 'bg-orange-500/70 text-white';
-      default:
-        return 'bg-gray-500/70 text-white';
-    }
-  };
 
   // 如果沒有單位資料
   if (filteredBranches.length === 0) {
@@ -65,11 +39,6 @@ const BranchTable = () => {
                 </div>
                 <div>
                   <h4 className="font-medium text-white">{branch.name}</h4>
-                  <div
-                    className={`inline-block px-2 py-1 rounded-lg text-xs ${getTypeColor(branch.type)}`}
-                  >
-                    {getTypeLabel(branch.type)}
-                  </div>
                 </div>
               </div>
               {canManageBranches && (
@@ -130,12 +99,6 @@ const BranchTable = () => {
             </th>
             <th className="text-left py-3 px-4 text-white/80 font-medium">
               <div className="flex items-center gap-2">
-                <Badge className="h-4 w-4" />
-                類型
-              </div>
-            </th>
-            <th className="text-left py-3 px-4 text-white/80 font-medium">
-              <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
                 地址
               </div>
@@ -153,7 +116,7 @@ const BranchTable = () => {
               </div>
             </th>
             {canManageBranches && (
-              <th className="text-left py-3 px-4 text-white/80 font-medium">操作</th>
+              <th className="text-right py-3 px-4 text-white/80 font-medium">操作</th>
             )}
           </tr>
         </thead>
@@ -174,19 +137,12 @@ const BranchTable = () => {
                   </div>
                 </div>
               </td>
-              <td className="py-3 px-4">
-                <div
-                  className={`inline-block px-3 py-1 rounded-lg text-sm ${getTypeColor(branch.type)}`}
-                >
-                  {getTypeLabel(branch.type)}
-                </div>
-              </td>
               <td className="py-3 px-4 text-white/80">{branch.address}</td>
               <td className="py-3 px-4 text-white/80">{branch.phone}</td>
               <td className="py-3 px-4 text-white/80">{branch.manager_name || '未設定'}</td>
               {canManageBranches && (
                 <td className="py-3 px-4">
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 justify-end">
                     <Button
                       size="sm"
                       variant="outline"

@@ -15,7 +15,6 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
   const [newBranch, setNewBranch] = useState<NewBranch>({
     name: '',
     code: '',
-    type: 'branch',
     address: '',
     phone: '',
     email: '',
@@ -82,7 +81,6 @@ export const useCompanyManagement = (): CompanyManagementContextType => {
       setNewBranch({
         name: '',
         code: '',
-        type: 'branch',
         address: '',
         phone: '',
         email: '',

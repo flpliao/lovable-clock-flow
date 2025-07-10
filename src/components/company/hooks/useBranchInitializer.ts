@@ -34,7 +34,6 @@ export const useBranchInitializer = () => {
         company_id: '1', // 假設有預設公司 ID
         code: 'HQ001',
         name: '總公司',
-        type: 'headquarters',
         address: '台北市信義區',
         phone: '02-1234-5678',
         email: 'headquarters@company.com',

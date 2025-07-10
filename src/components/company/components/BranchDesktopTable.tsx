@@ -1,11 +1,17 @@
-
-import React from 'react';
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Pencil, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Branch } from '@/types/company';
-import { getBranchTypeLabel, getBranchTypeColor } from '../utils/branchTypeUtils';
+import { Building2, Pencil, Trash2 } from 'lucide-react';
+import React from 'react';
+import { getBranchTypeColor, getBranchTypeLabel } from '../utils/branchTypeUtils';
 import { BranchStaffDisplay } from './BranchStaffDisplay';
 
 interface BranchDesktopTableProps {
@@ -19,7 +25,7 @@ export const BranchDesktopTable: React.FC<BranchDesktopTableProps> = ({
   branches,
   canManage,
   onEdit,
-  onDelete
+  onDelete,
 }) => {
   return (
     <div className="rounded-md border overflow-hidden">
@@ -27,7 +33,7 @@ export const BranchDesktopTable: React.FC<BranchDesktopTableProps> = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>營業處名稱</TableHead>
+              <TableHead>單位名稱</TableHead>
               <TableHead>代碼</TableHead>
               <TableHead>類型</TableHead>
               <TableHead>地址</TableHead>
@@ -39,7 +45,7 @@ export const BranchDesktopTable: React.FC<BranchDesktopTableProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {branches.map((branch) => (
+            {branches.map(branch => (
               <TableRow key={branch.id}>
                 <TableCell className="font-medium">
                   <div className="flex items-center">
@@ -73,15 +79,15 @@ export const BranchDesktopTable: React.FC<BranchDesktopTableProps> = ({
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={branch.is_active ? "default" : "secondary"}>
-                    {branch.is_active ? "營運中" : "暫停營運"}
+                  <Badge variant={branch.is_active ? 'default' : 'secondary'}>
+                    {branch.is_active ? '營運中' : '暫停營運'}
                   </Badge>
                 </TableCell>
                 {canManage && (
                   <TableCell>
                     <div className="flex items-center space-x-2">
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={() => onEdit(branch)}
                         className="flex items-center"
@@ -89,9 +95,9 @@ export const BranchDesktopTable: React.FC<BranchDesktopTableProps> = ({
                         <Pencil className="h-4 w-4 mr-1" />
                         編輯
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         className="text-red-500 hover:text-red-700 flex items-center"
                         onClick={() => onDelete(branch.id)}
                       >

@@ -1,6 +1,5 @@
-
-import React from 'react';
 import { Users } from 'lucide-react';
+import React from 'react';
 import { useStaffManagementSafe } from '../hooks/useStaffManagementSafe';
 
 interface BranchStaffDisplayProps {
@@ -8,10 +7,13 @@ interface BranchStaffDisplayProps {
   mobile?: boolean;
 }
 
-export const BranchStaffDisplay: React.FC<BranchStaffDisplayProps> = ({ branchId, mobile = false }) => {
+export const BranchStaffDisplay: React.FC<BranchStaffDisplayProps> = ({
+  branchId,
+  mobile = false,
+}) => {
   const { staffList } = useStaffManagementSafe();
 
-  // 安全地取得營業處員工數量，避免 RLS 錯誤
+  // 安全地取得單位員工數量，避免 RLS 錯誤
   const getBranchStaffCount = (branchId: string) => {
     try {
       if (!staffList || !Array.isArray(staffList)) {
@@ -46,7 +48,11 @@ export const BranchStaffDisplay: React.FC<BranchStaffDisplayProps> = ({ branchId
         <span className="font-medium">{staffCount} 人</span>
         {staffCount > 0 && branchStaff.length > 0 && (
           <span className="text-gray-500 ml-1">
-            ({branchStaff.slice(0, 2).map(staff => staff.name).join(', ')}
+            (
+            {branchStaff
+              .slice(0, 2)
+              .map(staff => staff.name)
+              .join(', ')}
             {staffCount > 2 && `等 ${staffCount} 人`})
           </span>
         )}
@@ -59,13 +65,14 @@ export const BranchStaffDisplay: React.FC<BranchStaffDisplayProps> = ({ branchId
       <span className="font-medium">{staffCount} 人</span>
       {staffCount > 0 && branchStaff.length > 0 && (
         <div className="text-xs text-gray-500 mt-1">
-          {branchStaff.slice(0, 2).map(staff => staff.name).join(', ')}
+          {branchStaff
+            .slice(0, 2)
+            .map(staff => staff.name)
+            .join(', ')}
           {staffCount > 2 && `等 ${staffCount} 人`}
         </div>
       )}
-      {staffCount === 0 && (
-        <span className="text-xs text-gray-400">尚無員工</span>
-      )}
+      {staffCount === 0 && <span className="text-xs text-gray-400">尚無員工</span>}
     </div>
   );
 };

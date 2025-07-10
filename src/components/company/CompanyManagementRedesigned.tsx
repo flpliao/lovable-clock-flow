@@ -20,7 +20,7 @@ const CompanyManagementRedesigned = () => {
   const { setIsAddBranchDialogOpen, branches } = useCompanyManagementContext();
   const { setIsAddDialogOpen, departments } = useDepartmentManagementContext();
   const [activeTab, setActiveTab] = useState('company');
-  
+
   const canManageBranches = isAdmin;
 
   const handleAddBranch = () => {
@@ -36,20 +36,20 @@ const CompanyManagementRedesigned = () => {
       id: 'company',
       label: '公司資訊',
       icon: Building2,
-      description: '管理公司基本資訊'
+      description: '管理公司基本資訊',
     },
     {
       id: 'branches',
       label: '分店部門',
       icon: Building,
-      description: '管理分店與部門門市'
+      description: '管理分店與部門門市',
     },
     {
       id: 'checkin',
       label: '打卡設定',
       icon: MapPin,
-      description: 'GPS打卡距離設定'
-    }
+      description: 'GPS打卡距離設定',
+    },
   ];
 
   const renderTabContent = () => {
@@ -68,9 +68,9 @@ const CompanyManagementRedesigned = () => {
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-white drop-shadow-md">
-                      營業處管理 ({branches?.length || 0})
+                      單位管理 ({branches?.length || 0})
                     </h3>
-                    <p className="text-white/80 text-sm mt-1">管理所有營業處資訊</p>
+                    <p className="text-white/80 text-sm mt-1">管理所有單位資訊</p>
                   </div>
                 </div>
                 {canManageBranches && (
@@ -79,7 +79,7 @@ const CompanyManagementRedesigned = () => {
                     className="bg-blue-500/80 hover:bg-blue-600/80 text-white border-0 rounded-xl shadow-lg backdrop-blur-xl"
                   >
                     <Plus className="mr-2 h-4 w-4" />
-                    新增營業處
+                    新增單位
                   </Button>
                 )}
               </div>
@@ -95,9 +95,9 @@ const CompanyManagementRedesigned = () => {
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-white drop-shadow-md">
-                      部門門市管理 ({departments?.length || 0})
+                      部門/門市管理 ({departments?.length || 0})
                     </h3>
-                    <p className="text-white/80 text-sm mt-1">管理部門門市與GPS定位資訊</p>
+                    <p className="text-white/80 text-sm mt-1">管理部門/門市與GPS定位資訊</p>
                   </div>
                 </div>
                 {canManageBranches && (
@@ -106,7 +106,7 @@ const CompanyManagementRedesigned = () => {
                     className="bg-blue-500/80 hover:bg-blue-600/80 text-white border-0 rounded-xl shadow-lg backdrop-blur-xl"
                   >
                     <Plus className="mr-2 h-4 w-4" />
-                    新增部門
+                    新增部門/門市
                   </Button>
                 )}
               </div>
@@ -131,10 +131,10 @@ const CompanyManagementRedesigned = () => {
             <p className="text-white/80 mt-1">管理公司資訊、分店部門和打卡設定</p>
           </div>
         </div>
-        
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 bg-white/20 backdrop-blur-xl border border-white/30">
-            {tabs.map((tab) => {
+            {tabs.map(tab => {
               const Icon = tab.icon;
               return (
                 <TabsTrigger

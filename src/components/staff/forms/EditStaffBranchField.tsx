@@ -28,7 +28,7 @@ export const EditStaffBranchField: React.FC<EditStaffBranchFieldProps> = ({
         const data = await branchService.loadBranches();
         setBranches(data);
       } catch (error) {
-        console.error('載入營業處失敗:', error);
+        console.error('載入單位失敗:', error);
       }
     };
     fetchBranches();

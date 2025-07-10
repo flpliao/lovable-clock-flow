@@ -18,7 +18,7 @@ export interface Branch {
   id: string;
   company_id: string;
   name: string;
-  code: string; // 營業處代碼
+  code: string; // 單位代碼
   type: 'headquarters' | 'branch' | 'store'; // 總公司 | 分公司 | 門市
   address: string;
   phone: string;

@@ -28,17 +28,17 @@ export const useStaffAddOperation = (
       return false;
     }
 
-    // 確保營業處 ID 是有效的 UUID 格式
+    // 確保單位 ID 是有效的 UUID 格式
     if (
       !newStaff.branch_id ||
       newStaff.branch_id === 'placeholder-value' ||
       newStaff.branch_id === '' ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(newStaff.branch_id)
     ) {
-      console.error('❌ 營業處 ID 格式無效:', newStaff.branch_id);
+      console.error('❌ 單位 ID 格式無效:', newStaff.branch_id);
       toast({
-        title: '營業處選擇錯誤',
-        description: '請選擇有效的營業處',
+        title: '單位選擇錯誤',
+        description: '請選擇有效的單位',
         variant: 'destructive',
       });
       return false;

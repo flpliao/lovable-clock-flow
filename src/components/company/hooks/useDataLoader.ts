@@ -15,15 +15,15 @@ export const useDataLoader = () => {
     console.log('🔄 useDataLoader: 開始載入所有資料...');
     console.log('👤 useDataLoader: 當前用戶:', currentUser?.name, 'ID:', currentUser?.id);
     console.log('👤 useDataLoader: 用戶載入狀態:', isUserLoaded);
-    
+
     // 如果用戶還沒載入完成，則等待
     if (!isUserLoaded) {
       console.log('⏳ useDataLoader: 等待用戶載入完成...');
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       // 驗證用戶權限
       if (currentUser?.id && !CompanyApiService.validateUserPermission(currentUser?.role_id)) {
@@ -35,14 +35,14 @@ export const useDataLoader = () => {
       // 1. 載入公司資料
       console.log('📋 useDataLoader: 載入公司資料...');
       await loadCompany();
-      
+
       // 2. 短暫延遲確保狀態更新
       await new Promise(resolve => setTimeout(resolve, 200));
-      
-      // 3. 載入營業處資料
-      console.log('🏪 useDataLoader: 載入營業處資料...');
+
+      // 3. 載入單位資料
+      console.log('🏪 useDataLoader: 載入單位資料...');
       await loadBranches();
-      
+
       console.log('✅ useDataLoader: 所有資料載入完成');
     } catch (error) {
       console.error('❌ useDataLoader: 載入資料失敗:', error);
@@ -62,7 +62,7 @@ export const useDataLoader = () => {
     console.log('🚀 useDataLoader: useEffect 觸發');
     console.log('👤 useDataLoader: 用戶載入狀態:', isUserLoaded);
     console.log('👤 useDataLoader: 用戶狀態:', currentUser?.name, currentUser?.id);
-    
+
     if (isUserLoaded && currentUser?.id) {
       console.log('✅ useDataLoader: 開始載入資料');
       loadAllData();
@@ -75,6 +75,6 @@ export const useDataLoader = () => {
   return {
     loading,
     loadAllData,
-    refreshData
+    refreshData,
   };
 };

@@ -29,7 +29,7 @@ export class staffService {
       staffData.branch_id === 'placeholder-value' ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(staffData.branch_id)
     ) {
-      throw new Error('營業處 ID 格式無效，請重新選擇營業處');
+      throw new Error('單位 ID 格式無效，請重新選擇單位');
     }
 
     const insertData = {
@@ -54,9 +54,9 @@ export class staffService {
         console.error('❌ StaffApiService: Supabase 新增錯誤:', error);
 
         if (error.message.includes('invalid input syntax for type uuid')) {
-          throw new Error('營業處資料格式錯誤，請重新選擇營業處');
+          throw new Error('單位資料格式錯誤，請重新選擇單位');
         } else if (error.message.includes('foreign key')) {
-          throw new Error('選擇的營業處不存在，請重新選擇');
+          throw new Error('選擇的單位不存在，請重新選擇');
         } else if (error.message.includes('not null')) {
           throw new Error('必填欄位不能為空，請檢查所有必要資訊');
         }

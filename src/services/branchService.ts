@@ -3,7 +3,7 @@ import { Branch } from '@/types/company';
 
 export class branchService {
   /**
-   * 從 Supabase 讀取全部營業處資料，僅取 id 與 name 欄位
+   * 從 Supabase 讀取全部單位資料，僅取 id 與 name 欄位
    */
   static async loadBranches(): Promise<Branch[]> {
     console.log('🏬 branchService: 載入 branches ...');
@@ -15,7 +15,7 @@ export class branchService {
 
     if (error) {
       console.error('❌ branchService: 載入失敗', error);
-      throw new Error(`載入營業處失敗: ${error.message}`);
+      throw new Error(`載入單位失敗: ${error.message}`);
     }
 
     console.log(`✅ branchService: 取得 ${data?.length || 0} 筆 branches`);

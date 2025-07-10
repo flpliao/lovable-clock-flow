@@ -1,7 +1,6 @@
-
-import React from 'react';
-import { Building2, Database, Settings } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Building2, Database, Settings } from 'lucide-react';
+import React from 'react';
 
 export const CompanyBranchHeader: React.FC = () => {
   const isMobile = useIsMobile();
@@ -16,9 +15,9 @@ export const CompanyBranchHeader: React.FC = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white drop-shadow-md">
-                公司基本資料與營業處管理
+                公司基本資料與單位管理
               </h1>
-              <p className="text-white/80 text-sm mt-1">管理公司基本資料與營業處資訊</p>
+              <p className="text-white/80 text-sm mt-1">管理公司基本資料與單位資訊</p>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-3">

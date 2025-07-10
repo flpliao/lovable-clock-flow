@@ -1,5 +1,4 @@
-
-import { Company, Branch } from '@/types/company';
+import { Branch, Company } from '@/types/company';
 
 // 保留基本公司資料作為範本，但可以修改為正式資料
 export const mockCompany: Company = {
@@ -15,8 +14,8 @@ export const mockCompany: Company = {
   business_type: '請輸入營業項目',
   legal_representative: '請輸入負責人姓名',
   created_at: '2020-01-15T00:00:00Z',
-  updated_at: '2024-01-15T00:00:00Z'
+  updated_at: '2024-01-15T00:00:00Z',
 };
 
-// 清空營業處資料，準備輸入正式資料
+// 清空單位資料，準備輸入正式資料
 export const mockBranches: Branch[] = [];

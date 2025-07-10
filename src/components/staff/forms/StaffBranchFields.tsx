@@ -25,7 +25,7 @@ const StaffBranchFields: React.FC<StaffBranchFieldsProps> = ({ newStaff, setNewS
         const data = await branchService.loadBranches();
         setBranches(data);
       } catch (error) {
-        console.error('載入營業處失敗:', error);
+        console.error('載入單位失敗:', error);
       }
     };
     fetchBranches();
@@ -34,7 +34,7 @@ const StaffBranchFields: React.FC<StaffBranchFieldsProps> = ({ newStaff, setNewS
   return (
     <div className="grid grid-cols-4 items-center gap-3">
       <Label htmlFor="branch" className="text-right text-xs">
-        營業處
+        單位
       </Label>
       <Select
         value={newStaff.branch_id || ''}
@@ -48,7 +48,7 @@ const StaffBranchFields: React.FC<StaffBranchFieldsProps> = ({ newStaff, setNewS
         }}
       >
         <SelectTrigger className="col-span-3 h-8 text-xs" id="branch">
-          <SelectValue placeholder="選擇營業處" />
+          <SelectValue placeholder="選擇單位" />
         </SelectTrigger>
         <SelectContent>
           {branches.map(branch => (

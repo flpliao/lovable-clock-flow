@@ -13,9 +13,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useIsAdmin } from '@/hooks/useStores';
+import { permissionService } from '@/services/permissionService';
 import { NewRole, roleService } from '@/services/roleService';
 import { Plus } from 'lucide-react';
 import React, { useState } from 'react';
+import PermissionSelect from './components/PermissionSelect';
 
 interface AddRoleDialogProps {
   onRoleAdded?: () => void;
@@ -26,6 +28,7 @@ const AddRoleDialog = ({ onRoleAdded }: AddRoleDialogProps) => {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set());
   const [newRole, setNewRole] = useState<NewRole>({
     id: '',
     name: '',
@@ -42,6 +45,7 @@ const AddRoleDialog = ({ onRoleAdded }: AddRoleDialogProps) => {
       description: '',
       is_system_role: false,
     });
+    setSelectedPermissions(new Set());
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,7 +73,13 @@ const AddRoleDialog = ({ onRoleAdded }: AddRoleDialogProps) => {
       setIsLoading(true);
       console.log('🔄 開始新增職位:', newRole);
 
+      // 先建立職位
       await roleService.addRole(newRole);
+
+      // 更新職位的權限
+      if (selectedPermissions.size > 0) {
+        await permissionService.updateRolePermissions(newRole.id, Array.from(selectedPermissions));
+      }
 
       toast({
         title: '新增成功',
@@ -115,63 +125,72 @@ const AddRoleDialog = ({ onRoleAdded }: AddRoleDialogProps) => {
           新增職位
         </Button>
       </DialogTrigger>
-      <DialogContent className="backdrop-blur-xl bg-white/90 border border-white/40 shadow-xl">
+      <DialogContent className="backdrop-blur-xl bg-white/90 border border-white/40 shadow-xl max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900">新增職位</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="id" className="text-sm font-medium text-gray-900">
-              職位代碼 *
-            </Label>
-            <Input
-              id="id"
-              placeholder="請輸入職位代碼（如：admin, manager, user）"
-              value={newRole.id}
-              onChange={e => setNewRole({ ...newRole, id: e.target.value })}
-              className="bg-white/70 border-white/50 text-gray-900 focus:bg-white focus:border-orange-500/50"
-              required
-              disabled={isLoading}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="id" className="text-sm font-medium text-gray-900">
+                職位代碼 *
+              </Label>
+              <Input
+                id="id"
+                placeholder="請輸入職位代碼（如：admin, manager, user）"
+                value={newRole.id}
+                onChange={e => setNewRole({ ...newRole, id: e.target.value })}
+                className="bg-white/70 border-white/50 text-gray-900 focus:bg-white focus:border-orange-500/50"
+                required
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium text-gray-900">
+                職位名稱 *
+              </Label>
+              <Input
+                id="name"
+                placeholder="請輸入職位名稱（如：系統管理員）"
+                value={newRole.name}
+                onChange={e => setNewRole({ ...newRole, name: e.target.value })}
+                className="bg-white/70 border-white/50 text-gray-900 focus:bg-white focus:border-orange-500/50"
+                required
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-sm font-medium text-gray-900">
+                說明
+              </Label>
+              <Textarea
+                id="description"
+                placeholder="請輸入職位說明（選填）"
+                value={newRole.description || ''}
+                onChange={e => setNewRole({ ...newRole, description: e.target.value })}
+                className="bg-white/70 border-white/50 text-gray-900 focus:bg-white focus:border-orange-500/50 min-h-[80px]"
+                disabled={isLoading}
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="is_system_role"
+                checked={newRole.is_system_role}
+                onCheckedChange={checked => setNewRole({ ...newRole, is_system_role: !!checked })}
+                disabled={isLoading}
+              />
+              <Label htmlFor="is_system_role" className="text-sm font-medium text-gray-900">
+                系統角色
+              </Label>
+            </div>
+
+            <PermissionSelect
+              selectedPermissions={selectedPermissions}
+              onPermissionsChange={setSelectedPermissions}
+              isLoading={isLoading}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium text-gray-900">
-              職位名稱 *
-            </Label>
-            <Input
-              id="name"
-              placeholder="請輸入職位名稱（如：系統管理員）"
-              value={newRole.name}
-              onChange={e => setNewRole({ ...newRole, name: e.target.value })}
-              className="bg-white/70 border-white/50 text-gray-900 focus:bg-white focus:border-orange-500/50"
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-gray-900">
-              說明
-            </Label>
-            <Textarea
-              id="description"
-              placeholder="請輸入職位說明（選填）"
-              value={newRole.description || ''}
-              onChange={e => setNewRole({ ...newRole, description: e.target.value })}
-              className="bg-white/70 border-white/50 text-gray-900 focus:bg-white focus:border-orange-500/50 min-h-[80px]"
-              disabled={isLoading}
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="is_system_role"
-              checked={newRole.is_system_role}
-              onCheckedChange={checked => setNewRole({ ...newRole, is_system_role: !!checked })}
-              disabled={isLoading}
-            />
-            <Label htmlFor="is_system_role" className="text-sm font-medium text-gray-900">
-              系統角色
-            </Label>
-          </div>
+
           <DialogFooter className="flex gap-3 pt-4">
             <Button
               type="button"

@@ -2,13 +2,26 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ArrowDown, ArrowUp, Search } from 'lucide-react';
-import { usePositionManagementContext } from './PositionManagementContext';
+import { useState } from 'react';
 
-const PositionFilters = () => {
-  const { searchTerm, setSearchTerm, sortOrder, setSortOrder } = usePositionManagementContext();
+interface RoleFiltersProps {
+  onSearchChange?: (searchTerm: string) => void;
+  onSortOrderChange?: (sortOrder: 'asc' | 'desc') => void;
+}
+
+const RoleFilters = ({ onSearchChange, onSortOrderChange }: RoleFiltersProps) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    onSearchChange?.(value);
+  };
 
   const toggleSortOrder = () => {
-    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortOrder(newOrder);
+    onSortOrderChange?.(newOrder);
   };
 
   const getSortIcon = () => {
@@ -26,9 +39,9 @@ const PositionFilters = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
           <Input
-            placeholder="搜尋職位名稱或說明..."
+            placeholder="搜尋職位代碼、名稱或說明..."
             value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            onChange={e => handleSearchChange(e.target.value)}
             className="pl-10 bg-white/60 border-white/40 text-gray-900 placeholder:text-gray-600 focus:bg-white/70 focus:border-white/60"
           />
         </div>
@@ -50,4 +63,4 @@ const PositionFilters = () => {
   );
 };
 
-export default PositionFilters;
+export default RoleFilters;

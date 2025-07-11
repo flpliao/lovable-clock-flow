@@ -37,7 +37,6 @@ import OvertimeManagement from '@/pages/OvertimeManagement';
 import OvertimeManagementPage from '@/pages/OvertimeManagementPage';
 import OvertimeRequestPage from '@/pages/OvertimeRequestPage';
 import PersonnelManagement from '@/pages/PersonnelManagement';
-import RoleManagement from '@/pages/RoleManagement';
 import ScheduleStatistics from '@/pages/ScheduleStatistics';
 import Scheduling from '@/pages/Scheduling';
 import SystemSettings from '@/pages/SystemSettings';
@@ -47,6 +46,7 @@ import NotFound from '@/pages/NotFound';
 
 // Route protection
 import ProtectedRoute from '@/components/common/ProtectedRoute';
+import Role from '@/pages/Role';
 
 // 認證初始化組件（替代 UserProvider）
 const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -158,7 +158,7 @@ function App() {
                 path="/role-management"
                 element={
                   <ProtectedRoute>
-                    <RoleManagement />
+                    <Role />
                   </ProtectedRoute>
                 }
               />

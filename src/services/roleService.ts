@@ -1,11 +1,92 @@
 import { supabase } from '@/integrations/supabase/client';
 import { NewStaffRole, Permission, StaffRole } from '../components/staff/types';
 
+// 統一的職位型別定義
+export interface Role {
+  id: string;
+  name: string;
+  description?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  is_system_role?: boolean;
+  permissions?: Permission[]; // 可選，用於進階權限管理
+}
+
+export interface NewRole {
+  id: string;
+  name: string;
+  description?: string | null;
+  is_system_role?: boolean;
+  permissions?: Permission[]; // 可選，用於進階權限管理
+}
+
+const TABLE_NAME = 'staff_roles';
+
 export class roleService {
-  // 載入所有角色及其權限
+  // === 基本 CRUD 操作 ===
+
+  static async getRoles(): Promise<Role[]> {
+    const { data, error } = await supabase
+      .from(TABLE_NAME)
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching roles:', error);
+      throw error;
+    }
+
+    return data || [];
+  }
+
+  static async addRole(newRole: NewRole): Promise<Role> {
+    const { data, error } = await supabase
+      .from(TABLE_NAME)
+      .insert([
+        {
+          id: newRole.id,
+          name: newRole.name,
+          description: newRole.description,
+          is_system_role: newRole.is_system_role || false,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding role:', error);
+      throw error;
+    }
+
+    return data;
+  }
+
+  static async updateRole(role: Role): Promise<Role> {
+    const { data, error } = await supabase
+      .from(TABLE_NAME)
+      .update({
+        name: role.name,
+        description: role.description,
+        is_system_role: role.is_system_role,
+      })
+      .eq('id', role.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating role:', error);
+      throw error;
+    }
+
+    return data;
+  }
+
+  // === 進階職位管理功能（包含權限系統） ===
+
+  // 載入所有職位及其權限
   static async loadRoles(): Promise<StaffRole[]> {
     try {
-      console.log('🔄 從後台載入角色資料...');
+      console.log('🔄 從後台載入職位資料...');
 
       const { data, error } = await supabase
         .from('staff_roles')
@@ -13,7 +94,7 @@ export class roleService {
         .order('created_at', { ascending: true });
 
       if (error) {
-        console.error('❌ 載入角色資料失敗:', error);
+        console.error('❌ 載入職位資料失敗:', error);
         throw error;
       }
 
@@ -32,18 +113,18 @@ export class roleService {
         })
       );
 
-      console.log('✅ 角色資料載入成功:', transformedRoles.length, '個角色');
+      console.log('✅ 職位資料載入成功:', transformedRoles.length, '個職位');
       return transformedRoles;
     } catch (error) {
-      console.error('❌ 載入角色資料系統錯誤:', error);
+      console.error('❌ 載入職位資料系統錯誤:', error);
       throw error;
     }
   }
 
-  // 載入角色權限
+  // 載入職位權限
   static async loadRolePermissions(roleId: string) {
     try {
-      console.log('🔄 載入角色權限:', roleId);
+      console.log('🔄 載入職位權限:', roleId);
 
       const { data, error } = await supabase
         .from('role_permissions')
@@ -62,7 +143,7 @@ export class roleService {
         .eq('role_id', roleId);
 
       if (error) {
-        console.error('❌ 載入角色權限失敗:', error);
+        console.error('❌ 載入職位權限失敗:', error);
         return [];
       }
 
@@ -76,7 +157,7 @@ export class roleService {
           category: item.permissions.category,
         }));
 
-      console.log('✅ 角色權限載入成功:', roleId, '共', permissions.length, '個權限');
+      console.log('✅ 職位權限載入成功:', roleId, '共', permissions.length, '個權限');
       console.log(
         '📋 權限詳細:',
         permissions.map(p => ({ id: p.id, name: p.name, category: p.category }))
@@ -84,7 +165,7 @@ export class roleService {
 
       return permissions;
     } catch (error) {
-      console.error('❌ 載入角色權限系統錯誤:', error);
+      console.error('❌ 載入職位權限系統錯誤:', error);
       return [];
     }
   }
@@ -132,10 +213,10 @@ export class roleService {
     }
   }
 
-  // 新增角色
+  // 新增職位
   static async createRole(newRole: NewStaffRole): Promise<StaffRole> {
     try {
-      console.log('🔄 新增角色到後台:', newRole.name);
+      console.log('🔄 新增職位到後台:', newRole.name);
 
       const { data, error } = await supabase
         .from('staff_roles')
@@ -149,7 +230,7 @@ export class roleService {
         .single();
 
       if (error) {
-        console.error('❌ 新增角色失敗:', error);
+        console.error('❌ 新增職位失敗:', error);
         throw error;
       }
 
@@ -164,18 +245,18 @@ export class roleService {
         is_system_role: data.is_system_role,
       };
 
-      console.log('✅ 角色新增成功:', createdRole.name);
+      console.log('✅ 職位新增成功:', createdRole.name);
       return createdRole;
     } catch (error) {
-      console.error('❌ 新增角色系統錯誤:', error);
+      console.error('❌ 新增職位系統錯誤:', error);
       throw error;
     }
   }
 
-  // 更新角色
-  static async updateRole(role: StaffRole): Promise<StaffRole> {
+  // 更新職位
+  static async updateRoleWithPermissions(role: StaffRole): Promise<StaffRole> {
     try {
-      console.log('🔄 更新角色到後台:', role.name, '權限數量:', role.permissions.length);
+      console.log('🔄 更新職位到後台:', role.name, '權限數量:', role.permissions.length);
       console.log(
         '📋 權限詳細資料:',
         role.permissions.map(p => ({ id: p.id, name: p.name }))
@@ -185,7 +266,7 @@ export class roleService {
       const validPermissions = await this.validatePermissions(role.permissions);
       console.log('🔍 驗證權限結果:', validPermissions.length, '個有效權限');
 
-      // 更新角色基本資料
+      // 更新職位基本資料
       const { data, error } = await supabase
         .from('staff_roles')
         .update({
@@ -198,7 +279,7 @@ export class roleService {
         .single();
 
       if (error) {
-        console.error('❌ 更新角色失敗:', error);
+        console.error('❌ 更新職位失敗:', error);
         throw error;
       }
 
@@ -218,14 +299,14 @@ export class roleService {
       };
 
       console.log(
-        '✅ 角色更新成功:',
+        '✅ 職位更新成功:',
         updatedRole.name,
         '權限數量:',
         updatedRole.permissions.length
       );
       return updatedRole;
     } catch (error) {
-      console.error('❌ 更新角色系統錯誤:', error);
+      console.error('❌ 更新職位系統錯誤:', error);
       throw error;
     }
   }
@@ -266,10 +347,10 @@ export class roleService {
     }
   }
 
-  // 儲存角色權限
+  // 儲存職位權限
   static async saveRolePermissions(roleId: string, permissions: Permission[]) {
     try {
-      console.log('🔄 儲存角色權限:', roleId, '權限數量:', permissions.length);
+      console.log('🔄 儲存職位權限:', roleId, '權限數量:', permissions.length);
       console.log(
         '📋 要儲存的權限ID:',
         permissions.map(p => p.id)
@@ -302,80 +383,40 @@ export class roleService {
           .insert(permissionData);
 
         if (insertError) {
-          console.error('❌ 儲存角色權限失敗:', insertError);
+          console.error('❌ 儲存職位權限失敗:', insertError);
           throw insertError;
         }
 
         console.log('✅ 新權限已儲存');
       }
 
-      console.log('✅ 角色權限儲存成功:', permissions.length, '個權限');
+      console.log('✅ 職位權限儲存成功:', permissions.length, '個權限');
     } catch (error) {
-      console.error('❌ 儲存角色權限系統錯誤:', error);
+      console.error('❌ 儲存職位權限系統錯誤:', error);
       throw error;
     }
   }
 
-  // 刪除角色
+  // 刪除職位（進階版本，包含權限清理）
   static async deleteRole(roleId: string): Promise<void> {
     try {
-      console.log('🔄 從後台刪除角色:', roleId);
+      console.log('🔄 從後台刪除職位:', roleId);
 
-      // 先刪除角色權限
+      // 先刪除職位權限
       await supabase.from('role_permissions').delete().eq('role_id', roleId);
 
-      // 再刪除角色
+      // 再刪除職位
       const { error } = await supabase.from('staff_roles').delete().eq('id', roleId);
 
       if (error) {
-        console.error('❌ 刪除角色失敗:', error);
+        console.error('❌ 刪除職位失敗:', error);
         throw error;
       }
 
-      console.log('✅ 角色刪除成功:', roleId);
+      console.log('✅ 職位刪除成功:', roleId);
     } catch (error) {
-      console.error('❌ 刪除角色系統錯誤:', error);
+      console.error('❌ 刪除職位系統錯誤:', error);
       throw error;
-    }
-  }
-
-  // 初始化系統預設角色
-  static async initializeSystemRoles(): Promise<void> {
-    try {
-      console.log('🔄 初始化系統預設角色...');
-
-      const systemRoles = [
-        {
-          id: 'admin',
-          name: '系統管理員',
-          description: '擁有系統完整管理權限',
-          is_system_role: true,
-        },
-        {
-          id: 'manager',
-          name: '部門主管',
-          description: '部門管理權限',
-          is_system_role: true,
-        },
-        {
-          id: 'user',
-          name: '一般員工',
-          description: '基本員工權限',
-          is_system_role: true,
-        },
-      ];
-
-      for (const role of systemRoles) {
-        const { error } = await supabase.from('staff_roles').upsert(role, { onConflict: 'id' });
-
-        if (error) {
-          console.error('❌ 初始化系統角色失敗:', role.name, error);
-        } else {
-          console.log('✅ 系統角色初始化成功:', role.name);
-        }
-      }
-    } catch (error) {
-      console.error('❌ 初始化系統角色過程錯誤:', error);
     }
   }
 }

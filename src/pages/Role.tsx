@@ -1,7 +1,7 @@
-import PositionManagement from '@/components/positions/PositionManagement';
+import RoleManagement from '@/components/roles/RoleManagement';
 import { Briefcase } from 'lucide-react';
 
-const RoleManagement = () => {
+const Role = () => {
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
       {/* 動態背景漸層 */}
@@ -46,11 +46,11 @@ const RoleManagement = () => {
 
         {/* 內容區域 */}
         <div className="w-full px-4 lg:px-8 pb-8">
-          <PositionManagement />
+          <RoleManagement />
         </div>
       </div>
     </div>
   );
 };
 
-export default RoleManagement;
+export default Role;

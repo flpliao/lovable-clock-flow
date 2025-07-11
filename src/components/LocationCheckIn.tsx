@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import CheckInButton from '@/components/check-in/CheckInButton';
 import CheckInCompletedStatus from '@/components/check-in/CheckInCompletedStatus';
 import CheckInMethodSelector from '@/components/check-in/CheckInMethodSelector';
-import CheckInStatusDisplay from '@/components/check-in/CheckInStatusDisplay';
 import CheckInStatusInfo from '@/components/check-in/CheckInStatusInfo';
 import CheckInWarning from '@/components/check-in/CheckInWarning';
 import DepartmentLocationSelector from '@/components/check-in/DepartmentLocationSelector';
@@ -170,13 +169,6 @@ const LocationCheckIn = () => {
         <div className="flex justify-center">
           <MissedCheckinDialog onSuccess={() => {}} />
         </div>
-        <CheckInStatusDisplay
-          checkInMethod={checkInMethod}
-          distance={distance}
-          error={error}
-          loading={loading}
-          locationName={selectedCheckpoint ? selectedCheckpoint.name : '總公司'}
-        />
       </div>
     </div>
   );

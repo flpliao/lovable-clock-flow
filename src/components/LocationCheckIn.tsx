@@ -1,105 +1,122 @@
-import { useDepartmentManagementContext } from '@/components/departments/DepartmentManagementContext';
-import { useCheckIn } from '@/hooks/useCheckIn';
 import { useCurrentUser } from '@/hooks/useStores';
-import { isDepartmentReadyForCheckIn } from '@/utils/departmentCheckInUtils';
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 
 // Import the new smaller components
 import CheckInButton from '@/components/check-in/CheckInButton';
 import CheckInCompletedStatus from '@/components/check-in/CheckInCompletedStatus';
 import CheckInMethodSelector from '@/components/check-in/CheckInMethodSelector';
-import CheckInStatusDisplay from '@/components/check-in/CheckInStatusDisplay';
 import CheckInStatusInfo from '@/components/check-in/CheckInStatusInfo';
 import CheckInWarning from '@/components/check-in/CheckInWarning';
 import DepartmentLocationSelector from '@/components/check-in/DepartmentLocationSelector';
 import LocationCheckInHeader from '@/components/check-in/LocationCheckInHeader';
 import MissedCheckinDialog from '@/components/check-in/MissedCheckinDialog';
+import { useCheckpoints } from '@/components/company/components/useCheckpoints';
+import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
+import { CheckInRecord } from '@/types';
+import ActionTypeSelector from '@/components/check-in/ActionTypeSelector';
 
 const LocationCheckIn = () => {
   const currentUser = useCurrentUser(); // 使用新的 Zustand hook
-  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string | null>(null);
+  const { data: checkpoints } = useCheckpoints();
+  const [selectedCheckpointId, setSelectedCheckpointId] = useState<number | null>(null);
+  const { createCheckInRecord, getTodayCheckInRecords } = useSupabaseCheckIn();
 
-  // Use defensive context access with fallback
-  let departments = [];
-  try {
-    const context = useDepartmentManagementContext();
-    departments = context.departments || [];
-  } catch {
-    console.warn('DepartmentManagementContext not available, using empty departments array');
-    departments = [];
-  }
-
-  // 根據當前用戶的部門設定預設打卡位置
+  // 自動載入今日打卡紀錄
   useEffect(() => {
-    if (currentUser && departments.length > 0) {
-      console.log('🔍 設定預設打卡位置 - 用戶部門:', currentUser.department);
-
-      if (currentUser.department) {
-        // 查找用戶部門對應的部門ID
-        const userDepartment = departments.find(dept => dept.name === currentUser.department);
-        if (userDepartment && isDepartmentReadyForCheckIn(userDepartment)) {
-          console.log('✅ 找到用戶部門，設定為預設打卡位置:', userDepartment.name);
-          setSelectedDepartmentId(prevId =>
-            prevId !== userDepartment.id ? userDepartment.id : prevId
-          );
-        } else {
-          console.log('⚠️ 用戶部門GPS未設定完成，預設為總公司');
-          setSelectedDepartmentId(prevId => (prevId !== null ? null : prevId)); // 總公司
+    const fetchTodayRecords = async () => {
+      if (currentUser?.id) {
+        const records = await getTodayCheckInRecords(currentUser.id);
+        setTodayRecords(records);
+        if (actionType === 'check-in' && records?.checkIn && !records?.checkOut) {
+          setActionType('check-out');
         }
-      } else {
-        console.log('📍 用戶沒有部門，預設為總公司');
-        setSelectedDepartmentId(prevId => (prevId !== null ? null : prevId)); // 總公司
       }
+    };
+    fetchTodayRecords();
+  }, [currentUser?.id, getTodayCheckInRecords]);
+
+  // 打卡邏輯
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [distance, setDistance] = useState<number | null>(null);
+  const [checkInMethod, setCheckInMethod] = useState<'location' | 'ip'>('location');
+  const [actionType, setActionType] = useState<'check-in' | 'check-out'>('check-in');
+  const [todayRecords, setTodayRecords] = useState<{
+    checkIn?: CheckInRecord;
+    checkOut?: CheckInRecord;
+  }>({});
+
+  // 取得目前選擇的 checkpoint
+  const selectedCheckpoint =
+    selectedCheckpointId !== null ? checkpoints.find(cp => cp.id === selectedCheckpointId) : null;
+
+  // 位置打卡
+  const onLocationCheckIn = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      if (!currentUser) throw new Error('請先登入');
+      // 取得目前位置
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+      });
+      const { latitude, longitude } = position.coords;
+      // 取得比對目標
+      let targetLat = null,
+        targetLng = null,
+        locationName = '總公司';
+      if (selectedCheckpoint) {
+        targetLat = selectedCheckpoint.latitude;
+        targetLng = selectedCheckpoint.longitude;
+        locationName = selectedCheckpoint.name;
+      }
+      // 計算距離
+      const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+        const toRad = (v: number) => (v * Math.PI) / 180;
+        const R = 6371000;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return Math.round(R * c);
+      };
+      const dist = getDistance(latitude, longitude, targetLat, targetLng);
+      setDistance(dist);
+      // 距離限制（可自訂）
+      const allowedDistance = 500;
+      if (dist > allowedDistance) throw new Error(`距離${locationName}過遠 (${dist}公尺)`);
+      // 儲存打卡記錄
+      const checkInData = {
+        userId: currentUser.id,
+        timestamp: new Date().toISOString(),
+        type: 'location' as const,
+        status: 'success' as const,
+        action: actionType as 'check-in' | 'check-out',
+        details: {
+          latitude,
+          longitude,
+          distance: dist,
+          locationName,
+        },
+      };
+      const success = await createCheckInRecord(checkInData);
+      if (success) {
+        // 重新載入今日記錄
+        if (currentUser?.id) {
+          const records = await getTodayCheckInRecords(currentUser.id);
+          setTodayRecords(records);
+        }
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '位置打卡失敗');
+    } finally {
+      setLoading(false);
     }
-  }, [currentUser, departments]);
+  };
 
-  const {
-    loading,
-    error,
-    distance,
-    checkInMethod,
-    setCheckInMethod,
-    actionType,
-    todayRecords,
-    onLocationCheckIn,
-    onIpCheckIn,
-  } = useCheckIn(currentUser?.id || '', selectedDepartmentId);
-
-  // Memoize computations before early returns
-  // 根據選擇的部門ID找到對應的部門資料 (memoized)
-  const selectedDepartment = useMemo(() => {
-    return selectedDepartmentId
-      ? departments?.find(dept => dept.id === selectedDepartmentId)
-      : null;
-  }, [selectedDepartmentId, departments]);
-
-  // 檢查部門GPS是否準備好 (memoized)
-  const isDepartmentGPSReady = useMemo(() => {
-    return selectedDepartment ? isDepartmentReadyForCheckIn(selectedDepartment) : true;
-  }, [selectedDepartment]);
-
-  // 判斷是否可以進行位置打卡 (memoized)
-  const canUseLocationCheckIn = useMemo(() => {
-    return selectedDepartmentId ? isDepartmentGPSReady : true;
-  }, [selectedDepartmentId, isDepartmentGPSReady]);
-
-  // 取得比對位置資訊 (memoized)
-  const locationName = useMemo(() => {
-    if (!selectedDepartmentId) {
-      return '總公司';
-    }
-    return selectedDepartment?.name || '未知部門';
-  }, [selectedDepartmentId, selectedDepartment]);
-
-  const handleMissedCheckinSuccess = useCallback(() => {
-    console.log('忘記打卡申請已提交');
-  }, []);
-
-  const handleDepartmentChange = useCallback((departmentId: string | null) => {
-    setSelectedDepartmentId(departmentId);
-  }, []);
-
-  // Early return if no user
+  // UI
   if (!currentUser) {
     return (
       <div className="flex justify-center items-center w-full min-h-[180px]">
@@ -124,51 +141,34 @@ const LocationCheckIn = () => {
     );
   }
 
-  const handleCheckIn = checkInMethod === 'location' ? onLocationCheckIn : onIpCheckIn;
-
   return (
     <div className="flex justify-center items-center w-full min-h-[180px]">
       <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 shadow-lg space-y-3 max-w-md w-full mx-4 py-[20px]">
         <LocationCheckInHeader />
-
-        <CheckInStatusInfo checkIn={safeCheckIn} checkOut={safeCheckOut} />
-
+        <CheckInStatusInfo checkIn={todayRecords?.checkIn} checkOut={todayRecords?.checkOut} />
         <DepartmentLocationSelector
-          departments={departments}
-          selectedDepartmentId={selectedDepartmentId}
-          onDepartmentChange={handleDepartmentChange}
+          selectedCheckpointId={selectedCheckpointId}
+          onCheckpointChange={setSelectedCheckpointId}
         />
-
         <CheckInMethodSelector
           checkInMethod={checkInMethod}
           setCheckInMethod={setCheckInMethod}
-          canUseLocationCheckIn={canUseLocationCheckIn}
+          canUseLocationCheckIn={true}
         />
-
         <CheckInWarning
           checkInMethod={checkInMethod}
-          canUseLocationCheckIn={canUseLocationCheckIn}
-          employeeDepartment={selectedDepartment}
+          canUseLocationCheckIn={true}
+          employeeDepartment={null}
         />
-
         <CheckInButton
           actionType={actionType}
           loading={loading}
-          onCheckIn={handleCheckIn}
-          disabled={checkInMethod === 'location' && !canUseLocationCheckIn}
+          onCheckIn={checkInMethod === 'location' ? onLocationCheckIn : undefined}
+          disabled={loading}
         />
-
         <div className="flex justify-center">
-          <MissedCheckinDialog onSuccess={handleMissedCheckinSuccess} />
+          <MissedCheckinDialog onSuccess={() => {}} />
         </div>
-
-        <CheckInStatusDisplay
-          checkInMethod={checkInMethod}
-          distance={distance}
-          error={error}
-          loading={loading}
-          locationName={locationName}
-        />
       </div>
     </div>
   );

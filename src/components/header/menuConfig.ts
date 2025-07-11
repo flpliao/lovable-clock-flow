@@ -56,7 +56,7 @@ export const menuItems: MenuItem[] = [
   { path: '/role-management', label: '職位管理', icon: Briefcase, public: false, adminOnly: true },
   {
     path: '/company-branch-management',
-    label: '公司部門管理',
+    label: '公司單位與打卡管理',
     icon: Building,
     public: false,
     adminOnly: true,

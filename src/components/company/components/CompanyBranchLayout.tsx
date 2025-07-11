@@ -1,4 +1,3 @@
-
 import React, { ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
 
@@ -7,9 +6,9 @@ interface CompanyBranchLayoutProps {
   isLoading?: boolean;
 }
 
-export const CompanyBranchLayout: React.FC<CompanyBranchLayoutProps> = ({ 
-  children, 
-  isLoading = false 
+export const CompanyBranchLayout: React.FC<CompanyBranchLayoutProps> = ({
+  children,
+  isLoading = false,
 }) => {
   if (isLoading) {
     return (
@@ -24,9 +23,7 @@ export const CompanyBranchLayout: React.FC<CompanyBranchLayoutProps> = ({
 
   return (
     <div className="relative z-10">
-      <main className="p-2 sm:p-4 lg:p-6 pt-20 sm:pt-24 md:pt-28 lg:pt-32">
-        {children}
-      </main>
+      <main className="p-2 sm:p-4 lg:p-6 pt-12">{children}</main>
     </div>
   );
 };

@@ -38,14 +38,25 @@ interface StaffData {
 }
 
 // 定義請假類型
-type LeaveType = 'annual' | 'sick' | 'personal' | 'marriage' | 'bereavement' | 'maternity' | 'paternity' | 'menstrual' | 'occupational' | 'parental' | 'other';
+type LeaveType =
+  | 'annual'
+  | 'sick'
+  | 'personal'
+  | 'marriage'
+  | 'bereavement'
+  | 'maternity'
+  | 'paternity'
+  | 'menstrual'
+  | 'occupational'
+  | 'parental'
+  | 'other';
 
 export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
   const { toast } = useToast();
   // 使用新的 Zustand hooks
   const currentUser = useCurrentUser();
   const isAuthenticated = useAuthenticated();
-  
+
   const { createLeaveRequest } = useLeaveManagementContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [calculatedHours, setCalculatedHours] = useState<number>(0);
@@ -60,8 +71,8 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       leave_type: '',
       start_date: undefined,
       end_date: undefined,
-      reason: ''
-    }
+      reason: '',
+    },
   });
 
   const watchedStartDate = form.watch('start_date');
@@ -71,7 +82,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
   // Secure staff data validation function
   const validateStaffData = async (userId: string) => {
     console.log('🔍 Validating staff data for authenticated user');
-    
+
     try {
       // Check via user_id query first
       const { data: staffByUserId, error: userIdError } = await supabase
@@ -98,15 +109,15 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       }
 
       console.error('❌ Unable to find staff data');
-      return { 
-        staff: null, 
-        error: 'Staff data record not found, please contact administrator for account setup' 
+      return {
+        staff: null,
+        error: 'Staff data record not found, please contact administrator for account setup',
       };
     } catch (error) {
       console.error('❌ Error validating staff data:', error);
-      return { 
-        staff: null, 
-        error: 'System error occurred while validating staff data' 
+      return {
+        staff: null,
+        error: 'System error occurred while validating staff data',
       };
     }
   };
@@ -124,10 +135,13 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       console.log('🚀 Starting to load staff data for authenticated user');
       setIsLoadingStaffData(true);
       setStaffValidationError(null);
-      
+
       try {
         // Check authentication status
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
         console.log('🔍 Authentication status check');
 
         if (authError || !user) {
@@ -137,7 +151,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
         // Validate staff data
         const { staff, error } = await validateStaffData(currentUser.id);
-        
+
         if (error || !staff) {
           console.error('❌ Staff data validation failed:', error);
           setStaffValidationError(error || 'Staff data not found');
@@ -147,7 +161,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
         const hireDate = staff.hire_date;
         console.log('📅 Hire date available');
-        
+
         // Calculate years of service and annual leave days
         let yearsOfService = 'Not Set';
         let totalAnnualLeaveDays = 0;
@@ -161,10 +175,13 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
           const years = Math.floor(diffDays / 365);
           const months = Math.floor((diffDays % 365) / 30);
-          
-          yearsOfService = years > 0 ? 
-            (months > 0 ? `${years} years ${months} months` : `${years} years`) : 
-            `${months} months`;
+
+          yearsOfService =
+            years > 0
+              ? months > 0
+                ? `${years} years ${months} months`
+                : `${years} years`
+              : `${months} months`;
 
           totalAnnualLeaveDays = calculateAnnualLeaveDays(hireDateObj);
           console.log('📊 Calculated annual leave days:', totalAnnualLeaveDays);
@@ -182,7 +199,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
           if (!leaveError && leaveRecords) {
             usedAnnualLeaveDays = leaveRecords.reduce((total, record) => {
-              return total + (Number(record.hours) / 8);
+              return total + Number(record.hours) / 8;
             }, 0);
           }
           console.log('📈 Used annual leave days:', usedAnnualLeaveDays);
@@ -203,15 +220,16 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
           yearsOfService,
           totalAnnualLeaveDays,
           usedAnnualLeaveDays,
-          remainingAnnualLeaveDays
+          remainingAnnualLeaveDays,
         };
 
         console.log('✅ Complete staff data loaded successfully');
         setUserStaffData(completeStaffData);
-
       } catch (error) {
         console.error('❌ Error loading staff data:', error);
-        setStaffValidationError('System error occurred while loading staff data, please try again later or contact administrator');
+        setStaffValidationError(
+          'System error occurred while loading staff data, please try again later or contact administrator'
+        );
         setUserStaffData(null);
       } finally {
         setIsLoadingStaffData(false);
@@ -244,7 +262,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
             start_date: watchedStartDate,
             end_date: watchedEndDate,
             hours: calculatedHours,
-            user_id: currentUser.id
+            user_id: currentUser.id,
           });
 
           if (!validation.isValid) {
@@ -273,24 +291,24 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     if (leaveType === 'annual' && userStaffData) {
       return {
         remainingDays: userStaffData.remainingAnnualLeaveDays,
-        usedDays: userStaffData.usedAnnualLeaveDays
+        usedDays: userStaffData.usedAnnualLeaveDays,
       };
     }
 
     // Mock data for other leave types
     const mockData: Record<string, { remainingDays?: number; usedDays: number }> = {
-      'sick': { remainingDays: 27, usedDays: 3 },
-      'personal': { remainingDays: 12, usedDays: 2 },
-      'marriage': { remainingDays: 8, usedDays: 0 },
-      'bereavement': { remainingDays: 8, usedDays: 0 },
-      'maternity': { remainingDays: 56, usedDays: 0 },
-      'paternity': { remainingDays: 7, usedDays: 0 },
-      'menstrual': { remainingDays: 10, usedDays: 2 },
-      'occupational': { usedDays: 0 },
-      'parental': { usedDays: 0 },
-      'other': { usedDays: 0 }
+      sick: { remainingDays: 27, usedDays: 3 },
+      personal: { remainingDays: 12, usedDays: 2 },
+      marriage: { remainingDays: 8, usedDays: 0 },
+      bereavement: { remainingDays: 8, usedDays: 0 },
+      maternity: { remainingDays: 56, usedDays: 0 },
+      paternity: { remainingDays: 7, usedDays: 0 },
+      menstrual: { remainingDays: 10, usedDays: 2 },
+      occupational: { usedDays: 0 },
+      parental: { usedDays: 0 },
+      other: { usedDays: 0 },
     };
-    
+
     return mockData[leaveType] || { usedDays: 0 };
   };
 
@@ -298,52 +316,52 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     // Pre-submission validation with enhanced security checks
     if (!currentUser) {
       toast({
-        title: "Error",
-        description: "Please log in to the system first",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Please log in to the system first',
+        variant: 'destructive',
       });
       return;
     }
 
     if (!isAuthenticated) {
       toast({
-        title: "Authentication Error",
-        description: "User authentication status is abnormal, please log in again",
-        variant: "destructive"
+        title: 'Authentication Error',
+        description: 'User authentication status is abnormal, please log in again',
+        variant: 'destructive',
       });
       return;
     }
 
     if (staffValidationError || !userStaffData) {
       toast({
-        title: "Staff Data Error",
-        description: staffValidationError || "Staff data not found, please contact administrator",
-        variant: "destructive"
+        title: 'Staff Data Error',
+        description: staffValidationError || 'Staff data not found, please contact administrator',
+        variant: 'destructive',
       });
       return;
     }
 
     if (validationError) {
       toast({
-        title: "Application Failed",
+        title: 'Application Failed',
         description: validationError,
-        variant: "destructive"
+        variant: 'destructive',
       });
       return;
     }
 
     if (calculatedHours <= 0) {
       toast({
-        title: "Application Failed", 
-        description: "Please select valid leave dates",
-        variant: "destructive"
+        title: 'Application Failed',
+        description: 'Please select valid leave dates',
+        variant: 'destructive',
       });
       return;
     }
 
     try {
       setIsSubmitting(true);
-      
+
       console.log('📝 Submitting leave request with secure validation');
 
       const startDateStr = datePickerToDatabase(data.start_date);
@@ -362,23 +380,23 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
         approval_level: 1,
         current_approver: userStaffData?.supervisor_id || null,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       console.log('📋 Prepared to create leave request with validated data');
 
       const success = await createLeaveRequest(leaveRequest);
-      
+
       if (success) {
         toast({
-          title: "Application Successful",
-          description: "Leave request has been submitted, awaiting approval",
+          title: 'Application Successful',
+          description: 'Leave request has been submitted, awaiting approval',
         });
-        
+
         form.reset();
         setCalculatedHours(0);
         setValidationError(null);
-        
+
         if (onSubmit) {
           onSubmit();
         }
@@ -386,9 +404,9 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
     } catch (error) {
       console.error('❌ Failed to submit leave request:', error);
       toast({
-        title: "Application Failed",
-        description: "Error occurred while submitting leave request",
-        variant: "destructive"
+        title: 'Application Failed',
+        description: 'Error occurred while submitting leave request',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
@@ -420,7 +438,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       )}
 
       {/* Staff data and annual leave balance display */}
-      <LeaveBalanceCard 
+      <LeaveBalanceCard
         userStaffData={userStaffData}
         hasHireDate={hasHireDate}
         isLoading={isLoadingStaffData}
@@ -429,32 +447,32 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           {/* Use simplified form field components */}
-          <LeaveRequestSimplifiedFormFields 
+          <LeaveRequestSimplifiedFormFields
             form={form}
             calculatedHours={calculatedHours}
             validationError={validationError}
             hasHireDate={hasHireDate}
             userStaffData={userStaffData}
           />
-          
+
           {/* Leave type detail information card */}
           {watchedLeaveType && (
-            <LeaveTypeDetailCard 
+            <LeaveTypeDetailCard
               leaveType={watchedLeaveType}
               remainingDays={userStaffData?.remainingAnnualLeaveDays}
               usedDays={userStaffData?.usedAnnualLeaveDays || 0}
             />
           )}
-          
+
           <div className="flex justify-end pt-4">
             <Button
               type="submit"
               disabled={
-                isSubmitting || 
-                validationError !== null || 
-                calculatedHours <= 0 || 
-                !isAuthenticated || 
-                !!staffValidationError || 
+                isSubmitting ||
+                validationError !== null ||
+                calculatedHours <= 0 ||
+                !isAuthenticated ||
+                !!staffValidationError ||
                 !userStaffData
               }
               className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-2 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
@@ -462,10 +480,10 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting...
+                  提交中...
                 </>
               ) : (
-                'Submit Application'
+                '提交申請'
               )}
             </Button>
           </div>

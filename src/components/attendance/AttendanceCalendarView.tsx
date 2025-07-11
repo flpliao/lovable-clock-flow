@@ -1,7 +1,14 @@
+import React, { useState, useMemo, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isFuture, isWeekend } from 'date-fns';
 import { CheckInRecord } from '@/types';
-import { eachDayOfInterval, endOfMonth, format, isFuture, isWeekend, startOfMonth } from 'date-fns';
-import React, { useMemo, useState } from 'react';
 import DateRecordDetails from './DateRecordDetails';
 
 interface AttendanceCalendarViewProps {
@@ -22,6 +29,7 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
   checkInRecords,
   onMonthChange,
 }) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [displayMonth, setDisplayMonth] = useState<Date>(new Date());
 
   // 監聽顯示月份變化並重新載入資料
@@ -45,6 +53,13 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
       const recordDate = format(new Date(record.timestamp), 'yyyy-MM-dd');
       return recordDate === selectedDateStr && record.status === 'success';
     }).length;
+  };
+
+  // 中文月份對照
+  const getChineseMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    return `${year}年${month}月`;
   };
 
   // 獲取有打卡記錄的日期
@@ -114,20 +129,27 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
     return dates;
   }, [datesWithRecords, displayMonth]);
 
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    setDate(selectedDate);
+    if (selectedDate) {
+      setIsDialogOpen(true);
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6">
+    <div className="flex justify-center">
+      <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6 max-w-md w-full">
         <Calendar
           mode="single"
           selected={date}
-          onSelect={setDate}
+          onSelect={handleDateSelect}
           month={displayMonth}
           onMonthChange={handleMonthChange}
           className="mx-auto"
           captionLayout="buttons"
           formatters={{
             formatCaption: (date, options) => {
-              return format(date, 'MMMM yyyy');
+              return getChineseMonth(date);
             },
           }}
           modifiers={{
@@ -144,16 +166,27 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
         />
       </div>
 
-      {date && (
-        <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6">
-          <DateRecordDetails
-            date={date}
-            selectedDateRecords={selectedDateRecords}
-            recordsCount={getDayRecordsCount()}
-            isInDialog={false}
-          />
-        </div>
-      )}
+      {/* 彈出式出勤記錄詳情 */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="bg-white/90 backdrop-blur-xl border border-white/50 shadow-2xl max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">
+              {date ? `${format(date, 'yyyy年MM月dd日')} 出勤記錄` : '出勤記錄'}
+            </DialogTitle>
+          </DialogHeader>
+
+          {date && (
+            <div className="text-gray-900">
+              <DateRecordDetails
+                date={date}
+                selectedDateRecords={selectedDateRecords}
+                recordsCount={getDayRecordsCount()}
+                isInDialog={true}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

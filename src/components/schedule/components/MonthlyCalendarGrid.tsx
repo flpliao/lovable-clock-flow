@@ -1,5 +1,6 @@
 import { Schedule } from '@/contexts/scheduling/types';
 import { CreateSchedule } from '@/services/scheduleService';
+import { useCallback } from 'react';
 import { useDragDrop } from '../hooks/useDragDrop';
 import { useExtendedCalendar } from '../hooks/useExtendedCalendar';
 import { useScheduleOperationsHandlers } from '../hooks/useScheduleOperationsHandlers';
@@ -28,7 +29,6 @@ const MonthlyCalendarGrid = ({
   schedules,
   getUserName,
   getUserRelation,
-  selectedSchedule,
   handleScheduleClick,
   handleShowAllSchedules,
   onRefreshSchedules,
@@ -36,49 +36,43 @@ const MonthlyCalendarGrid = ({
   const { calendarDays } = useExtendedCalendar(selectedDate);
   const { handleUpdateSchedule } = useScheduleOperationsHandlers({
     onScheduleUpdated: async () => {
-      console.log('Schedule updated, refreshing...');
       if (onRefreshSchedules) {
         await onRefreshSchedules();
       }
     },
   });
 
-  // 包裝更新函數以處理格式轉換
-  const handleScheduleUpdateWrapper = async (scheduleId: string, updates: DragUpdateParams) => {
-    console.log('MonthlyCalendarGrid - handleScheduleUpdateWrapper called with:', {
-      scheduleId,
-      updates,
-    });
-
-    // 轉換 workDate 為 work_date 格式
-    const convertedUpdates: Partial<CreateSchedule> = {};
-    if (updates.workDate) {
-      convertedUpdates.work_date = updates.workDate;
-    }
-    if (updates.timeSlot) {
-      convertedUpdates.time_slot = updates.timeSlot;
-    }
-    if (updates.startTime) {
-      convertedUpdates.start_time = updates.startTime;
-    }
-    if (updates.endTime) {
-      convertedUpdates.end_time = updates.endTime;
-    }
-
-    console.log('MonthlyCalendarGrid - converted updates:', convertedUpdates);
-
-    try {
-      await handleUpdateSchedule(scheduleId, convertedUpdates);
-      // 更新成功後立即刷新排班資料
-      if (onRefreshSchedules) {
-        console.log('MonthlyCalendarGrid - Refreshing schedules after update...');
-        await onRefreshSchedules();
+  // 使用 useCallback 穩定函數引用，避免不必要的重新渲染
+  const handleScheduleUpdateWrapper = useCallback(
+    async (scheduleId: string, updates: DragUpdateParams) => {
+      // 轉換 workDate 為 work_date 格式
+      const convertedUpdates: Partial<CreateSchedule> = {};
+      if (updates.workDate) {
+        convertedUpdates.work_date = updates.workDate;
       }
-    } catch (error) {
-      console.error('MonthlyCalendarGrid - Update failed:', error);
-      throw error;
-    }
-  };
+      if (updates.timeSlot) {
+        convertedUpdates.time_slot = updates.timeSlot;
+      }
+      if (updates.startTime) {
+        convertedUpdates.start_time = updates.startTime;
+      }
+      if (updates.endTime) {
+        convertedUpdates.end_time = updates.endTime;
+      }
+
+      try {
+        await handleUpdateSchedule(scheduleId, convertedUpdates);
+        // 更新成功後立即刷新排班資料
+        if (onRefreshSchedules) {
+          await onRefreshSchedules();
+        }
+      } catch (error) {
+        console.error('排班更新失敗:', error);
+        throw error;
+      }
+    },
+    [handleUpdateSchedule, onRefreshSchedules]
+  );
 
   const { isDragging, draggedScheduleId, filteredSchedules, makeDraggable, makeDropTarget } =
     useDragDrop({
@@ -88,19 +82,20 @@ const MonthlyCalendarGrid = ({
     });
 
   // 檢查排班衝突
-  const hasScheduleConflict = (schedule: Schedule): Schedule[] => {
-    return filteredSchedules.filter(
-      s =>
-        s.id !== schedule.id &&
-        s.workDate === schedule.workDate &&
-        s.userId === schedule.userId &&
-        ((schedule.startTime >= s.startTime && schedule.startTime < s.endTime) ||
-          (schedule.endTime > s.startTime && schedule.endTime <= s.endTime) ||
-          (schedule.startTime <= s.startTime && schedule.endTime >= s.endTime))
-    );
-  };
-
-  console.log('MonthlyCalendarGrid - Rendering with schedules:', filteredSchedules.length);
+  const hasScheduleConflict = useCallback(
+    (schedule: Schedule): Schedule[] => {
+      return filteredSchedules.filter(
+        s =>
+          s.id !== schedule.id &&
+          s.workDate === schedule.workDate &&
+          s.userId === schedule.userId &&
+          ((schedule.startTime >= s.startTime && schedule.startTime < s.endTime) ||
+            (schedule.endTime > s.startTime && schedule.endTime <= s.endTime) ||
+            (schedule.startTime <= s.startTime && schedule.endTime >= s.endTime))
+      );
+    },
+    [filteredSchedules]
+  );
 
   return (
     <div className="backdrop-blur-xl bg-white/8 border border-white/20 rounded-2xl shadow-xl overflow-hidden">

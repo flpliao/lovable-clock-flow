@@ -4,7 +4,7 @@ import {
   dropTargetForElements,
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { format } from 'date-fns';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 interface DragUpdateParams {
   workDate?: string;
@@ -39,8 +39,6 @@ export const useDragDrop = ({
   // 創建拖拽元素
   const makeDraggable = useCallback(
     (element: HTMLElement, scheduleId: string) => {
-      console.log('useDragDrop - Making draggable:', scheduleId);
-
       return draggable({
         element,
         getInitialData: () => ({ scheduleId }),
@@ -49,12 +47,10 @@ export const useDragDrop = ({
           return {};
         },
         onDragStart: () => {
-          console.log('useDragDrop - Drag started:', scheduleId);
           setIsDragging(true);
           setDraggedScheduleId(scheduleId);
         },
         onDrop: () => {
-          console.log('useDragDrop - Drag ended:', scheduleId);
           // 延遲重置狀態，確保拖拽動畫完成
           setTimeout(() => {
             resetDragState();
@@ -65,9 +61,9 @@ export const useDragDrop = ({
     [resetDragState]
   );
 
-  // 創建放置目標
-  const makeDropTarget = useCallback(
-    (element: HTMLElement, date: Date) => {
+  // 使用 useMemo 來穩定 makeDropTarget 函數，避免每次都重新創建
+  const makeDropTarget = useMemo(
+    () => (element: HTMLElement, date: Date) => {
       const dateStr = format(date, 'yyyy-MM-dd');
       console.log('useDragDrop - Making drop target:', dateStr);
 
@@ -87,7 +83,6 @@ export const useDragDrop = ({
         },
         onDrop: async ({ source }) => {
           const scheduleId = source.data.scheduleId as string;
-          console.log('useDragDrop - Drop detected:', { scheduleId, targetDate: dateStr });
 
           // 移除視覺反饋
           element.style.backgroundColor = '';
@@ -97,14 +92,13 @@ export const useDragDrop = ({
               await onUpdateSchedule(scheduleId, {
                 workDate: dateStr,
               });
-              console.log('useDragDrop - Update successful');
 
               // 更新成功後刷新資料
               if (onRefreshSchedules) {
                 await onRefreshSchedules();
               }
             } catch (error) {
-              console.error('useDragDrop - Update failed:', error);
+              console.error('拖拽更新失敗:', error);
             }
           }
         },

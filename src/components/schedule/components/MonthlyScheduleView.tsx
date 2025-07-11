@@ -38,7 +38,6 @@ const MonthlyScheduleView = ({
   onUpdateSchedule,
   onDeleteSchedule,
   onRefreshSchedules,
-  timeSlots = [],
 }: MonthlyScheduleViewProps) => {
   const navigate = useNavigate();
   const { handleUpdateSchedule, handleRemoveSchedule } = useScheduleOperationsHandlers({

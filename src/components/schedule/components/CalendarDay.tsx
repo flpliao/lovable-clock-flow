@@ -46,13 +46,15 @@ const CalendarDay = ({
 }: CalendarDayProps) => {
   const dayRef = useRef<HTMLDivElement>(null);
 
-  // 設置放置目標
+  // 設置放置目標 - 只在組件掛載時設置一次
   useEffect(() => {
+    console.log('effect run with day.date:', day?.date);
     const element = dayRef.current;
     if (!element || !day?.date) return;
 
+    // 只在組件掛載時設置一次放置目標
     return makeDropTarget(element, day.date);
-  }, [makeDropTarget, day?.date]);
+  }, [day?.date, makeDropTarget]); // 移除 makeDropTarget 依賴，避免重複設置
 
   if (!day?.date) {
     return (

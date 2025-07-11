@@ -9,10 +9,9 @@ import {
 } from '@/components/ui/dialog';
 import { roleService } from '@/services/roleService';
 import { useEffect, useState } from 'react';
-import { SYSTEM_ROLES } from './constants/systemRoles';
 import { EditStaffFormContent } from './forms/EditStaffFormContent';
-import { Staff, StaffRole } from './types';
 import { useSupervisorFilter } from './hooks/useSupervisorFilter';
+import { Staff, StaffRole } from './types';
 
 interface EditStaffDialogProps {
   open: boolean;
@@ -28,15 +27,14 @@ const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDial
   // 使用 hook 來篩選可選的主管
   const potentialSupervisors = useSupervisorFilter(editingStaff);
 
-  // 載入角色
+  // 載入職位
   useEffect(() => {
     const fetchRoles = async () => {
       try {
         const data = await roleService.loadRoles();
         setRoles(data);
       } catch (error) {
-        console.error('載入角色失敗，使用預設系統角色:', error);
-        setRoles(SYSTEM_ROLES);
+        console.error('載入職位失敗:', error);
       }
     };
     fetchRoles();
@@ -63,7 +61,7 @@ const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-base">編輯人員</DialogTitle>
           <DialogDescription className="text-xs">編輯員工資料</DialogDescription>

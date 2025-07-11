@@ -1,3 +1,4 @@
+import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,14 +11,13 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { staffService } from '@/services/staffService';
-import { Plus, Search, Filter, X, Mail, UserCheck, Users } from 'lucide-react';
+import { Filter, Plus, Search, Users, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import AddStaffDialog from './AddStaffDialog';
+import { ROLE_ID_MAP } from './constants/roleIdMap';
 import EditStaffDialog from './EditStaffDialog';
 import { StaffList } from './StaffList';
 import { NewStaff, Staff } from './types';
-import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
-import { ROLE_ID_MAP } from './constants/roleIdMap';
 
 const StaffManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -134,18 +134,6 @@ const StaffManagement = () => {
     return logic === 'AND' ? results.every(Boolean) : results.some(Boolean);
   };
 
-  // 取得所有部門列表
-  const getDepartments = () => {
-    const departments = [...new Set(staffList.map(staff => staff.department).filter(Boolean))];
-    return departments.sort();
-  };
-
-  // 取得所有角色列表
-  const getRoles = () => {
-    const roles = [...new Set(staffList.map(staff => staff.role_id).filter(Boolean))];
-    return roles.sort();
-  };
-
   // 進階過濾員工列表
   const filteredStaff = staffList.filter(staff => {
     // 若進階篩選展開且有條件，優先用多條件組合搜尋
@@ -185,18 +173,6 @@ const StaffManagement = () => {
     const matchesDepartment = departmentFilter === 'all' || staff.department === departmentFilter;
     return matchesSearch && matchesRole && matchesDepartment;
   });
-
-  // 清除所有篩選
-  const clearAllFilters = () => {
-    setSearchTerm('');
-    setSearchField('all');
-    setRoleFilter('all');
-    setDepartmentFilter('all');
-  };
-
-  // 檢查是否有任何篩選條件
-  const hasActiveFilters =
-    searchTerm || searchField !== 'all' || roleFilter !== 'all' || departmentFilter !== 'all';
 
   const handleEditStaff = (staff: Staff) => {
     setSelectedStaff(staff);

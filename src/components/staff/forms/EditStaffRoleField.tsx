@@ -37,7 +37,7 @@ export const EditStaffRoleField: React.FC<EditStaffRoleFieldProps> = ({
   return (
     <div className="grid grid-cols-4 items-center gap-4">
       <Label htmlFor="role" className="text-right">
-        權限角色 <span className="text-red-500">*</span>
+        職位（權限） <span className="text-red-500">*</span>
       </Label>
       <Select value={currentStaff.role_id || ''} onValueChange={handleRoleChange}>
         <SelectTrigger className="col-span-3" id="role">

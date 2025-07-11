@@ -3,13 +3,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { calculateAnnualLeaveDays, formatYearsOfService } from '@/utils/annualLeaveCalculator';
 import { format } from 'date-fns';
@@ -28,9 +21,6 @@ export const EditStaffBasicFields: React.FC<EditStaffBasicFieldsProps> = ({
   setCurrentStaff,
   onHireDateChange,
 }) => {
-  // 簡單的職位列表，可以根據需要擴展
-  const positions = ['系統管理員', '人事主管', '財務主管', '部門主管', '一般員工', '實習生'];
-
   const [hireDateOpen, setHireDateOpen] = useState(false);
 
   const handleHireDateChange = (date: Date | undefined) => {
@@ -75,27 +65,6 @@ export const EditStaffBasicFields: React.FC<EditStaffBasicFieldsProps> = ({
           className="col-span-3"
           placeholder="請輸入姓名"
         />
-      </div>
-
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="position" className="text-right">
-          職位 <span className="text-red-500">*</span>
-        </Label>
-        <Select
-          value={currentStaff.position || ''}
-          onValueChange={value => setCurrentStaff({ ...currentStaff, position: value })}
-        >
-          <SelectTrigger className="col-span-3" id="position">
-            <SelectValue placeholder="選擇職位" />
-          </SelectTrigger>
-          <SelectContent>
-            {positions.map(position => (
-              <SelectItem key={position} value={position}>
-                {position}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">

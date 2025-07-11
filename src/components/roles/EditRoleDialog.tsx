@@ -37,11 +37,11 @@ const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialog
   // 載入角色當前權限
   useEffect(() => {
     const loadRolePermissions = async () => {
-      if (!isOpen || !editingRole) return;
+      if (!isOpen || !role) return;
 
       try {
         setIsLoading(true);
-        const rolePermissions = await permissionService.getRolePermissions(editingRole.id);
+        const rolePermissions = await permissionService.getRolePermissions(role.id);
         setSelectedPermissions(new Set(rolePermissions.map(p => p.id)));
       } catch (error) {
         console.error('載入角色權限失敗:', error);
@@ -56,7 +56,7 @@ const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialog
     };
 
     loadRolePermissions();
-  }, [isOpen, editingRole, toast]);
+  }, [isOpen, role, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

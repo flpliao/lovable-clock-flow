@@ -1,17 +1,17 @@
 import {
-  Home,
-  Calendar,
-  FileText,
-  Users,
-  Building,
-  Settings,
-  Clock,
   Briefcase,
-  MessageSquare,
-  Megaphone,
+  Building,
+  Calendar,
   CalendarDays,
   CheckCircle,
+  Clock,
+  FileText,
+  Home,
   LucideIcon,
+  Megaphone,
+  MessageSquare,
+  Settings,
+  Users,
 } from 'lucide-react';
 
 export interface MenuItem {
@@ -53,6 +53,7 @@ export const menuItems: MenuItem[] = [
     adminOnly: true,
   },
   { path: '/personnel-management', label: '人員管理', icon: Users, public: false, adminOnly: true },
+  { path: '/role-management', label: '職位管理', icon: Briefcase, public: false, adminOnly: true },
   {
     path: '/company-branch-management',
     label: '公司單位與打卡管理',

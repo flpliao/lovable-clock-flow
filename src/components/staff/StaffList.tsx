@@ -48,9 +48,8 @@ export const StaffList: React.FC<StaffListProps> = ({
           <TableRow>
             <TableHead>姓名</TableHead>
             <TableHead>部門</TableHead>
-            <TableHead>職位</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>角色</TableHead>
+            <TableHead>職位（權限）</TableHead>
             <TableHead className="text-right">操作</TableHead>
           </TableRow>
         </TableHeader>
@@ -59,7 +58,6 @@ export const StaffList: React.FC<StaffListProps> = ({
             <TableRow key={staff.id}>
               <TableCell className="font-medium">{staff.name || '未設定姓名'}</TableCell>
               <TableCell>{staff.department || '未設定'}</TableCell>
-              <TableCell>{staff.position || '未設定'}</TableCell>
               <TableCell>{staff.email || '未設定'}</TableCell>
               <TableCell>{ROLE_ID_MAP[staff.role_id || ''] || '未設定'}</TableCell>
               <TableCell className="text-right">

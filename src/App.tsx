@@ -46,6 +46,7 @@ import NotFound from '@/pages/NotFound';
 
 // Route protection
 import ProtectedRoute from '@/components/common/ProtectedRoute';
+import Role from '@/pages/Role';
 
 // 認證初始化組件（替代 UserProvider）
 const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -150,6 +151,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <PersonnelManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/role-management"
+                element={
+                  <ProtectedRoute>
+                    <Role />
                   </ProtectedRoute>
                 }
               />

@@ -1,17 +1,14 @@
-
-import React, { useState } from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { Staff } from '../types';
-import { usePositions } from '../hooks/usePositions';
 import { calculateAnnualLeaveDays, formatYearsOfService } from '@/utils/annualLeaveCalculator';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import React, { useState } from 'react';
+import { Staff } from '../types';
 
 interface EditStaffBasicFieldsProps {
   currentStaff: Staff;
@@ -22,16 +19,17 @@ interface EditStaffBasicFieldsProps {
 export const EditStaffBasicFields: React.FC<EditStaffBasicFieldsProps> = ({
   currentStaff,
   setCurrentStaff,
-  onHireDateChange
+  onHireDateChange,
 }) => {
-  const { getPositionNames } = usePositions();
-  const positions = getPositionNames();
   const [hireDateOpen, setHireDateOpen] = useState(false);
 
   const handleHireDateChange = (date: Date | undefined) => {
-    const updatedStaff = { ...currentStaff, hire_date: date ? format(date, 'yyyy-MM-dd') : undefined };
+    const updatedStaff = {
+      ...currentStaff,
+      hire_date: date ? format(date, 'yyyy-MM-dd') : undefined,
+    };
     setCurrentStaff(updatedStaff);
-    
+
     // 計算特休天數並通知父組件
     if (date && onHireDateChange) {
       const entitledDays = calculateAnnualLeaveDays(date);
@@ -39,18 +37,18 @@ export const EditStaffBasicFields: React.FC<EditStaffBasicFieldsProps> = ({
     } else if (onHireDateChange) {
       onHireDateChange(false);
     }
-    
+
     setHireDateOpen(false);
   };
 
   // 計算顯示的年資和特休信息
   const hireDateInfo = React.useMemo(() => {
     if (!currentStaff.hire_date) return null;
-    
+
     const hireDate = new Date(currentStaff.hire_date);
     const yearsOfService = formatYearsOfService(hireDate);
     const entitledDays = calculateAnnualLeaveDays(hireDate);
-    
+
     return { yearsOfService, entitledDays };
   }, [currentStaff.hire_date]);
 
@@ -63,31 +61,10 @@ export const EditStaffBasicFields: React.FC<EditStaffBasicFieldsProps> = ({
         <Input
           id="name"
           value={currentStaff.name || ''}
-          onChange={(e) => setCurrentStaff({...currentStaff, name: e.target.value})}
+          onChange={e => setCurrentStaff({ ...currentStaff, name: e.target.value })}
           className="col-span-3"
           placeholder="請輸入姓名"
         />
-      </div>
-      
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="position" className="text-right">
-          職位 <span className="text-red-500">*</span>
-        </Label>
-        <Select 
-          value={currentStaff.position || ''} 
-          onValueChange={(value) => setCurrentStaff({...currentStaff, position: value})}
-        >
-          <SelectTrigger className="col-span-3" id="position">
-            <SelectValue placeholder="選擇職位" />
-          </SelectTrigger>
-          <SelectContent>
-            {positions.map((position) => (
-              <SelectItem key={position} value={position}>
-                {position}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
@@ -97,7 +74,7 @@ export const EditStaffBasicFields: React.FC<EditStaffBasicFieldsProps> = ({
         <Input
           id="contact"
           value={currentStaff.contact || ''}
-          onChange={(e) => setCurrentStaff({...currentStaff, contact: e.target.value})}
+          onChange={e => setCurrentStaff({ ...currentStaff, contact: e.target.value })}
           className="col-span-3"
           placeholder="請輸入聯絡電話"
         />
@@ -116,13 +93,13 @@ export const EditStaffBasicFields: React.FC<EditStaffBasicFieldsProps> = ({
               <Button
                 variant="outline"
                 className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !currentStaff.hire_date && "text-muted-foreground"
+                  'w-full justify-start text-left font-normal',
+                  !currentStaff.hire_date && 'text-muted-foreground'
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {currentStaff.hire_date ? (
-                  format(new Date(currentStaff.hire_date), "yyyy年MM月dd日")
+                  format(new Date(currentStaff.hire_date), 'yyyy年MM月dd日')
                 ) : (
                   <span>請選擇入職日期</span>
                 )}
@@ -133,9 +110,7 @@ export const EditStaffBasicFields: React.FC<EditStaffBasicFieldsProps> = ({
                 mode="single"
                 selected={currentStaff.hire_date ? new Date(currentStaff.hire_date) : undefined}
                 onSelect={handleHireDateChange}
-                disabled={(date) =>
-                  date > new Date() || date < new Date("1900-01-01")
-                }
+                disabled={date => date > new Date() || date < new Date('1900-01-01')}
                 initialFocus
                 className="pointer-events-auto"
                 captionLayout="dropdown-buttons"
@@ -144,7 +119,7 @@ export const EditStaffBasicFields: React.FC<EditStaffBasicFieldsProps> = ({
               />
             </PopoverContent>
           </Popover>
-          
+
           {/* 顯示年資和特休信息 */}
           {hireDateInfo && (
             <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
@@ -155,12 +130,12 @@ export const EditStaffBasicFields: React.FC<EditStaffBasicFieldsProps> = ({
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-blue-600 font-medium">特休：</span>
-                  <span className="text-blue-800 font-semibold">{hireDateInfo.entitledDays} 天</span>
+                  <span className="text-blue-800 font-semibold">
+                    {hireDateInfo.entitledDays} 天
+                  </span>
                 </div>
               </div>
-              <div className="mt-1 text-xs text-blue-600">
-                根據入職日自動計算
-              </div>
+              <div className="mt-1 text-xs text-blue-600">根據入職日自動計算</div>
             </div>
           )}
         </div>

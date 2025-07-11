@@ -1,11 +1,10 @@
 import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
 import { DataSyncManager } from '@/utils/dataSync';
 import { useEffect, useState } from 'react';
-import { useRoleManagement } from './useRoleManagement';
+import { Staff } from '../types';
 import { useStaffDialogs } from './useStaffDialogs';
 import { useStaffHierarchy } from './useStaffHierarchy';
 import { useSupabaseStaffOperations } from './useSupabaseStaffOperations';
-import { Staff } from '../types';
 
 export const useStaffManagement = () => {
   const currentUser = useCurrentUser();
@@ -33,9 +32,6 @@ export const useStaffManagement = () => {
     openEditDialog,
     resetNewStaff,
   } = useStaffDialogs();
-
-  const { roles, addRole, updateRole, deleteRole, getRole, hasPermission, assignRoleToStaff } =
-    useRoleManagement(staffList);
 
   // 初始化時執行完整資料同步
   useEffect(() => {
@@ -147,14 +143,5 @@ export const useStaffManagement = () => {
     getSubordinates,
     refreshData,
     performFullSync, // 新增完整同步功能
-
-    // Role management
-    roles,
-    addRole,
-    updateRole,
-    deleteRole,
-    getRole,
-    hasPermission,
-    assignRoleToStaff,
   };
 };

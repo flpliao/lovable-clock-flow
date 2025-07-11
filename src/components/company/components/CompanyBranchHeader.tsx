@@ -1,4 +1,4 @@
-import { Building2, Database, Settings } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import React from 'react';
 
 export const CompanyBranchHeader: React.FC = () => {

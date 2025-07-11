@@ -12,11 +12,22 @@ import { useCompanyManagementContext } from './CompanyManagementContext';
 import EditBranchDialog from './EditBranchDialog';
 import EditCompanyDialog from './EditCompanyDialog';
 import CheckInDistanceSettings from './components/CheckInDistanceSettings';
+import CheckpointTable from './components/CheckpointTable';
+import AddCheckpointDialog from './components/AddCheckpointDialog';
+import EditCheckpointDialog from './components/EditCheckpointDialog';
+import { useCheckpoints, Checkpoint } from './components/useCheckpoints';
 
 const CompanyManagementRedesigned = () => {
   const isAdmin = useIsAdmin();
   const { setIsAddBranchDialogOpen, branches } = useCompanyManagementContext();
   const [activeTab, setActiveTab] = useState('branches');
+  const [isAddCheckpointOpen, setIsAddCheckpointOpen] = useState(false);
+  const [editCheckpoint, setEditCheckpoint] = useState<Checkpoint | null>(null);
+  const {
+    data: checkpoints,
+    loading: checkpointsLoading,
+    refresh: refreshCheckpoints,
+  } = useCheckpoints();
 
   const canManageBranches = isAdmin;
 
@@ -32,9 +43,15 @@ const CompanyManagementRedesigned = () => {
       description: '管理單位資訊',
     },
     {
+      id: 'checkpoints',
+      label: '打卡點管理',
+      icon: MapPin,
+      description: '管理打卡點',
+    },
+    {
       id: 'checkin',
       label: '打卡設定',
-      icon: MapPin,
+      icon: Plus,
       description: 'GPS打卡距離設定',
     },
   ];
@@ -76,6 +93,39 @@ const CompanyManagementRedesigned = () => {
         );
       case 'checkin':
         return <CheckInDistanceSettings />;
+      case 'checkpoints':
+        return (
+          <div className="space-y-6">
+            <div className="backdrop-blur-xl bg-white/25 border border-white/30 rounded-2xl shadow-lg p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-blue-500/80 rounded-xl shadow-lg backdrop-blur-xl border border-blue-400/50">
+                    <MapPin className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white drop-shadow-md">打卡點管理</h3>
+                    <p className="text-white/80 text-sm mt-1">管理所有打卡點</p>
+                  </div>
+                </div>
+                {isAdmin && (
+                  <Button
+                    onClick={() => setIsAddCheckpointOpen(true)}
+                    className="bg-green-500/80 hover:bg-green-600/80 text-white border-0 rounded-xl shadow-lg backdrop-blur-xl"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    新增打卡點
+                  </Button>
+                )}
+              </div>
+              <CheckpointTable
+                onEdit={setEditCheckpoint}
+                data={checkpoints}
+                loading={checkpointsLoading}
+                refresh={refreshCheckpoints}
+              />
+            </div>
+          </div>
+        );
       default:
         return <CompanyInfoCard />;
     }
@@ -85,7 +135,7 @@ const CompanyManagementRedesigned = () => {
     <div className="space-y-6">
       {/* 標籤導航 */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-white/20 backdrop-blur-xl border border-white/30">
+        <TabsList className="grid w-full grid-cols-3 bg-white/20 backdrop-blur-xl border border-white/30">
           {tabs.map(tab => {
             const Icon = tab.icon;
             return (
@@ -112,6 +162,17 @@ const CompanyManagementRedesigned = () => {
       <EditBranchDialog />
       <EditDepartmentDialog />
       <EditCompanyDialog />
+      <AddCheckpointDialog
+        open={isAddCheckpointOpen}
+        onClose={() => setIsAddCheckpointOpen(false)}
+        onSuccess={refreshCheckpoints}
+      />
+      <EditCheckpointDialog
+        open={!!editCheckpoint}
+        onClose={() => setEditCheckpoint(null)}
+        checkpoint={editCheckpoint}
+        onSuccess={refreshCheckpoints}
+      />
     </div>
   );
 };

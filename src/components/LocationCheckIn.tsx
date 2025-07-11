@@ -14,19 +14,27 @@ import MissedCheckinDialog from '@/components/check-in/MissedCheckinDialog';
 import { useCheckpoints } from '@/components/company/components/useCheckpoints';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 import { CheckInRecord } from '@/types';
+import ActionTypeSelector from '@/components/check-in/ActionTypeSelector';
 
 const LocationCheckIn = () => {
   const currentUser = useCurrentUser(); // 使用新的 Zustand hook
   const { data: checkpoints } = useCheckpoints();
   const [selectedCheckpointId, setSelectedCheckpointId] = useState<number | null>(null);
-  const { createCheckInRecord } = useSupabaseCheckIn();
+  const { createCheckInRecord, getTodayCheckInRecords } = useSupabaseCheckIn();
 
-  // 設定預設打卡點（可根據需求自動選第一個或總公司）
+  // 自動載入今日打卡紀錄
   useEffect(() => {
-    if (checkpoints && checkpoints.length > 0 && selectedCheckpointId === null) {
-      setSelectedCheckpointId(null); // 預設為總公司
-    }
-  }, [checkpoints]);
+    const fetchTodayRecords = async () => {
+      if (currentUser?.id) {
+        const records = await getTodayCheckInRecords(currentUser.id);
+        setTodayRecords(records);
+        if (actionType === 'check-in' && records?.checkIn && !records?.checkOut) {
+          setActionType('check-out');
+        }
+      }
+    };
+    fetchTodayRecords();
+  }, [currentUser?.id, getTodayCheckInRecords]);
 
   // 打卡邏輯
   const [loading, setLoading] = useState(false);
@@ -96,7 +104,11 @@ const LocationCheckIn = () => {
       };
       const success = await createCheckInRecord(checkInData);
       if (success) {
-        // 重新載入今日記錄（略）
+        // 重新載入今日記錄
+        if (currentUser?.id) {
+          const records = await getTodayCheckInRecords(currentUser.id);
+          setTodayRecords(records);
+        }
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : '位置打卡失敗');

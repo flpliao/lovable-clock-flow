@@ -1,34 +1,27 @@
-import AttendanceTabsContainer from '@/components/attendance/AttendanceTabsContainer';
+import AttendanceCalendarView from '@/components/attendance/AttendanceCalendarView';
 import { useAttendanceRecords } from '@/hooks/useAttendanceRecords';
 import { useCurrentUser } from '@/hooks/useStores';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect } from 'react';
+import { Calendar } from 'lucide-react';
 
 const PersonalAttendance = () => {
   // 使用新的 Zustand hooks
   const currentUser = useCurrentUser();
 
-  const [activeTab, setActiveTab] = useState('history');
   const { date, setDate, selectedDateRecords, checkInRecords, refreshData } =
     useAttendanceRecords();
 
-  const lastActiveTabRef = useRef(activeTab);
-
-  // 當切換到月曆視圖時重新整理資料
-  const handleCalendarTabRefresh = useCallback(async () => {
-    if (activeTab === 'calendar' && currentUser?.id && lastActiveTabRef.current !== 'calendar') {
-      console.log('切換到月曆視圖，重新整理資料');
-      lastActiveTabRef.current = activeTab;
+  // 載入頁面時重新整理資料
+  const handleDataRefresh = useCallback(async () => {
+    if (currentUser?.id) {
+      console.log('載入月曆視圖，重新整理資料');
       await refreshData();
     }
-  }, [activeTab, currentUser?.id, refreshData]);
+  }, [currentUser?.id, refreshData]);
 
   useEffect(() => {
-    handleCalendarTabRefresh();
-  }, [handleCalendarTabRefresh]);
-
-  useEffect(() => {
-    lastActiveTabRef.current = activeTab;
-  }, [activeTab]);
+    handleDataRefresh();
+  }, [handleDataRefresh]);
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
@@ -54,14 +47,26 @@ const PersonalAttendance = () => {
 
       <div className="relative z-10 w-full">
         <div className="w-full px-4 sm:px-6 lg:px-8 pb-6 py-[50px]">
-          <AttendanceTabsContainer
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            date={date}
-            setDate={setDate}
-            selectedDateRecords={selectedDateRecords}
-            checkInRecords={checkInRecords}
-          />
+          <div className="space-y-6">
+            {/* 標題 */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-500/80 rounded-xl flex items-center justify-center shadow-lg">
+                <Calendar className="h-5 w-5 text-white" />
+              </div>
+              <h2 className="text-xl font-semibold text-white drop-shadow-md">打卡記錄</h2>
+            </div>
+
+            {/* 月曆視圖內容 */}
+            <div className="mt-6">
+              <AttendanceCalendarView
+                date={date}
+                setDate={setDate}
+                selectedDateRecords={selectedDateRecords}
+                checkInRecords={checkInRecords}
+                onMonthChange={refreshData}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

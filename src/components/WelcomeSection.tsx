@@ -58,28 +58,25 @@ const WelcomeSection = ({ userName }: WelcomeSectionProps) => {
           <h1 className="text-lg sm:text-xl font-bold text-white drop-shadow-lg">
             您好，{displayName}
           </h1>
-          <div className="inline-block px-2 py-1 bg-white/20 rounded-full backdrop-blur-xl border border-white/30">
-            <span className="text-white text-xs font-medium">{getUserRoleDisplay()}</span>
-          </div>
         </div>
 
         {/* 第二行：時間 + 日期 */}
         <div className="flex items-center justify-center gap-4">
-          <div className="flex items-center space-x-2">
-            <div className="p-1.5 bg-blue-500/80 rounded-lg shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
-              <Clock className="h-3 w-3" />
-            </div>
-            <span className="text-base sm:text-lg font-mono font-bold text-white drop-shadow-lg">
-              {timeString}
-            </span>
-          </div>
-
           <div className="flex items-center space-x-2">
             <div className="p-1.5 bg-green-500/80 rounded-lg shadow-lg backdrop-blur-xl border border-green-400/50 text-white">
               <Calendar className="h-3 w-3" />
             </div>
             <span className="text-xs sm:text-sm font-semibold text-white drop-shadow-lg">
               {dateString}
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <div className="p-1.5 bg-blue-500/80 rounded-lg shadow-lg backdrop-blur-xl border border-blue-400/50 text-white">
+              <Clock className="h-3 w-3" />
+            </div>
+            <span className="text-base sm:text-lg font-mono font-bold text-white drop-shadow-lg">
+              {timeString}
             </span>
           </div>
         </div>

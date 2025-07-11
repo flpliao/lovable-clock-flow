@@ -63,19 +63,33 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                     <div className="text-gray-600 text-xs">{currentUser.email}</div>
                   </div>
                 </div>
-                <Button
-                  onClick={onClose}
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-600 hover:text-gray-800 hover:bg-gray-200 p-2"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
+                <div className="flex items-center space-x-2">
+                  {/* 個人設定齒輪圖示按鈕 */}
+                  <Button
+                    onClick={() => {
+                      onNavigation('/account-settings');
+                      onClose();
+                    }}
+                    variant="ghost"
+                    size="icon"
+                    className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 p-2"
+                  >
+                    <Settings className="h-5 w-5" />
+                  </Button>
+                  {/* 關閉按鈕 */}
+                  <Button
+                    onClick={onClose}
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-200 p-2"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
               </div>
 
               {/* 功能選單 - 格子佈局 */}
               <div className="space-y-4">
-                <h3 className="text-gray-800 font-semibold text-base mb-3">功能選單</h3>
                 <div className="grid grid-cols-3 gap-4">
                   {visibleMenuItems.map(item => (
                     <button
@@ -115,19 +129,6 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
 
               {/* 底部功能 */}
               <div className="space-y-3">
-                {/* 個人設定 */}
-                <Button
-                  onClick={() => {
-                    onNavigation('/account-settings');
-                    onClose();
-                  }}
-                  variant="ghost"
-                  className="w-full justify-start text-gray-800 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 p-4 rounded-lg text-base font-medium"
-                >
-                  <Settings className="h-5 w-5 mr-3 text-gray-700" />
-                  <span>個人設定</span>
-                </Button>
-
                 {/* 登出按鈕 */}
                 <Button
                   onClick={() => {

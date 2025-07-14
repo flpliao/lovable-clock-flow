@@ -1,8 +1,6 @@
-import { CompanyManagementProvider } from '@/components/company/CompanyManagementContext';
+import CompanyManagement from '@/components/company/CompanyManagement';
 import { CompanyBranchHeader } from '@/components/company/components/CompanyBranchHeader';
 import { CompanyBranchLayout } from '@/components/company/components/CompanyBranchLayout';
-import { CompanyBranchPermissionGuard } from '@/components/company/components/CompanyBranchPermissionGuard';
-import { CompanyBranchTabs } from '@/components/company/components/CompanyBranchTabs';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 import { useUserLoaded } from '@/hooks/useStores';
 import { Loader2 } from 'lucide-react';
@@ -44,16 +42,12 @@ const CompanyBranchManagement = () => {
         style={{ animationDelay: '6s' }}
       ></div>
 
-      <CompanyBranchPermissionGuard>
-        <StaffManagementProvider>
-          <CompanyManagementProvider>
-            <CompanyBranchLayout>
-              <CompanyBranchHeader />
-              <CompanyBranchTabs />
-            </CompanyBranchLayout>
-          </CompanyManagementProvider>
-        </StaffManagementProvider>
-      </CompanyBranchPermissionGuard>
+      <StaffManagementProvider>
+        <CompanyBranchLayout>
+          <CompanyBranchHeader />
+          <CompanyManagement />
+        </CompanyBranchLayout>
+      </StaffManagementProvider>
     </div>
   );
 };

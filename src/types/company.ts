@@ -19,6 +19,7 @@ export interface Branch {
   company_id: string;
   name: string;
   code: string; // 單位代碼
+  type: string; // 分支類型
   address: string;
   phone: string;
   email?: string;
@@ -34,6 +35,7 @@ export interface Branch {
 export interface NewBranch {
   name: string;
   code: string;
+  type: string; // 分支類型
   address: string;
   phone: string;
   email?: string;

@@ -2,39 +2,40 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { Permission, permissionService } from '@/services/permissionService';
+import { permissionService } from '@/services/permissionService';
+import { usePermissionStore } from '@/stores/permissionStore';
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import PermissionSelectDialog from './PermissionSelectDialog';
 
+/**
+ * 權限選擇組件
+ * 使用 usePermissionStore 來管理所有權限資料的快取
+ * 包含自動載入、錯誤處理和快取機制
+ */
 interface PermissionSelectProps {
   selectedPermissions: Set<string>;
   onPermissionsChange: (permissions: Set<string>) => void;
   isLoading?: boolean;
 }
 
-const PermissionSelect = ({
-  selectedPermissions,
-  onPermissionsChange,
-  isLoading = false,
-}: PermissionSelectProps) => {
+const PermissionSelect = ({ selectedPermissions, onPermissionsChange }: PermissionSelectProps) => {
   const { toast } = useToast();
   const [isPermissionDialogOpen, setIsPermissionDialogOpen] = useState(false);
-  const [permissions, setPermissions] = useState<Permission[]>([]);
   const [isLoadingPermissions, setIsLoadingPermissions] = useState(false);
+  const { permissions } = usePermissionStore();
 
   // 載入權限列表
   useEffect(() => {
     const loadData = async () => {
+      setIsLoadingPermissions(true);
       try {
-        setIsLoadingPermissions(true);
-        const permissionsData = await permissionService.getPermissions();
-        setPermissions(permissionsData);
+        await permissionService.loadAllPermissions();
       } catch (error) {
         console.error('載入權限資料失敗:', error);
         toast({
           title: '載入失敗',
-          description: '無法載入權限資料',
+          description: error instanceof Error ? error.message : '無法載入權限資料，請稍後再試',
           variant: 'destructive',
         });
       } finally {
@@ -55,7 +56,7 @@ const PermissionSelect = ({
     return permissions.filter(p => selectedPermissions.has(p.id));
   };
 
-  const effectiveIsLoading = isLoading || isLoadingPermissions;
+  const effectiveIsLoading = isLoadingPermissions;
 
   return (
     <>

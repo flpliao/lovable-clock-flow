@@ -31,25 +31,32 @@ interface MissedCheckinRequestData {
   requested_check_out_time?: string;
 }
 
-export const useMissedCheckinForm = (onSuccess: () => void) => {
+interface UseMissedCheckinFormOptions {
+  initialData?: Partial<MissedCheckinFormData>;
+}
+
+export const useMissedCheckinForm = (
+  onSuccess: () => void,
+  options?: UseMissedCheckinFormOptions
+) => {
   const currentUser = useCurrentUser();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<MissedCheckinFormData>({
-    request_date: new Date().toISOString().split('T')[0],
-    missed_type: 'check_in',
-    requested_check_in_time: '',
-    requested_check_out_time: '',
-    reason: ''
+    request_date: options?.initialData?.request_date || new Date().toISOString().split('T')[0],
+    missed_type: options?.initialData?.missed_type || 'check_in',
+    requested_check_in_time: options?.initialData?.requested_check_in_time || '',
+    requested_check_out_time: options?.initialData?.requested_check_out_time || '',
+    reason: options?.initialData?.reason || '',
   });
 
   const resetForm = () => {
     setFormData({
-      request_date: new Date().toISOString().split('T')[0],
-      missed_type: 'check_in',
-      requested_check_in_time: '',
-      requested_check_out_time: '',
-      reason: ''
+      request_date: options?.initialData?.request_date || new Date().toISOString().split('T')[0],
+      missed_type: options?.initialData?.missed_type || 'check_in',
+      requested_check_in_time: options?.initialData?.requested_check_in_time || '',
+      requested_check_out_time: options?.initialData?.requested_check_out_time || '',
+      reason: options?.initialData?.reason || '',
     });
   };
 
@@ -66,7 +73,7 @@ export const useMissedCheckinForm = (onSuccess: () => void) => {
         staff_id: currentUser.id,
         request_date: formData.request_date,
         missed_type: formData.missed_type,
-        reason: formData.reason
+        reason: formData.reason,
       };
 
       // 根據申請類型添加時間
@@ -94,8 +101,8 @@ export const useMissedCheckinForm = (onSuccess: () => void) => {
       await createManagerNotification(insertedData as MissedCheckinRequestData);
 
       toast({
-        title: "申請已提交",
-        description: "忘記打卡申請已成功提交，等待主管審核",
+        title: '申請已提交',
+        description: '忘記打卡申請已成功提交，等待主管審核',
       });
 
       resetForm();
@@ -103,9 +110,9 @@ export const useMissedCheckinForm = (onSuccess: () => void) => {
     } catch (error) {
       console.error('提交申請失敗:', error);
       toast({
-        title: "提交失敗",
-        description: "無法提交忘記打卡申請，請稍後重試",
-        variant: "destructive",
+        title: '提交失敗',
+        description: '無法提交忘記打卡申請，請稍後重試',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -132,10 +139,14 @@ export const useMissedCheckinForm = (onSuccess: () => void) => {
 
       const getMissedTypeText = (type: string) => {
         switch (type) {
-          case 'check_in': return '忘記上班打卡';
-          case 'check_out': return '忘記下班打卡';
-          case 'both': return '忘記上下班打卡';
-          default: return type;
+          case 'check_in':
+            return '忘記上班打卡';
+          case 'check_out':
+            return '忘記下班打卡';
+          case 'both':
+            return '忘記上下班打卡';
+          default:
+            return type;
         }
       };
 
@@ -150,8 +161,8 @@ export const useMissedCheckinForm = (onSuccess: () => void) => {
             actionRequired: true,
             applicantName: currentUser?.name,
             requestDate: formData.request_date,
-            missedType: formData.missed_type
-          }
+            missedType: formData.missed_type,
+          },
         });
       }
 
@@ -166,6 +177,6 @@ export const useMissedCheckinForm = (onSuccess: () => void) => {
     loading,
     updateFormData,
     submitForm,
-    resetForm
+    resetForm,
   };
 };

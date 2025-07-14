@@ -6,6 +6,7 @@ import { Schedule } from '@/services/scheduleService';
 import { formatTime } from '@/utils/checkInUtils';
 import { format, isFuture } from 'date-fns';
 import { useCurrentUser } from '@/hooks/useStores';
+import { useToast } from '@/hooks/use-toast';
 import React from 'react';
 import {
   Dialog,
@@ -31,6 +32,7 @@ interface DateRecordDetailsProps {
   missedCheckinRecords?: MissedCheckinRequest[];
   hasScheduleForDate: (date: string) => boolean;
   getScheduleForDate: (date: string) => Schedule | undefined;
+  onDataRefresh?: () => Promise<void>;
   isInDialog?: boolean;
 }
 
@@ -48,9 +50,11 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   missedCheckinRecords = [],
   hasScheduleForDate,
   getScheduleForDate,
+  onDataRefresh,
   isInDialog = false,
 }) => {
   const currentUser = useCurrentUser();
+  const { toast } = useToast();
   const textClass = isInDialog ? 'text-gray-900' : 'text-gray-900';
   const subTextClass = isInDialog ? 'text-gray-600' : 'text-gray-500';
   const borderClass = isInDialog ? 'border-gray-200' : 'border-gray-100';
@@ -258,22 +262,35 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
     let requested_check_in_time = '';
     let requested_check_out_time = '';
 
+    // 格式化時間字符串，確保符合 HH:mm 格式
+    const formatTimeString = (timeStr: string) => {
+      if (!timeStr) return '';
+      // 移除可能的秒數部分，只保留 HH:mm
+      const timeParts = timeStr.split(':');
+      if (timeParts.length >= 2) {
+        const hours = timeParts[0].padStart(2, '0');
+        const minutes = timeParts[1].padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+      return timeStr;
+    };
+
     if (missedType) {
       // 如果指定了類型，使用指定的類型
       missed_type = missedType;
       if (missedType === 'check_in') {
-        requested_check_in_time = schedule?.start_time || '09:30';
+        requested_check_in_time = formatTimeString(schedule?.start_time || '09:30');
       } else {
-        requested_check_out_time = schedule?.end_time || '17:30';
+        requested_check_out_time = formatTimeString(schedule?.end_time || '17:30');
       }
     } else {
       // 原本的邏輯：根據現有記錄判斷
       if (!selectedDateRecords.checkIn) {
         missed_type = 'check_in';
-        requested_check_in_time = schedule?.start_time || '09:30';
+        requested_check_in_time = formatTimeString(schedule?.start_time || '09:30');
       } else if (!selectedDateRecords.checkOut) {
         missed_type = 'check_out';
-        requested_check_out_time = schedule?.end_time || '17:30';
+        requested_check_out_time = formatTimeString(schedule?.end_time || '17:30');
       }
     }
 
@@ -290,36 +307,101 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   const handleSubmitMissedCheckin = async (formData: MissedCheckinFormData) => {
     if (!currentUser?.id) {
       console.error('無法獲取用戶ID');
+      toast({
+        title: '提交失敗',
+        description: '無法獲取用戶資訊，請重新登入',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // 驗證必填欄位
+    if (!formData.reason.trim()) {
+      toast({
+        title: '提交失敗',
+        description: '請填寫申請原因',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (formData.missed_type === 'check_in' && !formData.requested_check_in_time) {
+      toast({
+        title: '提交失敗',
+        description: '請選擇上班時間',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (formData.missed_type === 'check_out' && !formData.requested_check_out_time) {
+      toast({
+        title: '提交失敗',
+        description: '請選擇下班時間',
+        variant: 'destructive',
+      });
       return;
     }
 
     setMissedLoading(true);
     try {
+      // 驗證和格式化時間
+      let formattedCheckInTime = null;
+      let formattedCheckOutTime = null;
+
+      if (formData.requested_check_in_time) {
+        const checkInTimeStr = `${formData.request_date}T${formData.requested_check_in_time}:00`;
+        const checkInDate = new Date(checkInTimeStr);
+        if (isNaN(checkInDate.getTime())) {
+          throw new Error('上班時間格式不正確');
+        }
+        formattedCheckInTime = checkInDate.toISOString();
+      }
+
+      if (formData.requested_check_out_time) {
+        const checkOutTimeStr = `${formData.request_date}T${formData.requested_check_out_time}:00`;
+        const checkOutDate = new Date(checkOutTimeStr);
+        if (isNaN(checkOutDate.getTime())) {
+          throw new Error('下班時間格式不正確');
+        }
+        formattedCheckOutTime = checkOutDate.toISOString();
+      }
+
       const { data, error } = await supabase.from('missed_checkin_requests').insert([
         {
           staff_id: currentUser.id,
           request_date: formData.request_date,
           missed_type: formData.missed_type,
-          requested_check_in_time: formData.requested_check_in_time
-            ? new Date(
-                `${formData.request_date}T${formData.requested_check_in_time}:00`
-              ).toISOString()
-            : null,
-          requested_check_out_time: formData.requested_check_out_time
-            ? new Date(
-                `${formData.request_date}T${formData.requested_check_out_time}:00`
-              ).toISOString()
-            : null,
+          requested_check_in_time: formattedCheckInTime,
+          requested_check_out_time: formattedCheckOutTime,
           reason: formData.reason,
         },
       ]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase 錯誤:', error);
+        throw new Error(error.message || '資料庫操作失敗');
+      }
+
+      // 提交成功
+      toast({
+        title: '申請已提交',
+        description: `忘打卡申請已成功提交，等待主管審核`,
+      });
 
       setShowMissedDialog(false);
-      // 這裡可以觸發重新載入資料
+
+      // 重新載入資料
+      if (onDataRefresh) {
+        await onDataRefresh();
+      }
     } catch (error) {
       console.error('提交忘打卡申請失敗:', error);
+      toast({
+        title: '提交失敗',
+        description: error instanceof Error ? error.message : '未知錯誤，請稍後再試',
+        variant: 'destructive',
+      });
     } finally {
       setMissedLoading(false);
     }

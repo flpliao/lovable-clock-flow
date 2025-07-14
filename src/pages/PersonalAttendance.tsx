@@ -97,6 +97,7 @@ const PersonalAttendance = () => {
                 hasScheduleForDate={hasScheduleForDate}
                 getScheduleForDate={getScheduleForDate}
                 onMonthChange={handleDataRefresh}
+                onDataRefresh={handleDataRefresh}
               />
             </div>
           </div>

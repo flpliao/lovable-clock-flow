@@ -19,6 +19,7 @@ interface AttendanceCalendarViewProps {
   hasScheduleForDate: (date: string) => boolean;
   getScheduleForDate: (date: string) => Schedule | undefined;
   onMonthChange?: () => Promise<void>;
+  onDataRefresh?: () => Promise<void>;
 }
 
 const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
@@ -31,6 +32,7 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
   hasScheduleForDate,
   getScheduleForDate,
   onMonthChange,
+  onDataRefresh,
 }) => {
   const [displayMonth, setDisplayMonth] = useState<Date>(new Date());
 
@@ -207,6 +209,7 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
               missedCheckinRecords={missedCheckinRecords}
               hasScheduleForDate={hasScheduleForDate}
               getScheduleForDate={getScheduleForDate}
+              onDataRefresh={onDataRefresh}
               isInDialog={false}
             />
           </div>

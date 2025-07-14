@@ -1,7 +1,7 @@
-import React from 'react';
-import { format } from 'date-fns';
 import { CheckInRecord } from '@/types';
 import { formatTime } from '@/utils/checkInUtils';
+import { format, isFuture, isWeekend } from 'date-fns';
+import React from 'react';
 
 interface DateRecordDetailsProps {
   date: Date;
@@ -21,9 +21,41 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
 }) => {
   const textClass = isInDialog ? 'text-gray-900' : 'text-white';
   const subTextClass = isInDialog ? 'text-gray-600' : 'text-white/70';
-  const accentTextClass = isInDialog ? 'text-gray-900' : 'text-white';
   const borderClass = isInDialog ? 'border-gray-200' : 'border-white/20';
-  const bgClass = isInDialog ? 'bg-gray-50' : 'bg-white/30';
+
+  // 判斷日期狀態
+  const isWeekendDay = isWeekend(date);
+  const isFutureDay = isFuture(date);
+  const hasCheckIn = !!selectedDateRecords.checkIn;
+  const hasCheckOut = !!selectedDateRecords.checkOut;
+
+  // 獲取未打卡原因
+  const getAttendanceStatus = () => {
+    if (isFutureDay) {
+      return { status: '未來日期', reason: '此日期尚未到來' };
+    }
+
+    if (isWeekendDay) {
+      return { status: '週末', reason: '非工作日' };
+    }
+
+    if (hasCheckIn && hasCheckOut) {
+      return { status: '正常', reason: '打卡完整' };
+    }
+
+    if (hasCheckIn && !hasCheckOut) {
+      return { status: '未打下班卡', reason: '缺少下班打卡記錄' };
+    }
+
+    if (!hasCheckIn && hasCheckOut) {
+      return { status: '未打上班卡', reason: '缺少上班打卡記錄' };
+    }
+
+    // 工作日但沒有任何打卡記錄
+    return { status: '未打卡', reason: '此工作日沒有任何打卡記錄' };
+  };
+
+  const attendanceStatus = getAttendanceStatus();
 
   return (
     <div>
@@ -70,26 +102,18 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
           <div className={`pt-3 border-t ${borderClass}`}>
             <p className={`flex justify-between ${textClass}`}>
               <span>狀態:</span>
-              <span
-                className={`font-medium ${
-                  selectedDateRecords.checkIn && selectedDateRecords.checkOut
-                    ? 'text-green-600'
-                    : 'text-orange-600'
-                }`}
-              >
-                {selectedDateRecords.checkIn && selectedDateRecords.checkOut
-                  ? '正常'
-                  : selectedDateRecords.checkIn
-                    ? '未打下班卡'
-                    : '僅下班打卡'}
-              </span>
+              <span className={`font-medium ${textClass}`}>{attendanceStatus.status}</span>
             </p>
+            <p className={`text-sm ${subTextClass} mt-1`}>{attendanceStatus.reason}</p>
           </div>
         </div>
       ) : (
-        <div className={`${subTextClass} text-center py-8`}>
-          <p>此日期無打卡記錄</p>
-          <p className="text-sm mt-1">選擇的日期: {format(date, 'yyyy-MM-dd')}</p>
+        <div className={`text-center py-8`}>
+          <div className={`mb-4 ${textClass}`}>
+            <p className={`font-medium ${textClass}`}>{attendanceStatus.status}</p>
+            <p className={`text-sm ${subTextClass} mt-2`}>{attendanceStatus.reason}</p>
+          </div>
+          <p className={`text-sm ${subTextClass}`}>選擇的日期: {format(date, 'yyyy-MM-dd')}</p>
         </div>
       )}
     </div>

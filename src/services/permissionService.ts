@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { usePermissionStore } from '@/stores/permissionStore';
 
 export interface Permission {
   id: string;
@@ -13,8 +14,37 @@ export interface RolePermission {
 }
 
 class PermissionService {
+  private CACHE_DURATION = 5 * 60 * 1000; // 5分鐘快取
+
   /**
-   * 取得所有權限列表
+   * 載入所有權限資料（包含快取處理）
+   */
+  async loadAllPermissions(): Promise<Permission[]> {
+    const store = usePermissionStore.getState();
+
+    // 檢查快取是否有效
+    if (store.lastUpdate && Date.now() - store.lastUpdate < this.CACHE_DURATION) {
+      console.log('📦 PermissionService: 使用快取的權限資料');
+      return store.permissions;
+    }
+
+    console.log('🔄 PermissionService: 開始載入所有權限資料');
+    const permissions = await this.getPermissions();
+    store.setPermissions(permissions);
+    return permissions;
+  }
+
+  /**
+   * 強制重新載入權限資料
+   */
+  async refreshPermissions(): Promise<Permission[]> {
+    const store = usePermissionStore.getState();
+    store.clearPermissions();
+    return this.loadAllPermissions();
+  }
+
+  /**
+   * 取得所有權限列表（原有功能）
    */
   async getPermissions(): Promise<Permission[]> {
     try {
@@ -35,9 +65,7 @@ class PermissionService {
   }
 
   /**
-   * 更新角色的權限
-   * @param roleId 角色 ID
-   * @param permissionIds 權限 ID 列表
+   * 更新角色的權限（原有功能）
    */
   async updateRolePermissions(roleId: string, permissionIds: string[]): Promise<void> {
     try {
@@ -73,8 +101,7 @@ class PermissionService {
   }
 
   /**
-   * 取得角色的所有權限
-   * @param roleId 角色 ID
+   * 取得角色的所有權限（原有功能）
    */
   async getRolePermissions(roleId: string): Promise<Permission[]> {
     try {

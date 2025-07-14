@@ -1,8 +1,8 @@
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { ensureAuthInitialized, useAuthStore } from '@/stores/authStore';
-import { usePermissionStore } from '@/stores/permissionStore';
+import { useUserPermissionStore } from '@/stores/userPermissionStore';
 import { useUserStore } from '@/stores/userStore';
 import { useEffect } from 'react';
-import { permissionService } from '@/services/simplifiedPermissionService';
 
 /**
  * 便利的 hooks 來直接使用各個 stores
@@ -30,34 +30,50 @@ export const useAuthInitialized = () => useAuthStore(state => state.isInitialize
 
 // 權限相關的 hooks
 export const useIsAdmin = () => {
-  const isAdmin = usePermissionStore(state => state.isAdmin);
+  const isAdmin = useUserPermissionStore(state => state.isAdmin);
   return isAdmin();
 };
 
 export const useIsManager = () => {
-  const isManager = usePermissionStore(state => state.isManager);
+  const isManager = useUserPermissionStore(state => state.isManager);
   return isManager();
 };
 
 export const usePermissionChecker = () => {
-  const hasPermission = usePermissionStore(state => state.hasPermission);
-  const isLoadingPermission = usePermissionStore(state => state.isLoadingPermission);
+  const hasPermission = useUserPermissionStore(state => state.hasPermission);
 
-  // 🆕 添加同步權限檢查方法
+  // 同步權限檢查方法
   const hasPermissionSync = (permission: string): boolean => {
     return permissionService.hasPermission(permission);
   };
 
   return {
     hasPermission,
-    hasPermissionSync, // 🆕 同步權限檢查
-    isLoadingPermission,
+    hasPermissionSync, // 同步權限檢查
   };
 };
 
 export const useCanManageUser = () => {
-  const canManageUser = usePermissionStore(state => state.canManageUser);
-  return canManageUser;
+  // 簡化的實作，直接在這裡處理邏輯
+  const currentUser = useCurrentUser();
+  const isAdmin = useIsAdmin();
+  const isManager = useIsManager();
+
+  return (targetUserId: string) => {
+    if (!currentUser) return false;
+
+    // 管理員可以管理所有用戶
+    if (isAdmin) return true;
+
+    // 經理可以管理下屬
+    if (isManager) {
+      // 這裡可以加入更複雜的邏輯來檢查是否為下屬
+      return true;
+    }
+
+    // 用戶只能管理自己
+    return currentUser.id === targetUserId;
+  };
 };
 
 // 組合 hooks - 常用的狀態組合
@@ -77,14 +93,13 @@ export const useUserAuth = () => {
 export const useUserPermissions = () => {
   const isAdmin = useIsAdmin();
   const isManager = useIsManager();
-  const { hasPermission, isLoadingPermission } = usePermissionChecker();
+  const { hasPermission } = usePermissionChecker();
   const canManageUser = useCanManageUser();
 
   return {
     isAdmin,
     isManager,
     hasPermission,
-    isLoadingPermission,
     canManageUser,
   };
 };
@@ -98,8 +113,7 @@ export const useUserActions = () => {
   const forceLogout = useAuthStore(state => state.forceLogout);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
 
-  const clearPermissionCache = usePermissionStore(state => state.clearPermissionCache);
-  const refreshPermissions = usePermissionStore(state => state.refreshPermissions);
+  const clearPermissions = useUserPermissionStore(state => state.clearPermissions);
 
   return {
     // 用戶操作
@@ -112,8 +126,7 @@ export const useUserActions = () => {
     setIsAuthenticated,
 
     // 權限操作
-    clearPermissionCache,
-    refreshPermissions,
+    clearPermissions,
   };
 };
 
@@ -141,7 +154,7 @@ export const useCompleteUserManagement = () => {
     resetUserState: async () => {
       console.log('🔄 重置用戶狀態');
       userActions.clearUserData();
-      userActions.clearPermissionCache();
+      userActions.clearPermissions();
       await userActions.forceLogout();
     },
   };

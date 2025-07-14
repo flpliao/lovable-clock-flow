@@ -1,13 +1,18 @@
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Calendar } from 'lucide-react';
 import TimeInput from './TimeInput';
 
-interface MissedCheckinFormData {
+export interface MissedCheckinFormData {
   request_date: string;
   missed_type: 'check_in' | 'check_out' | 'both';
   requested_check_in_time: string;
@@ -22,7 +27,7 @@ interface MissedCheckinFormFieldsProps {
 
 const MissedCheckinFormFields: React.FC<MissedCheckinFormFieldsProps> = ({
   formData,
-  onFormDataChange
+  onFormDataChange,
 }) => {
   const handleFieldChange = (field: keyof MissedCheckinFormData, value: string) => {
     onFormDataChange({ [field]: value });
@@ -36,7 +41,7 @@ const MissedCheckinFormFields: React.FC<MissedCheckinFormFieldsProps> = ({
           id="request_date"
           type="date"
           value={formData.request_date}
-          onChange={(e) => handleFieldChange('request_date', e.target.value)}
+          onChange={e => handleFieldChange('request_date', e.target.value)}
           required
         />
       </div>
@@ -45,7 +50,7 @@ const MissedCheckinFormFields: React.FC<MissedCheckinFormFieldsProps> = ({
         <Label htmlFor="missed_type">申請類型</Label>
         <Select
           value={formData.missed_type}
-          onValueChange={(value: 'check_in' | 'check_out' | 'both') => 
+          onValueChange={(value: 'check_in' | 'check_out' | 'both') =>
             handleFieldChange('missed_type', value)
           }
         >
@@ -65,7 +70,7 @@ const MissedCheckinFormFields: React.FC<MissedCheckinFormFieldsProps> = ({
           id="check_in_time"
           label="預計上班時間"
           value={formData.requested_check_in_time}
-          onChange={(value) => handleFieldChange('requested_check_in_time', value)}
+          onChange={value => handleFieldChange('requested_check_in_time', value)}
           required={formData.missed_type === 'check_in' || formData.missed_type === 'both'}
         />
       )}
@@ -75,7 +80,7 @@ const MissedCheckinFormFields: React.FC<MissedCheckinFormFieldsProps> = ({
           id="check_out_time"
           label="預計下班時間"
           value={formData.requested_check_out_time}
-          onChange={(value) => handleFieldChange('requested_check_out_time', value)}
+          onChange={value => handleFieldChange('requested_check_out_time', value)}
           required={formData.missed_type === 'check_out' || formData.missed_type === 'both'}
         />
       )}
@@ -86,7 +91,7 @@ const MissedCheckinFormFields: React.FC<MissedCheckinFormFieldsProps> = ({
           id="reason"
           placeholder="請說明忘記打卡的原因..."
           value={formData.reason}
-          onChange={(e) => handleFieldChange('reason', e.target.value)}
+          onChange={e => handleFieldChange('reason', e.target.value)}
           required
           rows={3}
         />

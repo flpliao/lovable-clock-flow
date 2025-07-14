@@ -14,7 +14,7 @@ import TimeInput from './TimeInput';
 
 export interface MissedCheckinFormData {
   request_date: string;
-  missed_type: 'check_in' | 'check_out' | 'both';
+  missed_type: 'check_in' | 'check_out';
   requested_check_in_time: string;
   requested_check_out_time: string;
   reason: string;
@@ -50,7 +50,7 @@ const MissedCheckinFormFields: React.FC<MissedCheckinFormFieldsProps> = ({
         <Label htmlFor="missed_type">申請類型</Label>
         <Select
           value={formData.missed_type}
-          onValueChange={(value: 'check_in' | 'check_out' | 'both') =>
+          onValueChange={(value: 'check_in' | 'check_out') =>
             handleFieldChange('missed_type', value)
           }
         >
@@ -60,28 +60,27 @@ const MissedCheckinFormFields: React.FC<MissedCheckinFormFieldsProps> = ({
           <SelectContent>
             <SelectItem value="check_in">忘記上班打卡</SelectItem>
             <SelectItem value="check_out">忘記下班打卡</SelectItem>
-            <SelectItem value="both">忘記上下班打卡</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {(formData.missed_type === 'check_in' || formData.missed_type === 'both') && (
+      {formData.missed_type === 'check_in' && (
         <TimeInput
           id="check_in_time"
           label="預計上班時間"
           value={formData.requested_check_in_time}
           onChange={value => handleFieldChange('requested_check_in_time', value)}
-          required={formData.missed_type === 'check_in' || formData.missed_type === 'both'}
+          required={formData.missed_type === 'check_in'}
         />
       )}
 
-      {(formData.missed_type === 'check_out' || formData.missed_type === 'both') && (
+      {formData.missed_type === 'check_out' && (
         <TimeInput
           id="check_out_time"
           label="預計下班時間"
           value={formData.requested_check_out_time}
           onChange={value => handleFieldChange('requested_check_out_time', value)}
-          required={formData.missed_type === 'check_out' || formData.missed_type === 'both'}
+          required={formData.missed_type === 'check_out'}
         />
       )}
 

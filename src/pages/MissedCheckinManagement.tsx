@@ -125,7 +125,7 @@ const MissedCheckinManagementContent = () => {
 
       const formattedData = filteredData.map(item => ({
         ...item,
-        missed_type: item.missed_type as 'check_in' | 'check_out' | 'both',
+        missed_type: item.missed_type as 'check_in' | 'check_out',
         status: item.status as 'pending' | 'approved' | 'rejected',
         staff: Array.isArray(item.staff) ? item.staff[0] : item.staff,
       }));
@@ -279,8 +279,6 @@ const MissedCheckinManagementContent = () => {
         return '忘記上班打卡';
       case 'check_out':
         return '忘記下班打卡';
-      case 'both':
-        return '忘記上下班打卡';
       default:
         return type;
     }

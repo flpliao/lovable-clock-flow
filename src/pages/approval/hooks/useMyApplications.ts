@@ -6,14 +6,14 @@ import { useCallback, useState } from 'react';
 export const useMyApplications = () => {
   // 使用新的 Zustand hooks
   const currentUser = useCurrentUser();
-  
+
   const [myApplications, setMyApplications] = useState<MyApplication[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const loadMyApplications = useCallback(async () => {
     // 使用預設用戶 ID 如果沒有當前用戶
     const userId = currentUser?.id || '550e8400-e29b-41d4-a716-446655440001';
-    
+
     try {
       setIsLoading(true);
       console.log('🔍 載入我的申請記錄，當前用戶:', userId, currentUser?.name || '預設用戶');
@@ -31,7 +31,7 @@ export const useMyApplications = () => {
       } else {
         console.log('✅ 加班申請記錄載入完成:', overtimeData?.length || 0, '筆');
       }
-      
+
       // 載入忘記打卡申請
       console.log('📋 開始載入忘記打卡申請記錄...');
       const { data: missedCheckinData, error: missedCheckinError } = await supabase
@@ -66,10 +66,15 @@ export const useMyApplications = () => {
       if (overtimeData && overtimeData.length > 0) {
         console.log('🔄 轉換加班申請記錄...');
         overtimeData.forEach(record => {
-          const statusText = record.status === 'pending' ? '審核中' : 
-                           record.status === 'approved' ? '已核准' : 
-                           record.status === 'rejected' ? '已拒絕' : '已取消';
-          
+          const statusText =
+            record.status === 'pending'
+              ? '審核中'
+              : record.status === 'approved'
+                ? '已核准'
+                : record.status === 'rejected'
+                  ? '已拒絕'
+                  : '已取消';
+
           applications.push({
             id: record.id,
             type: 'overtime',
@@ -80,7 +85,7 @@ export const useMyApplications = () => {
             department: '預設部門',
             date: record.overtime_date,
             reason: record.reason,
-            details: record
+            details: record,
           });
         });
         console.log('✅ 加班申請記錄轉換完成');
@@ -90,12 +95,16 @@ export const useMyApplications = () => {
       if (missedCheckinData && missedCheckinData.length > 0) {
         console.log('🔄 轉換忘記打卡申請記錄...');
         missedCheckinData.forEach(record => {
-          const typeText = record.missed_type === 'check_in' ? '忘記上班打卡' : 
-                          record.missed_type === 'check_out' ? '忘記下班打卡' : '忘記上下班打卡';
-          const statusText = record.status === 'pending' ? '審核中' : 
-                           record.status === 'approved' ? '已核准' : 
-                           record.status === 'rejected' ? '已拒絕' : '已取消';
-          
+          const typeText = record.missed_type === 'check_in' ? '忘記上班打卡' : '忘記下班打卡';
+          const statusText =
+            record.status === 'pending'
+              ? '審核中'
+              : record.status === 'approved'
+                ? '已核准'
+                : record.status === 'rejected'
+                  ? '已拒絕'
+                  : '已取消';
+
           applications.push({
             id: record.id,
             type: 'missed_checkin',
@@ -106,7 +115,7 @@ export const useMyApplications = () => {
             department: '預設部門',
             date: record.request_date,
             reason: record.reason,
-            details: record
+            details: record,
           });
         });
         console.log('✅ 忘記打卡申請記錄轉換完成');
@@ -116,10 +125,15 @@ export const useMyApplications = () => {
       if (leaveData && leaveData.length > 0) {
         console.log('🔄 轉換請假申請記錄...');
         leaveData.forEach(record => {
-          const statusText = record.status === 'pending' ? '審核中' : 
-                           record.status === 'approved' ? '已核准' : 
-                           record.status === 'rejected' ? '已拒絕' : '已取消';
-          
+          const statusText =
+            record.status === 'pending'
+              ? '審核中'
+              : record.status === 'approved'
+                ? '已核准'
+                : record.status === 'rejected'
+                  ? '已拒絕'
+                  : '已取消';
+
           applications.push({
             id: record.id,
             type: 'leave',
@@ -130,7 +144,7 @@ export const useMyApplications = () => {
             department: '預設部門',
             date: record.start_date,
             reason: record.reason,
-            details: record
+            details: record,
           });
         });
         console.log('✅ 請假申請記錄轉換完成');
@@ -150,15 +164,14 @@ export const useMyApplications = () => {
         請假申請: applications.filter(a => a.type === 'leave').length,
         狀態分布: {
           pending: applications.filter(a => a.status === 'pending').length,
-          approved: applications.filter(a => a.status === 'approved').length,  
+          approved: applications.filter(a => a.status === 'approved').length,
           rejected: applications.filter(a => a.status === 'rejected').length,
-          cancelled: applications.filter(a => a.status === 'cancelled').length
-        }
+          cancelled: applications.filter(a => a.status === 'cancelled').length,
+        },
       });
 
       setMyApplications(applications);
       console.log('✅ 載入我的申請記錄成功:', applications.length, '筆');
-      
     } catch (error) {
       console.error('❌ 載入我的申請記錄失敗:', error);
       setMyApplications([]);
@@ -176,6 +189,6 @@ export const useMyApplications = () => {
     isLoading,
     loadMyApplications,
     refreshMyApplications,
-    setMyApplications
+    setMyApplications,
   };
 };

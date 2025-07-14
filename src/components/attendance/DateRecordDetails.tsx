@@ -75,9 +75,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
 
   // 上班未打卡
   if (!isFutureDay && !isWeekendDay && !hasCheckIn) {
-    const approvedCheckIn = approvedMissedRecords.find(
-      r => r.missed_type === 'check_in' || r.missed_type === 'both'
-    );
+    const approvedCheckIn = approvedMissedRecords.find(r => r.missed_type === 'check_in');
     if (!approvedCheckIn) {
       cards.push(
         <div
@@ -110,12 +108,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
             <div className="font-medium text-gray-900">簽核中</div>
             <div className="text-xs text-gray-500 mt-1">
               忘打卡申請（
-              {record.missed_type === 'check_in'
-                ? '上班'
-                : record.missed_type === 'check_out'
-                  ? '下班'
-                  : '上下班'}
-              ）
+              {record.missed_type === 'check_in' ? '上班' : '下班'}）
             </div>
           </div>
         </div>
@@ -125,9 +118,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
 
   // 下班未打卡
   if (!isFutureDay && !isWeekendDay && !hasCheckOut) {
-    const approvedCheckOut = approvedMissedRecords.find(
-      r => r.missed_type === 'check_out' || r.missed_type === 'both'
-    );
+    const approvedCheckOut = approvedMissedRecords.find(r => r.missed_type === 'check_out');
     if (!approvedCheckOut) {
       cards.push(
         <div
@@ -199,9 +190,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
 
   // 無下班卡片但有已核准的下班忘打卡
   if (!isFutureDay && !isWeekendDay && !hasCheckOut) {
-    const approvedCheckOut = approvedMissedRecords.find(
-      r => r.missed_type === 'check_out' || r.missed_type === 'both'
-    );
+    const approvedCheckOut = approvedMissedRecords.find(r => r.missed_type === 'check_out');
     if (approvedCheckOut) {
       cards.push(
         <div
@@ -217,9 +206,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
 
   // 無上班卡片但有已核准的上班忘打卡
   if (!isFutureDay && !isWeekendDay && !hasCheckIn) {
-    const approvedCheckIn = approvedMissedRecords.find(
-      r => r.missed_type === 'check_in' || r.missed_type === 'both'
-    );
+    const approvedCheckIn = approvedMissedRecords.find(r => r.missed_type === 'check_in');
     if (approvedCheckIn) {
       cards.push(
         <div
@@ -257,20 +244,18 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   // 彈窗開啟時自動帶入日期與未打卡範圍
   const handleOpenMissedDialog = () => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    let missed_type: 'check_in' | 'check_out' | 'both' = 'check_in';
+    let missed_type: 'check_in' | 'check_out' = 'check_in';
     let requested_check_in_time = '';
     let requested_check_out_time = '';
-    if (!selectedDateRecords.checkIn && !selectedDateRecords.checkOut) {
-      missed_type = 'both';
-      requested_check_in_time = '09:30';
-      requested_check_out_time = '17:30';
-    } else if (!selectedDateRecords.checkIn) {
+
+    if (!selectedDateRecords.checkIn) {
       missed_type = 'check_in';
       requested_check_in_time = '09:30';
     } else if (!selectedDateRecords.checkOut) {
       missed_type = 'check_out';
       requested_check_out_time = '17:30';
     }
+
     setMissedFormData({
       request_date: dateStr,
       missed_type,
@@ -353,7 +338,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
                 const submitData: {
                   staff_id: string;
                   request_date: string;
-                  missed_type: 'check_in' | 'check_out' | 'both';
+                  missed_type: 'check_in' | 'check_out';
                   reason: string;
                   requested_check_in_time?: string;
                   requested_check_out_time?: string;
@@ -363,18 +348,12 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
                   missed_type: missedFormData.missed_type,
                   reason: missedFormData.reason,
                 };
-                if (
-                  missedFormData.missed_type === 'check_in' ||
-                  missedFormData.missed_type === 'both'
-                ) {
+                if (missedFormData.missed_type === 'check_in') {
                   if (missedFormData.requested_check_in_time) {
                     submitData.requested_check_in_time = `${missedFormData.request_date}T${missedFormData.requested_check_in_time}:00`;
                   }
                 }
-                if (
-                  missedFormData.missed_type === 'check_out' ||
-                  missedFormData.missed_type === 'both'
-                ) {
+                if (missedFormData.missed_type === 'check_out') {
                   if (missedFormData.requested_check_out_time) {
                     submitData.requested_check_out_time = `${missedFormData.request_date}T${missedFormData.requested_check_out_time}:00`;
                   }

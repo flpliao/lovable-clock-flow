@@ -13,13 +13,14 @@ import MissedCheckinDialog from '@/components/check-in/MissedCheckinDialog';
 import { useCheckpoints } from '@/components/company/components/useCheckpoints';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 import { CheckInRecord } from '@/types';
-import ActionTypeSelector from '@/components/check-in/ActionTypeSelector';
+import { useToast } from '@/hooks/use-toast';
 
 const LocationCheckIn = () => {
   const currentUser = useCurrentUser(); // 使用新的 Zustand hook
   const { data: checkpoints } = useCheckpoints();
   const [selectedCheckpointId, setSelectedCheckpointId] = useState<number | null>(null);
   const { createCheckInRecord, getTodayCheckInRecords } = useSupabaseCheckIn();
+  const { toast } = useToast();
 
   // 自動載入今日打卡紀錄
   useEffect(() => {
@@ -52,6 +53,7 @@ const LocationCheckIn = () => {
 
   // 位置打卡
   const onLocationCheckIn = async () => {
+    console.log('onLocationCheckIn');
     setLoading(true);
     setError(null);
     try {
@@ -110,7 +112,13 @@ const LocationCheckIn = () => {
         }
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : '位置打卡失敗');
+      const msg = err instanceof Error ? err.message : '位置打卡失敗';
+      setError(msg);
+      toast({
+        title: '打卡失敗',
+        description: msg,
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -163,7 +171,7 @@ const LocationCheckIn = () => {
         <CheckInButton
           actionType={actionType}
           loading={loading}
-          onCheckIn={checkInMethod === 'location' ? onLocationCheckIn : undefined}
+          onCheckIn={onLocationCheckIn}
           disabled={loading}
         />
         <div className="flex justify-center">

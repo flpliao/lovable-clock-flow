@@ -59,7 +59,6 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   const approvedMissedRecords = dayMissedRecords.filter(record => record.status === 'approved');
 
   const [openDialog, setOpenDialog] = useState<null | 'checkin' | 'checkout'>(null);
-  const [selectedAction, setSelectedAction] = useState<'leave' | 'missed' | null>(null);
   const navigate = useNavigate();
   const [showMissedDialog, setShowMissedDialog] = useState(false);
   const [missedFormData, setMissedFormData] = useState<MissedCheckinFormData>({
@@ -290,11 +289,10 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
         onOpenChange={v => {
           if (!v) {
             setOpenDialog(null);
-            setSelectedAction(null);
           }
         }}
       >
-        <DialogContent className="max-w-md w-full rounded-t-2xl sm:rounded-2xl p-0 overflow-hidden">
+        <DialogContent className="max-w-md w-full rounded-t-2xl rounded-2xl p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold px-6 pt-6 pb-2">
               {openDialog === 'checkin' ? '上班未打卡' : '下班未打卡'}
@@ -303,43 +301,32 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
           <div className="border-t border-gray-200" />
           <div className="flex flex-col divide-y divide-gray-100">
             <button
-              className={`w-full text-left px-6 py-4 bg-transparent hover:bg-gray-100 focus:bg-gray-100 text-base ${selectedAction === 'leave' ? 'bg-gray-100' : ''}`}
-              onClick={() => setSelectedAction('leave')}
+              className="w-full text-left px-6 py-4 bg-transparent hover:bg-gray-100 focus:bg-gray-100 text-base"
+              onClick={() => {
+                navigate('/leave-request');
+                setOpenDialog(null);
+              }}
               type="button"
             >
               請假
             </button>
             <button
-              className={`w-full text-left px-6 py-4 bg-transparent hover:bg-gray-100 focus:bg-gray-100 text-base ${selectedAction === 'missed' ? 'bg-gray-100' : ''}`}
-              onClick={() => setSelectedAction('missed')}
+              className="w-full text-left px-6 py-4 bg-transparent hover:bg-gray-100 focus:bg-gray-100 text-base"
+              onClick={() => {
+                setOpenDialog(null);
+                handleOpenMissedDialog();
+              }}
               type="button"
             >
               忘打卡申請
             </button>
           </div>
-          <DialogFooter className="flex-row justify-between px-6 py-4 border-t border-gray-200">
+          <DialogFooter className="flex justify-end px-6 py-4 border-t border-gray-200">
             <DialogClose asChild>
               <Button variant="outline" type="button">
                 取消
               </Button>
             </DialogClose>
-            <Button
-              type="button"
-              disabled={!selectedAction}
-              onClick={() => {
-                if (selectedAction === 'leave') {
-                  navigate('/leave-request');
-                  setOpenDialog(null);
-                  setSelectedAction(null);
-                } else if (selectedAction === 'missed') {
-                  setOpenDialog(null);
-                  setSelectedAction(null);
-                  handleOpenMissedDialog();
-                }
-              }}
-            >
-              確定
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -351,7 +338,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
           if (!v) setShowMissedDialog(false);
         }}
       >
-        <DialogContent className="max-w-md w-full rounded-t-2xl sm:rounded-2xl p-0 overflow-hidden">
+        <DialogContent className="max-w-md w-full rounded-t-2xl rounded-2xl p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold px-6 pt-6 pb-2">忘記打卡申請</DialogTitle>
           </DialogHeader>

@@ -1,5 +1,6 @@
 import AttendanceCalendarView from '@/components/attendance/AttendanceCalendarView';
 import { useAttendanceRecords } from '@/hooks/useAttendanceRecords';
+import { useMissedCheckinRecords } from '@/hooks/useMissedCheckinRecords';
 import { useCurrentUser } from '@/hooks/useStores';
 import { useCallback, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
@@ -11,17 +12,28 @@ const PersonalAttendance = () => {
   const { date, setDate, selectedDateRecords, checkInRecords, refreshData } =
     useAttendanceRecords();
 
+  const { missedCheckinRecords, loadMissedCheckinRecords, refreshMissedCheckinRecords } =
+    useMissedCheckinRecords();
+
   // 載入頁面時重新整理資料
   const handleDataRefresh = useCallback(async () => {
     if (currentUser?.id) {
       console.log('載入月曆視圖，重新整理資料');
       await refreshData();
+      await refreshMissedCheckinRecords();
     }
-  }, [currentUser?.id, refreshData]);
+  }, [currentUser?.id, refreshData, refreshMissedCheckinRecords]);
 
   useEffect(() => {
     handleDataRefresh();
   }, [handleDataRefresh]);
+
+  // 載入忘打卡記錄
+  useEffect(() => {
+    if (currentUser?.id) {
+      loadMissedCheckinRecords();
+    }
+  }, [currentUser?.id, loadMissedCheckinRecords]);
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
@@ -63,7 +75,8 @@ const PersonalAttendance = () => {
                 setDate={setDate}
                 selectedDateRecords={selectedDateRecords}
                 checkInRecords={checkInRecords}
-                onMonthChange={refreshData}
+                missedCheckinRecords={missedCheckinRecords}
+                onMonthChange={handleDataRefresh}
               />
             </div>
           </div>

@@ -14,6 +14,7 @@ import { useCheckpoints } from '@/components/company/components/useCheckpoints';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 import { CheckInRecord } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { useIpCheckIn } from '@/hooks/useIpCheckIn';
 
 const LocationCheckIn = () => {
   const currentUser = useCurrentUser(); // 使用新的 Zustand hook
@@ -21,6 +22,18 @@ const LocationCheckIn = () => {
   const [selectedCheckpointId, setSelectedCheckpointId] = useState<number | null>(null);
   const { createCheckInRecord, getTodayCheckInRecords } = useSupabaseCheckIn();
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [distance, setDistance] = useState<number | null>(null);
+  const [checkInMethod, setCheckInMethod] = useState<'location' | 'ip'>('location');
+  const [actionType, setActionType] = useState<'check-in' | 'check-out'>('check-in');
+  const [todayRecords, setTodayRecords] = useState<{
+    checkIn?: CheckInRecord;
+    checkOut?: CheckInRecord;
+  }>({});
+
+  // 取得 IP 打卡 hook（必須在 actionType 宣告之後）
+  const { onIpCheckIn } = useIpCheckIn(currentUser?.id, actionType);
 
   // 自動載入今日打卡紀錄
   useEffect(() => {
@@ -37,23 +50,13 @@ const LocationCheckIn = () => {
   }, [currentUser?.id, getTodayCheckInRecords]);
 
   // 打卡邏輯
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [distance, setDistance] = useState<number | null>(null);
-  const [checkInMethod, setCheckInMethod] = useState<'location' | 'ip'>('location');
-  const [actionType, setActionType] = useState<'check-in' | 'check-out'>('check-in');
-  const [todayRecords, setTodayRecords] = useState<{
-    checkIn?: CheckInRecord;
-    checkOut?: CheckInRecord;
-  }>({});
-
   // 取得目前選擇的 checkpoint
   const selectedCheckpoint =
     selectedCheckpointId !== null ? checkpoints.find(cp => cp.id === selectedCheckpointId) : null;
 
   // 位置打卡
   const onLocationCheckIn = async () => {
-    console.log('onLocationCheckIn');
+    if (loading) return; // 防止重複觸發
     setLoading(true);
     setError(null);
     try {
@@ -110,9 +113,41 @@ const LocationCheckIn = () => {
           const records = await getTodayCheckInRecords(currentUser.id);
           setTodayRecords(records);
         }
+        // 打卡成功後自動切換 actionType
+        if (actionType === 'check-in') {
+          setActionType('check-out');
+        }
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '位置打卡失敗';
+      setError(msg);
+      toast({
+        title: '打卡失敗',
+        description: msg,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 包裝 onIpCheckIn，防止重複觸發
+  const handleIpCheckIn = async () => {
+    if (loading) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await onIpCheckIn();
+      // 重新載入今日記錄
+      if (currentUser?.id) {
+        const records = await getTodayCheckInRecords(currentUser.id);
+        setTodayRecords(records);
+      }
+      if (actionType === 'check-in') {
+        setActionType('check-out');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'IP打卡失敗';
       setError(msg);
       toast({
         title: '打卡失敗',
@@ -154,15 +189,17 @@ const LocationCheckIn = () => {
       <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 shadow-lg space-y-3 max-w-md w-full mx-4 py-[20px]">
         <LocationCheckInHeader />
         <CheckInStatusInfo checkIn={todayRecords?.checkIn} checkOut={todayRecords?.checkOut} />
-        <DepartmentLocationSelector
-          selectedCheckpointId={selectedCheckpointId}
-          onCheckpointChange={setSelectedCheckpointId}
-        />
         <CheckInMethodSelector
           checkInMethod={checkInMethod}
           setCheckInMethod={setCheckInMethod}
           canUseLocationCheckIn={true}
         />
+        {checkInMethod === 'location' && (
+          <DepartmentLocationSelector
+            selectedCheckpointId={selectedCheckpointId}
+            onCheckpointChange={setSelectedCheckpointId}
+          />
+        )}
         <CheckInWarning
           checkInMethod={checkInMethod}
           canUseLocationCheckIn={true}
@@ -171,7 +208,7 @@ const LocationCheckIn = () => {
         <CheckInButton
           actionType={actionType}
           loading={loading}
-          onCheckIn={onLocationCheckIn}
+          onCheckIn={checkInMethod === 'location' ? onLocationCheckIn : handleIpCheckIn}
           disabled={loading}
         />
         <div className="flex justify-center">

@@ -1,6 +1,7 @@
 import AttendanceCalendarView from '@/components/attendance/AttendanceCalendarView';
 import { useAttendanceRecords } from '@/hooks/useAttendanceRecords';
 import { useMissedCheckinRecords } from '@/hooks/useMissedCheckinRecords';
+import { useUserSchedules } from '@/hooks/useUserSchedules';
 import { useCurrentUser } from '@/hooks/useStores';
 import { useCallback, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
@@ -15,14 +16,23 @@ const PersonalAttendance = () => {
   const { missedCheckinRecords, loadMissedCheckinRecords, refreshMissedCheckinRecords } =
     useMissedCheckinRecords();
 
+  const {
+    userSchedules,
+    loadUserSchedules,
+    refreshUserSchedules,
+    hasScheduleForDate,
+    getScheduleForDate,
+  } = useUserSchedules();
+
   // 載入頁面時重新整理資料
   const handleDataRefresh = useCallback(async () => {
     if (currentUser?.id) {
       console.log('載入月曆視圖，重新整理資料');
       await refreshData();
       await refreshMissedCheckinRecords();
+      await refreshUserSchedules(date);
     }
-  }, [currentUser?.id, refreshData, refreshMissedCheckinRecords]);
+  }, [currentUser?.id, refreshData, refreshMissedCheckinRecords, refreshUserSchedules, date]);
 
   useEffect(() => {
     handleDataRefresh();
@@ -34,6 +44,13 @@ const PersonalAttendance = () => {
       loadMissedCheckinRecords();
     }
   }, [currentUser?.id, loadMissedCheckinRecords]);
+
+  // 載入排班記錄
+  useEffect(() => {
+    if (currentUser?.id) {
+      loadUserSchedules(date);
+    }
+  }, [currentUser?.id, loadUserSchedules, date]);
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
@@ -76,6 +93,9 @@ const PersonalAttendance = () => {
                 selectedDateRecords={selectedDateRecords}
                 checkInRecords={checkInRecords}
                 missedCheckinRecords={missedCheckinRecords}
+                userSchedules={userSchedules}
+                hasScheduleForDate={hasScheduleForDate}
+                getScheduleForDate={getScheduleForDate}
                 onMonthChange={handleDataRefresh}
               />
             </div>

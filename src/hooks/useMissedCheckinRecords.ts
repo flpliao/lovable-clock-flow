@@ -33,7 +33,7 @@ export const useMissedCheckinRecords = () => {
 
       const formattedData = (data || []).map(item => ({
         ...item,
-        missed_type: item.missed_type as 'check_in' | 'check_out' | 'both',
+        missed_type: item.missed_type as 'check_in' | 'check_out',
         status: item.status as 'pending' | 'approved' | 'rejected',
       }));
 

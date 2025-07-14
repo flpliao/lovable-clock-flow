@@ -1,4 +1,3 @@
-
 export interface MissedCheckinApprovalRecord {
   id: string;
   missed_checkin_request_id: string;
@@ -15,7 +14,7 @@ export interface MissedCheckinRequest {
   id: string;
   staff_id: string;
   request_date: string;
-  missed_type: 'check_in' | 'check_out' | 'both';
+  missed_type: 'check_in' | 'check_out';
   requested_check_in_time?: string;
   requested_check_out_time?: string;
   reason: string;

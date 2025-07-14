@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { CheckCircle, XCircle, User, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ interface MissedCheckinApprovalTabProps {
 
 const MissedCheckinApprovalTab: React.FC<MissedCheckinApprovalTabProps> = ({
   missedCheckinRequests,
-  onApproval
+  onApproval,
 }) => {
   const getMissedTypeText = (type: string) => {
     switch (type) {
@@ -21,8 +20,6 @@ const MissedCheckinApprovalTab: React.FC<MissedCheckinApprovalTabProps> = ({
         return '忘記上班打卡';
       case 'check_out':
         return '忘記下班打卡';
-      case 'both':
-        return '忘記上下班打卡';
       default:
         return type;
     }
@@ -40,7 +37,9 @@ const MissedCheckinApprovalTab: React.FC<MissedCheckinApprovalTabProps> = ({
           <CheckCircle className="w-8 h-8 text-white/60" />
         </div>
         <p className="text-white font-medium drop-shadow-sm">目前沒有待審核的忘記打卡申請</p>
-        <p className="text-white/80 mt-1 font-medium drop-shadow-sm">所有忘記打卡申請都已處理完畢</p>
+        <p className="text-white/80 mt-1 font-medium drop-shadow-sm">
+          所有忘記打卡申請都已處理完畢
+        </p>
       </div>
     );
   }
@@ -53,13 +52,17 @@ const MissedCheckinApprovalTab: React.FC<MissedCheckinApprovalTabProps> = ({
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
                 <User className="h-5 w-5 text-white/80" />
-                <h3 className="text-lg font-semibold text-white">申請人員：{request.staff?.name || '未知申請人'}</h3>
+                <h3 className="text-lg font-semibold text-white">
+                  申請人員：{request.staff?.name || '未知申請人'}
+                </h3>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm mb-4">
                 <div>
                   <span className="text-white/70">申請類型</span>
-                  <div className="text-white font-medium">{getMissedTypeText(request.missed_type)}</div>
+                  <div className="text-white font-medium">
+                    {getMissedTypeText(request.missed_type)}
+                  </div>
                 </div>
                 <div>
                   <span className="text-white/70">申請日期</span>
@@ -70,13 +73,17 @@ const MissedCheckinApprovalTab: React.FC<MissedCheckinApprovalTabProps> = ({
                 {request.requested_check_in_time && (
                   <div>
                     <span className="text-white/70">上班時間</span>
-                    <div className="text-white font-medium">{formatTime(request.requested_check_in_time)}</div>
+                    <div className="text-white font-medium">
+                      {formatTime(request.requested_check_in_time)}
+                    </div>
                   </div>
                 )}
                 {request.requested_check_out_time && (
                   <div>
                     <span className="text-white/70">下班時間</span>
-                    <div className="text-white font-medium">{formatTime(request.requested_check_out_time)}</div>
+                    <div className="text-white font-medium">
+                      {formatTime(request.requested_check_out_time)}
+                    </div>
                   </div>
                 )}
               </div>
@@ -105,11 +112,19 @@ const MissedCheckinApprovalTab: React.FC<MissedCheckinApprovalTabProps> = ({
             </div>
 
             <div className="flex flex-col gap-2 lg:ml-6">
-              <Button onClick={() => onApproval(request.id, 'approved')} className="bg-green-500 hover:bg-green-600 text-white border-0" size="sm">
+              <Button
+                onClick={() => onApproval(request.id, 'approved')}
+                className="bg-green-500 hover:bg-green-600 text-white border-0"
+                size="sm"
+              >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 核准
               </Button>
-              <Button onClick={() => onApproval(request.id, 'rejected')} variant="destructive" size="sm">
+              <Button
+                onClick={() => onApproval(request.id, 'rejected')}
+                variant="destructive"
+                size="sm"
+              >
                 <XCircle className="h-4 w-4 mr-2" />
                 拒絕
               </Button>

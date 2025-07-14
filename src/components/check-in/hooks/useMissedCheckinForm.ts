@@ -1,67 +1,73 @@
-import { useToast } from '@/hooks/use-toast';
-import { useCurrentUser } from '@/hooks/useStores';
-import { supabase } from '@/integrations/supabase/client';
-import { NotificationDatabaseOperations } from '@/services/notifications';
 import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useCurrentUser } from '@/hooks/useStores';
+import { MissedCheckinRequest } from '@/types/missedCheckin';
 
-interface MissedCheckinFormData {
+export interface MissedCheckinFormData {
   request_date: string;
-  missed_type: 'check_in' | 'check_out' | 'both';
+  missed_type: 'check_in' | 'check_out';
   requested_check_in_time: string;
   requested_check_out_time: string;
   reason: string;
 }
 
-interface MissedCheckinSubmitData {
+export interface MissedCheckinSubmitData {
   staff_id: string;
   request_date: string;
-  missed_type: 'check_in' | 'check_out' | 'both';
+  missed_type: 'check_in' | 'check_out';
   reason: string;
   requested_check_in_time?: string;
   requested_check_out_time?: string;
 }
 
-interface MissedCheckinRequestData {
+export interface MissedCheckinRequestData {
   id: string;
   staff_id: string;
   request_date: string;
-  missed_type: 'check_in' | 'check_out' | 'both';
+  missed_type: 'check_in' | 'check_out';
   reason: string;
+  status: 'pending' | 'approved' | 'rejected';
   requested_check_in_time?: string;
   requested_check_out_time?: string;
+  created_at: string;
+  updated_at: string;
 }
 
-interface UseMissedCheckinFormOptions {
-  initialData?: Partial<MissedCheckinFormData>;
-}
-
-export const useMissedCheckinForm = (
-  onSuccess: () => void,
-  options?: UseMissedCheckinFormOptions
-) => {
-  const currentUser = useCurrentUser();
+export const useMissedCheckinForm = (onSuccess: () => void) => {
   const { toast } = useToast();
+  const currentUser = useCurrentUser();
   const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState<MissedCheckinFormData>({
-    request_date: options?.initialData?.request_date || new Date().toISOString().split('T')[0],
-    missed_type: options?.initialData?.missed_type || 'check_in',
-    requested_check_in_time: options?.initialData?.requested_check_in_time || '',
-    requested_check_out_time: options?.initialData?.requested_check_out_time || '',
-    reason: options?.initialData?.reason || '',
+    request_date: new Date().toISOString().split('T')[0],
+    missed_type: 'check_in',
+    requested_check_in_time: '',
+    requested_check_out_time: '',
+    reason: '',
   });
+
+  const updateFormData = (changes: Partial<MissedCheckinFormData>) => {
+    setFormData(prev => ({ ...prev, ...changes }));
+  };
 
   const resetForm = () => {
     setFormData({
-      request_date: options?.initialData?.request_date || new Date().toISOString().split('T')[0],
-      missed_type: options?.initialData?.missed_type || 'check_in',
-      requested_check_in_time: options?.initialData?.requested_check_in_time || '',
-      requested_check_out_time: options?.initialData?.requested_check_out_time || '',
-      reason: options?.initialData?.reason || '',
+      request_date: new Date().toISOString().split('T')[0],
+      missed_type: 'check_in',
+      requested_check_in_time: '',
+      requested_check_out_time: '',
+      reason: '',
     });
   };
 
-  const updateFormData = (updates: Partial<MissedCheckinFormData>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
+  const createManagerNotification = async (requestData: MissedCheckinRequestData) => {
+    try {
+      // 這裡可以實作通知主管的邏輯
+      console.log('建立主管通知:', requestData);
+    } catch (error) {
+      console.error('建立通知失敗:', error);
+    }
   };
 
   const submitForm = async () => {
@@ -77,13 +83,13 @@ export const useMissedCheckinForm = (
       };
 
       // 根據申請類型添加時間
-      if (formData.missed_type === 'check_in' || formData.missed_type === 'both') {
+      if (formData.missed_type === 'check_in') {
         if (formData.requested_check_in_time) {
           submitData.requested_check_in_time = `${formData.request_date}T${formData.requested_check_in_time}:00`;
         }
       }
 
-      if (formData.missed_type === 'check_out' || formData.missed_type === 'both') {
+      if (formData.missed_type === 'check_out') {
         if (formData.requested_check_out_time) {
           submitData.requested_check_out_time = `${formData.request_date}T${formData.requested_check_out_time}:00`;
         }
@@ -119,56 +125,34 @@ export const useMissedCheckinForm = (
     }
   };
 
-  const createManagerNotification = async (requestData: MissedCheckinRequestData) => {
-    try {
-      // 查詢所有主管和管理員
-      const { data: managers, error } = await supabase
-        .from('staff')
-        .select('id, name, role')
-        .or('role.eq.admin,role.eq.manager,role.eq.hr_manager');
+  const validateForm = (): string | null => {
+    if (!formData.request_date) {
+      return '請選擇申請日期';
+    }
 
-      if (error) {
-        console.error('查詢主管失敗:', error);
-        return;
-      }
+    if (!formData.reason.trim()) {
+      return '請填寫申請原因';
+    }
 
-      if (!managers || managers.length === 0) {
-        console.log('沒有找到主管');
-        return;
-      }
+    if (formData.missed_type === 'check_in' && !formData.requested_check_in_time) {
+      return '請填寫預計上班時間';
+    }
 
-      const getMissedTypeText = (type: string) => {
-        switch (type) {
-          case 'check_in':
-            return '忘記上班打卡';
-          case 'check_out':
-            return '忘記下班打卡';
-          case 'both':
-            return '忘記上下班打卡';
-          default:
-            return type;
-        }
-      };
+    if (formData.missed_type === 'check_out' && !formData.requested_check_out_time) {
+      return '請填寫預計下班時間';
+    }
 
-      // 為每個主管創建通知
-      for (const manager of managers) {
-        await NotificationDatabaseOperations.addNotification(manager.id, {
-          title: '有新的忘記打卡申請待審核',
-          message: `${currentUser?.name} 申請${getMissedTypeText(formData.missed_type)}審核 (${formData.request_date})`,
-          type: 'missed_checkin_approval',
-          data: {
-            missedCheckinRequestId: requestData.id,
-            actionRequired: true,
-            applicantName: currentUser?.name,
-            requestDate: formData.request_date,
-            missedType: formData.missed_type,
-          },
-        });
-      }
+    return null;
+  };
 
-      console.log(`已發送忘記打卡申請通知給 ${managers.length} 位主管`);
-    } catch (error) {
-      console.error('創建主管通知失敗:', error);
+  const getMissedTypeText = (type: 'check_in' | 'check_out') => {
+    switch (type) {
+      case 'check_in':
+        return '忘記上班打卡';
+      case 'check_out':
+        return '忘記下班打卡';
+      default:
+        return type;
     }
   };
 
@@ -177,6 +161,7 @@ export const useMissedCheckinForm = (
     loading,
     updateFormData,
     submitForm,
-    resetForm,
+    validateForm,
+    getMissedTypeText,
   };
 };

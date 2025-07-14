@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Calendar, Clock, FileText, AlertCircle } from 'lucide-react';
 import type { MyApplication } from '@/types/myApplication';
@@ -18,7 +17,9 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({ application }) 
         </div>
         <div className="flex items-center gap-2 text-white/80 text-xs">
           <Clock className="h-3 w-3" />
-          <span>時間：{details.start_time} - {details.end_time} ({details.hours}小時)</span>
+          <span>
+            時間：{details.start_time} - {details.end_time} ({details.hours}小時)
+          </span>
         </div>
         <div className="flex items-center gap-2 text-white/80 text-xs">
           <FileText className="h-3 w-3" />
@@ -36,9 +37,8 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({ application }) 
 
   const renderMissedCheckinDetails = () => {
     const details = application.details;
-    const typeText = details.missed_type === 'check_in' ? '上班打卡' : 
-                    details.missed_type === 'check_out' ? '下班打卡' : '上下班打卡';
-    
+    const typeText = details.missed_type === 'check_in' ? '上班打卡' : '下班打卡';
+
     return (
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-white/80 text-xs">
@@ -52,13 +52,17 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({ application }) 
         {details.requested_check_in_time && (
           <div className="flex items-center gap-2 text-white/80 text-xs">
             <Clock className="h-3 w-3" />
-            <span>補登上班：{new Date(details.requested_check_in_time).toLocaleTimeString('zh-TW')}</span>
+            <span>
+              補登上班：{new Date(details.requested_check_in_time).toLocaleTimeString('zh-TW')}
+            </span>
           </div>
         )}
         {details.requested_check_out_time && (
           <div className="flex items-center gap-2 text-white/80 text-xs">
             <Clock className="h-3 w-3" />
-            <span>補登下班：{new Date(details.requested_check_out_time).toLocaleTimeString('zh-TW')}</span>
+            <span>
+              補登下班：{new Date(details.requested_check_out_time).toLocaleTimeString('zh-TW')}
+            </span>
           </div>
         )}
         {details.reason && (
@@ -77,7 +81,10 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({ application }) 
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-white/80 text-xs">
           <Calendar className="h-3 w-3" />
-          <span>請假期間：{new Date(details.start_date).toLocaleDateString('zh-TW')} - {new Date(details.end_date).toLocaleDateString('zh-TW')}</span>
+          <span>
+            請假期間：{new Date(details.start_date).toLocaleDateString('zh-TW')} -{' '}
+            {new Date(details.end_date).toLocaleDateString('zh-TW')}
+          </span>
         </div>
         <div className="flex items-center gap-2 text-white/80 text-xs">
           <Clock className="h-3 w-3" />

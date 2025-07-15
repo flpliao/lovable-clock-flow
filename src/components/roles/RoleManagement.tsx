@@ -1,5 +1,6 @@
 import { useToast } from '@/hooks/use-toast';
-import { Role, roleService } from '@/services/roleService';
+import { roleService } from '@/services/roleService';
+import { useRoleStore } from '@/stores/roleStore';
 import { Briefcase } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import AddRoleDialog from './AddRoleDialog';
@@ -9,30 +10,34 @@ import RoleTable from './RoleTable';
 const RoleManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
+  const { roles, setRoles } = useRoleStore();
   const { toast } = useToast();
 
-  const loadRoles = async () => {
-    try {
-      setLoading(true);
-      const data = await roleService.getRoles();
-      setRoles(data);
-    } catch (error) {
-      console.error('載入職位資料失敗:', error);
-      toast({
-        title: '載入失敗',
-        description: '無法載入職位資料，請稍後再試',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    if (roles.length > 0) {
+      setLoading(false);
+      return;
+    }
+
+    const loadRoles = async () => {
+      try {
+        setLoading(true);
+        const data = await roleService.getRoles();
+        setRoles(data);
+      } catch {
+        toast({
+          title: '載入失敗',
+          description: '無法載入職位資料，請稍後再試',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadRoles();
-  }, []);
+  }, [roles, setRoles, toast, setLoading]);
 
   const handleSearchChange = (newSearchTerm: string) => {
     setSearchTerm(newSearchTerm);
@@ -51,7 +56,7 @@ const RoleManagement = () => {
           </div>
           <h2 className="text-xl font-bold text-gray-900">職位管理</h2>
         </div>
-        <AddRoleDialog onRoleAdded={loadRoles} />
+        <AddRoleDialog />
       </div>
 
       <div className="space-y-6">
@@ -59,13 +64,7 @@ const RoleManagement = () => {
           onSearchChange={handleSearchChange}
           onSortOrderChange={handleSortOrderChange}
         />
-        <RoleTable
-          roles={roles}
-          loading={loading}
-          searchTerm={searchTerm}
-          sortOrder={sortOrder}
-          onRoleUpdated={loadRoles}
-        />
+        <RoleTable roles={roles} loading={loading} searchTerm={searchTerm} sortOrder={sortOrder} />
       </div>
     </div>
   );

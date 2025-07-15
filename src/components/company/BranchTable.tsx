@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useToast } from '@/hooks/use-toast';
 import { branchService } from '@/services/branchService';
 import { useBranchStore } from '@/stores/branchStore';
 import { Branch } from '@/types/company';
@@ -13,6 +14,7 @@ interface BranchTableProps {
 const BranchTable = ({ onEdit, loading }: BranchTableProps) => {
   const { branches, removeBranch } = useBranchStore();
   const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   const handleDeleteBranch = async (id: string) => {
     if (window.confirm('確定要刪除此單位嗎？')) {
@@ -20,7 +22,11 @@ const BranchTable = ({ onEdit, loading }: BranchTableProps) => {
         await branchService.deleteBranch(id);
         removeBranch(id);
       } catch (error) {
-        console.error('刪除單位失敗:', error);
+        toast({
+          title: '刪除失敗',
+          description: error instanceof Error ? error.message : '刪除單位時發生錯誤',
+          variant: 'destructive',
+        });
       }
     }
   };

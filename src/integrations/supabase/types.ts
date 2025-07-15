@@ -349,6 +349,7 @@ export type Database = {
           manager_contact: string | null;
           manager_name: string | null;
           name: string;
+          parent_branch_id: string | null;
           phone: string;
           staff_count: number;
           type: string;
@@ -366,6 +367,7 @@ export type Database = {
           manager_contact?: string | null;
           manager_name?: string | null;
           name: string;
+          parent_branch_id?: string | null;
           phone: string;
           staff_count?: number;
           type: string;
@@ -383,6 +385,7 @@ export type Database = {
           manager_contact?: string | null;
           manager_name?: string | null;
           name?: string;
+          parent_branch_id?: string | null;
           phone?: string;
           staff_count?: number;
           type?: string;

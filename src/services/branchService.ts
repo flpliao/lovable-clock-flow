@@ -91,6 +91,26 @@ export class branchService {
     console.log('🗑️ branchService: 刪除單位:', branchId);
 
     try {
+      // 檢查是否為其他單位的上層單位
+      const { data, error: checkError } = await supabase
+        .from('branches')
+        .select('id, name')
+        .eq('parent_branch_id', branchId);
+
+      const childBranches = data as Branch[];
+
+      if (checkError) {
+        throw new Error(`檢查子單位失敗: ${checkError.message}`);
+      }
+
+      if (childBranches && childBranches.length > 0) {
+        const childNames = (childBranches as { name: string }[])
+          .map(branch => branch.name)
+          .join('、');
+        throw new Error(`無法刪除單位，因為它是以下單位的上層單位：${childNames}`);
+      }
+
+      // 執行刪除
       const { error } = await supabase.from('branches').delete().eq('id', branchId);
 
       if (error) {

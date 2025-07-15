@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { companyService } from '@/services/companyService';
 import { useCompanyStore } from '@/stores/companyStore';
 import { Edit } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
@@ -14,7 +15,7 @@ interface EditCompanyDialogProps {
 
 const EditCompanyDialog = ({ open, onClose }: EditCompanyDialogProps) => {
   const { toast } = useToast();
-  const { company, updateCompany } = useCompanyStore();
+  const { company, setCompany } = useCompanyStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -76,13 +77,16 @@ const EditCompanyDialog = ({ open, onClose }: EditCompanyDialogProps) => {
         capital: formData.capital ? Number(formData.capital) : null,
       };
 
-      const success = await updateCompany(updatedCompany);
-      if (success) {
+      const data = await companyService.updateCompany(company.id, updatedCompany);
+      if (data) {
+        setCompany(data);
         toast({
           title: '更新成功',
           description: `公司 ${formData.name} 已成功更新`,
         });
         onClose();
+      } else {
+        throw new Error('更新失敗');
       }
     } catch (error) {
       toast({

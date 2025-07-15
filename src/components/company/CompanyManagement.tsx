@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsAdmin } from '@/hooks/useStores';
+import { companyService } from '@/services/companyService';
 import { useBranchStore } from '@/stores/branchStore';
 import { useCompanyStore } from '@/stores/companyStore';
 import { Branch } from '@/types/company';
@@ -15,16 +16,21 @@ import CheckInDistanceSettings from './components/CheckInDistanceSettings';
 import CheckpointTable from './components/CheckpointTable';
 import EditCheckpointDialog from './components/EditCheckpointDialog';
 import { Checkpoint, useCheckpoints } from './components/useCheckpoints';
+
 const CompanyManagement = () => {
   const isAdmin = useIsAdmin();
 
   // 使用 Zustand store
   const { branches } = useBranchStore();
-  const { loadCompany } = useCompanyStore();
+  const { setCompany } = useCompanyStore();
 
   useEffect(() => {
+    const loadCompany = async () => {
+      const data = await companyService.findCompany();
+      setCompany(data);
+    };
     loadCompany();
-  }, [loadCompany]);
+  }, [setCompany]);
 
   // 本地狀態
   const [isAddBranchDialogOpen, setIsAddBranchDialogOpen] = useState(false);

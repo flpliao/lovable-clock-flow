@@ -77,10 +77,7 @@ const BranchTable = ({ onEdit }: BranchTableProps) => {
     return (
       <div className="space-y-3">
         {branches.map(branch => (
-          <div
-            key={branch.id}
-            className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-xl p-4 shadow-lg"
-          >
+          <div key={branch.id} className="border border-white/30 rounded-xl p-4 shadow-lg">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center">
                 <Building className="h-4 w-4 mr-2 text-white" />

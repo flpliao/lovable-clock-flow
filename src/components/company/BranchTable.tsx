@@ -20,10 +20,11 @@ const BranchTable = ({ onEdit }: BranchTableProps) => {
 
   // 載入分支資料
   useEffect(() => {
+    if (!company?.id) return; // 沒有公司資料時不載入
     const loadBranches = async () => {
       setLoading(true);
       try {
-        const branchData = await branchService.loadBranches(company?.id);
+        const branchData = await branchService.loadBranches(company.id);
         setBranches(branchData);
       } catch (error) {
         console.error('載入分支資料失敗:', error);

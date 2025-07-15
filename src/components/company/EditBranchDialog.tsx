@@ -2,6 +2,13 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { branchService } from '@/services/branchService';
 import { useBranchStore } from '@/stores/branchStore';
@@ -16,7 +23,7 @@ interface EditBranchDialogProps {
 
 const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
   const { toast } = useToast();
-  const { updateBranch } = useBranchStore();
+  const { updateBranch, branches } = useBranchStore();
 
   const [editedBranch, setEditedBranch] = useState<Partial<Branch>>({
     name: '',
@@ -24,6 +31,7 @@ const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
     address: '',
     phone: '',
     manager_name: '',
+    parent_branch_id: null,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,9 +45,13 @@ const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
         address: branch.address || '',
         phone: branch.phone || '',
         manager_name: branch.manager_name || '',
+        parent_branch_id: branch.parent_branch_id || null,
       });
     }
   }, [branch]);
+
+  // 取得可選的父分支（排除自己）
+  const availableParentBranches = branches.filter(b => b.id !== branch?.id);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +93,13 @@ const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
     setEditedBranch(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleParentBranchChange = (value: string) => {
+    setEditedBranch(prev => ({
+      ...prev,
+      parent_branch_id: value === 'none' ? null : value,
+    }));
+  };
+
   // 如果沒有 branch 資料，不顯示對話框
   if (!branch) {
     return null;
@@ -114,6 +133,25 @@ const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
                 required
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="parent_branch">上級單位</Label>
+            <Select
+              value={editedBranch.parent_branch_id || 'none'}
+              onValueChange={handleParentBranchChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="選擇上級單位" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">無上級單位</SelectItem>
+                {availableParentBranches.map(parentBranch => (
+                  <SelectItem key={parentBranch.id} value={parentBranch.id}>
+                    {parentBranch.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="address">地址</Label>

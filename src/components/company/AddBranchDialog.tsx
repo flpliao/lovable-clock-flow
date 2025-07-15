@@ -2,6 +2,13 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { branchService } from '@/services/branchService';
 import { useBranchStore } from '@/stores/branchStore';
@@ -17,15 +24,15 @@ interface AddBranchDialogProps {
 const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
   const { toast } = useToast();
   const { company } = useCompanyStore();
-  const { addBranch } = useBranchStore();
+  const { addBranch, branches } = useBranchStore();
 
-  const [newBranch, setNewBranch] = useState<NewBranch>({
+  const [newBranch, setNewBranch] = useState<Omit<NewBranch, 'type'>>({
     name: '',
     code: '',
-    type: 'branch',
     address: '',
     phone: '',
     manager_name: '',
+    parent_branch_id: null,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,7 +52,7 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
     setIsSubmitting(true);
 
     try {
-      const createdBranch = await branchService.addBranch(company.id, newBranch);
+      const createdBranch = await branchService.addBranch(company.id, newBranch as NewBranch);
       addBranch(createdBranch);
 
       toast({
@@ -57,10 +64,10 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
       setNewBranch({
         name: '',
         code: '',
-        type: 'branch',
         address: '',
         phone: '',
         manager_name: '',
+        parent_branch_id: null,
       });
 
       onClose();
@@ -78,6 +85,13 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
 
   const handleInputChange = (field: keyof NewBranch, value: string) => {
     setNewBranch(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleParentBranchChange = (value: string) => {
+    setNewBranch(prev => ({
+      ...prev,
+      parent_branch_id: value === 'none' ? null : value,
+    }));
   };
 
   return (
@@ -108,6 +122,25 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
                 required
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="parent_branch">上級單位</Label>
+            <Select
+              value={newBranch.parent_branch_id || 'none'}
+              onValueChange={handleParentBranchChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="選擇上級單位" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">無上級單位</SelectItem>
+                {branches.map(parentBranch => (
+                  <SelectItem key={parentBranch.id} value={parentBranch.id}>
+                    {parentBranch.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="address">地址</Label>

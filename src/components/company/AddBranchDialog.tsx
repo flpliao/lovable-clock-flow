@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useCompanyStore } from '@/stores/companyStore';
+import { useBranchStore } from '@/stores/branchStore';
 import { NewBranch } from '@/types/company';
 import { useState } from 'react';
 
@@ -19,7 +19,7 @@ interface AddBranchDialogProps {
 }
 
 const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
-  const { addBranch } = useCompanyStore();
+  const { addBranch } = useBranchStore();
 
   const [newBranch, setNewBranch] = useState<NewBranch>({
     name: '',

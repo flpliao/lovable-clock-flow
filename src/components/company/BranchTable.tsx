@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useCompanyStore } from '@/stores/companyStore';
+import { useBranchStore } from '@/stores/branchStore';
 import { Branch } from '@/types/company';
 import { Building, Edit, MapPin, Phone, Trash2, User } from 'lucide-react';
 
@@ -9,7 +9,7 @@ interface BranchTableProps {
 }
 
 const BranchTable = ({ onEdit }: BranchTableProps) => {
-  const { filteredBranches, deleteBranch } = useCompanyStore();
+  const { filteredBranches, deleteBranch } = useBranchStore();
 
   const isMobile = useIsMobile();
 

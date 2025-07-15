@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useCompanyStore } from '@/stores/companyStore';
+import { useBranchStore } from '@/stores/branchStore';
 import { Branch } from '@/types/company';
 import { Edit } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
@@ -16,7 +16,7 @@ interface EditBranchDialogProps {
 
 const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
   const { toast } = useToast();
-  const { updateBranch } = useCompanyStore();
+  const { updateBranch } = useBranchStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({

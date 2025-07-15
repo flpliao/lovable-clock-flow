@@ -1,13 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsAdmin } from '@/hooks/useStores';
-import { useCompanyStore } from '@/stores/companyStore';
+import { useBranchStore } from '@/stores/branchStore';
 import { Branch } from '@/types/company';
 import { Building, MapPin, Plus } from 'lucide-react';
 import { useState } from 'react';
 import AddBranchDialog from './AddBranchDialog';
 import BranchTable from './BranchTable';
-import CompanyInfoCard from './CompanyInfoCard';
 import EditBranchDialog from './EditBranchDialog';
 import EditCompanyDialog from './EditCompanyDialog';
 import AddCheckpointDialog from './components/AddCheckpointDialog';
@@ -21,7 +20,7 @@ const CompanyManagement = () => {
   const isAdmin = useIsAdmin();
 
   // 使用 Zustand store
-  const { branches } = useCompanyStore();
+  const { branches } = useBranchStore();
 
   // 初始化 store
   useCompanyStoreInitializer();
@@ -74,8 +73,6 @@ const CompanyManagement = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'company':
-        return <CompanyInfoCard />;
       case 'branches':
         return (
           <div className="space-y-6">
@@ -141,8 +138,6 @@ const CompanyManagement = () => {
             </div>
           </div>
         );
-      default:
-        return <CompanyInfoCard />;
     }
   };
 

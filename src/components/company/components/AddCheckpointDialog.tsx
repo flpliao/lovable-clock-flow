@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import React, { useState } from 'react';
 import { addCheckpoint } from './useCheckpoints';
 
 const AddCheckpointDialog = ({
@@ -30,8 +32,6 @@ const AddCheckpointDialog = ({
       setLongitude('');
       onClose();
       onSuccess?.();
-    } catch (err) {
-      alert('新增失敗');
     } finally {
       setLoading(false);
     }
@@ -42,34 +42,37 @@ const AddCheckpointDialog = ({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-        <h2 className="text-xl font-bold mb-4">新增 Checkpoint</h2>
+        <h2 className="text-lg font-semibold leading-none tracking-tight mb-4">新增打卡點</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block mb-1">名稱</label>
-            <input
-              className="w-full border rounded px-3 py-2"
+          <div className="space-y-2">
+            <Label htmlFor="name">名稱</Label>
+            <Input
+              id="name"
               value={name}
               onChange={e => setName(e.target.value)}
+              placeholder="請輸入打卡點名稱"
               required
             />
           </div>
-          <div>
-            <label className="block mb-1">緯度</label>
-            <input
-              className="w-full border rounded px-3 py-2"
+          <div className="space-y-2">
+            <Label htmlFor="latitude">緯度</Label>
+            <Input
+              id="latitude"
               value={latitude}
               onChange={e => setLatitude(e.target.value)}
+              placeholder="請輸入緯度"
               required
               type="number"
               step="any"
             />
           </div>
-          <div>
-            <label className="block mb-1">經度</label>
-            <input
-              className="w-full border rounded px-3 py-2"
+          <div className="space-y-2">
+            <Label htmlFor="longitude">經度</Label>
+            <Input
+              id="longitude"
               value={longitude}
               onChange={e => setLongitude(e.target.value)}
+              placeholder="請輸入經度"
               required
               type="number"
               step="any"

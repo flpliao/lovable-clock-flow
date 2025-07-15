@@ -16,7 +16,7 @@ interface EditBranchDialogProps {
 
 const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
   const { toast } = useToast();
-  const { updateBranch, setLoading } = useBranchStore();
+  const { updateBranch } = useBranchStore();
 
   const [editedBranch, setEditedBranch] = useState<Partial<Branch>>({
     name: '',
@@ -54,7 +54,6 @@ const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
     }
 
     setIsSubmitting(true);
-    setLoading(true);
 
     try {
       await branchService.updateBranch(branch.id, editedBranch);
@@ -75,7 +74,6 @@ const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
       });
     } finally {
       setIsSubmitting(false);
-      setLoading(false);
     }
   };
 

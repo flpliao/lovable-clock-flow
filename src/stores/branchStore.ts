@@ -5,13 +5,9 @@ import { devtools } from 'zustand/middleware';
 interface BranchState {
   // 資料狀態
   branches: Branch[];
-  selectedBranch: Branch | null;
-  loading: boolean;
 
   // Actions
   setBranches: (branches: Branch[]) => void;
-  setSelectedBranch: (branch: Branch | null) => void;
-  setLoading: (loading: boolean) => void;
 
   // Business Actions
   addBranch: (branch: Branch) => void;
@@ -26,13 +22,9 @@ export const useBranchStore = create<BranchState>()(
     (set, get) => ({
       // 初始狀態
       branches: [],
-      selectedBranch: null,
-      loading: false,
 
       // 基本 Actions
       setBranches: branches => set({ branches }),
-      setSelectedBranch: selectedBranch => set({ selectedBranch }),
-      setLoading: loading => set({ loading }),
 
       // Business Actions
       addBranch: (branch: Branch) => {

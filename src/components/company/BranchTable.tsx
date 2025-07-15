@@ -10,21 +10,18 @@ interface BranchTableProps {
 }
 
 const BranchTable = ({ onEdit }: BranchTableProps) => {
-  const { branches, removeBranch, setLoading } = useBranchStore();
+  const { branches, removeBranch } = useBranchStore();
 
   const isMobile = useIsMobile();
 
   const handleDeleteBranch = async (id: string) => {
     if (window.confirm('確定要刪除此單位嗎？')) {
-      setLoading(true);
       try {
         await branchService.deleteBranch(id);
         removeBranch(id);
       } catch (error) {
         console.error('刪除單位失敗:', error);
         // 可以在這裡顯示錯誤訊息
-      } finally {
-        setLoading(false);
       }
     }
   };

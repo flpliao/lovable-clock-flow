@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 
 export const useCompanyStoreInitializer = () => {
   const { company, loadCompany } = useCompanyStore();
-  const { setBranches, setLoading } = useBranchStore();
+  const { setBranches } = useBranchStore();
 
   useEffect(() => {
     const initializeData = async () => {
@@ -22,19 +22,16 @@ export const useCompanyStoreInitializer = () => {
     const loadBranchData = async () => {
       if (company?.id) {
         console.log('🏪 useCompanyStoreInitializer: 公司資料已載入，開始載入分支資料');
-        setLoading(true);
         try {
           const branches = await branchService.loadBranches(company.id);
           setBranches(branches);
         } catch (error) {
           console.error('載入分支資料失敗:', error);
           setBranches([]);
-        } finally {
-          setLoading(false);
         }
       }
     };
 
     loadBranchData();
-  }, [company, setBranches, setLoading]);
+  }, [company, setBranches]);
 };

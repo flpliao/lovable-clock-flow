@@ -17,7 +17,7 @@ interface AddBranchDialogProps {
 const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
   const { toast } = useToast();
   const { company } = useCompanyStore();
-  const { addBranch, setLoading } = useBranchStore();
+  const { addBranch } = useBranchStore();
 
   const [newBranch, setNewBranch] = useState<NewBranch>({
     name: '',
@@ -43,7 +43,6 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
     }
 
     setIsSubmitting(true);
-    setLoading(true);
 
     try {
       const createdBranch = await branchService.addBranch(company.id, newBranch);
@@ -74,7 +73,6 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
       });
     } finally {
       setIsSubmitting(false);
-      setLoading(false);
     }
   };
 

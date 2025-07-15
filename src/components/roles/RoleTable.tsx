@@ -10,6 +10,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useIsAdmin } from '@/hooks/useStores';
 import { Role, roleService } from '@/services/roleService';
+import { useRoleStore } from '@/stores/roleStore';
 import { Briefcase, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import AddRoleDialog from './AddRoleDialog';
@@ -20,20 +21,14 @@ interface RoleTableProps {
   loading: boolean;
   searchTerm?: string;
   sortOrder?: 'asc' | 'desc';
-  onRoleUpdated: () => Promise<void>;
 }
 
-const RoleTable = ({
-  roles,
-  loading,
-  searchTerm = '',
-  sortOrder = 'asc',
-  onRoleUpdated,
-}: RoleTableProps) => {
+const RoleTable = ({ roles, loading, searchTerm = '', sortOrder = 'asc' }: RoleTableProps) => {
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
   const isAdmin = useIsAdmin();
+  const { removeRole } = useRoleStore();
 
   const handleEditRole = (role: Role) => {
     setEditingRole(role);
@@ -52,12 +47,14 @@ const RoleTable = ({
       console.log('🔄 開始刪除職位:', role);
       await roleService.deleteRole(id);
 
+      // 直接更新 store
+      removeRole(id);
+
       toast({
         title: '刪除成功',
         description: `職位「${role.name}」已刪除`,
       });
 
-      await onRoleUpdated(); // 通知父組件重新載入資料
       console.log('✅ 職位刪除流程完成');
     } catch (error) {
       console.error('❌ 刪除職位失敗:', error);
@@ -113,7 +110,7 @@ const RoleTable = ({
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">尚未建立職位資料</h3>
         <p className="text-gray-700 mb-4">開始建立您的職位架構，管理組織權限</p>
-        <AddRoleDialog onRoleAdded={onRoleUpdated} />
+        <AddRoleDialog />
       </div>
     );
   }
@@ -218,7 +215,6 @@ const RoleTable = ({
         role={editingRole}
         isOpen={isEditDialogOpen}
         onClose={handleCloseEditDialog}
-        onRoleUpdated={onRoleUpdated}
       />
     </>
   );

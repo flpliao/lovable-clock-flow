@@ -23,6 +23,7 @@ import OvertimeHistoryPage from '@/pages/OvertimeHistoryPage';
 import OvertimeRequest from '@/pages/OvertimeRequest';
 import PersonalAttendance from '@/pages/PersonalAttendance';
 import StaffDashboard from '@/pages/StaffDashboard';
+import AttendanceRecordsPage from '@/pages/AttendanceRecordsPage';
 
 // Management pages
 import AnnouncementManagementPage from '@/pages/AnnouncementManagementPage';
@@ -103,6 +104,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <PersonalAttendance />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/attendance-records"
+                element={
+                  <ProtectedRoute>
+                    <AttendanceRecordsPage />
                   </ProtectedRoute>
                 }
               />

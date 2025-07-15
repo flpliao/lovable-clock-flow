@@ -7,6 +7,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { branchService } from '@/services/branchService';
+import { useCompanyStore } from '@/stores/companyStore';
 import { Branch } from '@/types/company';
 import React, { useEffect, useState } from 'react';
 import { Staff } from '../types';
@@ -21,18 +22,24 @@ export const EditStaffBranchField: React.FC<EditStaffBranchFieldProps> = ({
   setCurrentStaff,
 }) => {
   const [branches, setBranches] = useState<Branch[]>([]);
+  const { company } = useCompanyStore();
 
   useEffect(() => {
     const fetchBranches = async () => {
+      if (!company?.id) {
+        console.log('沒有公司ID，跳過載入單位');
+        return;
+      }
+
       try {
-        const data = await branchService.loadBranches();
+        const data = await branchService.loadBranches(company.id);
         setBranches(data);
       } catch (error) {
         console.error('載入單位失敗:', error);
       }
     };
     fetchBranches();
-  }, []);
+  }, [company?.id]);
 
   return (
     <div className="grid grid-cols-4 items-center gap-4">

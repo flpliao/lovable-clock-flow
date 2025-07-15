@@ -1,17 +1,13 @@
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { branchService } from '@/services/branchService';
 import { useBranchStore } from '@/stores/branchStore';
+import { useCompanyStore } from '@/stores/companyStore';
 import { NewBranch } from '@/types/company';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 interface AddBranchDialogProps {
   open: boolean;
@@ -19,7 +15,9 @@ interface AddBranchDialogProps {
 }
 
 const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
-  const { addBranch } = useBranchStore();
+  const { toast } = useToast();
+  const { company } = useCompanyStore();
+  const { addBranch, setLoading } = useBranchStore();
 
   const [newBranch, setNewBranch] = useState<NewBranch>({
     name: '',
@@ -27,28 +25,61 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
     type: 'branch',
     address: '',
     phone: '',
-    email: '',
     manager_name: '',
-    manager_contact: '',
-    business_license: '',
   });
 
-  const handleSubmit = async () => {
-    const success = await addBranch(newBranch);
-    if (success) {
-      onClose();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!company?.id) {
+      toast({
+        title: '錯誤',
+        description: '沒有公司ID，無法新增單位',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setLoading(true);
+
+    try {
+      const createdBranch = await branchService.addBranch(company.id, newBranch);
+      addBranch(createdBranch);
+
+      toast({
+        title: '成功',
+        description: '單位新增成功',
+      });
+
+      // 重置表單
       setNewBranch({
         name: '',
         code: '',
         type: 'branch',
         address: '',
         phone: '',
-        email: '',
         manager_name: '',
-        manager_contact: '',
-        business_license: '',
       });
+
+      onClose();
+    } catch (error) {
+      console.error('新增單位失敗:', error);
+      toast({
+        title: '錯誤',
+        description: error instanceof Error ? error.message : '新增單位失敗',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+      setLoading(false);
     }
+  };
+
+  const handleInputChange = (field: keyof NewBranch, value: string) => {
+    setNewBranch(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -56,104 +87,70 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>新增單位</DialogTitle>
-          <DialogDescription>請填寫單位的基本資訊。</DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              名稱
-            </Label>
-            <Input
-              id="name"
-              value={newBranch.name}
-              onChange={e => setNewBranch({ ...newBranch, name: e.target.value })}
-              className="col-span-3"
-            />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">單位名稱</Label>
+              <Input
+                id="name"
+                value={newBranch.name}
+                onChange={e => handleInputChange('name', e.target.value)}
+                placeholder="請輸入單位名稱"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="code">單位代碼</Label>
+              <Input
+                id="code"
+                value={newBranch.code}
+                onChange={e => handleInputChange('code', e.target.value)}
+                placeholder="請輸入單位代碼"
+                required
+              />
+            </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="code" className="text-right">
-              代碼
-            </Label>
-            <Input
-              id="code"
-              value={newBranch.code}
-              onChange={e => setNewBranch({ ...newBranch, code: e.target.value })}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="address" className="text-right">
-              地址
-            </Label>
+          <div className="space-y-2">
+            <Label htmlFor="address">地址</Label>
             <Input
               id="address"
               value={newBranch.address}
-              onChange={e => setNewBranch({ ...newBranch, address: e.target.value })}
-              className="col-span-3"
+              onChange={e => handleInputChange('address', e.target.value)}
+              placeholder="請輸入地址"
+              required
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="phone" className="text-right">
-              電話
-            </Label>
-            <Input
-              id="phone"
-              value={newBranch.phone}
-              onChange={e => setNewBranch({ ...newBranch, phone: e.target.value })}
-              className="col-span-3"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="phone">電話</Label>
+              <Input
+                id="phone"
+                value={newBranch.phone}
+                onChange={e => handleInputChange('phone', e.target.value)}
+                placeholder="請輸入電話"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="manager">負責人</Label>
+              <Input
+                id="manager"
+                value={newBranch.manager_name}
+                onChange={e => handleInputChange('manager_name', e.target.value)}
+                placeholder="請輸入負責人"
+              />
+            </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="text-right">
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              value={newBranch.email}
-              onChange={e => setNewBranch({ ...newBranch, email: e.target.value })}
-              className="col-span-3"
-            />
+          <div className="flex justify-end space-x-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              取消
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? '新增中...' : '新增'}
+            </Button>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="manager_name" className="text-right">
-              負責人
-            </Label>
-            <Input
-              id="manager_name"
-              value={newBranch.manager_name}
-              onChange={e => setNewBranch({ ...newBranch, manager_name: e.target.value })}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="manager_contact" className="text-right">
-              負責人聯絡方式
-            </Label>
-            <Input
-              id="manager_contact"
-              value={newBranch.manager_contact}
-              onChange={e => setNewBranch({ ...newBranch, manager_contact: e.target.value })}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="business_license" className="text-right">
-              營業執照
-            </Label>
-            <Input
-              id="business_license"
-              value={newBranch.business_license}
-              onChange={e => setNewBranch({ ...newBranch, business_license: e.target.value })}
-              className="col-span-3"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button type="submit" onClick={handleSubmit}>
-            新增
-          </Button>
-        </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { branchService } from '@/services/branchService';
 import { useBranchStore } from '@/stores/branchStore';
 import { Branch } from '@/types/company';
 import { Building, Edit, MapPin, Phone, Trash2, User } from 'lucide-react';
@@ -9,13 +10,22 @@ interface BranchTableProps {
 }
 
 const BranchTable = ({ onEdit }: BranchTableProps) => {
-  const { filteredBranches, deleteBranch } = useBranchStore();
+  const { branches, removeBranch, setLoading } = useBranchStore();
 
   const isMobile = useIsMobile();
 
   const handleDeleteBranch = async (id: string) => {
     if (window.confirm('確定要刪除此單位嗎？')) {
-      await deleteBranch(id);
+      setLoading(true);
+      try {
+        await branchService.deleteBranch(id);
+        removeBranch(id);
+      } catch (error) {
+        console.error('刪除單位失敗:', error);
+        // 可以在這裡顯示錯誤訊息
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -25,7 +35,7 @@ const BranchTable = ({ onEdit }: BranchTableProps) => {
   };
 
   // 如果沒有單位資料
-  if (filteredBranches.length === 0) {
+  if (branches.length === 0) {
     return (
       <div className="text-center py-8">
         <Building className="h-12 w-12 mx-auto text-white/50 mb-4" />
@@ -37,7 +47,7 @@ const BranchTable = ({ onEdit }: BranchTableProps) => {
   if (isMobile) {
     return (
       <div className="space-y-3">
-        {filteredBranches.map(branch => (
+        {branches.map(branch => (
           <div
             key={branch.id}
             className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-xl p-4 shadow-lg"
@@ -124,7 +134,7 @@ const BranchTable = ({ onEdit }: BranchTableProps) => {
           </tr>
         </thead>
         <tbody>
-          {filteredBranches.map(branch => (
+          {branches.map(branch => (
             <tr
               key={branch.id}
               className="border-b border-white/10 hover:bg-white/10 transition-colors"

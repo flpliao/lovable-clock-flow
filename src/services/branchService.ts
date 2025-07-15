@@ -1,11 +1,114 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Branch } from '@/types/company';
+import { Branch, NewBranch } from '@/types/company';
 
 export class branchService {
   /**
+   * 載入指定公司的所有分支機構
+   */
+  static async loadBranches(companyId: string): Promise<Branch[]> {
+    console.log('🔍 branchService: 載入單位...', companyId);
+
+    try {
+      const { data, error } = await supabase
+        .from('branches')
+        .select('*')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ branchService: 載入單位失敗:', error);
+        throw new Error(`載入單位失敗: ${error.message}`);
+      }
+
+      console.log('✅ branchService: 載入單位成功:', data?.length || 0, '筆');
+      return (data as Branch[]) || [];
+    } catch (error) {
+      console.error('💥 branchService: 載入單位時發生錯誤:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 新增分支機構
+   */
+  static async addBranch(companyId: string, branchData: NewBranch): Promise<Branch> {
+    console.log('➕ branchService: 新增單位:', branchData);
+
+    try {
+      const { data, error } = await supabase
+        .from('branches')
+        .insert({
+          ...branchData,
+          company_id: companyId,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ branchService: 新增單位失敗:', error);
+        throw new Error(`新增單位失敗: ${error.message}`);
+      }
+
+      console.log('✅ branchService: 新增單位成功');
+      return data as Branch;
+    } catch (error) {
+      console.error('💥 branchService: 新增單位時發生錯誤:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 更新分支機構
+   */
+  static async updateBranch(branchId: string, branchData: Partial<Branch>): Promise<void> {
+    console.log('🔄 branchService: 更新單位:', branchId, branchData);
+
+    try {
+      const { error } = await supabase
+        .from('branches')
+        .update({
+          ...branchData,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', branchId);
+
+      if (error) {
+        console.error('❌ branchService: 更新單位失敗:', error);
+        throw new Error(`更新單位失敗: ${error.message}`);
+      }
+
+      console.log('✅ branchService: 更新單位成功');
+    } catch (error) {
+      console.error('💥 branchService: 更新單位時發生錯誤:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 刪除分支機構
+   */
+  static async deleteBranch(branchId: string): Promise<void> {
+    console.log('🗑️ branchService: 刪除單位:', branchId);
+
+    try {
+      const { error } = await supabase.from('branches').delete().eq('id', branchId);
+
+      if (error) {
+        console.error('❌ branchService: 刪除單位失敗:', error);
+        throw new Error(`刪除單位失敗: ${error.message}`);
+      }
+
+      console.log('✅ branchService: 刪除單位成功');
+    } catch (error) {
+      console.error('💥 branchService: 刪除單位時發生錯誤:', error);
+      throw error;
+    }
+  }
+
+  /**
    * 從 Supabase 讀取全部單位資料，僅取 id 與 name 欄位
    */
-  static async loadBranches(): Promise<Branch[]> {
+  static async loadBranchesSimple(): Promise<Branch[]> {
     console.log('🏬 branchService: 載入 branches ...');
 
     const { data, error } = await supabase

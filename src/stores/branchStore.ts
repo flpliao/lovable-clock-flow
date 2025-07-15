@@ -45,12 +45,12 @@ export const useBranchStore = create<BranchState>()(
       loadBranches: async () => {
         const companyId = useCompanyStore.getState().company?.id;
         if (!companyId) {
-          console.log('⚠️ branchStore: 沒有公司ID，跳過載入分支機構');
+          console.log('⚠️ branchStore: 沒有公司ID，跳過載入單位');
           set({ branches: [], filteredBranches: [] });
           return [];
         }
 
-        console.log('🔍 branchStore: 載入分支機構...', companyId);
+        console.log('🔍 branchStore: 載入單位...', companyId);
 
         try {
           const { data, error } = await supabase
@@ -60,17 +60,17 @@ export const useBranchStore = create<BranchState>()(
             .order('created_at', { ascending: false });
 
           if (error) {
-            console.error('❌ branchStore: 載入分支機構失敗:', error);
+            console.error('❌ branchStore: 載入單位失敗:', error);
             set({ branches: [], filteredBranches: [] });
             return [];
           }
 
-          console.log('✅ branchStore: 載入分支機構成功:', data?.length || 0, '筆');
+          console.log('✅ branchStore: 載入單位成功:', data?.length || 0, '筆');
           const branchData = (data as Branch[]) || [];
           set({ branches: branchData, filteredBranches: branchData });
           return branchData;
         } catch (error) {
-          console.error('💥 branchStore: 載入分支機構時發生錯誤:', error);
+          console.error('💥 branchStore: 載入單位時發生錯誤:', error);
           set({ branches: [], filteredBranches: [] });
           return [];
         }
@@ -79,11 +79,11 @@ export const useBranchStore = create<BranchState>()(
       addBranch: async (branchData: NewBranch) => {
         const companyId = useCompanyStore.getState().company?.id;
         if (!companyId) {
-          console.error('❌ branchStore: 沒有公司ID，無法新增分支機構');
+          console.error('❌ branchStore: 沒有公司ID，無法新增單位');
           return false;
         }
 
-        console.log('➕ branchStore: 新增分支機構:', branchData);
+        console.log('➕ branchStore: 新增單位:', branchData);
 
         try {
           const { data, error } = await supabase
@@ -96,21 +96,21 @@ export const useBranchStore = create<BranchState>()(
             .single();
 
           if (error) {
-            console.error('❌ branchStore: 新增分支機構失敗:', error);
+            console.error('❌ branchStore: 新增單位失敗:', error);
             return false;
           }
 
-          console.log('✅ branchStore: 新增分支機構成功');
+          console.log('✅ branchStore: 新增單位成功');
           await get().loadBranches();
           return true;
         } catch (error) {
-          console.error('💥 branchStore: 新增分支機構時發生錯誤:', error);
+          console.error('💥 branchStore: 新增單位時發生錯誤:', error);
           return false;
         }
       },
 
       updateBranch: async (branchId: string, branchData: Partial<Branch>) => {
-        console.log('🔄 branchStore: 更新分支機構:', branchId, branchData);
+        console.log('🔄 branchStore: 更新單位:', branchId, branchData);
 
         try {
           const { error } = await supabase
@@ -122,35 +122,35 @@ export const useBranchStore = create<BranchState>()(
             .eq('id', branchId);
 
           if (error) {
-            console.error('❌ branchStore: 更新分支機構失敗:', error);
+            console.error('❌ branchStore: 更新單位失敗:', error);
             return false;
           }
 
-          console.log('✅ branchStore: 更新分支機構成功');
+          console.log('✅ branchStore: 更新單位成功');
           await get().loadBranches();
           return true;
         } catch (error) {
-          console.error('💥 branchStore: 更新分支機構時發生錯誤:', error);
+          console.error('💥 branchStore: 更新單位時發生錯誤:', error);
           return false;
         }
       },
 
       deleteBranch: async (branchId: string) => {
-        console.log('🗑️ branchStore: 刪除分支機構:', branchId);
+        console.log('🗑️ branchStore: 刪除單位:', branchId);
 
         try {
           const { error } = await supabase.from('branches').delete().eq('id', branchId);
 
           if (error) {
-            console.error('❌ branchStore: 刪除分支機構失敗:', error);
+            console.error('❌ branchStore: 刪除單位失敗:', error);
             return false;
           }
 
-          console.log('✅ branchStore: 刪除分支機構成功');
+          console.log('✅ branchStore: 刪除單位成功');
           await get().loadBranches();
           return true;
         } catch (error) {
-          console.error('💥 branchStore: 刪除分支機構時發生錯誤:', error);
+          console.error('💥 branchStore: 刪除單位時發生錯誤:', error);
           return false;
         }
       },

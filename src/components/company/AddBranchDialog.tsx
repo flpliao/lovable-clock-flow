@@ -55,8 +55,8 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>新增分支機構</DialogTitle>
-          <DialogDescription>請填寫分支機構的基本資訊。</DialogDescription>
+          <DialogTitle>新增單位</DialogTitle>
+          <DialogDescription>請填寫單位的基本資訊。</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">

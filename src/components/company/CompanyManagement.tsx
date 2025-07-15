@@ -23,32 +23,31 @@ const CompanyManagement = () => {
 
   // 使用 Zustand store
   const { branches, setBranches } = useBranchStore();
-  const { setCompany, company } = useCompanyStore();
+  const { company, setCompany } = useCompanyStore();
   const [branchesLoading, setBranchesLoading] = useState(false);
 
   useEffect(() => {
+    if (company || branches.length > 0) return;
     const loadCompany = async () => {
       const data = await companyService.findCompany();
       setCompany(data);
     };
     loadCompany();
-  }, [setCompany]);
+  }, [company, setCompany, branches]);
 
   useEffect(() => {
-    if (!company?.id) return;
+    if (!company?.id || branches.length > 0) return;
     const loadBranches = async () => {
       setBranchesLoading(true);
       try {
         const branchData = await branchService.loadBranches(company.id);
         setBranches(branchData);
-      } catch (error) {
-        setBranches([]);
       } finally {
         setBranchesLoading(false);
       }
     };
     loadBranches();
-  }, [company?.id, setBranches]);
+  }, [company?.id, setBranches, branches]);
 
   // 本地狀態
   const [isAddBranchDialogOpen, setIsAddBranchDialogOpen] = useState(false);

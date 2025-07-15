@@ -16,6 +16,7 @@ const AddCheckpointDialog = ({
   const [name, setName] = useState('');
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
+  const [checkInRadius, setCheckInRadius] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,6 +27,7 @@ const AddCheckpointDialog = ({
         name,
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),
+        check_in_radius: parseFloat(checkInRadius),
       } as Checkpoint);
       setName('');
       setLatitude('');
@@ -73,6 +75,18 @@ const AddCheckpointDialog = ({
               value={longitude}
               onChange={e => setLongitude(e.target.value)}
               placeholder="請輸入經度"
+              required
+              type="number"
+              step="any"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="check_in_radius">打卡距離（公尺）</Label>
+            <Input
+              id="check_in_radius"
+              value={checkInRadius}
+              onChange={e => setCheckInRadius(e.target.value)}
+              placeholder="請輸入打卡距離（公尺）"
               required
               type="number"
               step="any"

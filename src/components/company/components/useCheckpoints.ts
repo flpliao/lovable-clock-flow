@@ -6,6 +6,7 @@ export interface Checkpoint {
   name: string;
   latitude: number;
   longitude: number;
+  check_in_radius: number;
   created_at: string;
   disabled_at: string | null;
 }

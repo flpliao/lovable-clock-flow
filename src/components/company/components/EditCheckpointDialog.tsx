@@ -25,6 +25,7 @@ const EditCheckpointDialog = ({
   const [name, setName] = useState('');
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
+  const [checkInRadius, setCheckInRadius] = useState('');
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
 
@@ -33,6 +34,7 @@ const EditCheckpointDialog = ({
       setName(checkpoint.name || '');
       setLatitude(checkpoint.latitude?.toString() || '');
       setLongitude(checkpoint.longitude?.toString() || '');
+      setCheckInRadius(checkpoint.check_in_radius?.toString() || '');
       setDisabled(!!checkpoint.disabled_at);
     }
   }, [checkpoint]);
@@ -45,6 +47,7 @@ const EditCheckpointDialog = ({
         name,
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),
+        check_in_radius: parseFloat(checkInRadius),
         disabled_at: disabled ? new Date().toISOString() : null,
       });
       onClose();
@@ -90,6 +93,18 @@ const EditCheckpointDialog = ({
               value={longitude}
               onChange={e => setLongitude(e.target.value)}
               placeholder="請輸入經度"
+              required
+              type="number"
+              step="any"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="check_in_radius">打卡距離（公尺）</Label>
+            <Input
+              id="check_in_radius"
+              value={checkInRadius}
+              onChange={e => setCheckInRadius(e.target.value)}
+              placeholder="請輸入打卡距離（公尺）"
               required
               type="number"
               step="any"

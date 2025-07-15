@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from 'react';
 
 export interface Checkpoint {
   id: number;
@@ -31,9 +31,7 @@ export function useCheckpoints() {
   return { data, loading, refresh: fetchCheckpoints };
 }
 
-export async function addCheckpoint(
-  payload: Omit<Checkpoint, 'id' | 'created_at' | 'disabled_at'>
-) {
+export async function addCheckpoint(payload: Omit<Checkpoint, 'id' | 'created_at'>) {
   const { data, error } = await supabase.from('checkpoints').insert([payload]).select();
   if (error) throw error;
   return data;

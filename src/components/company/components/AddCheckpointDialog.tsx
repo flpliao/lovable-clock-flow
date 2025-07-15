@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import React, { useState } from 'react';
-import { addCheckpoint } from './useCheckpoints';
+import { addCheckpoint, Checkpoint } from './useCheckpoints';
 
 const AddCheckpointDialog = ({
   open,
@@ -26,7 +26,7 @@ const AddCheckpointDialog = ({
         name,
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),
-      });
+      } as Checkpoint);
       setName('');
       setLatitude('');
       setLongitude('');

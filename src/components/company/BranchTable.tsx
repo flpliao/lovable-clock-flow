@@ -2,40 +2,17 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { branchService } from '@/services/branchService';
 import { useBranchStore } from '@/stores/branchStore';
-import { useCompanyStore } from '@/stores/companyStore';
 import { Branch } from '@/types/company';
 import { Building, Edit, MapPin, Phone, Trash2, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 interface BranchTableProps {
   onEdit: (branch: Branch) => void;
+  loading: boolean;
 }
 
-const BranchTable = ({ onEdit }: BranchTableProps) => {
-  const { branches, setBranches, removeBranch } = useBranchStore();
-  const { company } = useCompanyStore();
-  const [loading, setLoading] = useState(false);
-
+const BranchTable = ({ onEdit, loading }: BranchTableProps) => {
+  const { branches, removeBranch } = useBranchStore();
   const isMobile = useIsMobile();
-
-  // 載入分支資料
-  useEffect(() => {
-    if (!company?.id) return; // 沒有公司資料時不載入
-    const loadBranches = async () => {
-      setLoading(true);
-      try {
-        const branchData = await branchService.loadBranches(company.id);
-        setBranches(branchData);
-      } catch (error) {
-        console.error('載入分支資料失敗:', error);
-        setBranches([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadBranches();
-  }, [setBranches, company?.id]);
 
   const handleDeleteBranch = async (id: string) => {
     if (window.confirm('確定要刪除此單位嗎？')) {
@@ -44,17 +21,14 @@ const BranchTable = ({ onEdit }: BranchTableProps) => {
         removeBranch(id);
       } catch (error) {
         console.error('刪除單位失敗:', error);
-        // 可以在這裡顯示錯誤訊息
       }
     }
   };
 
-  // 在需要編輯的地方調用 onEdit
   const handleEdit = (branch: Branch) => {
     onEdit(branch);
   };
 
-  // 載入中狀態
   if (loading) {
     return (
       <div className="text-center py-8">
@@ -64,7 +38,6 @@ const BranchTable = ({ onEdit }: BranchTableProps) => {
     );
   }
 
-  // 如果沒有單位資料
   if (branches.length === 0) {
     return (
       <div className="text-center py-8">
@@ -86,7 +59,6 @@ const BranchTable = ({ onEdit }: BranchTableProps) => {
               </div>
               <span className="text-white/70 text-sm">{branch.code}</span>
             </div>
-
             <div className="space-y-1 text-sm text-white/80">
               <div className="flex items-center">
                 <MapPin className="h-3 w-3 mr-1" />
@@ -101,7 +73,6 @@ const BranchTable = ({ onEdit }: BranchTableProps) => {
                 <span>{branch.manager_name || '未設定'}</span>
               </div>
             </div>
-
             <div className="flex gap-2 mt-3">
               <Button
                 size="sm"

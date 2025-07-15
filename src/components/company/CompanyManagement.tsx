@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsAdmin } from '@/hooks/useStores';
+import { branchService } from '@/services/branchService';
 import { companyService } from '@/services/companyService';
 import { useBranchStore } from '@/stores/branchStore';
 import { useCompanyStore } from '@/stores/companyStore';
@@ -21,8 +22,9 @@ const CompanyManagement = () => {
   const isAdmin = useIsAdmin();
 
   // 使用 Zustand store
-  const { branches } = useBranchStore();
-  const { setCompany } = useCompanyStore();
+  const { branches, setBranches } = useBranchStore();
+  const { setCompany, company } = useCompanyStore();
+  const [branchesLoading, setBranchesLoading] = useState(false);
 
   useEffect(() => {
     const loadCompany = async () => {
@@ -31,6 +33,22 @@ const CompanyManagement = () => {
     };
     loadCompany();
   }, [setCompany]);
+
+  useEffect(() => {
+    if (!company?.id) return;
+    const loadBranches = async () => {
+      setBranchesLoading(true);
+      try {
+        const branchData = await branchService.loadBranches(company.id);
+        setBranches(branchData);
+      } catch (error) {
+        setBranches([]);
+      } finally {
+        setBranchesLoading(false);
+      }
+    };
+    loadBranches();
+  }, [company?.id, setBranches]);
 
   // 本地狀態
   const [isAddBranchDialogOpen, setIsAddBranchDialogOpen] = useState(false);
@@ -106,7 +124,7 @@ const CompanyManagement = () => {
                   </Button>
                 )}
               </div>
-              <BranchTable onEdit={handleEditBranch} />
+              <BranchTable onEdit={handleEditBranch} loading={branchesLoading} />
             </div>
           </div>
         );

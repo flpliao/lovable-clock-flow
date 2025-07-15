@@ -19,12 +19,14 @@ export interface Branch {
   company_id: string;
   name: string;
   code: string; // 單位代碼
+  type: string; // 分支類型
   address: string;
   phone: string;
   email?: string;
   manager_name?: string;
   manager_contact?: string;
   business_license?: string; // 營業執照號碼
+  parent_branch_id?: string | null; // 上級單位 ID
   is_active: boolean;
   staff_count: number;
   created_at: string;
@@ -34,12 +36,14 @@ export interface Branch {
 export interface NewBranch {
   name: string;
   code: string;
+  type: string; // 分支類型
   address: string;
   phone: string;
   email?: string;
   manager_name?: string;
   manager_contact?: string;
   business_license?: string;
+  parent_branch_id?: string | null; // 上級單位 ID
 }
 
 export interface CompanyManagementContextType {

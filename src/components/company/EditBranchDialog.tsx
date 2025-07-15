@@ -2,147 +2,195 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import React from 'react';
-import { useCompanyManagementContext } from './CompanyManagementContext';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { branchService } from '@/services/branchService';
+import { useBranchStore } from '@/stores/branchStore';
+import { Branch } from '@/types/company';
+import React, { useEffect, useState } from 'react';
 
-const EditBranchDialog = () => {
-  const {
-    isEditBranchDialogOpen,
-    setIsEditBranchDialogOpen,
-    currentBranch,
-    setCurrentBranch,
-    handleEditBranch,
-  } = useCompanyManagementContext();
+interface EditBranchDialogProps {
+  open: boolean;
+  onClose: () => void;
+  branch: Branch | null;
+}
 
-  if (!currentBranch) {
+const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
+  const { toast } = useToast();
+  const { updateBranch, branches } = useBranchStore();
+
+  const [editedBranch, setEditedBranch] = useState<Partial<Branch>>({
+    name: '',
+    code: '',
+    address: '',
+    phone: '',
+    manager_name: '',
+    parent_branch_id: null,
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 當 branch 改變時，更新 editedBranch
+  useEffect(() => {
+    if (branch) {
+      setEditedBranch({
+        name: branch.name || '',
+        code: branch.code || '',
+        address: branch.address || '',
+        phone: branch.phone || '',
+        manager_name: branch.manager_name || '',
+        parent_branch_id: branch.parent_branch_id || null,
+      });
+    }
+  }, [branch]);
+
+  // 取得可選的父分支（排除自己）
+  const availableParentBranches = branches.filter(b => b.id !== branch?.id);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!branch) {
+      toast({
+        title: '錯誤',
+        description: '找不到要編輯的單位',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await branchService.updateBranch(branch.id, editedBranch);
+      updateBranch(branch.id, editedBranch);
+
+      toast({
+        title: '成功',
+        description: '單位更新成功',
+      });
+
+      onClose();
+    } catch (error) {
+      console.error('更新單位失敗:', error);
+      toast({
+        title: '錯誤',
+        description: error instanceof Error ? error.message : '更新單位失敗',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleInputChange = (field: keyof Branch, value: string) => {
+    setEditedBranch(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleParentBranchChange = (value: string) => {
+    setEditedBranch(prev => ({
+      ...prev,
+      parent_branch_id: value === 'none' ? null : value,
+    }));
+  };
+
+  // 如果沒有 branch 資料，不顯示對話框
+  if (!branch) {
     return null;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleEditBranch();
-  };
-
   return (
-    <Dialog open={isEditBranchDialogOpen} onOpenChange={setIsEditBranchDialogOpen}>
-      <DialogContent className="sm:max-w-[600px]">
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>編輯單位</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="edit-name">單位名稱 *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="name">單位名稱</Label>
               <Input
-                id="edit-name"
-                value={currentBranch.name}
-                onChange={e => setCurrentBranch({ ...currentBranch, name: e.target.value })}
+                id="name"
+                value={editedBranch.name}
+                onChange={e => handleInputChange('name', e.target.value)}
                 placeholder="請輸入單位名稱"
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="edit-code">單位代碼 *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="code">單位代碼</Label>
               <Input
-                id="edit-code"
-                value={currentBranch.code}
-                onChange={e => setCurrentBranch({ ...currentBranch, code: e.target.value })}
+                id="code"
+                value={editedBranch.code}
+                onChange={e => handleInputChange('code', e.target.value)}
                 placeholder="請輸入單位代碼"
                 required
               />
             </div>
           </div>
-
-          <div>
-            <Label htmlFor="edit-address">地址 *</Label>
+          <div className="space-y-2">
+            <Label htmlFor="parent_branch">上級單位</Label>
+            <Select
+              value={editedBranch.parent_branch_id || 'none'}
+              onValueChange={handleParentBranchChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="選擇上級單位" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">無上級單位</SelectItem>
+                {availableParentBranches.map(parentBranch => (
+                  <SelectItem key={parentBranch.id} value={parentBranch.id}>
+                    {parentBranch.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="address">地址</Label>
             <Input
-              id="edit-address"
-              value={currentBranch.address}
-              onChange={e => setCurrentBranch({ ...currentBranch, address: e.target.value })}
-              placeholder="請輸入完整地址"
+              id="address"
+              value={editedBranch.address}
+              onChange={e => handleInputChange('address', e.target.value)}
+              placeholder="請輸入地址"
               required
             />
           </div>
-
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="edit-phone">電話 *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="phone">電話</Label>
               <Input
-                id="edit-phone"
-                value={currentBranch.phone}
-                onChange={e => setCurrentBranch({ ...currentBranch, phone: e.target.value })}
-                placeholder="請輸入聯絡電話"
+                id="phone"
+                value={editedBranch.phone}
+                onChange={e => handleInputChange('phone', e.target.value)}
+                placeholder="請輸入電話"
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="edit-email">Email</Label>
+            <div className="space-y-2">
+              <Label htmlFor="manager">負責人</Label>
               <Input
-                id="edit-email"
-                type="email"
-                value={currentBranch.email || ''}
-                onChange={e => setCurrentBranch({ ...currentBranch, email: e.target.value })}
-                placeholder="請輸入Email地址"
+                id="manager"
+                value={editedBranch.manager_name}
+                onChange={e => handleInputChange('manager_name', e.target.value)}
+                placeholder="請輸入負責人"
               />
             </div>
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="edit-manager-name">負責人姓名</Label>
-              <Input
-                id="edit-manager-name"
-                value={currentBranch.manager_name || ''}
-                onChange={e => setCurrentBranch({ ...currentBranch, manager_name: e.target.value })}
-                placeholder="請輸入負責人姓名"
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-manager-contact">負責人聯絡方式</Label>
-              <Input
-                id="edit-manager-contact"
-                value={currentBranch.manager_contact || ''}
-                onChange={e =>
-                  setCurrentBranch({ ...currentBranch, manager_contact: e.target.value })
-                }
-                placeholder="請輸入負責人聯絡方式"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="edit-business-license">營業執照號碼</Label>
-            <Input
-              id="edit-business-license"
-              value={currentBranch.business_license || ''}
-              onChange={e =>
-                setCurrentBranch({ ...currentBranch, business_license: e.target.value })
-              }
-              placeholder="請輸入營業執照號碼"
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="edit-is-active"
-              checked={currentBranch.is_active}
-              onCheckedChange={checked =>
-                setCurrentBranch({ ...currentBranch, is_active: checked })
-              }
-            />
-            <Label htmlFor="edit-is-active">營運中</Label>
-          </div>
-
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsEditBranchDialogOpen(false)}
-            >
+          <div className="flex justify-end space-x-2">
+            <Button type="button" variant="outline" onClick={onClose}>
               取消
             </Button>
-            <Button type="submit">儲存</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? '更新中...' : '更新'}
+            </Button>
           </div>
         </form>
       </DialogContent>

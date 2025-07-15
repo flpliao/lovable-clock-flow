@@ -1,4 +1,3 @@
-import { DepartmentManagementProvider } from '@/components/departments/DepartmentManagementContext';
 import FeatureCards from '@/components/FeatureCards';
 import LocationCheckIn from '@/components/LocationCheckIn';
 import WelcomeSection from '@/components/WelcomeSection';
@@ -110,12 +109,10 @@ const Index = () => {
           <WelcomeSection userName={currentUser.name} />
         </div>
 
-        {/* 打卡區塊（壓縮下邊距） - 用 DepartmentManagementProvider 包裹 */}
-        <DepartmentManagementProvider>
-          <div className="w-full sm:px-6 lg:px-8 max-w-7xl mx-auto mb-[-8px] sm:mb-0 py-[10px] px-[15px]">
-            <LocationCheckIn />
-          </div>
-        </DepartmentManagementProvider>
+        {/* 打卡區塊（壓縮下邊距） */}
+        <div className="w-full sm:px-6 lg:px-8 max-w-7xl mx-auto mb-[-8px] sm:mb-0 py-[10px] px-[15px]">
+          <LocationCheckIn />
+        </div>
 
         {/* 功能卡片（完全貼上打卡區） */}
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-0">

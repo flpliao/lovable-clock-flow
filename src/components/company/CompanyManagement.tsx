@@ -2,9 +2,10 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsAdmin } from '@/hooks/useStores';
 import { useBranchStore } from '@/stores/branchStore';
+import { useCompanyStore } from '@/stores/companyStore';
 import { Branch } from '@/types/company';
 import { Building, MapPin, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AddBranchDialog from './AddBranchDialog';
 import BranchTable from './BranchTable';
 import EditBranchDialog from './EditBranchDialog';
@@ -14,16 +15,16 @@ import CheckInDistanceSettings from './components/CheckInDistanceSettings';
 import CheckpointTable from './components/CheckpointTable';
 import EditCheckpointDialog from './components/EditCheckpointDialog';
 import { Checkpoint, useCheckpoints } from './components/useCheckpoints';
-import { useCompanyStoreInitializer } from './hooks/useCompanyStoreInitializer';
-
 const CompanyManagement = () => {
   const isAdmin = useIsAdmin();
 
   // 使用 Zustand store
   const { branches } = useBranchStore();
+  const { loadCompany } = useCompanyStore();
 
-  // 初始化 store
-  useCompanyStoreInitializer();
+  useEffect(() => {
+    loadCompany();
+  }, [loadCompany]);
 
   // 本地狀態
   const [isAddBranchDialogOpen, setIsAddBranchDialogOpen] = useState(false);

@@ -106,14 +106,14 @@ export class branchService {
   }
 
   /**
-   * 從 Supabase 讀取全部單位資料，僅取 id 與 name 欄位
+   * 從 Supabase 讀取全部單位資料
    */
   static async loadBranchesSimple(): Promise<Branch[]> {
     console.log('🏬 branchService: 載入 branches ...');
 
     const { data, error } = await supabase
       .from('branches')
-      .select('id, name')
+      .select('*')
       .order('name', { ascending: true });
 
     if (error) {

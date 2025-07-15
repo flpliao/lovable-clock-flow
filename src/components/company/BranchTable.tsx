@@ -2,17 +2,39 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { branchService } from '@/services/branchService';
 import { useBranchStore } from '@/stores/branchStore';
+import { useCompanyStore } from '@/stores/companyStore';
 import { Branch } from '@/types/company';
 import { Building, Edit, MapPin, Phone, Trash2, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface BranchTableProps {
   onEdit: (branch: Branch) => void;
 }
 
 const BranchTable = ({ onEdit }: BranchTableProps) => {
-  const { branches, removeBranch } = useBranchStore();
+  const { branches, setBranches, removeBranch } = useBranchStore();
+  const { company } = useCompanyStore();
+  const [loading, setLoading] = useState(false);
 
   const isMobile = useIsMobile();
+
+  // 載入分支資料
+  useEffect(() => {
+    const loadBranches = async () => {
+      setLoading(true);
+      try {
+        const branchData = await branchService.loadBranches(company?.id);
+        setBranches(branchData);
+      } catch (error) {
+        console.error('載入分支資料失敗:', error);
+        setBranches([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBranches();
+  }, [setBranches, company?.id]);
 
   const handleDeleteBranch = async (id: string) => {
     if (window.confirm('確定要刪除此單位嗎？')) {
@@ -30,6 +52,16 @@ const BranchTable = ({ onEdit }: BranchTableProps) => {
   const handleEdit = (branch: Branch) => {
     onEdit(branch);
   };
+
+  // 載入中狀態
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+        <p className="text-white/70">正在載入單位資料...</p>
+      </div>
+    );
+  }
 
   // 如果沒有單位資料
   if (branches.length === 0) {

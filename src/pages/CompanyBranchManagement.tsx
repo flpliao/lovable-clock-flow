@@ -1,7 +1,6 @@
 import CompanyManagement from '@/components/company/CompanyManagement';
 import { CompanyBranchHeader } from '@/components/company/components/CompanyBranchHeader';
 import { CompanyBranchLayout } from '@/components/company/components/CompanyBranchLayout';
-import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 import { useUserLoaded } from '@/hooks/useStores';
 import { Loader2 } from 'lucide-react';
 
@@ -42,12 +41,10 @@ const CompanyBranchManagement = () => {
         style={{ animationDelay: '6s' }}
       ></div>
 
-      <StaffManagementProvider>
-        <CompanyBranchLayout>
-          <CompanyBranchHeader />
-          <CompanyManagement />
-        </CompanyBranchLayout>
-      </StaffManagementProvider>
+      <CompanyBranchLayout>
+        <CompanyBranchHeader />
+        <CompanyManagement />
+      </CompanyBranchLayout>
     </div>
   );
 };

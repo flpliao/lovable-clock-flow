@@ -160,7 +160,6 @@ const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
               value={editedBranch.address}
               onChange={e => handleInputChange('address', e.target.value)}
               placeholder="請輸入地址"
-              required
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -171,7 +170,6 @@ const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
                 value={editedBranch.phone}
                 onChange={e => handleInputChange('phone', e.target.value)}
                 placeholder="請輸入電話"
-                required
               />
             </div>
             <div className="space-y-2">

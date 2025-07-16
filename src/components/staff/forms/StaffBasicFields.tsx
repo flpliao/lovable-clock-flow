@@ -1,7 +1,6 @@
-
-import React from 'react';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import React from 'react';
 import { NewStaff } from '../types';
 
 interface StaffBasicFieldsProps {
@@ -19,41 +18,13 @@ export const StaffBasicFields: React.FC<StaffBasicFieldsProps> = ({ newStaff, se
         <Input
           id="name"
           value={newStaff.name}
-          onChange={(e) => setNewStaff({...newStaff, name: e.target.value})}
+          onChange={e => setNewStaff({ ...newStaff, name: e.target.value })}
           className="col-span-3 h-8 text-xs"
           placeholder="請輸入員工姓名"
           required
         />
       </div>
-      
-      <div className="grid grid-cols-4 items-center gap-3">
-        <Label htmlFor="position" className="text-right text-xs">
-          職位 <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="position"
-          value={newStaff.position}
-          onChange={(e) => setNewStaff({...newStaff, position: e.target.value})}
-          className="col-span-3 h-8 text-xs"
-          placeholder="請輸入職位"
-          required
-        />
-      </div>
-      
-      <div className="grid grid-cols-4 items-center gap-3">
-        <Label htmlFor="department" className="text-right text-xs">
-          部門 <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="department"
-          value={newStaff.department}
-          onChange={(e) => setNewStaff({...newStaff, department: e.target.value})}
-          className="col-span-3 h-8 text-xs"
-          placeholder="請輸入部門"
-          required
-        />
-      </div>
-      
+
       <div className="grid grid-cols-4 items-center gap-3">
         <Label htmlFor="contact" className="text-right text-xs">
           聯絡電話 <span className="text-red-500">*</span>
@@ -61,13 +32,13 @@ export const StaffBasicFields: React.FC<StaffBasicFieldsProps> = ({ newStaff, se
         <Input
           id="contact"
           value={newStaff.contact}
-          onChange={(e) => setNewStaff({...newStaff, contact: e.target.value})}
+          onChange={e => setNewStaff({ ...newStaff, contact: e.target.value })}
           className="col-span-3 h-8 text-xs"
           placeholder="請輸入聯絡電話"
           required
         />
       </div>
-      
+
       <div className="grid grid-cols-4 items-center gap-3">
         <Label htmlFor="email" className="text-right text-xs">
           電子郵件
@@ -76,12 +47,12 @@ export const StaffBasicFields: React.FC<StaffBasicFieldsProps> = ({ newStaff, se
           id="email"
           type="email"
           value={newStaff.email || ''}
-          onChange={(e) => setNewStaff({...newStaff, email: e.target.value})}
+          onChange={e => setNewStaff({ ...newStaff, email: e.target.value })}
           className="col-span-3 h-8 text-xs"
           placeholder="請輸入電子郵件"
         />
       </div>
-      
+
       <div className="grid grid-cols-4 items-center gap-3">
         <Label htmlFor="username" className="text-right text-xs">
           使用者名稱
@@ -89,12 +60,12 @@ export const StaffBasicFields: React.FC<StaffBasicFieldsProps> = ({ newStaff, se
         <Input
           id="username"
           value={newStaff.username || ''}
-          onChange={(e) => setNewStaff({...newStaff, username: e.target.value})}
+          onChange={e => setNewStaff({ ...newStaff, username: e.target.value })}
           className="col-span-3 h-8 text-xs"
           placeholder="請輸入使用者名稱"
         />
       </div>
-      
+
       <div className="grid grid-cols-4 items-center gap-3">
         <Label htmlFor="hire_date" className="text-right text-xs">
           入職日期
@@ -103,7 +74,7 @@ export const StaffBasicFields: React.FC<StaffBasicFieldsProps> = ({ newStaff, se
           id="hire_date"
           type="date"
           value={newStaff.hire_date || ''}
-          onChange={(e) => setNewStaff({...newStaff, hire_date: e.target.value})}
+          onChange={e => setNewStaff({ ...newStaff, hire_date: e.target.value })}
           className="col-span-3 h-8 text-xs"
         />
       </div>

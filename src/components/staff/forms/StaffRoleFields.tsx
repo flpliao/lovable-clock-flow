@@ -26,11 +26,11 @@ const StaffRoleFields: React.FC<StaffRoleFieldsProps> = ({ newStaff, setNewStaff
   return (
     <div className="grid grid-cols-4 items-center gap-3">
       <Label htmlFor="role" className="text-right text-xs">
-        角色
+        職位
       </Label>
       <Select value={newStaff.role_id} onValueChange={handleRoleChange}>
         <SelectTrigger className="col-span-3 h-8 text-xs" id="role">
-          <SelectValue placeholder="選擇角色" />
+          <SelectValue placeholder="選擇職位" />
         </SelectTrigger>
         <SelectContent>
           {roles.map(role => (

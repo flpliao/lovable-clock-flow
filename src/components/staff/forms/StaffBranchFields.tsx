@@ -7,8 +7,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { branchService } from '@/services/branchService';
+import { useBranchStore } from '@/stores/branchStore';
 import { useCompanyStore } from '@/stores/companyStore';
-import { Branch } from '@/types/company';
 import React, { useEffect, useState } from 'react';
 import { NewStaff } from '../types';
 
@@ -18,8 +18,9 @@ interface StaffBranchFieldsProps {
 }
 
 const StaffBranchFields: React.FC<StaffBranchFieldsProps> = ({ newStaff, setNewStaff }) => {
-  const [branches, setBranches] = useState<Branch[]>([]);
+  const { branches, setBranches } = useBranchStore();
   const { company } = useCompanyStore();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -28,15 +29,21 @@ const StaffBranchFields: React.FC<StaffBranchFieldsProps> = ({ newStaff, setNewS
         return;
       }
 
+      // 如果已經有分支數據，不需要重新載入
+      if (branches.length > 0) return;
+
+      setLoading(true);
       try {
         const data = await branchService.loadBranches(company.id);
         setBranches(data);
       } catch (error) {
         console.error('載入單位失敗:', error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchBranches();
-  }, [company?.id]);
+  }, [company?.id, setBranches, branches.length]);
 
   return (
     <div className="grid grid-cols-4 items-center gap-3">
@@ -53,9 +60,10 @@ const StaffBranchFields: React.FC<StaffBranchFieldsProps> = ({ newStaff, setNewS
             branch_name: selectedBranch?.name || '',
           });
         }}
+        disabled={loading}
       >
         <SelectTrigger className="col-span-3 h-8 text-xs" id="branch">
-          <SelectValue placeholder="選擇單位" />
+          <SelectValue placeholder={loading ? '載入中...' : '選擇單位'} />
         </SelectTrigger>
         <SelectContent>
           {branches.map(branch => (

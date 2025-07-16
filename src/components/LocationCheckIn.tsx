@@ -7,14 +7,14 @@ import CheckInCompletedStatus from '@/components/check-in/CheckInCompletedStatus
 import CheckInMethodSelector from '@/components/check-in/CheckInMethodSelector';
 import CheckInStatusInfo from '@/components/check-in/CheckInStatusInfo';
 import CheckInWarning from '@/components/check-in/CheckInWarning';
-import DepartmentLocationSelector from '@/components/check-in/DepartmentLocationSelector';
+import CheckpointSelector from '@/components/check-in/CheckpointSelector';
 import LocationCheckInHeader from '@/components/check-in/LocationCheckInHeader';
 import MissedCheckinDialog from '@/components/check-in/MissedCheckinDialog';
 import { useCheckpoints } from '@/components/company/components/useCheckpoints';
-import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
-import { CheckInRecord } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useIpCheckIn } from '@/hooks/useIpCheckIn';
+import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
+import { CheckInRecord } from '@/types';
 
 const LocationCheckIn = () => {
   const currentUser = useCurrentUser(); // 使用新的 Zustand hook
@@ -23,8 +23,6 @@ const LocationCheckIn = () => {
   const { createCheckInRecord, getTodayCheckInRecords } = useSupabaseCheckIn();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [distance, setDistance] = useState<number | null>(null);
   const [checkInMethod, setCheckInMethod] = useState<'location' | 'ip'>('location');
   const [actionType, setActionType] = useState<'check-in' | 'check-out'>('check-in');
   const [todayRecords, setTodayRecords] = useState<{
@@ -58,7 +56,6 @@ const LocationCheckIn = () => {
   const onLocationCheckIn = async () => {
     if (loading) return; // 防止重複觸發
     setLoading(true);
-    setError(null);
     try {
       if (!currentUser) throw new Error('請先登入');
       // 取得目前位置
@@ -88,7 +85,6 @@ const LocationCheckIn = () => {
         return Math.round(R * c);
       };
       const dist = getDistance(latitude, longitude, targetLat, targetLng);
-      setDistance(dist);
       // 距離限制（可自訂）
       const allowedDistance = 500;
       if (dist > allowedDistance) throw new Error(`距離${locationName}過遠 (${dist}公尺)`);
@@ -120,7 +116,6 @@ const LocationCheckIn = () => {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '位置打卡失敗';
-      setError(msg);
       toast({
         title: '打卡失敗',
         description: msg,
@@ -135,7 +130,6 @@ const LocationCheckIn = () => {
   const handleIpCheckIn = async () => {
     if (loading) return;
     setLoading(true);
-    setError(null);
     try {
       await onIpCheckIn();
       // 重新載入今日記錄
@@ -148,7 +142,6 @@ const LocationCheckIn = () => {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'IP打卡失敗';
-      setError(msg);
       toast({
         title: '打卡失敗',
         description: msg,
@@ -195,7 +188,7 @@ const LocationCheckIn = () => {
           canUseLocationCheckIn={true}
         />
         {checkInMethod === 'location' && (
-          <DepartmentLocationSelector
+          <CheckpointSelector
             selectedCheckpointId={selectedCheckpointId}
             onCheckpointChange={setSelectedCheckpointId}
           />

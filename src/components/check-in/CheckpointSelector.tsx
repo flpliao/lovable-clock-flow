@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useCheckpoints } from '@/components/company/components/useCheckpoints';
 import {
   Select,
   SelectContent,
@@ -7,18 +7,22 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MapPin } from 'lucide-react';
-import { useCheckpoints } from '@/components/company/components/useCheckpoints';
+import React, { useEffect } from 'react';
 
-interface DepartmentLocationSelectorProps {
+interface CheckpointSelectorProps {
   selectedCheckpointId: number | null;
   onCheckpointChange: (checkpointId: number | null) => void;
 }
 
-const DepartmentLocationSelector: React.FC<DepartmentLocationSelectorProps> = ({
+const CheckpointSelector: React.FC<CheckpointSelectorProps> = ({
   selectedCheckpointId,
   onCheckpointChange,
 }) => {
-  const { data: checkpoints, loading } = useCheckpoints();
+  const { data: checkpoints, loadCheckpoints, loading } = useCheckpoints();
+
+  useEffect(() => {
+    loadCheckpoints();
+  }, []);
 
   // 預設選擇第一個 checkpoint
   useEffect(() => {
@@ -32,7 +36,7 @@ const DepartmentLocationSelector: React.FC<DepartmentLocationSelectorProps> = ({
     <div className="space-y-2">
       <div className="flex items-center space-x-2 text-white/90 text-sm">
         <MapPin className="h-4 w-4" />
-        <span>選擇打卡位置:</span>
+        <span>選擇打卡點:</span>
       </div>
       <Select
         value={
@@ -62,4 +66,4 @@ const DepartmentLocationSelector: React.FC<DepartmentLocationSelectorProps> = ({
   );
 };
 
-export default DepartmentLocationSelector;
+export default CheckpointSelector;

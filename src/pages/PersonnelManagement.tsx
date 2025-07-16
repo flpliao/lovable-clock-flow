@@ -1,9 +1,20 @@
 import StaffManagement from '@/components/staff/StaffManagement';
 import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
+import { companyService } from '@/services/companyService';
+import { useCompanyStore } from '@/stores/companyStore';
 import { Users } from 'lucide-react';
+import { useEffect } from 'react';
 
 const PersonnelManagement = () => {
-  console.log('🎯 PersonnelManagement rendering');
+  const { company, setCompany } = useCompanyStore();
+  useEffect(() => {
+    if (company) return;
+    const loadCompany = async () => {
+      const data = await companyService.findCompany();
+      setCompany(data);
+    };
+    loadCompany();
+  }, [company, setCompany]);
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">

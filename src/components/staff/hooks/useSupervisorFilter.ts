@@ -1,6 +1,6 @@
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { Staff } from '../types';
 import { useMemo } from 'react';
+import { Staff } from '../types';
 
 export const useSupervisorFilter = (currentStaff: Staff | null) => {
   const { staffList } = useStaffManagementContext();
@@ -21,7 +21,7 @@ export const useSupervisorFilter = (currentStaff: Staff | null) => {
       }
 
       // 只顯示同部門的人員
-      if (staff.department !== currentStaff.department) {
+      if (staff.branch_id !== currentStaff.branch_id) {
         return false;
       }
 

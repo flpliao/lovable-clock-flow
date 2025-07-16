@@ -1837,10 +1837,10 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'staff_supervisor_id_fkey';
-            columns: ['supervisor_id'];
+            foreignKeyName: 'staff_role_id_fkey';
+            columns: ['role_id'];
             isOneToOne: false;
-            referencedRelation: 'staff';
+            referencedRelation: 'staff_roles';
             referencedColumns: ['id'];
           },
           {

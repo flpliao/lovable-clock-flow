@@ -14,6 +14,7 @@ export interface Staff {
   username?: string;
   hire_date?: string;
   supervisor_id?: string;
+  supervisor_name?: string;
   user_id?: string;
   role_id: string;
   created_at?: string;

@@ -59,11 +59,7 @@ export const StaffList: React.FC<StaffListProps> = ({
               <TableCell className="font-medium">{staff.name || '未設定姓名'}</TableCell>
               <TableCell>{staff.branch_name || '未設定'}</TableCell>
               <TableCell>{staff.email || '未設定'}</TableCell>
-              <TableCell>
-                {staff.supervisor_id
-                  ? staffList.find(s => s.id === staff.supervisor_id)?.name || '未設定'
-                  : '未設定'}
-              </TableCell>
+              <TableCell>{staff.supervisor_name || '未設定'}</TableCell>
               <TableCell>{staff.role_name || '未設定'}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end space-x-2">

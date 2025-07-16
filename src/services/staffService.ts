@@ -66,7 +66,12 @@ export class staffService {
       }
 
       console.log('✅ StaffApiService: 員工新增成功', data);
-      return data;
+      // 補齊型別需要但查詢不會帶回的欄位
+      return {
+        ...data,
+        branch_name: data.branch_name || '',
+        role_name: '',
+      };
     } catch (error) {
       console.error('❌ StaffApiService: 系統錯誤:', error);
       throw error;
@@ -74,13 +79,20 @@ export class staffService {
   }
 
   static async updateStaff(id: string, updateData: Partial<Staff>): Promise<Staff> {
-    console.log('📝 StaffApiService: 準備更新員工', { id, updateData });
+    // 過濾掉關聯欄位
+    const {
+      branch: _branch,
+      staff_role: _staff_role,
+      role_name: _role_name,
+      supervisor_name: _supervisor_name,
+      ...pureUpdateData
+    } = updateData;
 
     try {
       const { data, error } = await supabase
         .from('staff')
         .update({
-          ...updateData,
+          ...pureUpdateData,
           updated_at: new Date().toISOString(),
         })
         .eq('id', id)
@@ -88,12 +100,14 @@ export class staffService {
         .single();
 
       if (error) {
-        console.error('❌ StaffApiService: 更新錯誤:', error);
         throw new Error(`更新員工失敗: ${error.message}`);
       }
 
-      console.log('✅ StaffApiService: 員工更新成功', data);
-      return data;
+      return {
+        ...data,
+        branch_name: data.branch_name || '',
+        role_name: '',
+      };
     } catch (error) {
       console.error('❌ StaffApiService: 更新系統錯誤:', error);
       throw error;

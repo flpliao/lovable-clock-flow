@@ -7,8 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { permissionService } from '@/services/simplifiedPermissionService';
 import { roleService } from '@/services/roleService';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { useEffect, useState } from 'react';
 import { SYSTEM_ROLES } from './constants/systemRoles';
 import AddStaffForm from './forms/AddStaffForm';
@@ -66,7 +66,7 @@ const AddStaffDialog = ({ open, onOpenChange, onSuccess }: AddStaffDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-base">新增人員</DialogTitle>
           <DialogDescription className="text-xs">新增員工至系統</DialogDescription>

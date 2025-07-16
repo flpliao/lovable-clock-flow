@@ -13,7 +13,7 @@ interface AddStaffFormProps {
 
 const AddStaffForm: React.FC<AddStaffFormProps> = ({ newStaff, setNewStaff, roles }) => {
   return (
-    <div className="grid gap-3 py-2">
+    <div className="grid gap-4 py-4">
       <StaffBasicFields newStaff={newStaff} setNewStaff={setNewStaff} />
       {/* <StaffDepartmentFields newStaff={newStaff} setNewStaff={setNewStaff} /> */}
       <StaffBranchFields newStaff={newStaff} setNewStaff={setNewStaff} />

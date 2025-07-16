@@ -1,4 +1,3 @@
-import React from 'react';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -7,8 +6,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { NewStaff } from '../types';
 import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import React from 'react';
+import { NewStaff } from '../types';
 
 interface StaffSupervisorFieldsProps {
   newStaff: NewStaff;
@@ -29,24 +29,24 @@ const StaffSupervisorFields: React.FC<StaffSupervisorFieldsProps> = ({ newStaff,
   });
 
   return (
-    <div className="grid grid-cols-4 items-center gap-3">
-      <Label htmlFor="supervisor" className="text-right text-xs">
-        主管
+    <div className="grid grid-cols-4 items-center gap-4">
+      <Label htmlFor="supervisor" className="text-right">
+        直屬主管
       </Label>
       <Select
-        value={newStaff.supervisor_id || ''}
-        onValueChange={value => setNewStaff({ ...newStaff, supervisor_id: value || undefined })}
+        value={newStaff.supervisor_id || 'none'}
+        onValueChange={value =>
+          setNewStaff({ ...newStaff, supervisor_id: value === 'none' ? undefined : value })
+        }
       >
-        <SelectTrigger className="col-span-3 h-8 text-xs" id="supervisor">
-          <SelectValue placeholder="選擇主管" />
+        <SelectTrigger className="col-span-3" id="supervisor">
+          <SelectValue placeholder="選擇直屬主管" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="" className="text-xs">
-            無主管
-          </SelectItem>
+          <SelectItem value="none">無直屬主管</SelectItem>
           {potentialSupervisors.map(staff => (
-            <SelectItem key={staff.id} value={staff.id} className="text-xs">
-              {staff.name} ({staff.position}) - {staff.department}
+            <SelectItem key={staff.id} value={staff.id}>
+              {staff.name} - {staff.position} ({staff.department})
             </SelectItem>
           ))}
         </SelectContent>

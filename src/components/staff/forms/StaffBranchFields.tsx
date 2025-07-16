@@ -46,8 +46,8 @@ const StaffBranchFields: React.FC<StaffBranchFieldsProps> = ({ newStaff, setNewS
   }, [company?.id, setBranches, branches.length]);
 
   return (
-    <div className="grid grid-cols-4 items-center gap-3">
-      <Label htmlFor="branch" className="text-right text-xs">
+    <div className="grid grid-cols-4 items-center gap-4">
+      <Label htmlFor="branch" className="text-right">
         單位
       </Label>
       <Select
@@ -62,12 +62,12 @@ const StaffBranchFields: React.FC<StaffBranchFieldsProps> = ({ newStaff, setNewS
         }}
         disabled={loading}
       >
-        <SelectTrigger className="col-span-3 h-8 text-xs" id="branch">
+        <SelectTrigger className="col-span-3" id="branch">
           <SelectValue placeholder={loading ? '載入中...' : '選擇單位'} />
         </SelectTrigger>
         <SelectContent>
           {branches.map(branch => (
-            <SelectItem key={branch.id} value={branch.id} className="text-xs">
+            <SelectItem key={branch.id} value={branch.id}>
               {branch.name}
             </SelectItem>
           ))}

@@ -1,7 +1,5 @@
-import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -9,7 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import React from 'react';
 import TimeInput from './TimeInput';
 
 export interface MissedCheckinFormData {
@@ -67,7 +66,7 @@ const MissedCheckinFormFields: React.FC<MissedCheckinFormFieldsProps> = ({
       {formData.missed_type === 'check_in' && (
         <TimeInput
           id="check_in_time"
-          label="預計上班時間"
+          label="上班時間"
           value={formData.requested_check_in_time}
           onChange={value => handleFieldChange('requested_check_in_time', value)}
           required={formData.missed_type === 'check_in'}
@@ -77,7 +76,7 @@ const MissedCheckinFormFields: React.FC<MissedCheckinFormFieldsProps> = ({
       {formData.missed_type === 'check_out' && (
         <TimeInput
           id="check_out_time"
-          label="預計下班時間"
+          label="下班時間"
           value={formData.requested_check_out_time}
           onChange={value => handleFieldChange('requested_check_out_time', value)}
           required={formData.missed_type === 'check_out'}

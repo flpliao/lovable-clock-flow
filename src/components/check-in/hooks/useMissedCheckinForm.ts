@@ -1,8 +1,7 @@
-import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { useCurrentUser } from '@/hooks/useStores';
-import { MissedCheckinRequest } from '@/types/missedCheckin';
+import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 
 export interface MissedCheckinFormData {
   request_date: string;
@@ -135,11 +134,11 @@ export const useMissedCheckinForm = (onSuccess: () => void) => {
     }
 
     if (formData.missed_type === 'check_in' && !formData.requested_check_in_time) {
-      return '請填寫預計上班時間';
+      return '請填寫上班時間';
     }
 
     if (formData.missed_type === 'check_out' && !formData.requested_check_out_time) {
-      return '請填寫預計下班時間';
+      return '請填寫下班時間';
     }
 
     return null;

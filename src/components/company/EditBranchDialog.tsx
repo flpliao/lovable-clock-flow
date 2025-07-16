@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import RequiredLabel from '@/components/ui/RequiredLabel';
 import {
   Select,
   SelectContent,
@@ -114,7 +115,7 @@ const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">單位名稱</Label>
+              <RequiredLabel htmlFor="name">單位名稱</RequiredLabel>
               <Input
                 id="name"
                 value={editedBranch.name}
@@ -124,7 +125,7 @@ const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="code">單位代碼</Label>
+              <RequiredLabel htmlFor="code">單位代碼</RequiredLabel>
               <Input
                 id="code"
                 value={editedBranch.code}

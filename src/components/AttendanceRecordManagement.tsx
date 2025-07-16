@@ -114,11 +114,7 @@ const AttendanceRecordManagement: React.FC = () => {
   }, []);
 
   const canCreateMissedRequests = useMemo(() => {
-    return (
-      permissionService.hasPermission('missed_checkin:create') ||
-      permissionService.hasPermission('missed_checkin:manage') ||
-      permissionService.isAdmin()
-    );
+    return permissionService.hasPermission('missed_checkin:manage') || permissionService.isAdmin();
   }, []);
 
   // 資料狀態
@@ -671,6 +667,16 @@ const AttendanceRecordManagement: React.FC = () => {
 
   // 刪除打卡記錄
   const handleDeleteRecord = async (recordId: string) => {
+    // 權限檢查
+    if (!canDeleteRecords) {
+      toast({
+        title: '權限不足',
+        description: '您沒有權限刪除打卡記錄',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase.from('check_in_records').delete().eq('id', recordId);
 
@@ -695,6 +701,16 @@ const AttendanceRecordManagement: React.FC = () => {
 
   // 忘打卡補登
   const handleMissedCheckinCompensation = async (record: AttendanceAnomalyRecord) => {
+    // 權限檢查
+    if (!canCreateMissedRequests) {
+      toast({
+        title: '權限不足',
+        description: '您沒有權限執行忘打卡補登操作',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!record.schedule) {
       toast({
         title: '補登失敗',

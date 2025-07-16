@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import type { Checkpoint } from '@/services/checkpointService';
 import React, { useState } from 'react';
-import { addCheckpoint, Checkpoint } from './useCheckpoints';
+import { useCheckpoints } from './useCheckpoints';
 
 const AddCheckpointDialog = ({
   open,
@@ -13,6 +14,7 @@ const AddCheckpointDialog = ({
   onClose: () => void;
   onSuccess?: () => void;
 }) => {
+  const { addCheckpoint } = useCheckpoints();
   const [name, setName] = useState('');
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
@@ -28,7 +30,7 @@ const AddCheckpointDialog = ({
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),
         check_in_radius: parseFloat(checkInRadius),
-      } as Checkpoint);
+      } as Omit<Checkpoint, 'id' | 'created_at'>);
       setName('');
       setLatitude('');
       setLongitude('');

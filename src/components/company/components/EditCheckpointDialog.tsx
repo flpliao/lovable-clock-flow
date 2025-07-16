@@ -8,8 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import type { Checkpoint } from '@/services/checkpointService';
 import React, { useEffect, useState } from 'react';
-import { Checkpoint, updateCheckpoint } from './useCheckpoints';
+import { useCheckpoints } from './useCheckpoints';
 
 const EditCheckpointDialog = ({
   open,
@@ -22,6 +23,7 @@ const EditCheckpointDialog = ({
   checkpoint: Checkpoint | null;
   onSuccess?: () => void;
 }) => {
+  const { updateCheckpoint } = useCheckpoints();
   const [name, setName] = useState('');
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');

@@ -1,50 +1,73 @@
-import { supabase } from '@/integrations/supabase/client';
-import { useEffect, useState } from 'react';
+import { CheckpointService, type Checkpoint } from '@/services/checkpointService';
+import { useCheckpointStore } from '@/stores/checkpointStore';
+import { useState } from 'react';
 
-export interface Checkpoint {
-  id: number;
-  name: string;
-  latitude: number;
-  longitude: number;
-  check_in_radius: number;
-  created_at: string;
-  disabled_at: string | null;
-}
+// 重新導出 Checkpoint 介面，保持向後相容性
+export type { Checkpoint } from '@/services/checkpointService';
 
 export function useCheckpoints() {
-  const [data, setData] = useState<Checkpoint[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const {
+    checkpoints: data,
+    setCheckpoints,
+    addCheckpoint: addToStore,
+    updateCheckpoint: updateInStore,
+    removeCheckpoint: removeFromStore,
+  } = useCheckpointStore();
 
-  const fetchCheckpoints = async () => {
+  const loadCheckpoints = async () => {
+    if (data.length > 0) return;
+
     setLoading(true);
-    const { data, error } = await supabase
-      .from('checkpoints')
-      .select('*')
-      .order('id', { ascending: true });
-    if (!error && data) setData(data as Checkpoint[]);
-    setLoading(false);
+    try {
+      const checkpoints = await CheckpointService.loadCheckpoints();
+      setCheckpoints(checkpoints);
+    } catch (error) {
+      console.error('載入打卡點失敗:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    fetchCheckpoints();
-  }, []);
+  const addCheckpoint = async (checkpoint: Omit<Checkpoint, 'id' | 'created_at'>) => {
+    try {
+      const newCheckpoints = await CheckpointService.addCheckpoint(checkpoint);
+      addToStore(newCheckpoints[0]);
+    } catch (error) {
+      console.error('新增打卡點失敗:', error);
+      throw error;
+    }
+  };
 
-  return { data, loading, refresh: fetchCheckpoints };
+  const updateCheckpoint = async (id: number, checkpoint: Partial<Checkpoint>) => {
+    try {
+      const updatedCheckpoints = await CheckpointService.updateCheckpoint(id, checkpoint);
+      updateInStore(id, updatedCheckpoints[0]);
+    } catch (error) {
+      console.error('更新打卡點失敗:', error);
+      throw error;
+    }
+  };
+
+  const deleteCheckpoint = async (id: number) => {
+    try {
+      await CheckpointService.deleteCheckpoint(id);
+      removeFromStore(id);
+    } catch (error) {
+      console.error('刪除打卡點失敗:', error);
+      throw error;
+    }
+  };
+
+  return {
+    data,
+    loading,
+    refresh: loadCheckpoints,
+    addCheckpoint,
+    updateCheckpoint,
+    deleteCheckpoint,
+  };
 }
 
-export async function addCheckpoint(payload: Omit<Checkpoint, 'id' | 'created_at'>) {
-  const { data, error } = await supabase.from('checkpoints').insert([payload]).select();
-  if (error) throw error;
-  return data;
-}
-
-export async function updateCheckpoint(id: number, payload: Partial<Checkpoint>) {
-  const { data, error } = await supabase.from('checkpoints').update(payload).eq('id', id).select();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteCheckpoint(id: number) {
-  const { error } = await supabase.from('checkpoints').delete().eq('id', id);
-  if (error) throw error;
-}
+// 重新導出服務方法，保持向後相容性
+export { CheckpointService } from '@/services/checkpointService';

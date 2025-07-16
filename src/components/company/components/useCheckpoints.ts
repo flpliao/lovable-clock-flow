@@ -62,12 +62,10 @@ export function useCheckpoints() {
   return {
     data,
     loading,
+    loadCheckpoints: loadCheckpoints,
     refresh: loadCheckpoints,
     addCheckpoint,
     updateCheckpoint,
     deleteCheckpoint,
   };
 }
-
-// 重新導出服務方法，保持向後相容性
-export { CheckpointService } from '@/services/checkpointService';

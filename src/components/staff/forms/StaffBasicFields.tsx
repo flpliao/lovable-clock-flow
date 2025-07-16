@@ -26,22 +26,8 @@ export const StaffBasicFields: React.FC<StaffBasicFieldsProps> = ({ newStaff, se
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="contact" className="text-right">
-          聯絡電話 <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="contact"
-          value={newStaff.contact}
-          onChange={e => setNewStaff({ ...newStaff, contact: e.target.value })}
-          className="col-span-3"
-          placeholder="請輸入聯絡電話"
-          required
-        />
-      </div>
-
-      <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="email" className="text-right">
-          電子郵件
+          電子郵件 <span className="text-red-500">*</span>
         </Label>
         <Input
           id="email"
@@ -50,6 +36,20 @@ export const StaffBasicFields: React.FC<StaffBasicFieldsProps> = ({ newStaff, se
           onChange={e => setNewStaff({ ...newStaff, email: e.target.value })}
           className="col-span-3"
           placeholder="請輸入電子郵件"
+        />
+      </div>
+
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="contact" className="text-right">
+          聯絡電話
+        </Label>
+        <Input
+          id="contact"
+          value={newStaff.contact}
+          onChange={e => setNewStaff({ ...newStaff, contact: e.target.value })}
+          className="col-span-3"
+          placeholder="請輸入聯絡電話"
+          required
         />
       </div>
 

@@ -5,6 +5,7 @@ export interface Staff {
   department: string;
   branch_id: string;
   branch_name: string;
+  role_name: string;
   contact: string;
   email?: string;
   username?: string;

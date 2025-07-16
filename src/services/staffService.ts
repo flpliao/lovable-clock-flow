@@ -3,22 +3,23 @@ import { supabase } from '@/integrations/supabase/client';
 
 export class staffService {
   static async loadStaffList(): Promise<Staff[]> {
-    console.log('📝 StaffApiService: 載入員工列表');
+    const { data, error } = await supabase
+      .from('staff')
+      .select('*, branch:branch_id(name), staff_role:role_id(name)')
+      .order('name');
 
-    try {
-      const { data, error } = await supabase.from('staff').select('*').order('name');
-
-      if (error) {
-        console.error('❌ StaffApiService: 載入失敗:', error);
-        throw new Error(`載入員工列表失敗: ${error.message}`);
-      }
-
-      console.log(`✅ StaffApiService: 載入成功，共 ${data?.length || 0} 筆資料`);
-      return data || [];
-    } catch (error) {
-      console.error('❌ StaffApiService: 系統錯誤:', error);
-      throw error;
+    if (error) {
+      throw new Error(`載入員工列表失敗: ${error.message}`);
     }
+
+    // 將 branch.name 與 role.name 寫入對應欄位
+    const staffList = (data || []).map(staff => ({
+      ...staff,
+      branch_name: staff.branch?.name || '',
+      role_name: staff.staff_role?.name || '',
+    }));
+
+    return staffList;
   }
 
   static async addStaff(staffData: NewStaff): Promise<Staff> {

@@ -6,8 +6,6 @@ export class branchService {
    * 載入指定公司的所有分支機構
    */
   static async loadBranches(companyId: string): Promise<Branch[]> {
-    console.log('🔍 branchService: 載入單位...', companyId);
-
     try {
       const { data, error } = await supabase
         .from('branches')
@@ -16,11 +14,9 @@ export class branchService {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('❌ branchService: 載入單位失敗:', error);
         throw new Error(`載入單位失敗: ${error.message}`);
       }
 
-      console.log('✅ branchService: 載入單位成功:', data?.length || 0, '筆');
       return (data as Branch[]) || [];
     } catch (error) {
       console.error('💥 branchService: 載入單位時發生錯誤:', error);
@@ -32,8 +28,6 @@ export class branchService {
    * 新增分支機構
    */
   static async addBranch(companyId: string, branchData: NewBranch): Promise<Branch> {
-    console.log('➕ branchService: 新增單位:', branchData);
-
     try {
       const { data, error } = await supabase
         .from('branches')
@@ -45,11 +39,9 @@ export class branchService {
         .single();
 
       if (error) {
-        console.error('❌ branchService: 新增單位失敗:', error);
         throw new Error(`新增單位失敗: ${error.message}`);
       }
 
-      console.log('✅ branchService: 新增單位成功');
       return data as Branch;
     } catch (error) {
       console.error('💥 branchService: 新增單位時發生錯誤:', error);
@@ -61,8 +53,6 @@ export class branchService {
    * 更新分支機構
    */
   static async updateBranch(branchId: string, branchData: Partial<Branch>): Promise<void> {
-    console.log('🔄 branchService: 更新單位:', branchId, branchData);
-
     try {
       const { error } = await supabase
         .from('branches')
@@ -76,8 +66,6 @@ export class branchService {
         console.error('❌ branchService: 更新單位失敗:', error);
         throw new Error(`更新單位失敗: ${error.message}`);
       }
-
-      console.log('✅ branchService: 更新單位成功');
     } catch (error) {
       console.error('💥 branchService: 更新單位時發生錯誤:', error);
       throw error;
@@ -88,8 +76,6 @@ export class branchService {
    * 刪除分支機構
    */
   static async deleteBranch(branchId: string): Promise<void> {
-    console.log('🗑️ branchService: 刪除單位:', branchId);
-
     try {
       // 檢查是否為其他單位的上層單位
       const { data, error: checkError } = await supabase
@@ -114,11 +100,8 @@ export class branchService {
       const { error } = await supabase.from('branches').delete().eq('id', branchId);
 
       if (error) {
-        console.error('❌ branchService: 刪除單位失敗:', error);
         throw new Error(`刪除單位失敗: ${error.message}`);
       }
-
-      console.log('✅ branchService: 刪除單位成功');
     } catch (error) {
       console.error('💥 branchService: 刪除單位時發生錯誤:', error);
       throw error;
@@ -129,8 +112,6 @@ export class branchService {
    * 從 Supabase 讀取全部單位資料
    */
   static async loadBranchesSimple(): Promise<Branch[]> {
-    console.log('🏬 branchService: 載入 branches ...');
-
     const { data, error } = await supabase
       .from('branches')
       .select('*')
@@ -141,7 +122,6 @@ export class branchService {
       throw new Error(`載入單位失敗: ${error.message}`);
     }
 
-    console.log(`✅ branchService: 取得 ${data?.length || 0} 筆 branches`);
     return (data || []) as Branch[];
   }
 }

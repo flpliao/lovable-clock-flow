@@ -86,15 +86,12 @@ export class roleService {
   // 載入所有職位及其權限
   static async loadRoles(): Promise<StaffRole[]> {
     try {
-      console.log('🔄 從後台載入職位資料...');
-
       const { data, error } = await supabase
         .from('staff_roles')
         .select('*')
         .order('created_at', { ascending: true });
 
       if (error) {
-        console.error('❌ 載入職位資料失敗:', error);
         throw error;
       }
 
@@ -113,7 +110,6 @@ export class roleService {
         })
       );
 
-      console.log('✅ 職位資料載入成功:', transformedRoles.length, '個職位');
       return transformedRoles;
     } catch (error) {
       console.error('❌ 載入職位資料系統錯誤:', error);
@@ -124,8 +120,6 @@ export class roleService {
   // 載入職位權限
   static async loadRolePermissions(roleId: string) {
     try {
-      console.log('🔄 載入職位權限:', roleId);
-
       const { data, error } = await supabase
         .from('role_permissions')
         .select(
@@ -143,7 +137,6 @@ export class roleService {
         .eq('role_id', roleId);
 
       if (error) {
-        console.error('❌ 載入職位權限失敗:', error);
         return [];
       }
 
@@ -157,12 +150,6 @@ export class roleService {
           category: item.permissions.category,
         }));
 
-      console.log('✅ 職位權限載入成功:', roleId, '共', permissions.length, '個權限');
-      console.log(
-        '📋 權限詳細:',
-        permissions.map(p => ({ id: p.id, name: p.name, category: p.category }))
-      );
-
       return permissions;
     } catch (error) {
       console.error('❌ 載入職位權限系統錯誤:', error);
@@ -173,8 +160,6 @@ export class roleService {
   // 載入所有可用權限
   static async loadAllPermissions() {
     try {
-      console.log('🔄 載入所有可用權限...');
-
       const { data, error } = await supabase
         .from('permissions')
         .select('*')
@@ -182,7 +167,6 @@ export class roleService {
         .order('name', { ascending: true });
 
       if (error) {
-        console.error('❌ 載入權限資料失敗:', error);
         return [];
       }
 
@@ -194,18 +178,6 @@ export class roleService {
         category: permission.category || 'general',
       }));
 
-      console.log('✅ 權限資料載入成功:', permissions.length, '個權限');
-      console.log(
-        '📊 權限分類統計:',
-        permissions.reduce(
-          (acc, p) => {
-            acc[p.category] = (acc[p.category] || 0) + 1;
-            return acc;
-          },
-          {} as Record<string, number>
-        )
-      );
-
       return permissions;
     } catch (error) {
       console.error('❌ 載入權限資料系統錯誤:', error);
@@ -216,8 +188,6 @@ export class roleService {
   // 新增職位
   static async createRole(newRole: NewStaffRole): Promise<StaffRole> {
     try {
-      console.log('🔄 新增職位到後台:', newRole.name);
-
       const { data, error } = await supabase
         .from('staff_roles')
         .insert({
@@ -230,7 +200,6 @@ export class roleService {
         .single();
 
       if (error) {
-        console.error('❌ 新增職位失敗:', error);
         throw error;
       }
 
@@ -245,7 +214,6 @@ export class roleService {
         is_system_role: data.is_system_role,
       };
 
-      console.log('✅ 職位新增成功:', createdRole.name);
       return createdRole;
     } catch (error) {
       console.error('❌ 新增職位系統錯誤:', error);
@@ -256,15 +224,8 @@ export class roleService {
   // 更新職位
   static async updateRoleWithPermissions(role: StaffRole): Promise<StaffRole> {
     try {
-      console.log('🔄 更新職位到後台:', role.name, '權限數量:', role.permissions.length);
-      console.log(
-        '📋 權限詳細資料:',
-        role.permissions.map(p => ({ id: p.id, name: p.name }))
-      );
-
       // 先驗證權限ID是否存在
       const validPermissions = await this.validatePermissions(role.permissions);
-      console.log('🔍 驗證權限結果:', validPermissions.length, '個有效權限');
 
       // 更新職位基本資料
       const { data, error } = await supabase
@@ -279,7 +240,6 @@ export class roleService {
         .single();
 
       if (error) {
-        console.error('❌ 更新職位失敗:', error);
         throw error;
       }
 
@@ -288,7 +248,6 @@ export class roleService {
 
       // 驗證權限是否正確儲存
       const savedPermissions = await this.loadRolePermissions(role.id);
-      console.log('🔍 驗證儲存的權限:', savedPermissions.length, '個');
 
       const updatedRole: StaffRole = {
         id: data.id,
@@ -298,12 +257,6 @@ export class roleService {
         is_system_role: data.is_system_role,
       };
 
-      console.log(
-        '✅ 職位更新成功:',
-        updatedRole.name,
-        '權限數量:',
-        updatedRole.permissions.length
-      );
       return updatedRole;
     } catch (error) {
       console.error('❌ 更新職位系統錯誤:', error);
@@ -314,14 +267,11 @@ export class roleService {
   // 驗證權限ID是否有效
   static async validatePermissions(permissions: Permission[]) {
     try {
-      console.log('🔍 驗證權限ID有效性...');
-
       if (!permissions || permissions.length === 0) {
         return [];
       }
 
       const permissionIds = permissions.map(p => p.id);
-      console.log('📋 要驗證的權限ID:', permissionIds);
 
       const { data, error } = await supabase
         .from('permissions')
@@ -329,18 +279,10 @@ export class roleService {
         .in('id', permissionIds);
 
       if (error) {
-        console.error('❌ 驗證權限失敗:', error);
         return [];
       }
 
-      const validPermissions = data || [];
-      console.log('✅ 有效權限:', validPermissions.length, '個');
-      console.log(
-        '📋 有效權限詳細:',
-        validPermissions.map(p => ({ id: p.id, name: p.name }))
-      );
-
-      return validPermissions;
+      return data || [];
     } catch (error) {
       console.error('❌ 驗證權限系統錯誤:', error);
       return [];
@@ -350,12 +292,6 @@ export class roleService {
   // 儲存職位權限
   static async saveRolePermissions(roleId: string, permissions: Permission[]) {
     try {
-      console.log('🔄 儲存職位權限:', roleId, '權限數量:', permissions.length);
-      console.log(
-        '📋 要儲存的權限ID:',
-        permissions.map(p => p.id)
-      );
-
       // 先刪除現有權限
       const { error: deleteError } = await supabase
         .from('role_permissions')
@@ -363,11 +299,8 @@ export class roleService {
         .eq('role_id', roleId);
 
       if (deleteError) {
-        console.error('❌ 刪除舊權限失敗:', deleteError);
         throw deleteError;
       }
-
-      console.log('✅ 舊權限已清除');
 
       // 插入新權限（只有當權限陣列不為空時）
       if (permissions.length > 0) {
@@ -376,21 +309,14 @@ export class roleService {
           permission_id: permission.id,
         }));
 
-        console.log('🔄 準備插入權限資料:', permissionData);
-
         const { error: insertError } = await supabase
           .from('role_permissions')
           .insert(permissionData);
 
         if (insertError) {
-          console.error('❌ 儲存職位權限失敗:', insertError);
           throw insertError;
         }
-
-        console.log('✅ 新權限已儲存');
       }
-
-      console.log('✅ 職位權限儲存成功:', permissions.length, '個權限');
     } catch (error) {
       console.error('❌ 儲存職位權限系統錯誤:', error);
       throw error;
@@ -400,8 +326,6 @@ export class roleService {
   // 刪除職位（進階版本，包含權限清理）
   static async deleteRole(roleId: string): Promise<void> {
     try {
-      console.log('🔄 從後台刪除職位:', roleId);
-
       // 先刪除職位權限
       await supabase.from('role_permissions').delete().eq('role_id', roleId);
 
@@ -409,11 +333,8 @@ export class roleService {
       const { error } = await supabase.from('staff_roles').delete().eq('id', roleId);
 
       if (error) {
-        console.error('❌ 刪除職位失敗:', error);
         throw error;
       }
-
-      console.log('✅ 職位刪除成功:', roleId);
     } catch (error) {
       console.error('❌ 刪除職位系統錯誤:', error);
       throw error;

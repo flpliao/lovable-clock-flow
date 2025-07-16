@@ -12,11 +12,18 @@ export class staffService {
       throw new Error(`載入員工列表失敗: ${error.message}`);
     }
 
-    // 將 branch.name 與 role.name 寫入對應欄位
+    // 先建立 id -> name 的對照表
+    const idNameMap = new Map<string, string>();
+    (data || []).forEach(staff => {
+      if (staff.id && staff.name) idNameMap.set(staff.id, staff.name);
+    });
+
+    // 將 branch.name、role.name、supervisor_name 寫入對應欄位
     const staffList = (data || []).map(staff => ({
       ...staff,
       branch_name: staff.branch?.name || '',
       role_name: staff.staff_role?.name || '',
+      supervisor_name: staff.supervisor_id ? idNameMap.get(staff.supervisor_id) || '' : '',
     }));
 
     return staffList;
@@ -66,7 +73,13 @@ export class staffService {
       }
 
       console.log('✅ StaffApiService: 員工新增成功', data);
-      return data;
+      // 補齊 role_name、branch_name、supervisor_name
+      return {
+        ...data,
+        role_name: '',
+        branch_name: data.branch_name || '',
+        supervisor_name: '',
+      };
     } catch (error) {
       console.error('❌ StaffApiService: 系統錯誤:', error);
       throw error;
@@ -93,7 +106,13 @@ export class staffService {
       }
 
       console.log('✅ StaffApiService: 員工更新成功', data);
-      return data;
+      // 補齊 role_name、branch_name、supervisor_name
+      return {
+        ...data,
+        role_name: '',
+        branch_name: data.branch_name || '',
+        supervisor_name: '',
+      };
     } catch (error) {
       console.error('❌ StaffApiService: 更新系統錯誤:', error);
       throw error;

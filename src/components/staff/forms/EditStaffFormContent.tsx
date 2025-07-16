@@ -1,11 +1,9 @@
-
 import React from 'react';
 import { Staff, StaffRole } from '../types';
 import { EditStaffBasicFields } from './EditStaffBasicFields';
-import { EditStaffDepartmentField } from './EditStaffDepartmentField';
 import { EditStaffBranchField } from './EditStaffBranchField';
-import { EditStaffSupervisorField } from './EditStaffSupervisorField';
 import { EditStaffRoleField } from './EditStaffRoleField';
+import { EditStaffSupervisorField } from './EditStaffSupervisorField';
 
 interface EditStaffFormContentProps {
   currentStaff: Staff;
@@ -20,33 +18,30 @@ export const EditStaffFormContent: React.FC<EditStaffFormContentProps> = ({
   setCurrentStaff,
   potentialSupervisors,
   roles,
-  onHireDateChange
+  onHireDateChange,
 }) => {
   return (
     <div className="grid gap-4 py-4">
-      <EditStaffBasicFields 
+      <EditStaffBasicFields
         currentStaff={currentStaff}
         setCurrentStaff={setCurrentStaff}
         onHireDateChange={onHireDateChange}
       />
-      
-      <EditStaffDepartmentField 
+
+      {/* <EditStaffDepartmentField 
         currentStaff={currentStaff}
         setCurrentStaff={setCurrentStaff}
-      />
-      
-      <EditStaffBranchField 
-        currentStaff={currentStaff}
-        setCurrentStaff={setCurrentStaff}
-      />
-      
-      <EditStaffSupervisorField 
+      /> */}
+
+      <EditStaffBranchField currentStaff={currentStaff} setCurrentStaff={setCurrentStaff} />
+
+      <EditStaffSupervisorField
         currentStaff={currentStaff}
         setCurrentStaff={setCurrentStaff}
         potentialSupervisors={potentialSupervisors}
       />
-      
-      <EditStaffRoleField 
+
+      <EditStaffRoleField
         currentStaff={currentStaff}
         setCurrentStaff={setCurrentStaff}
         roles={roles}

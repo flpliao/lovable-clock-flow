@@ -7,8 +7,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { branchService } from '@/services/branchService';
+import { useBranchStore } from '@/stores/branchStore';
 import { useCompanyStore } from '@/stores/companyStore';
-import { Branch } from '@/types/company';
 import React, { useEffect, useState } from 'react';
 import { Staff } from '../types';
 
@@ -21,8 +21,9 @@ export const EditStaffBranchField: React.FC<EditStaffBranchFieldProps> = ({
   currentStaff,
   setCurrentStaff,
 }) => {
-  const [branches, setBranches] = useState<Branch[]>([]);
+  const { branches, setBranches } = useBranchStore();
   const { company } = useCompanyStore();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -31,20 +32,26 @@ export const EditStaffBranchField: React.FC<EditStaffBranchFieldProps> = ({
         return;
       }
 
+      // 如果已經有分支數據，不需要重新載入
+      if (branches.length > 0) return;
+
+      setLoading(true);
       try {
         const data = await branchService.loadBranches(company.id);
         setBranches(data);
       } catch (error) {
         console.error('載入單位失敗:', error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchBranches();
-  }, [company?.id]);
+  }, [company?.id, setBranches, branches.length]);
 
   return (
     <div className="grid grid-cols-4 items-center gap-4">
       <Label htmlFor="branch" className="text-right">
-        分店 <span className="text-red-500">*</span>
+        單位 <span className="text-red-500">*</span>
       </Label>
       <Select
         value={currentStaff.branch_id || ''}
@@ -56,12 +63,13 @@ export const EditStaffBranchField: React.FC<EditStaffBranchFieldProps> = ({
             branch_name: selectedBranch?.name || '',
           });
         }}
+        disabled={loading}
       >
         <SelectTrigger className="col-span-3" id="branch">
-          <SelectValue placeholder="選擇分店" />
+          <SelectValue placeholder={loading ? '載入中...' : '選擇單位'} />
         </SelectTrigger>
         <SelectContent>
-          {/* 如果當前員工的分店不在標準列表中，先顯示當前分店 */}
+          {/* 如果當前員工的單位不在標準列表中，先顯示當前單位 */}
           {currentStaff.branch_name &&
             currentStaff.branch_id &&
             !branches.find(b => b.id === currentStaff.branch_id) && (

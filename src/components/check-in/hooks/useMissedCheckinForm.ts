@@ -2,6 +2,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useStores';
 import { supabase } from '@/integrations/supabase/client';
 import { useState } from 'react';
+import { MissedCheckinValidationService } from '@/services/missedCheckinValidationService';
 
 export interface MissedCheckinFormData {
   request_date: string;
@@ -74,6 +75,22 @@ export const useMissedCheckinForm = (onSuccess: () => void) => {
 
     setLoading(true);
     try {
+      // 檢查是否已有重複申請
+      const validationResult = await MissedCheckinValidationService.checkDuplicateRequest(
+        currentUser.id,
+        formData.request_date,
+        formData.missed_type
+      );
+
+      if (!validationResult.canSubmit) {
+        toast({
+          title: '無法提交申請',
+          description: validationResult.errorMessage,
+          variant: 'destructive',
+        });
+        return;
+      }
+
       const submitData: MissedCheckinSubmitData = {
         staff_id: currentUser.id,
         request_date: formData.request_date,

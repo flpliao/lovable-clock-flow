@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckInRecord } from '@/types';
 import { MissedCheckinRequest } from '@/types/missedCheckin';
 import { Schedule } from '@/services/scheduleService';
+import { MissedCheckinValidationService } from '@/services/missedCheckinValidationService';
 import { formatTime } from '@/utils/checkInUtils';
 import { format, isFuture } from 'date-fns';
 import { useCurrentUser } from '@/hooks/useStores';
@@ -46,19 +47,13 @@ const Dot = ({ color }: { color: string }) => (
 const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   date,
   selectedDateRecords,
-  recordsCount,
   missedCheckinRecords = [],
   hasScheduleForDate,
   getScheduleForDate,
   onDataRefresh,
-  isInDialog = false,
 }) => {
   const currentUser = useCurrentUser();
   const { toast } = useToast();
-  const textClass = isInDialog ? 'text-gray-900' : 'text-gray-900';
-  const subTextClass = isInDialog ? 'text-gray-600' : 'text-gray-500';
-  const borderClass = isInDialog ? 'border-gray-200' : 'border-gray-100';
-
   const isFutureDay = isFuture(date);
   const dateStr = format(date, 'yyyy-MM-dd');
   const hasSchedule = hasScheduleForDate(dateStr);
@@ -345,6 +340,22 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
 
     setMissedLoading(true);
     try {
+      // 檢查是否已有重複申請
+      const validationResult = await MissedCheckinValidationService.checkDuplicateRequest(
+        currentUser.id,
+        formData.request_date,
+        formData.missed_type
+      );
+
+      if (!validationResult.canSubmit) {
+        toast({
+          title: '無法提交申請',
+          description: validationResult.errorMessage,
+          variant: 'destructive',
+        });
+        return;
+      }
+
       // 驗證和格式化時間
       let formattedCheckInTime = null;
       let formattedCheckOutTime = null;
@@ -367,7 +378,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
         formattedCheckOutTime = checkOutDate.toISOString();
       }
 
-      const { data, error } = await supabase.from('missed_checkin_requests').insert([
+      const { error } = await supabase.from('missed_checkin_requests').insert([
         {
           staff_id: currentUser.id,
           request_date: formData.request_date,

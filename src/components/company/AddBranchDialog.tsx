@@ -164,12 +164,12 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="manager">負責人</Label>
+              <Label htmlFor="manager">單位主管</Label>
               <Input
                 id="manager"
                 value={newBranch.manager_name}
                 onChange={e => handleInputChange('manager_name', e.target.value)}
-                placeholder="請輸入負責人"
+                placeholder="請輸入單位主管"
               />
             </div>
           </div>

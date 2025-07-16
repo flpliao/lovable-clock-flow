@@ -5,7 +5,6 @@ export interface Staff {
   department: string;
   branch?: unknown;
   staff_role?: unknown;
-  supervisor_name?: string;
   branch_id: string;
   branch_name: string;
   role_name: string;

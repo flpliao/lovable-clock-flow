@@ -1,10 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useIsAdmin } from '@/hooks/useStores';
+import { useCompany } from '@/hooks/useCompany';
 import { branchService } from '@/services/branchService';
-import { companyService } from '@/services/companyService';
 import { useBranchStore } from '@/stores/branchStore';
-import { useCompanyStore } from '@/stores/companyStore';
 import { Branch } from '@/types/company';
 import { Building, MapPin, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -19,21 +17,14 @@ import EditCheckpointDialog from './components/EditCheckpointDialog';
 import { Checkpoint, useCheckpoints } from './components/useCheckpoints';
 
 const CompanyManagement = () => {
-  const isAdmin = useIsAdmin();
-
   // 使用 Zustand store
   const { branches, setBranches } = useBranchStore();
-  const { company, setCompany } = useCompanyStore();
+  const { company, loadCompany } = useCompany();
   const [branchesLoading, setBranchesLoading] = useState(false);
 
   useEffect(() => {
-    if (company || branches.length > 0) return;
-    const loadCompany = async () => {
-      const data = await companyService.findCompany();
-      setCompany(data);
-    };
     loadCompany();
-  }, [company, setCompany, branches]);
+  }, []);
 
   useEffect(() => {
     if (!company?.id || branches.length > 0) return;
@@ -62,8 +53,6 @@ const CompanyManagement = () => {
     loading: checkpointsLoading,
     refresh: refreshCheckpoints,
   } = useCheckpoints();
-
-  const canManageBranches = isAdmin;
 
   const handleAddBranch = () => {
     setIsAddBranchDialogOpen(true);
@@ -113,15 +102,13 @@ const CompanyManagement = () => {
                     <p className="text-white/80 text-sm mt-1">管理所有單位資訊</p>
                   </div>
                 </div>
-                {canManageBranches && (
-                  <Button
-                    onClick={handleAddBranch}
-                    className="bg-blue-500/80 hover:bg-blue-600/80 text-white border-0 rounded-xl shadow-lg backdrop-blur-xl"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    新增單位
-                  </Button>
-                )}
+                <Button
+                  onClick={handleAddBranch}
+                  className="bg-blue-500/80 hover:bg-blue-600/80 text-white border-0 rounded-xl shadow-lg backdrop-blur-xl"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  新增單位
+                </Button>
               </div>
               <BranchTable onEdit={handleEditBranch} loading={branchesLoading} />
             </div>
@@ -143,15 +130,13 @@ const CompanyManagement = () => {
                     <p className="text-white/80 text-sm mt-1">管理所有打卡點</p>
                   </div>
                 </div>
-                {isAdmin && (
-                  <Button
-                    onClick={() => setIsAddCheckpointOpen(true)}
-                    className="bg-green-500/80 hover:bg-green-600/80 text-white border-0 rounded-xl shadow-lg backdrop-blur-xl"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    新增打卡點
-                  </Button>
-                )}
+                <Button
+                  onClick={() => setIsAddCheckpointOpen(true)}
+                  className="bg-green-500/80 hover:bg-green-600/80 text-white border-0 rounded-xl shadow-lg backdrop-blur-xl"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  新增打卡點
+                </Button>
               </div>
               <CheckpointTable
                 onEdit={setEditCheckpoint}

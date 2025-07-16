@@ -12,7 +12,7 @@ interface Props {
 }
 
 const CheckpointTable = ({ data, loading, refresh, onEdit }: Props) => {
-  const { refresh: loadCheckpoints, deleteCheckpoint } = useCheckpoints();
+  const { loadCheckpoints, deleteCheckpoint } = useCheckpoints();
 
   useEffect(() => {
     loadCheckpoints();

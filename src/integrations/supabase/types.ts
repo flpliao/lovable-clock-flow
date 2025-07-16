@@ -2005,6 +2005,34 @@ export type Database = {
         };
         Relationships: [];
       };
+      checkpoints: {
+        Row: {
+          id: number;
+          name: string;
+          latitude: number;
+          longitude: number;
+          check_in_radius: number;
+          created_at: string;
+          disabled_at: string | null;
+        };
+        Insert: {
+          name: string;
+          latitude: number;
+          longitude: number;
+          check_in_radius: number;
+          created_at?: string;
+          disabled_at?: string | null;
+        };
+        Update: {
+          name?: string;
+          latitude?: number;
+          longitude?: number;
+          check_in_radius?: number;
+          created_at?: string;
+          disabled_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       permission_summary: {

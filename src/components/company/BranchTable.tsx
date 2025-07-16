@@ -131,7 +131,7 @@ const BranchTable = ({ onEdit, loading }: BranchTableProps) => {
             <th className="text-left py-3 px-4 text-white/80 font-medium">
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4" />
-                負責人
+                單位主管
               </div>
             </th>
             <th className="text-right py-3 px-4 text-white/80 font-medium">操作</th>

@@ -143,12 +143,12 @@ const EditCompanyDialog = ({ open, onClose }: EditCompanyDialogProps) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="legal_representative">負責人</Label>
+              <Label htmlFor="legal_representative">單位主管</Label>
               <Input
                 id="legal_representative"
                 value={formData.legal_representative}
                 onChange={e => handleInputChange('legal_representative', e.target.value)}
-                placeholder="請輸入負責人"
+                placeholder="請輸入單位主管"
               />
             </div>
 

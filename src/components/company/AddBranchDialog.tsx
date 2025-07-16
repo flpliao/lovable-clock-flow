@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import RequiredLabel from '@/components/ui/RequiredLabel';
 import {
   Select,
   SelectContent,
@@ -103,7 +104,7 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">單位名稱</Label>
+              <RequiredLabel htmlFor="name">單位名稱</RequiredLabel>
               <Input
                 id="name"
                 value={newBranch.name}
@@ -113,7 +114,7 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="code">單位代碼</Label>
+              <RequiredLabel htmlFor="code">單位代碼</RequiredLabel>
               <Input
                 id="code"
                 value={newBranch.code}
@@ -149,7 +150,6 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
               value={newBranch.address}
               onChange={e => handleInputChange('address', e.target.value)}
               placeholder="請輸入地址"
-              required
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -160,16 +160,15 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
                 value={newBranch.phone}
                 onChange={e => handleInputChange('phone', e.target.value)}
                 placeholder="請輸入電話"
-                required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="manager">負責人</Label>
+              <Label htmlFor="manager">單位主管</Label>
               <Input
                 id="manager"
                 value={newBranch.manager_name}
                 onChange={e => handleInputChange('manager_name', e.target.value)}
-                placeholder="請輸入負責人"
+                placeholder="請輸入單位主管"
               />
             </div>
           </div>

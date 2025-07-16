@@ -1,6 +1,8 @@
-import { Checkpoint, deleteCheckpoint } from './useCheckpoints';
 import { Button } from '@/components/ui/button';
-import { MapPin, Edit, Trash2, Clock } from 'lucide-react';
+import type { Checkpoint } from '@/services/checkpointService';
+import { Clock, Edit, MapPin, Trash2 } from 'lucide-react';
+import { useEffect } from 'react';
+import { useCheckpoints } from './useCheckpoints';
 
 interface Props {
   data: Checkpoint[];
@@ -10,6 +12,12 @@ interface Props {
 }
 
 const CheckpointTable = ({ data, loading, refresh, onEdit }: Props) => {
+  const { refresh: loadCheckpoints, deleteCheckpoint } = useCheckpoints();
+
+  useEffect(() => {
+    loadCheckpoints();
+  }, []);
+
   const handleDelete = async (id: number) => {
     if (!window.confirm('確定要刪除此打卡點嗎？')) return;
     try {
@@ -50,6 +58,7 @@ const CheckpointTable = ({ data, loading, refresh, onEdit }: Props) => {
                 建立時間
               </div>
             </th>
+            <th className="text-left py-3 px-4 text-white/80 font-medium">打卡距離（公尺）</th>
             <th className="text-left py-3 px-4 text-white/80 font-medium">狀態</th>
             <th className="text-right py-3 px-4 text-white/80 font-medium">操作</th>
           </tr>
@@ -66,6 +75,7 @@ const CheckpointTable = ({ data, loading, refresh, onEdit }: Props) => {
               <td className="py-3 px-4 text-white/80">
                 {cp.created_at ? new Date(cp.created_at).toLocaleString() : '-'}
               </td>
+              <td className="py-3 px-4 text-white/80">{cp.check_in_radius ?? '-'}</td>
               <td className="py-3 px-4 text-white/80">
                 {cp.disabled_at ? (
                   <span className="text-red-400 font-semibold">停用</span>

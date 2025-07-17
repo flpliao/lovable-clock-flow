@@ -64,14 +64,10 @@ const LocationCheckIn = () => {
       });
       const { latitude, longitude } = position.coords;
       // 取得比對目標
-      let targetLat = null,
-        targetLng = null,
-        locationName = '總公司';
-      if (selectedCheckpoint) {
-        targetLat = selectedCheckpoint.latitude;
-        targetLng = selectedCheckpoint.longitude;
-        locationName = selectedCheckpoint.name;
+      if (!selectedCheckpoint) {
+        throw new Error('請先選擇打卡地點');
       }
+
       // 計算距離
       const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
         const toRad = (v: number) => (v * Math.PI) / 180;
@@ -84,10 +80,18 @@ const LocationCheckIn = () => {
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return Math.round(R * c);
       };
-      const dist = getDistance(latitude, longitude, targetLat, targetLng);
+      const dist = getDistance(
+        latitude,
+        longitude,
+        selectedCheckpoint.latitude,
+        selectedCheckpoint.longitude
+      );
       // 距離限制（可自訂）
-      const allowedDistance = 500;
-      if (dist > allowedDistance) throw new Error(`距離${locationName}過遠 (${dist}公尺)`);
+      if (dist > selectedCheckpoint.check_in_radius)
+        throw new Error(
+          `距離 ${selectedCheckpoint.name} 過遠 (${dist}公尺)，請移動到${selectedCheckpoint.name}附近再進行打卡`
+        );
+
       // 儲存打卡記錄
       const checkInData = {
         userId: currentUser.id,
@@ -99,7 +103,7 @@ const LocationCheckIn = () => {
           latitude,
           longitude,
           distance: dist,
-          locationName,
+          locationName: selectedCheckpoint.name,
         },
       };
       const success = await createCheckInRecord(checkInData);

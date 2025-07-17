@@ -56,6 +56,7 @@ import {
 } from 'lucide-react';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { format, eachDayOfInterval, isFuture, subDays } from 'date-fns';
+import { isToday } from '@/utils/dateUtils';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -384,8 +385,8 @@ const AttendanceRecordManagement: React.FC = () => {
       if (!staff) return;
 
       daysInRange.forEach(day => {
-        // 跳過未來日期
-        if (isFuture(day)) return;
+        // 跳過未來日期和當日
+        if (isFuture(day) || isToday(day)) return;
 
         const dateStr = format(day, 'yyyy-MM-dd');
         const schedule = staffSchedules.find(s => s.work_date === dateStr);
@@ -743,7 +744,7 @@ const AttendanceRecordManagement: React.FC = () => {
 
         if (checkInError) throw checkInError;
 
-        if (existingCheckInRequest) {
+        if (existingCheckInRequest && existingCheckInRequest.status !== 'rejected') {
           toast({
             title: '補登失敗',
             description: `該日期已存在${existingCheckInRequest.status === 'pending' ? '待審核' : '已處理'}的上班打卡申請`,
@@ -791,7 +792,7 @@ const AttendanceRecordManagement: React.FC = () => {
 
         if (checkOutError) throw checkOutError;
 
-        if (existingCheckOutRequest) {
+        if (existingCheckOutRequest && existingCheckOutRequest.status !== 'rejected') {
           toast({
             title: '補登失敗',
             description: `該日期已存在${existingCheckOutRequest.status === 'pending' ? '待審核' : '已處理'}的下班打卡申請`,

@@ -3,6 +3,7 @@ import { CheckInRecord } from '@/types';
 import { MissedCheckinRequest } from '@/types/missedCheckin';
 import { Schedule } from '@/services/scheduleService';
 import { eachDayOfInterval, endOfMonth, format, isFuture, startOfMonth } from 'date-fns';
+import { isToday } from '@/utils/dateUtils';
 import React, { useMemo, useState } from 'react';
 import DateRecordDetails from './DateRecordDetails';
 
@@ -28,7 +29,7 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
   selectedDateRecords,
   checkInRecords,
   missedCheckinRecords,
-  userSchedules,
+  userSchedules: _userSchedules,
   hasScheduleForDate,
   getScheduleForDate,
   onMonthChange,
@@ -105,8 +106,8 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
     const allDaysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
     allDaysInMonth.forEach(day => {
-      // 跳過未來的日期
-      if (isFuture(day)) {
+      // 跳過未來日期和當日
+      if (isFuture(day) || isToday(day)) {
         return;
       }
 
@@ -131,8 +132,8 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
     const allDaysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
     allDaysInMonth.forEach(day => {
-      // 跳過未來的日期
-      if (isFuture(day)) {
+      // 跳過未來日期和當日
+      if (isFuture(day) || isToday(day)) {
         return;
       }
 
@@ -182,7 +183,7 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
             className="mx-auto"
             captionLayout="buttons"
             formatters={{
-              formatCaption: (date, options) => {
+              formatCaption: (date, _options) => {
                 return format(date, 'MMMM yyyy');
               },
             }}

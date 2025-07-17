@@ -998,7 +998,7 @@ const AttendanceRecordManagement: React.FC = () => {
                         filters.department === 'all' || staff.department === filters.department
                     )
                     .map(staff => (
-                      <SelectItem key={staff.user_id} value={staff.user_id}>
+                      <SelectItem key={staff.id} value={staff.id}>
                         {staff.name}
                       </SelectItem>
                     ))}

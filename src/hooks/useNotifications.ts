@@ -6,9 +6,8 @@ import { NotificationDatabaseOperations } from '@/services/notifications';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export const useNotifications = () => {
-  // 使用新的 Zustand hooks
   const currentUser = useCurrentUser();
-  
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -17,99 +16,89 @@ export const useNotifications = () => {
   const hasInitialLoadRef = useRef(false);
 
   // Load notifications from database with debouncing
-  const loadNotifications = useCallback(async (forceLoad = false) => {
-    if (!currentUser || loadingRef.current) {
-      return;
-    }
+  const loadNotifications = useCallback(
+    async (forceLoad = false) => {
+      if (!currentUser || loadingRef.current) {
+        return;
+      }
 
-    const now = new Date();
-    // 防止頻繁刷新 - 至少間隔 2 秒，但首次載入或強制載入時不受限制
-    if (!forceLoad && hasInitialLoadRef.current && now.getTime() - lastRefreshRef.current.getTime() < 2000) {
-      console.log('跳過載入通知（時間間隔未達）');
-      return;
-    }
+      const now = new Date();
+      // 防止頻繁刷新 - 至少間隔 2 秒，但首次載入或強制載入時不受限制
+      if (
+        !forceLoad &&
+        hasInitialLoadRef.current &&
+        now.getTime() - lastRefreshRef.current.getTime() < 2000
+      ) {
+        return;
+      }
 
-    console.log('=== 開始載入通知 ===');
-    console.log('Loading notifications for user:', currentUser.id, 'Name:', currentUser.name, 'Role:', currentUser?.role_id);
-    
-    loadingRef.current = true;
-    setIsLoading(true);
+      loadingRef.current = true;
+      setIsLoading(true);
 
-    try {
-      const formattedNotifications = await NotificationDatabaseOperations.loadNotifications(currentUser.id);
-      const unread = formattedNotifications.filter(n => !n.isRead).length;
-      
-      console.log('Raw loaded notifications:', formattedNotifications.length);
-      console.log('Unread count:', unread);
-      
-      setNotifications(formattedNotifications);
-      setUnreadCount(unread);
-      lastRefreshRef.current = now;
-      hasInitialLoadRef.current = true;
-      console.log(`通知載入完成 - 用戶: ${currentUser.name} (${currentUser?.role_id}), 總計: ${formattedNotifications.length}, 未讀: ${unread}`);
-      
-    } catch (error) {
-      console.error('Error loading notifications:', error);
-    } finally {
-      setIsLoading(false);
-      loadingRef.current = false;
-    }
-  }, [currentUser]);
+      try {
+        const formattedNotifications = await NotificationDatabaseOperations.loadNotifications(
+          currentUser.id
+        );
+        const unread = formattedNotifications.filter(n => !n.isRead).length;
 
-  // Load notifications when user changes - only once
+        setNotifications(formattedNotifications);
+        setUnreadCount(unread);
+        lastRefreshRef.current = now;
+        hasInitialLoadRef.current = true;
+      } catch (error) {
+        console.error('Error loading notifications:', error);
+      } finally {
+        setIsLoading(false);
+        loadingRef.current = false;
+      }
+    },
+    [currentUser]
+  );
+
+  // Load notifications when user changes
   useEffect(() => {
     if (currentUser) {
-      console.log('User changed, loading notifications for:', currentUser.id, currentUser.name, currentUser?.role_id);
       hasInitialLoadRef.current = false;
       loadNotifications(true);
     } else {
-      console.log('No user, clearing notifications');
       setNotifications([]);
       setUnreadCount(0);
       hasInitialLoadRef.current = false;
     }
   }, [currentUser?.id, loadNotifications]);
 
-  // Set up real-time subscription for notifications - only once
+  // Set up real-time subscription for notifications
   useEffect(() => {
     if (!currentUser) {
       return;
     }
 
-    console.log('Setting up real-time subscription for user:', currentUser.id, currentUser.name, currentUser?.role_id);
-    
-    const cleanup = NotificationRealtimeService.setupRealtimeSubscription(
-      currentUser.id,
-      () => {
-        console.log(`Real-time event triggered for ${currentUser.name} (${currentUser?.role_id}), reloading notifications`);
-        loadNotifications();
-      }
+    const cleanup = NotificationRealtimeService.setupRealtimeSubscription(currentUser.id, () =>
+      loadNotifications()
     );
 
     return cleanup;
   }, [currentUser?.id, loadNotifications]);
 
-  // 監聽通知更新事件 - 減少事件監聽器數量
+  // 監聽通知更新事件
   useEffect(() => {
     if (!currentUser) return;
 
-    const handleNotificationUpdate = (event: CustomEvent) => {
-      console.log(`收到通知更新事件 for ${currentUser.name} (${currentUser?.role_id}):`, event.detail);
-      
-      // 檢查是否需要刷新（防止頻繁刷新）
+    const handleNotificationUpdate = () => {
+      // 防止頻繁刷新
       const now = new Date();
-      if (now.getTime() - lastRefreshRef.current.getTime() > 1000) { // 至少間隔 1 秒
+      if (now.getTime() - lastRefreshRef.current.getTime() > 1000) {
         loadNotifications();
       }
     };
 
-    // 只註冊關鍵的事件監聽器
-    window.addEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
-    window.addEventListener('forceNotificationRefresh', handleNotificationUpdate as EventListener);
-    
+    // 註冊事件監聽器
+    window.addEventListener('notificationUpdated', handleNotificationUpdate);
+    window.addEventListener('forceNotificationRefresh', handleNotificationUpdate);
+
     return () => {
-      window.removeEventListener('notificationUpdated', handleNotificationUpdate as EventListener);
-      window.removeEventListener('forceNotificationRefresh', handleNotificationUpdate as EventListener);
+      window.removeEventListener('notificationUpdated', handleNotificationUpdate);
+      window.removeEventListener('forceNotificationRefresh', handleNotificationUpdate);
     };
   }, [currentUser?.id, loadNotifications]);
 
@@ -122,11 +111,11 @@ export const useNotifications = () => {
     loadNotifications
   );
 
-  return { 
-    notifications, 
+  return {
+    notifications,
     unreadCount,
     isLoading,
     refreshNotifications: loadNotifications,
-    ...actions
+    ...actions,
   };
 };

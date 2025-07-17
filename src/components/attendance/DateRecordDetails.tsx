@@ -108,21 +108,42 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
     if (!hasCheckIn) {
       const approvedCheckIn = approvedMissedRecords.find(r => r.missed_type === 'check_in');
       if (!approvedCheckIn) {
-        cards.push(
-          <div
-            key="no-checkin"
-            className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6 cursor-pointer hover:bg-blue-100/40 transition"
-            onClick={() => setOpenDialog('checkin')}
-          >
-            <div className="flex items-center justify-between w-full">
-              <span className="flex items-center">
-                <Dot color="#ef4444" />
-                <span className="font-medium text-gray-900">上班未打卡</span>
-              </span>
-              <ChevronRight className="h-5 w-5 text-gray-900" />
+        // 重新設計異常判斷邏輯 - 檢查是否需要檢查上班記錄
+        const today = new Date();
+        const isToday = today.toDateString() === date.toDateString();
+        const now = new Date();
+
+        const shouldCheckIn = (() => {
+          if (isToday) {
+            // 當天：只有當前時間超過上班時間時才需要檢查
+            if (!schedule?.start_time) return false;
+            const [startHour, startMinute] = schedule.start_time.split(':').map(Number);
+            const workStartTime = new Date();
+            workStartTime.setHours(startHour, startMinute, 0, 0);
+            return now > workStartTime;
+          } else {
+            // 過去日期：一定要有上班記錄
+            return true;
+          }
+        })();
+
+        if (shouldCheckIn) {
+          cards.push(
+            <div
+              key="no-checkin"
+              className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6 cursor-pointer hover:bg-blue-100/40 transition"
+              onClick={() => setOpenDialog('checkin')}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="flex items-center">
+                  <Dot color="#ef4444" />
+                  <span className="font-medium text-gray-900">上班未打卡</span>
+                </span>
+                <ChevronRight className="h-5 w-5 text-gray-900" />
+              </div>
             </div>
-          </div>
-        );
+          );
+        }
       }
     }
 
@@ -151,21 +172,42 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
     if (!hasCheckOut) {
       const approvedCheckOut = approvedMissedRecords.find(r => r.missed_type === 'check_out');
       if (!approvedCheckOut) {
-        cards.push(
-          <div
-            key="no-checkout"
-            className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6 cursor-pointer hover:bg-blue-100/40 transition"
-            onClick={() => setOpenDialog('checkout')}
-          >
-            <div className="flex items-center justify-between w-full">
-              <span className="flex items-center">
-                <Dot color="#ef4444" />
-                <span className="font-medium text-gray-900">下班未打卡</span>
-              </span>
-              <ChevronRight className="h-5 w-5 text-gray-900" />
+        // 重新設計異常判斷邏輯 - 檢查是否需要檢查下班記錄
+        const today = new Date();
+        const isToday = today.toDateString() === date.toDateString();
+        const now = new Date();
+
+        const shouldCheckOut = (() => {
+          if (isToday) {
+            // 當天：只有當前時間超過下班時間時才需要檢查
+            if (!schedule?.end_time) return false;
+            const [endHour, endMinute] = schedule.end_time.split(':').map(Number);
+            const workEndTime = new Date();
+            workEndTime.setHours(endHour, endMinute, 0, 0);
+            return now > workEndTime;
+          } else {
+            // 過去日期：一定要有下班記錄
+            return true;
+          }
+        })();
+
+        if (shouldCheckOut) {
+          cards.push(
+            <div
+              key="no-checkout"
+              className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6 cursor-pointer hover:bg-blue-100/40 transition"
+              onClick={() => setOpenDialog('checkout')}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="flex items-center">
+                  <Dot color="#ef4444" />
+                  <span className="font-medium text-gray-900">下班未打卡</span>
+                </span>
+                <ChevronRight className="h-5 w-5 text-gray-900" />
+              </div>
             </div>
-          </div>
-        );
+          );
+        }
       }
     }
 

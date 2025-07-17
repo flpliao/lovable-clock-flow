@@ -132,8 +132,8 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
     const allDaysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
     allDaysInMonth.forEach(day => {
-      // 跳過未來日期和當日
-      if (isFuture(day) || isToday(day)) {
+      // 跳過未來日期
+      if (isFuture(day)) {
         return;
       }
 
@@ -146,6 +146,7 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
 
       const dayRecords = datesWithRecords.get(dayStr);
       const missedRecords = missedCheckinMap.get(dayStr) || [];
+      const schedule = getScheduleForDate(dayStr);
 
       // 檢查上班記錄：有打卡記錄 OR 有已核准的上班忘打卡
       const hasCheckInRecord = dayRecords?.checkIn || false;
@@ -161,14 +162,52 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
       );
       const hasValidCheckOut = hasCheckOutRecord || hasApprovedCheckOutMissed;
 
-      // 如果上班或下班任一記錄缺失，就標記為紅色異常
-      if (!hasValidCheckIn || !hasValidCheckOut) {
+      // 重新設計異常判斷邏輯
+      const today = new Date();
+      const isToday = today.toDateString() === day.toDateString();
+      const now = new Date();
+
+      // 判斷是否需要檢查上班記錄
+      const shouldCheckIn = (() => {
+        if (isToday) {
+          // 當天：只有當前時間超過上班時間時才需要檢查
+          if (!schedule?.start_time) return false;
+          const [startHour, startMinute] = schedule.start_time.split(':').map(Number);
+          const workStartTime = new Date();
+          workStartTime.setHours(startHour, startMinute, 0, 0);
+          return now > workStartTime;
+        } else {
+          // 過去日期：一定要有上班記錄
+          return true;
+        }
+      })();
+
+      // 判斷是否需要檢查下班記錄
+      const shouldCheckOut = (() => {
+        if (isToday) {
+          // 當天：只有當前時間超過下班時間時才需要檢查
+          if (!schedule?.end_time) return false;
+          const [endHour, endMinute] = schedule.end_time.split(':').map(Number);
+          const workEndTime = new Date();
+          workEndTime.setHours(endHour, endMinute, 0, 0);
+          return now > workEndTime;
+        } else {
+          // 過去日期：一定要有下班記錄
+          return true;
+        }
+      })();
+
+      // 檢查是否有異常
+      const hasMissingCheckIn = shouldCheckIn && !hasValidCheckIn;
+      const hasMissingCheckOut = shouldCheckOut && !hasValidCheckOut;
+
+      if (hasMissingCheckIn || hasMissingCheckOut) {
         dates.push(day);
       }
     });
 
     return dates;
-  }, [datesWithRecords, missedCheckinMap, displayMonth, hasScheduleForDate]);
+  }, [datesWithRecords, missedCheckinMap, displayMonth, hasScheduleForDate, getScheduleForDate]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">

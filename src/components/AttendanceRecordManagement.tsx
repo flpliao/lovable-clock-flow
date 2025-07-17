@@ -56,7 +56,6 @@ import {
 } from 'lucide-react';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { format, eachDayOfInterval, isFuture, subDays } from 'date-fns';
-import { isToday } from '@/utils/dateUtils';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -385,8 +384,8 @@ const AttendanceRecordManagement: React.FC = () => {
       if (!staff) return;
 
       daysInRange.forEach(day => {
-        // 跳過未來日期和當日
-        if (isFuture(day) || isToday(day)) return;
+        // 跳過未來日期，但允許檢查當日
+        if (isFuture(day)) return;
 
         const dateStr = format(day, 'yyyy-MM-dd');
         const schedule = staffSchedules.find(s => s.work_date === dateStr);
@@ -414,20 +413,91 @@ const AttendanceRecordManagement: React.FC = () => {
         // 判斷是否有有效的下班記錄（實際打卡 或 已核准的忘打卡申請）
         const hasValidCheckOut = hasCheckOut || !!approvedCheckOutRequest;
 
-        // 檢查異常情況：只有當缺少上班或下班記錄時才標記為異常
-        if (!hasValidCheckIn && !hasValidCheckOut) {
-          // 雙重異常：既沒上班記錄也沒下班記錄
-          // 但是，如果有任何已核准的申請，就不算異常
-          const hasAnyApprovedRequest = missedRequests.some(r => r.status === 'approved');
+        // 重新設計異常判斷邏輯
+        const today = new Date();
+        const recordDate = new Date(dateStr);
+        const isToday = today.toDateString() === recordDate.toDateString();
+        const now = new Date();
 
-          if (!hasAnyApprovedRequest) {
-            const description = '上班未打卡 / 下班未打卡';
-            const hasMissedRequest = missedRequests.length > 0;
+        // 判斷是否需要檢查上班記錄
+        const shouldCheckIn = (() => {
+          if (isToday) {
+            // 當天：只有當前時間超過上班時間時才需要檢查
+            if (!schedule?.start_time) return false;
+            const [startHour, startMinute] = schedule.start_time.split(':').map(Number);
+            const workStartTime = new Date();
+            workStartTime.setHours(startHour, startMinute, 0, 0);
+            return now > workStartTime;
+          } else {
+            // 過去日期：一定要有上班記錄
+            return true;
+          }
+        })();
+
+        // 判斷是否需要檢查下班記錄
+        const shouldCheckOut = (() => {
+          if (isToday) {
+            // 當天：只有當前時間超過下班時間時才需要檢查
+            if (!schedule?.end_time) return false;
+            const [endHour, endMinute] = schedule.end_time.split(':').map(Number);
+            const workEndTime = new Date();
+            workEndTime.setHours(endHour, endMinute, 0, 0);
+            return now > workEndTime;
+          } else {
+            // 過去日期：一定要有下班記錄
+            return true;
+          }
+        })();
+
+        // 檢查異常情況
+        const hasMissingCheckIn = shouldCheckIn && !hasValidCheckIn;
+        const hasMissingCheckOut = shouldCheckOut && !hasValidCheckOut;
+
+        // 如果有任何異常，創建合併的記錄
+        if (hasMissingCheckIn || hasMissingCheckOut) {
+          // 收集所有相關的忘打卡申請
+          const allMissedRequests = missedRequests.filter(
+            r =>
+              (hasMissingCheckIn && r.missed_type === 'check_in') ||
+              (hasMissingCheckOut && r.missed_type === 'check_out')
+          );
+
+          // 檢查是否有已核准的申請
+          const hasApprovedCheckInRequest =
+            hasMissingCheckIn &&
+            missedRequests.some(r => r.missed_type === 'check_in' && r.status === 'approved');
+          const hasApprovedCheckOutRequest =
+            hasMissingCheckOut &&
+            missedRequests.some(r => r.missed_type === 'check_out' && r.status === 'approved');
+
+          // 如果所有異常都有已核准的申請，就不算異常
+          const allApproved =
+            (!hasMissingCheckIn || hasApprovedCheckInRequest) &&
+            (!hasMissingCheckOut || hasApprovedCheckOutRequest);
+
+          if (!allApproved) {
+            // 生成描述
+            let description = '';
+            let anomalyType = '';
+
+            if (hasMissingCheckIn && hasMissingCheckOut) {
+              description = '上班未打卡 / 下班未打卡';
+              anomalyType = 'both_missing';
+            } else if (hasMissingCheckIn) {
+              description = '上班未打卡';
+              anomalyType = 'missing_check_in';
+            } else if (hasMissingCheckOut) {
+              description = '下班未打卡';
+              anomalyType = 'missing_check_out';
+            }
+
+            // 判斷申請狀態
+            const hasMissedRequest = allMissedRequests.length > 0;
             let missedRequestStatus: 'pending' | 'approved' | 'rejected' | undefined = undefined;
 
             if (hasMissedRequest) {
-              const pendingRequest = missedRequests.find(r => r.status === 'pending');
-              const rejectedRequest = missedRequests.find(r => r.status === 'rejected');
+              const pendingRequest = allMissedRequests.find(r => r.status === 'pending');
+              const rejectedRequest = allMissedRequests.find(r => r.status === 'rejected');
 
               if (pendingRequest) {
                 missedRequestStatus = 'pending';
@@ -436,90 +506,15 @@ const AttendanceRecordManagement: React.FC = () => {
               }
             }
 
+            // 創建合併的異常記錄
             anomalies.push({
               id: `${staffId}_${dateStr}`,
               staff_id: staffId,
               staff_name: staff.name,
               department: staff.department,
               date: dateStr,
-              anomaly_type: 'both_missing',
+              anomaly_type: anomalyType,
               description,
-              has_missed_request: hasMissedRequest,
-              missed_request_status: missedRequestStatus,
-              schedule,
-            });
-          }
-        } else if (!hasValidCheckIn) {
-          // 只缺上班記錄
-          const checkInMissedRequests = missedRequests.filter(r => r.missed_type === 'check_in');
-          const hasMissedRequest = checkInMissedRequests.length > 0;
-
-          // 檢查是否有已核准的上班申請
-          const hasApprovedCheckInRequest = checkInMissedRequests.some(
-            r => r.status === 'approved'
-          );
-
-          // 如果有已核准的申請，這不算異常，跳過
-          if (!hasApprovedCheckInRequest) {
-            let missedRequestStatus = undefined;
-
-            if (hasMissedRequest) {
-              const pendingRequest = checkInMissedRequests.find(r => r.status === 'pending');
-              const rejectedRequest = checkInMissedRequests.find(r => r.status === 'rejected');
-
-              if (pendingRequest) {
-                missedRequestStatus = 'pending';
-              } else if (rejectedRequest) {
-                missedRequestStatus = 'rejected';
-              }
-            }
-
-            anomalies.push({
-              id: `${staffId}_${dateStr}_checkin`,
-              staff_id: staffId,
-              staff_name: staff.name,
-              department: staff.department,
-              date: dateStr,
-              anomaly_type: 'missing_check_in',
-              description: '上班未打卡',
-              has_missed_request: hasMissedRequest,
-              missed_request_status: missedRequestStatus,
-              schedule,
-            });
-          }
-        } else if (!hasValidCheckOut) {
-          // 只缺下班記錄
-          const checkOutMissedRequests = missedRequests.filter(r => r.missed_type === 'check_out');
-          const hasMissedRequest = checkOutMissedRequests.length > 0;
-
-          // 檢查是否有已核准的下班申請
-          const hasApprovedCheckOutRequest = checkOutMissedRequests.some(
-            r => r.status === 'approved'
-          );
-
-          // 如果有已核准的申請，這不算異常，跳過
-          if (!hasApprovedCheckOutRequest) {
-            let missedRequestStatus = undefined;
-
-            if (hasMissedRequest) {
-              const pendingRequest = checkOutMissedRequests.find(r => r.status === 'pending');
-              const rejectedRequest = checkOutMissedRequests.find(r => r.status === 'rejected');
-
-              if (pendingRequest) {
-                missedRequestStatus = 'pending';
-              } else if (rejectedRequest) {
-                missedRequestStatus = 'rejected';
-              }
-            }
-
-            anomalies.push({
-              id: `${staffId}_${dateStr}_checkout`,
-              staff_id: staffId,
-              staff_name: staff.name,
-              department: staff.department,
-              date: dateStr,
-              anomaly_type: 'missing_check_out',
-              description: '下班未打卡',
               has_missed_request: hasMissedRequest,
               missed_request_status: missedRequestStatus,
               schedule,

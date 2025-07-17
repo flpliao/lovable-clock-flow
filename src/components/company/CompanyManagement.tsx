@@ -11,7 +11,6 @@ import BranchTable from './BranchTable';
 import EditBranchDialog from './EditBranchDialog';
 import EditCompanyDialog from './EditCompanyDialog';
 import AddCheckpointDialog from './components/AddCheckpointDialog';
-import CheckInDistanceSettings from './components/CheckInDistanceSettings';
 import CheckpointTable from './components/CheckpointTable';
 import EditCheckpointDialog from './components/EditCheckpointDialog';
 import { Checkpoint, useCheckpoints } from './components/useCheckpoints';
@@ -76,12 +75,6 @@ const CompanyManagement = () => {
       icon: MapPin,
       description: '管理打卡點',
     },
-    {
-      id: 'checkin',
-      label: '打卡設定',
-      icon: Plus,
-      description: 'GPS打卡距離設定',
-    },
   ];
 
   const renderTabContent = () => {
@@ -114,8 +107,6 @@ const CompanyManagement = () => {
             </div>
           </div>
         );
-      case 'checkin':
-        return <CheckInDistanceSettings />;
       case 'checkpoints':
         return (
           <div className="space-y-6">
@@ -154,7 +145,7 @@ const CompanyManagement = () => {
     <div className="space-y-6">
       {/* 標籤導航 */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-white/20 backdrop-blur-xl border border-white/30">
+        <TabsList className="grid w-full grid-cols-2 bg-white/20 backdrop-blur-xl border border-white/30">
           {tabs.map(tab => {
             const Icon = tab.icon;
             return (

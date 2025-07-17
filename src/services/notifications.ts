@@ -1,13 +1,22 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/components/notifications/NotificationItem';
+
+interface DbNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  created_at: string;
+  is_read: boolean;
+  leave_request_id?: string;
+  announcement_id?: string;
+  action_required?: boolean;
+}
 
 export class NotificationDatabaseOperations {
   // 載入通知
   static async loadNotifications(userId: string): Promise<Notification[]> {
     try {
-      console.log('載入通知 for user:', userId);
-      
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
@@ -16,37 +25,25 @@ export class NotificationDatabaseOperations {
         .limit(50);
 
       if (error) {
-        console.error('載入通知失敗:', error);
         throw error;
       }
 
-      interface DbNotification {
-        id: string;
-        title: string;
-        message: string;
-        type: string;
-        created_at: string;
-        is_read: boolean;
-        leave_request_id?: string;
-        announcement_id?: string;
-        action_required?: boolean;
-      }
+      const formattedNotifications: Notification[] = (data || []).map(
+        (notification: DbNotification) => ({
+          id: notification.id,
+          title: notification.title,
+          message: notification.message,
+          type: notification.type as Notification['type'],
+          createdAt: notification.created_at,
+          isRead: notification.is_read,
+          data: {
+            leaveRequestId: notification.leave_request_id,
+            announcementId: notification.announcement_id,
+            actionRequired: notification.action_required,
+          },
+        })
+      );
 
-      const formattedNotifications: Notification[] = (data || []).map((notification: DbNotification) => ({
-        id: notification.id,
-        title: notification.title,
-        message: notification.message,
-        type: notification.type as Notification['type'],
-        createdAt: notification.created_at,
-        isRead: notification.is_read,
-        data: {
-          leaveRequestId: notification.leave_request_id,
-          announcementId: notification.announcement_id,
-          actionRequired: notification.action_required
-        }
-      }));
-
-      console.log('成功載入通知:', formattedNotifications.length, '筆');
       return formattedNotifications;
     } catch (error) {
       console.error('載入通知失敗:', error);
@@ -56,12 +53,10 @@ export class NotificationDatabaseOperations {
 
   // 新增通知
   static async addNotification(
-    userId: string, 
+    userId: string,
     notification: Omit<Notification, 'id' | 'createdAt' | 'isRead'>
   ): Promise<string> {
     try {
-      console.log('新增通知 for user:', userId, notification);
-      
       const { data, error } = await supabase
         .from('notifications')
         .insert({
@@ -72,17 +67,15 @@ export class NotificationDatabaseOperations {
           leave_request_id: notification.data?.leaveRequestId,
           announcement_id: notification.data?.announcementId,
           action_required: notification.data?.actionRequired || false,
-          is_read: false
+          is_read: false,
         })
         .select()
         .single();
 
       if (error) {
-        console.error('新增通知失敗:', error);
         throw error;
       }
 
-      console.log('成功新增通知:', data.id);
       return data.id;
     } catch (error) {
       console.error('新增通知失敗:', error);
@@ -93,8 +86,6 @@ export class NotificationDatabaseOperations {
   // 標記通知為已讀
   static async markNotificationAsRead(notificationId: string, userId: string): Promise<boolean> {
     try {
-      console.log('標記通知為已讀:', notificationId, 'for user:', userId);
-      
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
@@ -102,11 +93,9 @@ export class NotificationDatabaseOperations {
         .eq('user_id', userId);
 
       if (error) {
-        console.error('標記通知為已讀失敗:', error);
-        return false;
+        throw error;
       }
 
-      console.log('成功標記通知為已讀');
       return true;
     } catch (error) {
       console.error('標記通知為已讀失敗:', error);
@@ -117,8 +106,6 @@ export class NotificationDatabaseOperations {
   // 標記所有通知為已讀
   static async markAllNotificationsAsRead(userId: string): Promise<boolean> {
     try {
-      console.log('標記所有通知為已讀 for user:', userId);
-      
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
@@ -126,11 +113,9 @@ export class NotificationDatabaseOperations {
         .eq('is_read', false);
 
       if (error) {
-        console.error('標記所有通知為已讀失敗:', error);
-        return false;
+        throw error;
       }
 
-      console.log('成功標記所有通知為已讀');
       return true;
     } catch (error) {
       console.error('標記所有通知為已讀失敗:', error);
@@ -141,19 +126,12 @@ export class NotificationDatabaseOperations {
   // 清空所有通知
   static async clearAllNotifications(userId: string): Promise<boolean> {
     try {
-      console.log('清空所有通知 for user:', userId);
-      
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('user_id', userId);
+      const { error } = await supabase.from('notifications').delete().eq('user_id', userId);
 
       if (error) {
-        console.error('清空所有通知失敗:', error);
-        return false;
+        throw error;
       }
 
-      console.log('成功清空所有通知');
       return true;
     } catch (error) {
       console.error('清空所有通知失敗:', error);

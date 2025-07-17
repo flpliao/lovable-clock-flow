@@ -52,14 +52,14 @@ const CheckpointTable = ({ data, loading, refresh, onEdit }: Props) => {
             </th>
             <th className="text-left py-3 px-4 text-white/80 font-medium">緯度</th>
             <th className="text-left py-3 px-4 text-white/80 font-medium">經度</th>
+            <th className="text-left py-3 px-4 text-white/80 font-medium">打卡距離（公尺）</th>
+            <th className="text-left py-3 px-4 text-white/80 font-medium">狀態</th>
             <th className="text-left py-3 px-4 text-white/80 font-medium">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 建立時間
               </div>
             </th>
-            <th className="text-left py-3 px-4 text-white/80 font-medium">打卡距離（公尺）</th>
-            <th className="text-left py-3 px-4 text-white/80 font-medium">狀態</th>
             <th className="text-right py-3 px-4 text-white/80 font-medium">操作</th>
           </tr>
         </thead>
@@ -72,9 +72,6 @@ const CheckpointTable = ({ data, loading, refresh, onEdit }: Props) => {
               <td className="py-3 px-4 text-white font-medium">{cp.name}</td>
               <td className="py-3 px-4 text-white/80">{cp.latitude}</td>
               <td className="py-3 px-4 text-white/80">{cp.longitude}</td>
-              <td className="py-3 px-4 text-white/80">
-                {cp.created_at ? new Date(cp.created_at).toLocaleString() : '-'}
-              </td>
               <td className="py-3 px-4 text-white/80">{cp.check_in_radius ?? '-'}</td>
               <td className="py-3 px-4 text-white/80">
                 {cp.disabled_at ? (
@@ -83,6 +80,10 @@ const CheckpointTable = ({ data, loading, refresh, onEdit }: Props) => {
                   <span className="text-green-400 font-semibold">啟用</span>
                 )}
               </td>
+              <td className="py-3 px-4 text-white/80">
+                {cp.created_at ? new Date(cp.created_at).toLocaleString() : '-'}
+              </td>
+
               <td className="py-3 px-4">
                 <div className="flex gap-2 justify-end">
                   <Button

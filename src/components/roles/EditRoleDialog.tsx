@@ -11,21 +11,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { updateRole } from '@/hooks/useRole';
+import { useRole } from '@/hooks/useRole';
 import { permissionService } from '@/services/permissionService';
-import { Role } from '@/services/roleService';
+import { Role } from '@/types/role';
 import React, { useEffect, useState } from 'react';
 import PermissionSelect from './components/PermissionSelect';
 
 interface EditRoleDialogProps {
   role: Role | null;
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onRoleUpdated?: () => void;
 }
 
-const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialogProps) => {
+const EditRoleDialog = ({ role, open, onOpenChange, onRoleUpdated }: EditRoleDialogProps) => {
   const { toast } = useToast();
+  const { updateRole } = useRole();
   const [isLoading, setIsLoading] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(role);
   const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set());
@@ -38,7 +39,7 @@ const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialog
   // 載入角色當前權限
   useEffect(() => {
     const loadRolePermissions = async () => {
-      if (!isOpen || !role) return;
+      if (!open || !role) return;
 
       try {
         setIsLoading(true);
@@ -57,7 +58,7 @@ const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialog
     };
 
     loadRolePermissions();
-  }, [isOpen, role, toast]);
+  }, [open, role, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +89,7 @@ const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialog
         description: `職位「${editingRole.name}」已更新`,
       });
 
-      onClose();
+      onOpenChange(false);
       onRoleUpdated?.();
     } catch (error) {
       console.error('❌ 更新職位失敗:', error);
@@ -105,7 +106,7 @@ const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialog
   if (!editingRole) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="backdrop-blur-xl bg-white/90 border border-white/40 shadow-xl max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900">編輯職位</DialogTitle>
@@ -177,7 +178,7 @@ const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialog
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={() => onOpenChange(false)}
               className="bg-white/70 border-gray-300 text-gray-700 hover:bg-white hover:border-gray-400"
               disabled={isLoading}
             >

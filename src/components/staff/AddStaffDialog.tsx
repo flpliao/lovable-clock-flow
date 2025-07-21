@@ -8,10 +8,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { loadRoles } from '@/hooks/useRole';
-import { addStaff } from '@/hooks/useStaff';
-import { useRoleStore } from '@/stores/roleStore';
-import { useEffect, useState } from 'react';
+import { useStaff } from '@/hooks/useStaff';
+import { useState } from 'react';
 import AddStaffForm from './forms/AddStaffForm';
 import { NewStaff } from './types';
 
@@ -23,7 +21,7 @@ interface AddStaffDialogProps {
 
 const AddStaffDialog = ({ open, onOpenChange, onSuccess }: AddStaffDialogProps) => {
   const { toast } = useToast();
-  const { roles } = useRoleStore();
+  const { addStaff } = useStaff();
   const [newStaff, setNewStaff] = useState<NewStaff>({
     name: '',
     position: '',
@@ -33,10 +31,6 @@ const AddStaffDialog = ({ open, onOpenChange, onSuccess }: AddStaffDialogProps) 
     contact: '',
     role_id: 'user',
   });
-
-  useEffect(() => {
-    loadRoles();
-  }, []);
 
   const handleAddStaff = async () => {
     try {
@@ -72,7 +66,7 @@ const AddStaffDialog = ({ open, onOpenChange, onSuccess }: AddStaffDialogProps) 
           <DialogDescription className="text-xs">新增員工至系統</DialogDescription>
         </DialogHeader>
 
-        <AddStaffForm newStaff={newStaff} setNewStaff={setNewStaff} roles={roles} />
+        <AddStaffForm newStaff={newStaff} setNewStaff={setNewStaff} />
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="h-8 text-xs">

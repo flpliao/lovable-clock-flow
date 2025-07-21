@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useBranch } from '@/hooks/useBranch';
+import { useBranches } from '@/hooks/useBranches';
 import { useCompanyStore } from '@/stores/companyStore';
 import React, { useEffect } from 'react';
 import { NewStaff } from '../types';
@@ -18,7 +18,7 @@ interface StaffBranchFieldsProps {
 
 const StaffBranchFields: React.FC<StaffBranchFieldsProps> = ({ newStaff, setNewStaff }) => {
   const { company } = useCompanyStore();
-  const { branches, loading, loadBranches } = useBranch();
+  const { data: branches, loading, loadBranches } = useBranches();
 
   useEffect(() => {
     if (!company?.id) return;

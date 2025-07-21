@@ -1,6 +1,5 @@
 import { useToast } from '@/hooks/use-toast';
-import { loadRoles } from '@/hooks/useRole';
-import { useRoleStore } from '@/stores/roleStore';
+import { useRole } from '@/hooks/useRole';
 import { Briefcase, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
@@ -11,14 +10,12 @@ import RoleTable from './RoleTable';
 const RoleManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const { roles } = useRoleStore();
+  const { data: roles, loading, loadRoles } = useRole();
   const { toast } = useToast();
 
   useEffect(() => {
     const fetch = async () => {
-      setLoading(true);
       try {
         await loadRoles();
       } catch {
@@ -27,8 +24,6 @@ const RoleManagement = () => {
           description: '無法載入職位資料，請稍後再試',
           variant: 'destructive',
         });
-      } finally {
-        setLoading(false);
       }
     };
     fetch();

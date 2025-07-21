@@ -6,14 +6,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useBranch } from '@/hooks/useBranch';
+import { useBranches } from '@/hooks/useBranches';
 import { useCompanyStore } from '@/stores/companyStore';
 import React, { useEffect } from 'react';
 import { Staff } from '../types';
 
 interface EditStaffBranchFieldProps {
-  currentStaff: Staff;
-  setCurrentStaff: (staff: Staff) => void;
+  currentStaff: Staff | null;
+  setCurrentStaff: (staff: Staff | null) => void;
 }
 
 export const EditStaffBranchField: React.FC<EditStaffBranchFieldProps> = ({
@@ -21,7 +21,7 @@ export const EditStaffBranchField: React.FC<EditStaffBranchFieldProps> = ({
   setCurrentStaff,
 }) => {
   const { company } = useCompanyStore();
-  const { branches, loading, loadBranches } = useBranch();
+  const { data: branches, loading, loadBranches } = useBranches();
 
   useEffect(() => {
     if (!company?.id) return;
@@ -34,7 +34,7 @@ export const EditStaffBranchField: React.FC<EditStaffBranchFieldProps> = ({
         單位 <span className="text-red-500">*</span>
       </Label>
       <Select
-        value={currentStaff.branch_id || ''}
+        value={currentStaff?.branch_id || ''}
         onValueChange={value => {
           const selectedBranch = branches.find(b => b.id === value);
           setCurrentStaff({
@@ -50,8 +50,8 @@ export const EditStaffBranchField: React.FC<EditStaffBranchFieldProps> = ({
         </SelectTrigger>
         <SelectContent>
           {/* 如果當前員工的單位不在標準列表中，先顯示當前單位 */}
-          {currentStaff.branch_name &&
-            currentStaff.branch_id &&
+          {currentStaff?.branch_name &&
+            currentStaff?.branch_id &&
             !branches.find(b => b.id === currentStaff.branch_id) && (
               <SelectItem value={currentStaff.branch_id}>
                 {currentStaff.branch_name} (當前設定)

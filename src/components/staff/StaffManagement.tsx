@@ -3,8 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { deleteStaff, loadStaff } from '@/hooks/useStaff';
-import { useStaffStore } from '@/stores/staffStore';
+import { useStaff } from '@/hooks/useStaff';
 import { Plus, Search, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import AddStaffDialog from './AddStaffDialog';
@@ -24,11 +23,10 @@ const StaffManagement = () => {
   const [staffToDelete, setStaffToDelete] = useState<Staff | null>(null);
 
   // 使用操作 hook
-  const { staff } = useStaffStore();
-  const [loading, setLoading] = useState(false);
+  const { data: staff, loading, loadStaff, deleteStaff } = useStaff();
 
   useEffect(() => {
-    handleLoadStaff();
+    loadStaff();
   }, []);
 
   // 篩選員工列表
@@ -89,12 +87,6 @@ const StaffManagement = () => {
     });
   };
 
-  const handleLoadStaff = async () => {
-    setLoading(true);
-    await loadStaff();
-    setLoading(false);
-  };
-
   return (
     <div className="space-y-6">
       {/* 主要內容卡片 */}
@@ -131,15 +123,6 @@ const StaffManagement = () => {
                   className="pl-10 bg-white/70 border-white/40 backdrop-blur-sm"
                 />
               </div>
-
-              {/* 重新整理按鈕 */}
-              <Button
-                variant="outline"
-                onClick={handleLoadStaff}
-                className="bg-white/60 border-white/40 hover:bg-white/80"
-              >
-                重新整理
-              </Button>
             </div>
           </div>
 
@@ -165,7 +148,6 @@ const StaffManagement = () => {
         staff={currentStaff}
         onSuccess={handleEditSuccess}
       />
-
       {/* 刪除確認對話框 */}
       <DeleteConfirmDialog
         open={isDeleteDialogOpen}

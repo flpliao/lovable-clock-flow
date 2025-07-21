@@ -11,10 +11,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { addRole } from '@/hooks/useRole';
+import { useRole } from '@/hooks/useRole';
 import { useIsAdmin } from '@/hooks/useStores';
 import { permissionService } from '@/services/permissionService';
-import { NewRole } from '@/services/roleService';
+import { NewRole } from '@/types/role';
 import React, { useState } from 'react';
 import PermissionSelect from './components/PermissionSelect';
 
@@ -27,6 +27,7 @@ interface AddRoleDialogProps {
 const AddRoleDialog = ({ open, onOpenChange, onRoleAdded }: AddRoleDialogProps) => {
   const isAdmin = useIsAdmin();
   const { toast } = useToast();
+  const { addRole } = useRole();
   const [isOpen, setIsOpen] = useState(false);
   const dialogOpen = open !== undefined ? open : isOpen;
   const handleOpenChange = onOpenChange || setIsOpen;

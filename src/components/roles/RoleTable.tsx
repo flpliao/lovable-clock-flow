@@ -8,9 +8,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { deleteRole } from '@/hooks/useRole';
+import { useRole } from '@/hooks/useRole';
 import { useIsAdmin } from '@/hooks/useStores';
-import { Role } from '@/services/roleService';
+import { Role } from '@/types/role';
 import { Briefcase, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import AddRoleDialog from './AddRoleDialog';
@@ -26,6 +26,7 @@ interface RoleTableProps {
 const RoleTable = ({ roles, loading, searchTerm = '', sortOrder = 'asc' }: RoleTableProps) => {
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const { deleteRole } = useRole();
   const { toast } = useToast();
   const isAdmin = useIsAdmin();
 
@@ -56,11 +57,6 @@ const RoleTable = ({ roles, loading, searchTerm = '', sortOrder = 'asc' }: RoleT
         variant: 'destructive',
       });
     }
-  };
-
-  const handleCloseEditDialog = () => {
-    setIsEditDialogOpen(false);
-    setEditingRole(null);
   };
 
   // 在組件內部進行篩選和排序
@@ -205,8 +201,8 @@ const RoleTable = ({ roles, loading, searchTerm = '', sortOrder = 'asc' }: RoleT
 
       <EditRoleDialog
         role={editingRole}
-        isOpen={isEditDialogOpen}
-        onClose={handleCloseEditDialog}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
       />
     </>
   );

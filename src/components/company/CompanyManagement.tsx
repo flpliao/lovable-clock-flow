@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useBranch } from '@/hooks/useBranch';
+import { useBranches } from '@/hooks/useBranches';
+import { Checkpoint, useCheckpoints } from '@/hooks/useCheckpoints';
 import { useCompany } from '@/hooks/useCompany';
 import { Branch } from '@/types/company';
 import { Building, MapPin, Plus } from 'lucide-react';
@@ -12,12 +13,11 @@ import EditCompanyDialog from './EditCompanyDialog';
 import AddCheckpointDialog from './components/AddCheckpointDialog';
 import CheckpointTable from './components/CheckpointTable';
 import EditCheckpointDialog from './components/EditCheckpointDialog';
-import { Checkpoint, useCheckpoints } from './components/useCheckpoints';
 
 const CompanyManagement = () => {
   // 使用 Zustand store
   const { company, loadCompany } = useCompany();
-  const { branches, loading: branchesLoading, loadBranches } = useBranch();
+  const { data: branches, loading: branchesLoading, loadBranches } = useBranches();
 
   // 本地狀態
   const [isAddBranchDialogOpen, setIsAddBranchDialogOpen] = useState(false);
@@ -27,11 +27,7 @@ const CompanyManagement = () => {
   const [activeTab, setActiveTab] = useState('branches');
   const [isAddCheckpointOpen, setIsAddCheckpointOpen] = useState(false);
   const [editCheckpoint, setEditCheckpoint] = useState<Checkpoint | null>(null);
-  const {
-    data: checkpoints,
-    loading: checkpointsLoading,
-    refresh: refreshCheckpoints,
-  } = useCheckpoints();
+  const { data: checkpoints, loading: checkpointsLoading, loadCheckpoints } = useCheckpoints();
 
   useEffect(() => {
     loadCompany();
@@ -123,7 +119,7 @@ const CompanyManagement = () => {
                 onEdit={setEditCheckpoint}
                 data={checkpoints}
                 loading={checkpointsLoading}
-                refresh={refreshCheckpoints}
+                refresh={loadCheckpoints}
               />
             </div>
           </div>
@@ -176,13 +172,13 @@ const CompanyManagement = () => {
       <AddCheckpointDialog
         open={isAddCheckpointOpen}
         onClose={() => setIsAddCheckpointOpen(false)}
-        onSuccess={refreshCheckpoints}
+        onSuccess={loadCheckpoints}
       />
       <EditCheckpointDialog
         open={!!editCheckpoint}
         onClose={() => setEditCheckpoint(null)}
         checkpoint={editCheckpoint}
-        onSuccess={refreshCheckpoints}
+        onSuccess={loadCheckpoints}
       />
     </div>
   );

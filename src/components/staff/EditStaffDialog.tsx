@@ -8,9 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { loadRoles } from '@/hooks/useRole';
-import { updateStaff } from '@/hooks/useStaff';
-import { useRoleStore } from '@/stores/roleStore';
+import { useStaff } from '@/hooks/useStaff';
 import { useEffect, useState } from 'react';
 import EditStaffForm from './forms/EditStaffForm';
 import { useSupervisorFilter } from './hooks/useSupervisorFilter';
@@ -25,16 +23,11 @@ interface EditStaffDialogProps {
 
 const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDialogProps) => {
   const { toast } = useToast();
-  const { roles } = useRoleStore();
+  const { updateStaff } = useStaff();
   const [currentStaff, setCurrentStaff] = useState<Staff | null>(null);
 
   // 使用 hook 來篩選可選的主管
   const potentialSupervisors = useSupervisorFilter(currentStaff);
-
-  // 載入職位
-  useEffect(() => {
-    loadRoles();
-  }, []);
 
   useEffect(() => {
     if (staff) {
@@ -76,7 +69,6 @@ const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDial
           currentStaff={currentStaff}
           setCurrentStaff={setCurrentStaff}
           potentialSupervisors={potentialSupervisors}
-          roles={roles}
           onHireDateChange={() => {}}
         />
 

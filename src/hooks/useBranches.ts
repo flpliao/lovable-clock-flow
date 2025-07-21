@@ -3,44 +3,52 @@ import { useBranchStore } from '@/stores/branchStore';
 import { NewBranch } from '@/types/company';
 import { useState } from 'react';
 
-export const useBranch = () => {
-  const { branches, setBranches, addBranch, removeBranch } = useBranchStore();
+export const useBranches = () => {
   const [loading, setLoading] = useState(false);
+  const {
+    branches: data,
+    setBranches,
+    addBranch: addToStore,
+    removeBranch: removeFromStore,
+  } = useBranchStore();
 
   const loadBranches = async (companyId?: string) => {
-    if (!companyId || branches.length > 0) return;
+    if (!companyId || data.length > 0) return;
+
     setLoading(true);
     try {
-      const data = await branchService.loadBranches(companyId);
-      setBranches(data);
+      const branches = await branchService.loadBranches(companyId);
+      setBranches(branches);
+    } catch (error) {
+      console.error('載入分支失敗:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const createBranch = async (companyId: string, newBranch: NewBranch) => {
-    setLoading(true);
     try {
       const created = await branchService.addBranch(companyId, newBranch);
-      addBranch(created);
+      addToStore(created);
       return created;
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('新增分支失敗:', error);
+      throw error;
     }
   };
 
   const deleteBranch = async (branchId: string) => {
-    setLoading(true);
     try {
       await branchService.deleteBranch(branchId);
-      removeBranch(branchId);
-    } finally {
-      setLoading(false);
+      removeFromStore(branchId);
+    } catch (error) {
+      console.error('刪除分支失敗:', error);
+      throw error;
     }
   };
 
   return {
-    branches,
+    data,
     loading,
     loadBranches,
     createBranch,

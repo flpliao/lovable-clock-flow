@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
-import { useBranch } from '@/hooks/useBranch';
+import { useBranches } from '@/hooks/useBranches';
 import { Branch } from '@/types/company';
 import { Building, Edit, MapPin, Phone, Trash2, User } from 'lucide-react';
 
@@ -12,7 +12,7 @@ interface BranchTableProps {
 }
 
 const BranchTable = ({ branches, onEdit, loading }: BranchTableProps) => {
-  const { deleteBranch } = useBranch();
+  const { deleteBranch } = useBranches();
   const isMobile = useIsMobile();
   const { toast } = useToast();
 

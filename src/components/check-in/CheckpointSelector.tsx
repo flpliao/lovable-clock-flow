@@ -1,4 +1,3 @@
-import { useCheckpoints } from '@/components/company/components/useCheckpoints';
 import {
   Select,
   SelectContent,
@@ -6,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useCheckpoints } from '@/hooks/useCheckpoints';
 import { MapPin } from 'lucide-react';
 import React, { useEffect } from 'react';
 

@@ -63,7 +63,6 @@ export function useCheckpoints() {
     data,
     loading,
     loadCheckpoints: loadCheckpoints,
-    refresh: loadCheckpoints,
     addCheckpoint,
     updateCheckpoint,
     deleteCheckpoint,

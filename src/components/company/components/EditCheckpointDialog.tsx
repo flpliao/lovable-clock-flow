@@ -8,9 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useCheckpoints } from '@/hooks/useCheckpoints';
 import type { Checkpoint } from '@/services/checkpointService';
 import React, { useEffect, useState } from 'react';
-import { useCheckpoints } from './useCheckpoints';
 
 const EditCheckpointDialog = ({
   open,

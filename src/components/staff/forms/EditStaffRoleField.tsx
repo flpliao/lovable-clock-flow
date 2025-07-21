@@ -6,13 +6,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Role } from '@/types/role';
 import React from 'react';
-import { Staff, StaffRole } from '../types';
+import { Staff } from '../types';
 
 interface EditStaffRoleFieldProps {
   currentStaff: Staff;
   setCurrentStaff: (staff: Staff) => void;
-  roles: StaffRole[];
+  roles: Role[];
 }
 
 export const EditStaffRoleField: React.FC<EditStaffRoleFieldProps> = ({

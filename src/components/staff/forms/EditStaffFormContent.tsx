@@ -1,5 +1,6 @@
+import { Role } from '@/types/role';
 import React from 'react';
-import { Staff, StaffRole } from '../types';
+import { Staff } from '../types';
 import { EditStaffBasicFields } from './EditStaffBasicFields';
 import { EditStaffBranchField } from './EditStaffBranchField';
 import { EditStaffRoleField } from './EditStaffRoleField';
@@ -9,7 +10,7 @@ interface EditStaffFormContentProps {
   currentStaff: Staff;
   setCurrentStaff: (staff: Staff) => void;
   potentialSupervisors: Staff[];
-  roles: StaffRole[];
+  roles: Role[];
   onHireDateChange?: (hasHireDate: boolean, entitledDays?: number) => void;
 }
 

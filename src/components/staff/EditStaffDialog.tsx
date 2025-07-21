@@ -8,12 +8,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { loadRoles } from '@/hooks/useRole';
 import { updateStaff } from '@/hooks/useStaff';
-import { roleService } from '@/services/roleService';
+import { useRoleStore } from '@/stores/roleStore';
 import { useEffect, useState } from 'react';
 import { EditStaffFormContent } from './forms/EditStaffFormContent';
 import { useSupervisorFilter } from './hooks/useSupervisorFilter';
-import { Staff, StaffRole } from './types';
+import { Staff } from './types';
 
 interface EditStaffDialogProps {
   open: boolean;
@@ -24,23 +25,15 @@ interface EditStaffDialogProps {
 
 const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDialogProps) => {
   const { toast } = useToast();
+  const { roles } = useRoleStore();
   const [currentStaff, setCurrentStaff] = useState<Staff | null>(null);
-  const [roles, setRoles] = useState<StaffRole[]>([]);
 
   // 使用 hook 來篩選可選的主管
   const potentialSupervisors = useSupervisorFilter(currentStaff);
 
   // 載入職位
   useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const data = await roleService.loadRoles();
-        setRoles(data);
-      } catch (error) {
-        console.error('載入職位失敗:', error);
-      }
-    };
-    fetchRoles();
+    loadRoles();
   }, []);
 
   useEffect(() => {

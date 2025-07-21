@@ -1,5 +1,6 @@
-import { NewRole, Role, roleService } from '@/services/roleService';
+import { roleService } from '@/services/roleService';
 import { useRoleStore } from '@/stores/roleStore';
+import { NewRole, Role } from '@/types/role';
 
 export const loadRoles = async () => {
   const { roles, setRoles } = useRoleStore.getState();

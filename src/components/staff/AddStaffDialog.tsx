@@ -8,12 +8,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { loadRoles } from '@/hooks/useRole';
 import { addStaff } from '@/hooks/useStaff';
-import { roleService } from '@/services/roleService';
+import { useRoleStore } from '@/stores/roleStore';
 import { useEffect, useState } from 'react';
-import { SYSTEM_ROLES } from './constants/systemRoles';
 import AddStaffForm from './forms/AddStaffForm';
-import { NewStaff, StaffRole } from './types';
+import { NewStaff } from './types';
 
 interface AddStaffDialogProps {
   open: boolean;
@@ -23,7 +23,7 @@ interface AddStaffDialogProps {
 
 const AddStaffDialog = ({ open, onOpenChange, onSuccess }: AddStaffDialogProps) => {
   const { toast } = useToast();
-  const [roles, setRoles] = useState<StaffRole[]>([]);
+  const { roles } = useRoleStore();
   const [newStaff, setNewStaff] = useState<NewStaff>({
     name: '',
     position: '',
@@ -34,18 +34,8 @@ const AddStaffDialog = ({ open, onOpenChange, onSuccess }: AddStaffDialogProps) 
     role_id: 'user',
   });
 
-  // 載入角色
   useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const data = await roleService.loadRoles();
-        setRoles(data);
-      } catch (error) {
-        console.error('載入角色失敗，使用預設系統角色:', error);
-        setRoles(SYSTEM_ROLES);
-      }
-    };
-    fetchRoles();
+    loadRoles();
   }, []);
 
   const handleAddStaff = async () => {

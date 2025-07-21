@@ -1,5 +1,6 @@
+import { Role } from '@/types/role';
 import React from 'react';
-import { NewStaff, StaffRole } from '../types';
+import { NewStaff } from '../types';
 import { StaffBasicFields } from './StaffBasicFields';
 import StaffBranchFields from './StaffBranchFields';
 import StaffRoleFields from './StaffRoleFields';
@@ -8,7 +9,7 @@ import StaffSupervisorFields from './StaffSupervisorFields';
 interface AddStaffFormProps {
   newStaff: NewStaff;
   setNewStaff: (staff: NewStaff) => void;
-  roles: StaffRole[];
+  roles: Role[];
 }
 
 const AddStaffForm: React.FC<AddStaffFormProps> = ({ newStaff, setNewStaff, roles }) => {

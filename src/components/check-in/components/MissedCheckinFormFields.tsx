@@ -22,13 +22,22 @@ export interface MissedCheckinFormData {
 interface MissedCheckinFormFieldsProps {
   formData: MissedCheckinFormData;
   onFormDataChange: (updates: Partial<MissedCheckinFormData>) => void;
+  disabledFields?: {
+    request_date?: boolean;
+    missed_type?: boolean;
+  };
 }
 
 const MissedCheckinFormFields: React.FC<MissedCheckinFormFieldsProps> = ({
   formData,
   onFormDataChange,
+  disabledFields = {},
 }) => {
   const handleFieldChange = (field: keyof MissedCheckinFormData, value: string) => {
+    // 如果欄位被禁用，則不允許修改
+    if (disabledFields[field as keyof typeof disabledFields]) {
+      return;
+    }
     onFormDataChange({ [field]: value });
   };
 
@@ -41,7 +50,9 @@ const MissedCheckinFormFields: React.FC<MissedCheckinFormFieldsProps> = ({
           type="date"
           value={formData.request_date}
           onChange={e => handleFieldChange('request_date', e.target.value)}
+          disabled={disabledFields.request_date}
           required
+          className={disabledFields.request_date ? 'bg-gray-100 cursor-not-allowed' : ''}
         />
       </div>
 
@@ -52,8 +63,11 @@ const MissedCheckinFormFields: React.FC<MissedCheckinFormFieldsProps> = ({
           onValueChange={(value: 'check_in' | 'check_out') =>
             handleFieldChange('missed_type', value)
           }
+          disabled={disabledFields.missed_type}
         >
-          <SelectTrigger>
+          <SelectTrigger
+            className={disabledFields.missed_type ? 'bg-gray-100 cursor-not-allowed' : ''}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

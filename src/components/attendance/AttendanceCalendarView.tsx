@@ -2,7 +2,15 @@ import { Calendar } from '@/components/ui/calendar';
 import { CheckInRecord } from '@/types';
 import { MissedCheckinRequest } from '@/types/missedCheckin';
 import { Schedule } from '@/services/scheduleService';
-import { eachDayOfInterval, endOfMonth, format, isFuture, startOfMonth } from 'date-fns';
+import {
+  eachDayOfInterval,
+  endOfMonth,
+  format,
+  isFuture,
+  startOfMonth,
+  isAfter,
+  startOfDay,
+} from 'date-fns';
 import { isToday } from '@/utils/dateUtils';
 import React, { useMemo, useState } from 'react';
 import DateRecordDetails from './DateRecordDetails';
@@ -209,6 +217,26 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
     return dates;
   }, [datesWithRecords, missedCheckinMap, displayMonth, hasScheduleForDate, getScheduleForDate]);
 
+  // 獲取需要禁用的日期（未來日期）
+  const disabledDates = useMemo(() => {
+    const dates: Date[] = [];
+    const today = startOfDay(new Date());
+
+    // 使用當前顯示的月份
+    const monthStart = startOfMonth(displayMonth);
+    const monthEnd = endOfMonth(displayMonth);
+    const allDaysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+    allDaysInMonth.forEach(day => {
+      // 如果日期在明天之後，則禁用
+      if (isAfter(day, today)) {
+        dates.push(day);
+      }
+    });
+
+    return dates;
+  }, [displayMonth]);
+
   return (
     <div className="w-full max-w-7xl mx-auto">
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -221,6 +249,7 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
             onMonthChange={handleMonthChange}
             className="mx-auto"
             captionLayout="buttons"
+            disabled={disabledDates}
             formatters={{
               formatCaption: (date, _options) => {
                 return format(date, 'MMMM yyyy');
@@ -236,6 +265,7 @@ const AttendanceCalendarView: React.FC<AttendanceCalendarViewProps> = ({
             }}
             classNames={{
               day: 'relative h-10 w-10 p-0 font-normal rounded-full transition-colors hover:bg-gray-100 text-gray-800 font-medium cursor-pointer',
+              day_disabled: 'text-gray-400 cursor-not-allowed hover:bg-transparent',
             }}
           />
         </div>

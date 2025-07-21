@@ -1,6 +1,7 @@
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import React from 'react';
 import { NewStaff } from '../types';
-import { StaffBasicFields } from './StaffBasicFields';
 import StaffBranchFields from './StaffBranchFields';
 import StaffRoleFields from './StaffRoleFields';
 import StaffSupervisorFields from './StaffSupervisorFields';
@@ -13,11 +14,61 @@ interface AddStaffFormProps {
 const AddStaffForm: React.FC<AddStaffFormProps> = ({ newStaff, setNewStaff }) => {
   return (
     <div className="grid gap-4 py-4">
-      <StaffBasicFields newStaff={newStaff} setNewStaff={setNewStaff} />
-      {/* <StaffDepartmentFields newStaff={newStaff} setNewStaff={setNewStaff} /> */}
+      {/* 基本欄位 */}
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="name" className="text-right">
+          姓名 <span className="text-red-500">*</span>
+        </Label>
+        <Input
+          id="name"
+          value={newStaff.name}
+          onChange={e => setNewStaff({ ...newStaff, name: e.target.value })}
+          className="col-span-3"
+          placeholder="請輸入員工姓名"
+          required
+        />
+      </div>
       <StaffBranchFields newStaff={newStaff} setNewStaff={setNewStaff} />
-      <StaffSupervisorFields newStaff={newStaff} setNewStaff={setNewStaff} />
       <StaffRoleFields newStaff={newStaff} setNewStaff={setNewStaff} />
+      <StaffSupervisorFields newStaff={newStaff} setNewStaff={setNewStaff} />
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="hire_date" className="text-right">
+          入職日期
+        </Label>
+        <Input
+          id="hire_date"
+          type="date"
+          value={newStaff.hire_date || ''}
+          onChange={e => setNewStaff({ ...newStaff, hire_date: e.target.value })}
+          className="col-span-3"
+        />
+      </div>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="email" className="text-right">
+          電子郵件 <span className="text-red-500">*</span>
+        </Label>
+        <Input
+          id="email"
+          type="email"
+          value={newStaff.email || ''}
+          onChange={e => setNewStaff({ ...newStaff, email: e.target.value })}
+          className="col-span-3"
+          placeholder="請輸入電子郵件"
+        />
+      </div>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="contact" className="text-right">
+          聯絡電話
+        </Label>
+        <Input
+          id="contact"
+          value={newStaff.contact}
+          onChange={e => setNewStaff({ ...newStaff, contact: e.target.value })}
+          className="col-span-3"
+          placeholder="請輸入聯絡電話"
+          required
+        />
+      </div>
     </div>
   );
 };

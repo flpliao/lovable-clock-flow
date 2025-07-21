@@ -3,7 +3,8 @@ import { staffService } from '@/services/staffService';
 import { useStaffStore } from '@/stores/staffStore';
 
 export const loadStaff = async () => {
-  const { setStaff } = useStaffStore.getState();
+  const { staff, setStaff } = useStaffStore.getState();
+  if (staff.length > 0) return;
   const data = await staffService.loadStaffList();
   setStaff(data);
 };

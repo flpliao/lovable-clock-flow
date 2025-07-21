@@ -9,7 +9,21 @@ export class roleService {
   static async getRoles(): Promise<Role[]> {
     const { data, error } = await supabase
       .from(TABLE_NAME)
-      .select('*')
+      .select(
+        `
+      *,
+      role_permissions:role_permissions (
+        permission_id,
+        permissions (
+          id,
+          name,
+          code,
+          description,
+          category
+        )
+      )
+    `
+      )
       .order('name', { ascending: true });
 
     if (error) {
@@ -17,7 +31,27 @@ export class roleService {
       throw error;
     }
 
-    return data || [];
+    // 將 role_permissions 轉成 permissions: Permission[]
+    const roles: Role[] = (data || []).map(role => {
+      const permissions: Permission[] = (role.role_permissions || [])
+        .filter(rp => rp.permissions)
+        .map(rp => ({
+          id: rp.permissions.id,
+          name: rp.permissions.name,
+          code: rp.permissions.code,
+          description: rp.permissions.description,
+          category: rp.permissions.category,
+        }));
+      return {
+        id: role.id,
+        name: role.name,
+        description: role.description || '',
+        is_system_role: role.is_system_role || false,
+        permissions,
+      };
+    });
+
+    return roles;
   }
 
   static async addRole(newRole: NewRole): Promise<Role> {

@@ -29,36 +29,15 @@ const EditRoleDialog = ({ role, open, onOpenChange, onRoleUpdated }: EditRoleDia
   const { updateRole } = useRoles();
   const [isLoading, setIsLoading] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(role);
-  const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set());
+  const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(
+    new Set(role?.permissions?.map(p => p.id) ?? [])
+  );
 
-  // 當 role prop 改變時更新本地狀態
+  // 當 role 或其 permissions 變動時，更新本地權限狀態
   useEffect(() => {
     setEditingRole(role);
+    setSelectedPermissions(new Set(role?.permissions?.map(p => p.id) ?? []));
   }, [role]);
-
-  // 載入角色當前權限
-  useEffect(() => {
-    const loadRolePermissions = async () => {
-      if (!open || !role) return;
-
-      try {
-        setIsLoading(true);
-        const rolePermissions = await permissionService.getRolePermissions(role.id);
-        setSelectedPermissions(new Set(rolePermissions.map(p => p.id)));
-      } catch (error) {
-        console.error('載入角色權限失敗:', error);
-        toast({
-          title: '載入失敗',
-          description: '無法載入角色權限資料',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadRolePermissions();
-  }, [open, role, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

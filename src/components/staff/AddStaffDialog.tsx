@@ -10,7 +10,6 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { addStaff } from '@/hooks/useStaff';
 import { roleService } from '@/services/roleService';
-import { permissionService } from '@/services/simplifiedPermissionService';
 import { useEffect, useState } from 'react';
 import { SYSTEM_ROLES } from './constants/systemRoles';
 import AddStaffForm from './forms/AddStaffForm';
@@ -34,7 +33,6 @@ const AddStaffDialog = ({ open, onOpenChange, onSuccess }: AddStaffDialogProps) 
     contact: '',
     role_id: 'user',
   });
-  const isAdmin = permissionService.isAdmin();
 
   // 載入角色
   useEffect(() => {
@@ -49,10 +47,6 @@ const AddStaffDialog = ({ open, onOpenChange, onSuccess }: AddStaffDialogProps) 
     };
     fetchRoles();
   }, []);
-
-  if (!isAdmin) {
-    return null;
-  }
 
   const handleAddStaff = async () => {
     try {

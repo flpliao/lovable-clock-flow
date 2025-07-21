@@ -3,142 +3,93 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { staffService } from '@/services/staffService';
+import { useStaff } from '@/hooks/useStaff';
 import { Plus, Search, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import AddStaffDialog from './AddStaffDialog';
 import EditStaffDialog from './EditStaffDialog';
 import { StaffList } from './StaffList';
-import { NewStaff, Staff } from './types';
+import { Staff } from './types';
 
 const StaffManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
-  const [staffList, setStaffList] = useState<Staff[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [staffToDelete, setStaffToDelete] = useState<Staff | null>(null);
   const { toast } = useToast();
 
-  // 載入員工列表
-  const loadStaffList = async () => {
-    try {
-      setLoading(true);
-      const data = await staffService.loadStaffList();
-      setStaffList(data);
-    } catch (error) {
-      console.error('載入員工列表失敗:', error);
-      toast({
-        title: '載入失敗',
-        description: error instanceof Error ? error.message : '無法載入員工列表',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // 對話框狀態
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [currentStaff, setCurrentStaff] = useState<Staff | null>(null);
+  const [staffToDelete, setStaffToDelete] = useState<Staff | null>(null);
 
-  // 初始載入
+  // 使用操作 hook
+  const { data: staff, loading, loadStaff, deleteStaff } = useStaff();
+
   useEffect(() => {
-    loadStaffList();
+    loadStaff();
   }, []);
 
-  const filteredStaff = staffList.filter(staff => {
-    const searchLower = searchTerm.toLowerCase();
-    let matchesSearch = false;
-    matchesSearch =
-      staff.name?.toLowerCase().includes(searchLower) ||
-      staff.email?.toLowerCase().includes(searchLower) ||
-      staff.role_name?.toLowerCase().includes(searchLower) ||
-      staff.branch_name?.toLowerCase().includes(searchLower) ||
-      staff.supervisor_name?.toLowerCase().includes(searchLower);
-    return matchesSearch;
-  });
+  // 篩選員工列表
+  const filteredStaff = staff.filter(
+    s =>
+      s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.role_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
+  // 處理編輯員工
   const handleEditStaff = (staff: Staff) => {
-    setSelectedStaff(staff);
+    setCurrentStaff(staff);
     setIsEditDialogOpen(true);
   };
 
+  // 處理刪除員工點擊
   const handleDeleteClick = (staff: Staff) => {
     setStaffToDelete(staff);
     setIsDeleteDialogOpen(true);
   };
 
+  // 處理刪除確認
   const handleDeleteConfirm = async () => {
     if (!staffToDelete) return;
 
     try {
-      setLoading(true);
-      await staffService.deleteStaff(staffToDelete.id);
+      await deleteStaff(staffToDelete.id);
       toast({
         title: '刪除成功',
-        description: `員工「${staffToDelete.name}」資料已刪除`,
+        description: '員工已成功刪除',
       });
-      await loadStaffList();
     } catch (error) {
       console.error('刪除員工失敗:', error);
       toast({
         title: '刪除失敗',
-        description: error instanceof Error ? error.message : '無法刪除員工資料',
+        description: error instanceof Error ? error.message : '無法刪除員工',
         variant: 'destructive',
       });
-    } finally {
-      setLoading(false);
-      setIsDeleteDialogOpen(false);
-      setStaffToDelete(null);
     }
   };
 
-  const handleAddSuccess = async (newStaff: NewStaff) => {
-    try {
-      setLoading(true);
-      await staffService.addStaff(newStaff);
-      toast({
-        title: '新增成功',
-        description: `員工 ${newStaff.name} 已新增`,
-      });
-      setIsAddDialogOpen(false);
-      await loadStaffList();
-    } catch (error) {
-      console.error('新增員工失敗:', error);
-      toast({
-        title: '新增失敗',
-        description: error instanceof Error ? error.message : '無法新增員工',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+  // 處理新增成功
+  const handleAddSuccess = () => {
+    toast({
+      title: '新增成功',
+      description: '員工已成功新增',
+    });
   };
 
-  const handleEditSuccess = async (updatedStaff: Staff) => {
-    try {
-      setLoading(true);
-      await staffService.updateStaff(updatedStaff.id, updatedStaff);
-      toast({
-        title: '更新成功',
-        description: `員工 ${updatedStaff.name} 資料已更新`,
-      });
-      setIsEditDialogOpen(false);
-      await loadStaffList();
-    } catch (error) {
-      console.error('更新員工失敗:', error);
-      toast({
-        title: '更新失敗',
-        description: error instanceof Error ? error.message : '無法更新員工資料',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+  // 處理編輯成功
+  const handleEditSuccess = () => {
+    toast({
+      title: '更新成功',
+      description: '員工資料已成功更新',
+    });
   };
 
   return (
-    <div className="space-y-4">
-      {/* 主要管理介面 */}
+    <div className="space-y-6">
+      {/* 主要內容卡片 */}
       <Card className="backdrop-blur-xl bg-white/60 border border-white/40 shadow-lg">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
@@ -172,15 +123,6 @@ const StaffManagement = () => {
                   className="pl-10 bg-white/70 border-white/40 backdrop-blur-sm"
                 />
               </div>
-
-              {/* 重新整理按鈕 */}
-              <Button
-                variant="outline"
-                onClick={loadStaffList}
-                className="bg-white/60 border-white/40 hover:bg-white/80"
-              >
-                重新整理
-              </Button>
             </div>
           </div>
 
@@ -203,17 +145,16 @@ const StaffManagement = () => {
       <EditStaffDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
-        staff={selectedStaff}
+        staff={currentStaff}
         onSuccess={handleEditSuccess}
       />
-
       {/* 刪除確認對話框 */}
       <DeleteConfirmDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
         title="確認刪除員工"
-        description={`確定要刪除員工「${staffToDelete?.name}」嗎？此操作無法復原，將永久刪除該員工的所有資料。`}
+        description={`確定要刪除員工「${staffToDelete?.name}」嗎？此操作無法復原。`}
       />
     </div>
   );

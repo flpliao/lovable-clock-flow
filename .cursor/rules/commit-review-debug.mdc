@@ -18,12 +18,13 @@ alwaysApply: false
 ## cc：Git Commit 訊息產生器
 
 ```prompt
-請根據當前程式碼變更內容，產生一則符合規範的 Git commit 訊息。
+請根據「已 staged（已暫存）」的程式碼變更內容，產生一則符合規範的 Git commit 訊息。
+（請勿包含未暫存或未追蹤檔案的變更）
 
 步驟：
 
 1. 檢查變更：
-   - staged / unstaged / untracked / deleted files
+   - 僅限 staged files（已暫存檔案）
 
 2. 修改細項：
    - 每個變動檔案簡要說明變更重點
@@ -87,24 +88,19 @@ description 規則：
 ```prompt
 請根據當前程式碼變更，協助建立一個從 main 分出的新分支，並建議分支命名：
 
-步驟：
-
 1. 檢查變更：
    - staged / unstaged / untracked / deleted files
-
 2. 判斷分支類型：
-   - feature/：新增功能
-   - bugfix/：修復錯誤
+   - feat/：新增功能
+   - fix/：修復錯誤
    - refactor/：程式重構
    - hotfix/：緊急修正
    - chore/：環境或設定調整
-
 3. 命名格式：
    <類型>/<簡要描述>
    - 使用小寫英文
    - 單字以 dash 分隔
    - 最多 5 個單字內
-
 4. 請產出：
    - 建議分支名稱
    - 命名原因
@@ -114,6 +110,8 @@ description 規則：
 ---
 
 ## 使用方式
+
+- 所有操作預設僅針對已 staged 內容，請先將欲提交的檔案加入暫存區。
 
 1. 在 Cursor 中載入本文件（可常駐開啟）
 2. 使用任一快速指令（如 `cc`, `review`）或輸入完整提示（如 `請使用 commit prompt`）

@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import RequiredLabel from '@/components/ui/RequiredLabel';
 import {
   Select,
   SelectContent,
@@ -11,8 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { branchService } from '@/services/branchService';
-import { useBranchStore } from '@/stores/branchStore';
+import { useBranches } from '@/hooks/useBranches';
 import { useCompanyStore } from '@/stores/companyStore';
 import { NewBranch } from '@/types/company';
 import React, { useState } from 'react';
@@ -25,7 +23,7 @@ interface AddBranchDialogProps {
 const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
   const { toast } = useToast();
   const { company } = useCompanyStore();
-  const { addBranch, branches } = useBranchStore();
+  const { createBranch, data: branches } = useBranches();
 
   const [newBranch, setNewBranch] = useState<Omit<NewBranch, 'type'>>({
     name: '',
@@ -53,9 +51,7 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
     setIsSubmitting(true);
 
     try {
-      const createdBranch = await branchService.addBranch(company.id, newBranch as NewBranch);
-      addBranch(createdBranch);
-
+      await createBranch(company.id, newBranch as NewBranch);
       toast({
         title: '成功',
         description: '單位新增成功',
@@ -104,7 +100,7 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <RequiredLabel htmlFor="name">單位名稱</RequiredLabel>
+              <Label htmlFor="name">單位名稱</Label>
               <Input
                 id="name"
                 value={newBranch.name}
@@ -114,7 +110,7 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
               />
             </div>
             <div className="space-y-2">
-              <RequiredLabel htmlFor="code">單位代碼</RequiredLabel>
+              <Label htmlFor="code">單位代碼</Label>
               <Input
                 id="code"
                 value={newBranch.code}

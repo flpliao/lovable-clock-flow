@@ -1,6 +1,6 @@
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
-import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
+import { useIsAdmin } from '@/hooks/useStores';
 import { supabase } from '@/integrations/supabase/client';
+import { useStaffStore } from '@/stores/staffStore';
 import { CheckInRecord } from '@/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Staff } from '../types';
@@ -13,9 +13,8 @@ export interface TeamMemberCheckInData {
 }
 
 export const useTeamCheckInData = () => {
-  const currentUser = useCurrentUser();
   const isAdmin = useIsAdmin();
-  const { staffList } = useStaffManagementContext();
+  const { staffList } = useStaffStore();
   const [filter, setFilter] = useState<'today' | 'week' | 'month'>('today');
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [allRecords, setAllRecords] = useState<CheckInRecord[]>([]);
@@ -31,7 +30,7 @@ export const useTeamCheckInData = () => {
 
     try {
       console.log('🔄 載入團隊打卡記錄...');
-      
+
       const { data, error } = await supabase
         .from('check_in_records')
         .select('*')
@@ -42,7 +41,7 @@ export const useTeamCheckInData = () => {
         return;
       }
 
-      const formattedRecords = (data || []).map((record: any) => ({
+      const formattedRecords = (data || []).map((record: CheckInRecord) => ({
         id: record.id,
         userId: record.user_id,
         timestamp: record.timestamp,
@@ -54,8 +53,8 @@ export const useTeamCheckInData = () => {
           longitude: record.longitude,
           distance: record.distance,
           ip: record.ip_address,
-          locationName: record.location_name
-        }
+          locationName: record.location_name,
+        },
       }));
 
       console.log('✅ 團隊打卡記錄載入完成:', formattedRecords.length, '筆記錄');
@@ -95,16 +94,18 @@ export const useTeamCheckInData = () => {
 
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const weekStart = new Date(today - (now.getDay() > 0 ? now.getDay() - 1 : 6) * 86400000).getTime();
+    const weekStart = new Date(
+      today - (now.getDay() > 0 ? now.getDay() - 1 : 6) * 86400000
+    ).getTime();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
     return filteredStaff.map(staff => {
       // Filter records by date range and user ID
       const userRecords = allRecords.filter(record => {
         const recordTime = new Date(record.timestamp).getTime();
-        
+
         if (record.userId !== staff.id) return false;
-        
+
         if (filter === 'today') {
           return recordTime >= today;
         } else if (filter === 'week') {
@@ -112,24 +113,25 @@ export const useTeamCheckInData = () => {
         } else if (filter === 'month') {
           return recordTime >= monthStart;
         }
-        
+
         return false;
       });
 
       // Get stats
       const totalRecords = userRecords.length;
       const successRecords = userRecords.filter(r => r.status === 'success').length;
-      
+
       // Get latest record
-      const latestRecord = userRecords.sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      )[0] || null;
+      const latestRecord =
+        userRecords.sort(
+          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )[0] || null;
 
       return {
         staff,
         totalRecords,
         successRecords,
-        latestRecord
+        latestRecord,
       };
     });
   }, [filteredStaff, filter, hasPermission, allRecords]);
@@ -141,6 +143,6 @@ export const useTeamCheckInData = () => {
     setDepartmentFilter,
     departments,
     teamCheckInData,
-    hasPermission
+    hasPermission,
   };
 };

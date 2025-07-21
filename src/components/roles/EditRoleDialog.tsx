@@ -11,52 +11,33 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useRoles } from '@/hooks/useRoles';
 import { permissionService } from '@/services/permissionService';
-import { Role, roleService } from '@/services/roleService';
+import { Role } from '@/types/role';
 import React, { useEffect, useState } from 'react';
 import PermissionSelect from './components/PermissionSelect';
 
 interface EditRoleDialogProps {
   role: Role | null;
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onRoleUpdated?: () => void;
 }
 
-const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialogProps) => {
+const EditRoleDialog = ({ role, open, onOpenChange, onRoleUpdated }: EditRoleDialogProps) => {
   const { toast } = useToast();
+  const { updateRole } = useRoles();
   const [isLoading, setIsLoading] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(role);
-  const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set());
+  const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(
+    new Set(role?.permissions?.map(p => p.id) ?? [])
+  );
 
-  // 當 role prop 改變時更新本地狀態
+  // 當 role 或其 permissions 變動時，更新本地權限狀態
   useEffect(() => {
     setEditingRole(role);
+    setSelectedPermissions(new Set(role?.permissions?.map(p => p.id) ?? []));
   }, [role]);
-
-  // 載入角色當前權限
-  useEffect(() => {
-    const loadRolePermissions = async () => {
-      if (!isOpen || !role) return;
-
-      try {
-        setIsLoading(true);
-        const rolePermissions = await permissionService.getRolePermissions(role.id);
-        setSelectedPermissions(new Set(rolePermissions.map(p => p.id)));
-      } catch (error) {
-        console.error('載入角色權限失敗:', error);
-        toast({
-          title: '載入失敗',
-          description: '無法載入角色權限資料',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadRolePermissions();
-  }, [isOpen, role, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,12 +55,9 @@ const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialog
 
     try {
       setIsLoading(true);
-      console.log('🔄 開始更新職位:', editingRole);
 
       // 更新職位基本資訊
-      await roleService.updateRole(editingRole);
-
-      // 更新職位的權限
+      await updateRole(editingRole);
       await permissionService.updateRolePermissions(
         editingRole.id,
         Array.from(selectedPermissions)
@@ -90,10 +68,8 @@ const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialog
         description: `職位「${editingRole.name}」已更新`,
       });
 
-      onClose();
+      onOpenChange(false);
       onRoleUpdated?.();
-
-      console.log('✅ 職位更新流程完成');
     } catch (error) {
       console.error('❌ 更新職位失敗:', error);
       toast({
@@ -109,7 +85,7 @@ const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialog
   if (!editingRole) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="backdrop-blur-xl bg-white/90 border border-white/40 shadow-xl max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900">編輯職位</DialogTitle>
@@ -181,7 +157,7 @@ const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialog
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={() => onOpenChange(false)}
               className="bg-white/70 border-gray-300 text-gray-700 hover:bg-white hover:border-gray-400"
               disabled={isLoading}
             >

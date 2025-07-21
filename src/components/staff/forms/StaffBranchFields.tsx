@@ -6,10 +6,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { branchService } from '@/services/branchService';
-import { useBranchStore } from '@/stores/branchStore';
+import { useBranches } from '@/hooks/useBranches';
 import { useCompanyStore } from '@/stores/companyStore';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { NewStaff } from '../types';
 
 interface StaffBranchFieldsProps {
@@ -18,32 +17,13 @@ interface StaffBranchFieldsProps {
 }
 
 const StaffBranchFields: React.FC<StaffBranchFieldsProps> = ({ newStaff, setNewStaff }) => {
-  const { branches, setBranches } = useBranchStore();
   const { company } = useCompanyStore();
-  const [loading, setLoading] = useState(false);
+  const { data: branches, loading, loadBranches } = useBranches();
 
   useEffect(() => {
-    const fetchBranches = async () => {
-      if (!company?.id) {
-        console.log('沒有公司ID，跳過載入單位');
-        return;
-      }
-
-      // 如果已經有分支數據，不需要重新載入
-      if (branches.length > 0) return;
-
-      setLoading(true);
-      try {
-        const data = await branchService.loadBranches(company.id);
-        setBranches(data);
-      } catch (error) {
-        console.error('載入單位失敗:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBranches();
-  }, [company?.id, setBranches, branches.length]);
+    if (!company?.id) return;
+    loadBranches(company.id);
+  }, [company?.id]);
 
   return (
     <div className="grid grid-cols-4 items-center gap-4">

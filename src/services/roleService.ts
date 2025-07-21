@@ -1,24 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { NewStaffRole, Permission, StaffRole } from '../components/staff/types';
-
-// 統一的職位型別定義
-export interface Role {
-  id: string;
-  name: string;
-  description?: string | null;
-  created_at?: string;
-  updated_at?: string;
-  is_system_role?: boolean;
-  permissions?: Permission[]; // 可選，用於進階權限管理
-}
-
-export interface NewRole {
-  id: string;
-  name: string;
-  description?: string | null;
-  is_system_role?: boolean;
-  permissions?: Permission[]; // 可選，用於進階權限管理
-}
+import { NewRole, Permission, Role } from '@/types/role';
 
 const TABLE_NAME = 'staff_roles';
 
@@ -28,7 +9,21 @@ export class roleService {
   static async getRoles(): Promise<Role[]> {
     const { data, error } = await supabase
       .from(TABLE_NAME)
-      .select('*')
+      .select(
+        `
+      *,
+      role_permissions:role_permissions (
+        permission_id,
+        permissions (
+          id,
+          name,
+          code,
+          description,
+          category
+        )
+      )
+    `
+      )
       .order('name', { ascending: true });
 
     if (error) {
@@ -36,7 +31,27 @@ export class roleService {
       throw error;
     }
 
-    return data || [];
+    // 將 role_permissions 轉成 permissions: Permission[]
+    const roles: Role[] = (data || []).map(role => {
+      const permissions: Permission[] = (role.role_permissions || [])
+        .filter(rp => rp.permissions)
+        .map(rp => ({
+          id: rp.permissions.id,
+          name: rp.permissions.name,
+          code: rp.permissions.code,
+          description: rp.permissions.description,
+          category: rp.permissions.category,
+        }));
+      return {
+        id: role.id,
+        name: role.name,
+        description: role.description || '',
+        is_system_role: role.is_system_role || false,
+        permissions,
+      };
+    });
+
+    return roles;
   }
 
   static async addRole(newRole: NewRole): Promise<Role> {
@@ -84,7 +99,7 @@ export class roleService {
   // === 進階職位管理功能（包含權限系統） ===
 
   // 載入所有職位及其權限
-  static async loadRoles(): Promise<StaffRole[]> {
+  static async loadRoles(): Promise<Role[]> {
     try {
       const { data, error } = await supabase
         .from('staff_roles')
@@ -96,7 +111,7 @@ export class roleService {
       }
 
       // 轉換資料格式以符合前台介面，並載入權限資料
-      const transformedRoles: StaffRole[] = await Promise.all(
+      const transformedRoles: Role[] = await Promise.all(
         (data || []).map(async role => {
           const permissions = await this.loadRolePermissions(role.id);
 
@@ -186,7 +201,7 @@ export class roleService {
   }
 
   // 新增職位
-  static async createRole(newRole: NewStaffRole): Promise<StaffRole> {
+  static async createRole(newRole: NewRole): Promise<Role> {
     try {
       const { data, error } = await supabase
         .from('staff_roles')
@@ -206,7 +221,7 @@ export class roleService {
       // 儲存權限
       await this.saveRolePermissions(data.id, newRole.permissions);
 
-      const createdRole: StaffRole = {
+      const createdRole: Role = {
         id: data.id,
         name: data.name,
         description: data.description || '',
@@ -222,7 +237,7 @@ export class roleService {
   }
 
   // 更新職位
-  static async updateRoleWithPermissions(role: StaffRole): Promise<StaffRole> {
+  static async updateRoleWithPermissions(role: Role): Promise<Role> {
     try {
       // 先驗證權限ID是否存在
       const validPermissions = await this.validatePermissions(role.permissions);
@@ -249,7 +264,7 @@ export class roleService {
       // 驗證權限是否正確儲存
       const savedPermissions = await this.loadRolePermissions(role.id);
 
-      const updatedRole: StaffRole = {
+      const updatedRole: Role = {
         id: data.id,
         name: data.name,
         description: data.description || '',

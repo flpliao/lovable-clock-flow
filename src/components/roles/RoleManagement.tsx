@@ -1,8 +1,8 @@
 import { useToast } from '@/hooks/use-toast';
-import { roleService } from '@/services/roleService';
-import { useRoleStore } from '@/stores/roleStore';
-import { Briefcase } from 'lucide-react';
+import { useRoles } from '@/hooks/useRoles';
+import { Briefcase, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Button } from '../ui/button';
 import AddRoleDialog from './AddRoleDialog';
 import RoleFilters from './RoleFilters';
 import RoleTable from './RoleTable';
@@ -10,34 +10,24 @@ import RoleTable from './RoleTable';
 const RoleManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [loading, setLoading] = useState(true);
-  const { roles, setRoles } = useRoleStore();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const { data: roles, loading, loadRoles } = useRoles();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (roles.length > 0) {
-      setLoading(false);
-      return;
-    }
-
-    const loadRoles = async () => {
+    const fetch = async () => {
       try {
-        setLoading(true);
-        const data = await roleService.getRoles();
-        setRoles(data);
+        await loadRoles();
       } catch {
         toast({
           title: '載入失敗',
           description: '無法載入職位資料，請稍後再試',
           variant: 'destructive',
         });
-      } finally {
-        setLoading(false);
       }
     };
-
-    loadRoles();
-  }, [roles, setRoles, toast, setLoading]);
+    fetch();
+  }, [toast]);
 
   const handleSearchChange = (newSearchTerm: string) => {
     setSearchTerm(newSearchTerm);
@@ -56,7 +46,14 @@ const RoleManagement = () => {
           </div>
           <h2 className="text-xl font-bold text-gray-900">職位管理</h2>
         </div>
-        <AddRoleDialog />
+        <Button
+          size="sm"
+          className="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md transition-colors"
+          onClick={() => setIsAddDialogOpen(true)}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          新增職位
+        </Button>
       </div>
 
       <div className="space-y-6">
@@ -66,6 +63,11 @@ const RoleManagement = () => {
         />
         <RoleTable roles={roles} loading={loading} searchTerm={searchTerm} sortOrder={sortOrder} />
       </div>
+      <AddRoleDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onRoleAdded={() => setIsAddDialogOpen(false)}
+      />
     </div>
   );
 };

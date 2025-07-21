@@ -6,27 +6,31 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useRoles } from '@/hooks/useRoles';
 import { useIsAdmin } from '@/hooks/useStores';
 import { permissionService } from '@/services/permissionService';
-import { NewRole, roleService } from '@/services/roleService';
-import { Plus } from 'lucide-react';
+import { NewRole } from '@/types/role';
 import React, { useState } from 'react';
 import PermissionSelect from './components/PermissionSelect';
 
 interface AddRoleDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   onRoleAdded?: () => void;
 }
 
-const AddRoleDialog = ({ onRoleAdded }: AddRoleDialogProps) => {
+const AddRoleDialog = ({ open, onOpenChange, onRoleAdded }: AddRoleDialogProps) => {
   const isAdmin = useIsAdmin();
   const { toast } = useToast();
+  const { addRole } = useRoles();
   const [isOpen, setIsOpen] = useState(false);
+  const dialogOpen = open !== undefined ? open : isOpen;
+  const handleOpenChange = onOpenChange || setIsOpen;
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set());
   const [newRole, setNewRole] = useState<NewRole>({
@@ -71,14 +75,12 @@ const AddRoleDialog = ({ onRoleAdded }: AddRoleDialogProps) => {
 
     try {
       setIsLoading(true);
-      console.log('🔄 開始新增職位:', newRole);
 
       // 先建立職位
-      await roleService.addRole(newRole);
+      const created = await addRole(newRole);
 
-      // 更新職位的權限
       if (selectedPermissions.size > 0) {
-        await permissionService.updateRolePermissions(newRole.id, Array.from(selectedPermissions));
+        await permissionService.updateRolePermissions(created.id, Array.from(selectedPermissions));
       }
 
       toast({
@@ -89,8 +91,6 @@ const AddRoleDialog = ({ onRoleAdded }: AddRoleDialogProps) => {
       resetForm();
       setIsOpen(false);
       onRoleAdded?.();
-
-      console.log('✅ 職位新增流程完成');
     } catch (error) {
       console.error('❌ 新增職位失敗:', error);
       let errorMessage = '無法新增職位，請稍後再試';
@@ -115,16 +115,7 @@ const AddRoleDialog = ({ onRoleAdded }: AddRoleDialogProps) => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button
-          size="sm"
-          className="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md transition-colors"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          新增職位
-        </Button>
-      </DialogTrigger>
+    <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="backdrop-blur-xl bg-white/90 border border-white/40 shadow-xl max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900">新增職位</DialogTitle>
@@ -195,7 +186,7 @@ const AddRoleDialog = ({ onRoleAdded }: AddRoleDialogProps) => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setIsOpen(false)}
+              onClick={() => handleOpenChange(false)}
               className="bg-white/70 border-gray-300 text-gray-700 hover:bg-white hover:border-gray-400"
               disabled={isLoading}
             >

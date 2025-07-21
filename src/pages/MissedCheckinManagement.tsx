@@ -3,12 +3,11 @@ import { MISSED_CHECKIN_PERMISSIONS } from '@/components/staff/constants/permiss
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useStores';
-import { permissionService } from '@/services/simplifiedPermissionService';
 import { supabase } from '@/integrations/supabase/client';
 import { NotificationDatabaseOperations } from '@/services/notifications';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { MissedCheckinRequest } from '@/types/missedCheckin';
 import { format } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
@@ -502,11 +501,7 @@ const MissedCheckinManagementContent = () => {
 };
 
 const MissedCheckinManagement = () => {
-  return (
-    <StaffManagementProvider>
-      <MissedCheckinManagementContent />
-    </StaffManagementProvider>
-  );
+  return <MissedCheckinManagementContent />;
 };
 
 export default MissedCheckinManagement;

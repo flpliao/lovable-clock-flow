@@ -7,55 +7,53 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { roleService } from '@/services/roleService';
+import { useToast } from '@/hooks/use-toast';
+import { useStaff } from '@/hooks/useStaff';
 import { useEffect, useState } from 'react';
-import { EditStaffFormContent } from './forms/EditStaffFormContent';
+import EditStaffForm from './forms/EditStaffForm';
 import { useSupervisorFilter } from './hooks/useSupervisorFilter';
-import { Staff, StaffRole } from './types';
+import { Staff } from './types';
 
 interface EditStaffDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   staff: Staff | null;
-  onSuccess: (staff: Staff) => void;
+  onSuccess: () => void;
 }
 
 const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDialogProps) => {
-  const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
-  const [roles, setRoles] = useState<StaffRole[]>([]);
+  const { toast } = useToast();
+  const { updateStaff } = useStaff();
+  const [currentStaff, setCurrentStaff] = useState<Staff | null>(null);
 
   // 使用 hook 來篩選可選的主管
-  const potentialSupervisors = useSupervisorFilter(editingStaff);
-
-  // 載入職位
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const data = await roleService.loadRoles();
-        setRoles(data);
-      } catch (error) {
-        console.error('載入職位失敗:', error);
-      }
-    };
-    fetchRoles();
-  }, []);
+  const potentialSupervisors = useSupervisorFilter(currentStaff);
 
   useEffect(() => {
     if (staff) {
-      setEditingStaff(staff);
+      setCurrentStaff(staff);
     }
-  }, [staff]);
+  }, [staff, setCurrentStaff]);
 
-  if (!editingStaff) {
+  if (!currentStaff) {
     return null;
   }
 
   const handleEditStaff = async () => {
     try {
-      // TODO: 實作編輯員工的 API 呼叫
-      onSuccess(editingStaff);
+      if (!currentStaff) return;
+      const success = await updateStaff(currentStaff);
+      if (success) {
+        onSuccess();
+        onOpenChange(false);
+      }
     } catch (error) {
       console.error('編輯員工失敗:', error);
+      toast({
+        title: '更新失敗',
+        description: error instanceof Error ? error.message : '無法更新員工資料',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -67,11 +65,10 @@ const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDial
           <DialogDescription className="text-xs">編輯員工資料</DialogDescription>
         </DialogHeader>
 
-        <EditStaffFormContent
-          currentStaff={editingStaff}
-          setCurrentStaff={setEditingStaff}
+        <EditStaffForm
+          currentStaff={currentStaff}
+          setCurrentStaff={setCurrentStaff}
           potentialSupervisors={potentialSupervisors}
-          roles={roles}
           onHireDateChange={() => {}}
         />
 

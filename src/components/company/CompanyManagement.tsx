@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useBranches } from '@/hooks/useBranches';
+import { Checkpoint, useCheckpoints } from '@/hooks/useCheckpoints';
 import { useCompany } from '@/hooks/useCompany';
-import { branchService } from '@/services/branchService';
-import { useBranchStore } from '@/stores/branchStore';
 import { Branch } from '@/types/company';
 import { Building, MapPin, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -13,31 +13,11 @@ import EditCompanyDialog from './EditCompanyDialog';
 import AddCheckpointDialog from './components/AddCheckpointDialog';
 import CheckpointTable from './components/CheckpointTable';
 import EditCheckpointDialog from './components/EditCheckpointDialog';
-import { Checkpoint, useCheckpoints } from './components/useCheckpoints';
 
 const CompanyManagement = () => {
   // 使用 Zustand store
-  const { branches, setBranches } = useBranchStore();
   const { company, loadCompany } = useCompany();
-  const [branchesLoading, setBranchesLoading] = useState(false);
-
-  useEffect(() => {
-    loadCompany();
-  }, []);
-
-  useEffect(() => {
-    if (!company?.id || branches.length > 0) return;
-    const loadBranches = async () => {
-      setBranchesLoading(true);
-      try {
-        const branchData = await branchService.loadBranches(company.id);
-        setBranches(branchData);
-      } finally {
-        setBranchesLoading(false);
-      }
-    };
-    loadBranches();
-  }, [company?.id, setBranches, branches]);
+  const { data: branches, loading: branchesLoading, loadBranches } = useBranches();
 
   // 本地狀態
   const [isAddBranchDialogOpen, setIsAddBranchDialogOpen] = useState(false);
@@ -47,11 +27,15 @@ const CompanyManagement = () => {
   const [activeTab, setActiveTab] = useState('branches');
   const [isAddCheckpointOpen, setIsAddCheckpointOpen] = useState(false);
   const [editCheckpoint, setEditCheckpoint] = useState<Checkpoint | null>(null);
-  const {
-    data: checkpoints,
-    loading: checkpointsLoading,
-    refresh: refreshCheckpoints,
-  } = useCheckpoints();
+  const { data: checkpoints, loading: checkpointsLoading, loadCheckpoints } = useCheckpoints();
+
+  useEffect(() => {
+    loadCompany();
+  }, []);
+
+  useEffect(() => {
+    loadBranches(company?.id);
+  }, [company?.id]);
 
   const handleAddBranch = () => {
     setIsAddBranchDialogOpen(true);
@@ -89,9 +73,7 @@ const CompanyManagement = () => {
                     <Building className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-white drop-shadow-md">
-                      單位管理 ({branches?.length || 0})
-                    </h3>
+                    <h3 className="text-2xl font-bold text-white drop-shadow-md">單位管理</h3>
                     <p className="text-white/80 text-sm mt-1">管理所有單位資訊</p>
                   </div>
                 </div>
@@ -103,7 +85,11 @@ const CompanyManagement = () => {
                   新增單位
                 </Button>
               </div>
-              <BranchTable onEdit={handleEditBranch} loading={branchesLoading} />
+              <BranchTable
+                branches={branches}
+                onEdit={handleEditBranch}
+                loading={branchesLoading}
+              />
             </div>
           </div>
         );
@@ -133,7 +119,7 @@ const CompanyManagement = () => {
                 onEdit={setEditCheckpoint}
                 data={checkpoints}
                 loading={checkpointsLoading}
-                refresh={refreshCheckpoints}
+                refresh={loadCheckpoints}
               />
             </div>
           </div>
@@ -186,13 +172,13 @@ const CompanyManagement = () => {
       <AddCheckpointDialog
         open={isAddCheckpointOpen}
         onClose={() => setIsAddCheckpointOpen(false)}
-        onSuccess={refreshCheckpoints}
+        onSuccess={loadCheckpoints}
       />
       <EditCheckpointDialog
         open={!!editCheckpoint}
         onClose={() => setEditCheckpoint(null)}
         checkpoint={editCheckpoint}
-        onSuccess={refreshCheckpoints}
+        onSuccess={loadCheckpoints}
       />
     </div>
   );

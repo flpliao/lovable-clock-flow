@@ -7,6 +7,8 @@ export function useCompany() {
 
   // 取得公司資料並存入 store
   const loadCompany = async () => {
+    if (company) return;
+
     const data = await companyService.findCompany();
     setCompany(data);
   };

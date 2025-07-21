@@ -1,26 +1,25 @@
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
-import { branchService } from '@/services/branchService';
-import { useBranchStore } from '@/stores/branchStore';
+import { useBranches } from '@/hooks/useBranches';
 import { Branch } from '@/types/company';
 import { Building, Edit, MapPin, Phone, Trash2, User } from 'lucide-react';
 
 interface BranchTableProps {
+  branches: Branch[];
   onEdit: (branch: Branch) => void;
   loading: boolean;
 }
 
-const BranchTable = ({ onEdit, loading }: BranchTableProps) => {
-  const { branches, removeBranch } = useBranchStore();
+const BranchTable = ({ branches, onEdit, loading }: BranchTableProps) => {
+  const { deleteBranch } = useBranches();
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
   const handleDeleteBranch = async (id: string) => {
     if (window.confirm('確定要刪除此單位嗎？')) {
       try {
-        await branchService.deleteBranch(id);
-        removeBranch(id);
+        await deleteBranch(id);
       } catch (error) {
         toast({
           title: '刪除失敗',

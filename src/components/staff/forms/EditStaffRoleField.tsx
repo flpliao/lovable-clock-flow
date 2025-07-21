@@ -6,28 +6,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import React from 'react';
-import { Staff, StaffRole } from '../types';
+import { useRoles } from '@/hooks/useRoles';
+import React, { useEffect } from 'react';
+import { Staff } from '../types';
 
 interface EditStaffRoleFieldProps {
   currentStaff: Staff;
   setCurrentStaff: (staff: Staff) => void;
-  roles: StaffRole[];
 }
 
 export const EditStaffRoleField: React.FC<EditStaffRoleFieldProps> = ({
   currentStaff,
   setCurrentStaff,
-  roles,
 }) => {
-  const handleRoleChange = (value: string) => {
-    const selectedRole = roles.find(r => r.id === value);
-    console.log('🔄 角色變更:', {
-      oldRole: currentStaff.role_id,
-      newRole: value,
-      selectedRole: selectedRole?.name,
-    });
+  const { data: roles, loadRoles } = useRoles();
+  useEffect(() => {
+    loadRoles();
+  }, []);
 
+  const handleRoleChange = (value: string) => {
     setCurrentStaff({
       ...currentStaff,
       role_id: value,

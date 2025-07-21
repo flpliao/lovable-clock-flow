@@ -1,12 +1,12 @@
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useStaffStore } from '@/stores/staffStore';
 import { useMemo } from 'react';
 import { Staff } from '../types';
 
 export const useSupervisorFilter = (currentStaff: Staff | null) => {
-  const { staffList } = useStaffManagementContext();
+  const { staff } = useStaffStore();
 
   const potentialSupervisors = useMemo(() => {
-    if (!currentStaff || !staffList) {
+    if (!currentStaff || !staff) {
       return [];
     }
 
@@ -14,20 +14,20 @@ export const useSupervisorFilter = (currentStaff: Staff | null) => {
     // 1. 排除自己
     // 2. 只顯示同部門的人員
     // 3. 排除已離職的人員（如果有 status 欄位）
-    return staffList.filter(staff => {
+    return staff.filter(s => {
       // 排除自己
-      if (staff.id === currentStaff.id) {
+      if (s.id === currentStaff.id) {
         return false;
       }
 
       // 只顯示同部門的人員
-      if (staff.branch_id !== currentStaff.branch_id) {
+      if (s.branch_id !== currentStaff.branch_id) {
         return false;
       }
 
       return true;
     });
-  }, [currentStaff, staffList]);
+  }, [currentStaff, staff]);
 
   return potentialSupervisors;
 };

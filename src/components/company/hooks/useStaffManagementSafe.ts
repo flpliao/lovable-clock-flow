@@ -1,9 +1,9 @@
+import { useStaffStore } from '@/stores/staffStore';
+import { useEffect, useMemo, useState } from 'react';
 
-import { useState, useEffect, useMemo } from 'react';
-
-// 安全地使用 StaffManagementContext
+// 安全地使用 StaffStore
 export const useStaffManagementSafe = () => {
-  const [staffList, setStaffList] = useState<any[]>([]);
+  const { staffList } = useStaffStore();
   const [loading, setLoading] = useState(true);
 
   // 直接使用 Supabase 載入員工資料的函數
@@ -11,10 +11,10 @@ export const useStaffManagementSafe = () => {
     try {
       console.log('🔄 直接從 Supabase 載入員工資料...');
       setLoading(true);
-      
+
       // 動態導入 supabase client
       const { supabase } = await import('@/integrations/supabase/client');
-      
+
       const { data, error } = await supabase
         .from('staff')
         .select('*')
@@ -22,55 +22,54 @@ export const useStaffManagementSafe = () => {
 
       if (error) {
         console.error('❌ 載入員工資料失敗:', error);
-        setStaffList([]);
+        return [];
       } else {
         console.log('✅ 成功載入員工資料:', data);
-        setStaffList(data || []);
+        return data || [];
       }
     } catch (error) {
       console.error('❌ 載入員工資料系統錯誤:', error);
-      setStaffList([]);
+      return [];
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // 首先嘗試使用 context
-    const tryUseContext = async () => {
+    // 首先嘗試使用 store
+    const tryUseStore = async () => {
       try {
-        const { useStaffManagementContext } = await import('@/contexts/StaffManagementContext');
-        const context = useStaffManagementContext();
-        
-        if (context?.staffList && context.staffList.length > 0) {
-          console.log('✅ 使用 Context 中的員工資料');
-          setStaffList(context.staffList);
+        if (staffList && staffList.length > 0) {
+          console.log('✅ 使用 Store 中的員工資料');
           setLoading(false);
           return true;
         } else {
-          console.log('⚠️ Context 中沒有員工資料，嘗試直接載入');
+          console.log('⚠️ Store 中沒有員工資料，嘗試直接載入');
           return false;
         }
       } catch (error) {
-        console.log('⚠️ StaffManagementContext 不可用，嘗試直接載入');
+        console.log('⚠️ StaffStore 不可用，嘗試直接載入', error);
         return false;
       }
     };
 
     const initializeData = async () => {
-      const contextLoaded = await tryUseContext();
-      
-      if (!contextLoaded) {
+      const storeLoaded = await tryUseStore();
+
+      if (!storeLoaded) {
         await loadStaffDirectly();
       }
     };
 
     initializeData();
-  }, []);
+  }, [staffList]);
 
-  return useMemo(() => ({
-    staffList,
-    loading,
-    refreshStaffList: loadStaffDirectly
-  }), [staffList, loading]);
+  return useMemo(
+    () => ({
+      staffList,
+      loading,
+      refreshStaffList: loadStaffDirectly,
+    }),
+    [staffList, loading]
+  );
 };

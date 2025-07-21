@@ -541,6 +541,10 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
             <MissedCheckinFormFields
               formData={missedFormData}
               onFormDataChange={updates => setMissedFormData(prev => ({ ...prev, ...updates }))}
+              disabledFields={{
+                request_date: true, // 申請日期自動填入且不可修改
+                missed_type: true, // 申請類型自動填入且不可修改
+              }}
             />
             <div className="flex justify-end space-x-2 pt-4">
               <Button

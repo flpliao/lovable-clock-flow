@@ -7,35 +7,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 import { roleService } from '@/services/roleService';
 import { permissionService } from '@/services/simplifiedPermissionService';
+import { useStaffStore } from '@/stores/staffStore';
 import { useEffect, useState } from 'react';
 import { SYSTEM_ROLES } from './constants/systemRoles';
 import AddStaffForm from './forms/AddStaffForm';
-import { NewStaff, StaffRole } from './types';
+import { StaffRole } from './types';
 
 interface AddStaffDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: (staff: NewStaff) => void;
+  onSuccess: () => void;
 }
 
 const AddStaffDialog = ({ open, onOpenChange, onSuccess }: AddStaffDialogProps) => {
-  const [newStaff, setNewStaff] = useState<NewStaff>({
-    name: '',
-    email: '',
-    department: '',
-    position: '',
-    role_id: '',
-    branch_id: '',
-    branch_name: '',
-    contact: '',
-  });
-
-  const isAdmin = permissionService.isAdmin();
-
-  // 角色列表
+  const { toast } = useToast();
+  const { newStaff, setNewStaff, addStaff, resetNewStaff } = useStaffStore();
   const [roles, setRoles] = useState<StaffRole[]>([]);
+  const isAdmin = permissionService.isAdmin();
 
   // 載入角色
   useEffect(() => {
@@ -57,10 +48,18 @@ const AddStaffDialog = ({ open, onOpenChange, onSuccess }: AddStaffDialogProps) 
 
   const handleAddStaff = async () => {
     try {
-      // 將收集到的表單資料交給父層，由父層負責呼叫 API
-      onSuccess(newStaff);
+      const success = await addStaff(newStaff);
+      if (success) {
+        onSuccess();
+        resetNewStaff();
+      }
     } catch (error) {
       console.error('新增員工失敗:', error);
+      toast({
+        title: '新增失敗',
+        description: error instanceof Error ? error.message : '無法新增員工',
+        variant: 'destructive',
+      });
     }
   };
 

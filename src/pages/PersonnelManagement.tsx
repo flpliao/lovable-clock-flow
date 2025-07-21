@@ -1,5 +1,4 @@
 import StaffManagement from '@/components/staff/StaffManagement';
-import { StaffManagementProvider } from '@/contexts/StaffManagementContext';
 import { useCompany } from '@/hooks/useCompany';
 import { Users } from 'lucide-react';
 import { useEffect } from 'react';
@@ -55,9 +54,7 @@ const PersonnelManagement = () => {
 
         {/* 內容區域 */}
         <div className="w-full px-4 lg:px-8 pb-8">
-          <StaffManagementProvider>
-            <StaffManagement />
-          </StaffManagementProvider>
+          <StaffManagement />
         </div>
       </div>
     </div>

@@ -1,9 +1,9 @@
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useStaffStore } from '@/stores/staffStore';
 import { useMemo } from 'react';
 import { Staff } from '../types';
 
 export const useSupervisorFilter = (currentStaff: Staff | null) => {
-  const { staffList } = useStaffManagementContext();
+  const { staffList } = useStaffStore();
 
   const potentialSupervisors = useMemo(() => {
     if (!currentStaff || !staffList) {

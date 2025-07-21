@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useStaffManagementContext } from '@/contexts/StaffManagementContext';
+import { useStaffStore } from '@/stores/staffStore';
 import React from 'react';
 import { NewStaff } from '../types';
 
@@ -16,7 +16,7 @@ interface StaffSupervisorFieldsProps {
 }
 
 const StaffSupervisorFields: React.FC<StaffSupervisorFieldsProps> = ({ newStaff, setNewStaff }) => {
-  const { staffList } = useStaffManagementContext();
+  const { staffList } = useStaffStore();
 
   // 根據部門篩選可選的主管
   const potentialSupervisors = staffList.filter(staff => {

@@ -7,7 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 import { roleService } from '@/services/roleService';
+import { useStaffStore } from '@/stores/staffStore';
 import { useEffect, useState } from 'react';
 import { EditStaffFormContent } from './forms/EditStaffFormContent';
 import { useSupervisorFilter } from './hooks/useSupervisorFilter';
@@ -17,15 +19,16 @@ interface EditStaffDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   staff: Staff | null;
-  onSuccess: (staff: Staff) => void;
+  onSuccess: () => void;
 }
 
 const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDialogProps) => {
-  const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
+  const { toast } = useToast();
+  const { currentStaff, setCurrentStaff, updateStaff } = useStaffStore();
   const [roles, setRoles] = useState<StaffRole[]>([]);
 
   // 使用 hook 來篩選可選的主管
-  const potentialSupervisors = useSupervisorFilter(editingStaff);
+  const potentialSupervisors = useSupervisorFilter(currentStaff);
 
   // 載入職位
   useEffect(() => {
@@ -42,20 +45,27 @@ const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDial
 
   useEffect(() => {
     if (staff) {
-      setEditingStaff(staff);
+      setCurrentStaff(staff);
     }
-  }, [staff]);
+  }, [staff, setCurrentStaff]);
 
-  if (!editingStaff) {
+  if (!currentStaff) {
     return null;
   }
 
   const handleEditStaff = async () => {
     try {
-      // TODO: 實作編輯員工的 API 呼叫
-      onSuccess(editingStaff);
+      const success = await updateStaff(currentStaff);
+      if (success) {
+        onSuccess();
+      }
     } catch (error) {
       console.error('編輯員工失敗:', error);
+      toast({
+        title: '更新失敗',
+        description: error instanceof Error ? error.message : '無法更新員工資料',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -68,8 +78,8 @@ const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDial
         </DialogHeader>
 
         <EditStaffFormContent
-          currentStaff={editingStaff}
-          setCurrentStaff={setEditingStaff}
+          currentStaff={currentStaff}
+          setCurrentStaff={setCurrentStaff}
           potentialSupervisors={potentialSupervisors}
           roles={roles}
           onHireDateChange={() => {}}

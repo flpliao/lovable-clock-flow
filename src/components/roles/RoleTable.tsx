@@ -8,9 +8,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
+import { deleteRole } from '@/hooks/useRole';
 import { useIsAdmin } from '@/hooks/useStores';
-import { Role, roleService } from '@/services/roleService';
-import { useRoleStore } from '@/stores/roleStore';
+import { Role } from '@/services/roleService';
 import { Briefcase, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import AddRoleDialog from './AddRoleDialog';
@@ -28,7 +28,6 @@ const RoleTable = ({ roles, loading, searchTerm = '', sortOrder = 'asc' }: RoleT
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
   const isAdmin = useIsAdmin();
-  const { removeRole } = useRoleStore();
 
   const handleEditRole = (role: Role) => {
     setEditingRole(role);
@@ -44,18 +43,11 @@ const RoleTable = ({ roles, loading, searchTerm = '', sortOrder = 'asc' }: RoleT
     }
 
     try {
-      console.log('🔄 開始刪除職位:', role);
-      await roleService.deleteRole(id);
-
-      // 直接更新 store
-      removeRole(id);
-
+      await deleteRole(id);
       toast({
         title: '刪除成功',
         description: `職位「${role.name}」已刪除`,
       });
-
-      console.log('✅ 職位刪除流程完成');
     } catch (error) {
       console.error('❌ 刪除職位失敗:', error);
       toast({

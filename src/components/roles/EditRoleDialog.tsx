@@ -11,8 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { updateRole } from '@/hooks/useRole';
 import { permissionService } from '@/services/permissionService';
-import { Role, roleService } from '@/services/roleService';
+import { Role } from '@/services/roleService';
 import React, { useEffect, useState } from 'react';
 import PermissionSelect from './components/PermissionSelect';
 
@@ -74,12 +75,9 @@ const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialog
 
     try {
       setIsLoading(true);
-      console.log('🔄 開始更新職位:', editingRole);
 
       // 更新職位基本資訊
-      await roleService.updateRole(editingRole);
-
-      // 更新職位的權限
+      await updateRole(editingRole);
       await permissionService.updateRolePermissions(
         editingRole.id,
         Array.from(selectedPermissions)
@@ -92,8 +90,6 @@ const EditRoleDialog = ({ role, isOpen, onClose, onRoleUpdated }: EditRoleDialog
 
       onClose();
       onRoleUpdated?.();
-
-      console.log('✅ 職位更新流程完成');
     } catch (error) {
       console.error('❌ 更新職位失敗:', error);
       toast({

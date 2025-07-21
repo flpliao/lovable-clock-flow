@@ -11,8 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { branchService } from '@/services/branchService';
-import { useBranchStore } from '@/stores/branchStore';
+import { useBranch } from '@/hooks/useBranch';
 import { useCompanyStore } from '@/stores/companyStore';
 import { NewBranch } from '@/types/company';
 import React, { useState } from 'react';
@@ -25,7 +24,7 @@ interface AddBranchDialogProps {
 const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
   const { toast } = useToast();
   const { company } = useCompanyStore();
-  const { addBranch, branches } = useBranchStore();
+  const { createBranch, branches } = useBranch();
 
   const [newBranch, setNewBranch] = useState<Omit<NewBranch, 'type'>>({
     name: '',
@@ -53,9 +52,7 @@ const AddBranchDialog = ({ open, onClose }: AddBranchDialogProps) => {
     setIsSubmitting(true);
 
     try {
-      const createdBranch = await branchService.addBranch(company.id, newBranch as NewBranch);
-      addBranch(createdBranch);
-
+      await createBranch(company.id, newBranch as NewBranch);
       toast({
         title: '成功',
         description: '單位新增成功',

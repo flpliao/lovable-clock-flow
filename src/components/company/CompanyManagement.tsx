@@ -1,8 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useBranch } from '@/hooks/useBranch';
 import { useCompany } from '@/hooks/useCompany';
-import { branchService } from '@/services/branchService';
-import { useBranchStore } from '@/stores/branchStore';
 import { Branch } from '@/types/company';
 import { Building, MapPin, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -17,27 +16,8 @@ import { Checkpoint, useCheckpoints } from './components/useCheckpoints';
 
 const CompanyManagement = () => {
   // 使用 Zustand store
-  const { branches, setBranches } = useBranchStore();
   const { company, loadCompany } = useCompany();
-  const [branchesLoading, setBranchesLoading] = useState(false);
-
-  useEffect(() => {
-    loadCompany();
-  }, []);
-
-  useEffect(() => {
-    if (!company?.id || branches.length > 0) return;
-    const loadBranches = async () => {
-      setBranchesLoading(true);
-      try {
-        const branchData = await branchService.loadBranches(company.id);
-        setBranches(branchData);
-      } finally {
-        setBranchesLoading(false);
-      }
-    };
-    loadBranches();
-  }, [company?.id, setBranches, branches]);
+  const { branches, loading: branchesLoading, loadBranches } = useBranch();
 
   // 本地狀態
   const [isAddBranchDialogOpen, setIsAddBranchDialogOpen] = useState(false);
@@ -52,6 +32,14 @@ const CompanyManagement = () => {
     loading: checkpointsLoading,
     refresh: refreshCheckpoints,
   } = useCheckpoints();
+
+  useEffect(() => {
+    loadCompany();
+  }, []);
+
+  useEffect(() => {
+    loadBranches(company?.id);
+  }, [company?.id]);
 
   const handleAddBranch = () => {
     setIsAddBranchDialogOpen(true);
@@ -89,9 +77,7 @@ const CompanyManagement = () => {
                     <Building className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-white drop-shadow-md">
-                      單位管理 ({branches?.length || 0})
-                    </h3>
+                    <h3 className="text-2xl font-bold text-white drop-shadow-md">單位管理</h3>
                     <p className="text-white/80 text-sm mt-1">管理所有單位資訊</p>
                   </div>
                 </div>
@@ -103,7 +89,11 @@ const CompanyManagement = () => {
                   新增單位
                 </Button>
               </div>
-              <BranchTable onEdit={handleEditBranch} loading={branchesLoading} />
+              <BranchTable
+                branches={branches}
+                onEdit={handleEditBranch}
+                loading={branchesLoading}
+              />
             </div>
           </div>
         );

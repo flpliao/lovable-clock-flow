@@ -16,12 +16,12 @@ interface StaffSupervisorFieldsProps {
 }
 
 const StaffSupervisorFields: React.FC<StaffSupervisorFieldsProps> = ({ newStaff, setNewStaff }) => {
-  const { staffList } = useStaffStore();
+  const { staff } = useStaffStore();
 
   // 根據部門篩選可選的主管
-  const potentialSupervisors = staffList.filter(staff => {
+  const potentialSupervisors = staff.filter(s => {
     // 如果新員工有設定部門，只顯示同部門的人員
-    if (newStaff.department && staff.department !== newStaff.department) {
+    if (newStaff.department && s.department !== newStaff.department) {
       return false;
     }
 
@@ -44,9 +44,9 @@ const StaffSupervisorFields: React.FC<StaffSupervisorFieldsProps> = ({ newStaff,
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="none">無直屬主管</SelectItem>
-          {potentialSupervisors.map(staff => (
-            <SelectItem key={staff.id} value={staff.id}>
-              {staff.name} - {staff.position} ({staff.department})
+          {potentialSupervisors.map(s => (
+            <SelectItem key={s.id} value={s.id}>
+              {s.name} - {s.position} ({s.department})
             </SelectItem>
           ))}
         </SelectContent>

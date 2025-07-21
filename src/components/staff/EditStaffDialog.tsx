@@ -8,8 +8,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { updateStaff } from '@/hooks/useStaff';
 import { roleService } from '@/services/roleService';
-import { useStaffStore } from '@/stores/staffStore';
 import { useEffect, useState } from 'react';
 import { EditStaffFormContent } from './forms/EditStaffFormContent';
 import { useSupervisorFilter } from './hooks/useSupervisorFilter';
@@ -24,7 +24,7 @@ interface EditStaffDialogProps {
 
 const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDialogProps) => {
   const { toast } = useToast();
-  const { currentStaff, setCurrentStaff, updateStaff } = useStaffStore();
+  const [currentStaff, setCurrentStaff] = useState<Staff | null>(null);
   const [roles, setRoles] = useState<StaffRole[]>([]);
 
   // 使用 hook 來篩選可選的主管
@@ -55,9 +55,11 @@ const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDial
 
   const handleEditStaff = async () => {
     try {
+      if (!currentStaff) return;
       const success = await updateStaff(currentStaff);
       if (success) {
         onSuccess();
+        onOpenChange(false);
       }
     } catch (error) {
       console.error('編輯員工失敗:', error);

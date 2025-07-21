@@ -8,13 +8,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { addStaff } from '@/hooks/useStaff';
 import { roleService } from '@/services/roleService';
 import { permissionService } from '@/services/simplifiedPermissionService';
-import { useStaffStore } from '@/stores/staffStore';
 import { useEffect, useState } from 'react';
 import { SYSTEM_ROLES } from './constants/systemRoles';
 import AddStaffForm from './forms/AddStaffForm';
-import { StaffRole } from './types';
+import { NewStaff, StaffRole } from './types';
 
 interface AddStaffDialogProps {
   open: boolean;
@@ -24,8 +24,16 @@ interface AddStaffDialogProps {
 
 const AddStaffDialog = ({ open, onOpenChange, onSuccess }: AddStaffDialogProps) => {
   const { toast } = useToast();
-  const { newStaff, setNewStaff, addStaff, resetNewStaff } = useStaffStore();
   const [roles, setRoles] = useState<StaffRole[]>([]);
+  const [newStaff, setNewStaff] = useState<NewStaff>({
+    name: '',
+    position: '',
+    department: '',
+    branch_id: '',
+    branch_name: '',
+    contact: '',
+    role_id: 'user',
+  });
   const isAdmin = permissionService.isAdmin();
 
   // 載入角色
@@ -51,7 +59,16 @@ const AddStaffDialog = ({ open, onOpenChange, onSuccess }: AddStaffDialogProps) 
       const success = await addStaff(newStaff);
       if (success) {
         onSuccess();
-        resetNewStaff();
+        setNewStaff({
+          name: '',
+          position: '',
+          department: '',
+          branch_id: '',
+          branch_name: '',
+          contact: '',
+          role_id: 'user',
+        });
+        onOpenChange(false); // 新增成功時自動關閉 dialog
       }
     } catch (error) {
       console.error('新增員工失敗:', error);

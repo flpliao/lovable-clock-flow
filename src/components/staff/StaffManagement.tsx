@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useStaffStoreInit } from '@/hooks/useStaffStoreInit';
+import { deleteStaff, loadStaff } from '@/hooks/useStaff';
 import { useStaffStore } from '@/stores/staffStore';
 import { Plus, Search, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AddStaffDialog from './AddStaffDialog';
 import EditStaffDialog from './EditStaffDialog';
 import { StaffList } from './StaffList';
@@ -16,40 +16,35 @@ const StaffManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
-  // 初始化 staff store
-  useStaffStoreInit();
+  // 對話框狀態
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [currentStaff, setCurrentStaff] = useState<Staff | null>(null);
+  const [staffToDelete, setStaffToDelete] = useState<Staff | null>(null);
 
-  // 使用 Zustand store
-  const {
-    staffList,
-    loading,
-    isAddDialogOpen,
-    setIsAddDialogOpen,
-    isEditDialogOpen,
-    setIsEditDialogOpen,
-    isDeleteDialogOpen,
-    setIsDeleteDialogOpen,
-    currentStaff,
-    staffToDelete,
-    setStaffToDelete,
-    loadStaffList,
-    openEditDialog,
-    deleteStaff,
-  } = useStaffStore();
+  // 使用操作 hook
+  const { staff } = useStaffStore();
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    handleLoadStaff();
+  }, []);
 
   // 篩選員工列表
-  const filteredStaff = staffList.filter(
-    staff =>
-      staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff.role_name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredStaff = staff.filter(
+    s =>
+      s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.role_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // 處理編輯員工
   const handleEditStaff = (staff: Staff) => {
-    openEditDialog(staff);
+    setCurrentStaff(staff);
+    setIsEditDialogOpen(true);
   };
 
   // 處理刪除員工點擊
@@ -94,6 +89,12 @@ const StaffManagement = () => {
     });
   };
 
+  const handleLoadStaff = async () => {
+    setLoading(true);
+    await loadStaff();
+    setLoading(false);
+  };
+
   return (
     <div className="space-y-6">
       {/* 主要內容卡片 */}
@@ -134,7 +135,7 @@ const StaffManagement = () => {
               {/* 重新整理按鈕 */}
               <Button
                 variant="outline"
-                onClick={loadStaffList}
+                onClick={handleLoadStaff}
                 className="bg-white/60 border-white/40 hover:bg-white/80"
               >
                 重新整理

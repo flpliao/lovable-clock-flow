@@ -12,7 +12,7 @@ import { loadRoles } from '@/hooks/useRole';
 import { updateStaff } from '@/hooks/useStaff';
 import { useRoleStore } from '@/stores/roleStore';
 import { useEffect, useState } from 'react';
-import { EditStaffFormContent } from './forms/EditStaffFormContent';
+import EditStaffForm from './forms/EditStaffForm';
 import { useSupervisorFilter } from './hooks/useSupervisorFilter';
 import { Staff } from './types';
 
@@ -72,7 +72,7 @@ const EditStaffDialog = ({ open, onOpenChange, staff, onSuccess }: EditStaffDial
           <DialogDescription className="text-xs">編輯員工資料</DialogDescription>
         </DialogHeader>
 
-        <EditStaffFormContent
+        <EditStaffForm
           currentStaff={currentStaff}
           setCurrentStaff={setCurrentStaff}
           potentialSupervisors={potentialSupervisors}

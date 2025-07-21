@@ -6,7 +6,7 @@ import { EditStaffBranchField } from './EditStaffBranchField';
 import { EditStaffRoleField } from './EditStaffRoleField';
 import { EditStaffSupervisorField } from './EditStaffSupervisorField';
 
-interface EditStaffFormContentProps {
+interface EditStaffFormProps {
   currentStaff: Staff;
   setCurrentStaff: (staff: Staff) => void;
   potentialSupervisors: Staff[];
@@ -14,7 +14,7 @@ interface EditStaffFormContentProps {
   onHireDateChange?: (hasHireDate: boolean, entitledDays?: number) => void;
 }
 
-export const EditStaffFormContent: React.FC<EditStaffFormContentProps> = ({
+const EditStaffForm: React.FC<EditStaffFormProps> = ({
   currentStaff,
   setCurrentStaff,
   potentialSupervisors,
@@ -50,3 +50,5 @@ export const EditStaffFormContent: React.FC<EditStaffFormContentProps> = ({
     </div>
   );
 };
+
+export default EditStaffForm;

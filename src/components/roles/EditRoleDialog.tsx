@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useRole } from '@/hooks/useRole';
+import { useRoles } from '@/hooks/useRoles';
 import { permissionService } from '@/services/permissionService';
 import { Role } from '@/types/role';
 import React, { useEffect, useState } from 'react';
@@ -26,7 +26,7 @@ interface EditRoleDialogProps {
 
 const EditRoleDialog = ({ role, open, onOpenChange, onRoleUpdated }: EditRoleDialogProps) => {
   const { toast } = useToast();
-  const { updateRole } = useRole();
+  const { updateRole } = useRoles();
   const [isLoading, setIsLoading] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(role);
   const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set());

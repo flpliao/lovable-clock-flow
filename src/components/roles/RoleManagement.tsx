@@ -1,5 +1,5 @@
 import { useToast } from '@/hooks/use-toast';
-import { useRole } from '@/hooks/useRole';
+import { useRoles } from '@/hooks/useRoles';
 import { Briefcase, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
@@ -11,7 +11,7 @@ const RoleManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const { data: roles, loading, loadRoles } = useRole();
+  const { data: roles, loading, loadRoles } = useRoles();
   const { toast } = useToast();
 
   useEffect(() => {

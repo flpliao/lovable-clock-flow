@@ -3,7 +3,7 @@ import { useRoleStore } from '@/stores/roleStore';
 import { NewRole, Role } from '@/types/role';
 import { useState } from 'react';
 
-export const useRole = () => {
+export const useRoles = () => {
   const [loading, setLoading] = useState(false);
   const { roles: data, setRoles, removeRole: removeFromStore } = useRoleStore();
 

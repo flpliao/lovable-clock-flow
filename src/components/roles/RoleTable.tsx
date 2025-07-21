@@ -8,7 +8,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { useRole } from '@/hooks/useRole';
+import { useRoles } from '@/hooks/useRoles';
 import { useIsAdmin } from '@/hooks/useStores';
 import { Role } from '@/types/role';
 import { Briefcase, Pencil, Trash2 } from 'lucide-react';
@@ -26,7 +26,7 @@ interface RoleTableProps {
 const RoleTable = ({ roles, loading, searchTerm = '', sortOrder = 'asc' }: RoleTableProps) => {
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const { deleteRole } = useRole();
+  const { deleteRole } = useRoles();
   const { toast } = useToast();
   const isAdmin = useIsAdmin();
 

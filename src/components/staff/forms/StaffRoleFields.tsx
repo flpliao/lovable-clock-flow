@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useRole } from '@/hooks/useRole';
+import { useRoles } from '@/hooks/useRoles';
 import React, { useEffect } from 'react';
 import { NewStaff } from '../types';
 
@@ -16,7 +16,7 @@ interface StaffRoleFieldsProps {
 }
 
 const StaffRoleFields: React.FC<StaffRoleFieldsProps> = ({ newStaff, setNewStaff }) => {
-  const { data: roles, loadRoles } = useRole();
+  const { data: roles, loadRoles } = useRoles();
   useEffect(() => {
     loadRoles();
   }, []);

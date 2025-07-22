@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useUserActions } from '@/hooks/useStores';
-import { AuthService } from '@/services/authService';
+import { AuthService } from '@/services/authServiceOld';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 

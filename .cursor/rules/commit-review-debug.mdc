@@ -17,14 +17,18 @@ alwaysApply: false
 
 ## cc：Git Commit 訊息產生器
 
-```prompt
-請根據「已 staged（已暫存）」的程式碼變更內容，產生一則符合規範的 Git commit 訊息。
+````prompt
+請根據下列 git 已 staged（已暫存）變更內容（來自 `git diff --cached`），產生一則符合規範的 Git commit 訊息。
 （請勿包含未暫存或未追蹤檔案的變更）
+
+若未檢查出任何已暫存變更，請重新執行 `git diff --cached` 或 `git status` 確認是否有變更被加入暫存區，再重新執行本指令。
+目前沒有已暫存的變更，請先執行 `git add` 或確認狀態後再試一次。
 
 步驟：
 
 1. 檢查變更：
    - 僅限 staged files（已暫存檔案）
+   - 若無變更，請提示並結束
 
 2. 修改細項：
    - 每個變動檔案簡要說明變更重點
@@ -52,8 +56,19 @@ description 規則：
 - 中文說明修改目的、重點
 - 可使用條列說明
 
-若有提供 `git status`、`git diff` 或 `lines=`，請優先依其內容生成訊息。
+請將輸出結果包在 Markdown 格式的 ``` 區塊中，以便使用者方便複製。
+範例輸出
+```md
+feat: 新增使用者註冊 API
+
+- 新增 POST /api/register 路由
+- 建立 RegisterController 處理註冊流程
+- 驗證 email、密碼欄位格式
 ```
+
+若有提供 `git status`、`git diff` 或 `lines=`，請優先依其內容生成訊息。
+
+````
 
 ---
 

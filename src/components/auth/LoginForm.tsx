@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useUserActions } from '@/hooks/useStores';
-import { AuthService } from '@/services/authServiceOld';
+import { ROUTES } from '@/routes';
+import { AutoLogin, login, me } from '@/services/authService';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,9 +13,6 @@ const LoginForm: React.FC = () => {
 
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  // 使用新的 Zustand hooks
-  const { setCurrentUser, setIsAuthenticated } = useUserActions();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,65 +26,25 @@ const LoginForm: React.FC = () => {
       return;
     }
 
-    setIsLoading(true);
-    console.log('🔐 開始登入流程:', email);
-
     try {
-      const authResult = await AuthService.authenticate(email, password);
-
-      if (authResult.success && authResult.user) {
-        console.log('✅ 登入成功:', authResult.user.name);
-
-        // 直接將用戶資料寫入 Zustand store
-        const userForContext = {
-          id: authResult.user.id,
-          name: authResult.user.name || '用戶',
-          position: authResult.user.position || '員工',
-          department: authResult.user.department || '未指定',
-          onboard_date: authResult.user.onboard_date || new Date().toISOString().split('T')[0],
-          role_id: authResult.user.role_id,
-          email: authResult.user.email,
-        };
-
-        console.log('📝 寫入 Zustand store 的用戶資料:', userForContext);
-        setCurrentUser(userForContext);
-        setIsAuthenticated(true);
-
-        toast({
-          title: '登入成功',
-          description: `歡迎回來，${authResult.user.name}！`,
-        });
-
-        // 給 Zustand store 更多時間處理用戶狀態變化
-        setTimeout(() => {
-          console.log('🔄 準備跳轉到主頁面');
-          navigate('/', { replace: true });
-        }, 1500);
+      setIsLoading(true);
+      const accessToken = await login(email, password).catch(() => null);
+      const employese = await me(accessToken).catch(() => null);
+      if (employese) {
+        navigate(ROUTES.HOME);
+        return;
       } else {
-        console.log('❌ 登入失敗:', authResult.error);
-
-        // 根據錯誤類型顯示不同訊息
-        let errorMessage = '登入失敗';
-        if (authResult.error?.includes('Invalid login credentials')) {
-          errorMessage = '帳號或密碼不正確';
-        } else if (authResult.error?.includes('Email not confirmed')) {
-          errorMessage = '請先確認您的電子郵件';
-        } else if (authResult.error) {
-          errorMessage = authResult.error;
-        }
-
         toast({
           variant: 'destructive',
           title: '登入失敗',
-          description: errorMessage,
+          description: '帳號或密碼錯誤',
         });
       }
     } catch (error) {
-      console.error('🔥 登入系統錯誤:', error);
       toast({
         variant: 'destructive',
         title: '登入失敗',
-        description: '系統發生錯誤，請稍後再試',
+        description: error.message,
       });
     } finally {
       setIsLoading(false);
@@ -95,54 +52,57 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleLogin} className="mt-8 space-y-6">
-      <div className="space-y-2">
-        <label htmlFor="email" className="block text-sm font-medium text-white">
-          電子郵件
-        </label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="email@example.com"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-          disabled={isLoading}
-          className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60 disabled:opacity-50"
-        />
-      </div>
+    <>
+      <AutoLogin />
+      <form onSubmit={handleLogin} className="mt-8 space-y-6">
+        <div className="space-y-2">
+          <label htmlFor="email" className="block text-sm font-medium text-white">
+            電子郵件
+          </label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="email@example.com"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            disabled={isLoading}
+            className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60 disabled:opacity-50"
+          />
+        </div>
 
-      <div className="space-y-2">
-        <label htmlFor="password" className="block text-sm font-medium text-white">
-          密碼
-        </label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="請輸入密碼"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-          disabled={isLoading}
-          className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60 disabled:opacity-50"
-        />
-      </div>
+        <div className="space-y-2">
+          <label htmlFor="password" className="block text-sm font-medium text-white">
+            密碼
+          </label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="請輸入密碼"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+            disabled={isLoading}
+            className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60 disabled:opacity-50"
+          />
+        </div>
 
-      <Button
-        type="submit"
-        className="w-full bg-blue-600/80 hover:bg-blue-700/80 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <div className="flex items-center space-x-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            <span>登入中...</span>
-          </div>
-        ) : (
-          '登入'
-        )}
-      </Button>
-    </form>
+        <Button
+          type="submit"
+          className="w-full bg-blue-600/80 hover:bg-blue-700/80 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <span>登入中...</span>
+            </div>
+          ) : (
+            '登入'
+          )}
+        </Button>
+      </form>
+    </>
   );
 };
 

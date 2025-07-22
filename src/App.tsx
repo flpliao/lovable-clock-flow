@@ -1,9 +1,10 @@
+import ProtectedRoute from '@/components/common/ProtectedRoute';
 import ProtectedRouteOld from '@/components/common/ProtectedRouteOld';
 import Header from '@/components/Header';
 import { Toaster } from '@/components/ui/toaster';
 import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
 import { useAutoInitAuth } from '@/hooks/useStores';
-import { notFoundRoute, protectedRoutesOld, publicRoutes } from '@/routes/routes';
+import { notFoundRoute, protectedRoutes, protectedRoutesOld, publicRoutes } from '@/routes/routes';
 import React from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
@@ -24,7 +25,7 @@ function App() {
               {publicRoutes.map(route => (
                 <Route key={route.path} path={route.path} element={<route.component />} />
               ))}
-              {/* {protectedRoutes.map(route => (
+              {protectedRoutes.map(route => (
                 <Route
                   key={route.path}
                   path={route.path}
@@ -34,7 +35,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-              ))} */}
+              ))}
               {/* 受保護路由自動渲染 */}
               {protectedRoutesOld.map(route => (
                 <Route

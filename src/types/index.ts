@@ -1,3 +1,5 @@
+import type { CheckInMethod, CheckInType } from '@/constants/checkInTypes';
+
 export interface User {
   id: string;
   name: string;
@@ -92,7 +94,8 @@ export interface Approver {
 export interface CheckInRecord {
   id?: string;
   employee_id?: string;
-  type: 'check-in' | 'check-out';
+  type: CheckInType;
+  method: CheckInMethod;
   status: 'success' | 'failed';
   distance: number;
   latitude: number;

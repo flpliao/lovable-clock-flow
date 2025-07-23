@@ -1,4 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
+import { METHOD_LOCATION } from '@/constants/checkInTypes';
 import { CheckInRecord } from '@/types';
 import dayjs from 'dayjs';
 import { CheckCircle2, LogIn, LogOut } from 'lucide-react';
@@ -23,7 +24,7 @@ const CheckInCompletedStatus: React.FC<CheckInCompletedStatusProps> = ({ checkIn
             <div className="bg-white rounded-lg p-3 border border-green-200">
               <div className="flex items-center justify-center mb-1">
                 <LogIn className="h-4 w-4 text-green-600 mr-1" />
-                <span className="font-medium">上班1</span>
+                <span className="font-medium">上班</span>
               </div>
               <div className="text-center">
                 <div className="font-mono text-lg text-green-800">
@@ -45,7 +46,7 @@ const CheckInCompletedStatus: React.FC<CheckInCompletedStatusProps> = ({ checkIn
                   {dayjs(checkOut.created_at).format('HH:mm:ss')}
                 </div>
                 <div className="text-green-600 text-xs mt-1">
-                  {checkOut.type === 'check-out' ? '位置打卡' : 'IP打卡'}
+                  {checkOut.method === METHOD_LOCATION ? '位置打卡' : 'IP打卡'}
                 </div>
               </div>
             </div>

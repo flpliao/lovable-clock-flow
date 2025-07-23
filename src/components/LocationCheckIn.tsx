@@ -6,7 +6,6 @@ import CheckInCompletedStatus from '@/components/check-in/CheckInCompletedStatus
 import CheckInMethodSelector from '@/components/check-in/CheckInMethodSelector';
 import CheckInStatus from '@/components/check-in/CheckInStatus';
 import CheckInWarning from '@/components/check-in/CheckInWarning';
-import CheckpointSelector from '@/components/check-in/CheckpointSelector';
 import LocationCheckInHeader from '@/components/check-in/LocationCheckInHeader';
 import MissedCheckinDialog from '@/components/check-in/MissedCheckinDialog';
 import { CHECK_IN, CHECK_OUT, CheckInType } from '@/constants/checkInTypes';
@@ -18,12 +17,12 @@ import {
   getTodayCheckInRecords,
 } from '@/services/checkInService';
 import { CheckInRecord } from '@/types';
+import NearestCheckInPointInfo from './check-in/NearestCheckInPointInfo';
 
 const LocationCheckIn = () => {
-  const { data: checkInPoints } = useCheckInPoints();
+  const { data: checkInPoints, loadCheckInPoints, currentPos } = useCheckInPoints();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [selectedCheckpointId, setSelectedCheckpointId] = useState<number | null>(null);
   const [checkInMethod, setCheckInMethod] = useState<'location' | 'ip'>('location');
   const [type, setType] = useState<CheckInType>(CHECK_IN);
   const [todayRecords, setTodayRecords] = useState<{
@@ -40,28 +39,23 @@ const LocationCheckIn = () => {
         setType(CHECK_OUT);
       }
     };
-    fetchTodayRecords();
-  }, [getTodayCheckInRecords]);
 
-  // 打卡邏輯
-  // 取得目前選擇的 checkpoint
-  const selectedCheckpoint =
-    selectedCheckpointId !== null ? checkInPoints.find(cp => cp.id === selectedCheckpointId) : null;
+    fetchTodayRecords();
+    loadCheckInPoints();
+  }, [getTodayCheckInRecords]);
 
   // 位置打卡
   const handleLocationCheckIn = async () => {
     if (loading) return; // 防止重複觸發
     setLoading(true);
     try {
-      if (!selectedCheckpoint) {
-        throw new Error('請先選擇打卡地點');
+      if (!checkInPoints || checkInPoints.length === 0) {
+        throw new Error('無可用打卡點');
       }
-
       const result = await createLocationCheckInRecord({
         type,
-        selectedCheckpoint,
+        selectedCheckpoint: checkInPoints[0],
       });
-
       handleCheckIn(result);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '位置打卡失敗';
@@ -101,6 +95,9 @@ const LocationCheckIn = () => {
     }
   };
 
+  const noAvailableCheckInPoint =
+    checkInMethod === 'location' && (!checkInPoints || checkInPoints.length === 0);
+
   // 如果已完成今日打卡，顯示完成狀態
   if (todayRecords?.checkIn && todayRecords?.checkOut) {
     return (
@@ -125,22 +122,19 @@ const LocationCheckIn = () => {
           setCheckInMethod={setCheckInMethod}
           canUseLocationCheckIn={true}
         />
-        {checkInMethod === 'location' && (
-          <CheckpointSelector
-            selectedCheckpointId={selectedCheckpointId}
-            onCheckpointChange={setSelectedCheckpointId}
-          />
-        )}
         <CheckInWarning
           checkInMethod={checkInMethod}
           canUseLocationCheckIn={true}
           employeeDepartment={null}
         />
+        {checkInMethod === 'location' && (
+          <NearestCheckInPointInfo currentPos={currentPos} checkInPoints={checkInPoints} />
+        )}
         <CheckInButton
           type={type}
           loading={loading}
           onCheckIn={checkInMethod === 'location' ? handleLocationCheckIn : handleIpCheckIn}
-          disabled={loading}
+          disabled={loading || noAvailableCheckInPoint}
         />
         <div className="flex justify-center">
           <MissedCheckinDialog onSuccess={() => {}} />

@@ -1,5 +1,12 @@
-import { CheckInPointService, type CheckInPoint } from '@/services/checkInPointService';
+import {
+  addCheckInPoint,
+  deleteCheckInPoint,
+  getNearbyCheckInPoints,
+  updateCheckInPoint,
+  type CheckInPoint,
+} from '@/services/checkInPointService';
 import { useCheckInPointStore } from '@/stores/checkInPointStore';
+import { getCurrentPosition } from '@/utils/location';
 import { useState } from 'react';
 
 // 重新導出 CheckInPoint 介面，保持向後相容性
@@ -7,6 +14,9 @@ export type { CheckInPoint } from '@/services/checkInPointService';
 
 export function useCheckInPoints() {
   const [loading, setLoading] = useState(false);
+  const [currentPos, setCurrentPos] = useState<{ latitude: number; longitude: number } | null>(
+    null
+  );
   const {
     checkInPoints: data,
     setCheckInPoints,
@@ -20,7 +30,9 @@ export function useCheckInPoints() {
 
     setLoading(true);
     try {
-      const checkInPoints = await CheckInPointService.loadCheckInPoints();
+      const { latitude, longitude } = await getCurrentPosition();
+      setCurrentPos({ latitude, longitude });
+      const checkInPoints = await getNearbyCheckInPoints(latitude, longitude);
       setCheckInPoints(checkInPoints);
     } catch (error) {
       console.error('載入打卡點失敗:', error);
@@ -31,7 +43,7 @@ export function useCheckInPoints() {
 
   const addCheckpoint = async (checkpoint: Omit<CheckInPoint, 'id' | 'created_at'>) => {
     try {
-      const newCheckInPoints = await CheckInPointService.addCheckInPoint(checkpoint);
+      const newCheckInPoints = await addCheckInPoint(checkpoint);
       addToStore(newCheckInPoints[0]);
     } catch (error) {
       console.error('新增打卡點失敗:', error);
@@ -41,7 +53,7 @@ export function useCheckInPoints() {
 
   const updateCheckpoint = async (id: number, checkpoint: Partial<CheckInPoint>) => {
     try {
-      const updatedCheckInPoints = await CheckInPointService.updateCheckInPoint(id, checkpoint);
+      const updatedCheckInPoints = await updateCheckInPoint(id, checkpoint);
       updateInStore(id, updatedCheckInPoints[0]);
     } catch (error) {
       console.error('更新打卡點失敗:', error);
@@ -51,7 +63,7 @@ export function useCheckInPoints() {
 
   const deleteCheckpoint = async (id: number) => {
     try {
-      await CheckInPointService.deleteCheckInPoint(id);
+      await deleteCheckInPoint(id);
       removeFromStore(id);
     } catch (error) {
       console.error('刪除打卡點失敗:', error);
@@ -66,5 +78,6 @@ export function useCheckInPoints() {
     addCheckpoint,
     updateCheckpoint,
     deleteCheckpoint,
+    currentPos,
   };
 }

@@ -1,22 +1,28 @@
 // checkInService: 提供打卡相關 API 操作
+import { CheckInType, METHOD_IP, METHOD_LOCATION } from '@/constants/checkInTypes';
 import { API_ROUTES } from '@/routes';
 import { CheckInRecord } from '@/types';
+import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 import dayjs from 'dayjs';
 
 // 取得今日打卡紀錄
 export const getTodayCheckInRecords = async () => {
-  const response = await axiosWithEmployeeAuth().get(`${API_ROUTES.CHECKIN.INDEX}`, {
-    params: { created_at: dayjs().toISOString() },
-  });
-  const records = response.data;
-  return splitCheckInRecords(records);
+  const data = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(`${API_ROUTES.CHECKIN.INDEX}`, {
+      params: { created_at: dayjs().format('YYYY-MM-DD') },
+    })
+  );
+
+  return splitCheckInRecords(data as CheckInRecord[]);
 };
 
 // 前端分組
 export const splitCheckInRecords = (records: CheckInRecord[]) => {
-  const checkIn = records.find(r => r.type === 'check-in');
-  const checkOut = records.find(r => r.type === 'check-out');
+  if (!records) return { checkIn: null, checkOut: null };
+
+  const checkIn = records.find(r => r.type === 'check_in');
+  const checkOut = records.find(r => r.type === 'check_out');
   return { checkIn, checkOut };
 };
 
@@ -45,12 +51,13 @@ export const getDistance = (lat1: number, lon1: number, lat2: number, lon2: numb
 };
 
 // 建立 employee 版本的 IP 打卡紀錄
-export const createEmployeeIpCheckInRecord = async (type: 'check-in' | 'check-out') => {
+export const createIpCheckInRecord = async (type: CheckInType) => {
   // 取得IP位址
   const ipResponse = await fetch('https://api.ipify.org?format=json');
   const ipData = await ipResponse.json();
   const checkInData: CheckInRecord = {
     type: type,
+    method: METHOD_IP,
     status: 'success',
     distance: 0,
     latitude: 0,
@@ -58,5 +65,63 @@ export const createEmployeeIpCheckInRecord = async (type: 'check-in' | 'check-ou
     ip_address: ipData.ip,
   };
 
-  return await createCheckInRecord(checkInData);
+  const response = await createCheckInRecord(checkInData);
+  return response.data;
+};
+
+// 位置打卡處理邏輯
+export interface LocationCheckInParams {
+  type: CheckInType;
+  selectedCheckpoint: {
+    latitude: number;
+    longitude: number;
+    check_in_radius: number;
+    name: string;
+  };
+}
+
+export const createLocationCheckInRecord = async (
+  params: LocationCheckInParams
+): Promise<CheckInRecord> => {
+  const { type, selectedCheckpoint } = params;
+
+  // 取得比對目標
+  if (!selectedCheckpoint) {
+    throw new Error('請先選擇打卡地點');
+  }
+
+  // 取得地理位置
+  const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+  const { latitude, longitude } = position.coords;
+
+  // 計算距離
+  const dist = getDistance(
+    latitude,
+    longitude,
+    selectedCheckpoint.latitude,
+    selectedCheckpoint.longitude
+  );
+
+  // 距離限制檢查
+  if (dist > selectedCheckpoint.check_in_radius) {
+    throw new Error(
+      `距離 ${selectedCheckpoint.name} 過遠 (${dist}公尺)，請移動到${selectedCheckpoint.name}附近再進行打卡`
+    );
+  }
+
+  // 儲存打卡記錄
+  const checkInData: CheckInRecord = {
+    type: type,
+    method: METHOD_LOCATION,
+    status: 'success',
+    distance: dist,
+    latitude,
+    longitude,
+    ip_address: '127.0.0.1',
+  };
+
+  const response = await createCheckInRecord(checkInData);
+  return response.data;
 };

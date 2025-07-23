@@ -97,7 +97,7 @@ export interface CheckInRecord {
   type: CheckInType;
   method: CheckInMethod;
   status: 'success' | 'failed';
-  distance: number;
+  distance?: number;
   latitude: number;
   longitude: number;
   ip_address: string;

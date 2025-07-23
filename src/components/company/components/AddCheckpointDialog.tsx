@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useCheckpoints } from '@/hooks/useCheckpoints';
-import type { Checkpoint } from '@/services/checkpointService';
+import { useCheckpoints } from '@/hooks/useCheckInPoints';
+import type { Checkpoint } from '@/services/checkInPointService';
 import React, { useState } from 'react';
 
 const AddCheckpointDialog = ({

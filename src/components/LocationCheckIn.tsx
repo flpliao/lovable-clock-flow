@@ -10,7 +10,7 @@ import CheckpointSelector from '@/components/check-in/CheckpointSelector';
 import LocationCheckInHeader from '@/components/check-in/LocationCheckInHeader';
 import MissedCheckinDialog from '@/components/check-in/MissedCheckinDialog';
 import { CHECK_IN, CHECK_OUT, CheckInType } from '@/constants/checkInTypes';
-import { useCheckpoints } from '@/hooks/useCheckpoints';
+import { useCheckInPoints } from '@/hooks/useCheckInPoints';
 import { useToast } from '@/hooks/useToast';
 import {
   createIpCheckInRecord,
@@ -20,7 +20,7 @@ import {
 import { CheckInRecord } from '@/types';
 
 const LocationCheckIn = () => {
-  const { data: checkpoints } = useCheckpoints();
+  const { data: checkInPoints } = useCheckInPoints();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [selectedCheckpointId, setSelectedCheckpointId] = useState<number | null>(null);
@@ -46,7 +46,7 @@ const LocationCheckIn = () => {
   // 打卡邏輯
   // 取得目前選擇的 checkpoint
   const selectedCheckpoint =
-    selectedCheckpointId !== null ? checkpoints.find(cp => cp.id === selectedCheckpointId) : null;
+    selectedCheckpointId !== null ? checkInPoints.find(cp => cp.id === selectedCheckpointId) : null;
 
   // 位置打卡
   const handleLocationCheckIn = async () => {

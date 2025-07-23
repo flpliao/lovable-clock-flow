@@ -1,4 +1,6 @@
-import { supabase } from '@/integrations/supabase/client';
+import { API_ROUTES } from '@/routes/constants';
+import { callApiAndDecode } from '@/utils/apiHelper';
+import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 
 export interface CheckInPoint {
   id: number;
@@ -8,48 +10,45 @@ export interface CheckInPoint {
   check_in_radius: number;
   created_at: string;
   disabled_at: string | null;
+  distance?: number;
 }
 
-export class CheckInPointService {
-  static async loadCheckInPoints(): Promise<CheckInPoint[]> {
-    const { data, error } = await supabase
-      .from('checkpoints')
-      .select('*')
-      .order('id', { ascending: true });
+// 取得所有打卡點
+export const getNearbyCheckInPoints = async (
+  latitude: number,
+  longitude: number
+): Promise<CheckInPoint[]> => {
+  const data = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(API_ROUTES.CHECKIN_POINT.INDEX, {
+      params: {
+        latitude,
+        longitude,
+      },
+    })
+  );
+  return data as CheckInPoint[];
+};
 
-    if (error) throw error;
-    return data as CheckInPoint[];
-  }
+// 新增打卡點
+export const addCheckInPoint = async (
+  payload: Omit<CheckInPoint, 'id' | 'created_at'>
+): Promise<CheckInPoint[]> => {
+  return await callApiAndDecode(
+    axiosWithEmployeeAuth().post(API_ROUTES.CHECKIN_POINT.CREATE, payload)
+  );
+};
 
-  static async addCheckInPoint(
-    payload: Omit<CheckInPoint, 'id' | 'created_at'>
-  ): Promise<CheckInPoint[]> {
-    const { data, error } = await supabase
-      .from('employee_check_in_points')
-      .insert([payload])
-      .select();
+// 更新打卡點
+export const updateCheckInPoint = async (
+  id: number,
+  payload: Partial<CheckInPoint>
+): Promise<CheckInPoint[]> => {
+  const url = API_ROUTES.CHECKIN_POINT.UPDATE.replace(':id', String(id));
+  return await callApiAndDecode(axiosWithEmployeeAuth().put(url, payload));
+};
 
-    if (error) throw error;
-    return data;
-  }
-
-  static async updateCheckInPoint(
-    id: number,
-    payload: Partial<CheckInPoint>
-  ): Promise<CheckInPoint[]> {
-    const { data, error } = await supabase
-      .from('employee_check_in_points')
-      .update(payload)
-      .eq('id', id)
-      .select();
-
-    if (error) throw error;
-    return data;
-  }
-
-  static async deleteCheckInPoint(id: number): Promise<void> {
-    const { error } = await supabase.from('employee_check_in_points').delete().eq('id', id);
-
-    if (error) throw error;
-  }
-}
+// 刪除打卡點
+export const deleteCheckInPoint = async (id: number): Promise<void> => {
+  const url = API_ROUTES.CHECKIN_POINT.DELETE.replace(':id', String(id));
+  await callApiAndDecode(axiosWithEmployeeAuth().delete(url));
+};

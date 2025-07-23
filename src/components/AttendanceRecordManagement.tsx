@@ -1,3 +1,14 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -22,40 +33,29 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useToast } from '@/hooks/use-toast';
-import { permissionService } from '@/services/simplifiedPermissionService';
-import { scheduleService, Schedule as SupabaseSchedule } from '@/services/scheduleService';
+import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
+import { scheduleService, Schedule as SupabaseSchedule } from '@/services/scheduleService';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { CheckInRecord } from '@/types';
 import { MissedCheckinRequest } from '@/types/missedCheckin';
 import { formatDate, formatTime } from '@/utils/checkInUtils';
-import { cn } from '@/lib/utils';
+import { eachDayOfInterval, format, isFuture, subDays } from 'date-fns';
 import {
+  AlertCircle,
   CalendarIcon,
   ChevronLeft,
   ChevronRight,
+  Clock,
+  FileText,
   RefreshCw,
   Search,
-  X,
-  FileText,
-  Clock,
-  AlertCircle,
   Trash2,
+  X,
 } from 'lucide-react';
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
-import { format, eachDayOfInterval, isFuture, subDays } from 'date-fns';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 const ITEMS_PER_PAGE = 10;
 

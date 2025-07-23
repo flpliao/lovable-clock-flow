@@ -1,7 +1,7 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useStores';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
+import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { Bell, Clock } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';

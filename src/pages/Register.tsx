@@ -1,6 +1,6 @@
 import RegisterForm from '@/components/auth/RegisterForm';
-import { useToast } from '@/hooks/use-toast';
 import { useAuthenticated, useCurrentUser, useUserLoaded } from '@/hooks/useStores';
+import { useToast } from '@/hooks/useToast';
 import { User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';

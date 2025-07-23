@@ -1,7 +1,7 @@
 
-import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/useToast';
 import { PayrollService } from '@/services/payrollService';
-import { useToast } from '@/hooks/use-toast';
+import { useEffect, useState } from 'react';
 
 export const usePayrollData = () => {
   const [payrolls, setPayrolls] = useState<any[]>([]);

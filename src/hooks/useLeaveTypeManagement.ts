@@ -1,4 +1,4 @@
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { LeaveTypeService } from '@/services/payroll/leaveTypeService';
 import { useEffect, useState } from 'react';
 

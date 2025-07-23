@@ -3,13 +3,13 @@ import { useCurrentUser } from '@/hooks/useStores';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckInRecord } from '@/types';
 import {
-    isWithinCheckInRange
+  isWithinCheckInRange
 } from '@/utils/departmentCheckInUtils';
 import { getCurrentPosition } from '@/utils/geolocationUtils';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { toast } from './use-toast';
 import { useSupabaseCheckIn } from './useSupabaseCheckIn';
+import { toast } from './useToast';
 
 export const useLocationCheckIn = (userId: string, actionType: 'check-in' | 'check-out') => {
   const { createCheckInRecord } = useSupabaseCheckIn();

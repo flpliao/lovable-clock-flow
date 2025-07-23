@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useStores';
+import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { sendLeaveStatusNotification } from '@/services/leaveNotificationService';
 import { LeaveRequest } from '@/types';

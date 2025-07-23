@@ -1,8 +1,8 @@
 import { Staff } from '@/components/staff/types';
 import { transformFromSupabase } from '@/contexts/scheduling/transformUtils';
 import { Schedule } from '@/contexts/scheduling/types';
-import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useStores';
+import { useToast } from '@/hooks/useToast';
 import { scheduleService } from '@/services/scheduleService';
 import { permissionService } from '@/services/simplifiedPermissionService';
 import { useCallback, useEffect, useState } from 'react';

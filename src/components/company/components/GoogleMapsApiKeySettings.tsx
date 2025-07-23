@@ -1,12 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Loader2, AlertCircle, CheckCircle2, Eye, EyeOff, ExternalLink } from 'lucide-react';
+import { toast } from '@/hooks/useToast';
 import { SystemSettingsService } from '@/services/systemSettingsService';
-import { toast } from '@/hooks/use-toast';
+import { AlertCircle, CheckCircle2, ExternalLink, Eye, EyeOff, Loader2, MapPin } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const GoogleMapsApiKeySettings = () => {
   const [apiKey, setApiKey] = useState('');

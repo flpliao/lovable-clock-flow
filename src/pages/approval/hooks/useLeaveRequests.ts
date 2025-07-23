@@ -1,5 +1,5 @@
-import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useStores';
+import { useToast } from '@/hooks/useToast';
 import { useState } from 'react';
 import type { LeaveRequestWithApplicant } from './types';
 import { useLeaveRequestsActions } from './useLeaveRequestsActions';

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { ROUTES } from '@/routes';
 import { AutoLogin, login, me } from '@/services/authService';
 import React, { useState } from 'react';

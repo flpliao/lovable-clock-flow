@@ -6,8 +6,8 @@ import { isWithinCheckInRange } from '@/utils/departmentCheckInUtils';
 import { getCurrentPosition } from '@/utils/geolocationUtils';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { toast } from './use-toast';
 import { useSupabaseCheckIn } from './useSupabaseCheckIn';
+import { toast } from './useToast';
 
 export const useLocationCheckInWithDepartment = (
   userId: string, 

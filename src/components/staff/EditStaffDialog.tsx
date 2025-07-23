@@ -7,8 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
 import { useStaff } from '@/hooks/useStaff';
+import { useToast } from '@/hooks/useToast';
 import { useEffect, useState } from 'react';
 import EditStaffForm from './forms/EditStaffForm';
 import { useSupervisorFilter } from './hooks/useSupervisorFilter';

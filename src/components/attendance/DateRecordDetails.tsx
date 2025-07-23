@@ -1,27 +1,26 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { CheckInRecord } from '@/types';
-import { MissedCheckinRequest } from '@/types/missedCheckin';
-import { Schedule } from '@/services/scheduleService';
-import { MissedCheckinValidationService } from '@/services/missedCheckinValidationService';
-import { formatTime } from '@/utils/checkInUtils';
-import { format, isFuture } from 'date-fns';
-import { useCurrentUser } from '@/hooks/useStores';
-import { useToast } from '@/hooks/use-toast';
-import React from 'react';
+import type { MissedCheckinFormData } from '@/components/check-in/components/MissedCheckinFormFields';
+import MissedCheckinFormFields from '@/components/check-in/components/MissedCheckinFormFields';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogClose,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { ChevronRight } from 'lucide-react';
-import MissedCheckinFormFields from '@/components/check-in/components/MissedCheckinFormFields';
+import { useCurrentUser } from '@/hooks/useStores';
+import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
-import type { MissedCheckinFormData } from '@/components/check-in/components/MissedCheckinFormFields';
+import { MissedCheckinValidationService } from '@/services/missedCheckinValidationService';
+import { Schedule } from '@/services/scheduleService';
+import { CheckInRecord } from '@/types';
+import { MissedCheckinRequest } from '@/types/missedCheckin';
+import { formatTime } from '@/utils/checkInUtils';
+import { format, isFuture } from 'date-fns';
+import { ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface DateRecordDetailsProps {
   date: Date;

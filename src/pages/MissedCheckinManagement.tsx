@@ -3,8 +3,8 @@ import { MISSED_CHECKIN_PERMISSIONS } from '@/components/staff/constants/permiss
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useStores';
+import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { NotificationDatabaseOperations } from '@/services/notifications';
 import { permissionService } from '@/services/simplifiedPermissionService';

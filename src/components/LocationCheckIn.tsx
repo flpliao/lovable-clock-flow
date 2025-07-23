@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import CheckInButton from '@/components/check-in/CheckInButton';
 import CheckInCompletedStatus from '@/components/check-in/CheckInCompletedStatus';
 import CheckInMethodSelector from '@/components/check-in/CheckInMethodSelector';
-import CheckInStatusInfo from '@/components/check-in/CheckInStatusInfo';
+import CheckInStatus from '@/components/check-in/CheckInStatus';
 import CheckInWarning from '@/components/check-in/CheckInWarning';
 import CheckpointSelector from '@/components/check-in/CheckpointSelector';
 import LocationCheckInHeader from '@/components/check-in/LocationCheckInHeader';
@@ -119,7 +119,7 @@ const LocationCheckIn = () => {
     <div className="flex justify-center items-center w-full min-h-[180px]">
       <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 shadow-lg space-y-3 max-w-md w-full mx-4 py-[20px]">
         <LocationCheckInHeader />
-        <CheckInStatusInfo checkIn={todayRecords?.checkIn} checkOut={todayRecords?.checkOut} />
+        <CheckInStatus checkIn={todayRecords?.checkIn} />
         <CheckInMethodSelector
           checkInMethod={checkInMethod}
           setCheckInMethod={setCheckInMethod}

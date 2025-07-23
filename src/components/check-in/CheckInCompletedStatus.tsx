@@ -31,7 +31,7 @@ const CheckInCompletedStatus: React.FC<CheckInCompletedStatusProps> = ({ checkIn
                   {dayjs(checkIn.created_at).format('HH:mm:ss')}
                 </div>
                 <div className="text-green-600 text-xs mt-1">
-                  {checkIn.distance > 0 ? '位置打卡' : 'IP打卡'}
+                  {checkIn.method === METHOD_LOCATION ? '位置打卡' : 'IP打卡'}
                 </div>
               </div>
             </div>

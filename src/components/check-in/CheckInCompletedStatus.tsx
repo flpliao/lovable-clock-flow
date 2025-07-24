@@ -1,19 +1,33 @@
-
-import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle2, LogIn, LogOut } from 'lucide-react';
+import { METHOD_LOCATION } from '@/constants/checkInTypes';
 import { CheckInRecord } from '@/types';
-import { formatTime } from '@/utils/checkInUtils';
+import dayjs from 'dayjs';
+import { CheckCircle2, LogIn, LogOut, MapPin, Wifi } from 'lucide-react';
+import React from 'react';
 
 interface CheckInCompletedStatusProps {
   checkIn: CheckInRecord;
   checkOut: CheckInRecord;
 }
 
-const CheckInCompletedStatus: React.FC<CheckInCompletedStatusProps> = ({
-  checkIn,
-  checkOut
-}) => {
+const CheckInCompletedStatus: React.FC<CheckInCompletedStatusProps> = ({ checkIn, checkOut }) => {
+  const renderCheckInMethod = (record: CheckInRecord) => {
+    if (record.method === METHOD_LOCATION) {
+      return (
+        <>
+          <MapPin className="h-3 w-3 shrink-0" />
+          <span className="truncate max-w-[120px]">{record.location_name || '位置打卡'}</span>
+        </>
+      );
+    }
+    return (
+      <>
+        <Wifi className="h-3 w-3 shrink-0" />
+        <span>IP打卡</span>
+      </>
+    );
+  };
+
   return (
     <Card className="bg-green-50 border-green-200">
       <CardContent className="p-4">
@@ -22,34 +36,34 @@ const CheckInCompletedStatus: React.FC<CheckInCompletedStatusProps> = ({
             <CheckCircle2 className="h-8 w-8 text-green-600 mr-2" />
             <span className="text-lg font-semibold text-green-800">今日打卡已完成</span>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="bg-white rounded-lg p-3 border border-green-200">
-              <div className="flex items-center justify-center mb-1">
+              <div className="flex items-center justify-center mb-2">
                 <LogIn className="h-4 w-4 text-green-600 mr-1" />
                 <span className="font-medium">上班</span>
               </div>
-              <div className="text-center">
+              <div className="text-center space-y-1.5">
                 <div className="font-mono text-lg text-green-800">
-                  {formatTime(checkIn.timestamp)}
+                  {dayjs(checkIn.created_at).format('HH:mm:ss')}
                 </div>
-                <div className="text-green-600 text-xs mt-1">
-                  {checkIn.type === 'location' ? '位置打卡' : 'IP打卡'}
+                <div className="flex items-center justify-center gap-1 text-green-600 text-xs">
+                  {renderCheckInMethod(checkIn)}
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-lg p-3 border border-green-200">
-              <div className="flex items-center justify-center mb-1">
+              <div className="flex items-center justify-center mb-2">
                 <LogOut className="h-4 w-4 text-green-600 mr-1" />
                 <span className="font-medium">下班</span>
               </div>
-              <div className="text-center">
+              <div className="text-center space-y-1.5">
                 <div className="font-mono text-lg text-green-800">
-                  {formatTime(checkOut.timestamp)}
+                  {dayjs(checkOut.created_at).format('HH:mm:ss')}
                 </div>
-                <div className="text-green-600 text-xs mt-1">
-                  {checkOut.type === 'location' ? '位置打卡' : 'IP打卡'}
+                <div className="flex items-center justify-center gap-1 text-green-600 text-xs">
+                  {renderCheckInMethod(checkOut)}
                 </div>
               </div>
             </div>

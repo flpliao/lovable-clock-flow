@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { useCheckpoints } from '@/hooks/useCheckpoints';
-import type { Checkpoint } from '@/services/checkpointService';
+import { useCheckpoints } from '@/hooks/useCheckInPoints';
+import type { Checkpoint } from '@/services/checkInPointService';
 import { Clock, Edit, MapPin, Trash2 } from 'lucide-react';
 import { useEffect } from 'react';
 

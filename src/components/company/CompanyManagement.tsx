@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBranches } from '@/hooks/useBranches';
-import { Checkpoint, useCheckpoints } from '@/hooks/useCheckpoints';
+import { Checkpoint, useCheckpoints } from '@/hooks/useCheckInPoints';
 import { useCompany } from '@/hooks/useCompany';
 import { Branch } from '@/types/company';
 import { Building, MapPin, Plus } from 'lucide-react';

@@ -1,5 +1,5 @@
-import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useStores';
+import { useToast } from '@/hooks/useToast';
 import { useEffect, useState } from 'react';
 import { useSupabaseCheckIn } from './useSupabaseCheckIn';
 

@@ -1,6 +1,5 @@
 
-import React, { useState } from 'react';
-import { Mail, Edit2, Save, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -10,8 +9,9 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
+import { Edit2, Mail, Save, X } from 'lucide-react';
+import React, { useState } from 'react';
 
 interface EmailManagementCardProps {
   currentEmail: string;

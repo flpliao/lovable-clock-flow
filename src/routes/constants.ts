@@ -47,6 +47,16 @@ export const API_ROUTES = {
     ME: `${API_URL}/employee-auth/me`,
     FORGOT_PASSWORD: `${API_URL}/employee-auth/forgot-password`,
   },
+  CHECKIN: {
+    INDEX: `${API_URL}/employee/check-in`,
+    CREATE: `${API_URL}/employee/check-in`,
+  },
+  CHECKIN_POINT: {
+    INDEX: `${API_URL}/employee/check-in/points`,
+    CREATE: `${API_URL}/employee/check-in/points`,
+    UPDATE: `${API_URL}/employee/check-in/points/:id`,
+    DELETE: `${API_URL}/employee/check-in/points/:id`,
+  },
 } as const;
 
 // 路由群組

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const RegisterForm: React.FC = () => {
   const [email, setEmail] = useState('');

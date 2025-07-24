@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 interface Employee {
-  id: string;
+  slug: string;
   name: string;
 }
 

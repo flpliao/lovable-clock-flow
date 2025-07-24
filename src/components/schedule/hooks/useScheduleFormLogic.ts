@@ -1,6 +1,6 @@
 import { Staff } from '@/components/staff/types';
-import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser, usePermissionChecker } from '@/hooks/useStores';
+import { useToast } from '@/hooks/useToast';
 import { scheduleService } from '@/services/scheduleService';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';

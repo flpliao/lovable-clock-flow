@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [companySlug, setCompanySlug] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -17,18 +18,18 @@ const LoginForm: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email || !password) {
+    if (!email || !password || !companySlug) {
       toast({
         variant: 'destructive',
         title: '請填寫完整資訊',
-        description: '請輸入電子郵件和密碼',
+        description: '請輸入公司代號、電子郵件和密碼',
       });
       return;
     }
 
     try {
       setIsLoading(true);
-      const accessToken = await login(email, password).catch(() => null);
+      const accessToken = await login(email, password, companySlug).catch(() => null);
       const employese = await me(accessToken).catch(() => null);
       if (employese) {
         navigate(ROUTES.HOME);
@@ -55,6 +56,22 @@ const LoginForm: React.FC = () => {
     <>
       <AutoLogin />
       <form onSubmit={handleLogin} className="mt-8 space-y-6">
+        <div className="space-y-2">
+          <label htmlFor="companySlug" className="block text-sm font-medium text-white">
+            公司代號
+          </label>
+          <Input
+            id="companySlug"
+            type="text"
+            placeholder="請輸入公司代號"
+            value={companySlug}
+            onChange={e => setCompanySlug(e.target.value)}
+            required
+            disabled={isLoading}
+            className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/60 disabled:opacity-50"
+          />
+        </div>
+
         <div className="space-y-2">
           <label htmlFor="email" className="block text-sm font-medium text-white">
             電子郵件

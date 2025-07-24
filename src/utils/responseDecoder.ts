@@ -29,9 +29,17 @@ export function decodeApiResponse(
     }
   }
 
+  // 攤平成最底層的 data
+  function flattenData(data: unknown) {
+    while (data && typeof data === 'object' && 'data' in data) {
+      data = data.data;
+    }
+    return data;
+  }
+
   return {
     status,
     message,
-    data: (data as { data?: unknown })?.data ?? data,
+    data: flattenData(data),
   };
 }

@@ -1,7 +1,7 @@
 // checkInService: 提供打卡相關 API 操作
 import { CheckInType, METHOD_IP, METHOD_LOCATION } from '@/constants/checkInTypes';
 import { API_ROUTES } from '@/routes';
-import { CheckInRecord } from '@/types';
+import { CheckInRecord } from '@/types/checkIn';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 import { getCurrentIp, getCurrentPosition } from '@/utils/location';
@@ -9,33 +9,35 @@ import dayjs from 'dayjs';
 
 // 取得今日打卡紀錄
 export const getTodayCheckInRecords = async () => {
-  const data = await callApiAndDecode(
+  const { data, status } = await callApiAndDecode(
     axiosWithEmployeeAuth().get(`${API_ROUTES.CHECKIN.INDEX}`, {
       params: { created_at: dayjs().format('YYYY-MM-DD') },
     })
   );
+
+  if (status === 'error') {
+    return { checkIn: null, checkOut: null };
+  }
 
   return splitCheckInRecords(data as CheckInRecord[]);
 };
 
 // 前端分組
 export const splitCheckInRecords = (records: CheckInRecord[]) => {
-  if (!records) return { checkIn: null, checkOut: null };
-
   const checkIn = records.find(r => r.type === 'check_in');
   const checkOut = records.find(r => r.type === 'check_out');
   return { checkIn, checkOut };
 };
 
 export const getCheckInRecords = async () => {
-  const response = await axiosWithEmployeeAuth().get(`${API_ROUTES.CHECKIN.INDEX}`, {});
-  return response.data;
+  const { data } = await axiosWithEmployeeAuth().get(`${API_ROUTES.CHECKIN.INDEX}`, {});
+  return data as CheckInRecord[];
 };
 
 // 建立打卡紀錄
 export const createCheckInRecord = async (checkInData: CheckInRecord) => {
-  const response = await axiosWithEmployeeAuth().post(`${API_ROUTES.CHECKIN.CREATE}`, checkInData);
-  return response.data;
+  const { data } = await axiosWithEmployeeAuth().post(`${API_ROUTES.CHECKIN.CREATE}`, checkInData);
+  return data;
 };
 
 // 建立 employee 版本的 IP 打卡紀錄
@@ -52,8 +54,8 @@ export const createIpCheckInRecord = async (type: CheckInType) => {
     ip_address: ip,
   };
 
-  const response = await createCheckInRecord(checkInData);
-  return response.data;
+  const { data } = await createCheckInRecord(checkInData);
+  return data;
 };
 
 // 位置打卡處理邏輯
@@ -88,6 +90,6 @@ export const createLocationCheckInRecord = async (
     ip_address: '127.0.0.1',
   };
 
-  const response = await createCheckInRecord(checkInData);
-  return response.data;
+  const { data } = await createCheckInRecord(checkInData);
+  return data;
 };

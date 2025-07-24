@@ -3,14 +3,11 @@ import {
   deleteCheckInPoint,
   getNearbyCheckInPoints,
   updateCheckInPoint,
-  type CheckInPoint,
 } from '@/services/checkInPointService';
 import { useCheckInPointStore } from '@/stores/checkInPointStore';
+import { CheckInPoint } from '@/types/checkIn';
 import { getCurrentPosition } from '@/utils/location';
 import { useState } from 'react';
-
-// 重新導出 CheckInPoint 介面，保持向後相容性
-export type { CheckInPoint } from '@/services/checkInPointService';
 
 export function useCheckInPoints() {
   const [loading, setLoading] = useState(false);

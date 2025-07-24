@@ -16,7 +16,7 @@ import {
   createLocationCheckInRecord,
   getTodayCheckInRecords,
 } from '@/services/checkInService';
-import { CheckInRecord } from '@/types';
+import { CheckInRecord } from '@/types/checkIn';
 import NearestCheckInPointInfo from './check-in/NearestCheckInPointInfo';
 
 const LocationCheckIn = () => {

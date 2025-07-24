@@ -1,18 +1,9 @@
-interface DecodeOptions {
-  requiredFields?: string[];
-  allowNullData?: boolean;
-  expectDataType?: 'any' | 'object' | 'array' | 'string' | 'number';
-}
+import { ApiResponse, DecodedResponse, DecodeOptions } from '@/types/api';
 
-interface ApiResponse {
-  data: {
-    status: 'success' | 'error';
-    message?: string;
-    data: unknown;
-  };
-}
-
-export function decodeApiResponse(response: ApiResponse, options: DecodeOptions = {}) {
+export function decodeApiResponse(
+  response: ApiResponse,
+  options: DecodeOptions = {}
+): DecodedResponse {
   const {
     requiredFields = [],
     allowNullData = false,
@@ -38,5 +29,9 @@ export function decodeApiResponse(response: ApiResponse, options: DecodeOptions 
     }
   }
 
-  return data;
+  return {
+    status,
+    message,
+    data: (data as { data?: unknown })?.data ?? data,
+  };
 }

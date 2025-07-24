@@ -1,4 +1,11 @@
-import type { CheckInMethod, CheckInType } from '@/constants/checkInTypes';
+// 重新導出 API 相關類型
+export type { ApiResponse, CallApiOptions, DecodedResponse, DecodeOptions } from '@/types/api';
+
+// 重新導出考勤相關類型
+export type { AttendanceException, Overtime, ReminderSetting } from '@/types/attendance';
+
+// 重新導出打卡相關類型
+export type { CheckInPoint, CheckInRecord } from '@/types/checkIn';
 
 export interface User {
   id: string;
@@ -88,18 +95,4 @@ export interface Approver {
   name: string;
   position: string;
   level: number;
-}
-
-// Check-in record type
-export interface CheckInRecord {
-  id?: string;
-  employee_id?: string;
-  type: CheckInType;
-  method: CheckInMethod;
-  status: 'success' | 'failed';
-  distance?: number;
-  latitude: number;
-  longitude: number;
-  ip_address: string;
-  created_at?: string;
 }

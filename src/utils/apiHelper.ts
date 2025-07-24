@@ -1,28 +1,18 @@
 import { isAuthError } from '@/constants/errorCodes';
 import { toast } from '@/hooks/useToast';
+import { ApiResponse, CallApiOptions, DecodedResponse } from '@/types/api';
 import { decodeApiResponse } from '@/utils/responseDecoder';
 
-interface CallApiOptions {
-  onError?: (error: unknown, errorMessage: string) => void;
-  showErrorAlert?: boolean;
-  requiredFields?: string[];
-  allowNullData?: boolean;
-  expectDataType?: 'any' | 'object' | 'array' | 'string' | 'number';
-}
-
-export async function callApiAndDecode(promise: Promise<unknown>, options: CallApiOptions = {}) {
+export async function callApiAndDecode(
+  promise: Promise<unknown>,
+  options: CallApiOptions = {}
+): Promise<DecodedResponse> {
   const { onError, showErrorAlert = true, ...decodeOptions } = options;
 
   try {
     const response = await promise;
-    const data = decodeApiResponse(
-      response as { data: { status: 'success' | 'error'; message?: string; data: unknown } },
-      decodeOptions
-    );
-
-    return data;
+    return decodeApiResponse(response as ApiResponse, decodeOptions);
   } catch (error) {
-    console.log(error);
     const errorMessage = error.response ? error.response.data.message : error.message;
     const isAuth = isAuthError(error.response?.status);
 
@@ -40,7 +30,7 @@ export async function callApiAndDecode(promise: Promise<unknown>, options: CallA
       onError(error, errorMessage);
     }
 
-    return { success: false, error, errorMessage };
+    return { status: 'error', message: errorMessage };
   }
 }
 

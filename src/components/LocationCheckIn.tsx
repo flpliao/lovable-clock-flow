@@ -26,8 +26,8 @@ const LocationCheckIn = () => {
   const [checkInMethod, setCheckInMethod] = useState<'location' | 'ip'>('location');
   const [type, setType] = useState<CheckInType>(CHECK_IN);
   const [todayRecords, setTodayRecords] = useState<{
-    checkIn?: CheckInRecord;
-    checkOut?: CheckInRecord;
+    [CHECK_IN]?: CheckInRecord;
+    [CHECK_OUT]?: CheckInRecord;
   }>({});
 
   // 自動載入今日打卡紀錄
@@ -35,77 +35,85 @@ const LocationCheckIn = () => {
     const fetchTodayRecords = async () => {
       const records = await getTodayCheckInRecords();
       setTodayRecords(records);
-      if (type === CHECK_IN && records?.checkIn && !records?.checkOut) {
+      if (type === CHECK_IN && records?.[CHECK_IN] && !records?.[CHECK_OUT]) {
         setType(CHECK_OUT);
       }
     };
 
     fetchTodayRecords();
     loadCheckInPoints();
-  }, [getTodayCheckInRecords]);
+  }, []); // 移除不必要的依賴
 
   // 位置打卡
   const handleLocationCheckIn = async () => {
     if (loading) return; // 防止重複觸發
     setLoading(true);
-    try {
-      if (!checkInPoints || checkInPoints.length === 0) {
-        throw new Error('無可用打卡點');
-      }
-      const result = await createLocationCheckInRecord({
-        type,
-        selectedCheckpoint: checkInPoints[0],
-      });
-      handleCheckIn(result);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : '位置打卡失敗';
+
+    if (!checkInPoints || checkInPoints.length === 0) {
       toast({
         title: '打卡失敗',
-        description: msg,
+        description: '無可用打卡點',
         variant: 'destructive',
       });
-    } finally {
       setLoading(false);
+      return;
     }
+
+    const result = await createLocationCheckInRecord({
+      type,
+      selectedCheckpoint: checkInPoints[0],
+    });
+
+    if (result) {
+      handleCheckIn(result);
+    }
+
+    setLoading(false);
   };
 
   // 包裝 onIpCheckIn，防止重複觸發
   const handleIpCheckIn = async () => {
     if (loading) return;
     setLoading(true);
-    try {
-      const result = await createIpCheckInRecord(type);
+
+    const result = await createIpCheckInRecord(type);
+    if (result) {
       handleCheckIn(result);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'IP打卡失敗';
-      toast({
-        title: '打卡失敗',
-        description: msg,
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   };
 
   const handleCheckIn = (result: CheckInRecord) => {
-    setTodayRecords({ ...todayRecords, [type]: result });
+    // 更新 todayRecords
+    const newRecords = { ...todayRecords, [result.type]: result };
+    setTodayRecords(newRecords);
+
     if (result.type === CHECK_IN) {
       setType(CHECK_OUT);
     }
+
+    toast({
+      title: '打卡成功',
+      description: `${type === CHECK_IN ? '上班' : '下班'}打卡完成`,
+    });
+
+    // 使用最新的值來記錄
+    console.log('新紀錄：', result);
+    console.log('更新後的打卡記錄：', newRecords);
   };
 
   const noAvailableCheckInPoint =
     checkInMethod === 'location' && (!checkInPoints || checkInPoints.length === 0);
 
   // 如果已完成今日打卡，顯示完成狀態
-  if (todayRecords?.checkIn && todayRecords?.checkOut) {
+  if (todayRecords?.[CHECK_IN] && todayRecords?.[CHECK_OUT]) {
     return (
       <div className="flex justify-center items-center w-full min-h-[180px]">
         <div className="max-w-md w-full mx-4">
           <CheckInCompletedStatus
-            checkIn={todayRecords?.checkIn}
-            checkOut={todayRecords?.checkOut}
+            checkIn={todayRecords?.[CHECK_IN]}
+            checkOut={todayRecords?.[CHECK_OUT]}
           />
         </div>
       </div>
@@ -116,7 +124,7 @@ const LocationCheckIn = () => {
     <div className="flex justify-center items-center w-full min-h-[180px]">
       <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 shadow-lg space-y-3 max-w-md w-full mx-4 py-[20px]">
         <LocationCheckInHeader />
-        <CheckInStatus checkIn={todayRecords?.checkIn} />
+        <CheckInStatus checkIn={todayRecords?.[CHECK_IN]} />
         <CheckInMethodSelector
           checkInMethod={checkInMethod}
           setCheckInMethod={setCheckInMethod}

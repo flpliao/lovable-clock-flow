@@ -6,7 +6,7 @@ export interface CheckInRecord {
   employee_id?: string;
   type: CheckInType;
   method: CheckInMethod;
-  status: 'success' | 'failed';
+  status?: 'success' | 'failed';
   distance?: number;
   latitude: number;
   longitude: number;

@@ -1,21 +1,21 @@
 import { Button } from '@/components/ui/button';
-import { useCheckpoints } from '@/hooks/useCheckInPoints';
-import type { Checkpoint } from '@/services/checkInPointService';
+import { useCheckInPoints } from '@/hooks/useCheckInPoints';
+import type { CheckInPoint } from '@/types/checkIn';
 import { Clock, Edit, MapPin, Trash2 } from 'lucide-react';
 import { useEffect } from 'react';
 
 interface Props {
-  data: Checkpoint[];
+  data: CheckInPoint[];
   loading: boolean;
   refresh: () => void;
-  onEdit?: (checkpoint: Checkpoint) => void;
+  onEdit?: (checkpoint: CheckInPoint) => void;
 }
 
 const CheckpointTable = ({ data, loading, refresh, onEdit }: Props) => {
-  const { loadCheckpoints, deleteCheckpoint } = useCheckpoints();
+  const { loadCheckInPoints, deleteCheckpoint } = useCheckInPoints();
 
   useEffect(() => {
-    loadCheckpoints();
+    loadCheckInPoints();
   }, []);
 
   const handleDelete = async (id: number) => {

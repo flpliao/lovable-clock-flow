@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBranches } from '@/hooks/useBranches';
-import { Checkpoint, useCheckpoints } from '@/hooks/useCheckInPoints';
+import { CheckInPoint, useCheckInPoints } from '@/hooks/useCheckInPoints';
 import { useCompany } from '@/hooks/useCompany';
 import { Branch } from '@/types/company';
 import { Building, MapPin, Plus } from 'lucide-react';
@@ -26,8 +26,8 @@ const CompanyManagement = () => {
   const [currentBranch, setCurrentBranch] = useState<Branch | null>(null);
   const [activeTab, setActiveTab] = useState('branches');
   const [isAddCheckpointOpen, setIsAddCheckpointOpen] = useState(false);
-  const [editCheckpoint, setEditCheckpoint] = useState<Checkpoint | null>(null);
-  const { data: checkpoints, loading: checkpointsLoading, loadCheckpoints } = useCheckpoints();
+  const [editCheckpoint, setEditCheckpoint] = useState<CheckInPoint | null>(null);
+  const { data: checkpoints, loading: checkpointsLoading, loadCheckInPoints } = useCheckInPoints();
 
   useEffect(() => {
     loadCompany();
@@ -119,7 +119,7 @@ const CompanyManagement = () => {
                 onEdit={setEditCheckpoint}
                 data={checkpoints}
                 loading={checkpointsLoading}
-                refresh={loadCheckpoints}
+                refresh={loadCheckInPoints}
               />
             </div>
           </div>
@@ -172,13 +172,13 @@ const CompanyManagement = () => {
       <AddCheckpointDialog
         open={isAddCheckpointOpen}
         onClose={() => setIsAddCheckpointOpen(false)}
-        onSuccess={loadCheckpoints}
+        onSuccess={loadCheckInPoints}
       />
       <EditCheckpointDialog
         open={!!editCheckpoint}
         onClose={() => setEditCheckpoint(null)}
         checkpoint={editCheckpoint}
-        onSuccess={loadCheckpoints}
+        onSuccess={loadCheckInPoints}
       />
     </div>
   );

@@ -5,7 +5,6 @@ import CheckInButton from '@/components/check-in/CheckInButton';
 import CheckInCompletedStatus from '@/components/check-in/CheckInCompletedStatus';
 import CheckInMethodSelector from '@/components/check-in/CheckInMethodSelector';
 import CheckInStatus from '@/components/check-in/CheckInStatus';
-import LocationCheckInHeader from '@/components/check-in/LocationCheckInHeader';
 import MissedCheckinDialog from '@/components/check-in/MissedCheckinDialog';
 import { CHECK_IN, CHECK_OUT, CheckInType } from '@/constants/checkInTypes';
 import { useCheckInPoints } from '@/hooks/useCheckInPoints';
@@ -15,7 +14,8 @@ import {
   createLocationCheckInRecord,
   getTodayCheckInRecords,
 } from '@/services/checkInService';
-import { CheckInRecord } from '@/types/checkIn';
+import { CheckInRecord } from '@/types';
+import { Clock } from 'lucide-react';
 import NearestCheckInPointInfo from './check-in/NearestCheckInPointInfo';
 
 const LocationCheckIn = () => {
@@ -96,10 +96,6 @@ const LocationCheckIn = () => {
       title: '打卡成功',
       description: `${type === CHECK_IN ? '上班' : '下班'}打卡完成`,
     });
-
-    // 使用最新的值來記錄
-    console.log('新紀錄：', result);
-    console.log('更新後的打卡記錄：', newRecords);
   };
 
   const noAvailableCheckInPoint =
@@ -122,7 +118,12 @@ const LocationCheckIn = () => {
   return (
     <div className="flex justify-center items-center w-full min-h-[180px]">
       <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 shadow-lg space-y-3 max-w-md w-full mx-4 py-[20px]">
-        <LocationCheckInHeader />
+        <div className="flex items-center justify-center space-x-2 text-white mb-4">
+          <div className="p-2 bg-blue-500/80 rounded-lg shadow-md backdrop-blur-xl border border-blue-400/50">
+            <Clock className="h-5 w-5 text-white" />
+          </div>
+          <span className="text-lg font-semibold drop-shadow-md">打卡</span>
+        </div>
         <CheckInStatus checkIn={todayRecords?.[CHECK_IN]} />
         <CheckInMethodSelector
           checkInMethod={checkInMethod}

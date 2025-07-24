@@ -1,5 +1,6 @@
 import { API_ROUTES, ROUTES } from '@/routes';
 import useEmployeeStore from '@/stores/employeeStore';
+import type { Employee, LoginRequest, LoginResponse } from '@/types/auth';
 import axios from 'axios';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -36,8 +37,8 @@ export const AutoLogin = () => {
   return null;
 };
 
-export const me = async token => {
-  const response = await axios.get(API_ROUTES.AUTH.ME, {
+export const me = async (token: string): Promise<Employee> => {
+  const response = await axios.get<Employee>(API_ROUTES.AUTH.ME, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const employee = response.data;
@@ -45,13 +46,18 @@ export const me = async token => {
   return employee;
 };
 
-export const login = async (email, password) => {
+export const login = async (
+  email: string,
+  password: string,
+  companySlug: string
+): Promise<string> => {
   try {
-    const response = await axios.post(API_ROUTES.AUTH.SIGN_IN, {
+    const loginData: LoginRequest = {
       email,
       password,
-      company_slug: 'demo',
-    });
+      company_slug: companySlug,
+    };
+    const response = await axios.post<LoginResponse>(API_ROUTES.AUTH.SIGN_IN, loginData);
     const { accessToken } = response.data;
     return accessToken;
   } catch (error) {

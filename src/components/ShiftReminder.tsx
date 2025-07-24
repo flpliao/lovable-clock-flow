@@ -1,6 +1,6 @@
-import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useStores';
 import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
+import { useToast } from '@/hooks/useToast';
 import { CheckInRecord } from '@/types';
 import { Bell } from 'lucide-react';
 import React, { useEffect, useState } from 'react';

@@ -7,9 +7,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useToast } from '@/hooks/use-toast';
 import { useRoles } from '@/hooks/useRoles';
 import { useIsAdmin } from '@/hooks/useStores';
+import { useToast } from '@/hooks/useToast';
 import { Role } from '@/types/role';
 import { Briefcase, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';

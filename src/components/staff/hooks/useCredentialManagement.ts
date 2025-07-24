@@ -1,5 +1,5 @@
-import { useToast } from '@/hooks/use-toast';
 import { useCanManageUser } from '@/hooks/useStores';
+import { useToast } from '@/hooks/useToast';
 import { useState } from 'react';
 
 export const useCredentialManagement = () => {

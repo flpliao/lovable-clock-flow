@@ -1,3 +1,12 @@
+// 重新導出 API 相關類型
+export type { ApiResponse, CallApiOptions, DecodedResponse, DecodeOptions } from '@/types/api';
+
+// 重新導出考勤相關類型
+export type { AttendanceException, Overtime, ReminderSetting } from '@/types/attendance';
+
+// 重新導出打卡相關類型
+export type { CheckInPoint, CheckInRecord } from '@/types/checkIn';
+
 export interface User {
   id: string;
   name: string;
@@ -36,7 +45,18 @@ export interface LeaveRequest {
   user_id: string;
   start_date: string;
   end_date: string;
-  leave_type: 'annual' | 'sick' | 'personal' | 'marriage' | 'bereavement' | 'maternity' | 'paternity' | 'parental' | 'occupational' | 'menstrual' | 'other';
+  leave_type:
+    | 'annual'
+    | 'sick'
+    | 'personal'
+    | 'marriage'
+    | 'bereavement'
+    | 'maternity'
+    | 'paternity'
+    | 'parental'
+    | 'occupational'
+    | 'menstrual'
+    | 'other';
   status: 'pending' | 'approved' | 'rejected';
   hours: number;
   reason: string;
@@ -75,25 +95,4 @@ export interface Approver {
   name: string;
   position: string;
   level: number;
-}
-
-// Check-in record type
-export interface CheckInRecord {
-  id: string;
-  userId: string;
-  timestamp: string;
-  type: 'location' | 'ip';
-  status: 'success' | 'failed';
-  action: 'check-in' | 'check-out';
-  details: {
-    latitude?: number;
-    longitude?: number;
-    distance?: number;
-    ip?: string;
-    locationName?: string;
-    departmentLatitude?: number;
-    departmentLongitude?: number;
-    departmentName?: string;
-    gpsComparisonResult?: any;
-  };
 }

@@ -1,7 +1,7 @@
 
-import { useSupabaseCheckIn } from './useSupabaseCheckIn';
-import { toast } from './use-toast';
 import { CheckInRecord } from '@/types';
+import { useSupabaseCheckIn } from './useSupabaseCheckIn';
+import { toast } from './useToast';
 
 export const useIpCheckIn = (userId: string, actionType: 'check-in' | 'check-out') => {
   const { createCheckInRecord } = useSupabaseCheckIn();

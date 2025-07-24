@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { branchService } from '@/services/branchService';
 import { useBranchStore } from '@/stores/branchStore';
 import { Branch } from '@/types/company';

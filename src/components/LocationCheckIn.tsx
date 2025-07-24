@@ -5,7 +5,6 @@ import CheckInButton from '@/components/check-in/CheckInButton';
 import CheckInCompletedStatus from '@/components/check-in/CheckInCompletedStatus';
 import CheckInMethodSelector from '@/components/check-in/CheckInMethodSelector';
 import CheckInStatus from '@/components/check-in/CheckInStatus';
-import CheckInWarning from '@/components/check-in/CheckInWarning';
 import LocationCheckInHeader from '@/components/check-in/LocationCheckInHeader';
 import MissedCheckinDialog from '@/components/check-in/MissedCheckinDialog';
 import { CHECK_IN, CHECK_OUT, CheckInType } from '@/constants/checkInTypes';
@@ -129,11 +128,6 @@ const LocationCheckIn = () => {
           checkInMethod={checkInMethod}
           setCheckInMethod={setCheckInMethod}
           canUseLocationCheckIn={true}
-        />
-        <CheckInWarning
-          checkInMethod={checkInMethod}
-          canUseLocationCheckIn={true}
-          employeeDepartment={null}
         />
         {checkInMethod === 'location' && (
           <NearestCheckInPointInfo currentPos={currentPos} checkInPoints={checkInPoints} />

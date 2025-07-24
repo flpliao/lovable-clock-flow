@@ -12,6 +12,7 @@ export interface CheckInRecord {
   longitude: number;
   ip_address: string;
   created_at?: string;
+  location_name?: string;
 }
 
 // 打卡點

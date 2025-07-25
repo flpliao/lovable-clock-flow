@@ -30,7 +30,6 @@ const CheckInStatus: React.FC<CheckInStatusProps> = ({ checkIn }) => {
             ) : (
               checkIn.method === METHOD_IP && (
                 <>
-                  <span className="text-blue-400">·</span>
                   <div className="flex items-center gap-1 text-sm text-blue-600">
                     <Wifi className="h-3.5 w-3.5 shrink-0" />
                     <span className="font-medium">IP打卡</span>

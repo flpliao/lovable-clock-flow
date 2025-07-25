@@ -39,13 +39,13 @@ export const ROUTES = {
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// API 路由
+// API 路由ㄇ
 export const API_ROUTES = {
   // 認證相關 API
   AUTH: {
-    SIGN_IN: `${API_URL}/employee-auth/sign-in`,
-    ME: `${API_URL}/employee-auth/me`,
-    FORGOT_PASSWORD: `${API_URL}/employee-auth/forgot-password`,
+    SIGN_IN: `${API_URL}/employee/auth/sign-in`,
+    ME: `${API_URL}/employee/auth/me`,
+    FORGOT_PASSWORD: `${API_URL}/employee/auth/forgot-password`,
   },
   CHECKIN: {
     INDEX: `${API_URL}/employee/check-in`,

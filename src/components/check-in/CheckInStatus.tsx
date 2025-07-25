@@ -18,7 +18,7 @@ const CheckInStatus: React.FC<CheckInStatusProps> = ({ checkIn }) => {
           <div className="bg-blue-100 p-1.5 rounded-full shrink-0">
             <CheckCircle2 className="h-5 w-5 text-blue-600" />
           </div>
-          <div className="flex items-center gap-2 truncate">
+          <div className="flex items-center gap-2 truncate text-sm">
             <span className="font-medium text-blue-900">已打上班卡</span>
             {checkIn.method === METHOD_LOCATION && checkIn.location_name ? (
               <>

@@ -1,10 +1,6 @@
+import { Employee } from '@/types/employee';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-
-interface Employee {
-  slug: string;
-  name: string;
-}
 
 interface EmployeeStore {
   employee: Employee | null;

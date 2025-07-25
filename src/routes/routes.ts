@@ -82,16 +82,16 @@ export const protectedRoutes: RouteConfig[] = [
     component: Index,
     icon: 'home',
   },
+  {
+    path: ROUTES.ACCOUNT_SETTINGS,
+    name: '帳號設定',
+    component: AccountSettings,
+    icon: 'settings',
+  },
 ];
 
 // 受保護路由
 export const protectedRoutesOld: RouteConfig[] = [
-  {
-    path: ROUTES.ACCOUNT_SETTINGS,
-    name: '帳戶設定',
-    component: AccountSettings,
-    icon: 'settings',
-  },
   {
     path: ROUTES.STAFF_DASHBOARD,
     name: '員工儀表板',

@@ -2,29 +2,21 @@ import { Button } from '@/components/ui/button';
 import useEmployeeStore from '@/stores/employeeStore';
 import { Menu } from 'lucide-react';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import DesktopNavigation from './header/DesktopNavigation';
 import EmployeeInfo from './header/EmployeeInfo';
 import HeaderLogo from './header/HeaderLogo';
 import MobileNavigation from './header/MobileNavigation';
-import { useMenuLogic } from './header/useMenuLogic';
+import { useMenuItems } from './header/useMenuItems';
 import NotificationCenter from './notifications/NotificationCenter';
 
 const Header: React.FC = () => {
-  const navigate = useNavigate();
-
   // 使用 employeeStore
   const { employee, isAuthenticated } = useEmployeeStore();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // 直接以 employee 作為 user 物件
-  const { visibleMenuItems } = useMenuLogic(employee, isAuthenticated);
-
-  const handleNavigation = (path: string) => {
-    navigate(path);
-    setIsMobileMenuOpen(false);
-  };
+  const { visibleMenuItems } = useMenuItems();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -39,11 +31,8 @@ const Header: React.FC = () => {
           <HeaderLogo />
 
           {/* Desktop Navigation */}
-          <div className="flex items-center space-x-8">
-            <DesktopNavigation
-              visibleMenuItems={visibleMenuItems}
-              onNavigation={handleNavigation}
-            />
+          <div className="flex items-center space-x-8 ">
+            <DesktopNavigation visibleMenuItems={visibleMenuItems} />
           </div>
 
           {/* 通知中心和用戶信息 */}

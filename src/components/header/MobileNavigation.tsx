@@ -3,7 +3,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { ROUTES } from '@/routes';
 import { useLogout } from '@/services/authService';
-import { MobileNavigationProps } from '@/types/employee';
+import { MobileNavigationProps } from '@/types/navigation';
 import { LogOut, Settings, User, X } from 'lucide-react';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -89,7 +89,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                         ${location.pathname === item.path ? 'bg-blue-500 text-white' : 'bg-white text-blue-600'}
                       `}
                       >
-                        <item.icon className="h-6 w-6" />
+                        {item.iconComponent && <item.iconComponent className="h-6 w-6" />}
                       </div>
                       <span
                         className={`
@@ -97,7 +97,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                         ${location.pathname === item.path ? 'text-blue-700' : 'text-gray-700'}
                       `}
                       >
-                        {item.label}
+                        {item.name}
                       </span>
                     </button>
                   </Link>

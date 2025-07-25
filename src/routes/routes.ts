@@ -102,19 +102,19 @@ export const protectedRoutesOld: RouteConfig[] = [
     path: ROUTES.PERSONAL_ATTENDANCE,
     name: '個人考勤',
     component: PersonalAttendance,
-    icon: 'calendar',
+    icon: 'clock',
   },
   {
     path: ROUTES.ATTENDANCE_RECORDS,
     name: '考勤記錄',
     component: AttendanceRecordsPage,
-    icon: 'list',
+    icon: 'clock',
   },
   {
     path: ROUTES.LEAVE_REQUEST,
     name: '請假申請',
     component: LeaveRequest,
-    icon: 'calendar-plus',
+    icon: 'file-text',
   },
   {
     path: ROUTES.OVERTIME_REQUEST,
@@ -132,7 +132,7 @@ export const protectedRoutesOld: RouteConfig[] = [
     path: ROUTES.SCHEDULING,
     name: '排班管理',
     component: Scheduling,
-    icon: 'calendar-days',
+    icon: 'calendar',
   },
   {
     path: ROUTES.SCHEDULE_STATISTICS,
@@ -150,7 +150,7 @@ export const protectedRoutesOld: RouteConfig[] = [
     path: ROUTES.ROLE_MANAGEMENT,
     name: '角色管理',
     component: Role,
-    icon: 'shield',
+    icon: 'briefcase',
   },
   {
     path: ROUTES.COMPANY_BRANCH_MANAGEMENT,
@@ -162,7 +162,7 @@ export const protectedRoutesOld: RouteConfig[] = [
     path: ROUTES.HR_MANAGEMENT,
     name: '人力資源管理',
     component: HRManagement,
-    icon: 'user-tie',
+    icon: 'users',
   },
   {
     path: ROUTES.APPROVAL_CENTER,
@@ -174,19 +174,19 @@ export const protectedRoutesOld: RouteConfig[] = [
     path: ROUTES.SYSTEM_SETTINGS,
     name: '系統設定',
     component: SystemSettings,
-    icon: 'cog',
+    icon: 'settings',
   },
   {
     path: ROUTES.HOLIDAY_MANAGEMENT,
     name: '假日管理',
     component: HolidayManagement,
-    icon: 'calendar-check',
+    icon: 'calendar-days',
   },
   {
     path: ROUTES.LEAVE_TYPE_MANAGEMENT,
     name: '請假類型管理',
     component: LeaveTypeManagement,
-    icon: 'list-check',
+    icon: 'file-text',
   },
   {
     path: ROUTES.MISSED_CHECKIN_MANAGEMENT,
@@ -198,7 +198,7 @@ export const protectedRoutesOld: RouteConfig[] = [
     path: ROUTES.OVERTIME_MANAGEMENT,
     name: '加班管理',
     component: OvertimeManagement,
-    icon: 'clock',
+    icon: 'briefcase',
   },
   {
     path: ROUTES.OVERTIME_MANAGEMENT_PAGE,
@@ -222,7 +222,7 @@ export const protectedRoutesOld: RouteConfig[] = [
     path: ROUTES.COMPANY_ANNOUNCEMENTS,
     name: '公司公告',
     component: CompanyAnnouncements,
-    icon: 'newspaper',
+    icon: 'message-square',
   },
 ];
 

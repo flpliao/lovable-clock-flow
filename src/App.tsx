@@ -1,60 +1,14 @@
-import ProtectedRoute from '@/components/common/ProtectedRoute';
-import ProtectedRouteOld from '@/components/common/ProtectedRouteOld';
-import Header from '@/components/Header';
 import { Toaster } from '@/components/ui/toaster';
-import { LeaveManagementProvider } from '@/contexts/LeaveManagementContext';
-import { useAutoInitAuth } from '@/hooks/useStores';
-import { notFoundRoute, protectedRoutes, protectedRoutesOld, publicRoutes } from '@/routes/routes';
-import React from 'react';
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-
-const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  useAutoInitAuth();
-  return <>{children}</>;
-};
+import AppRoutes from '@/routes/AppRoutes';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 function App() {
   return (
     <Router>
-      <AuthInitializer>
-        <LeaveManagementProvider>
-          <div className="min-h-screen bg-gray-50">
-            <Header />
-            <Routes>
-              {/* 公開路由自動渲染 */}
-              {publicRoutes.map(route => (
-                <Route key={route.path} path={route.path} element={<route.component />} />
-              ))}
-              {protectedRoutes.map(route => (
-                <Route
-                  key={route.path}
-                  path={route.path}
-                  element={
-                    <ProtectedRoute>
-                      <route.component />
-                    </ProtectedRoute>
-                  }
-                />
-              ))}
-              {/* 受保護路由自動渲染 */}
-              {protectedRoutesOld.map(route => (
-                <Route
-                  key={route.path}
-                  path={route.path}
-                  element={
-                    <ProtectedRouteOld>
-                      <route.component />
-                    </ProtectedRouteOld>
-                  }
-                />
-              ))}
-              {/* 404 */}
-              <Route path={notFoundRoute.path} element={<notFoundRoute.component />} />
-            </Routes>
-            <Toaster />
-          </div>
-        </LeaveManagementProvider>
-      </AuthInitializer>
+      <div className="min-h-screen bg-gray-50">
+        <AppRoutes />
+        <Toaster />
+      </div>
     </Router>
   );
 }

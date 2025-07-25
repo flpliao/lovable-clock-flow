@@ -1,43 +1,45 @@
 // 路由配置
-import React from 'react';
-import { ROUTES, ROUTE_GROUPS } from './constants';
-import { RouteConfig, RouteGroup } from './types';
+import LazyWithSuspense from '@/components/common/LazyWithSuspense';
+import { ROUTES } from './constants';
+import { RouteConfig } from './types';
 
 // 動態導入頁面元件
-const Login = React.lazy(() => import('@/pages/Login'));
-const Register = React.lazy(() => import('@/pages/Register'));
-const ForgotPassword = React.lazy(() => import('@/pages/ForgotPassword'));
-const ResetPassword = React.lazy(() => import('@/pages/ResetPassword'));
-const MagicLinkLogin = React.lazy(() => import('@/pages/MagicLinkLogin'));
-const AuthCallback = React.lazy(() => import('@/pages/AuthCallback'));
+const Login = LazyWithSuspense(() => import('@/pages/Login'));
+const Register = LazyWithSuspense(() => import('@/pages/Register'));
+const ForgotPassword = LazyWithSuspense(() => import('@/pages/ForgotPassword'));
+const ResetPassword = LazyWithSuspense(() => import('@/pages/ResetPassword'));
+const MagicLinkLogin = LazyWithSuspense(() => import('@/pages/MagicLinkLogin'));
+const AuthCallback = LazyWithSuspense(() => import('@/pages/AuthCallback'));
 
-const Index = React.lazy(() => import('@/pages/Index'));
-const AccountSettings = React.lazy(() => import('@/pages/AccountSettings'));
-const StaffDashboard = React.lazy(() => import('@/pages/StaffDashboard'));
-const PersonalAttendance = React.lazy(() => import('@/pages/PersonalAttendance'));
-const AttendanceRecordsPage = React.lazy(() => import('@/pages/AttendanceRecordsPage'));
-const LeaveRequest = React.lazy(() => import('@/pages/LeaveRequest'));
-const OvertimeRequest = React.lazy(() => import('@/pages/OvertimeRequest'));
-const OvertimeHistoryPage = React.lazy(() => import('@/pages/OvertimeHistoryPage'));
-const Scheduling = React.lazy(() => import('@/pages/Scheduling'));
-const ScheduleStatistics = React.lazy(() => import('@/pages/ScheduleStatistics'));
+const Index = LazyWithSuspense(() => import('@/pages/Index'));
+const AccountSettings = LazyWithSuspense(() => import('@/pages/AccountSettings'));
+const StaffDashboard = LazyWithSuspense(() => import('@/pages/StaffDashboard'));
+const PersonalAttendance = LazyWithSuspense(() => import('@/pages/PersonalAttendance'));
+const AttendanceRecordsPage = LazyWithSuspense(() => import('@/pages/AttendanceRecordsPage'));
+const LeaveRequest = LazyWithSuspense(() => import('@/pages/LeaveRequest'));
+const OvertimeRequest = LazyWithSuspense(() => import('@/pages/OvertimeRequest'));
+const OvertimeHistoryPage = LazyWithSuspense(() => import('@/pages/OvertimeHistoryPage'));
+const Scheduling = LazyWithSuspense(() => import('@/pages/Scheduling'));
+const ScheduleStatistics = LazyWithSuspense(() => import('@/pages/ScheduleStatistics'));
 
-const PersonnelManagement = React.lazy(() => import('@/pages/PersonnelManagement'));
-const Role = React.lazy(() => import('@/pages/Role'));
-const CompanyBranchManagement = React.lazy(() => import('@/pages/CompanyBranchManagement'));
-const HRManagement = React.lazy(() => import('@/pages/HRManagement'));
-const ApprovalCenter = React.lazy(() => import('@/pages/ApprovalCenter'));
-const SystemSettings = React.lazy(() => import('@/pages/SystemSettings'));
-const HolidayManagement = React.lazy(() => import('@/pages/HolidayManagement'));
-const LeaveTypeManagement = React.lazy(() => import('@/pages/LeaveTypeManagement'));
-const MissedCheckinManagement = React.lazy(() => import('@/pages/MissedCheckinManagement'));
-const OvertimeManagement = React.lazy(() => import('@/pages/OvertimeManagement'));
-const OvertimeManagementPage = React.lazy(() => import('@/pages/OvertimeManagementPage'));
-const OvertimeRequestPage = React.lazy(() => import('@/pages/OvertimeRequestPage'));
-const AnnouncementManagementPage = React.lazy(() => import('@/pages/AnnouncementManagementPage'));
-const CompanyAnnouncements = React.lazy(() => import('@/pages/CompanyAnnouncements'));
+const PersonnelManagement = LazyWithSuspense(() => import('@/pages/PersonnelManagement'));
+const Role = LazyWithSuspense(() => import('@/pages/Role'));
+const CompanyBranchManagement = LazyWithSuspense(() => import('@/pages/CompanyBranchManagement'));
+const HRManagement = LazyWithSuspense(() => import('@/pages/HRManagement'));
+const ApprovalCenter = LazyWithSuspense(() => import('@/pages/ApprovalCenter'));
+const SystemSettings = LazyWithSuspense(() => import('@/pages/SystemSettings'));
+const HolidayManagement = LazyWithSuspense(() => import('@/pages/HolidayManagement'));
+const LeaveTypeManagement = LazyWithSuspense(() => import('@/pages/LeaveTypeManagement'));
+const MissedCheckinManagement = LazyWithSuspense(() => import('@/pages/MissedCheckinManagement'));
+const OvertimeManagement = LazyWithSuspense(() => import('@/pages/OvertimeManagement'));
+const OvertimeManagementPage = LazyWithSuspense(() => import('@/pages/OvertimeManagementPage'));
+const OvertimeRequestPage = LazyWithSuspense(() => import('@/pages/OvertimeRequestPage'));
+const AnnouncementManagementPage = LazyWithSuspense(
+  () => import('@/pages/AnnouncementManagementPage')
+);
+const CompanyAnnouncements = LazyWithSuspense(() => import('@/pages/CompanyAnnouncements'));
 
-const NotFound = React.lazy(() => import('@/pages/NotFound'));
+const NotFound = LazyWithSuspense(() => import('@/pages/NotFound'));
 
 // 公開路由
 export const publicRoutes: RouteConfig[] = [
@@ -84,12 +86,6 @@ export const protectedRoutes: RouteConfig[] = [
 
 // 受保護路由
 export const protectedRoutesOld: RouteConfig[] = [
-  {
-    path: ROUTES.HOME,
-    name: '首頁',
-    component: Index,
-    icon: 'home',
-  },
   {
     path: ROUTES.ACCOUNT_SETTINGS,
     name: '帳戶設定',
@@ -227,72 +223,6 @@ export const protectedRoutesOld: RouteConfig[] = [
     name: '公司公告',
     component: CompanyAnnouncements,
     icon: 'newspaper',
-  },
-];
-
-// 路由群組配置
-export const routeGroups: RouteGroup[] = [
-  {
-    name: ROUTE_GROUPS.AUTH,
-    routes: publicRoutes,
-  },
-  {
-    name: ROUTE_GROUPS.DASHBOARD,
-    routes: protectedRoutes.filter(route =>
-      [ROUTES.HOME, ROUTES.STAFF_DASHBOARD].includes(route.path as string)
-    ),
-  },
-  {
-    name: ROUTE_GROUPS.ATTENDANCE,
-    routes: protectedRoutes.filter(route =>
-      [ROUTES.PERSONAL_ATTENDANCE, ROUTES.ATTENDANCE_RECORDS].includes(route.path as string)
-    ),
-  },
-  {
-    name: ROUTE_GROUPS.LEAVE,
-    routes: protectedRoutes.filter(route =>
-      [ROUTES.LEAVE_REQUEST, ROUTES.LEAVE_TYPE_MANAGEMENT].includes(route.path as string)
-    ),
-  },
-  {
-    name: ROUTE_GROUPS.OVERTIME,
-    routes: protectedRoutes.filter(route =>
-      [
-        ROUTES.OVERTIME_REQUEST,
-        ROUTES.OVERTIME_HISTORY,
-        ROUTES.OVERTIME_MANAGEMENT,
-        ROUTES.OVERTIME_MANAGEMENT_PAGE,
-        ROUTES.OVERTIME_REQUEST_PAGE,
-      ].includes(route.path as string)
-    ),
-  },
-  {
-    name: ROUTE_GROUPS.SCHEDULING,
-    routes: protectedRoutes.filter(route =>
-      [ROUTES.SCHEDULING, ROUTES.SCHEDULE_STATISTICS].includes(route.path as string)
-    ),
-  },
-  {
-    name: ROUTE_GROUPS.MANAGEMENT,
-    routes: protectedRoutes.filter(route =>
-      [
-        ROUTES.PERSONNEL_MANAGEMENT,
-        ROUTES.ROLE_MANAGEMENT,
-        ROUTES.COMPANY_BRANCH_MANAGEMENT,
-        ROUTES.HR_MANAGEMENT,
-        ROUTES.APPROVAL_CENTER,
-        ROUTES.HOLIDAY_MANAGEMENT,
-        ROUTES.MISSED_CHECKIN_MANAGEMENT,
-        ROUTES.ANNOUNCEMENT_MANAGEMENT,
-        ROUTES.COMPANY_ANNOUNCEMENTS,
-      ].includes(route.path as string)
-    ),
-  },
-  {
-    name: ROUTE_GROUPS.SETTINGS,
-    routes: protectedRoutes.filter(route =>
-      [ROUTES.ACCOUNT_SETTINGS, ROUTES.SYSTEM_SETTINGS].includes(route.path as string)
-    ),
   },
 ];
 

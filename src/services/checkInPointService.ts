@@ -1,4 +1,4 @@
-import { API_ROUTES } from '@/routes/constants';
+import { apiRoutes } from '@/routes/api';
 import { CheckInPoint } from '@/types/checkIn';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
@@ -9,7 +9,7 @@ export const getNearbyCheckInPoints = async (
   longitude: number
 ): Promise<CheckInPoint[]> => {
   const { data, status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().get(API_ROUTES.CHECKIN_POINT.INDEX, {
+    axiosWithEmployeeAuth().get(apiRoutes.checkinPoint.index, {
       params: {
         latitude,
         longitude,
@@ -29,7 +29,7 @@ export const addCheckInPoint = async (
   payload: Omit<CheckInPoint, 'id' | 'created_at'>
 ): Promise<CheckInPoint[]> => {
   const { data } = await callApiAndDecode(
-    axiosWithEmployeeAuth().post(API_ROUTES.CHECKIN_POINT.CREATE, payload)
+    axiosWithEmployeeAuth().post(apiRoutes.checkinPoint.create, payload)
   );
 
   return data as CheckInPoint[];
@@ -40,13 +40,13 @@ export const updateCheckInPoint = async (
   id: number,
   payload: Partial<CheckInPoint>
 ): Promise<CheckInPoint[]> => {
-  const url = API_ROUTES.CHECKIN_POINT.UPDATE.replace(':id', String(id));
+  const url = apiRoutes.checkinPoint.update(String(id));
   const { data } = await callApiAndDecode(axiosWithEmployeeAuth().put(url, payload));
   return data as CheckInPoint[];
 };
 
 // 刪除打卡點
 export const deleteCheckInPoint = async (id: number): Promise<void> => {
-  const url = API_ROUTES.CHECKIN_POINT.DELETE.replace(':id', String(id));
+  const url = apiRoutes.checkinPoint.delete(String(id));
   await callApiAndDecode(axiosWithEmployeeAuth().delete(url));
 };

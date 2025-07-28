@@ -1,17 +1,19 @@
 import { Button } from '@/components/ui/button';
-import { ROUTES } from '@/routes/constants';
+import { routes } from '@/routes/api';
 import { DesktopNavigationProps } from '@/types/navigation';
 import { ChevronDown } from 'lucide-react';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-const FIXED_PATHS = [
-  ROUTES.HOME,
-  ROUTES.PERSONAL_ATTENDANCE,
-  ROUTES.LEAVE_REQUEST,
-  ROUTES.OVERTIME_REQUEST,
-] as string[];
-const EXCLUDE_PATHS = [ROUTES.ACCOUNT_SETTINGS] as string[];
+// 導航項目
+const NAVIGATION_ITEMS = [
+  routes.home,
+  routes.personalAttendance,
+  routes.leaveRequest,
+  routes.overtimeRequest,
+];
+
+const EXCLUDE_PATHS = [routes.accountSettings];
 
 const DesktopNavigation: React.FC<DesktopNavigationProps> = ({ visibleMenuItems }) => {
   const location = useLocation();
@@ -22,11 +24,11 @@ const DesktopNavigation: React.FC<DesktopNavigationProps> = ({ visibleMenuItems 
   const filteredMenuItems = visibleMenuItems.filter(item => !EXCLUDE_PATHS.includes(item.path));
 
   // 依照指定順序取得前4個固定選單
-  const fixedItems = FIXED_PATHS.map(path =>
+  const fixedItems = NAVIGATION_ITEMS.map(path =>
     filteredMenuItems.find(item => item.path === path)
   ).filter(Boolean) as typeof filteredMenuItems;
   // 其他項目
-  const moreItems = filteredMenuItems.filter(item => !FIXED_PATHS.includes(item.path));
+  const moreItems = filteredMenuItems.filter(item => !NAVIGATION_ITEMS.includes(item.path));
 
   return (
     <nav className="flex items-center space-x-6">

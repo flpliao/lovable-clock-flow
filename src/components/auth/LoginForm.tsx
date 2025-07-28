@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/useToast';
-import { ROUTES } from '@/routes';
+import { routes } from '@/routes';
 import { AutoLogin, login, me } from '@/services/authService';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -32,7 +32,7 @@ const LoginForm: React.FC = () => {
       const accessToken = await login(email, password, companySlug).catch(() => null);
       const employese = await me(accessToken).catch(() => null);
       if (employese) {
-        navigate(ROUTES.HOME);
+        navigate(routes.home);
         return;
       } else {
         toast({

@@ -1,4 +1,4 @@
-import { API_ROUTES } from '@/routes/constants';
+import { apiRoutes } from '@/routes/api';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 
@@ -12,7 +12,7 @@ export async function updateEmployeeEmail(currentEmail: string, newEmail: string
   }
 
   const { status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().put(API_ROUTES.EMPLOYEE.UPDATE_EMAIL, { email: newEmail })
+    axiosWithEmployeeAuth().put(apiRoutes.employee.updateEmail, { email: newEmail })
   );
 
   if (status === 'error') {
@@ -42,7 +42,7 @@ export async function updateEmployeePassword(
   }
 
   const { status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().put(API_ROUTES.EMPLOYEE.UPDATE_PASSWORD, {
+    axiosWithEmployeeAuth().put(apiRoutes.employee.updatePassword, {
       current_password: currentPassword,
       new_password: newPassword,
       new_password_confirmation: confirmPassword,

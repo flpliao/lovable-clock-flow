@@ -1,31 +1,30 @@
 // 路由配置
 import LazyWithSuspense from '@/components/common/LazyWithSuspense';
-import { ROUTES } from './constants';
-import { RouteConfig } from './types';
+import { routes } from './api';
 
 // 動態導入頁面元件
 const Login = LazyWithSuspense(() => import('@/pages/Login'));
 const Register = LazyWithSuspense(() => import('@/pages/Register'));
 const ForgotPassword = LazyWithSuspense(() => import('@/pages/ForgotPassword'));
 const ResetPassword = LazyWithSuspense(() => import('@/pages/ResetPassword'));
-const MagicLinkLogin = LazyWithSuspense(() => import('@/pages/MagicLinkLogin'));
+const MagicLink = LazyWithSuspense(() => import('@/pages/MagicLinkLogin'));
 const AuthCallback = LazyWithSuspense(() => import('@/pages/AuthCallback'));
 
-const Index = LazyWithSuspense(() => import('@/pages/Index'));
+const Home = LazyWithSuspense(() => import('@/pages/Index'));
+const LeaveRequest = LazyWithSuspense(() => import('@/pages/LeaveRequest'));
 const AccountSettings = LazyWithSuspense(() => import('@/pages/AccountSettings'));
+
 const StaffDashboard = LazyWithSuspense(() => import('@/pages/StaffDashboard'));
 const PersonalAttendance = LazyWithSuspense(() => import('@/pages/PersonalAttendance'));
-const AttendanceRecordsPage = LazyWithSuspense(() => import('@/pages/AttendanceRecordsPage'));
-const LeaveRequest = LazyWithSuspense(() => import('@/pages/LeaveRequest'));
+const AttendanceRecords = LazyWithSuspense(() => import('@/pages/AttendanceRecordsPage'));
 const OvertimeRequest = LazyWithSuspense(() => import('@/pages/OvertimeRequest'));
-const OvertimeHistoryPage = LazyWithSuspense(() => import('@/pages/OvertimeHistoryPage'));
+const OvertimeHistory = LazyWithSuspense(() => import('@/pages/OvertimeHistoryPage'));
 const Scheduling = LazyWithSuspense(() => import('@/pages/Scheduling'));
 const ScheduleStatistics = LazyWithSuspense(() => import('@/pages/ScheduleStatistics'));
-
 const PersonnelManagement = LazyWithSuspense(() => import('@/pages/PersonnelManagement'));
-const Role = LazyWithSuspense(() => import('@/pages/Role'));
+const RoleManagement = LazyWithSuspense(() => import('@/pages/Role'));
 const CompanyBranchManagement = LazyWithSuspense(() => import('@/pages/CompanyBranchManagement'));
-const HRManagement = LazyWithSuspense(() => import('@/pages/HRManagement'));
+const HrManagement = LazyWithSuspense(() => import('@/pages/HRManagement'));
 const ApprovalCenter = LazyWithSuspense(() => import('@/pages/ApprovalCenter'));
 const SystemSettings = LazyWithSuspense(() => import('@/pages/SystemSettings'));
 const HolidayManagement = LazyWithSuspense(() => import('@/pages/HolidayManagement'));
@@ -34,192 +33,187 @@ const MissedCheckinManagement = LazyWithSuspense(() => import('@/pages/MissedChe
 const OvertimeManagement = LazyWithSuspense(() => import('@/pages/OvertimeManagement'));
 const OvertimeManagementPage = LazyWithSuspense(() => import('@/pages/OvertimeManagementPage'));
 const OvertimeRequestPage = LazyWithSuspense(() => import('@/pages/OvertimeRequestPage'));
-const AnnouncementManagementPage = LazyWithSuspense(
-  () => import('@/pages/AnnouncementManagementPage')
-);
+const AnnouncementManagement = LazyWithSuspense(() => import('@/pages/AnnouncementManagementPage'));
 const CompanyAnnouncements = LazyWithSuspense(() => import('@/pages/CompanyAnnouncements'));
 
 const NotFound = LazyWithSuspense(() => import('@/pages/NotFound'));
 
 // 公開路由
-export const publicRoutes: RouteConfig[] = [
+export const publicRoutes = [
   {
-    path: ROUTES.LOGIN,
+    path: routes.login,
     name: '登入',
     component: Login,
   },
   {
-    path: ROUTES.REGISTER,
+    path: routes.register,
     name: '註冊',
     component: Register,
   },
   {
-    path: ROUTES.FORGOT_PASSWORD,
+    path: routes.forgotPassword,
     name: '忘記密碼',
     component: ForgotPassword,
   },
   {
-    path: ROUTES.RESET_PASSWORD,
+    path: routes.resetPassword,
     name: '重設密碼',
     component: ResetPassword,
   },
   {
-    path: ROUTES.MAGIC_LINK,
+    path: routes.magicLink,
     name: '魔法連結登入',
-    component: MagicLinkLogin,
+    component: MagicLink,
   },
   {
-    path: ROUTES.AUTH_CALLBACK,
+    path: routes.authCallback,
     name: '認證回調',
     component: AuthCallback,
   },
 ];
 
-export const protectedRoutes: RouteConfig[] = [
+// 受保護的路由
+export const protectedRoutes = [
   {
-    path: ROUTES.HOME,
+    path: routes.home,
     name: '首頁',
-    component: Index,
+    component: Home,
     icon: 'home',
   },
   {
-    path: ROUTES.ACCOUNT_SETTINGS,
-    name: '帳號設定',
-    component: AccountSettings,
-    icon: 'settings',
-  },
-];
-
-// 受保護路由
-export const protectedRoutesOld: RouteConfig[] = [
-  {
-    path: ROUTES.STAFF_DASHBOARD,
-    name: '員工儀表板',
-    component: StaffDashboard,
-    icon: 'dashboard',
-  },
-  {
-    path: ROUTES.PERSONAL_ATTENDANCE,
-    name: '個人考勤',
-    component: PersonalAttendance,
-    icon: 'clock',
-  },
-  {
-    path: ROUTES.ATTENDANCE_RECORDS,
-    name: '考勤記錄',
-    component: AttendanceRecordsPage,
-    icon: 'clock',
-  },
-  {
-    path: ROUTES.LEAVE_REQUEST,
+    path: routes.leaveRequest,
     name: '請假申請',
     component: LeaveRequest,
     icon: 'file-text',
   },
   {
-    path: ROUTES.OVERTIME_REQUEST,
+    path: routes.accountSettings,
+    name: '帳號設定',
+    component: AccountSettings,
+    icon: 'settings',
+  },
+  {
+    path: routes.staffDashboard,
+    name: '員工儀表板',
+    component: StaffDashboard,
+    icon: 'dashboard',
+  },
+  {
+    path: routes.personalAttendance,
+    name: '個人考勤',
+    component: PersonalAttendance,
+    icon: 'clock',
+  },
+  {
+    path: routes.attendanceRecords,
+    name: '考勤記錄',
+    component: AttendanceRecords,
+    icon: 'clock',
+  },
+  {
+    path: routes.overtimeRequest,
     name: '加班申請',
     component: OvertimeRequest,
     icon: 'clock',
   },
   {
-    path: ROUTES.OVERTIME_HISTORY,
+    path: routes.overtimeHistory,
     name: '加班歷史',
-    component: OvertimeHistoryPage,
+    component: OvertimeHistory,
     icon: 'history',
   },
   {
-    path: ROUTES.SCHEDULING,
+    path: routes.scheduling,
     name: '排班管理',
     component: Scheduling,
     icon: 'calendar',
   },
   {
-    path: ROUTES.SCHEDULE_STATISTICS,
+    path: routes.scheduleStatistics,
     name: '排班統計',
     component: ScheduleStatistics,
     icon: 'chart-bar',
   },
   {
-    path: ROUTES.PERSONNEL_MANAGEMENT,
+    path: routes.personnelManagement,
     name: '人事管理',
     component: PersonnelManagement,
     icon: 'users',
   },
   {
-    path: ROUTES.ROLE_MANAGEMENT,
+    path: routes.roleManagement,
     name: '角色管理',
-    component: Role,
+    component: RoleManagement,
     icon: 'briefcase',
   },
   {
-    path: ROUTES.COMPANY_BRANCH_MANAGEMENT,
+    path: routes.companyBranchManagement,
     name: '公司分店管理',
     component: CompanyBranchManagement,
     icon: 'building',
   },
   {
-    path: ROUTES.HR_MANAGEMENT,
+    path: routes.hrManagement,
     name: '人力資源管理',
-    component: HRManagement,
+    component: HrManagement,
     icon: 'users',
   },
   {
-    path: ROUTES.APPROVAL_CENTER,
+    path: routes.approvalCenter,
     name: '審核中心',
     component: ApprovalCenter,
     icon: 'check-circle',
   },
   {
-    path: ROUTES.SYSTEM_SETTINGS,
+    path: routes.systemSettings,
     name: '系統設定',
     component: SystemSettings,
     icon: 'settings',
   },
   {
-    path: ROUTES.HOLIDAY_MANAGEMENT,
+    path: routes.holidayManagement,
     name: '假日管理',
     component: HolidayManagement,
     icon: 'calendar-days',
   },
   {
-    path: ROUTES.LEAVE_TYPE_MANAGEMENT,
+    path: routes.leaveTypeManagement,
     name: '請假類型管理',
     component: LeaveTypeManagement,
     icon: 'file-text',
   },
   {
-    path: ROUTES.MISSED_CHECKIN_MANAGEMENT,
+    path: routes.missedCheckinManagement,
     name: '漏打卡管理',
     component: MissedCheckinManagement,
     icon: 'exclamation-triangle',
   },
   {
-    path: ROUTES.OVERTIME_MANAGEMENT,
+    path: routes.overtimeManagement,
     name: '加班管理',
     component: OvertimeManagement,
     icon: 'briefcase',
   },
   {
-    path: ROUTES.OVERTIME_MANAGEMENT_PAGE,
+    path: routes.overtimeManagementPage,
     name: '加班管理頁面',
     component: OvertimeManagementPage,
     icon: 'clock',
   },
   {
-    path: ROUTES.OVERTIME_REQUEST_PAGE,
+    path: routes.overtimeRequestPage,
     name: '加班申請頁面',
     component: OvertimeRequestPage,
     icon: 'clock',
   },
   {
-    path: ROUTES.ANNOUNCEMENT_MANAGEMENT,
+    path: routes.announcementManagement,
     name: '公告管理',
-    component: AnnouncementManagementPage,
+    component: AnnouncementManagement,
     icon: 'megaphone',
   },
   {
-    path: ROUTES.COMPANY_ANNOUNCEMENTS,
+    path: routes.companyAnnouncements,
     name: '公司公告',
     component: CompanyAnnouncements,
     icon: 'message-square',
@@ -227,7 +221,7 @@ export const protectedRoutesOld: RouteConfig[] = [
 ];
 
 // 404 路由
-export const notFoundRoute: RouteConfig = {
+export const notFoundRoute = {
   path: '*',
   name: '頁面不存在',
   component: NotFound,

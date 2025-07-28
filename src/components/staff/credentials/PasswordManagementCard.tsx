@@ -10,69 +10,25 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/useToast';
-import { PasswordValidationService } from '@/services/passwordValidationService';
+import { updateEmployeePassword } from '@/services/employeeService';
 import { Eye, EyeOff, Key, ShieldAlert } from 'lucide-react';
 import React, { useState } from 'react';
 
-interface PasswordManagementCardProps {
-  managingOwnAccount: boolean;
-  onPasswordChange?: (currentPassword: string, newPassword: string) => Promise<void>;
-}
-
-const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
-  managingOwnAccount,
-  onPasswordChange
-}) => {
-  const { toast } = useToast();
+const PasswordManagementCard: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newPassword.trim()) {
-      toast({
-        title: "請輸入新密碼",
-        description: "新密碼不能為空",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      toast({
-        title: "密碼太短",
-        description: "新密碼至少需要6個字符",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: "密碼不匹配",
-        description: "新密碼與確認密碼不一致",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      // 使用自定義的 onPasswordChange 或預設的 Supabase 更新方法
-      if (onPasswordChange) {
-        await onPasswordChange('', newPassword); // 不再傳 currentPassword
-      } else {
-        // 使用 Supabase Auth API 更新密碼
-        const result = await PasswordValidationService.updatePassword(newPassword);
-        if (!result.success) {
-          throw new Error(result.error || '密碼更新失敗');
-        }
-      }
+      await updateEmployeePassword(newPassword, confirmPassword);
 
       // 重設表單
       setNewPassword('');
@@ -81,16 +37,14 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
       setShowConfirmPassword(false);
 
       toast({
-        title: "密碼更新成功",
-        description: "您的密碼已成功更新",
+        title: '密碼更新成功',
+        description: '您的密碼已成功更新',
       });
-
     } catch (error) {
-      console.error('Password update failed:', error);
       toast({
-        title: "更新失敗",
-        description: error instanceof Error ? error.message : "密碼更新失敗",
-        variant: "destructive"
+        title: '更新失敗',
+        description: error instanceof Error ? error.message : '無法更新密碼',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
@@ -104,9 +58,7 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
           <Key className="mr-2 h-5 w-5 text-gray-500" />
           <CardTitle>更改密碼</CardTitle>
         </div>
-        <CardDescription>
-          請輸入新密碼並確認
-        </CardDescription>
+        <CardDescription>請輸入新密碼並確認</CardDescription>
       </CardHeader>
       <form onSubmit={handlePasswordChange}>
         <CardContent>
@@ -116,9 +68,9 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
               <div className="relative">
                 <Input
                   id="new-password"
-                  type={showNewPassword ? "text" : "password"}
+                  type={showNewPassword ? 'text' : 'password'}
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  onChange={e => setNewPassword(e.target.value)}
                   placeholder="請輸入新密碼（至少6個字符）"
                   disabled={isSubmitting}
                 />
@@ -130,11 +82,7 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
                   onClick={() => setShowNewPassword(!showNewPassword)}
                   disabled={isSubmitting}
                 >
-                  {showNewPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
             </div>
@@ -144,9 +92,9 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
               <div className="relative">
                 <Input
                   id="confirm-password"
-                  type={showConfirmPassword ? "text" : "password"}
+                  type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={e => setConfirmPassword(e.target.value)}
                   placeholder="請再次輸入新密碼"
                   disabled={isSubmitting}
                 />
@@ -176,8 +124,8 @@ const PasswordManagementCard: React.FC<PasswordManagementCardProps> = ({
           </div>
         </CardContent>
         <CardFooter>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={isSubmitting || !newPassword.trim() || !confirmPassword.trim()}
             className="w-full md:w-auto"
           >

@@ -47,6 +47,10 @@ export const API_ROUTES = {
     ME: `${API_URL}/employee/auth/me`,
     FORGOT_PASSWORD: `${API_URL}/employee/auth/forgot-password`,
   },
+  EMPLOYEE: {
+    UPDATE_EMAIL: `${API_URL}/employee/profile/email`,
+    UPDATE_PASSWORD: `${API_URL}/employee/profile/password`,
+  },
   CHECKIN: {
     INDEX: `${API_URL}/employee/check-in`,
     CREATE: `${API_URL}/employee/check-in`,

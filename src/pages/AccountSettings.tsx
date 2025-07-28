@@ -106,16 +106,7 @@ const AccountSettings: React.FC = () => {
           </Card>
 
           {/* 帳號安全設定 */}
-          <div>
-            {employee && (
-              <CredentialManagement
-                userId={employee.id || employee.slug}
-                onSuccess={() => {
-                  console.log('帳號設定更新成功');
-                }}
-              />
-            )}
-          </div>
+          <div>{employee && <CredentialManagement />}</div>
         </div>
       </div>
     </div>

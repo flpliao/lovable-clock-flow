@@ -1,13 +1,11 @@
-
-import React from 'react';
+import { leaveRequestService } from '@/services/leaveRequestService';
 import { LeaveRequest } from '@/types';
-import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
-import LeaveApprovalFlow from './LeaveApprovalFlow';
+import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import React from 'react';
 import LeaveApprovalActions from './LeaveApprovalActions';
-import LeaveStatusBadge from './LeaveStatusBadge';
+import LeaveApprovalFlow from './LeaveApprovalFlow';
 import LeaveRequestInfo from './LeaveRequestInfo';
-import { useLeaveApproval } from '@/hooks/useLeaveApproval';
-import { CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import LeaveStatusBadge from './LeaveStatusBadge';
 
 interface LeaveRequestDetailProps {
   leaveRequest: LeaveRequest;
@@ -16,11 +14,8 @@ interface LeaveRequestDetailProps {
 
 const LeaveRequestDetail: React.FC<LeaveRequestDetailProps> = ({
   leaveRequest,
-  isApprover = false
+  isApprover = false,
 }) => {
-  const { updateLeaveRequest } = useLeaveManagementContext();
-  const { handleApprove, handleReject } = useLeaveApproval();
-  
   // 獲取詳細的審核狀態資訊
   const getDetailedApprovalStatus = () => {
     if (leaveRequest.status === 'approved') {
@@ -31,10 +26,10 @@ const LeaveRequestDetail: React.FC<LeaveRequestDetailProps> = ({
           title: '無需核准（系統自動核准）',
           description: '因員工無設定直屬主管，系統已自動核准此請假申請',
           bgColor: 'bg-green-500/20',
-          borderColor: 'border-green-400/30'
+          borderColor: 'border-green-400/30',
         };
       }
-      
+
       const approvedRecords = leaveRequest.approvals?.filter(a => a.status === 'approved') || [];
       if (approvedRecords.length === 1) {
         return {
@@ -42,7 +37,7 @@ const LeaveRequestDetail: React.FC<LeaveRequestDetailProps> = ({
           title: '已核准',
           description: `已由直屬主管 ${approvedRecords[0].approver_name} 核准`,
           bgColor: 'bg-green-500/20',
-          borderColor: 'border-green-400/30'
+          borderColor: 'border-green-400/30',
         };
       } else if (approvedRecords.length > 1) {
         return {
@@ -50,7 +45,7 @@ const LeaveRequestDetail: React.FC<LeaveRequestDetailProps> = ({
           title: '已核准',
           description: `已通過 ${approvedRecords.length} 層主管審核`,
           bgColor: 'bg-green-500/20',
-          borderColor: 'border-green-400/30'
+          borderColor: 'border-green-400/30',
         };
       }
     } else if (leaveRequest.status === 'rejected') {
@@ -58,11 +53,11 @@ const LeaveRequestDetail: React.FC<LeaveRequestDetailProps> = ({
       return {
         icon: <XCircle className="h-5 w-5 text-red-400" />,
         title: '已退回',
-        description: rejectedRecord 
+        description: rejectedRecord
           ? `已由 ${rejectedRecord.approver_name} 退回，原因：${rejectedRecord.comment || '未提供原因'}`
           : '請假申請已被退回',
         bgColor: 'bg-red-500/20',
-        borderColor: 'border-red-400/30'
+        borderColor: 'border-red-400/30',
       };
     } else if (leaveRequest.status === 'pending') {
       if (leaveRequest.approval_level === 1) {
@@ -71,16 +66,17 @@ const LeaveRequestDetail: React.FC<LeaveRequestDetailProps> = ({
           title: '直屬主管審核中',
           description: '請假申請已送交直屬主管，等待第一層審核',
           bgColor: 'bg-yellow-500/20',
-          borderColor: 'border-yellow-400/30'
+          borderColor: 'border-yellow-400/30',
         };
       } else if (leaveRequest.approval_level && leaveRequest.approval_level > 1) {
-        const approvedCount = leaveRequest.approvals?.filter(a => a.status === 'approved').length || 0;
+        const approvedCount =
+          leaveRequest.approvals?.filter(a => a.status === 'approved').length || 0;
         return {
           icon: <AlertCircle className="h-5 w-5 text-yellow-400" />,
           title: `第 ${approvedCount} 層已通過，等待第 ${leaveRequest.approval_level} 層核准`,
           description: '多層主管審核進行中，請耐心等候',
           bgColor: 'bg-yellow-500/20',
-          borderColor: 'border-yellow-400/30'
+          borderColor: 'border-yellow-400/30',
         };
       }
     }
@@ -90,57 +86,67 @@ const LeaveRequestDetail: React.FC<LeaveRequestDetailProps> = ({
       title: '審核中',
       description: '請假申請審核中',
       bgColor: 'bg-gray-500/20',
-      borderColor: 'border-gray-400/30'
+      borderColor: 'border-gray-400/30',
     };
   };
 
   const statusInfo = getDetailedApprovalStatus();
-  
+
   // Wrapped approval handler
-  const onApprove = (comment: string) => {
-    handleApprove(leaveRequest, comment, updateLeaveRequest);
+  const onApprove = async (comment: string) => {
+    try {
+      await leaveRequestService.updateLeaveRequest(leaveRequest.id, 'approve', comment);
+      // 可能需要重新載入資料或觸發回調
+    } catch (error) {
+      console.error('核准請假申請失敗:', error);
+    }
   };
-  
-  // Wrapped reject handler
-  const onReject = (reason: string) => {
-    handleReject(leaveRequest, reason, updateLeaveRequest);
+
+  // Wrapped rejection handler
+  const onReject = async (reason: string) => {
+    try {
+      await leaveRequestService.updateLeaveRequest(leaveRequest.id, 'reject', reason);
+      // 可能需要重新載入資料或觸發回調
+    } catch (error) {
+      console.error('退回請假申請失敗:', error);
+    }
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-white drop-shadow-md">請假詳情</h2>
         <LeaveStatusBadge status={leaveRequest.status} />
       </div>
-      
+
       {/* 審核狀態詳細資訊 */}
-      <div className={`backdrop-blur-xl ${statusInfo.bgColor} border ${statusInfo.borderColor} rounded-3xl shadow-xl p-6`}>
+      <div
+        className={`backdrop-blur-xl ${statusInfo.bgColor} border ${statusInfo.borderColor} rounded-3xl shadow-xl p-6`}
+      >
         <div className="flex items-start gap-4">
           {statusInfo.icon}
           <div>
             <h3 className="text-lg font-semibold text-white drop-shadow-md mb-2">
               {statusInfo.title}
             </h3>
-            <p className="text-white/90 drop-shadow-sm">
-              {statusInfo.description}
-            </p>
+            <p className="text-white/90 drop-shadow-sm">{statusInfo.description}</p>
           </div>
         </div>
       </div>
-      
+
       <div className="backdrop-blur-xl bg-white/20 rounded-3xl border border-white/30 shadow-xl p-6">
         <LeaveRequestInfo leaveRequest={leaveRequest} />
       </div>
-      
+
       {leaveRequest.approvals && leaveRequest.approvals.length > 0 && (
         <div className="backdrop-blur-xl bg-white/20 rounded-3xl border border-white/30 shadow-xl p-6">
-          <LeaveApprovalFlow 
-            approvals={leaveRequest.approvals} 
+          <LeaveApprovalFlow
+            approvals={leaveRequest.approvals}
             currentLevel={leaveRequest.approval_level || 0}
           />
         </div>
       )}
-      
+
       {isApprover && leaveRequest.status === 'pending' && (
         <div className="backdrop-blur-xl bg-white/20 rounded-3xl border border-white/30 shadow-xl p-6">
           <LeaveApprovalActions

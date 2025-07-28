@@ -1,195 +1,196 @@
 import { toast } from '@/components/ui/use-toast';
-import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
-import { useCurrentUser } from '@/hooks/useStores';
-import { getApprovers } from '@/services/leaveRequestService';
-import { LeaveUsage, LeaveValidationService, ValidationResult } from '@/services/leaveValidationService';
+import { leaveRequestService } from '@/services/leaveRequestService';
+import {
+  LeaveUsage,
+  LeaveValidationService,
+  ValidationResult,
+} from '@/services/leaveValidationService';
+import useEmployeeStore from '@/stores/employeeStore';
+import { LeaveFormData } from '@/types/leave';
 import { leaveFormSchema, LeaveFormValues } from '@/utils/leaveTypes';
 import { zodResolver } from '@hookform/resolvers/zod';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 export function useLeaveRequestFormLogic(onSubmit?: () => void) {
-  const currentUser = useCurrentUser();
-  const { createLeaveRequest } = useLeaveManagementContext();
+  const { employee } = useEmployeeStore();
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const validationTimeoutRef = useRef<NodeJS.Timeout>();
+  const validationTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const lastValidationKeyRef = useRef<string>('');
-  
-  // Memoize approvers to prevent unnecessary recalculations
-  const approvers = useMemo(() => getApprovers(), []);
-  
+
+  // Mock approvers data since getApprovers is not available in leaveRequestService
+  const approvers = useMemo(
+    () => [
+      { id: '1', name: '主管', level: 1 },
+      { id: '2', name: '經理', level: 2 },
+    ],
+    []
+  );
+
   const form = useForm<LeaveFormValues>({
     resolver: zodResolver(leaveFormSchema),
     defaultValues: {
-      reason: "",
+      reason: '',
     },
   });
 
   const watchedValues = form.watch();
-  
-  // Stable mock leave usage data
-  const mockLeaveUsage: LeaveUsage = useMemo(() => ({
-    annualUsed: 5,
-    personalUsed: 2,
-    sickUsed: 3,
-    menstrualUsed: 2,
-    marriageUsed: false,
-    paternalUsed: 0,
-    bereavementUsed: {},
-    monthlyMenstrualUsage: {
-      '2024-01': 1,
-      '2024-02': 1,
-    }
-  }), []);
 
-  // Stable calculation with proper dependencies
+  // Stable mock leave usage data
+  const mockLeaveUsage: LeaveUsage = useMemo(
+    () => ({
+      annualUsed: 5,
+      personalUsed: 2,
+      sickUsed: 3,
+      menstrualUsed: 2,
+      marriageUsed: false,
+      paternalUsed: 0,
+      bereavementUsed: {},
+      monthlyMenstrualUsage: {
+        '2024-01': 1,
+        '2024-02': 1,
+      },
+    }),
+    []
+  );
+
+  // Calculate hours based on date range
   const calculatedHours = useMemo(() => {
-    if (watchedValues.start_date && watchedValues.end_date) {
-      return LeaveValidationService.calculateLeaveHours(
-        watchedValues.start_date,
-        watchedValues.end_date
-      );
-    }
-    return 0;
+    const startDate = watchedValues.start_date;
+    const endDate = watchedValues.end_date;
+
+    if (!startDate || !endDate) return 0;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    return diffDays * 8; // 8 hours per day
   }, [watchedValues.start_date, watchedValues.end_date]);
 
-  // Create a stable validation key to prevent unnecessary validations
-  const validationKey = useMemo(() => {
-    if (!currentUser || !watchedValues.start_date || !watchedValues.end_date || !watchedValues.leave_type) {
-      return '';
-    }
-    return JSON.stringify({
-      userId: currentUser.id,
-      startDate: watchedValues.start_date.toISOString(),
-      endDate: watchedValues.end_date.toISOString(),
-      leaveType: watchedValues.leave_type,
-      reason: watchedValues.reason
-    });
-  }, [currentUser?.id, watchedValues.start_date, watchedValues.end_date, watchedValues.leave_type, watchedValues.reason]);
-
-  // Optimized validation function
+  // Validation logic
   const validateForm = useCallback(async () => {
-    if (!validationKey || validationKey === lastValidationKeyRef.current) {
+    const data = form.getValues();
+
+    if (!data.start_date || !data.end_date || !data.leave_type || !data.reason) {
+      return;
+    }
+
+    const validationKey = `${data.start_date}-${data.end_date}-${data.leave_type}-${data.reason}`;
+
+    if (validationKey === lastValidationKeyRef.current) {
       return;
     }
 
     lastValidationKeyRef.current = validationKey;
     setIsValidating(true);
-    
+
     try {
       const result = await LeaveValidationService.validateLeaveRequest(
-        watchedValues,
-        currentUser!,
+        data,
+        employee,
         mockLeaveUsage,
-        []
+        approvers
       );
       setValidationResult(result);
     } catch (error) {
       console.error('Validation error:', error);
-      setValidationResult(null);
+      setValidationResult({
+        isValid: false,
+        errors: ['驗證過程中發生錯誤'],
+        warnings: [],
+      });
     } finally {
       setIsValidating(false);
     }
-  }, [validationKey, watchedValues, currentUser, mockLeaveUsage]);
+  }, [form, employee, mockLeaveUsage, approvers]);
 
-  // Optimized debounced validation
-  React.useEffect(() => {
-    if (!validationKey) {
-      setValidationResult(null);
-      return;
-    }
-
-    // Clear existing timeout
+  // Debounced validation
+  useEffect(() => {
     if (validationTimeoutRef.current) {
       clearTimeout(validationTimeoutRef.current);
     }
 
-    // Set new timeout only if validation key changed
-    validationTimeoutRef.current = setTimeout(validateForm, 800);
+    validationTimeoutRef.current = setTimeout(() => {
+      validateForm();
+    }, 500);
 
     return () => {
       if (validationTimeoutRef.current) {
         clearTimeout(validationTimeoutRef.current);
       }
     };
-  }, [validationKey, validateForm]);
+  }, [validateForm]);
 
-  const handleSubmit = useCallback(async (data: LeaveFormValues) => {
-    if (!currentUser) return;
-
-    setIsSubmitting(true);
-    
-    try {
-      // Final validation before submission  
-      const finalValidation = await LeaveValidationService.validateLeaveRequest(
-        data,
-        currentUser,
-        mockLeaveUsage,
-        []
-      );
-
-      if (!finalValidation.isValid) {
+  // Submit handler
+  const handleSubmit = useCallback(
+    async (data: LeaveFormValues) => {
+      if (!employee) {
         toast({
-          title: "表單驗證失敗",
-          description: finalValidation.errors.join('\n'),
-          variant: "destructive"
+          title: '錯誤',
+          description: '請先登入',
+          variant: 'destructive',
         });
         return;
       }
 
-      // Create the leave request
-      const leaveRequest = {
-        id: '',
-        user_id: currentUser.id,
-        start_date: data.start_date.toISOString().split('T')[0],
-        end_date: data.end_date.toISOString().split('T')[0],
-        leave_type: data.leave_type as 'annual' | 'sick' | 'personal' | 'marriage' | 'bereavement' | 'maternity' | 'paternity' | 'parental' | 'occupational' | 'menstrual' | 'other',
-        status: 'pending' as const,
-        hours: calculatedHours,
-        reason: data.reason,
-        approval_level: 1,
-        current_approver: approvers[0]?.id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        approvals: approvers.map((approver, index) => ({
-          id: `${Date.now()}-${index}`,
-          leave_request_id: '',
-          approver_id: approver.id,
-          approver_name: approver.name,
-          status: 'pending' as const,
-          level: approver.level
-        }))
-      };
+      setIsSubmitting(true);
 
-      const success = await createLeaveRequest(leaveRequest);
-      
-      if (success) {
+      try {
+        // Final validation before submission
+        const finalValidation = await LeaveValidationService.validateLeaveRequest(
+          data,
+          employee,
+          mockLeaveUsage,
+          []
+        );
+
+        if (!finalValidation.isValid) {
+          toast({
+            title: '表單驗證失敗',
+            description: finalValidation.errors.join('\n'),
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        // Create the leave request using LeaveFormData format
+        const leaveFormData: LeaveFormData = {
+          start_date: data.start_date,
+          end_date: data.end_date,
+          leave_type: data.leave_type as 'annual' | 'sick' | 'personal' | 'other',
+          reason: data.reason,
+        };
+
+        await leaveRequestService.submitLeaveRequest(leaveFormData);
+
         toast({
-          title: "申請成功",
-          description: "請假申請已送出，等待主管審核",
+          title: '申請成功',
+          description: '請假申請已送出，等待主管審核',
         });
-        
+
         if (onSubmit) {
           onSubmit();
         }
-        
+
         form.reset();
         setValidationResult(null);
         lastValidationKeyRef.current = '';
+      } catch (error) {
+        console.error('Submit error:', error);
+        toast({
+          title: '提交失敗',
+          description: '請檢查網路連線後重試',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error) {
-      console.error('Submit error:', error);
-      toast({
-        title: "提交失敗",
-        description: "請檢查網路連線後重試",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [currentUser, calculatedHours, mockLeaveUsage, approvers, createLeaveRequest, onSubmit, form]);
+    },
+    [employee, calculatedHours, mockLeaveUsage, approvers, onSubmit, form]
+  );
 
   const canSubmit = useMemo(() => {
     return validationResult?.isValid && !isValidating && !isSubmitting;
@@ -197,7 +198,7 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
 
   return {
     form,
-    currentUser,
+    employee,
     approvers,
     calculatedHours,
     watchedValues,
@@ -205,6 +206,6 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
     isValidating,
     isSubmitting,
     canSubmit,
-    handleSubmit
+    handleSubmit,
   };
 }

@@ -11,7 +11,7 @@ const MagicLink = LazyWithSuspense(() => import('@/pages/MagicLinkLogin'));
 const AuthCallback = LazyWithSuspense(() => import('@/pages/AuthCallback'));
 
 const Home = LazyWithSuspense(() => import('@/pages/Index'));
-const LeaveRequest = LazyWithSuspense(() => import('@/pages/LeaveRequest'));
+const LeaveRequestManagement = LazyWithSuspense(() => import('@/pages/LeaveRequestManagement'));
 const AccountSettings = LazyWithSuspense(() => import('@/pages/AccountSettings'));
 
 const StaffDashboard = LazyWithSuspense(() => import('@/pages/StaffDashboard'));
@@ -83,7 +83,7 @@ export const protectedRoutes = [
   {
     path: routes.leaveRequest,
     name: '請假申請',
-    component: LeaveRequest,
+    component: LeaveRequestManagement,
     icon: 'file-text',
   },
   {

@@ -1,13 +1,13 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
-import { useLeaveManagementContext } from '@/contexts/LeaveManagementContext';
-import { useAuthenticated, useCurrentUser } from '@/hooks/useStores';
-import { useToast } from '@/hooks/useToast';
+import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { leaveRequestService } from '@/services/leaveRequestService';
+import useEmployeeStore from '@/stores/employeeStore';
+import { LeaveFormData } from '@/types/leave';
 import { calculateAnnualLeaveDays } from '@/utils/annualLeaveCalculator';
-import { datePickerToDatabase } from '@/utils/dateUtils';
-import { LeaveFormValues, leaveFormSchema } from '@/utils/leaveTypes';
+import { leaveFormSchema, LeaveFormValues } from '@/utils/leaveTypes';
 import { validateLeaveRequest } from '@/utils/leaveValidation';
 import { calculateWorkingHours } from '@/utils/workingHoursCalculator';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,7 +22,6 @@ interface NewLeaveRequestFormProps {
   onSubmit?: () => void;
 }
 
-// 定義員工資料類型
 interface StaffData {
   id: string;
   user_id?: string;
@@ -37,296 +36,155 @@ interface StaffData {
   remainingAnnualLeaveDays: number;
 }
 
-// 定義請假類型
-type LeaveType =
-  | 'annual'
-  | 'sick'
-  | 'personal'
-  | 'marriage'
-  | 'bereavement'
-  | 'maternity'
-  | 'paternity'
-  | 'menstrual'
-  | 'occupational'
-  | 'parental'
-  | 'other';
-
 export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
-  const { toast } = useToast();
   // 使用新的 Zustand hooks
-  const currentUser = useCurrentUser();
-  const isAuthenticated = useAuthenticated();
-
-  const { createLeaveRequest } = useLeaveManagementContext();
+  const { employee } = useEmployeeStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [calculatedHours, setCalculatedHours] = useState<number>(0);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [userStaffData, setUserStaffData] = useState<StaffData | null>(null);
-  const [isLoadingStaffData, setIsLoadingStaffData] = useState(true);
+  const [isLoadingStaffData, setIsLoadingStaffData] = useState(false);
   const [staffValidationError, setStaffValidationError] = useState<string | null>(null);
 
   const form = useForm<LeaveFormValues>({
     resolver: zodResolver(leaveFormSchema),
     defaultValues: {
-      leave_type: '',
-      start_date: undefined,
-      end_date: undefined,
       reason: '',
     },
   });
 
-  const watchedStartDate = form.watch('start_date');
-  const watchedEndDate = form.watch('end_date');
   const watchedLeaveType = form.watch('leave_type');
 
-  // Secure staff data validation function
+  // Validate staff data
   const validateStaffData = async (userId: string) => {
-    console.log('🔍 Validating staff data for authenticated user');
-
     try {
-      // Check via user_id query first
-      const { data: staffByUserId, error: userIdError } = await supabase
+      const { data: staffData, error } = await supabase
         .from('staff')
-        .select('id, user_id, name, department, position, hire_date, supervisor_id')
+        .select('*')
         .eq('user_id', userId)
-        .maybeSingle();
+        .single();
 
-      if (staffByUserId && !userIdError) {
-        console.log('✅ Found staff data via user_id');
-        return { staff: staffByUserId, error: null };
+      if (error) {
+        console.error('❌ Staff data validation failed:', error);
+        setStaffValidationError('員工資料驗證失敗，請聯繫管理員');
+        return null;
       }
 
-      // If not found via user_id, try via id query
-      const { data: staffById, error: idError } = await supabase
-        .from('staff')
-        .select('id, user_id, name, department, position, hire_date, supervisor_id')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (staffById && !idError) {
-        console.log('✅ Found staff data via id');
-        return { staff: staffById, error: null };
+      if (!staffData) {
+        console.error('❌ Staff data not found for user:', userId);
+        setStaffValidationError('找不到員工資料，請聯繫管理員');
+        return null;
       }
 
-      console.error('❌ Unable to find staff data');
-      return {
-        staff: null,
-        error: 'Staff data record not found, please contact administrator for account setup',
+      // Calculate annual leave days
+      const hireDate = new Date(staffData.hire_date);
+      const currentDate = new Date();
+      const yearsOfService = Math.floor(
+        (currentDate.getTime() - hireDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25)
+      );
+
+      const totalAnnualLeaveDays = calculateAnnualLeaveDays(yearsOfService);
+      const usedAnnualLeaveDays = staffData.used_annual_leave_days || 0;
+      const remainingAnnualLeaveDays = totalAnnualLeaveDays - usedAnnualLeaveDays;
+
+      const processedStaffData: StaffData = {
+        id: staffData.id,
+        user_id: staffData.user_id,
+        name: staffData.name,
+        department: staffData.department,
+        position: staffData.position,
+        hire_date: staffData.hire_date,
+        supervisor_id: staffData.supervisor_id,
+        yearsOfService: `${yearsOfService} 年`,
+        totalAnnualLeaveDays,
+        usedAnnualLeaveDays,
+        remainingAnnualLeaveDays,
       };
+
+      console.log('✅ Staff data validated successfully:', processedStaffData);
+      setStaffValidationError(null);
+      return processedStaffData;
     } catch (error) {
-      console.error('❌ Error validating staff data:', error);
-      return {
-        staff: null,
-        error: 'System error occurred while validating staff data',
-      };
+      console.error('❌ Staff data validation error:', error);
+      setStaffValidationError('員工資料驗證過程中發生錯誤');
+      return null;
     }
   };
 
-  // Load staff data with secure validation
+  // Load staff data
   useEffect(() => {
     const loadStaffData = async () => {
-      if (!currentUser?.id) {
-        console.log('❌ No current user');
-        setIsLoadingStaffData(false);
-        setStaffValidationError('Please log in to the system first');
-        return;
-      }
+      if (!employee?.slug) return;
 
-      console.log('🚀 Starting to load staff data for authenticated user');
       setIsLoadingStaffData(true);
-      setStaffValidationError(null);
-
       try {
-        // Check authentication status
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser();
-        console.log('🔍 Authentication status check');
-
-        if (authError || !user) {
-          setStaffValidationError('User authentication has expired, please log in again');
-          return;
+        const staffData = await validateStaffData(employee.slug);
+        if (staffData) {
+          setUserStaffData(staffData);
         }
-
-        // Validate staff data
-        const { staff, error } = await validateStaffData(currentUser.id);
-
-        if (error || !staff) {
-          console.error('❌ Staff data validation failed:', error);
-          setStaffValidationError(error || 'Staff data not found');
-          setUserStaffData(null);
-          return;
-        }
-
-        const hireDate = staff.hire_date;
-        console.log('📅 Hire date available');
-
-        // Calculate years of service and annual leave days
-        let yearsOfService = 'Not Set';
-        let totalAnnualLeaveDays = 0;
-        let usedAnnualLeaveDays = 0;
-        let remainingAnnualLeaveDays = 0;
-
-        if (hireDate) {
-          const hireDateObj = new Date(hireDate);
-          const now = new Date();
-          const diffTime = Math.abs(now.getTime() - hireDateObj.getTime());
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          const years = Math.floor(diffDays / 365);
-          const months = Math.floor((diffDays % 365) / 30);
-
-          yearsOfService =
-            years > 0
-              ? months > 0
-                ? `${years} years ${months} months`
-                : `${years} years`
-              : `${months} months`;
-
-          totalAnnualLeaveDays = calculateAnnualLeaveDays(hireDateObj);
-          console.log('📊 Calculated annual leave days:', totalAnnualLeaveDays);
-
-          // Calculate used annual leave days - use staff.id for query
-          const currentYear = new Date().getFullYear();
-          const { data: leaveRecords, error: leaveError } = await supabase
-            .from('leave_requests')
-            .select('hours')
-            .eq('staff_id', staff.id) // Use correct staff.id
-            .eq('leave_type', 'annual')
-            .eq('status', 'approved')
-            .gte('start_date', `${currentYear}-01-01`)
-            .lte('start_date', `${currentYear}-12-31`);
-
-          if (!leaveError && leaveRecords) {
-            usedAnnualLeaveDays = leaveRecords.reduce((total, record) => {
-              return total + Number(record.hours) / 8;
-            }, 0);
-          }
-          console.log('📈 Used annual leave days:', usedAnnualLeaveDays);
-
-          remainingAnnualLeaveDays = Math.max(0, totalAnnualLeaveDays - usedAnnualLeaveDays);
-          console.log('📉 Remaining annual leave days:', remainingAnnualLeaveDays);
-        }
-
-        // Set complete staff data
-        const completeStaffData: StaffData = {
-          id: staff.id, // Ensure staff.id is included
-          user_id: staff.user_id,
-          name: staff.name,
-          department: staff.department,
-          position: staff.position,
-          hire_date: hireDate,
-          supervisor_id: staff.supervisor_id,
-          yearsOfService,
-          totalAnnualLeaveDays,
-          usedAnnualLeaveDays,
-          remainingAnnualLeaveDays,
-        };
-
-        console.log('✅ Complete staff data loaded successfully');
-        setUserStaffData(completeStaffData);
       } catch (error) {
-        console.error('❌ Error loading staff data:', error);
-        setStaffValidationError(
-          'System error occurred while loading staff data, please try again later or contact administrator'
-        );
-        setUserStaffData(null);
+        console.error('❌ Failed to load staff data:', error);
+        setStaffValidationError('載入員工資料失敗');
       } finally {
         setIsLoadingStaffData(false);
       }
     };
 
     loadStaffData();
-  }, [currentUser?.id, isAuthenticated]);
+  }, [employee?.slug]);
 
   // Calculate leave hours
   useEffect(() => {
-    if (watchedStartDate && watchedEndDate) {
-      const hours = calculateWorkingHours(watchedStartDate, watchedEndDate);
-      setCalculatedHours(hours);
-      console.log('⏰ Calculated leave hours:', hours);
-    } else {
-      setCalculatedHours(0);
-    }
-  }, [watchedStartDate, watchedEndDate]);
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'start_date' || name === 'end_date') {
+        const startDate = value.start_date;
+        const endDate = value.end_date;
 
-  // Validate leave request
+        if (startDate && endDate) {
+          const hours = calculateWorkingHours(startDate, endDate);
+          setCalculatedHours(hours);
+        } else {
+          setCalculatedHours(0);
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
+
+  // Validate request
   useEffect(() => {
     const validateRequest = async () => {
-      if (watchedStartDate && watchedEndDate && watchedLeaveType && currentUser) {
-        try {
-          console.log('🔍 Starting leave request validation');
-
-          const validation = await validateLeaveRequest({
-            leave_type: watchedLeaveType,
-            start_date: watchedStartDate,
-            end_date: watchedEndDate,
-            hours: calculatedHours,
-            user_id: currentUser.id,
-          });
-
-          if (!validation.isValid) {
-            setValidationError(validation.message);
-            console.log('❌ Validation failed:', validation.message);
-          } else {
-            setValidationError(null);
-            console.log('✅ Validation passed');
-          }
-        } catch (error) {
-          console.error('❌ Error during validation process:', error);
-          setValidationError('Error occurred during validation process, please try again later');
-        }
-      } else {
+      const formData = form.getValues();
+      if (!formData.start_date || !formData.end_date || !formData.leave_type || !userStaffData) {
         setValidationError(null);
+        return;
+      }
+
+      try {
+        const validationResult = await validateLeaveRequest({
+          start_date: formData.start_date,
+          end_date: formData.end_date,
+          leave_type: formData.leave_type,
+          userStaffData,
+        });
+
+        setValidationError(validationResult.error || null);
+      } catch (error) {
+        console.error('❌ Request validation error:', error);
+        setValidationError('請假申請驗證失敗');
       }
     };
 
-    if (calculatedHours > 0) {
-      validateRequest();
-    }
-  }, [watchedStartDate, watchedEndDate, watchedLeaveType, calculatedHours, currentUser]);
-
-  // Get leave data by leave type
-  const getLeaveData = (leaveType: string) => {
-    if (leaveType === 'annual' && userStaffData) {
-      return {
-        remainingDays: userStaffData.remainingAnnualLeaveDays,
-        usedDays: userStaffData.usedAnnualLeaveDays,
-      };
-    }
-
-    // Mock data for other leave types
-    const mockData: Record<string, { remainingDays?: number; usedDays: number }> = {
-      sick: { remainingDays: 27, usedDays: 3 },
-      personal: { remainingDays: 12, usedDays: 2 },
-      marriage: { remainingDays: 8, usedDays: 0 },
-      bereavement: { remainingDays: 8, usedDays: 0 },
-      maternity: { remainingDays: 56, usedDays: 0 },
-      paternity: { remainingDays: 7, usedDays: 0 },
-      menstrual: { remainingDays: 10, usedDays: 2 },
-      occupational: { usedDays: 0 },
-      parental: { usedDays: 0 },
-      other: { usedDays: 0 },
-    };
-
-    return mockData[leaveType] || { usedDays: 0 };
-  };
+    validateRequest();
+  }, [form.watch(), userStaffData]);
 
   const handleSubmit = async (data: LeaveFormValues) => {
     // Pre-submission validation with enhanced security checks
-    if (!currentUser) {
+    if (!employee) {
       toast({
         title: 'Error',
         description: 'Please log in to the system first',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!isAuthenticated) {
-      toast({
-        title: 'Authentication Error',
-        description: 'User authentication status is abnormal, please log in again',
         variant: 'destructive',
       });
       return;
@@ -364,42 +222,29 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
 
       console.log('📝 Submitting leave request with secure validation');
 
-      const startDateStr = datePickerToDatabase(data.start_date);
-      const endDateStr = datePickerToDatabase(data.end_date);
-
-      const leaveRequest = {
-        id: '',
-        user_id: currentUser.id,
-        staff_id: userStaffData.id, // Use validated staff.id
-        start_date: startDateStr,
-        end_date: endDateStr,
-        leave_type: data.leave_type as LeaveType,
-        status: 'pending' as const,
-        hours: calculatedHours,
+      // Create the leave request using LeaveFormData format
+      const leaveFormData: LeaveFormData = {
+        start_date: data.start_date,
+        end_date: data.end_date,
+        leave_type: data.leave_type as 'annual' | 'sick' | 'personal' | 'other',
         reason: data.reason,
-        approval_level: 1,
-        current_approver: userStaffData?.supervisor_id || null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       };
 
       console.log('📋 Prepared to create leave request with validated data');
 
-      const success = await createLeaveRequest(leaveRequest);
+      await leaveRequestService.submitLeaveRequest(leaveFormData);
 
-      if (success) {
-        toast({
-          title: 'Application Successful',
-          description: 'Leave request has been submitted, awaiting approval',
-        });
+      toast({
+        title: 'Application Successful',
+        description: 'Leave request has been submitted, awaiting approval',
+      });
 
-        form.reset();
-        setCalculatedHours(0);
-        setValidationError(null);
+      form.reset();
+      setCalculatedHours(0);
+      setValidationError(null);
 
-        if (onSubmit) {
-          onSubmit();
-        }
+      if (onSubmit) {
+        onSubmit();
       }
     } catch (error) {
       console.error('❌ Failed to submit leave request:', error);
@@ -418,7 +263,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
   return (
     <div className="space-y-6">
       {/* Authentication status warning */}
-      {!isAuthenticated && (
+      {!employee && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
@@ -471,7 +316,7 @@ export function NewLeaveRequestForm({ onSubmit }: NewLeaveRequestFormProps) {
                 isSubmitting ||
                 validationError !== null ||
                 calculatedHours <= 0 ||
-                !isAuthenticated ||
+                !employee ||
                 !!staffValidationError ||
                 !userStaffData
               }

@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { ROUTES } from '@/routes';
+import { routes } from '@/routes/api';
 import { useLogout } from '@/services/authService';
 import { MobileNavigationProps } from '@/types/navigation';
 import { LogOut, Settings, User, X } from 'lucide-react';
@@ -49,7 +49,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
               </div>
               <div className="flex items-center space-x-2">
                 {/* 個人設定齒輪圖示按鈕 */}
-                <Link to={ROUTES.ACCOUNT_SETTINGS} onClick={onClose}>
+                <Link to={routes.accountSettings} onClick={onClose}>
                   <Button
                     variant="ghost"
                     size="icon"

@@ -6,17 +6,16 @@ import {
   METHOD_IP,
   METHOD_LOCATION,
 } from '@/constants/checkInTypes';
-import { API_ROUTES } from '@/routes';
+import { apiRoutes } from '@/routes/api';
 import { CheckInRecord } from '@/types/checkIn';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 import { getCurrentIp, getCurrentPosition } from '@/utils/location';
 import dayjs from 'dayjs';
 
-// 取得今日打卡紀錄
 export const getTodayCheckInRecords = async () => {
   const { data, status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().get(`${API_ROUTES.CHECKIN.INDEX}`, {
+    axiosWithEmployeeAuth().get(`${apiRoutes.checkin.index}`, {
       params: { created_at: dayjs().format('YYYY-MM-DD') },
     })
   );
@@ -35,19 +34,41 @@ export const splitCheckInRecords = (records: CheckInRecord[]) => {
   return { [CHECK_IN]: checkIn, [CHECK_OUT]: checkOut };
 };
 
-export const getCheckInRecords = async () => {
-  const { data } = await callApiAndDecode(
-    axiosWithEmployeeAuth().get(`${API_ROUTES.CHECKIN.INDEX}`, {})
-  );
-  return data as CheckInRecord[];
+// 取得打卡記錄
+export const getCheckInRecords = async (date?: string): Promise<CheckInRecord[]> => {
+  try {
+    const params = date ? { date } : {};
+    const response = await axiosWithEmployeeAuth().get(`${apiRoutes.checkin.index}`, {
+      params,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('獲取打卡記錄失敗:', error);
+    throw new Error('獲取打卡記錄失敗');
+  }
 };
 
 // 建立打卡紀錄
 export const createCheckInRecord = async (checkInData: CheckInRecord) => {
   const { data } = await callApiAndDecode(
-    axiosWithEmployeeAuth().post(`${API_ROUTES.CHECKIN.CREATE}`, checkInData)
+    axiosWithEmployeeAuth().post(`${apiRoutes.checkin.create}`, checkInData)
   );
   return data as CheckInRecord;
+};
+
+// 打卡
+export const checkIn = async (checkInData: {
+  latitude: number;
+  longitude: number;
+  type: 'in' | 'out';
+}): Promise<CheckInRecord> => {
+  try {
+    const response = await axiosWithEmployeeAuth().post(`${apiRoutes.checkin.create}`, checkInData);
+    return response.data;
+  } catch (error) {
+    console.error('打卡失敗:', error);
+    throw new Error('打卡失敗');
+  }
 };
 
 // 打卡參數介面

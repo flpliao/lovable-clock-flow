@@ -1,4 +1,4 @@
-import { ROUTES } from '@/routes';
+import { routes } from '@/routes/api';
 import useEmployeeStore from '@/stores/employeeStore';
 import React from 'react';
 import { Navigate } from 'react-router-dom';
@@ -8,7 +8,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   // 只有在認證系統完全初始化且用戶資料載入完成後，才進行認證檢查
   if (!isAuthenticated) {
-    return <Navigate to={ROUTES.LOGIN} replace />;
+    return <Navigate to={routes.login} replace />;
   }
 
   return <>{children}</>;

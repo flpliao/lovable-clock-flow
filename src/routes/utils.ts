@@ -1,5 +1,5 @@
 // 路由工具函數
-import { ROUTES } from './constants';
+import { routes } from './api';
 import { ApiRouteConfig, RouteConfig } from './types';
 
 // 前端路由工具函數
@@ -15,7 +15,7 @@ export const getRouteByPath = (path: string, routes: RouteConfig[]): RouteConfig
  * 檢查路徑是否為前端路由
  */
 export const isRoute = (path: string): boolean => {
-  return (Object.values(ROUTES) as string[]).includes(path);
+  return (Object.values(routes) as string[]).includes(path);
 };
 
 /**

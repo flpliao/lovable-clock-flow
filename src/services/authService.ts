@@ -1,4 +1,4 @@
-import { API_ROUTES, ROUTES } from '@/routes';
+import { apiRoutes, routes } from '@/routes/api';
 import useEmployeeStore from '@/stores/employeeStore';
 import type { Employee, LoginRequest, LoginResponse } from '@/types/auth';
 import axios from 'axios';
@@ -25,7 +25,7 @@ export const AutoLogin = () => {
       try {
         const employee = await autoLogin();
         if (employee) {
-          navigate(ROUTES.HOME);
+          navigate(routes.home);
         }
       } catch (error) {
         console.error('Auto login failed', error);
@@ -38,7 +38,7 @@ export const AutoLogin = () => {
 };
 
 export const me = async (token: string): Promise<Employee> => {
-  const response = await axios.get<Employee>(API_ROUTES.AUTH.ME, {
+  const response = await axios.get<Employee>(apiRoutes.auth.me, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const employee = response.data;
@@ -57,7 +57,7 @@ export const login = async (
       password,
       company_slug: companySlug,
     };
-    const response = await axios.post<LoginResponse>(API_ROUTES.AUTH.SIGN_IN, loginData);
+    const response = await axios.post<LoginResponse>(apiRoutes.auth.signIn, loginData);
     const { accessToken } = response.data;
     return accessToken;
   } catch (error) {
@@ -70,7 +70,7 @@ export const useLogout = () => {
   const navigate = useNavigate();
   const logout = () => {
     useEmployeeStore.getState().reset();
-    navigate(ROUTES.LOGIN);
+    navigate(routes.login);
   };
   return logout;
 };

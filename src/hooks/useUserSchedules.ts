@@ -1,17 +1,17 @@
 import { useCallback, useState } from 'react';
 import { scheduleService, Schedule } from '@/services/scheduleService';
-import { useCurrentUser } from '@/hooks/useStores';
+import useEmployeeStore from '@/stores/employeeStore';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 
 export const useUserSchedules = () => {
-  const currentUser = useCurrentUser();
+  const { employee } = useEmployeeStore();
   const [userSchedules, setUserSchedules] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(false);
 
   // 載入用戶的排班記錄
   const loadUserSchedules = useCallback(
     async (month?: Date) => {
-      if (!currentUser?.id) {
+      if (!employee?.slug) {
         console.log('沒有使用者 ID，跳過載入排班記錄');
         setUserSchedules([]);
         return;
@@ -19,7 +19,7 @@ export const useUserSchedules = () => {
 
       setLoading(true);
       try {
-        console.log('開始載入用戶排班記錄，使用者ID:', currentUser.id);
+        console.log('開始載入用戶排班記錄，使用者ID:', employee.slug);
 
         let schedules: Schedule[];
 
@@ -29,10 +29,10 @@ export const useUserSchedules = () => {
           const endDate = format(endOfMonth(month), 'yyyy-MM-dd');
           schedules = await scheduleService.getSchedulesForDateRange(startDate, endDate);
           // 過濾出當前用戶的排班
-          schedules = schedules.filter(schedule => schedule.user_id === currentUser.id);
+          schedules = schedules.filter(schedule => schedule.user_id === employee.slug);
         } else {
           // 載入用戶所有排班記錄
-          schedules = await scheduleService.getSchedulesForUser(currentUser.id);
+          schedules = await scheduleService.getSchedulesForUser(employee.slug);
         }
 
         console.log('成功載入排班記錄:', schedules.length, '筆');
@@ -44,7 +44,7 @@ export const useUserSchedules = () => {
         setLoading(false);
       }
     },
-    [currentUser?.id]
+    [employee?.slug]
   );
 
   // 重新整理排班記錄

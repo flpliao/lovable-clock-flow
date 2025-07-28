@@ -2,6 +2,9 @@ export interface Employee {
   slug: string;
   name: string;
   email: string;
+  position?: string;
+  department?: string;
+  start_date?: string;
 }
 
 export interface EmployeeInfoProps {

@@ -15,8 +15,10 @@ import { Eye, EyeOff, Key, ShieldAlert } from 'lucide-react';
 import React, { useState } from 'react';
 
 const PasswordManagementCard: React.FC = () => {
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,11 +30,13 @@ const PasswordManagementCard: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await updateEmployeePassword(newPassword, confirmPassword);
+      await updateEmployeePassword(currentPassword, newPassword, confirmPassword);
 
       // 重設表單
+      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      setShowCurrentPassword(false);
       setShowNewPassword(false);
       setShowConfirmPassword(false);
 
@@ -58,21 +62,53 @@ const PasswordManagementCard: React.FC = () => {
           <Key className="mr-2 h-5 w-5 text-gray-500" />
           <CardTitle>更改密碼</CardTitle>
         </div>
-        <CardDescription>請輸入新密碼並確認</CardDescription>
+        <CardDescription>請輸入目前密碼和新密碼</CardDescription>
       </CardHeader>
       <form onSubmit={handlePasswordChange}>
         <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="current-password">目前密碼</Label>
+              <div className="relative">
+                <Input
+                  id="current-password"
+                  name="current_password"
+                  type={showCurrentPassword ? 'text' : 'password'}
+                  value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)}
+                  placeholder="請輸入目前密碼"
+                  disabled={isSubmitting}
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  disabled={isSubmitting}
+                >
+                  {showCurrentPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="new-password">新密碼</Label>
               <div className="relative">
                 <Input
                   id="new-password"
+                  name="new_password"
                   type={showNewPassword ? 'text' : 'password'}
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
                   placeholder="請輸入新密碼（至少6個字符）"
                   disabled={isSubmitting}
+                  required
                 />
                 <Button
                   type="button"
@@ -92,11 +128,13 @@ const PasswordManagementCard: React.FC = () => {
               <div className="relative">
                 <Input
                   id="confirm-password"
+                  name="new_password_confirmation"
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
                   placeholder="請再次輸入新密碼"
                   disabled={isSubmitting}
+                  required
                 />
                 <Button
                   type="button"
@@ -126,7 +164,12 @@ const PasswordManagementCard: React.FC = () => {
         <CardFooter>
           <Button
             type="submit"
-            disabled={isSubmitting || !newPassword.trim() || !confirmPassword.trim()}
+            disabled={
+              isSubmitting ||
+              !currentPassword.trim() ||
+              !newPassword.trim() ||
+              !confirmPassword.trim()
+            }
             className="w-full md:w-auto"
           >
             {isSubmitting ? '更新中...' : '更新密碼'}

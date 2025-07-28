@@ -21,9 +21,14 @@ export async function updateEmployeeEmail(currentEmail: string, newEmail: string
 }
 
 export async function updateEmployeePassword(
+  currentPassword: string,
   newPassword: string,
   confirmPassword: string
 ): Promise<void> {
+  if (!currentPassword.trim()) {
+    throw new Error('目前密碼不能為空');
+  }
+
   if (!newPassword.trim()) {
     throw new Error('新密碼不能為空');
   }
@@ -38,8 +43,9 @@ export async function updateEmployeePassword(
 
   const { status } = await callApiAndDecode(
     axiosWithEmployeeAuth().put(API_ROUTES.EMPLOYEE.UPDATE_PASSWORD, {
-      password: newPassword,
-      confirmPassword: confirmPassword,
+      current_password: currentPassword,
+      new_password: newPassword,
+      new_password_confirmation: confirmPassword,
     })
   );
 

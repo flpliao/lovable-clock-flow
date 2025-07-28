@@ -92,6 +92,9 @@ export const protectedRoutes = [
     component: AccountSettings,
     icon: 'settings',
   },
+];
+
+export const unFinishedRoutes = [
   {
     path: routes.staffDashboard,
     name: '員工儀表板',

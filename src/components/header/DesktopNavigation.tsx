@@ -8,9 +8,9 @@ import { Link, useLocation } from 'react-router-dom';
 // 導航項目
 const NAVIGATION_ITEMS = [
   routes.home,
-  routes.personalAttendance,
+  // routes.personalAttendance,
   routes.leaveRequest,
-  routes.overtimeRequest,
+  // routes.overtimeRequest,
 ];
 
 const EXCLUDE_PATHS = [routes.accountSettings];
@@ -21,14 +21,18 @@ const DesktopNavigation: React.FC<DesktopNavigationProps> = ({ visibleMenuItems 
   if (visibleMenuItems.length === 0) return null;
 
   // 先排除帳號設定
-  const filteredMenuItems = visibleMenuItems.filter(item => !EXCLUDE_PATHS.includes(item.path));
+  const filteredMenuItems = visibleMenuItems.filter(
+    item => !EXCLUDE_PATHS.includes(item.path as (typeof EXCLUDE_PATHS)[number])
+  );
 
   // 依照指定順序取得前4個固定選單
   const fixedItems = NAVIGATION_ITEMS.map(path =>
     filteredMenuItems.find(item => item.path === path)
   ).filter(Boolean) as typeof filteredMenuItems;
   // 其他項目
-  const moreItems = filteredMenuItems.filter(item => !NAVIGATION_ITEMS.includes(item.path));
+  const moreItems = filteredMenuItems.filter(
+    item => !NAVIGATION_ITEMS.includes(item.path as (typeof NAVIGATION_ITEMS)[number])
+  );
 
   return (
     <nav className="flex items-center space-x-6">

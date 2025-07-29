@@ -1,13 +1,6 @@
 import { Badge } from '@/components/ui/badge';
-import { permissionService } from '@/services/simplifiedPermissionService';
 import { Bell, Calendar, Clock, FileText, LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-interface FeatureCardsProps {
-  abnormalCount: number;
-  annualLeaveBalance: number;
-}
-
 interface Feature {
   title: string;
   description: string;
@@ -18,10 +11,7 @@ interface Feature {
   badge?: string | null;
 }
 
-const FeatureCards = ({ abnormalCount, annualLeaveBalance }: FeatureCardsProps) => {
-  const isAdmin = permissionService.isAdmin();
-  const isManager = permissionService.isManager();
-
+const FeatureCards = () => {
   // 主要功能卡片
   const mainFeatures: Feature[] = [
     {
@@ -39,7 +29,6 @@ const FeatureCards = ({ abnormalCount, annualLeaveBalance }: FeatureCardsProps) 
       link: '/leave-request',
       iconBg: 'bg-blue-100',
       iconColor: 'text-blue-600',
-      badge: annualLeaveBalance > 0 ? `${annualLeaveBalance}小時` : null,
     },
     {
       title: '排班管理',

@@ -26,45 +26,28 @@ export function useCheckInPoints() {
     if (data.length > 0) return;
 
     setLoading(true);
-    try {
-      const { latitude, longitude } = await getCurrentPosition();
-      setCurrentPos({ latitude, longitude });
-      const checkInPoints = await getNearbyCheckInPoints(latitude, longitude);
-      setCheckInPoints(checkInPoints);
-    } catch (error) {
-      console.error('載入打卡點失敗:', error);
-    } finally {
-      setLoading(false);
-    }
+    const { latitude, longitude } = await getCurrentPosition();
+    setCurrentPos({ latitude, longitude });
+    const checkInPoints = await getNearbyCheckInPoints(latitude, longitude);
+    setCheckInPoints(checkInPoints);
+    setLoading(false);
   };
 
   const createCheckInPoint = async (checkpoint: Omit<CheckInPoint, 'id' | 'created_at'>) => {
-    try {
-      const newCheckInPoints = await createCheckInPointService(checkpoint);
-      addCheckInPoint(newCheckInPoints[0]);
-    } catch (error) {
-      console.error('新增打卡點失敗:', error);
-      throw error;
-    }
+    const newCheckInPoints = await createCheckInPointService(checkpoint);
+    addCheckInPoint(newCheckInPoints);
   };
 
   const updateCheckInPoint = async (id: string, checkpoint: Partial<CheckInPoint>) => {
-    try {
-      const updatedCheckInPoints = await updateCheckInPointService(id, checkpoint);
-      updateCheckInStore(id, updatedCheckInPoints[0]);
-    } catch (error) {
-      console.error('更新打卡點失敗:', error);
-      throw error;
-    }
+    const updatedCheckInPoints = await updateCheckInPointService(id, checkpoint);
+    updateCheckInStore(id, updatedCheckInPoints);
   };
 
   const deleteCheckInPoint = async (id: string) => {
-    try {
-      await deleteCheckInPointService(id);
+    const status = await deleteCheckInPointService(id);
+
+    if (status === 'success') {
       removeCheckInStore(id);
-    } catch (error) {
-      console.error('刪除打卡點失敗:', error);
-      throw error;
     }
   };
 

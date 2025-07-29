@@ -84,7 +84,7 @@ export const protectedRoutes = [
     path: routes.leaveRequest,
     name: '請假申請',
     component: LeaveRequestManagement,
-    icon: 'file-text',
+    icon: 'fileText',
   },
   {
     path: routes.accountSettings,

@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge';
 import { Bell, Calendar, Clock, FileText, LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 interface Feature {
@@ -68,14 +67,6 @@ const FeatureCards = () => {
                 <feature.icon className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
             </div>
-
-            {feature.badge && (
-              <div className="mt-auto">
-                <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-xs font-semibold px-2 py-1 rounded-full shadow-sm">
-                  {feature.badge}
-                </Badge>
-              </div>
-            )}
           </div>
         </div>
       </Link>

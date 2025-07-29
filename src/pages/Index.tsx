@@ -1,16 +1,10 @@
 import FeatureCards from '@/components/FeatureCards';
 import LocationCheckIn from '@/components/LocationCheckIn';
 import WelcomeSection from '@/components/WelcomeSection';
-import { useAnnualLeaveBalance } from '@/hooks/useStores';
 import useEmployeeStore from '@/stores/employeeStore';
 
 const Index = () => {
   const employee = useEmployeeStore(state => state.employee);
-  const annualLeaveBalance = useAnnualLeaveBalance();
-
-  const leaveHours = annualLeaveBalance
-    ? (annualLeaveBalance.total_days - annualLeaveBalance.used_days) * 8
-    : 0;
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen flex justify-center">
@@ -53,7 +47,7 @@ const Index = () => {
 
         {/* 功能卡片（完全貼上打卡區） */}
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-0">
-          <FeatureCards annualLeaveBalance={leaveHours} />
+          <FeatureCards />
         </div>
       </div>
     </div>

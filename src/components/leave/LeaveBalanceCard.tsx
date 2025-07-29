@@ -1,48 +1,17 @@
+import useEmployeeStore from '@/stores/employeeStore';
+import { calculateAnnualLeaveHours, calculateYearsOfService } from '@/utils/annualLeaveCalculator';
+import { AlertCircle, Calendar, Clock, User } from 'lucide-react';
 
-import React from 'react';
-import { UserStaffData } from '@/services/staffDataService';
-import { Calendar, Clock, User, AlertCircle } from 'lucide-react';
+export function LeaveBalanceCard() {
+  const { employee } = useEmployeeStore();
 
-interface LeaveBalanceCardProps {
-  userStaffData: UserStaffData | null;
-  hasHireDate: boolean;
-  isLoading?: boolean;
-}
-
-export function LeaveBalanceCard({ userStaffData, hasHireDate, isLoading }: LeaveBalanceCardProps) {
-  if (isLoading) {
-    return (
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <User className="h-5 w-5 text-white" />
-          <h3 className="text-lg font-semibold text-white drop-shadow-md">員工資料</h3>
-        </div>
-        <div className="animate-pulse">
-          <div className="space-y-3">
-            <div className="h-4 bg-white/30 rounded w-3/4"></div>
-            <div className="h-4 bg-white/30 rounded w-1/2"></div>
-            <div className="h-4 bg-white/30 rounded w-2/3"></div>
-          </div>
-        </div>
-        <p className="text-white/80 text-sm mt-3">正在載入員工資料...</p>
-      </div>
-    );
-  }
-
-  if (!userStaffData) {
-    return (
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <AlertCircle className="h-5 w-5 text-orange-300" />
-          <h3 className="text-lg font-semibold text-white drop-shadow-md">員工資料</h3>
-        </div>
-        <div className="text-center py-4">
-          <p className="text-orange-200 mb-2">無法載入員工資料</p>
-          <p className="text-white/60 text-sm">請檢查您的帳號設定或聯繫管理員</p>
-        </div>
-      </div>
-    );
-  }
+  const yearsOfService = calculateYearsOfService(employee.start_date);
+  const {
+    total: totalHours,
+    used: usedHours,
+    remaining: remainingHours,
+  } = calculateAnnualLeaveHours(employee.start_date);
+  const hasStartDate = Boolean(employee.start_date);
 
   return (
     <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
@@ -50,74 +19,72 @@ export function LeaveBalanceCard({ userStaffData, hasHireDate, isLoading }: Leav
         <User className="h-5 w-5 text-white" />
         <h3 className="text-lg font-semibold text-white drop-shadow-md">員工資料</h3>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-3">
           <div className="flex justify-between items-center text-white">
             <span className="font-medium">姓名：</span>
-            <span className="text-white/90">{userStaffData.name}</span>
+            <span className="text-white/90">{employee.name}</span>
           </div>
           <div className="flex justify-between items-center text-white">
             <span className="font-medium">部門：</span>
-            <span className="text-white/90">{userStaffData.department}</span>
+            <span className="text-white/90">{employee.department || '未設定'}</span>
           </div>
           <div className="flex justify-between items-center text-white">
             <span className="font-medium">職位：</span>
-            <span className="text-white/90">{userStaffData.position}</span>
+            <span className="text-white/90">{employee.position || '未設定'}</span>
           </div>
         </div>
-        
+
         <div className="space-y-3">
           <div className="flex justify-between items-center text-white">
             <span className="font-medium flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              入職日期：
+              到職日期：
             </span>
-            <span className={`font-medium ${hasHireDate ? 'text-green-300' : 'text-orange-300'}`}>
-              {hasHireDate ? userStaffData.hire_date : '未設定'}
+            <span className={`font-medium ${hasStartDate ? 'text-green-300' : 'text-white/90'}`}>
+              {hasStartDate ? employee.start_date : '未設定'}
             </span>
           </div>
-          
-          {hasHireDate && (
+
+          {hasStartDate && (
             <>
               <div className="flex justify-between items-center text-white">
                 <span className="font-medium flex items-center gap-1">
                   <Clock className="h-4 w-4" />
                   年資：
                 </span>
-                <span className="text-blue-300 font-medium">{userStaffData.yearsOfService}</span>
+                <span className="text-blue-400 font-medium">{yearsOfService}</span>
               </div>
-              
+
               <div className="bg-white/10 rounded-lg p-3 mt-4">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-white font-medium">特休假餘額</span>
-                  <span className="text-green-300 font-bold text-lg">
-                    {userStaffData.remainingAnnualLeaveDays} 天
-                  </span>
+                  <span className="text-green-300 font-bold text-lg">{remainingHours} 小時</span>
                 </div>
                 <div className="w-full bg-white/20 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-300"
-                    style={{ 
-                      width: `${Math.max(0, Math.min(100, (userStaffData.remainingAnnualLeaveDays / userStaffData.totalAnnualLeaveDays) * 100))}%` 
+                    style={{
+                      width: `${Math.max(0, Math.min(100, totalHours > 0 ? (remainingHours / totalHours) * 100 : 0))}%`,
                     }}
                   ></div>
                 </div>
                 <div className="flex justify-between text-xs text-white/70 mt-1">
-                  <span>已用: {userStaffData.usedAnnualLeaveDays} 天</span>
-                  <span>總計: {userStaffData.totalAnnualLeaveDays} 天</span>
+                  <span>已用: {usedHours} 小時</span>
+                  <span>總計: {totalHours} 小時</span>
                 </div>
               </div>
             </>
           )}
         </div>
       </div>
-      
-      {!hasHireDate && (
+
+      {!hasStartDate && (
         <div className="mt-4 p-3 bg-orange-500/20 border border-orange-400/30 rounded-lg">
           <p className="text-orange-200 text-sm flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
-            請聯繫人事部門設定入職日期，以便正確計算特休天數
+            請聯繫人事部門設定到職日期，以便正確計算特休時數
           </p>
         </div>
       )}

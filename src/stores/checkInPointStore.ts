@@ -1,12 +1,12 @@
-import type { CheckInPoint } from '@/services/checkInPointService';
+import type { CheckInPoint } from '@/types/checkIn';
 import { create } from 'zustand';
 
 interface CheckInPointState {
   checkInPoints: CheckInPoint[];
   setCheckInPoints: (checkInPoints: CheckInPoint[]) => void;
   addCheckInPoint: (checkInPoint: CheckInPoint) => void;
-  updateCheckInPoint: (id: number, checkInPoint: Partial<CheckInPoint>) => void;
-  removeCheckInPoint: (id: number) => void;
+  updateCheckInPoint: (id: string, checkInPoint: Partial<CheckInPoint>) => void;
+  removeCheckInPoint: (id: string) => void;
   clearCheckInPoints: () => void;
 }
 

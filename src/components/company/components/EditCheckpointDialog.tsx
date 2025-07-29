@@ -23,7 +23,7 @@ const EditCheckpointDialog = ({
   checkpoint: CheckInPoint | null;
   onSuccess?: () => void;
 }) => {
-  const { updateCheckpoint } = useCheckInPoints();
+  const { updateCheckInPoint } = useCheckInPoints();
   const [name, setName] = useState('');
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
@@ -45,7 +45,7 @@ const EditCheckpointDialog = ({
     e.preventDefault();
     setLoading(true);
     try {
-      await updateCheckpoint(checkpoint!.id, {
+      await updateCheckInPoint(checkpoint!.id, {
         name,
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),

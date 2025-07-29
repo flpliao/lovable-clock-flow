@@ -10,8 +10,8 @@ import { MapPin } from 'lucide-react';
 import React, { useEffect } from 'react';
 
 interface CheckpointSelectorProps {
-  selectedCheckpointId: number | null;
-  onCheckpointChange: (checkpointId: number | null) => void;
+  selectedCheckpointId: string | null;
+  onCheckpointChange: (checkpointId: string | null) => void;
 }
 
 const CheckpointSelector: React.FC<CheckpointSelectorProps> = ({
@@ -46,7 +46,7 @@ const CheckpointSelector: React.FC<CheckpointSelectorProps> = ({
               ? String(checkInPoints[0].id)
               : 'none'
         }
-        onValueChange={value => onCheckpointChange(value === 'none' ? null : Number(value))}
+        onValueChange={value => onCheckpointChange(value === 'none' ? null : value)}
         disabled={loading}
       >
         <SelectTrigger className="bg-white/20 border-white/30 text-white">

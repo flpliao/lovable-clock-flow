@@ -24,8 +24,8 @@ export const getNearbyCheckInPoints = async (
   return data as CheckInPoint[];
 };
 
-// 新增打卡點
-export const addCheckInPoint = async (
+// 建立打卡點
+export const createCheckInPoint = async (
   payload: Omit<CheckInPoint, 'id' | 'created_at'>
 ): Promise<CheckInPoint[]> => {
   const { data } = await callApiAndDecode(
@@ -37,7 +37,7 @@ export const addCheckInPoint = async (
 
 // 更新打卡點
 export const updateCheckInPoint = async (
-  id: number,
+  id: string,
   payload: Partial<CheckInPoint>
 ): Promise<CheckInPoint[]> => {
   const url = apiRoutes.checkinPoint.update(String(id));
@@ -46,7 +46,7 @@ export const updateCheckInPoint = async (
 };
 
 // 刪除打卡點
-export const deleteCheckInPoint = async (id: number): Promise<void> => {
+export const deleteCheckInPoint = async (id: string): Promise<void> => {
   const url = apiRoutes.checkinPoint.delete(String(id));
   await callApiAndDecode(axiosWithEmployeeAuth().delete(url));
 };

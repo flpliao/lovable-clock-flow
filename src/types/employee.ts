@@ -5,6 +5,7 @@ export interface Employee {
   position?: string;
   department?: string;
   start_date?: string;
+  roles?: string[];
 }
 
 export interface EmployeeInfoProps {

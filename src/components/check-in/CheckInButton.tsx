@@ -5,14 +5,14 @@ import React from 'react';
 
 interface CheckInButtonProps {
   type: CheckInType;
-  loading: boolean;
+  isLoading: boolean;
   onCheckIn: () => void;
   disabled?: boolean;
 }
 
 const CheckInButton: React.FC<CheckInButtonProps> = ({
   type,
-  loading,
+  isLoading,
   onCheckIn,
   disabled = false,
 }) => {
@@ -20,13 +20,13 @@ const CheckInButton: React.FC<CheckInButtonProps> = ({
     <div className="text-center">
       <Button
         onClick={onCheckIn}
-        disabled={loading || disabled}
+        disabled={isLoading || disabled}
         size="lg"
         className={`w-full h-16 text-lg font-semibold rounded-xl transition-all duration-200 ${
           type === CHECK_IN ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'
         }`}
       >
-        {loading ? (
+        {isLoading ? (
           <div className="flex items-center space-x-2">
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             <span>處理中...</span>

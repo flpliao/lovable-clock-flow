@@ -25,11 +25,6 @@ export const useLeaveType = () => {
     return fetchedLeaveTypes;
   };
 
-  // 根據 slug 取得請假類型
-  const getLeaveTypeBySlug = (slug: string) => {
-    return leaveTypes.find(type => type.slug === slug) || null;
-  };
-
   // 新增請假類型
   const createLeaveType = async (leaveTypeData: Omit<LeaveType, 'slug'>) => {
     const newLeaveType = await createLeaveTypeService(leaveTypeData);
@@ -57,7 +52,6 @@ export const useLeaveType = () => {
 
     // 操作
     loadLeaveTypes,
-    getLeaveTypeBySlug,
     createLeaveType,
     updateLeaveType,
     deleteLeaveType,

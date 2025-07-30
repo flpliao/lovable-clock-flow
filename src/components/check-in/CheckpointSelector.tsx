@@ -18,7 +18,7 @@ const CheckpointSelector: React.FC<CheckpointSelectorProps> = ({
   selectedCheckpointId,
   onCheckpointChange,
 }) => {
-  const { data: checkInPoints, loadCheckInPoints, loading } = useCheckInPoints();
+  const { data: checkInPoints, loadCheckInPoints, isLoading } = useCheckInPoints();
 
   useEffect(() => {
     loadCheckInPoints();
@@ -47,7 +47,7 @@ const CheckpointSelector: React.FC<CheckpointSelectorProps> = ({
               : 'none'
         }
         onValueChange={value => onCheckpointChange(value === 'none' ? null : value)}
-        disabled={loading}
+        disabled={isLoading}
       >
         <SelectTrigger className="bg-white/20 border-white/30 text-white">
           <SelectValue placeholder="選擇打卡點" />

@@ -1,52 +1,25 @@
 import { LeaveHistoryItem } from '@/components/leave/LeaveHistoryItem';
-import { getMyLeaveRequests } from '@/services/leaveRequestService';
+import { useMyLeaveRequest } from '@/hooks/useMyLeaveRequest';
 import useEmployeeStore from '@/stores/employeeStore';
-import { LeaveRequest } from '@/types';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
-interface LeaveHistoryProps {
-  onClick?: (leave: LeaveRequest) => void;
-}
-
-const LeaveHistory: React.FC<LeaveHistoryProps> = ({ onClick }) => {
-  const [leaveHistory, setLeaveHistory] = useState<LeaveRequest[]>([]);
-  const [loading, setLoading] = useState(false);
+const LeaveHistory: React.FC = () => {
   const { employee } = useEmployeeStore();
-
-  // 載入請假歷史記錄
-  const loadLeaveHistory = async () => {
-    if (!employee) return;
-
-    try {
-      setLoading(true);
-      const requests = await getMyLeaveRequests();
-      setLeaveHistory(requests);
-    } catch (error) {
-      console.error('載入請假歷史記錄失敗:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { requests, isLoading, loadMyLeaveRequests } = useMyLeaveRequest();
 
   // 初始載入
   useEffect(() => {
-    loadLeaveHistory();
+    loadMyLeaveRequests();
   }, [employee]);
 
   // 顯示所有請假記錄（包含待審核、已核准、已退回）
-  const leaveHistoryToShow = leaveHistory.sort(
+  const leaveHistoryToShow = requests.sort(
     (a, b) =>
       new Date(b.created_at || b.start_date).getTime() -
       new Date(a.created_at || a.start_date).getTime()
   );
 
-  const handleClick = (leave: LeaveRequest) => {
-    if (onClick) {
-      onClick(leave);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="text-center py-8">
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -92,9 +65,7 @@ const LeaveHistory: React.FC<LeaveHistoryProps> = ({ onClick }) => {
           <p className="text-gray-500 mt-1">您的請假記錄將會顯示在這裡</p>
         </div>
       ) : (
-        leaveHistoryToShow.map(leave => (
-          <LeaveHistoryItem key={leave.id} leave={leave} onClick={handleClick} />
-        ))
+        leaveHistoryToShow.map(leave => <LeaveHistoryItem key={leave.id} leave={leave} />)
       )}
     </div>
   );

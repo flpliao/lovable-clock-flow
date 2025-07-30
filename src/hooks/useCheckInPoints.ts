@@ -10,7 +10,7 @@ import { getCurrentPosition } from '@/utils/location';
 import { useState } from 'react';
 
 export function useCheckInPoints() {
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [currentPos, setCurrentPos] = useState<{ latitude: number; longitude: number } | null>(
     null
   );
@@ -23,14 +23,14 @@ export function useCheckInPoints() {
   } = useCheckInPointStore();
 
   const loadCheckInPoints = async () => {
-    if (data.length > 0) return;
+    if (data.length > 0 || isLoading) return;
 
-    setLoading(true);
+    setIsLoading(true);
     const { latitude, longitude } = await getCurrentPosition();
     setCurrentPos({ latitude, longitude });
     const checkInPoints = await getNearbyCheckInPoints(latitude, longitude);
     setCheckInPoints(checkInPoints);
-    setLoading(false);
+    setIsLoading(false);
   };
 
   const createCheckInPoint = async (checkpoint: Omit<CheckInPoint, 'id' | 'created_at'>) => {
@@ -53,7 +53,7 @@ export function useCheckInPoints() {
 
   return {
     data,
-    loading,
+    isLoading,
     loadCheckInPoints,
     createCheckInPoint,
     updateCheckInPoint,

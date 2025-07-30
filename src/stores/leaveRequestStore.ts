@@ -8,9 +8,9 @@ interface AllLeaveRequestsState {
 
   setRequests: (requests: LeaveRequest[]) => void;
   addRequest: (request: LeaveRequest) => void;
-  updateRequest: (id: string, updates: Partial<LeaveRequest>) => void;
-  removeRequest: (id: string) => void;
-  getRequestById: (id: string) => LeaveRequest | undefined;
+  updateRequest: (slug: string, updates: Partial<LeaveRequest>) => void;
+  removeRequest: (slug: string) => void;
+  getRequestBySlug: (slug: string) => LeaveRequest | undefined;
   getRequestsByStatus: (status: string) => LeaveRequest[];
   getRequestsByType: (leaveType: string) => LeaveRequest[];
   getRequestCounts: () => { total: number; byStatus: Record<string, number> };
@@ -29,21 +29,23 @@ export const useAllLeaveRequestsStore = create<AllLeaveRequestsState>((set, get)
     set({ requests: [...requests, request] });
   },
 
-  updateRequest: (id, updates) => {
+  updateRequest: (slug, updates) => {
     const { requests } = get();
     set({
-      requests: requests.map(request => (request.id === id ? { ...request, ...updates } : request)),
+      requests: requests.map(request =>
+        request.slug === slug ? { ...request, ...updates } : request
+      ),
     });
   },
 
-  removeRequest: id => {
+  removeRequest: slug => {
     const { requests } = get();
-    set({ requests: requests.filter(request => request.id !== id) });
+    set({ requests: requests.filter(request => request.slug !== slug) });
   },
 
-  getRequestById: id => {
+  getRequestBySlug: slug => {
     const { requests } = get();
-    return requests.find(request => request.id === id);
+    return requests.find(request => request.slug === slug);
   },
 
   getRequestsByStatus: status => {
@@ -81,8 +83,8 @@ interface MyLeaveRequestsState {
 
   setRequests: (requests: LeaveRequest[]) => void;
   addRequest: (request: LeaveRequest) => void;
-  updateRequest: (id: string, updates: Partial<LeaveRequest>) => void;
-  removeRequest: (id: string) => void;
+  updateRequest: (slug: string, updates: Partial<LeaveRequest>) => void;
+  removeRequest: (slug: string) => void;
   getRequestBySlug: (slug: string) => LeaveRequest | undefined;
   getRequestsByStatus: (status: string) => LeaveRequest[];
   getRequestCounts: () => { total: number; byStatus: Record<string, number> };
@@ -101,21 +103,23 @@ export const useMyLeaveRequestsStore = create<MyLeaveRequestsState>((set, get) =
     set({ requests: [...requests, request] });
   },
 
-  updateRequest: (id, updates) => {
+  updateRequest: (slug, updates) => {
     const { requests } = get();
     set({
-      requests: requests.map(request => (request.id === id ? { ...request, ...updates } : request)),
+      requests: requests.map(request =>
+        request.slug === slug ? { ...request, ...updates } : request
+      ),
     });
   },
 
-  removeRequest: id => {
+  removeRequest: slug => {
     const { requests } = get();
-    set({ requests: requests.filter(request => request.id !== id) });
+    set({ requests: requests.filter(request => request.slug !== slug) });
   },
 
   getRequestBySlug: slug => {
     const { requests } = get();
-    return requests.find(request => request.id === slug);
+    return requests.find(request => request.slug === slug);
   },
 
   getRequestsByStatus: status => {
@@ -148,9 +152,9 @@ interface PendingApprovalsState {
 
   setRequests: (requests: LeaveRequest[]) => void;
   addRequest: (request: LeaveRequest) => void;
-  updateRequest: (id: string, updates: Partial<LeaveRequest>) => void;
-  removeRequest: (id: string) => void;
-  getRequestById: (id: string) => LeaveRequest | undefined;
+  updateRequest: (slug: string, updates: Partial<LeaveRequest>) => void;
+  removeRequest: (slug: string) => void;
+  getRequestBySlug: (slug: string) => LeaveRequest | undefined;
   getRequestCounts: () => { total: number; byStatus: Record<string, number> };
   setLoading: (loading: boolean) => void;
   reset: () => void;
@@ -167,21 +171,23 @@ export const usePendingApprovalsStore = create<PendingApprovalsState>((set, get)
     set({ requests: [...requests, request] });
   },
 
-  updateRequest: (id, updates) => {
+  updateRequest: (slug, updates) => {
     const { requests } = get();
     set({
-      requests: requests.map(request => (request.id === id ? { ...request, ...updates } : request)),
+      requests: requests.map(request =>
+        request.slug === slug ? { ...request, ...updates } : request
+      ),
     });
   },
 
-  removeRequest: id => {
+  removeRequest: slug => {
     const { requests } = get();
-    set({ requests: requests.filter(request => request.id !== id) });
+    set({ requests: requests.filter(request => request.slug !== slug) });
   },
 
-  getRequestById: id => {
+  getRequestBySlug: slug => {
     const { requests } = get();
-    return requests.find(request => request.id === id);
+    return requests.find(request => request.slug === slug);
   },
 
   getRequestCounts: () => {

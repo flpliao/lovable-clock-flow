@@ -1,6 +1,6 @@
 import { createLeaveRequest, getMyLeaveRequests } from '@/services/leaveRequestService';
 import { useMyLeaveRequestsStore } from '@/stores/leaveRequestStore';
-import { LeaveRequest } from '@/types';
+import { LeaveRequest } from '@/types/leaveRequest';
 import { useState } from 'react';
 
 export const useMyLeaveRequest = () => {
@@ -21,7 +21,7 @@ export const useMyLeaveRequest = () => {
 
   // 新增請假申請
   const createMyLeaveRequest = async (
-    requestData: Omit<LeaveRequest, 'id' | 'created_at' | 'updated_at' | 'rejection_reason'>
+    requestData: Omit<LeaveRequest, 'slug' | 'created_at' | 'updated_at' | 'rejection_reason'>
   ) => {
     const newRequest = await createLeaveRequest(requestData);
     if (newRequest) {

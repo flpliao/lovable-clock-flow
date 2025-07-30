@@ -1,13 +1,7 @@
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import SearchableSelect from '@/components/ui/SearchableSelect';
 import dayjs from 'dayjs';
 import { Building2, Calendar, Clock, Plus, Search, Settings, Users } from 'lucide-react';
 import React, { useState } from 'react';
@@ -112,18 +106,14 @@ const ScheduleManagement = () => {
           {/* 單位選擇 */}
           <div>
             <label className="block text-white/80 text-sm font-medium mb-2">選擇單位</label>
-            <Select value={selectedUnit} onValueChange={setSelectedUnit}>
-              <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                <SelectValue placeholder="請選擇單位" />
-              </SelectTrigger>
-              <SelectContent className="bg-white/90 border-white/20">
-                {units.map(unit => (
-                  <SelectItem key={unit.id} value={unit.id} className="text-gray-800">
-                    {unit.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              className="w-full bg-white/10 border-white/20 text-white"
+              options={units.map(unit => ({ value: unit.id, label: unit.name }))}
+              value={selectedUnit}
+              onChange={setSelectedUnit}
+              placeholder="請選擇單位"
+              searchPlaceholder="搜尋單位..."
+            />
           </div>
 
           {/* 月份選擇 */}

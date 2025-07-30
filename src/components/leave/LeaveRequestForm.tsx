@@ -7,13 +7,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import SearchableSelect from '@/components/ui/SearchableSelect';
 import { Textarea } from '@/components/ui/textarea';
 import { useLeaveType } from '@/hooks/useLeaveType';
 import { useMyLeaveRequest } from '@/hooks/useMyLeaveRequest';
@@ -131,27 +125,21 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-white font-medium">假別</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60">
-                      <SelectValue placeholder="請選擇請假類型" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {leaveTypes.map(type => {
-                      const isTypeDisabled = !hasStartDate && type.code === LeaveTypeCode.ANNUAL;
-
-                      return (
-                        <SelectItem key={type.slug} value={type.slug} disabled={isTypeDisabled}>
-                          {type.name}
-                          {isTypeDisabled && (
-                            <span className="text-orange-500 ml-2">（需設定到職日期）</span>
-                          )}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <SearchableSelect
+                    options={leaveTypes.map(type => ({
+                      value: type.slug,
+                      label: type.name,
+                      disabled: !hasStartDate && type.code === LeaveTypeCode.ANNUAL,
+                    }))}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="請選擇請假類型"
+                    searchPlaceholder="搜尋請假類型..."
+                    emptyMessage="找不到符合的請假類型"
+                    className="bg-white/20 border-white/30 text-white"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

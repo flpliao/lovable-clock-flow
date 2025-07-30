@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { LeaveType } from './leaveType';
 
 // 請假申請狀態
 export enum LeaveRequestStatus {
@@ -20,6 +21,7 @@ export interface LeaveRequest {
   duration_hours: number;
   reason: string;
   rejection_reason?: string;
+  leave_type?: LeaveType;
   created_at: string;
   updated_at: string;
 }

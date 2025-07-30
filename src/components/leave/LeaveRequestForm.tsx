@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import {
   Form,
   FormControl,
@@ -8,7 +7,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -17,17 +15,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/components/ui/use-toast';
 import { useLeaveType } from '@/hooks/useLeaveType';
 import { useMyLeaveRequest } from '@/hooks/useMyLeaveRequest';
-import { cn } from '@/lib/utils';
 import useEmployeeStore from '@/stores/employeeStore';
+import useLeaveTypeStore from '@/stores/leaveTypeStore';
+import {
+  leaveRequestFormSchema,
+  LeaveRequestFormValues,
+  LeaveRequestStatus,
+} from '@/types/leaveRequest';
 import { LeaveTypeCode } from '@/types/leaveType';
-import { leaveFormSchema, LeaveFormValues } from '@/utils/leaveTypes';
+import { calculateHoursBetween } from '@/utils/dateTimeUtils';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { format } from 'date-fns';
-import { CalendarIcon, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import dayjs from 'dayjs';
+import { Loader2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { LeaveTypeDetailCard } from './LeaveTypeDetailCard';
 
@@ -37,14 +39,16 @@ interface LeaveRequestFormProps {
 
 export function LeaveRequestForm({ onSuccess }: LeaveRequestFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { leaveTypes, loadLeaveTypes, getLeaveTypeBySlug } = useLeaveType();
+  const { leaveTypes, loadLeaveTypes } = useLeaveType();
+  const getLeaveTypeBySlug = useLeaveTypeStore(state => state.getLeaveTypeBySlug);
   const { createMyLeaveRequest } = useMyLeaveRequest();
   const { employee } = useEmployeeStore();
 
-  const form = useForm<LeaveFormValues>({
-    resolver: zodResolver(leaveFormSchema),
+  const form = useForm<LeaveRequestFormValues>({
+    resolver: zodResolver(leaveRequestFormSchema),
     defaultValues: {
       reason: '',
+      status: LeaveRequestStatus.PENDING,
     },
   });
 
@@ -52,63 +56,45 @@ export function LeaveRequestForm({ onSuccess }: LeaveRequestFormProps) {
     loadLeaveTypes();
   }, []);
 
-  const watchedLeaveType = form.watch('leave_type');
+  const watchedLeaveType = form.watch('leave_type_code');
+  const watchedStartDate = form.watch('start_date');
+  const watchedEndDate = form.watch('end_date');
 
-  const handleFormSubmit = async (data: LeaveFormValues) => {
-    if (!employee) {
-      toast({
-        title: '錯誤',
-        description: '請先登入系統',
-        variant: 'destructive',
-      });
-      return;
+  const currentLeaveType = useMemo(() => {
+    return watchedLeaveType ? getLeaveTypeBySlug(watchedLeaveType) : null;
+  }, [watchedLeaveType, getLeaveTypeBySlug]);
+
+  // 計算請假時數（當開始和結束日期都存在時）
+  const calculatedHours = useMemo(() => {
+    if (watchedStartDate && watchedEndDate) {
+      const startDateTime = dayjs(watchedStartDate);
+      const endDateTime = dayjs(watchedEndDate);
+      return calculateHoursBetween(startDateTime, endDateTime);
+    }
+    return 0;
+  }, [watchedStartDate, watchedEndDate]);
+
+  const handleFormSubmit = async (data: LeaveRequestFormValues) => {
+    setIsSubmitting(true);
+
+    // 準備請假申請資料
+    const leaveRequestData = {
+      start_date: data.start_date.format('YYYY-MM-DD HH:mm:ss'),
+      end_date: data.end_date.format('YYYY-MM-DD HH:mm:ss'),
+      leave_type_code: currentLeaveType.code,
+      duration_hours: calculatedHours,
+      reason: data.reason,
+      status: LeaveRequestStatus.PENDING,
+    };
+
+    await createMyLeaveRequest(leaveRequestData);
+    if (onSuccess) {
+      onSuccess();
     }
 
-    try {
-      setIsSubmitting(true);
-
-      // 計算請假天數
-      const startDate = new Date(data.start_date);
-      const endDate = new Date(data.end_date);
-      const timeDiff = endDate.getTime() - startDate.getTime();
-      const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // 包含開始和結束日期
-      const hours = daysDiff * 8; // 假設每天8小時
-
-      // 準備請假申請資料
-      const leaveRequestData = {
-        employee_id: employee.slug,
-        start_date: format(data.start_date, 'yyyy-MM-dd'),
-        end_date: format(data.end_date, 'yyyy-MM-dd'),
-        leave_type_id: data.leave_type,
-        duration_hours: hours,
-        reason: data.reason,
-        status: 'pending' as const,
-      };
-
-      await createMyLeaveRequest(leaveRequestData);
-
-      toast({
-        title: '申請成功',
-        description: '請假申請已提交，等待審核',
-      });
-
-      // 重置表單
-      form.reset();
-
-      // 通知父元件
-      if (onSuccess) {
-        onSuccess();
-      }
-    } catch (error) {
-      console.error('❌ 提交請假申請失敗:', error);
-      toast({
-        title: '申請失敗',
-        description: '提交請假申請時發生錯誤',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    // 重置表單
+    form.reset();
+    setIsSubmitting(false);
   };
 
   const hasStartDate = Boolean(employee?.start_date);
@@ -122,7 +108,7 @@ export function LeaveRequestForm({ onSuccess }: LeaveRequestFormProps) {
           <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假類型</h3>
           <FormField
             control={form.control}
-            name="leave_type"
+            name="leave_type_code"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-white font-medium">假別</FormLabel>
@@ -154,62 +140,30 @@ export function LeaveRequestForm({ onSuccess }: LeaveRequestFormProps) {
         </div>
 
         {/* 請假類型詳細資訊 */}
-        {watchedLeaveType && getLeaveTypeBySlug(watchedLeaveType) && (
-          <LeaveTypeDetailCard leaveType={getLeaveTypeBySlug(watchedLeaveType)!} />
-        )}
+        {currentLeaveType && <LeaveTypeDetailCard leaveType={currentLeaveType} />}
 
-        {/* 請假日期 */}
+        {/* 請假日期時間 */}
         <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
-          <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假日期</h3>
+          <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假日期時間</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="start_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel className="text-white font-medium">開始日期</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            'w-full pl-3 text-left font-normal bg-white/20 border-white/30 text-white hover:bg-white/30',
-                            !field.value && 'text-white/60'
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, 'yyyy/MM/dd')
-                          ) : (
-                            <span>選擇開始日期</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={date => {
-                          // 計算6個月前的日期作為最早可選日期
-                          const sixMonthsAgo = new Date();
-                          sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-                          sixMonthsAgo.setHours(0, 0, 0, 0);
-
-                          // 計算1年後的日期作為最晚可選日期
-                          const oneYearLater = new Date();
-                          oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
-                          oneYearLater.setHours(23, 59, 59, 999);
-
-                          return date < sixMonthsAgo || date > oneYearLater;
-                        }}
-                        initialFocus
-                        className={cn('p-3 pointer-events-auto')}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <FormLabel className="text-white font-medium">開始日期時間</FormLabel>
+                  <FormControl>
+                    <input
+                      type="datetime-local"
+                      step="1800"
+                      className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:bg-white/30 transition-colors duration-200"
+                      value={field.value ? field.value.format('YYYY-MM-DDTHH:mm') : ''}
+                      onChange={e => {
+                        const date = e.target.value ? dayjs(e.target.value) : null;
+                        field.onChange(date);
+                      }}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -220,56 +174,34 @@ export function LeaveRequestForm({ onSuccess }: LeaveRequestFormProps) {
               name="end_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel className="text-white font-medium">結束日期</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            'w-full pl-3 text-left font-normal bg-white/20 border-white/30 text-white hover:bg-white/30',
-                            !field.value && 'text-white/60'
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, 'yyyy/MM/dd')
-                          ) : (
-                            <span>選擇結束日期</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={date => {
-                          // 計算6個月前的日期作為最早可選日期
-                          const sixMonthsAgo = new Date();
-                          sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-                          sixMonthsAgo.setHours(0, 0, 0, 0);
-
-                          // 計算1年後的日期作為最晚可選日期
-                          const oneYearLater = new Date();
-                          oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
-                          oneYearLater.setHours(23, 59, 59, 999);
-
-                          return date < sixMonthsAgo || date > oneYearLater;
-                        }}
-                        initialFocus
-                        className={cn('p-3 pointer-events-auto')}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <FormLabel className="text-white font-medium">結束日期時間</FormLabel>
+                  <FormControl>
+                    <input
+                      type="datetime-local"
+                      step="1800"
+                      className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:bg-white/30 transition-colors duration-200"
+                      value={field.value ? field.value.format('YYYY-MM-DDTHH:mm') : ''}
+                      onChange={e => {
+                        const date = e.target.value ? dayjs(e.target.value) : null;
+                        field.onChange(date);
+                      }}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
 
-          {/* 請假原因 */}
+          {/* 顯示計算的請假時數 */}
+          {calculatedHours > 0 && (
+            <div className="mt-4 p-3 bg-blue-500/20 border border-blue-300/30 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-white font-medium">請假時數：</span>
+                <span className="text-blue-200 font-semibold text-lg">{calculatedHours} 小時</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 請假原因 */}
@@ -293,6 +225,31 @@ export function LeaveRequestForm({ onSuccess }: LeaveRequestFormProps) {
               </FormItem>
             )}
           />
+
+          {/* 附件欄位 */}
+          {currentLeaveType?.required_attachment && (
+            <FormField
+              control={form.control}
+              name="attachment"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white font-medium">附件上傳</FormLabel>
+                  <FormControl>
+                    <input
+                      type="file"
+                      className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white"
+                      onChange={e => {
+                        if (e.target.files?.[0]) {
+                          field.onChange(e.target.files[0]);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
 
         {/* 提交按鈕 */}

@@ -1,12 +1,21 @@
+import { z } from 'zod';
+
+// 請假申請狀態
+export enum LeaveRequestStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  CANCELLED = 'cancelled',
+}
+
 // 請假申請記錄
 export interface LeaveRequest {
-  id: string;
-  employee_id: string;
-  approver_id?: string;
+  slug: string;
+  employee_id?: string; // 可選，創建時後端會自動從認證信息中獲取
   start_date: string;
   end_date: string;
-  leave_type_id: string;
-  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  leave_type_code: string;
+  status: LeaveRequestStatus;
   duration_hours: number;
   reason: string;
   rejection_reason?: string;
@@ -14,15 +23,49 @@ export interface LeaveRequest {
   updated_at: string;
 }
 
+// 審核狀態
+export enum ApprovalStatus {
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+}
+
 // 審核記錄
 export interface ApprovalRecord {
-  id: string;
+  slug: string;
   leave_request_id: string;
   approver_id: string;
   approver_name: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: ApprovalStatus;
   level: number;
   comment?: string;
   created_at: string;
   updated_at: string;
 }
+
+// 請假申請表單 Schema
+
+export const leaveRequestFormSchema = z
+  .object({
+    start_date: z.any({
+      required_error: '請選擇請假開始日期',
+    }),
+    end_date: z.any({
+      required_error: '請選擇請假結束日期',
+    }),
+    leave_type_code: z.string({
+      required_error: '請選擇請假類型',
+    }),
+    reason: z.string().min(1, {
+      message: '請輸入請假事由',
+    }),
+    duration_hours: z.number().min(0, {
+      message: '請假時數不能為負數',
+    }),
+    status: z.nativeEnum(LeaveRequestStatus).default(LeaveRequestStatus.PENDING),
+  })
+  .refine(data => data.end_date >= data.start_date, {
+    message: '結束日期不能早於開始日期',
+    path: ['end_date'],
+  });
+
+export type LeaveRequestFormValues = z.infer<typeof leaveRequestFormSchema>;

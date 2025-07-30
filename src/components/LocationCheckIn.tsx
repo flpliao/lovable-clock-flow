@@ -21,7 +21,7 @@ import NearestCheckInPointInfo from './check-in/NearestCheckInPointInfo';
 const LocationCheckIn = () => {
   const { data: checkInPoints, loadCheckInPoints, currentPos } = useCheckInPoints();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [checkInMethod, setCheckInMethod] = useState<'location' | 'ip'>('location');
   const [type, setType] = useState<CheckInType>(CHECK_IN);
   const [todayRecords, setTodayRecords] = useState<{
@@ -45,8 +45,8 @@ const LocationCheckIn = () => {
 
   // 位置打卡
   const handleLocationCheckIn = async () => {
-    if (loading) return; // 防止重複觸發
-    setLoading(true);
+    if (isSubmitting) return; // 防止重複觸發
+    setIsSubmitting(true);
 
     if (!checkInPoints || checkInPoints.length === 0) {
       toast({
@@ -54,7 +54,7 @@ const LocationCheckIn = () => {
         description: '無可用打卡點',
         variant: 'destructive',
       });
-      setLoading(false);
+      setIsSubmitting(false);
       return;
     }
 
@@ -67,20 +67,20 @@ const LocationCheckIn = () => {
       handleCheckIn(result);
     }
 
-    setLoading(false);
+    setIsSubmitting(false);
   };
 
   // 包裝 onIpCheckIn，防止重複觸發
   const handleIpCheckIn = async () => {
-    if (loading) return;
-    setLoading(true);
+    if (isSubmitting) return;
+    setIsSubmitting(true);
 
     const result = await createIpCheckInRecord(type);
     if (result) {
       handleCheckIn(result);
     }
 
-    setLoading(false);
+    setIsSubmitting(false);
   };
 
   const handleCheckIn = (result: CheckInRecord) => {
@@ -128,16 +128,16 @@ const LocationCheckIn = () => {
         <CheckInMethodSelector
           checkInMethod={checkInMethod}
           setCheckInMethod={setCheckInMethod}
-          canUseLocationCheckIn={true}
+          disabled={isSubmitting}
         />
         {checkInMethod === 'location' && (
           <NearestCheckInPointInfo currentPos={currentPos} checkInPoints={checkInPoints} />
         )}
         <CheckInButton
           type={type}
-          loading={loading}
+          isLoading={isSubmitting}
           onCheckIn={checkInMethod === 'location' ? handleLocationCheckIn : handleIpCheckIn}
-          disabled={loading || noAvailableCheckInPoint}
+          disabled={noAvailableCheckInPoint}
         />
         <div className="flex justify-center">
           <MissedCheckinDialog onSuccess={() => {}} />

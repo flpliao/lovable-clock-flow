@@ -1,5 +1,5 @@
 import { protectedRoutes } from '@/routes';
-import { MenuItemWithIcon } from '@/types';
+import { MenuItemWithIcon } from '@/types/menu';
 import { useEffect, useState } from 'react';
 import { iconMap } from './iconMap';
 

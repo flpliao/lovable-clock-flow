@@ -17,7 +17,7 @@ export interface CheckInRecord {
 
 // 打卡點
 export interface CheckInPoint {
-  id: number;
+  id: string;
   name: string;
   latitude: number;
   longitude: number;

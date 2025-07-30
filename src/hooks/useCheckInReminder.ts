@@ -1,7 +1,6 @@
-import { useCurrentUser } from '@/hooks/useStores';
 import { useToast } from '@/hooks/useToast';
+import useEmployeeStore from '@/stores/employeeStore';
 import { useEffect, useState } from 'react';
-import { useSupabaseCheckIn } from './useSupabaseCheckIn';
 
 interface ReminderState {
   isActive: boolean;
@@ -12,32 +11,33 @@ interface ReminderState {
 }
 
 export const useCheckInReminder = () => {
-  const currentUser = useCurrentUser();
-  const { getTodayCheckInRecords } = useSupabaseCheckIn();
+  const { employee } = useEmployeeStore();
   const { toast } = useToast();
   const [reminderState, setReminderState] = useState<ReminderState>({
     isActive: false,
     reminderCount: 0,
     lastReminderTime: null,
     maxReminders: 2,
-    intervalMinutes: 5
+    intervalMinutes: 5,
   });
 
   // 檢查並發送提醒
   const checkAndSendReminder = async (actionType: 'check-in' | 'check-out') => {
-    if (!currentUser?.id || reminderState.reminderCount >= reminderState.maxReminders) {
+    if (!employee?.slug || reminderState.reminderCount >= reminderState.maxReminders) {
       return;
     }
 
     const now = new Date();
-    const shouldSendReminder = !reminderState.lastReminderTime || 
-      (now.getTime() - reminderState.lastReminderTime.getTime()) >= (reminderState.intervalMinutes * 60 * 1000);
+    const shouldSendReminder =
+      !reminderState.lastReminderTime ||
+      now.getTime() - reminderState.lastReminderTime.getTime() >=
+        reminderState.intervalMinutes * 60 * 1000;
 
     if (shouldSendReminder) {
       const action = actionType === 'check-in' ? '上班' : '下班';
-      
+
       toast({
-        title: "打卡提醒",
+        title: '打卡提醒',
         description: `您還沒有${action}打卡喔！請記得完成打卡。`,
         duration: 8000,
       });
@@ -45,7 +45,7 @@ export const useCheckInReminder = () => {
       setReminderState(prev => ({
         ...prev,
         reminderCount: prev.reminderCount + 1,
-        lastReminderTime: now
+        lastReminderTime: now,
       }));
 
       console.log(`發送${action}打卡提醒 (第${reminderState.reminderCount + 1}次)`);
@@ -57,7 +57,7 @@ export const useCheckInReminder = () => {
     setReminderState(prev => ({
       ...prev,
       reminderCount: 0,
-      lastReminderTime: null
+      lastReminderTime: null,
     }));
   };
 
@@ -65,9 +65,10 @@ export const useCheckInReminder = () => {
   useEffect(() => {
     const resetDaily = () => {
       const now = new Date();
-      const isNewDay = !reminderState.lastReminderTime || 
+      const isNewDay =
+        !reminderState.lastReminderTime ||
         now.toDateString() !== reminderState.lastReminderTime.toDateString();
-      
+
       if (isNewDay) {
         resetReminders();
       }
@@ -82,6 +83,6 @@ export const useCheckInReminder = () => {
   return {
     reminderState,
     checkAndSendReminder,
-    resetReminders
+    resetReminders,
   };
 };

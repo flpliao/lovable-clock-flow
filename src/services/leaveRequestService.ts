@@ -1,46 +1,93 @@
+// leaveRequestService: 提供請假申請相關 API 操作
+import { apiRoutes } from '@/routes/api';
+import { LeaveRequest } from '@/types';
+import { callApiAndDecode } from '@/utils/apiHelper';
+import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 
-import { LeaveRequest, ApprovalRecord } from '@/types';
-import { LeaveFormValues } from '@/utils/leaveTypes';
-import { format } from 'date-fns';
+// 獲取所有請假申請
+export const getAllLeaveRequests = async (): Promise<LeaveRequest[]> => {
+  const { data, status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.leaveRequest.index)
+  );
 
-// Mock approvers data
-const approversData = [
-  { id: '2', name: '王小明', position: '組長', level: 1 },
-  { id: '3', name: '李經理', position: '經理', level: 2 },
-  { id: '4', name: '人事部 張小姐', position: '人事專員', level: 3 }
-];
+  if (status === 'error') {
+    return [];
+  }
 
-export const getApprovers = () => {
-  return approversData;
+  return data as LeaveRequest[];
 };
 
-export const createLeaveRequest = (data: LeaveFormValues, userId: string, calculatedHours: number): LeaveRequest => {
-  // Create approval records for the leave request
-  const approvals: ApprovalRecord[] = approversData.map(approver => ({
-    id: `approval-${Math.random().toString(36).substr(2, 9)}`,
-    leave_request_id: `leave-${Math.random().toString(36).substr(2, 9)}`,
-    approver_id: approver.id,
-    approver_name: approver.name,
-    status: 'pending',
-    level: approver.level
-  }));
-  
-  // Create a leave request with calculated hours and approval workflow
-  const leaveRequest: LeaveRequest = {
-    id: `leave-${Math.random().toString(36).substr(2, 9)}`,
-    user_id: userId,
-    start_date: format(data.start_date, 'yyyy-MM-dd'),
-    end_date: format(data.end_date, 'yyyy-MM-dd'),
-    leave_type: data.leave_type as 'annual' | 'sick' | 'personal' | 'other',
-    status: 'pending',
-    hours: calculatedHours,
-    reason: data.reason,
-    approvals: approvals,
-    approval_level: 1, // Start at the first approval level
-    current_approver: approversData[0].id,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  };
-  
-  return leaveRequest;
+// 獲取我的請假申請
+export const getMyLeaveRequests = async (): Promise<LeaveRequest[]> => {
+  const { data, status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.leaveRequest.myRequests)
+  );
+
+  if (status === 'error') {
+    return [];
+  }
+
+  return data as LeaveRequest[];
+};
+
+// 獲取待審核的請假申請
+export const getPendingApprovals = async (): Promise<LeaveRequest[]> => {
+  const { data, status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.leaveRequest.pendingApprovals)
+  );
+
+  if (status === 'error') {
+    return [];
+  }
+
+  return data as LeaveRequest[];
+};
+
+// 建立請假申請
+export const createLeaveRequest = async (
+  leaveRequestData: Omit<LeaveRequest, 'slug' | 'created_at' | 'updated_at' | 'rejection_reason'>
+): Promise<LeaveRequest | null> => {
+  const { data, status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().post(apiRoutes.leaveRequest.store, leaveRequestData)
+  );
+
+  if (status === 'error') {
+    return null;
+  }
+
+  return data as LeaveRequest;
+};
+
+// 更新請假申請
+export const updateLeaveRequest = async (
+  id: string,
+  leaveRequestData: Partial<LeaveRequest>
+): Promise<LeaveRequest> => {
+  const { data, status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().put(apiRoutes.leaveRequest.update(id), leaveRequestData)
+  );
+
+  if (status === 'error') {
+    return null;
+  }
+
+  return data as LeaveRequest;
+};
+
+// 取消請假申請
+export const cancelLeaveRequest = async (id: string): Promise<string> => {
+  const { status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().post(apiRoutes.leaveRequest.cancel(id))
+  );
+
+  return status;
+};
+
+// 刪除請假申請
+export const deleteLeaveRequest = async (id: string): Promise<string> => {
+  const { status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().delete(apiRoutes.leaveRequest.destroy(id))
+  );
+
+  return status;
 };

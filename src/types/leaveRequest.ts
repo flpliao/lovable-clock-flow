@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { z } from 'zod';
 import { LeaveType } from './leaveType';
 
@@ -49,14 +50,14 @@ export interface ApprovalRecord {
 
 export const leaveRequestFormSchema = z
   .object({
-    start_date: z.any({
-      required_error: '請選擇請假開始日期',
+    start_date: z.custom<dayjs.Dayjs>(val => val instanceof dayjs, {
+      message: '請選擇請假開始日期',
     }),
-    end_date: z.any({
-      required_error: '請選擇請假結束日期',
+    end_date: z.custom<dayjs.Dayjs>(val => val instanceof dayjs, {
+      message: '請選擇請假結束日期',
     }),
-    leave_type_code: z.string({
-      required_error: '請選擇請假類型',
+    leave_type_code: z.string().min(1, {
+      message: '請選擇請假類型',
     }),
     reason: z.string().min(1, {
       message: '請輸入請假事由',
@@ -67,7 +68,7 @@ export const leaveRequestFormSchema = z
     status: z.nativeEnum(LeaveRequestStatus).default(LeaveRequestStatus.PENDING),
     attachment: z.any().optional(),
   })
-  .refine(data => data.end_date >= data.start_date, {
+  .refine(data => data.end_date.isAfter(data.start_date) || data.end_date.isSame(data.start_date), {
     message: '結束日期不能早於開始日期',
     path: ['end_date'],
   });

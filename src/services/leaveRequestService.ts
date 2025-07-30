@@ -46,7 +46,7 @@ export const getPendingApprovals = async (): Promise<LeaveRequest[]> => {
 // 建立請假申請
 export const createLeaveRequest = async (
   leaveRequestData: Omit<LeaveRequest, 'slug' | 'created_at' | 'updated_at' | 'rejection_reason'>
-): Promise<LeaveRequest> => {
+): Promise<LeaveRequest | null> => {
   const { data, status } = await callApiAndDecode(
     axiosWithEmployeeAuth().post(apiRoutes.leaveRequest.store, leaveRequestData)
   );

@@ -91,13 +91,15 @@ export function MyPendingLeaveRequestsList() {
 
   return (
     <>
-      {pendingRequests.map((leaveRequest: LeaveRequest) => (
-        <LeaveRequestItem
-          key={leaveRequest.slug}
-          leaveRequest={leaveRequest}
-          onCancel={handleCancelClick}
-        />
-      ))}
+      <div className="space-y-3">
+        {pendingRequests.map((leaveRequest: LeaveRequest) => (
+          <LeaveRequestItem
+            key={leaveRequest.slug}
+            leaveRequest={leaveRequest}
+            onCancel={handleCancelClick}
+          />
+        ))}
+      </div>
 
       {/* 共享的取消確認對話框 */}
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>

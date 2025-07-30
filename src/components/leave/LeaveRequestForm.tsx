@@ -47,8 +47,13 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
   const form = useForm<LeaveRequestFormValues>({
     resolver: zodResolver(leaveRequestFormSchema),
     defaultValues: {
+      start_date: null,
+      end_date: null,
+      leave_type_code: '',
       reason: '',
+      duration_hours: 0,
       status: LeaveRequestStatus.PENDING,
+      attachment: null,
     },
   });
 
@@ -75,6 +80,13 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
   }, [watchedStartDate, watchedEndDate]);
 
   const handleFormSubmit = async (data: LeaveRequestFormValues) => {
+    // 檢查表單驗證
+    const isValid = await form.trigger();
+
+    if (!isValid) {
+      return;
+    }
+
     setIsSubmitting(true);
 
     // 準備請假申請資料
@@ -87,13 +99,20 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
       status: LeaveRequestStatus.PENDING,
     };
 
-    await createMyLeaveRequest(leaveRequestData);
-    if (onSuccess) {
-      onSuccess();
+    const result = await createMyLeaveRequest(leaveRequestData);
+
+    if (result) {
+      // 成功提交
+      if (onSuccess) {
+        onSuccess();
+      }
+      // 重置表單
+      form.reset();
+    } else {
+      // 提交失敗
+      alert('請假申請提交失敗，請稍後再試');
     }
 
-    // 重置表單
-    form.reset();
     setIsSubmitting(false);
   };
 
@@ -112,7 +131,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-white font-medium">假別</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60">
                       <SelectValue placeholder="請選擇請假類型" />

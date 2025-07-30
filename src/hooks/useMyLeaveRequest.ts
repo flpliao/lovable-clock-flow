@@ -26,7 +26,7 @@ export const useMyLeaveRequest = () => {
   // 新增請假申請
   const createMyLeaveRequest = async (
     requestData: Omit<LeaveRequest, 'slug' | 'created_at' | 'updated_at' | 'rejection_reason'>
-  ) => {
+  ): Promise<LeaveRequest | null> => {
     const newRequest = await createLeaveRequest(requestData);
     if (newRequest) {
       addRequest(newRequest);

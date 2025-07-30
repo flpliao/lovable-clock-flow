@@ -1,38 +1,27 @@
-import { NewLeaveRequestForm } from '@/components/leave/NewLeaveRequestForm';
+import { LeaveBalanceCard } from '@/components/leave/LeaveBalanceCard';
+import { LeaveRequestForm } from '@/components/leave/LeaveRequestForm';
 import LeaveHistory from '@/components/LeaveHistory';
 import LeaveRequestDetail from '@/components/LeaveRequestDetail';
 import ShiftReminder from '@/components/ShiftReminder';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { leaveRequestService } from '@/services/leaveRequestService';
+import { useMyLeaveRequest } from '@/hooks/useMyLeaveRequest';
 import useEmployeeStore from '@/stores/employeeStore';
-import type { LeaveRequest } from '@/types/leave';
+import type { LeaveRequest } from '@/types';
 import { FileText, History } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const LeaveRequestManagement = () => {
   const [activeTab, setActiveTab] = useState<string>('request');
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const { employee } = useEmployeeStore();
-
-  // 載入請假申請資料
-  const loadLeaveRequests = async () => {
-    if (!employee) return;
-
-    try {
-      const requests = await leaveRequestService.getMyLeaveRequests();
-      setLeaveRequests(requests);
-    } catch (error) {
-      console.error('載入請假申請失敗:', error);
-    }
-  };
+  const { requests, loadMyLeaveRequests } = useMyLeaveRequest();
 
   // 初始載入
   useEffect(() => {
-    loadLeaveRequests();
+    loadMyLeaveRequests();
   }, [employee]);
 
   // 獲取待審核的申請
-  const pendingLeaveRequest = leaveRequests.find(leave => leave.status === 'pending') || null;
+  const pendingLeaveRequest = requests.find(leave => leave.status === 'pending') || null;
 
   // 檢查當前使用者是否為指定請假申請的審核者
   const isApproverForRequest = (request: LeaveRequest) => {
@@ -44,11 +33,12 @@ const LeaveRequestManagement = () => {
     );
   };
 
-  // Function to handle new leave request submission
-  const handleNewLeaveRequest = () => {
+  // 處理請假申請成功
+  const handleLeaveRequestSuccess = () => {
     setActiveTab('view');
-    loadLeaveRequests(); // 重新載入資料
+    loadMyLeaveRequests(); // 重新載入資料
   };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36 py-[50px]">
       <div className="w-full px-4 sm:px-6 lg:px-8 pb-6">
@@ -66,7 +56,9 @@ const LeaveRequestManagement = () => {
                 <h2 className="text-lg font-semibold text-white drop-shadow-md">請假管理</h2>
               </div>
             </div>
-
+            <div className="px-4 pt-4">
+              <LeaveBalanceCard />
+            </div>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="p-4">
                 <TabsList className="grid w-full grid-cols-3 backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-1 h-12">
@@ -93,7 +85,7 @@ const LeaveRequestManagement = () => {
 
               <div className="px-4 pb-4">
                 <TabsContent value="request" className="mt-0">
-                  <NewLeaveRequestForm onSubmit={handleNewLeaveRequest} />
+                  <LeaveRequestForm onSuccess={handleLeaveRequestSuccess} />
                 </TabsContent>
 
                 <TabsContent value="view" className="mt-0">

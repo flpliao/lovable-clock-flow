@@ -1,4 +1,4 @@
-import { LeaveType } from '@/types/leaveType';
+import { LeaveType, PaidType } from '@/types/leaveType';
 import { create } from 'zustand';
 
 interface LeaveTypeState {
@@ -45,7 +45,9 @@ const useLeaveTypeStore = create<LeaveTypeState>()((set, get) => ({
 
   getPaidLeaveTypes: () => {
     const { leaveTypes } = get();
-    return leaveTypes.filter(leaveType => leaveType.paid);
+    return leaveTypes.filter(
+      leaveType => leaveType.paid_type === PaidType.PAID || leaveType.paid_type === PaidType.HALF
+    );
   },
 
   getLeaveTypesRequiringAttachment: () => {

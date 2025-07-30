@@ -1,5 +1,12 @@
 import { ApiResponse, DecodedResponse, DecodeOptions } from '@/types/api';
 
+function flattenData(data: unknown) {
+  while (data && typeof data === 'object' && 'data' in data) {
+    data = data.data;
+  }
+  return data;
+}
+
 export function decodeApiResponse(
   response: ApiResponse,
   options: DecodeOptions = {}
@@ -27,14 +34,6 @@ export function decodeApiResponse(
     if (!data || typeof data !== 'object' || !(field in data)) {
       throw new Error(`缺少必要欄位：${field}`);
     }
-  }
-
-  // 攤平成最底層的 data
-  function flattenData(data: unknown) {
-    while (data && typeof data === 'object' && 'data' in data) {
-      data = data.data;
-    }
-    return data;
   }
 
   return {

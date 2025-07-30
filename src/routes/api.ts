@@ -19,6 +19,7 @@ export const routes = {
   leaveRequest: '/leave-request',
   overtimeRequest: '/overtime-request',
   overtimeHistory: '/overtime-history',
+  schedule: '/schedule',
   scheduling: '/scheduling',
   scheduleStatistics: '/schedule-statistics',
   personnelManagement: '/personnel-management',
@@ -51,6 +52,16 @@ export const apiRoutes = {
     updateEmail: `${API_URL}/employee/profile/email`,
     updatePassword: `${API_URL}/employee/profile/password`,
   },
+  checkin: {
+    index: `${API_URL}/employee/check-in`,
+    create: `${API_URL}/employee/check-in`,
+  },
+  checkinPoint: {
+    index: `${API_URL}/employee/check-in/points`,
+    create: `${API_URL}/employee/check-in/points`,
+    update: (id: string) => `${API_URL}/employee/check-in/points/${id}`,
+    delete: (id: string) => `${API_URL}/employee/check-in/points/${id}`,
+  },
   leaveRequest: {
     index: `${API_URL}/employee/leave-requests`,
     myRequests: `${API_URL}/employee/leave-requests/my-requests`,
@@ -70,14 +81,18 @@ export const apiRoutes = {
     update: (slug: string) => `${API_URL}/employee/leave-types/${slug}`,
     destroy: (slug: string) => `${API_URL}/employee/leave-types/${slug}`,
   },
-  checkin: {
-    index: `${API_URL}/employee/check-in`,
-    create: `${API_URL}/employee/check-in`,
+  schedule: {
+    index: `${API_URL}/employee/schedules`,
+    show: (slug: string) => `${API_URL}/employee/schedules/${slug}`,
+    store: `${API_URL}/employee/schedules`,
+    update: (slug: string) => `${API_URL}/employee/schedules/${slug}`,
+    destroy: (slug: string) => `${API_URL}/employee/schedules/${slug}`,
   },
-  checkinPoint: {
-    index: `${API_URL}/employee/check-in/points`,
-    create: `${API_URL}/employee/check-in/points`,
-    update: (id: string) => `${API_URL}/employee/check-in/points/${id}`,
-    delete: (id: string) => `${API_URL}/employee/check-in/points/${id}`,
+  department: {
+    index: `${API_URL}/employee/departments`,
+    show: (slug: string) => `${API_URL}/employee/departments/${slug}`,
+    store: `${API_URL}/employee/departments`,
+    update: (slug: string) => `${API_URL}/employee/departments/${slug}`,
+    destroy: (slug: string) => `${API_URL}/employee/departments/${slug}`,
   },
 };

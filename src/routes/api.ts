@@ -51,7 +51,7 @@ export const apiRoutes = {
     updateEmail: `${API_URL}/employee/profile/email`,
     updatePassword: `${API_URL}/employee/profile/password`,
   },
-  leave: {
+  leaveRequest: {
     index: `${API_URL}/employee/leave-requests`,
     myRequests: `${API_URL}/employee/leave-requests/my-requests`,
     pendingApprovals: `${API_URL}/employee/leave-requests/pending-approvals`,
@@ -60,7 +60,13 @@ export const apiRoutes = {
     update: (id: string) => `${API_URL}/employee/leave-requests/${id}`,
     destroy: (id: string) => `${API_URL}/employee/leave-requests/${id}`,
     cancel: (id: string) => `${API_URL}/employee/leave-requests/${id}/cancel`,
-    balance: `${API_URL}/employee/leave/balance`,
+  },
+  leaveType: {
+    index: `${API_URL}/employee/leave-types`,
+    show: (id: string) => `${API_URL}/employee/leave-types/${id}`,
+    store: `${API_URL}/employee/leave-types`,
+    update: (id: string) => `${API_URL}/employee/leave-types/${id}`,
+    destroy: (id: string) => `${API_URL}/employee/leave-types/${id}`,
   },
   checkin: {
     index: `${API_URL}/employee/check-in`,

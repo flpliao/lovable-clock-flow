@@ -62,10 +62,13 @@ export const leaveRequestFormSchema = z
       message: '請假時數不能為負數',
     }),
     status: z.nativeEnum(LeaveRequestStatus).default(LeaveRequestStatus.PENDING),
+    attachment: z.any().optional(),
   })
   .refine(data => data.end_date >= data.start_date, {
     message: '結束日期不能早於開始日期',
     path: ['end_date'],
   });
 
-export type LeaveRequestFormValues = z.infer<typeof leaveRequestFormSchema>;
+export type LeaveRequestFormValues = z.infer<typeof leaveRequestFormSchema> & {
+  attachment?: File | null;
+};

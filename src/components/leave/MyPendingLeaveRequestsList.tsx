@@ -115,7 +115,7 @@ export function MyPendingLeaveRequestsList() {
               disabled={isCancelling}
               className="bg-red-500 hover:bg-red-600"
             >
-              {isCancelling ? '取消中...' : '確認取消'}
+              {isCancelling ? '取消中...' : '確定'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

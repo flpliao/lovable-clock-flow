@@ -11,7 +11,7 @@ interface AllLeaveRequestsState {
   updateRequest: (slug: string, updates: Partial<LeaveRequest>) => void;
   removeRequest: (slug: string) => void;
   getRequestBySlug: (slug: string) => LeaveRequest | undefined;
-  getRequestsByStatus: (status: string) => LeaveRequest[];
+  getRequestsByStatus: (status: string | string[]) => LeaveRequest[];
   getRequestsByType: (leaveType: string) => LeaveRequest[];
   getRequestCounts: () => { total: number; byStatus: Record<string, number> };
   setLoading: (loading: boolean) => void;
@@ -50,6 +50,9 @@ export const useAllLeaveRequestsStore = create<AllLeaveRequestsState>((set, get)
 
   getRequestsByStatus: status => {
     const { requests } = get();
+    if (Array.isArray(status)) {
+      return requests.filter(request => status.includes(request.status));
+    }
     return requests.filter(request => request.status === status);
   },
 
@@ -86,7 +89,7 @@ interface MyLeaveRequestsState {
   updateRequest: (slug: string, updates: Partial<LeaveRequest>) => void;
   removeRequest: (slug: string) => void;
   getRequestBySlug: (slug: string) => LeaveRequest | undefined;
-  getRequestsByStatus: (status: string) => LeaveRequest[];
+  getRequestsByStatus: (status: string | string[]) => LeaveRequest[];
   getRequestCounts: () => { total: number; byStatus: Record<string, number> };
   setLoading: (loading: boolean) => void;
   reset: () => void;
@@ -124,6 +127,9 @@ export const useMyLeaveRequestsStore = create<MyLeaveRequestsState>((set, get) =
 
   getRequestsByStatus: status => {
     const { requests } = get();
+    if (Array.isArray(status)) {
+      return requests.filter(request => status.includes(request.status));
+    }
     return requests.filter(request => request.status === status);
   },
 
@@ -155,6 +161,7 @@ interface PendingApprovalsState {
   updateRequest: (slug: string, updates: Partial<LeaveRequest>) => void;
   removeRequest: (slug: string) => void;
   getRequestBySlug: (slug: string) => LeaveRequest | undefined;
+  getRequestsByStatus: (status: string | string[]) => LeaveRequest[];
   getRequestCounts: () => { total: number; byStatus: Record<string, number> };
   setLoading: (loading: boolean) => void;
   reset: () => void;
@@ -188,6 +195,14 @@ export const usePendingApprovalsStore = create<PendingApprovalsState>((set, get)
   getRequestBySlug: slug => {
     const { requests } = get();
     return requests.find(request => request.slug === slug);
+  },
+
+  getRequestsByStatus: status => {
+    const { requests } = get();
+    if (Array.isArray(status)) {
+      return requests.filter(request => status.includes(request.status));
+    }
+    return requests.filter(request => request.status === status);
   },
 
   getRequestCounts: () => {

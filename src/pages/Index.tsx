@@ -35,18 +35,9 @@ const Index = () => {
       ></div>
 
       <div className="relative z-10 w-full min-h-screen pb-safe md:pt-12 py-0">
-        {/* 歡迎區塊 */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
           <WelcomeSection userName={employee.name} />
-        </div>
-
-        {/* 打卡區塊（壓縮下邊距） */}
-        <div className="w-full sm:px-6 lg:px-8 max-w-7xl mx-auto mb-[-8px] sm:mb-0 py-[10px] px-[15px]">
           <LocationCheckIn />
-        </div>
-
-        {/* 功能卡片（完全貼上打卡區） */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-0">
           <FeatureCards />
         </div>
       </div>

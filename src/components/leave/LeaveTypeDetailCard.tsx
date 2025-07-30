@@ -49,13 +49,13 @@ export function LeaveTypeDetailCard({ leaveType }: LeaveTypeDetailCardProps) {
         </div>
 
         {/* 附件要求 */}
-        {leaveType.required_attachment && (
+        {/* {leaveType.required_attachment && (
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-white/80" />
             <span className="text-white/80 text-sm">是否需要上傳附件：</span>
             <Badge className="bg-orange-500/20 text-orange-700 border-0">需要</Badge>
           </div>
-        )}
+        )} */}
 
         {/* 剩餘次數/天數 */}
         {/* <div className="flex items-center gap-2">

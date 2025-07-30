@@ -2,7 +2,7 @@ import useEmployeeStore from '@/stores/employeeStore';
 import { calculateAnnualLeaveHours, calculateYearsOfService } from '@/utils/annualLeaveCalculator';
 import { AlertCircle, Calendar, Clock, User } from 'lucide-react';
 
-export function LeaveBalanceCard() {
+const EmployeeInfoCard = () => {
   const { employee } = useEmployeeStore();
 
   const yearsOfService = calculateYearsOfService(employee.start_date);
@@ -90,4 +90,6 @@ export function LeaveBalanceCard() {
       )}
     </div>
   );
-}
+};
+
+export default EmployeeInfoCard;

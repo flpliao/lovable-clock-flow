@@ -37,7 +37,7 @@ interface LeaveRequestFormProps {
   onSuccess?: () => void;
 }
 
-export function LeaveRequestForm({ onSuccess }: LeaveRequestFormProps) {
+const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { leaveTypes, loadLeaveTypes } = useLeaveType();
   const getLeaveTypeBySlug = useLeaveTypeStore(state => state.getLeaveTypeBySlug);
@@ -272,4 +272,6 @@ export function LeaveRequestForm({ onSuccess }: LeaveRequestFormProps) {
       </form>
     </Form>
   );
-}
+};
+
+export default LeaveRequestForm;

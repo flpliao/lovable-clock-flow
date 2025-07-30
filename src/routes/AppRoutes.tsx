@@ -1,6 +1,6 @@
 import ProtectedRoute from '@/components/common/ProtectedRoute';
-import Header from '@/components/Header';
-import Sidebar from '@/components/Sidebar';
+import Header from '@/components/layout/Header';
+import Sidebar from '@/components/layout/Sidebar';
 import { protectedRoutes, publicRoutes } from '@/routes/routes';
 import React from 'react';
 import { Outlet, Route, Routes } from 'react-router-dom';

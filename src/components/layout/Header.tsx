@@ -1,13 +1,13 @@
+import DesktopNavigation from '@/components/header/DesktopNavigation';
+import EmployeeInfo from '@/components/header/EmployeeInfo';
+import HeaderLogo from '@/components/header/HeaderLogo';
+import MobileNavigation from '@/components/header/MobileNavigation';
+import { useMenuItems } from '@/components/header/useMenuItems';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
 import { Button } from '@/components/ui/button';
 import useEmployeeStore from '@/stores/employeeStore';
 import { Menu } from 'lucide-react';
 import React, { useState } from 'react';
-import DesktopNavigation from './header/DesktopNavigation';
-import EmployeeInfo from './header/EmployeeInfo';
-import HeaderLogo from './header/HeaderLogo';
-import MobileNavigation from './header/MobileNavigation';
-import { useMenuItems } from './header/useMenuItems';
-import NotificationCenter from './notifications/NotificationCenter';
 
 const Header: React.FC = () => {
   // 使用 employeeStore

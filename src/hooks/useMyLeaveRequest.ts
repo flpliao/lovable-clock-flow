@@ -10,8 +10,7 @@ import { useState } from 'react';
 export const useMyLeaveRequest = () => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const { requests, setRequests, addRequest, updateRequest, removeRequest, reset } =
-    useMyLeaveRequestsStore();
+  const { requests, setRequests, addRequest, updateRequest } = useMyLeaveRequestsStore();
 
   // 載入我的請假申請
   const loadMyLeaveRequests = async () => {
@@ -55,16 +54,6 @@ export const useMyLeaveRequest = () => {
     }
   };
 
-  // 移除請假申請
-  const removeMyLeaveRequest = (id: string) => {
-    removeRequest(id);
-  };
-
-  // 重置 store
-  const resetMyLeaveRequests = () => {
-    reset();
-  };
-
   return {
     // 狀態
     requests,
@@ -75,9 +64,5 @@ export const useMyLeaveRequest = () => {
     createMyLeaveRequest,
     updateMyLeaveRequest,
     cancelMyLeaveRequest,
-    removeMyLeaveRequest,
-
-    // 管理方法
-    resetMyLeaveRequests,
   };
 };

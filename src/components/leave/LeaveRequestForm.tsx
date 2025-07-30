@@ -253,7 +253,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
         </div>
 
         {/* 提交按鈕 */}
-        <div className="flex justify-end pt-4">
+        <div className="flex justify-end">
           <Button
             type="submit"
             disabled={isSubmitting || isDisabled}

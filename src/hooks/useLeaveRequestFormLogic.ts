@@ -1,5 +1,5 @@
 import { toast } from '@/components/ui/use-toast';
-import { leaveRequestService } from '@/services/leaveRequestService';
+import { createLeaveRequest } from '@/services/leaveRequestService';
 import {
   LeaveUsage,
   LeaveValidationService,
@@ -164,7 +164,7 @@ export function useLeaveRequestFormLogic(onSubmit?: () => void) {
           reason: data.reason,
         };
 
-        await leaveRequestService.submitLeaveRequest(leaveFormData);
+        await createLeaveRequest(leaveFormData);
 
         toast({
           title: '申請成功',

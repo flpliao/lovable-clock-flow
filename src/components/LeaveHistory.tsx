@@ -1,5 +1,5 @@
 import { LeaveHistoryItem } from '@/components/leave/LeaveHistoryItem';
-import { leaveRequestService } from '@/services/leaveRequestService';
+import { getMyLeaveRequests } from '@/services/leaveRequestService';
 import useEmployeeStore from '@/stores/employeeStore';
 import { LeaveRequest } from '@/types';
 import React, { useEffect, useState } from 'react';
@@ -19,7 +19,7 @@ const LeaveHistory: React.FC<LeaveHistoryProps> = ({ onClick }) => {
 
     try {
       setLoading(true);
-      const requests = await leaveRequestService.getMyLeaveRequests();
+      const requests = await getMyLeaveRequests();
       setLeaveHistory(requests);
     } catch (error) {
       console.error('載入請假歷史記錄失敗:', error);

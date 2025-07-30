@@ -1,5 +1,5 @@
 import { useToast } from '@/hooks/useToast';
-import { leaveRequestService } from '@/services/leaveRequestService';
+import { deleteLeaveRequest, updateLeaveRequest } from '@/services/leaveRequestService';
 import { LeaveRequest } from '@/types';
 import { useState } from 'react';
 
@@ -13,7 +13,7 @@ export const useLeaveRecordCrud = () => {
       setLoading(true);
       console.log('刪除請假記錄:', leaveId);
 
-      await leaveRequestService.deleteLeaveRequest(leaveId);
+      await deleteLeaveRequest(leaveId);
 
       toast({
         title: '刪除成功',
@@ -43,7 +43,7 @@ export const useLeaveRecordCrud = () => {
       // 根據更新資料的類型決定使用哪個方法
       if (updateData.status === 'approved' || updateData.status === 'rejected') {
         const action = updateData.status === 'approved' ? 'approve' : 'reject';
-        await leaveRequestService.updateLeaveRequest(leaveId, action);
+        await updateLeaveRequest(leaveId, action);
       } else {
         // 對於其他更新，可能需要使用不同的方法
         console.warn('不支援的更新類型:', updateData);

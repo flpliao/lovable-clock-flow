@@ -1,5 +1,5 @@
 import { useToast } from '@/hooks/useToast';
-import { leaveRequestService } from '@/services/leaveRequestService';
+import { createLeaveRequest } from '@/services/leaveRequestService';
 import { LeaveSubmissionData, submitLeaveRequest } from '@/services/leaveSubmissionService';
 import { validateAnnualLeave } from '@/services/leaveValidationService';
 import { loadUserStaffData, UserStaffData } from '@/services/staffDataService';
@@ -185,7 +185,7 @@ export const useLeaveRequestForm = () => {
           reason: data.reason,
         };
 
-        await leaveRequestService.submitLeaveRequest(leaveFormData);
+        await createLeaveRequest(leaveFormData);
 
         toast({
           title: '申請成功',

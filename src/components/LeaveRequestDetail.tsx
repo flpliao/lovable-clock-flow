@@ -1,4 +1,4 @@
-import { leaveRequestService } from '@/services/leaveRequestService';
+import { updateLeaveRequest } from '@/services/leaveRequestService';
 import { LeaveRequest } from '@/types';
 import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import React from 'react';
@@ -95,7 +95,7 @@ const LeaveRequestDetail: React.FC<LeaveRequestDetailProps> = ({
   // Wrapped approval handler
   const onApprove = async (comment: string) => {
     try {
-      await leaveRequestService.updateLeaveRequest(leaveRequest.id, 'approve', comment);
+      await updateLeaveRequest(leaveRequest.id, 'approve', comment);
       // 可能需要重新載入資料或觸發回調
     } catch (error) {
       console.error('核准請假申請失敗:', error);
@@ -105,7 +105,7 @@ const LeaveRequestDetail: React.FC<LeaveRequestDetailProps> = ({
   // Wrapped rejection handler
   const onReject = async (reason: string) => {
     try {
-      await leaveRequestService.updateLeaveRequest(leaveRequest.id, 'reject', reason);
+      await updateLeaveRequest(leaveRequest.id, 'reject', reason);
       // 可能需要重新載入資料或觸發回調
     } catch (error) {
       console.error('退回請假申請失敗:', error);

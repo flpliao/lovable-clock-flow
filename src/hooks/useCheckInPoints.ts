@@ -44,11 +44,13 @@ export function useCheckInPoints() {
   };
 
   const deleteCheckInPoint = async (id: string) => {
-    const status = await deleteCheckInPointService(id);
+    const success = await deleteCheckInPointService(id);
 
-    if (status === 'success') {
+    if (success) {
       removeCheckInStore(id);
     }
+
+    return success;
   };
 
   return {

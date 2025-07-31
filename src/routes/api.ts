@@ -36,6 +36,7 @@ export const routes = {
   overtimeRequestPage: '/overtime-request-page',
   announcementManagement: '/announcement-management',
   companyAnnouncements: '/company-announcements',
+  shiftManagement: '/shift-management',
 } as const;
 
 const API_URL = import.meta.env.VITE_API_URL;

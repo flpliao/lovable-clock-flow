@@ -14,6 +14,7 @@ const Home = LazyWithSuspense(() => import('@/pages/Index'));
 const LeaveRequestManagement = LazyWithSuspense(() => import('@/pages/LeaveRequestManagement'));
 const AccountSettings = LazyWithSuspense(() => import('@/pages/AccountSettings'));
 const ScheduleManagement = LazyWithSuspense(() => import('@/pages/ScheduleManagement'));
+const ShiftManagement = LazyWithSuspense(() => import('@/pages/ShiftManagement'));
 
 const StaffDashboard = LazyWithSuspense(() => import('@/pages/StaffDashboard'));
 const PersonalAttendance = LazyWithSuspense(() => import('@/pages/PersonalAttendance'));
@@ -98,6 +99,12 @@ export const protectedRoutes = [
     name: '排班審核',
     component: ScheduleManagement,
     icon: 'calendar',
+  },
+  {
+    path: routes.shiftManagement,
+    name: '班次規劃',
+    component: ShiftManagement,
+    icon: 'clock',
   },
 ];
 

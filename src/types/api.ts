@@ -7,6 +7,7 @@ export enum ApiResponseStatus {
 
 export type ApiResponse<T = unknown> = {
   data: T;
+  message: string;
   status: ApiResponseStatus;
 };
 
@@ -19,6 +20,12 @@ export interface DecodedResponse {
 export interface CallApiOptions {
   onError?: (error: unknown, errorMessage: string) => void;
   showErrorAlert?: boolean;
+  requiredFields?: string[];
+  allowNullData?: boolean;
+  expectDataType?: 'any' | 'object' | 'array' | 'string' | 'number';
+}
+
+export interface DecodeOptions {
   requiredFields?: string[];
   allowNullData?: boolean;
   expectDataType?: 'any' | 'object' | 'array' | 'string' | 'number';

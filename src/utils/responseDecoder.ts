@@ -19,7 +19,7 @@ export function decodeApiResponse(
 
   if (!response?.data) throw new Error('API 回應為空');
 
-  const { status, message, data } = response.data;
+  const { status, message, data } = response.data as ApiResponse<unknown>;
   if (status !== 'success') throw new Error(message || '操作失敗');
 
   if (data === null && !allowNullData) {

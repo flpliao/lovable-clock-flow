@@ -95,4 +95,64 @@ export const apiRoutes = {
     update: (slug: string) => `${API_URL}/employee/departments/${slug}`,
     destroy: (slug: string) => `${API_URL}/employee/departments/${slug}`,
   },
+  // 行事曆管理
+  calendar: {
+    index: `${API_URL}/employee/calendars`,
+    getAll: `${API_URL}/employee/calendars/all`,
+    show: (slug: string) => `${API_URL}/employee/calendars/${slug}`,
+    store: `${API_URL}/employee/calendars`,
+    update: (slug: string) => `${API_URL}/employee/calendars/${slug}`,
+    destroy: (slug: string) => `${API_URL}/employee/calendars/${slug}`,
+    generateDays: (slug: string) => `${API_URL}/employee/calendars/${slug}/generate-days`,
+    copyToYear: (slug: string) => `${API_URL}/employee/calendars/${slug}/copy-to-year`,
+  },
+  // 行事曆日期管理
+  calendarDay: {
+    index: (calendarSlug: string) => `${API_URL}/employee/calendar-days/calendar/${calendarSlug}`,
+    statistics: (calendarSlug: string) =>
+      `${API_URL}/employee/calendar-days/calendar/${calendarSlug}/statistics`,
+    show: (slug: string) => `${API_URL}/employee/calendar-days/${slug}`,
+    store: (calendarSlug: string) => `${API_URL}/employee/calendar-days/calendar/${calendarSlug}`,
+    update: (slug: string) => `${API_URL}/employee/calendar-days/${slug}`,
+    destroy: (slug: string) => `${API_URL}/employee/calendar-days/${slug}`,
+    batchUpdate: (calendarSlug: string) =>
+      `${API_URL}/employee/calendar-days/calendar/${calendarSlug}/batch-update`,
+  },
+  // 班次管理
+  shift: {
+    index: `${API_URL}/employee/shifts`,
+    getAll: `${API_URL}/employee/shifts/all`,
+    show: (slug: string) => `${API_URL}/employee/shifts/${slug}`,
+    store: `${API_URL}/employee/shifts`,
+    update: (slug: string) => `${API_URL}/employee/shifts/${slug}`,
+    destroy: (slug: string) => `${API_URL}/employee/shifts/${slug}`,
+  },
+  // 班別群組管理
+  shiftGroup: {
+    index: `${API_URL}/employee/shift-groups`,
+    getAll: `${API_URL}/employee/shift-groups/all`,
+    show: (slug: string) => `${API_URL}/employee/shift-groups/${slug}`,
+    store: `${API_URL}/employee/shift-groups`,
+    update: (slug: string) => `${API_URL}/employee/shift-groups/${slug}`,
+    destroy: (slug: string) => `${API_URL}/employee/shift-groups/${slug}`,
+  },
+  // 工作排程管理
+  workSchedule: {
+    index: `${API_URL}/employee/work-schedules`,
+    getAll: `${API_URL}/employee/work-schedules/all`,
+    show: (slug: string) => `${API_URL}/employee/work-schedules/${slug}`,
+    store: `${API_URL}/employee/work-schedules`,
+    update: (slug: string) => `${API_URL}/employee/work-schedules/${slug}`,
+    destroy: (slug: string) => `${API_URL}/employee/work-schedules/${slug}`,
+  },
+  // 員工排班管理
+  employeeSchedule: {
+    index: `${API_URL}/employee/employee-schedules`,
+    show: (employeeSlug: string) => `${API_URL}/employee/employee-schedules/${employeeSlug}`,
+    store: `${API_URL}/employee/employee-schedules`,
+    bulkStore: `${API_URL}/employee/employee-schedules/bulk`,
+    update: (employeeSlug: string) =>
+      `${API_URL}/employee/employee-schedules/${employeeSlug}/update`,
+    destroy: (employeeSlug: string) => `${API_URL}/employee/employee-schedules/${employeeSlug}`,
+  },
 };

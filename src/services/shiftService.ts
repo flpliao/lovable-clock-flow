@@ -6,8 +6,16 @@ import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 
 // 取得所有班次
 export const getAllShifts = async (): Promise<Shift[]> => {
-  const { data } = await callApiAndDecode(axiosWithEmployeeAuth().get(apiRoutes.shift.getAll));
-  return data as Shift[];
+  const { data, status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.shift.getAll)
+  );
+
+  const shifts = (data as Shift[]).map(shift => ({
+    ...shift,
+    cycle_days: shift.work_schedules?.length ?? 0,
+  }));
+
+  return status === ApiResponseStatus.SUCCESS ? shifts : [];
 };
 
 // 取得班次列表（分頁）
@@ -24,14 +32,14 @@ export const getShifts = async (params?: {
 
 // 取得單一班次
 export const getShift = async (slug: string): Promise<Shift | null> => {
-  const { data } = await callApiAndDecode(axiosWithEmployeeAuth().get(apiRoutes.shift.show(slug)));
+  const { data, status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.shift.show(slug))
+  );
   return status === ApiResponseStatus.SUCCESS ? (data as Shift) : null;
 };
 
 // 建立班次
-export const createShift = async (
-  shiftData: Omit<Shift, 'id' | 'slug' | 'created_at' | 'updated_at'>
-): Promise<Shift | null> => {
+export const createShift = async (shiftData: Omit<Shift, 'slug'>): Promise<Shift | null> => {
   const { data, status } = await callApiAndDecode(
     axiosWithEmployeeAuth().post(apiRoutes.shift.store, shiftData)
   );
@@ -41,10 +49,10 @@ export const createShift = async (
 // 更新班次
 export const updateShift = async (
   slug: string,
-  shiftData: Partial<Shift>
+  shiftData: Partial<Omit<Shift, 'slug'>>
 ): Promise<Shift | null> => {
   const { data, status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().post(apiRoutes.shift.update(slug), shiftData)
+    axiosWithEmployeeAuth().put(apiRoutes.shift.update(slug), shiftData)
   );
   return status === ApiResponseStatus.SUCCESS ? (data as Shift) : null;
 };

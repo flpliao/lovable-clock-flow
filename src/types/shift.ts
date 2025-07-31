@@ -1,45 +1,26 @@
 import { WorkSchedule } from './workSchedule';
 
 export interface Shift {
-  id: string;
   slug: string;
-  name: string;
   code: string;
-  start_time: string;
-  end_time: string;
-  break_start_time?: string;
-  break_end_time?: string;
-  work_hours: number;
-  is_active: boolean;
-  description?: string;
-  color?: string;
-  work_schedule?: WorkSchedule;
-  created_at: string;
-  updated_at: string;
+  name: string;
+  day_cut_time: string;
+  color: string;
+  cycle_days?: number;
+  work_schedules?: WorkSchedule[];
 }
 
 export interface CreateShiftData {
-  name: string;
   code: string;
-  start_time: string;
-  end_time: string;
-  break_start_time?: string;
-  break_end_time?: string;
-  work_hours: number;
-  is_active: boolean;
-  description?: string;
-  color?: string;
+  name: string;
+  day_cut_time: string;
+  color: string;
 }
 
 export interface UpdateShiftData {
-  name?: string;
   code?: string;
-  start_time?: string;
-  end_time?: string;
-  break_start_time?: string;
-  break_end_time?: string;
-  work_hours?: number;
-  is_active?: boolean;
-  description?: string;
+  name?: string;
+  day_cut_time?: string;
   color?: string;
+  cycle_days?: number;
 }

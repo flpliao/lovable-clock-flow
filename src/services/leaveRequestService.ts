@@ -4,6 +4,7 @@ import { LeaveRequest } from '@/types';
 import { ApiResponseStatus } from '@/types/api';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
+import dayjs from 'dayjs';
 
 // 獲取所有請假申請
 export const getAllLeaveRequests = async (): Promise<LeaveRequest[]> => {
@@ -20,7 +21,13 @@ export const getMyLeaveRequests = async (): Promise<LeaveRequest[]> => {
     axiosWithEmployeeAuth().get(apiRoutes.leaveRequest.myRequests)
   );
 
-  return status === ApiResponseStatus.SUCCESS ? (data as LeaveRequest[]) : [];
+  const requests = (data as LeaveRequest[]).map(req => ({
+    ...req,
+    start: dayjs(req.start_date, 'YYYY-MM-DD HH:mm:ss'),
+    end: dayjs(req.end_date, 'YYYY-MM-DD HH:mm:ss'),
+  }));
+
+  return status === ApiResponseStatus.SUCCESS ? (requests as LeaveRequest[]) : [];
 };
 
 // 獲取待審核的請假申請
@@ -34,7 +41,10 @@ export const getPendingApprovals = async (): Promise<LeaveRequest[]> => {
 
 // 建立請假申請
 export const createLeaveRequest = async (
-  leaveRequestData: Omit<LeaveRequest, 'slug' | 'created_at' | 'updated_at' | 'rejection_reason'>
+  leaveRequestData: Omit<
+    LeaveRequest,
+    'slug' | 'created_at' | 'updated_at' | 'rejection_reason' | 'start' | 'end'
+  >
 ): Promise<LeaveRequest | null> => {
   const { data, status } = await callApiAndDecode(
     axiosWithEmployeeAuth().post(apiRoutes.leaveRequest.store, leaveRequestData)

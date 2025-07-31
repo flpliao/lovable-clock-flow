@@ -41,11 +41,13 @@ export const useLeaveType = () => {
 
   // 刪除請假類型
   const deleteLeaveType = async (slug: string) => {
-    const status = await deleteLeaveTypeService(slug);
+    const success = await deleteLeaveTypeService(slug);
 
-    if (status === 'success') {
+    if (success) {
       removeStoreLeaveType(slug);
     }
+
+    return success;
   };
 
   return {

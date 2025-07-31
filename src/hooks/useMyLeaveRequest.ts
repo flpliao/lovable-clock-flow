@@ -43,18 +43,13 @@ export const useMyLeaveRequest = () => {
 
   // 取消請假申請
   const cancelMyLeaveRequest = async (slug: string) => {
-    try {
-      const result = await cancelLeaveRequest(slug);
-      if (result === 'success') {
-        // 更新本地狀態為已取消
-        updateRequest(slug, { status: LeaveRequestStatus.CANCELLED });
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('取消請假申請失敗:', error);
-      return false;
+    const success = await cancelLeaveRequest(slug);
+    if (success) {
+      // 更新本地狀態為已取消
+      updateRequest(slug, { status: LeaveRequestStatus.CANCELLED });
     }
+
+    return success;
   };
 
   return {

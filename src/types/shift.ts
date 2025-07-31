@@ -1,3 +1,5 @@
+import { WorkSchedule } from './workSchedule';
+
 export interface Shift {
   id: string;
   slug: string;
@@ -11,6 +13,7 @@ export interface Shift {
   is_active: boolean;
   description?: string;
   color?: string;
+  work_schedule?: WorkSchedule;
   created_at: string;
   updated_at: string;
 }

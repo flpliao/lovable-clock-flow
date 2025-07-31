@@ -24,7 +24,10 @@ export const useMyLeaveRequest = () => {
 
   // 新增請假申請
   const createMyLeaveRequest = async (
-    requestData: Omit<LeaveRequest, 'slug' | 'created_at' | 'updated_at' | 'rejection_reason'>
+    requestData: Omit<
+      LeaveRequest,
+      'id' | 'slug' | 'created_at' | 'updated_at' | 'rejection_reason'
+    >
   ): Promise<LeaveRequest | null> => {
     const newRequest = await createLeaveRequest(requestData);
     if (newRequest) {
@@ -34,8 +37,8 @@ export const useMyLeaveRequest = () => {
   };
 
   // 更新請假申請
-  const updateMyLeaveRequest = (id: string, updates: Partial<LeaveRequest>) => {
-    updateRequest(id, updates);
+  const updateMyLeaveRequest = (slug: string, updates: Partial<LeaveRequest>) => {
+    updateRequest(slug, updates);
   };
 
   // 取消請假申請

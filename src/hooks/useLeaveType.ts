@@ -26,7 +26,9 @@ export const useLeaveType = () => {
   };
 
   // 新增請假類型
-  const createLeaveType = async (leaveTypeData: Omit<LeaveType, 'slug'>) => {
+  const createLeaveType = async (
+    leaveTypeData: Omit<LeaveType, 'id' | 'slug' | 'created_at' | 'updated_at'>
+  ) => {
     const newLeaveType = await createLeaveTypeService(leaveTypeData);
     addLeaveType(newLeaveType);
   };

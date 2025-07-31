@@ -55,7 +55,7 @@ export const useDepartment = () => {
     setIsLoading(false);
 
     if (updatedDepartment) {
-      updateDepartmentInStore(updatedDepartment.id, updatedDepartment);
+      updateDepartmentInStore(updatedDepartment.slug, updatedDepartment);
     }
 
     return updatedDepartment;
@@ -71,19 +71,11 @@ export const useDepartment = () => {
       // 從 store 中移除
       const departmentToRemove = getDepartmentBySlugFromStore(slug);
       if (departmentToRemove) {
-        removeDepartmentFromStore(departmentToRemove.id);
+        removeDepartmentFromStore(departmentToRemove.slug);
       }
     }
 
     return success;
-  };
-
-  // 強制重新載入部門資料
-  const refreshDepartments = async () => {
-    setIsLoading(true);
-    const data = await getAllDepartments();
-    setDepartments(data);
-    setIsLoading(false);
   };
 
   return {
@@ -96,6 +88,5 @@ export const useDepartment = () => {
     createDepartment,
     updateDepartment,
     deleteDepartment,
-    refreshDepartments,
   };
 };

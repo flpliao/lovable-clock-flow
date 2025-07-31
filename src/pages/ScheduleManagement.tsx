@@ -4,23 +4,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 import SearchableSelect from '@/components/ui/SearchableSelect';
+import { useDepartment } from '@/hooks/useDepartment';
+import { useDepartmentStore } from '@/stores/departmentStore';
 import dayjs from 'dayjs';
 import { Calendar, Clock, Plus, Search, Settings, Users } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const ScheduleManagement = () => {
   const [activeView, setActiveView] = useState<'calendar' | 'list' | 'stats'>('calendar');
-  const [selectedUnit, setSelectedUnit] = useState<string>('');
+  const [selectedDepartment, setSelectedDepartment] = useState<string>('');
   const [selectedMonth, setSelectedMonth] = useState<string>(dayjs().format('YYYY-MM'));
 
-  // 模擬單位數據
-  const units = [
-    { id: '1', name: '資訊部' },
-    { id: '2', name: '人事部' },
-    { id: '3', name: '財務部' },
-    { id: '4', name: '行銷部' },
-    { id: '5', name: '客服部' },
-  ];
+  const departments = useDepartmentStore(state => state.departments);
+
+  const { loadDepartments } = useDepartment();
+  useEffect(() => {
+    loadDepartments();
+  }, []);
 
   // 模擬排班數據
   const mockSchedules = [
@@ -73,7 +73,7 @@ const ScheduleManagement = () => {
   };
 
   // 檢查是否已選擇單位和月份
-  const isSelectionComplete = selectedUnit && selectedMonth;
+  const isSelectionComplete = selectedDepartment && selectedMonth;
 
   // 使用 dayjs 格式化月份顯示
   const formatMonthDisplay = (monthValue: string) => {
@@ -106,9 +106,12 @@ const ScheduleManagement = () => {
             <label className="block text-white/80 text-sm font-medium mb-2">選擇單位</label>
             <SearchableSelect
               className="w-full bg-white/10 border-white/20 text-white rounded-md"
-              options={units.map(unit => ({ value: unit.id, label: unit.name }))}
-              value={selectedUnit}
-              onChange={setSelectedUnit}
+              options={departments.map(department => ({
+                value: department.slug,
+                label: department.name,
+              }))}
+              value={selectedDepartment}
+              onChange={setSelectedDepartment}
               placeholder="請選擇單位"
               searchPlaceholder="搜尋單位..."
             />
@@ -133,8 +136,10 @@ const ScheduleManagement = () => {
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
               <span className="text-green-100 text-sm">
-                已選擇：{units.find(u => u.id === selectedUnit)?.name} -{' '}
-                {formatMonthDisplay(selectedMonth)}
+                已選擇：
+                {
+                  departments.find(department => department.slug === selectedDepartment)?.name
+                } - {formatMonthDisplay(selectedMonth)}
               </span>
             </div>
           </div>

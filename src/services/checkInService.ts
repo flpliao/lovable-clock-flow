@@ -7,6 +7,7 @@ import {
   METHOD_LOCATION,
 } from '@/constants/checkInTypes';
 import { apiRoutes } from '@/routes/api';
+import { ApiResponseStatus } from '@/types/api';
 import { CheckInRecord } from '@/types/checkIn';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
@@ -20,11 +21,9 @@ export const getTodayCheckInRecords = async () => {
     })
   );
 
-  if (status === 'error') {
-    return { [CHECK_IN]: null, [CHECK_OUT]: null };
-  }
-
-  return splitCheckInRecords(data as CheckInRecord[]);
+  return status === ApiResponseStatus.SUCCESS
+    ? splitCheckInRecords(data as CheckInRecord[])
+    : { [CHECK_IN]: null, [CHECK_OUT]: null };
 };
 
 // 前端分組
@@ -36,24 +35,20 @@ export const splitCheckInRecords = (records: CheckInRecord[]) => {
 
 // 取得打卡記錄
 export const getCheckInRecords = async (date?: string): Promise<CheckInRecord[]> => {
-  try {
-    const params = date ? { date } : {};
-    const response = await axiosWithEmployeeAuth().get(`${apiRoutes.checkin.index}`, {
-      params,
-    });
-    return response.data;
-  } catch (error) {
-    console.error('獲取打卡記錄失敗:', error);
-    throw new Error('獲取打卡記錄失敗');
-  }
+  const { data, status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(`${apiRoutes.checkin.index}`, {
+      params: date ? { date } : {},
+    })
+  );
+  return status === ApiResponseStatus.SUCCESS ? (data as CheckInRecord[]) : [];
 };
 
 // 建立打卡紀錄
 export const createCheckInRecord = async (checkInData: CheckInRecord) => {
-  const { data } = await callApiAndDecode(
+  const { data, status } = await callApiAndDecode(
     axiosWithEmployeeAuth().post(`${apiRoutes.checkin.create}`, checkInData)
   );
-  return data as CheckInRecord;
+  return status === ApiResponseStatus.SUCCESS ? (data as CheckInRecord) : null;
 };
 
 // 打卡
@@ -62,13 +57,10 @@ export const checkIn = async (checkInData: {
   longitude: number;
   type: 'in' | 'out';
 }): Promise<CheckInRecord> => {
-  try {
-    const response = await axiosWithEmployeeAuth().post(`${apiRoutes.checkin.create}`, checkInData);
-    return response.data;
-  } catch (error) {
-    console.error('打卡失敗:', error);
-    throw new Error('打卡失敗');
-  }
+  const { data, status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().post(`${apiRoutes.checkin.create}`, checkInData)
+  );
+  return status === ApiResponseStatus.SUCCESS ? (data as CheckInRecord) : null;
 };
 
 // 打卡參數介面

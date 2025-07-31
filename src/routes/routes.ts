@@ -97,7 +97,7 @@ export const protectedRoutes = [
     path: routes.schedule,
     name: '排班審核',
     component: ScheduleManagement,
-    icon: 'chart-bar',
+    icon: 'calendar',
   },
 ];
 

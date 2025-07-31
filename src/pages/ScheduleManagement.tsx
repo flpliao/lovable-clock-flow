@@ -1,9 +1,11 @@
+import PageHeader from '@/components/layout/PageHeader';
 import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import dayjs from 'dayjs';
-import { Building2, Calendar, Clock, Plus, Search, Settings, Users } from 'lucide-react';
+import { Calendar, Clock, Plus, Search, Settings, Users } from 'lucide-react';
 import React, { useState } from 'react';
 
 const ScheduleManagement = () => {
@@ -87,27 +89,23 @@ const ScheduleManagement = () => {
 
   return (
     <PageLayout>
-      {/* 頁面標題 */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-2">排班管理</h1>
-          <p className="text-white/70">管理員工工作時間安排</p>
-        </div>
-      </div>
+      <PageHeader
+        icon={Calendar}
+        title="排班管理"
+        description="用於管理員工工作時間安排"
+        iconBgColor="bg-blue-500"
+      />
 
       {/* 選擇區域 */}
-      <div className="bg-white/10 border border-white/20 rounded-2xl backdrop-blur-xl p-6 mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <Building2 className="h-6 w-6 text-blue-400" />
-          <h2 className="text-xl font-semibold text-white">選擇查看條件</h2>
-        </div>
+      <div className="bg-white/10 border border-white/20 rounded-2xl backdrop-blur-xl p-6 space-y-3">
+        <h2 className="text-xl font-semibold text-white">選擇查看條件</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* 單位選擇 */}
           <div>
             <label className="block text-white/80 text-sm font-medium mb-2">選擇單位</label>
             <SearchableSelect
-              className="w-full bg-white/10 border-white/20 text-white"
+              className="w-full bg-white/10 border-white/20 text-white rounded-md"
               options={units.map(unit => ({ value: unit.id, label: unit.name }))}
               value={selectedUnit}
               onChange={setSelectedUnit}
@@ -123,7 +121,7 @@ const ScheduleManagement = () => {
               type="month"
               value={selectedMonth}
               onChange={handleMonthChange}
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-md text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full h-10 px-3 bg-white/10 border border-white/20 rounded-md text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="請選擇月份"
             />
           </div>

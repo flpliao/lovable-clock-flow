@@ -15,8 +15,9 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { CreateShiftData } from '@/types/shift';
+import { Shift, UpdateShiftData } from '@/types/shift';
 import { zodResolver } from '@hookform/resolvers/zod';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
@@ -30,38 +31,54 @@ const shiftFormSchema = z.object({
 
 type ShiftFormData = z.infer<typeof shiftFormSchema>;
 
-interface CreateShiftFormProps {
+interface EditShiftFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (formData: CreateShiftData) => void;
+  onSubmit: (slug: string, formData: UpdateShiftData) => void;
   isLoading?: boolean;
+  shift?: Shift;
 }
 
-const CreateShiftForm = ({
+const EditShiftForm = ({
   open,
   onOpenChange,
   onSubmit,
   isLoading = false,
-}: CreateShiftFormProps) => {
+  shift,
+}: EditShiftFormProps) => {
   const form = useForm<ShiftFormData>({
     resolver: zodResolver(shiftFormSchema),
     defaultValues: {
-      code: '',
-      name: '',
-      day_cut_time: '',
-      color: '#3B82F6',
+      code: shift?.code || '',
+      name: shift?.name || '',
+      day_cut_time: shift?.day_cut_time || '',
+      color: shift?.color || '#3B82F6',
     },
   });
 
+  // 當 shift 資料變更時，更新表單預設值
+  React.useEffect(() => {
+    if (shift) {
+      form.reset({
+        code: shift.code,
+        name: shift.name,
+        day_cut_time: shift.day_cut_time,
+        color: shift.color,
+      });
+    }
+  }, [shift, form]);
+
   const handleSubmit = (data: ShiftFormData) => {
+    if (!shift) return;
+
     // 確保所有必填欄位都有值
-    const shiftData: CreateShiftData = {
+    const shiftData: UpdateShiftData = {
       code: data.code,
       name: data.name,
       day_cut_time: data.day_cut_time,
       color: data.color,
     };
-    onSubmit(shiftData);
+    onSubmit(shift.slug, shiftData);
   };
 
   const handleClose = () => {
@@ -73,8 +90,8 @@ const CreateShiftForm = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-base">新增班次</DialogTitle>
-          <DialogDescription className="text-xs">新增工作班次設定</DialogDescription>
+          <DialogTitle className="text-base">編輯班次</DialogTitle>
+          <DialogDescription className="text-xs">修改班次設定</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -162,7 +179,7 @@ const CreateShiftForm = ({
                 取消
               </Button>
               <Button type="submit" disabled={isLoading} className="h-8 text-sm">
-                {isLoading ? '新增中...' : '新增'}
+                {isLoading ? '更新中...' : '更新'}
               </Button>
             </div>
           </form>
@@ -172,4 +189,4 @@ const CreateShiftForm = ({
   );
 };
 
-export default CreateShiftForm;
+export default EditShiftForm;

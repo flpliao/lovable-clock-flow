@@ -1,7 +1,13 @@
+export enum WorkScheduleStatus {
+  WORK = 'work',
+  OFF = 'off',
+}
+
 export interface WorkSchedule {
+  id?: number;
   shift_id: string;
   slug: string;
-  status: string;
+  status: WorkScheduleStatus;
   clock_in_time: string;
   clock_out_time: string;
   ot_start_after_hours: number;
@@ -12,14 +18,14 @@ export interface WorkSchedule {
   break2_end?: string;
   break3_start?: string;
   break3_end?: string;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CreateWorkScheduleData {
   shift_id: string;
   slug: string;
-  status: string;
+  status: WorkScheduleStatus;
   clock_in_time: string;
   clock_out_time: string;
   ot_start_after_hours: number;
@@ -33,9 +39,8 @@ export interface CreateWorkScheduleData {
 }
 
 export interface UpdateWorkScheduleData {
-  shift_id?: string;
   slug?: string;
-  status?: string;
+  status?: WorkScheduleStatus;
   clock_in_time?: string;
   clock_out_time?: string;
   ot_start_after_hours?: number;

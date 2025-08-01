@@ -1,20 +1,25 @@
 import CreateShiftForm from '@/components/shift/CreateShiftForm';
+import CreateWorkScheduleForm from '@/components/shift/CreateWorkScheduleForm';
 import EditShiftForm from '@/components/shift/EditShiftForm';
+import WorkScheduleList from '@/components/shift/WorkScheduleList';
 import { Button } from '@/components/ui/button';
 import DeleteDialog from '@/components/ui/DeleteDialog';
 import { Input } from '@/components/ui/input';
 import { useShift } from '@/hooks/useShift';
 import { CreateShiftData, Shift, UpdateShiftData } from '@/types/shift';
-import { Clock, Edit, Plus, Search, Settings, Trash2 } from 'lucide-react';
+import { CreateWorkScheduleData, WorkSchedule } from '@/types/workSchedule';
+import { ChevronDown, ChevronRight, Clock, Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const ShiftList = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
   const [showEditForm, setShowEditForm] = useState<boolean>(false);
+  const [showCreateWorkScheduleForm, setShowCreateWorkScheduleForm] = useState<boolean>(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [shiftToDelete, setShiftToDelete] = useState<string | null>(null);
+  const [expandedShifts, setExpandedShifts] = useState<Set<string>>(new Set());
 
   const { shifts, isLoading, loadAllShifts, createShiftData, updateShiftData, deleteShiftData } =
     useShift();
@@ -51,10 +56,35 @@ const ShiftList = () => {
     }
   };
 
-  const handleManageTimeSlots = (shift: Shift) => {
-    // TODO: 實作管理時間段的功能
-    console.log('管理時間段:', shift);
-    // 這裡可以導航到時間段管理頁面或打開時間段管理 dialog
+  const handleToggleExpand = (shiftSlug: string) => {
+    const newExpanded = new Set(expandedShifts);
+    if (newExpanded.has(shiftSlug)) {
+      newExpanded.delete(shiftSlug);
+    } else {
+      newExpanded.add(shiftSlug);
+    }
+    setExpandedShifts(newExpanded);
+  };
+
+  const handleEditWorkSchedule = (workSchedule: WorkSchedule) => {
+    // TODO: 實作編輯工作時程的功能
+    console.log('編輯工作時程:', workSchedule);
+  };
+
+  const handleAddWorkSchedule = (shiftSlug: string) => {
+    setSelectedShift(shifts.find(shift => shift.slug === shiftSlug) || null);
+    setShowCreateWorkScheduleForm(true);
+  };
+
+  const handleCreateWorkSchedule = async (data: CreateWorkScheduleData) => {
+    // TODO: 實作新增工作時程的 API 調用
+    console.log('新增工作時程:', data);
+    setShowCreateWorkScheduleForm(false);
+  };
+
+  const handleDeleteWorkSchedule = (slug: string) => {
+    // TODO: 實作刪除工作時程的功能
+    console.log('刪除工作時程:', slug);
   };
 
   const handleDeleteShift = (slug: string) => {
@@ -68,6 +98,7 @@ const ShiftList = () => {
       setShiftToDelete(null);
     }
   };
+
   if (isLoading) {
     return (
       <div className="bg-white/10 border border-white/20 rounded-2xl backdrop-blur-xl p-6">
@@ -121,63 +152,82 @@ const ShiftList = () => {
         <div>
           <h2 className="text-xl font-semibold text-white mb-6">班次列表</h2>
           <div className="space-y-3">
-            {filteredShifts.map(shift => (
-              <div
-                key={shift.slug}
-                className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors gap-4"
-              >
-                <div className="flex items-center space-x-4">
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: shift.color || '#3B82F6' }}
-                  >
-                    <Clock className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-white font-medium truncate">{shift.name}</h3>
-                    <p className="text-white/60 text-sm">代碼：{shift.code}</p>
-                  </div>
-                </div>
-                <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-6">
-                  <div className="flex flex-col md:flex-row md:space-x-6 space-y-1 md:space-y-0">
-                    <div className="text-white/80 text-sm flex items-center">
-                      日切時間：{shift.day_cut_time}
-                    </div>
-                    <div className="text-white/80 text-sm flex items-center gap-2">
-                      週期天數：{shift.cycle_days} 天
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 text-white/60 hover:text-white hover:bg-white/10"
-                        onClick={() => handleManageTimeSlots(shift)}
+            {filteredShifts.map(shift => {
+              const isExpanded = expandedShifts.has(shift.slug);
+              const workSchedules = shift.work_schedules || [];
+
+              return (
+                <div key={shift.slug} className="space-y-2">
+                  {/* 班次主項目 */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors gap-4">
+                    <div className="flex items-center space-x-4">
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: shift.color || '#3B82F6' }}
                       >
-                        <Settings className="h-3 w-3" />
-                      </Button>
+                        <Clock className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-white font-medium truncate">{shift.name}</h3>
+                        <p className="text-white/60 text-sm">代碼：{shift.code}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-6">
+                      <div className="flex flex-col md:flex-row md:space-x-6 space-y-1 md:space-y-0">
+                        <div className="text-white/80 text-sm flex items-center">
+                          日切時間：{shift.day_cut_time}
+                        </div>
+                        <div className="text-white/80 text-sm flex items-center gap-2">
+                          週期天數：{shift.cycle_days} 天
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleToggleExpand(shift.slug)}
+                            className="h-6 w-6 p-0 text-white/60 hover:text-white hover:bg-white/10"
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="h-3 w-3" />
+                            ) : (
+                              <ChevronRight className="h-3 w-3" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex-1 md:flex-none"
+                          onClick={() => handleEditShift(shift)}
+                        >
+                          <Edit className="h-3 w-3 mr-1" />
+                          編輯
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 flex-1 md:flex-none"
+                          onClick={() => handleDeleteShift(shift.slug)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          移除
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex-1 md:flex-none"
-                      onClick={() => handleEditShift(shift)}
-                    >
-                      <Edit className="h-3 w-3 mr-1" />
-                      編輯
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 flex-1 md:flex-none"
-                      onClick={() => handleDeleteShift(shift.slug)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                      移除
-                    </Button>
-                  </div>
+
+                  {/* 展開的工作時程列表 */}
+                  {isExpanded && (
+                    <WorkScheduleList
+                      workSchedules={workSchedules}
+                      onAddWorkSchedule={() => handleAddWorkSchedule(shift.slug)}
+                      onEditWorkSchedule={handleEditWorkSchedule}
+                      onDeleteWorkSchedule={handleDeleteWorkSchedule}
+                    />
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -196,6 +246,16 @@ const ShiftList = () => {
           open={showEditForm}
           onOpenChange={setShowEditForm}
           onSubmit={handleUpdateShift}
+        />
+      )}
+
+      {/* 新增工作時程表單 */}
+      {selectedShift && (
+        <CreateWorkScheduleForm
+          shiftSlug={selectedShift.slug}
+          open={showCreateWorkScheduleForm}
+          onOpenChange={setShowCreateWorkScheduleForm}
+          onSubmit={handleCreateWorkSchedule}
         />
       )}
 

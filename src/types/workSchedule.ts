@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export enum WorkScheduleStatus {
   WORK = 'work',
   OFF = 'off',
@@ -5,8 +7,8 @@ export enum WorkScheduleStatus {
 
 export interface WorkSchedule {
   id?: number;
-  shift_id: string;
   slug: string;
+  shift_id: string;
   status: WorkScheduleStatus;
   clock_in_time: string;
   clock_out_time: string;
@@ -52,3 +54,27 @@ export interface UpdateWorkScheduleData {
   break3_start?: string;
   break3_end?: string;
 }
+
+// 表單驗證 Schema
+export const createWorkScheduleSchema = z.object({
+  slug: z.string().min(1, '代碼為必填'),
+  status: z.enum([WorkScheduleStatus.WORK, WorkScheduleStatus.OFF]),
+  clock_in_time: z.string().min(1, '上班時間為必填'),
+  clock_out_time: z.string().min(1, '下班時間為必填'),
+  ot_start_after_hours: z.coerce
+    .number()
+    .min(0, '加班開始小時不能小於0')
+    .max(23, '加班開始小時不能大於23'),
+  ot_start_after_minutes: z.coerce
+    .number()
+    .min(0, '加班開始分鐘不能小於0')
+    .max(59, '加班開始分鐘不能大於59'),
+  break1_start: z.string().optional(),
+  break1_end: z.string().optional(),
+  break2_start: z.string().optional(),
+  break2_end: z.string().optional(),
+  break3_start: z.string().optional(),
+  break3_end: z.string().optional(),
+});
+
+export type CreateWorkScheduleFormData = z.infer<typeof createWorkScheduleSchema>;

@@ -5,7 +5,7 @@ interface ShiftState {
   shifts: Shift[];
   setShifts: (shifts: Shift[]) => void;
   addShift: (shift: Shift) => void;
-  updateShift: (slug: string, shiftData: Partial<Shift>) => void;
+  setShift: (slug: string, shiftData: Partial<Shift>) => void;
   removeShift: (slug: string) => void;
   getShiftBySlug: (slug: string) => Shift | undefined;
 }
@@ -20,7 +20,7 @@ export const useShiftStore = create<ShiftState>()((set, get) => ({
     set({ shifts: [shift, ...shifts] });
   },
 
-  updateShift: (slug: string, shiftData: Partial<Shift>) => {
+  setShift: (slug: string, shiftData: Partial<Shift>) => {
     const { shifts } = get();
     const updatedShifts = shifts.map(shift =>
       shift.slug === slug ? { ...shift, ...shiftData } : shift

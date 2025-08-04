@@ -19,7 +19,7 @@ import { useState } from 'react';
 export const useShift = () => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const { shifts, setShifts, addShift, updateShift, removeShift } = useShiftStore();
+  const { shifts, setShifts, addShift, setShift, removeShift } = useShiftStore();
 
   // 載入所有班次
   const loadAllShifts = async () => {
@@ -66,7 +66,7 @@ export const useShift = () => {
   const handleUpdateShift = async (slug: string, shiftData: UpdateShiftData) => {
     const updatedShift = await updateShiftService(slug, shiftData);
     if (updatedShift) {
-      updateShift(slug, updatedShift);
+      setShift(slug, updatedShift);
     }
 
     return updatedShift;
@@ -87,13 +87,15 @@ export const useShift = () => {
     const newWorkSchedule = await createWorkScheduleService(workScheduleData);
     if (newWorkSchedule) {
       // 更新對應的 shift 中的 work_schedules
-      const shift = shifts.find(s => s.slug === workScheduleData.shift_id);
+      const shift = shifts.find(s => s.id === workScheduleData.shift_id);
       if (shift) {
+        const updatedWorkSchedules = [...(shift.work_schedules || []), newWorkSchedule];
         const updatedShift = {
           ...shift,
-          work_schedules: [...(shift.work_schedules || []), newWorkSchedule],
+          work_schedules: updatedWorkSchedules,
+          cycle_days: updatedWorkSchedules.length, // 更新週期天數
         };
-        updateShift(shift.slug, updatedShift);
+        setShift(shift.slug, updatedShift);
       }
     }
 
@@ -115,8 +117,9 @@ export const useShift = () => {
         const updatedShift = {
           ...shift,
           work_schedules: updatedWorkSchedules,
+          cycle_days: updatedWorkSchedules.length, // 更新週期天數
         };
-        updateShift(shift.slug, updatedShift);
+        setShift(shift.slug, updatedShift);
       }
     }
 
@@ -134,8 +137,9 @@ export const useShift = () => {
         const updatedShift = {
           ...shift,
           work_schedules: updatedWorkSchedules,
+          cycle_days: updatedWorkSchedules.length, // 更新週期天數
         };
-        updateShift(shift.slug, updatedShift);
+        setShift(shift.slug, updatedShift);
       }
     }
 

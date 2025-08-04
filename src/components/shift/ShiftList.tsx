@@ -9,7 +9,8 @@ import { useShift } from '@/hooks/useShift';
 import { CreateShiftData, Shift, UpdateShiftData } from '@/types/shift';
 import { CreateWorkScheduleData, WorkSchedule } from '@/types/workSchedule';
 import { ChevronDown, ChevronRight, Clock, Edit, Plus, Search, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { CreateWorkScheduleFormRef } from './CreateWorkScheduleForm';
 
 const ShiftList = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -17,12 +18,23 @@ const ShiftList = () => {
   const [showEditForm, setShowEditForm] = useState<boolean>(false);
   const [showCreateWorkScheduleForm, setShowCreateWorkScheduleForm] = useState<boolean>(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
+  const [showDeleteWorkScheduleDialog, setShowDeleteWorkScheduleDialog] = useState<boolean>(false);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [shiftToDelete, setShiftToDelete] = useState<string | null>(null);
+  const [workScheduleToDelete, setWorkScheduleToDelete] = useState<string | null>(null);
   const [expandedShifts, setExpandedShifts] = useState<Set<string>>(new Set());
+  const formRef = useRef<CreateWorkScheduleFormRef>(null);
 
-  const { shifts, isLoading, loadAllShifts, createShiftData, updateShiftData, deleteShiftData } =
-    useShift();
+  const {
+    shifts,
+    isLoading,
+    loadAllShifts,
+    handleCreateShift,
+    handleUpdateShift,
+    handleDeleteShift,
+    handleCreateWorkSchedule,
+    handleDeleteWorkSchedule,
+  } = useShift();
 
   useEffect(() => {
     loadAllShifts();
@@ -36,8 +48,8 @@ const ShiftList = () => {
     return matchesSearch;
   });
 
-  const handleCreateShift = async (formData: CreateShiftData) => {
-    const result = await createShiftData(formData);
+  const submitCreateShift = async (formData: CreateShiftData) => {
+    const result = await handleCreateShift(formData);
     if (result) {
       setShowCreateForm(false);
     }
@@ -48,8 +60,8 @@ const ShiftList = () => {
     setShowEditForm(true);
   };
 
-  const handleUpdateShift = async (slug: string, formData: UpdateShiftData) => {
-    const result = await updateShiftData(slug, formData);
+  const submitUpdateShift = async (slug: string, formData: UpdateShiftData) => {
+    const result = await handleUpdateShift(slug, formData);
     if (result) {
       setShowEditForm(false);
       setSelectedShift(null);
@@ -76,25 +88,37 @@ const ShiftList = () => {
     setShowCreateWorkScheduleForm(true);
   };
 
-  const handleCreateWorkSchedule = async (data: CreateWorkScheduleData) => {
-    // TODO: 實作新增工作時程的 API 調用
-    console.log('新增工作時程:', data);
-    setShowCreateWorkScheduleForm(false);
+  const submitCreateWorkSchedule = async (data: CreateWorkScheduleData) => {
+    const result = await handleCreateWorkSchedule(data);
+    if (result) {
+      setShowCreateWorkScheduleForm(false);
+      formRef.current?.reset();
+    }
   };
 
-  const handleDeleteWorkSchedule = (slug: string) => {
-    // TODO: 實作刪除工作時程的功能
-    console.log('刪除工作時程:', slug);
+  const handleDeleteWorkScheduleConfirm = async (slug: string) => {
+    setWorkScheduleToDelete(slug);
+    setShowDeleteWorkScheduleDialog(true);
   };
 
-  const handleDeleteShift = (slug: string) => {
+  const handleDeleteWorkScheduleConfirmAction = async () => {
+    if (workScheduleToDelete) {
+      const result = await handleDeleteWorkSchedule(workScheduleToDelete);
+      if (result) {
+        setWorkScheduleToDelete(null);
+        setShowDeleteWorkScheduleDialog(false);
+      }
+    }
+  };
+
+  const handleDeleteShiftConfirm = (slug: string) => {
     setShiftToDelete(slug);
     setShowDeleteDialog(true);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleDeleteShiftConfirmAction = async () => {
     if (shiftToDelete) {
-      await deleteShiftData(shiftToDelete);
+      await handleDeleteShift(shiftToDelete);
       setShiftToDelete(null);
     }
   };
@@ -207,7 +231,7 @@ const ShiftList = () => {
                           variant="outline"
                           size="sm"
                           className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 flex-1 md:flex-none"
-                          onClick={() => handleDeleteShift(shift.slug)}
+                          onClick={() => handleDeleteShiftConfirm(shift.slug)}
                         >
                           <Trash2 className="h-3 w-3" />
                           移除
@@ -222,7 +246,7 @@ const ShiftList = () => {
                       workSchedules={workSchedules}
                       onAddWorkSchedule={() => handleAddWorkSchedule(shift.slug)}
                       onEditWorkSchedule={handleEditWorkSchedule}
-                      onDeleteWorkSchedule={handleDeleteWorkSchedule}
+                      onDeleteWorkSchedule={handleDeleteWorkScheduleConfirm}
                     />
                   )}
                 </div>
@@ -236,7 +260,7 @@ const ShiftList = () => {
       <CreateShiftForm
         open={showCreateForm}
         onOpenChange={setShowCreateForm}
-        onSubmit={handleCreateShift}
+        onSubmit={submitCreateShift}
       />
 
       {/* 編輯班次表單 */}
@@ -245,17 +269,18 @@ const ShiftList = () => {
           shift={selectedShift}
           open={showEditForm}
           onOpenChange={setShowEditForm}
-          onSubmit={handleUpdateShift}
+          onSubmit={submitUpdateShift}
         />
       )}
 
       {/* 新增工作時程表單 */}
       {selectedShift && (
         <CreateWorkScheduleForm
-          shiftSlug={selectedShift.slug}
+          ref={formRef}
+          shiftId={selectedShift.id}
           open={showCreateWorkScheduleForm}
           onOpenChange={setShowCreateWorkScheduleForm}
-          onSubmit={handleCreateWorkSchedule}
+          onSubmit={submitCreateWorkSchedule}
         />
       )}
 
@@ -263,9 +288,18 @@ const ShiftList = () => {
       <DeleteDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        onConfirm={handleConfirmDelete}
+        onConfirm={handleDeleteShiftConfirmAction}
         title="確認刪除班次"
         description="確定要刪除此班次嗎？此操作無法復原。"
+      />
+
+      {/* 刪除工作時程確認對話框 */}
+      <DeleteDialog
+        open={showDeleteWorkScheduleDialog}
+        onOpenChange={setShowDeleteWorkScheduleDialog}
+        onConfirm={handleDeleteWorkScheduleConfirmAction}
+        title="確認刪除工作時程"
+        description="確定要刪除此工作時程嗎？此操作無法復原。"
       />
     </div>
   );

@@ -1,6 +1,6 @@
+import { ButtonLoader } from '@/components/common/ButtonLoader';
 import { Button, ButtonProps } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { getButtonContent } from '@/utils/buttonUtils';
 import { ReactNode } from 'react';
 
 interface CancelButtonProps extends Omit<ButtonProps, 'className' | 'children'> {
@@ -27,7 +27,7 @@ const CancelButton = ({
       disabled={disabled}
       className={cn('text-sm', className)}
     >
-      {getButtonContent(children, '取消')}
+      <ButtonLoader defaultContent="取消">{children}</ButtonLoader>
     </Button>
   );
 };

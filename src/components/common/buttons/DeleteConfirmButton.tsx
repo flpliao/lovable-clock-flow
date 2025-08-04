@@ -1,6 +1,6 @@
+import { ButtonLoader } from '@/components/common/ButtonLoader';
 import { Button, ButtonProps } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { getButtonContent } from '@/utils/buttonUtils';
 import { Trash2 } from 'lucide-react';
 import { ReactNode } from 'react';
 
@@ -28,15 +28,6 @@ const DeleteConfirmButton = ({
     </>
   );
 
-  const customContent = children ? (
-    <>
-      <Trash2 className="h-4 w-4 mr-2" />
-      {children}
-    </>
-  ) : (
-    defaultContent
-  );
-
   return (
     <Button
       variant="destructive"
@@ -48,7 +39,9 @@ const DeleteConfirmButton = ({
         className
       )}
     >
-      {getButtonContent(customContent, defaultContent, loading, '刪除中...')}
+      <ButtonLoader defaultContent={defaultContent} loading={loading} loadingText="刪除中...">
+        {children}
+      </ButtonLoader>
     </Button>
   );
 };

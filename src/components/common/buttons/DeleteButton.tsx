@@ -1,6 +1,6 @@
+import { ButtonLoader } from '@/components/common/ButtonLoader';
 import { Button, ButtonProps } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { getButtonContent } from '@/utils/buttonUtils';
 import { Trash2 } from 'lucide-react';
 import { ReactNode } from 'react';
 
@@ -37,7 +37,7 @@ const DeleteButton = ({
         className
       )}
     >
-      {getButtonContent(children, defaultContent)}
+      <ButtonLoader defaultContent={defaultContent}>{children}</ButtonLoader>
     </Button>
   );
 };

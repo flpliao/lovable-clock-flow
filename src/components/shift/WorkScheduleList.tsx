@@ -124,7 +124,7 @@ const WorkScheduleList = ({
                               <DeleteButton
                                 onClick={() => onDeleteWorkSchedule(workSchedule.slug)}
                                 size="sm"
-                                className="h-6 w-6 p-0 border-none bg-transparent hover:bg-transparent"
+                                className="h-6 w-6 p-0"
                               >
                                 <Trash2 className="h-3 w-3" />
                               </DeleteButton>

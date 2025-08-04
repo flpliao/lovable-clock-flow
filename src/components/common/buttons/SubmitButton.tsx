@@ -1,6 +1,6 @@
+import { ButtonLoader } from '@/components/common/ButtonLoader';
 import { Button, ButtonProps } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { getButtonContent } from '@/utils/buttonUtils';
 import { ReactNode } from 'react';
 
 interface SubmitButtonProps extends Omit<ButtonProps, 'className' | 'children'> {
@@ -27,7 +27,9 @@ const SubmitButton = ({
       disabled={disabled || loading}
       className={cn('text-sm', className)}
     >
-      {getButtonContent(children, '提交', loading, loadingText)}
+      <ButtonLoader defaultContent="提交" loading={loading} loadingText={loadingText}>
+        {children}
+      </ButtonLoader>
     </Button>
   );
 };

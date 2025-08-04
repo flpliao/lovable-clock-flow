@@ -1,6 +1,6 @@
+import { ButtonLoader } from '@/components/common/ButtonLoader';
 import { Button, ButtonProps } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { getButtonContent } from '@/utils/buttonUtils';
 import { Plus } from 'lucide-react';
 import { ReactNode } from 'react';
 
@@ -48,7 +48,9 @@ const AddButton = ({
         className
       )}
     >
-      {getButtonContent(customContent, defaultContent, loading, '新增中...')}
+      <ButtonLoader defaultContent={defaultContent} loading={loading} loadingText="新增中...">
+        {customContent}
+      </ButtonLoader>
     </Button>
   );
 };

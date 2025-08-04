@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { CancelButton, SubmitButton } from '@/components/common/buttons';
 import {
   Dialog,
   DialogContent,
@@ -294,10 +294,8 @@ const CreateWorkScheduleForm = forwardRef<CreateWorkScheduleFormRef, CreateWorkS
 
               {/* 按鈕 */}
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={handleClose}>
-                  取消
-                </Button>
-                <Button type="submit">新增</Button>
+                <CancelButton onClick={handleClose} />
+                <SubmitButton />
               </div>
             </form>
           </Form>

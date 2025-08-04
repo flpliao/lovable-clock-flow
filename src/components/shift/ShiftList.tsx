@@ -1,3 +1,4 @@
+import { AddButton, DeleteButton, EditButton } from '@/components/common/buttons';
 import CreateShiftForm from '@/components/shift/CreateShiftForm';
 import CreateWorkScheduleForm from '@/components/shift/CreateWorkScheduleForm';
 import EditShiftForm from '@/components/shift/EditShiftForm';
@@ -9,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { useShift } from '@/hooks/useShift';
 import { CreateShiftData, Shift, UpdateShiftData } from '@/types/shift';
 import { CreateWorkScheduleData, UpdateWorkScheduleData, WorkSchedule } from '@/types/workSchedule';
-import { ChevronDown, ChevronRight, Clock, Edit, Plus, Search, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { CreateWorkScheduleFormRef } from './CreateWorkScheduleForm';
 import { EditWorkScheduleFormRef } from './EditWorkScheduleForm';
@@ -169,13 +170,12 @@ const ShiftList = () => {
           </div>
 
           {/* 新增按鈕 */}
-          <Button
+          <AddButton
             onClick={() => setShowCreateForm(true)}
             className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700"
           >
-            <Plus className="h-4 w-4 mr-2" />
             新增班次
-          </Button>
+          </AddButton>
         </div>
 
         {/* 搜尋結果提示 */}
@@ -233,24 +233,14 @@ const ShiftList = () => {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex-1 md:flex-none"
+                        <EditButton
                           onClick={() => handleEditShift(shift)}
-                        >
-                          <Edit className="h-3 w-3 mr-1" />
-                          編輯
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 flex-1 md:flex-none"
+                          className="flex-1 md:flex-none"
+                        />
+                        <DeleteButton
                           onClick={() => handleDeleteShiftConfirm(shift.slug)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                          移除
-                        </Button>
+                          className="flex-1 md:flex-none"
+                        />
                       </div>
                     </div>
                   </div>

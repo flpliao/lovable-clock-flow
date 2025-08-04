@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { CancelButton, SubmitButton } from '@/components/common/buttons';
 import {
   Dialog,
   DialogContent,
@@ -14,13 +14,11 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/Input';
+import { Input } from '@/components/ui/input';
 import { CreateShiftData } from '@/types/shift';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-
-// 表單驗證 schema
 const shiftFormSchema = z.object({
   code: z.string().min(1, '班次代碼為必填項目'),
   name: z.string().min(1, '班次名稱為必填項目'),
@@ -158,12 +156,10 @@ const CreateShiftForm = ({
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={handleClose} className="h-8 text-sm">
-                取消
-              </Button>
-              <Button type="submit" disabled={isLoading} className="h-8 text-sm">
-                {isLoading ? '新增中...' : '新增'}
-              </Button>
+              <CancelButton onClick={handleClose} />
+              <SubmitButton loading={isLoading} loadingText="新增中...">
+                新增
+              </SubmitButton>
             </div>
           </form>
         </Form>

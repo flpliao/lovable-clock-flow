@@ -1,7 +1,7 @@
-import { Button } from '@/components/ui/button';
+import { AddButton, DeleteButton, EditButton } from '@/components/common/buttons';
 import { WorkSchedule, WorkScheduleStatus } from '@/types/workSchedule';
 import { calculateOvertimeStartTime } from '@/utils/dateTimeUtils';
-import { Clock, Edit, Plus, Trash2 } from 'lucide-react';
+import { Clock, Edit, Trash2 } from 'lucide-react';
 
 interface WorkScheduleListProps {
   workSchedules: WorkSchedule[];
@@ -32,15 +32,9 @@ const WorkScheduleList = ({
       <div className="flex items-center justify-between">
         <h4 className="text-white font-medium">工作時程 ({workSchedules.length})</h4>
         {onAddWorkSchedule && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onAddWorkSchedule}
-            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-          >
-            <Plus className="h-3 w-3 mr-1" />
+          <AddButton onClick={onAddWorkSchedule} size="sm">
             新增工作時程
-          </Button>
+          </AddButton>
         )}
       </div>
 
@@ -118,24 +112,22 @@ const WorkScheduleList = ({
                         <td className="px-3 py-2">
                           <div className="flex gap-2">
                             {onEditWorkSchedule && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
+                              <EditButton
                                 onClick={() => onEditWorkSchedule(workSchedule)}
-                                className="h-6 w-6 p-0 text-white/60 hover:text-white hover:bg-white/10"
+                                size="sm"
+                                className="h-6 w-6 p-0 border-none bg-transparent hover:bg-transparent"
                               >
-                                <Edit className="h-3 w-3" />
-                              </Button>
+                                <Edit className="h-3 w-3 mr-1" />
+                              </EditButton>
                             )}
                             {onDeleteWorkSchedule && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
+                              <DeleteButton
                                 onClick={() => onDeleteWorkSchedule(workSchedule.slug)}
-                                className="h-6 w-6 p-0 text-red-300 hover:text-red-200 hover:bg-red-500/10"
+                                size="sm"
+                                className="h-6 w-6 p-0 border-none bg-transparent hover:bg-transparent"
                               >
                                 <Trash2 className="h-3 w-3" />
-                              </Button>
+                              </DeleteButton>
                             )}
                           </div>
                         </td>
@@ -166,24 +158,22 @@ const WorkScheduleList = ({
                     {(onEditWorkSchedule || onDeleteWorkSchedule) && (
                       <div className="flex gap-1">
                         {onEditWorkSchedule && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
+                          <EditButton
                             onClick={() => onEditWorkSchedule(workSchedule)}
-                            className="h-6 w-6 p-0 text-white/60 hover:text-white hover:bg-white/10"
+                            size="sm"
+                            className="h-6 w-6"
                           >
-                            <Edit className="h-3 w-3" />
-                          </Button>
+                            <Edit className="h-3 w-3 mr-1" />
+                          </EditButton>
                         )}
                         {onDeleteWorkSchedule && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
+                          <DeleteButton
                             onClick={() => onDeleteWorkSchedule(workSchedule.slug)}
-                            className="h-6 w-6 p-0 text-red-300 hover:text-red-200 hover:bg-red-500/10"
+                            size="sm"
+                            className="h-6 w-6"
                           >
                             <Trash2 className="h-3 w-3" />
-                          </Button>
+                          </DeleteButton>
                         )}
                       </div>
                     )}

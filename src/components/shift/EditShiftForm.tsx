@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { CancelButton, SubmitButton } from '@/components/common/buttons';
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/Input';
+import { Input } from '@/components/ui/input';
 import { Shift, UpdateShiftData } from '@/types/shift';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
@@ -175,12 +175,10 @@ const EditShiftForm = ({
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={handleClose} className="h-8 text-sm">
-                取消
-              </Button>
-              <Button type="submit" disabled={isLoading} className="h-8 text-sm">
-                {isLoading ? '更新中...' : '更新'}
-              </Button>
+              <CancelButton onClick={handleClose} />
+              <SubmitButton loading={isLoading} loadingText="更新中...">
+                更新
+              </SubmitButton>
             </div>
           </form>
         </Form>

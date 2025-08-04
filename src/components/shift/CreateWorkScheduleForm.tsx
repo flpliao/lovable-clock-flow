@@ -87,8 +87,13 @@ const CreateWorkScheduleForm = forwardRef<CreateWorkScheduleFormRef, CreateWorkS
       onSubmit(workScheduleData);
     };
 
+    const handleClose = () => {
+      form.reset();
+      onOpenChange(false);
+    };
+
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg">新增工作時程</DialogTitle>
@@ -289,7 +294,7 @@ const CreateWorkScheduleForm = forwardRef<CreateWorkScheduleFormRef, CreateWorkS
 
               {/* 按鈕 */}
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                <Button type="button" variant="outline" onClick={handleClose}>
                   取消
                 </Button>
                 <Button type="submit">新增</Button>

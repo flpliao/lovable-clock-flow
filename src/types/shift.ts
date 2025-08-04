@@ -1,6 +1,7 @@
 import { WorkSchedule } from './workSchedule';
 
 export interface Shift {
+  id?: string;
   slug: string;
   code: string;
   name: string;

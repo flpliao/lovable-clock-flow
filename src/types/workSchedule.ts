@@ -26,7 +26,7 @@ export interface WorkSchedule {
 
 export interface CreateWorkScheduleData {
   shift_id: string;
-  slug: string;
+  slug?: string;
   status: WorkScheduleStatus;
   clock_in_time: string;
   clock_out_time: string;
@@ -57,7 +57,6 @@ export interface UpdateWorkScheduleData {
 
 // 表單驗證 Schema
 export const createWorkScheduleSchema = z.object({
-  slug: z.string().min(1, '代碼為必填'),
   status: z.enum([WorkScheduleStatus.WORK, WorkScheduleStatus.OFF]),
   clock_in_time: z.string().min(1, '上班時間為必填'),
   clock_out_time: z.string().min(1, '下班時間為必填'),

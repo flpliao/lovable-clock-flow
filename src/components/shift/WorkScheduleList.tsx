@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { WorkSchedule, WorkScheduleStatus } from '@/types/workSchedule';
+import { calculateOvertimeStartTime } from '@/utils/dateTimeUtils';
 import { Clock, Edit, Plus, Trash2 } from 'lucide-react';
 
 interface WorkScheduleListProps {
@@ -24,20 +25,6 @@ const WorkScheduleList = ({
       default:
         return { text: '未知', className: 'bg-gray-500/20 text-gray-700' };
     }
-  };
-
-  // 計算實際加班開始時間
-  const calculateOvertimeStartTime = (clockOutTime: string, hours: number, minutes: number) => {
-    if (!clockOutTime) return '';
-
-    const [outHours, outMinutes] = clockOutTime.split(':').map(Number);
-    const totalMinutes = outHours * 60 + outMinutes + hours * 60 + minutes;
-
-    // 處理跨日情況
-    const newHours = Math.floor(totalMinutes / 60) % 24;
-    const newMinutes = totalMinutes % 60;
-
-    return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
   };
 
   return (

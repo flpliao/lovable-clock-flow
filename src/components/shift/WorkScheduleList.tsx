@@ -26,6 +26,20 @@ const WorkScheduleList = ({
     }
   };
 
+  // 計算實際加班開始時間
+  const calculateOvertimeStartTime = (clockOutTime: string, hours: number, minutes: number) => {
+    if (!clockOutTime) return '';
+
+    const [outHours, outMinutes] = clockOutTime.split(':').map(Number);
+    const totalMinutes = outHours * 60 + outMinutes + hours * 60 + minutes;
+
+    // 處理跨日情況
+    const newHours = Math.floor(totalMinutes / 60) % 24;
+    const newMinutes = totalMinutes % 60;
+
+    return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="md:ml-12 bg-white/5 border border-white/10 rounded-lg p-4 space-y-4">
       <div className="flex items-center justify-between">
@@ -50,19 +64,25 @@ const WorkScheduleList = ({
             <table className="w-full">
               <thead className="bg-white/10">
                 <tr>
-                  <th className="px-3 py-2 text-left text-white/80 text-xs font-medium">順序</th>
-                  <th className="px-3 py-2 text-left text-white/80 text-xs font-medium">狀態</th>
-                  <th className="px-3 py-2 text-left text-white/80 text-xs font-medium">
+                  <th className="px-3 py-2 text-left text-white/80 text-xs font-medium w-16">
+                    順序
+                  </th>
+                  <th className="px-3 py-2 text-left text-white/80 text-xs font-medium w-20">
+                    狀態
+                  </th>
+                  <th className="px-3 py-2 text-left text-white/80 text-xs font-medium w-24">
                     上班時間
                   </th>
-                  <th className="px-3 py-2 text-left text-white/80 text-xs font-medium">
+                  <th className="px-3 py-2 text-left text-white/80 text-xs font-medium w-24">
                     下班時間
                   </th>
-                  <th className="px-3 py-2 text-left text-white/80 text-xs font-medium">
-                    加班開始
+                  <th className="px-3 py-2 text-left text-white/80 text-xs font-medium w-32">
+                    加班起算時間
                   </th>
                   {(onEditWorkSchedule || onDeleteWorkSchedule) && (
-                    <th className="px-3 py-2 text-left text-white/80 text-xs font-medium">操作</th>
+                    <th className="px-3 py-2 text-left text-white/80 text-xs font-medium w-20">
+                      操作
+                    </th>
                   )}
                 </tr>
               </thead>
@@ -84,8 +104,28 @@ const WorkScheduleList = ({
                         {workSchedule.clock_out_time}
                       </td>
                       <td className="px-3 py-2 text-white text-sm">
-                        {workSchedule.ot_start_after_hours}:
-                        {workSchedule.ot_start_after_minutes.toString().padStart(2, '0')}
+                        <div className="text-sm">
+                          {workSchedule.ot_start_after_hours > 0 ||
+                          workSchedule.ot_start_after_minutes > 0 ? (
+                            <div>
+                              下班後 {workSchedule.ot_start_after_hours} 小時
+                              {workSchedule.ot_start_after_minutes > 0 && (
+                                <span> {workSchedule.ot_start_after_minutes} 分鐘</span>
+                              )}
+                              <span className="text-white/60 ml-1">
+                                (
+                                {calculateOvertimeStartTime(
+                                  workSchedule.clock_out_time,
+                                  workSchedule.ot_start_after_hours,
+                                  workSchedule.ot_start_after_minutes
+                                )}
+                                )
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-white/60">無設定</span>
+                          )}
+                        </div>
                       </td>
                       {(onEditWorkSchedule || onDeleteWorkSchedule) && (
                         <td className="px-3 py-2">
@@ -174,8 +214,19 @@ const WorkScheduleList = ({
                     <div className="col-span-2">
                       <span className="text-white/60">加班開始：</span>
                       <span className="text-white">
-                        {workSchedule.ot_start_after_hours}:
-                        {workSchedule.ot_start_after_minutes.toString().padStart(2, '0')}
+                        下班後 {workSchedule.ot_start_after_hours}小時
+                        {workSchedule.ot_start_after_minutes > 0 && (
+                          <span> {workSchedule.ot_start_after_minutes}分鐘</span>
+                        )}
+                        <span className="text-white/60 ml-1">
+                          (
+                          {calculateOvertimeStartTime(
+                            workSchedule.clock_out_time,
+                            workSchedule.ot_start_after_hours,
+                            workSchedule.ot_start_after_minutes
+                          )}
+                          )
+                        </span>
                       </span>
                     </div>
                   </div>

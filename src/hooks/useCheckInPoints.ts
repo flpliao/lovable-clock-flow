@@ -1,8 +1,8 @@
 import {
-  createCheckInPoint as createCheckInPointService,
-  deleteCheckInPoint as deleteCheckInPointService,
+  createCheckInPoint,
+  deleteCheckInPoint,
   getNearbyCheckInPoints,
-  updateCheckInPoint as updateCheckInPointService,
+  updateCheckInPoint,
 } from '@/services/checkInPointService';
 import { useCheckInPointStore } from '@/stores/checkInPointStore';
 import { CheckInPoint } from '@/types/checkIn';
@@ -18,8 +18,8 @@ export function useCheckInPoints() {
     checkInPoints: data,
     setCheckInPoints,
     addCheckInPoint,
-    updateCheckInPoint: updateCheckInStore,
-    removeCheckInPoint: removeCheckInStore,
+    setCheckInPoint,
+    removeCheckInPoint,
   } = useCheckInPointStore();
 
   const loadCheckInPoints = async () => {
@@ -33,21 +33,21 @@ export function useCheckInPoints() {
     setIsLoading(false);
   };
 
-  const createCheckInPoint = async (checkpoint: Omit<CheckInPoint, 'id' | 'created_at'>) => {
-    const newCheckInPoints = await createCheckInPointService(checkpoint);
+  const handleCreateCheckInPoint = async (checkpoint: Omit<CheckInPoint, 'id' | 'created_at'>) => {
+    const newCheckInPoints = await createCheckInPoint(checkpoint);
     addCheckInPoint(newCheckInPoints);
   };
 
-  const updateCheckInPoint = async (id: string, checkpoint: Partial<CheckInPoint>) => {
-    const updatedCheckInPoints = await updateCheckInPointService(id, checkpoint);
-    updateCheckInStore(id, updatedCheckInPoints);
+  const handleUpdateCheckInPoint = async (id: string, checkpoint: Partial<CheckInPoint>) => {
+    const updatedCheckInPoints = await updateCheckInPoint(id, checkpoint);
+    setCheckInPoint(id, updatedCheckInPoints);
   };
 
-  const deleteCheckInPoint = async (id: string) => {
-    const success = await deleteCheckInPointService(id);
+  const handleDeleteCheckInPoint = async (id: string) => {
+    const success = await deleteCheckInPoint(id);
 
     if (success) {
-      removeCheckInStore(id);
+      removeCheckInPoint(id);
     }
 
     return success;
@@ -57,9 +57,9 @@ export function useCheckInPoints() {
     data,
     isLoading,
     loadCheckInPoints,
-    createCheckInPoint,
-    updateCheckInPoint,
-    deleteCheckInPoint,
+    handleCreateCheckInPoint,
+    handleUpdateCheckInPoint,
+    handleDeleteCheckInPoint,
     currentPos,
   };
 }

@@ -35,7 +35,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { leaveTypes, loadLeaveTypes } = useLeaveType();
   const getLeaveTypeBySlug = useLeaveTypeStore(state => state.getLeaveTypeBySlug);
-  const { createMyLeaveRequest } = useMyLeaveRequest();
+  const { handleCreateMyLeaveRequest } = useMyLeaveRequest();
   const { employee } = useEmployeeStore();
 
   const form = useForm<LeaveRequestFormValues>({
@@ -93,7 +93,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
       status: LeaveRequestStatus.PENDING,
     };
 
-    const result = await createMyLeaveRequest(leaveRequestData);
+    const result = await handleCreateMyLeaveRequest(leaveRequestData);
 
     if (result) {
       // 成功提交

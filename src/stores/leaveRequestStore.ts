@@ -86,7 +86,7 @@ interface MyLeaveRequestsState {
 
   setRequests: (requests: LeaveRequest[]) => void;
   addRequest: (request: LeaveRequest) => void;
-  updateRequest: (slug: string, updates: Partial<LeaveRequest>) => void;
+  setRequest: (slug: string, updates: Partial<LeaveRequest>) => void;
   removeRequest: (slug: string) => void;
   getRequestBySlug: (slug: string) => LeaveRequest | undefined;
   getRequestsByStatus: (status: string | string[]) => LeaveRequest[];
@@ -106,7 +106,7 @@ export const useMyLeaveRequestsStore = create<MyLeaveRequestsState>((set, get) =
     set({ requests: [...requests, request] });
   },
 
-  updateRequest: (slug, updates) => {
+  setRequest: (slug, updates) => {
     const { requests } = get();
     set({
       requests: requests.map(request =>

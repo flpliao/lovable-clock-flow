@@ -5,7 +5,7 @@ interface LeaveTypeState {
   leaveTypes: LeaveType[];
   setLeaveTypes: (leaveTypes: LeaveType[]) => void;
   addLeaveType: (leaveType: LeaveType) => void;
-  updateLeaveType: (leaveTypeSlug: string, leaveTypeData: Partial<LeaveType>) => void;
+  setLeaveType: (leaveTypeSlug: string, leaveTypeData: Partial<LeaveType>) => void;
   removeLeaveType: (leaveTypeSlug: string) => void;
   getLeaveTypeBySlug: (slug: string) => LeaveType | undefined;
   getPaidLeaveTypes: () => LeaveType[];
@@ -24,7 +24,7 @@ const useLeaveTypeStore = create<LeaveTypeState>()((set, get) => ({
     set({ leaveTypes: [leaveType, ...leaveTypes] });
   },
 
-  updateLeaveType: (leaveTypeSlug: string, leaveTypeData: Partial<LeaveType>) => {
+  setLeaveType: (leaveTypeSlug: string, leaveTypeData: Partial<LeaveType>) => {
     const { leaveTypes } = get();
     const updatedLeaveTypes = leaveTypes.map(leaveType =>
       leaveType.slug === leaveTypeSlug ? { ...leaveType, ...leaveTypeData } : leaveType

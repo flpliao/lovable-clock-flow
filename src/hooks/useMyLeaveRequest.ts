@@ -10,7 +10,7 @@ import { useState } from 'react';
 export const useMyLeaveRequest = () => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const { requests, setRequests, addRequest, updateRequest } = useMyLeaveRequestsStore();
+  const { requests, setRequests, addRequest, setRequest } = useMyLeaveRequestsStore();
 
   // 載入我的請假申請
   const loadMyLeaveRequests = async () => {
@@ -23,7 +23,7 @@ export const useMyLeaveRequest = () => {
   };
 
   // 新增請假申請
-  const createMyLeaveRequest = async (
+  const handleCreateMyLeaveRequest = async (
     requestData: Omit<
       LeaveRequest,
       'id' | 'slug' | 'created_at' | 'updated_at' | 'rejection_reason'
@@ -37,16 +37,16 @@ export const useMyLeaveRequest = () => {
   };
 
   // 更新請假申請
-  const updateMyLeaveRequest = (slug: string, updates: Partial<LeaveRequest>) => {
-    updateRequest(slug, updates);
+  const handleUpdateMyLeaveRequest = (slug: string, updates: Partial<LeaveRequest>) => {
+    setRequest(slug, updates);
   };
 
   // 取消請假申請
-  const cancelMyLeaveRequest = async (slug: string) => {
+  const handleCancelMyLeaveRequest = async (slug: string) => {
     const success = await cancelLeaveRequest(slug);
     if (success) {
       // 更新本地狀態為已取消
-      updateRequest(slug, { status: LeaveRequestStatus.CANCELLED });
+      setRequest(slug, { status: LeaveRequestStatus.CANCELLED });
     }
 
     return success;
@@ -59,8 +59,8 @@ export const useMyLeaveRequest = () => {
 
     // 操作方法
     loadMyLeaveRequests,
-    createMyLeaveRequest,
-    updateMyLeaveRequest,
-    cancelMyLeaveRequest,
+    handleCreateMyLeaveRequest,
+    handleUpdateMyLeaveRequest,
+    handleCancelMyLeaveRequest,
   };
 };

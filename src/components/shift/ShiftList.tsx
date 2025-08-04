@@ -1,29 +1,34 @@
 import CreateShiftForm from '@/components/shift/CreateShiftForm';
 import CreateWorkScheduleForm from '@/components/shift/CreateWorkScheduleForm';
 import EditShiftForm from '@/components/shift/EditShiftForm';
+import EditWorkScheduleForm from '@/components/shift/EditWorkScheduleForm';
 import WorkScheduleList from '@/components/shift/WorkScheduleList';
 import { Button } from '@/components/ui/button';
 import DeleteDialog from '@/components/ui/DeleteDialog';
 import { Input } from '@/components/ui/input';
 import { useShift } from '@/hooks/useShift';
 import { CreateShiftData, Shift, UpdateShiftData } from '@/types/shift';
-import { CreateWorkScheduleData, WorkSchedule } from '@/types/workSchedule';
+import { CreateWorkScheduleData, UpdateWorkScheduleData, WorkSchedule } from '@/types/workSchedule';
 import { ChevronDown, ChevronRight, Clock, Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { CreateWorkScheduleFormRef } from './CreateWorkScheduleForm';
+import { EditWorkScheduleFormRef } from './EditWorkScheduleForm';
 
 const ShiftList = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
   const [showEditForm, setShowEditForm] = useState<boolean>(false);
   const [showCreateWorkScheduleForm, setShowCreateWorkScheduleForm] = useState<boolean>(false);
+  const [showEditWorkScheduleForm, setShowEditWorkScheduleForm] = useState<boolean>(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
   const [showDeleteWorkScheduleDialog, setShowDeleteWorkScheduleDialog] = useState<boolean>(false);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
+  const [selectedWorkSchedule, setSelectedWorkSchedule] = useState<WorkSchedule | null>(null);
   const [shiftToDelete, setShiftToDelete] = useState<string | null>(null);
   const [workScheduleToDelete, setWorkScheduleToDelete] = useState<string | null>(null);
   const [expandedShifts, setExpandedShifts] = useState<Set<string>>(new Set());
   const formRef = useRef<CreateWorkScheduleFormRef>(null);
+  const editFormRef = useRef<EditWorkScheduleFormRef>(null);
 
   const {
     shifts,
@@ -33,6 +38,7 @@ const ShiftList = () => {
     handleUpdateShift,
     handleDeleteShift,
     handleCreateWorkSchedule,
+    handleUpdateWorkSchedule,
     handleDeleteWorkSchedule,
   } = useShift();
 
@@ -79,8 +85,17 @@ const ShiftList = () => {
   };
 
   const handleEditWorkSchedule = (workSchedule: WorkSchedule) => {
-    // TODO: 實作編輯工作時程的功能
-    console.log('編輯工作時程:', workSchedule);
+    setSelectedWorkSchedule(workSchedule);
+    setShowEditWorkScheduleForm(true);
+  };
+
+  const submitUpdateWorkSchedule = async (slug: string, data: UpdateWorkScheduleData) => {
+    const result = await handleUpdateWorkSchedule(slug, data);
+    if (result) {
+      setShowEditWorkScheduleForm(false);
+      setSelectedWorkSchedule(null);
+      editFormRef.current?.reset();
+    }
   };
 
   const handleAddWorkSchedule = (shiftSlug: string) => {
@@ -281,6 +296,17 @@ const ShiftList = () => {
           open={showCreateWorkScheduleForm}
           onOpenChange={setShowCreateWorkScheduleForm}
           onSubmit={submitCreateWorkSchedule}
+        />
+      )}
+
+      {/* 編輯工作時程表單 */}
+      {selectedWorkSchedule && (
+        <EditWorkScheduleForm
+          ref={editFormRef}
+          workSchedule={selectedWorkSchedule}
+          open={showEditWorkScheduleForm}
+          onOpenChange={setShowEditWorkScheduleForm}
+          onSubmit={submitUpdateWorkSchedule}
         />
       )}
 

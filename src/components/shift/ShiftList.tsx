@@ -8,12 +8,10 @@ import { Button } from '@/components/ui/button';
 import DeleteDialog from '@/components/ui/DeleteDialog';
 import { Input } from '@/components/ui/input';
 import { useShift } from '@/hooks/useShift';
-import { CreateShiftData, Shift, UpdateShiftData } from '@/types/shift';
-import { CreateWorkScheduleData, UpdateWorkScheduleData, WorkSchedule } from '@/types/workSchedule';
+import { Shift } from '@/types/shift';
+import { WorkSchedule } from '@/types/workSchedule';
 import { ChevronDown, ChevronRight, Clock, Search } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { CreateWorkScheduleFormRef } from './CreateWorkScheduleForm';
-import { EditWorkScheduleFormRef } from './EditWorkScheduleForm';
+import { useEffect, useState } from 'react';
 
 const ShiftList = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -28,8 +26,6 @@ const ShiftList = () => {
   const [shiftToDelete, setShiftToDelete] = useState<string | null>(null);
   const [workScheduleToDelete, setWorkScheduleToDelete] = useState<string | null>(null);
   const [expandedShifts, setExpandedShifts] = useState<Set<string>>(new Set());
-  const formRef = useRef<CreateWorkScheduleFormRef>(null);
-  const editFormRef = useRef<EditWorkScheduleFormRef>(null);
 
   const {
     shifts,
@@ -55,24 +51,9 @@ const ShiftList = () => {
     return matchesSearch;
   });
 
-  const submitCreateShift = async (formData: CreateShiftData) => {
-    const result = await handleCreateShift(formData);
-    if (result) {
-      setShowCreateForm(false);
-    }
-  };
-
   const handleEditShift = (shift: Shift) => {
     setSelectedShift(shift);
     setShowEditForm(true);
-  };
-
-  const submitUpdateShift = async (slug: string, formData: UpdateShiftData) => {
-    const result = await handleUpdateShift(slug, formData);
-    if (result) {
-      setShowEditForm(false);
-      setSelectedShift(null);
-    }
   };
 
   const handleToggleExpand = (shiftSlug: string) => {
@@ -90,26 +71,9 @@ const ShiftList = () => {
     setShowEditWorkScheduleForm(true);
   };
 
-  const submitUpdateWorkSchedule = async (slug: string, data: UpdateWorkScheduleData) => {
-    const result = await handleUpdateWorkSchedule(slug, data);
-    if (result) {
-      setShowEditWorkScheduleForm(false);
-      setSelectedWorkSchedule(null);
-      editFormRef.current?.reset();
-    }
-  };
-
   const handleAddWorkSchedule = (shiftSlug: string) => {
     setSelectedShift(shifts.find(shift => shift.slug === shiftSlug) || null);
     setShowCreateWorkScheduleForm(true);
-  };
-
-  const submitCreateWorkSchedule = async (data: CreateWorkScheduleData) => {
-    const result = await handleCreateWorkSchedule(data);
-    if (result) {
-      setShowCreateWorkScheduleForm(false);
-      formRef.current?.reset();
-    }
   };
 
   const handleDeleteWorkScheduleConfirm = async (slug: string) => {
@@ -117,26 +81,9 @@ const ShiftList = () => {
     setShowDeleteWorkScheduleDialog(true);
   };
 
-  const handleDeleteWorkScheduleConfirmAction = async () => {
-    if (workScheduleToDelete) {
-      const result = await handleDeleteWorkSchedule(workScheduleToDelete);
-      if (result) {
-        setWorkScheduleToDelete(null);
-        setShowDeleteWorkScheduleDialog(false);
-      }
-    }
-  };
-
   const handleDeleteShiftConfirm = (slug: string) => {
     setShiftToDelete(slug);
     setShowDeleteDialog(true);
-  };
-
-  const handleDeleteShiftConfirmAction = async () => {
-    if (shiftToDelete) {
-      await handleDeleteShift(shiftToDelete);
-      setShiftToDelete(null);
-    }
   };
 
   if (isLoading) {
@@ -173,9 +120,8 @@ const ShiftList = () => {
           <AddButton
             onClick={() => setShowCreateForm(true)}
             className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700"
-          >
-            新增班次
-          </AddButton>
+            buttonText="新增班次"
+          />
         </div>
 
         {/* 搜尋結果提示 */}
@@ -265,38 +211,38 @@ const ShiftList = () => {
       <CreateShiftForm
         open={showCreateForm}
         onOpenChange={setShowCreateForm}
-        onSubmit={submitCreateShift}
+        onSubmit={handleCreateShift}
       />
 
       {/* 編輯班次表單 */}
       {selectedShift && (
         <EditShiftForm
           shift={selectedShift}
+          setShift={setSelectedShift}
           open={showEditForm}
           onOpenChange={setShowEditForm}
-          onSubmit={submitUpdateShift}
+          onSubmit={handleUpdateShift}
         />
       )}
 
       {/* 新增工作時程表單 */}
       {selectedShift && (
         <CreateWorkScheduleForm
-          ref={formRef}
           shiftId={selectedShift.id}
           open={showCreateWorkScheduleForm}
           onOpenChange={setShowCreateWorkScheduleForm}
-          onSubmit={submitCreateWorkSchedule}
+          onSubmit={handleCreateWorkSchedule}
         />
       )}
 
       {/* 編輯工作時程表單 */}
       {selectedWorkSchedule && (
         <EditWorkScheduleForm
-          ref={editFormRef}
           workSchedule={selectedWorkSchedule}
+          setWorkSchedule={setSelectedWorkSchedule}
           open={showEditWorkScheduleForm}
           onOpenChange={setShowEditWorkScheduleForm}
-          onSubmit={submitUpdateWorkSchedule}
+          onSubmit={handleUpdateWorkSchedule}
         />
       )}
 
@@ -304,7 +250,10 @@ const ShiftList = () => {
       <DeleteDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        onConfirm={handleDeleteShiftConfirmAction}
+        onConfirm={() => handleDeleteShift(shiftToDelete)}
+        onSuccess={() => {
+          setShiftToDelete(null);
+        }}
         title="確認刪除班次"
         description="確定要刪除此班次嗎？此操作無法復原。"
       />
@@ -313,7 +262,10 @@ const ShiftList = () => {
       <DeleteDialog
         open={showDeleteWorkScheduleDialog}
         onOpenChange={setShowDeleteWorkScheduleDialog}
-        onConfirm={handleDeleteWorkScheduleConfirmAction}
+        onConfirm={() => handleDeleteWorkSchedule(workScheduleToDelete)}
+        onSuccess={() => {
+          setWorkScheduleToDelete(null);
+        }}
         title="確認刪除工作時程"
         description="確定要刪除此工作時程嗎？此操作無法復原。"
       />

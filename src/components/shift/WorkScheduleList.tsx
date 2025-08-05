@@ -32,9 +32,7 @@ const WorkScheduleList = ({
       <div className="flex items-center justify-between">
         <h4 className="text-white font-medium">工作時程 ({workSchedules.length})</h4>
         {onAddWorkSchedule && (
-          <AddButton onClick={onAddWorkSchedule} size="sm">
-            新增工作時程
-          </AddButton>
+          <AddButton onClick={onAddWorkSchedule} size="sm" buttonText="新增工作時程" />
         )}
       </div>
 

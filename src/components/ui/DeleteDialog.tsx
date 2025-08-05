@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { CancelButton, DeleteConfirmButton } from '@/components/common/buttons';
 import {
   Dialog,
   DialogContent,
@@ -7,29 +7,33 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import useLoadingAction from '@/hooks/useLoadingAction';
 import { AlertTriangle } from 'lucide-react';
 
 interface DeleteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<boolean>;
+  onSuccess?: () => void;
   title?: string;
   description?: string;
-  isLoading?: boolean;
 }
 
 const DeleteDialog = ({
   open,
   onOpenChange,
   onConfirm,
+  onSuccess,
   title = '確認刪除',
   description = '確定要刪除此項目嗎？此操作無法復原。',
-  isLoading = false,
 }: DeleteDialogProps) => {
-  const handleConfirm = () => {
-    onConfirm();
-    onOpenChange(false);
-  };
+  const { wrappedAction: handleConfirm, isLoading } = useLoadingAction(async () => {
+    const result = await onConfirm();
+    if (result) {
+      onOpenChange(false);
+      onSuccess?.();
+    }
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -49,17 +53,19 @@ const DeleteDialog = ({
         </DialogHeader>
 
         <DialogFooter className="gap-2">
-          <Button
+          <CancelButton
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
-          >
-            取消
-          </Button>
-          <Button type="button" variant="destructive" onClick={handleConfirm} disabled={isLoading}>
-            {isLoading ? '刪除中...' : '確認刪除'}
-          </Button>
+          />
+          <DeleteConfirmButton
+            type="button"
+            variant="destructive"
+            onClick={handleConfirm}
+            disabled={isLoading}
+            isLoading={isLoading}
+          />
         </DialogFooter>
       </DialogContent>
     </Dialog>

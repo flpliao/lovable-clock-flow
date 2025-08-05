@@ -1,4 +1,4 @@
-import { CancelButton, SubmitButton } from '@/components/common/buttons';
+import { CancelButton, SaveButton } from '@/components/common/buttons';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import useLoadingAction from '@/hooks/useLoadingAction';
 import { CreateShiftData } from '@/types/shift';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -31,16 +32,10 @@ type ShiftFormData = z.infer<typeof shiftFormSchema>;
 interface CreateShiftFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (formData: CreateShiftData) => void;
-  isLoading?: boolean;
+  onSubmit: (formData: CreateShiftData) => Promise<unknown>;
 }
 
-const CreateShiftForm = ({
-  open,
-  onOpenChange,
-  onSubmit,
-  isLoading = false,
-}: CreateShiftFormProps) => {
+const CreateShiftForm = ({ open, onOpenChange, onSubmit }: CreateShiftFormProps) => {
   const form = useForm<ShiftFormData>({
     resolver: zodResolver(shiftFormSchema),
     defaultValues: {
@@ -51,16 +46,21 @@ const CreateShiftForm = ({
     },
   });
 
-  const handleSubmit = (data: ShiftFormData) => {
-    // 確保所有必填欄位都有值
-    const shiftData: CreateShiftData = {
-      code: data.code,
-      name: data.name,
-      day_cut_time: data.day_cut_time,
-      color: data.color,
-    };
-    onSubmit(shiftData);
-  };
+  const { wrappedAction: handleSubmitAction, isLoading } = useLoadingAction(
+    async (data: ShiftFormData) => {
+      // 確保所有必填欄位都有值
+      const shiftData: CreateShiftData = {
+        code: data.code,
+        name: data.name,
+        day_cut_time: data.day_cut_time,
+        color: data.color,
+      };
+      const result = await onSubmit(shiftData);
+      if (result) {
+        handleClose();
+      }
+    }
+  );
 
   const handleClose = () => {
     form.reset();
@@ -76,7 +76,7 @@ const CreateShiftForm = ({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmitAction)} className="space-y-4">
             {/* 班次名稱和代碼並排 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -156,10 +156,8 @@ const CreateShiftForm = ({
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
-              <CancelButton onClick={handleClose} />
-              <SubmitButton loading={isLoading} loadingText="新增中...">
-                新增
-              </SubmitButton>
+              <CancelButton onClick={handleClose} disabled={isLoading} />
+              <SaveButton isLoading={isLoading} />
             </div>
           </form>
         </Form>

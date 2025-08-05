@@ -3,7 +3,7 @@ import { Button, ButtonProps } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ReactNode } from 'react';
 
-interface SubmitButtonProps extends Omit<ButtonProps, 'className' | 'children'> {
+interface UpdateButtonProps extends Omit<ButtonProps, 'className' | 'children'> {
   children?: ReactNode;
   className?: string;
   size?: 'default' | 'sm' | 'lg';
@@ -11,14 +11,14 @@ interface SubmitButtonProps extends Omit<ButtonProps, 'className' | 'children'> 
   loadingText?: string;
 }
 
-const SubmitButton = ({
+const UpdateButton = ({
   children,
   className,
   size = 'default',
   isLoading = false,
-  loadingText = '提交中...',
+  loadingText = '更新中...',
   disabled = false,
-}: SubmitButtonProps) => {
+}: UpdateButtonProps) => {
   return (
     <Button
       type="submit"
@@ -28,10 +28,10 @@ const SubmitButton = ({
       className={cn('text-sm', className)}
     >
       <ButtonLoader isLoading={isLoading} loadingText={loadingText}>
-        {children || '提交'}
+        {children || '更新'}
       </ButtonLoader>
     </Button>
   );
 };
 
-export default SubmitButton;
+export default UpdateButton;

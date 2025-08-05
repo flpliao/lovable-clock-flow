@@ -19,13 +19,6 @@ const DeleteButton = ({
   onClick,
   disabled = false,
 }: DeleteButtonProps) => {
-  const defaultContent = (
-    <>
-      <Trash2 className="h-4 w-4" />
-      移除
-    </>
-  );
-
   return (
     <Button
       variant="destructive"
@@ -37,7 +30,14 @@ const DeleteButton = ({
         className
       )}
     >
-      <ButtonLoader defaultContent={defaultContent}>{children}</ButtonLoader>
+      <ButtonLoader>
+        {children || (
+          <>
+            <Trash2 className="h-4 w-4" />
+            移除
+          </>
+        )}
+      </ButtonLoader>
     </Button>
   );
 };

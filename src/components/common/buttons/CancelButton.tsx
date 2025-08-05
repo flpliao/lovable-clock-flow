@@ -27,7 +27,7 @@ const CancelButton = ({
       disabled={disabled}
       className={cn('text-sm', className)}
     >
-      <ButtonLoader defaultContent="取消">{children}</ButtonLoader>
+      <ButtonLoader>{children || '取消'}</ButtonLoader>
     </Button>
   );
 };

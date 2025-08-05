@@ -19,13 +19,6 @@ const EditButton = ({
   onClick,
   disabled = false,
 }: EditButtonProps) => {
-  const defaultContent = (
-    <>
-      <Edit className="h-3 w-3 mr-1" />
-      編輯
-    </>
-  );
-
   return (
     <Button
       variant="outline"
@@ -37,7 +30,14 @@ const EditButton = ({
         className
       )}
     >
-      <ButtonLoader defaultContent={defaultContent}>{children}</ButtonLoader>
+      <ButtonLoader>
+        {children || (
+          <>
+            <Edit className="h-3 w-3 mr-1" />
+            編輯
+          </>
+        )}
+      </ButtonLoader>
     </Button>
   );
 };

@@ -7,7 +7,7 @@ interface SubmitButtonProps extends Omit<ButtonProps, 'className' | 'children'> 
   children?: ReactNode;
   className?: string;
   size?: 'default' | 'sm' | 'lg';
-  loading?: boolean;
+  isLoading?: boolean;
   loadingText?: string;
 }
 
@@ -15,7 +15,7 @@ const SubmitButton = ({
   children,
   className,
   size = 'default',
-  loading = false,
+  isLoading = false,
   loadingText,
   disabled = false,
 }: SubmitButtonProps) => {
@@ -24,11 +24,11 @@ const SubmitButton = ({
       type="submit"
       variant="default"
       size={size}
-      disabled={disabled || loading}
+      disabled={disabled || isLoading}
       className={cn('text-sm', className)}
     >
-      <ButtonLoader defaultContent="提交" loading={loading} loadingText={loadingText}>
-        {children}
+      <ButtonLoader isLoading={isLoading} loadingText={loadingText}>
+        {children || '提交'}
       </ButtonLoader>
     </Button>
   );

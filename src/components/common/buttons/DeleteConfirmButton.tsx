@@ -10,7 +10,7 @@ interface DeleteConfirmButtonProps extends Omit<ButtonProps, 'className' | 'chil
   size?: 'default' | 'sm' | 'lg';
   onClick?: () => void;
   disabled?: boolean;
-  loading?: boolean;
+  isLoading?: boolean;
 }
 
 const DeleteConfirmButton = ({
@@ -19,28 +19,26 @@ const DeleteConfirmButton = ({
   size = 'default',
   onClick,
   disabled = false,
-  loading = false,
+  isLoading = false,
 }: DeleteConfirmButtonProps) => {
-  const defaultContent = (
-    <>
-      <Trash2 className="h-4 w-4 mr-2" />
-      確認刪除
-    </>
-  );
-
   return (
     <Button
       variant="destructive"
       size={size}
       onClick={onClick}
-      disabled={disabled || loading}
+      disabled={disabled || isLoading}
       className={cn(
-        'bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 font-medium transition-all duration-200',
+        'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         className
       )}
     >
-      <ButtonLoader defaultContent={defaultContent} loading={loading} loadingText="刪除中...">
-        {children}
+      <ButtonLoader isLoading={isLoading} loadingText="刪除中...">
+        {children || (
+          <>
+            <Trash2 className="h-4 w-4 mr-2" />
+            確認刪除
+          </>
+        )}
       </ButtonLoader>
     </Button>
   );

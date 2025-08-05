@@ -1,3 +1,5 @@
+import React from 'react';
+
 // 登入請求參數
 export interface LoginRequest {
   email: string;
@@ -19,4 +21,29 @@ export interface Employee {
   role: string;
   created_at: string;
   updated_at: string;
+}
+
+// 角色類型定義
+export enum EmployeeRole {
+  ADMIN = 'admin',
+  MANAGER = 'manager',
+  STAFF = 'staff',
+}
+
+// 路由接口定義
+export interface RouteConfig {
+  path: string;
+  name: string;
+  component: React.ComponentType;
+  icon?: string;
+  roles?: EmployeeRole[]; // 可訪問的角色列表
+  children?: RouteConfig[]; // 支援子路由
+}
+
+// 角色守衛組件接口定義
+export interface RoleGuardProps {
+  requiredRoles: EmployeeRole[];
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  requireAll?: boolean; // true: 需要所有角色, false: 需要任一角色
 }

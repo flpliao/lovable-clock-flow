@@ -31,7 +31,7 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute route={protectedRoutes[0]}>
             <DashboardLayout />
           </ProtectedRoute>
         }
@@ -39,7 +39,7 @@ const AppRoutes: React.FC = () => {
         {protectedRoutes.map((route, id) => (
           <Route
             path={route.path}
-            element={<ProtectedRoute>{<route.component />}</ProtectedRoute>}
+            element={<ProtectedRoute route={route}>{<route.component />}</ProtectedRoute>}
             key={id}
           />
         ))}

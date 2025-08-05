@@ -10,6 +10,15 @@ export type { CheckInPoint, CheckInRecord } from '@/types/checkIn';
 // 重新導出請假申請相關類型
 export type { ApprovalRecord, LeaveRequest } from '@/types/leaveRequest';
 
+// 重新導出按鈕相關類型
+export type {
+  AddButtonProps,
+  BaseButtonProps,
+  ClickableButtonProps,
+  ClickableLoadingButtonProps,
+  SubmitButtonProps,
+} from '@/types/button';
+
 export interface User {
   id: string;
   name: string;

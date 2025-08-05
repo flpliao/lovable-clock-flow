@@ -1,15 +1,7 @@
 import { ButtonLoader } from '@/components/common/ButtonLoader';
-import { Button, ButtonProps } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ReactNode } from 'react';
-
-interface CancelButtonProps extends Omit<ButtonProps, 'className' | 'children'> {
-  children?: ReactNode;
-  className?: string;
-  size?: 'default' | 'sm' | 'lg';
-  onClick?: () => void;
-  disabled?: boolean;
-}
+import { ClickableButtonProps } from '@/types/button';
 
 const CancelButton = ({
   children,
@@ -17,7 +9,7 @@ const CancelButton = ({
   size = 'default',
   onClick,
   disabled = false,
-}: CancelButtonProps) => {
+}: ClickableButtonProps) => {
   return (
     <Button
       type="button"

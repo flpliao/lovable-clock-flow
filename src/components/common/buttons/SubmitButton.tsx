@@ -1,15 +1,7 @@
 import { ButtonLoader } from '@/components/common/ButtonLoader';
-import { Button, ButtonProps } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ReactNode } from 'react';
-
-interface SubmitButtonProps extends Omit<ButtonProps, 'className' | 'children'> {
-  children?: ReactNode;
-  className?: string;
-  size?: 'default' | 'sm' | 'lg';
-  isLoading?: boolean;
-  loadingText?: string;
-}
+import { SubmitButtonProps } from '@/types/button';
 
 const SubmitButton = ({
   children,

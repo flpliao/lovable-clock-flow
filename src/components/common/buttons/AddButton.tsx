@@ -1,18 +1,8 @@
 import { ButtonLoader } from '@/components/common/ButtonLoader';
-import { Button, ButtonProps } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { AddButtonProps } from '@/types/button';
 import { Plus } from 'lucide-react';
-import { ReactNode } from 'react';
-
-interface AddButtonProps extends Omit<ButtonProps, 'className' | 'children'> {
-  children?: ReactNode;
-  buttonText?: string;
-  className?: string;
-  size?: 'default' | 'sm' | 'lg';
-  onClick?: () => void;
-  disabled?: boolean;
-  isLoading?: boolean;
-}
 
 const AddButton = ({
   children,

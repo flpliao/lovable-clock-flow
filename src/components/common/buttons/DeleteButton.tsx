@@ -1,16 +1,8 @@
 import { ButtonLoader } from '@/components/common/ButtonLoader';
-import { Button, ButtonProps } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ClickableButtonProps } from '@/types/button';
 import { Trash2 } from 'lucide-react';
-import { ReactNode } from 'react';
-
-interface DeleteButtonProps extends Omit<ButtonProps, 'className' | 'children'> {
-  children?: ReactNode;
-  className?: string;
-  size?: 'default' | 'sm' | 'lg';
-  onClick?: () => void;
-  disabled?: boolean;
-}
 
 const DeleteButton = ({
   children,
@@ -18,7 +10,7 @@ const DeleteButton = ({
   size = 'sm',
   onClick,
   disabled = false,
-}: DeleteButtonProps) => {
+}: ClickableButtonProps) => {
   return (
     <Button
       variant="destructive"

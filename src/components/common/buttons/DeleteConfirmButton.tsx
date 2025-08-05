@@ -1,17 +1,8 @@
 import { ButtonLoader } from '@/components/common/ButtonLoader';
-import { Button, ButtonProps } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ClickableLoadingButtonProps } from '@/types/button';
 import { Trash2 } from 'lucide-react';
-import { ReactNode } from 'react';
-
-interface DeleteConfirmButtonProps extends Omit<ButtonProps, 'className' | 'children'> {
-  children?: ReactNode;
-  className?: string;
-  size?: 'default' | 'sm' | 'lg';
-  onClick?: () => void;
-  disabled?: boolean;
-  isLoading?: boolean;
-}
 
 const DeleteConfirmButton = ({
   children,
@@ -20,7 +11,7 @@ const DeleteConfirmButton = ({
   onClick,
   disabled = false,
   isLoading = false,
-}: DeleteConfirmButtonProps) => {
+}: ClickableLoadingButtonProps) => {
   return (
     <Button
       variant="destructive"

@@ -1,15 +1,7 @@
 import { ButtonLoader } from '@/components/common/ButtonLoader';
-import { Button, ButtonProps } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ReactNode } from 'react';
-
-interface UpdateButtonProps extends Omit<ButtonProps, 'className' | 'children'> {
-  children?: ReactNode;
-  className?: string;
-  size?: 'default' | 'sm' | 'lg';
-  isLoading?: boolean;
-  loadingText?: string;
-}
+import { SubmitButtonProps } from '@/types/button';
 
 const UpdateButton = ({
   children,
@@ -18,7 +10,7 @@ const UpdateButton = ({
   isLoading = false,
   loadingText = '更新中...',
   disabled = false,
-}: UpdateButtonProps) => {
+}: SubmitButtonProps) => {
   return (
     <Button
       type="submit"

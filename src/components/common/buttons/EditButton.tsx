@@ -1,16 +1,8 @@
 import { ButtonLoader } from '@/components/common/ButtonLoader';
-import { Button, ButtonProps } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ClickableButtonProps } from '@/types/button';
 import { Edit } from 'lucide-react';
-import { ReactNode } from 'react';
-
-interface EditButtonProps extends Omit<ButtonProps, 'className' | 'children'> {
-  children?: ReactNode;
-  className?: string;
-  size?: 'default' | 'sm' | 'lg';
-  onClick?: () => void;
-  disabled?: boolean;
-}
 
 const EditButton = ({
   children,
@@ -18,7 +10,7 @@ const EditButton = ({
   size = 'sm',
   onClick,
   disabled = false,
-}: EditButtonProps) => {
+}: ClickableButtonProps) => {
   return (
     <Button
       variant="outline"

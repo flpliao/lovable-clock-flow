@@ -1,15 +1,7 @@
 import { ButtonLoader } from '@/components/common/ButtonLoader';
-import { Button, ButtonProps } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ReactNode } from 'react';
-
-interface SaveButtonProps extends Omit<ButtonProps, 'className' | 'children'> {
-  children?: ReactNode;
-  className?: string;
-  size?: 'default' | 'sm' | 'lg';
-  isLoading?: boolean;
-  loadingText?: string;
-}
+import { SubmitButtonProps } from '@/types/button';
 
 const SaveButton = ({
   children,
@@ -18,7 +10,7 @@ const SaveButton = ({
   isLoading = false,
   loadingText = '儲存中...',
   disabled = false,
-}: SaveButtonProps) => {
+}: SubmitButtonProps) => {
   return (
     <Button
       type="submit"

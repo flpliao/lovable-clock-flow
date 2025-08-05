@@ -2,7 +2,7 @@ import { isAuthError } from '@/constants/errorCodes';
 import useEmployeeStore from '@/stores/employeeStore';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_WEB_API_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 // 創建全域的 axios 實例
 const axiosInstance = axios.create({

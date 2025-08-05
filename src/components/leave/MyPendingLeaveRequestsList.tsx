@@ -15,7 +15,7 @@ import {
 import LeaveRequestItem from './LeaveRequestItem';
 
 export function MyPendingLeaveRequestsList() {
-  const { isLoading, loadMyLeaveRequests, cancelMyLeaveRequest } = useMyLeaveRequest();
+  const { isLoading, loadMyLeaveRequests, handleCancelMyLeaveRequest } = useMyLeaveRequest();
   const getRequestByStatus = useMyLeaveRequestsStore(state => state.getRequestsByStatus);
 
   // 共享的確認對話框狀態
@@ -41,17 +41,12 @@ export function MyPendingLeaveRequestsList() {
     if (!pendingCancelSlug) return;
 
     setIsCancelling(true);
-    try {
-      const success = await cancelMyLeaveRequest(pendingCancelSlug);
-      if (success) {
-        setShowCancelDialog(false);
-        setPendingCancelSlug(null);
-      }
-    } catch (error) {
-      console.error('取消請假申請失敗:', error);
-    } finally {
-      setIsCancelling(false);
+    const success = await handleCancelMyLeaveRequest(pendingCancelSlug);
+    if (success) {
+      setShowCancelDialog(false);
+      setPendingCancelSlug(null);
     }
+    setIsCancelling(false);
   };
 
   if (isLoading) {

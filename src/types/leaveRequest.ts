@@ -16,6 +16,8 @@ export interface LeaveRequest {
   employee_id?: string; // 可選，創建時後端會自動從認證信息中獲取
   start_date: string;
   end_date: string;
+  start?: dayjs.Dayjs;
+  end?: dayjs.Dayjs;
   leave_type_id?: string;
   leave_type_code: string;
   status: LeaveRequestStatus;

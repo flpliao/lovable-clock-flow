@@ -12,7 +12,7 @@ interface Props {
 }
 
 const CheckpointTable = ({ data, loading, refresh, onEdit }: Props) => {
-  const { loadCheckInPoints, deleteCheckInPoint } = useCheckInPoints();
+  const { loadCheckInPoints, handleDeleteCheckInPoint } = useCheckInPoints();
 
   useEffect(() => {
     loadCheckInPoints();
@@ -21,7 +21,7 @@ const CheckpointTable = ({ data, loading, refresh, onEdit }: Props) => {
   const handleDelete = async (id: string) => {
     if (!window.confirm('確定要刪除此打卡點嗎？')) return;
     try {
-      await deleteCheckInPoint(id);
+      await handleDeleteCheckInPoint(id);
       refresh();
     } catch {
       alert('刪除失敗');

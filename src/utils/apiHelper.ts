@@ -1,6 +1,6 @@
 import { isAuthError } from '@/constants/errorCodes';
 import { toast } from '@/hooks/useToast';
-import { ApiResponse, CallApiOptions, DecodedResponse } from '@/types/api';
+import { ApiResponse, ApiResponseStatus, CallApiOptions, DecodedResponse } from '@/types/api';
 import { decodeApiResponse } from '@/utils/responseDecoder';
 
 export async function callApiAndDecode(
@@ -30,7 +30,7 @@ export async function callApiAndDecode(
       onError(error, errorMessage);
     }
 
-    return { status: 'error', message: errorMessage };
+    return { status: ApiResponseStatus.ERROR, message: errorMessage };
   }
 }
 

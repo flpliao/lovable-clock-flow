@@ -1,5 +1,6 @@
 // leaveTypeService: 提供請假類型相關 API 操作
 import { apiRoutes } from '@/routes/api';
+import { ApiResponseStatus } from '@/types/api';
 import { LeaveType } from '@/types/leaveType';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
@@ -10,11 +11,7 @@ export const getAllLeaveTypes = async (): Promise<LeaveType[]> => {
     axiosWithEmployeeAuth().get(apiRoutes.leaveType.index)
   );
 
-  if (status === 'error') {
-    return [];
-  }
-
-  return data as LeaveType[];
+  return status === ApiResponseStatus.SUCCESS ? (data as LeaveType[]) : [];
 };
 
 // 建立請假類型
@@ -25,11 +22,7 @@ export const createLeaveType = async (
     axiosWithEmployeeAuth().post(apiRoutes.leaveType.store, leaveTypeData)
   );
 
-  if (status === 'error') {
-    return null;
-  }
-
-  return data as LeaveType;
+  return status === ApiResponseStatus.SUCCESS ? (data as LeaveType) : null;
 };
 
 // 更新請假類型
@@ -41,18 +34,14 @@ export const updateLeaveType = async (
     axiosWithEmployeeAuth().put(apiRoutes.leaveType.update(slug), leaveTypeData)
   );
 
-  if (status === 'error') {
-    return null;
-  }
-
-  return data as LeaveType;
+  return status === ApiResponseStatus.SUCCESS ? (data as LeaveType) : null;
 };
 
 // 刪除請假類型
-export const deleteLeaveType = async (slug: string): Promise<string> => {
+export const deleteLeaveType = async (slug: string): Promise<boolean> => {
   const { status } = await callApiAndDecode(
     axiosWithEmployeeAuth().delete(apiRoutes.leaveType.destroy(slug))
   );
 
-  return status;
+  return status === ApiResponseStatus.SUCCESS;
 };

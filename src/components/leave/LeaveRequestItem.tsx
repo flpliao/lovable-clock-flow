@@ -1,5 +1,4 @@
 import { LeaveRequest, LeaveRequestStatus } from '@/types/leaveRequest';
-import dayjs from 'dayjs';
 import { AlertCircle, Calendar, CheckCircle, Clock, FileText, XCircle } from 'lucide-react';
 import LeaveRequestStatusBadge from '../LeaveRequestStatusBadge';
 import { Button } from '../ui/button';
@@ -69,8 +68,8 @@ export function LeaveRequestItem({ leaveRequest, onCancel }: LeaveRequestItemPro
         <div className="flex items-center gap-3">
           <Calendar className="h-5 w-5" />
           <span className="font-medium">
-            {dayjs(leaveRequest.start_date).format('YYYY/MM/DD HH:mm')} -{' '}
-            {dayjs(leaveRequest.end_date).format('YYYY/MM/DD HH:mm')}
+            {leaveRequest.start?.format('YYYY/MM/DD HH:mm')} -{' '}
+            {leaveRequest.end?.format('YYYY/MM/DD HH:mm')}
           </span>
         </div>
 

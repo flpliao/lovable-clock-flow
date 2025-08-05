@@ -1,4 +1,5 @@
 import { apiRoutes } from '@/routes/api';
+import { ApiResponseStatus } from '@/types/api';
 import { CheckInPoint } from '@/types/checkIn';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
@@ -17,11 +18,7 @@ export const getNearbyCheckInPoints = async (
     })
   );
 
-  if (status === 'error') {
-    return [];
-  }
-
-  return data as CheckInPoint[];
+  return status === ApiResponseStatus.SUCCESS ? (data as CheckInPoint[]) : [];
 };
 
 // 建立打卡點
@@ -32,11 +29,7 @@ export const createCheckInPoint = async (
     axiosWithEmployeeAuth().post(apiRoutes.checkinPoint.create, payload)
   );
 
-  if (status === 'error') {
-    return null;
-  }
-
-  return data as CheckInPoint;
+  return status === ApiResponseStatus.SUCCESS ? (data as CheckInPoint) : null;
 };
 
 // 更新打卡點
@@ -47,16 +40,12 @@ export const updateCheckInPoint = async (
   const url = apiRoutes.checkinPoint.update(String(id));
   const { data, status } = await callApiAndDecode(axiosWithEmployeeAuth().put(url, payload));
 
-  if (status === 'error') {
-    return null;
-  }
-
-  return data as CheckInPoint;
+  return status === ApiResponseStatus.SUCCESS ? (data as CheckInPoint) : null;
 };
 
 // 刪除打卡點
-export const deleteCheckInPoint = async (id: string): Promise<string> => {
+export const deleteCheckInPoint = async (id: string): Promise<boolean> => {
   const url = apiRoutes.checkinPoint.delete(String(id));
   const { status } = await callApiAndDecode(axiosWithEmployeeAuth().delete(url));
-  return status;
+  return status === ApiResponseStatus.SUCCESS;
 };

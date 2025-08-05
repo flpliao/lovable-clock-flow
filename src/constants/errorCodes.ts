@@ -7,7 +7,7 @@ export const HTTP_STATUS = {
 };
 
 // 驗證相關錯誤
-export const AUTH_ERROR_CODES = [HTTP_STATUS.UNAUTHORIZED, HTTP_STATUS.FORBIDDEN];
+export const AUTH_ERROR_CODES = [HTTP_STATUS.UNAUTHORIZED];
 
 // 檢查是否為驗證錯誤
 export const isAuthError = status => {

@@ -1,4 +1,4 @@
-import { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 
 /**
  * 計算兩個日期時間之間的小時差
@@ -8,4 +8,29 @@ import { Dayjs } from 'dayjs';
  */
 export const calculateHoursBetween = (startDateTime: Dayjs, endDateTime: Dayjs): number => {
   return Math.ceil(endDateTime.diff(startDateTime, 'hour', true)); // 使用 dayjs 計算小時差並向上取整
+};
+
+/**
+ * 計算實際加班開始時間
+ * @param clockOutTime 下班時間 (格式: HH:MM)
+ * @param hours 延遲小時數
+ * @param minutes 延遲分鐘數
+ * @returns 實際加班開始時間 (格式: HH:MM)
+ */
+export const calculateOvertimeStartTime = (
+  clockOutTime: string,
+  hours: number,
+  minutes: number
+): string => {
+  if (!clockOutTime) return '';
+
+  // 使用 dayjs 解析下班時間
+  const [outHours, outMinutes] = clockOutTime.split(':').map(Number);
+  const clockOutDateTime = dayjs().hour(outHours).minute(outMinutes).second(0);
+
+  // 加上延遲時間
+  const overtimeStartDateTime = clockOutDateTime.add(hours, 'hour').add(minutes, 'minute');
+
+  // 格式化為 HH:MM
+  return overtimeStartDateTime.format('HH:mm');
 };

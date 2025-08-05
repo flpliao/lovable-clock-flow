@@ -1,20 +1,15 @@
 import {
-  createLeaveType as createLeaveTypeService,
-  deleteLeaveType as deleteLeaveTypeService,
+  createLeaveType,
+  deleteLeaveType,
   getAllLeaveTypes,
-  updateLeaveType as updateLeaveTypeService,
+  updateLeaveType,
 } from '@/services/leaveTypeService';
 import useLeaveTypeStore from '@/stores/leaveTypeStore';
 import { LeaveType } from '@/types/leaveType';
 
 export const useLeaveType = () => {
-  const {
-    leaveTypes,
-    setLeaveTypes,
-    addLeaveType,
-    updateLeaveType: updateStoreLeaveType,
-    removeLeaveType: removeStoreLeaveType,
-  } = useLeaveTypeStore();
+  const { leaveTypes, setLeaveTypes, addLeaveType, setLeaveType, removeLeaveType } =
+    useLeaveTypeStore();
 
   // 載入所有請假類型
   const loadLeaveTypes = async () => {
@@ -26,24 +21,28 @@ export const useLeaveType = () => {
   };
 
   // 新增請假類型
-  const createLeaveType = async (leaveTypeData: Omit<LeaveType, 'slug'>) => {
-    const newLeaveType = await createLeaveTypeService(leaveTypeData);
+  const handleCreateLeaveType = async (
+    leaveTypeData: Omit<LeaveType, 'id' | 'slug' | 'created_at' | 'updated_at'>
+  ) => {
+    const newLeaveType = await createLeaveType(leaveTypeData);
     addLeaveType(newLeaveType);
   };
 
   // 更新請假類型
-  const updateLeaveType = async (slug: string, leaveTypeData: Partial<LeaveType>) => {
-    const updatedLeaveType = await updateLeaveTypeService(slug, leaveTypeData);
-    updateStoreLeaveType(slug, updatedLeaveType);
+  const handleUpdateLeaveType = async (slug: string, leaveTypeData: Partial<LeaveType>) => {
+    const updatedLeaveType = await updateLeaveType(slug, leaveTypeData);
+    setLeaveType(slug, updatedLeaveType);
   };
 
   // 刪除請假類型
-  const deleteLeaveType = async (slug: string) => {
-    const status = await deleteLeaveTypeService(slug);
+  const handleDeleteLeaveType = async (slug: string) => {
+    const success = await deleteLeaveType(slug);
 
-    if (status === 'success') {
-      removeStoreLeaveType(slug);
+    if (success) {
+      removeLeaveType(slug);
     }
+
+    return success;
   };
 
   return {
@@ -52,8 +51,8 @@ export const useLeaveType = () => {
 
     // 操作
     loadLeaveTypes,
-    createLeaveType,
-    updateLeaveType,
-    deleteLeaveType,
+    handleCreateLeaveType,
+    handleUpdateLeaveType,
+    handleDeleteLeaveType,
   };
 };

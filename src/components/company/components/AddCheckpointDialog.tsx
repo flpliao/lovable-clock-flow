@@ -14,7 +14,7 @@ const AddCheckpointDialog = ({
   onClose: () => void;
   onSuccess?: () => void;
 }) => {
-  const { createCheckInPoint } = useCheckInPoints();
+  const { handleCreateCheckInPoint } = useCheckInPoints();
   const [name, setName] = useState('');
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
@@ -25,7 +25,7 @@ const AddCheckpointDialog = ({
     e.preventDefault();
     setLoading(true);
     try {
-      await createCheckInPoint({
+      await handleCreateCheckInPoint({
         name,
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),

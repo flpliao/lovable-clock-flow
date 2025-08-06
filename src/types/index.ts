@@ -19,12 +19,7 @@ export type {
   SubmitButtonProps,
 } from '@/types/button';
 
-export type {
-  Employee,
-  EmployeeWorkSchedule,
-  EmployeeWorkScheduleData,
-  ScheduleShift,
-} from '@/types/schedule';
+export type { EmployeeWorkSchedule, EmployeeWorkScheduleData } from '@/types/employeeWorkSchedule';
 
 export interface User {
   id: string;

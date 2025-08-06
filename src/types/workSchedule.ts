@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { Shift } from './shift';
 
 export enum WorkScheduleStatus {
   WORK = 'work',
@@ -9,6 +10,7 @@ export interface WorkSchedule {
   id?: number;
   slug: string;
   shift_id: string;
+  shift?: Shift;
   status: WorkScheduleStatus;
   clock_in_time: string;
   clock_out_time: string;

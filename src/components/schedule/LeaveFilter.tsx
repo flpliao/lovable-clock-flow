@@ -1,5 +1,7 @@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { getSelectAllState } from '@/utils/checkboxUtils';
+import SelectAllOption from './SelectAllOption';
 
 interface LeaveFilterState {
   all: boolean;
@@ -16,24 +18,57 @@ interface LeaveFilterProps {
 }
 
 const LeaveFilter = ({ leaveFilter, onLeaveFilterChange }: LeaveFilterProps) => {
+  // 使用 utils 計算全選狀態
+  const visibleOptions = [
+    leaveFilter.leave,
+    leaveFilter.monthlyLeave,
+    leaveFilter.nationalHoliday,
+    leaveFilter.restDay,
+    leaveFilter.regularHoliday,
+  ];
+  const selectAllState = getSelectAllState(visibleOptions);
+
   const handleFilterChange = (key: keyof LeaveFilterState, checked: boolean) => {
-    onLeaveFilterChange({ ...leaveFilter, [key]: checked });
+    if (key === 'all') {
+      // 全選邏輯：將所有可見選項設為相同狀態
+      onLeaveFilterChange({
+        ...leaveFilter,
+        leave: checked,
+        monthlyLeave: checked,
+        nationalHoliday: checked,
+        restDay: checked,
+        regularHoliday: checked,
+        all: checked,
+      });
+    } else {
+      // 個別選項邏輯
+      const newFilter = { ...leaveFilter, [key]: checked };
+
+      // 更新全選狀態
+      const newVisibleOptions = [
+        newFilter.leave,
+        newFilter.monthlyLeave,
+        newFilter.nationalHoliday,
+        newFilter.restDay,
+        newFilter.regularHoliday,
+      ];
+      newFilter.all = newVisibleOptions.every(option => option);
+
+      onLeaveFilterChange(newFilter);
+    }
   };
 
   return (
     <div>
       <h3 className="text-white font-medium mb-3">休假選擇</h3>
       <div className="flex flex-wrap gap-4">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="leave-all"
-            checked={leaveFilter.all}
-            onCheckedChange={checked => handleFilterChange('all', checked as boolean)}
-          />
-          <Label htmlFor="leave-all" className="text-white text-sm">
-            全選
-          </Label>
-        </div>
+        <SelectAllOption
+          id="leave-all"
+          label="全選"
+          checked={selectAllState.checked}
+          onCheckedChange={checked => handleFilterChange('all', checked)}
+          indeterminate={selectAllState.indeterminate}
+        />
         <div className="flex items-center space-x-2">
           <Checkbox
             id="leave"

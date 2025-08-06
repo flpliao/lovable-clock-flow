@@ -19,6 +19,13 @@ export type {
   SubmitButtonProps,
 } from '@/types/button';
 
+export type {
+  Employee,
+  EmployeeWorkSchedule,
+  EmployeeWorkScheduleData,
+  ScheduleShift,
+} from '@/types/schedule';
+
 export interface User {
   id: string;
   name: string;

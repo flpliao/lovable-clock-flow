@@ -3,18 +3,21 @@ import PageLayout from '@/components/layout/PageLayout';
 import {
   DepartmentSelect,
   PersonnelFilter,
+  ScheduleGrid,
   ShiftFilter,
   ShiftSelector,
 } from '@/components/schedule';
 import { Button } from '@/components/ui/button';
 import { useDepartment } from '@/hooks/useDepartment';
 import { useShift } from '@/hooks/useShift';
+import { Employee, EmployeeWorkScheduleData, ScheduleShift } from '@/types/schedule';
+import { formatMonthDisplay } from '@/utils/dateUtils';
 import dayjs from 'dayjs';
-import { Calendar, ChevronDown, ChevronRight, Edit, Save, Search } from 'lucide-react';
+import { Calendar, Edit, Save, Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 // 模擬員工資料
-const mockEmployees = [
+const mockEmployees: Employee[] = [
   { id: 1, name: '楊玄琳', department: '診所' },
   { id: 2, name: '林郁庭', department: '診所' },
   { id: 3, name: '周荃', department: '診所' },
@@ -23,54 +26,38 @@ const mockEmployees = [
 ];
 
 // 模擬班次資料
-const mockShifts = [
+const mockShifts: ScheduleShift[] = [
   { id: 2, name: '診所早班', color: '#10B981', code: 'MORNING' },
   { id: 3, name: '診所晚班', color: '#F59E0B', code: 'EVENING' },
   { id: 4, name: '請假', color: '#EF4444', code: 'LEAVE' },
 ];
 
-// 模擬排班資料
-const mockScheduleData = {
+// 模擬員工工作排程資料
+const mockEmployeeWorkScheduleData: EmployeeWorkScheduleData = {
   楊玄琳: {
     4: {
-      shiftId: 3,
-      shiftName: '診所晚班',
-      startTime: '14:00',
-      endTime: '22:00',
+      employee_id: 1,
+      work_schedule_id: 3,
+      date: '2024-01-04',
       status: '已確認',
-      leave: null,
-      overtime: null,
-      businessTrip: null,
     },
     17: {
-      shiftId: 3,
-      shiftName: '診所晚班',
-      startTime: '14:00',
-      endTime: '22:00',
+      employee_id: 1,
+      work_schedule_id: 3,
+      date: '2024-01-17',
       status: '已確認',
-      leave: null,
-      overtime: null,
-      businessTrip: null,
     },
     20: {
-      shiftId: 3,
-      shiftName: '診所晚班',
-      startTime: '14:00',
-      endTime: '22:00',
+      employee_id: 1,
+      work_schedule_id: 3,
+      date: '2024-01-20',
       status: '已確認',
-      leave: null,
-      overtime: null,
-      businessTrip: null,
     },
     21: {
-      shiftId: 3,
-      shiftName: '診所晚班',
-      startTime: '14:00',
-      endTime: '22:00',
+      employee_id: 1,
+      work_schedule_id: 3,
+      date: '2024-01-21',
       status: '已確認',
-      leave: null,
-      overtime: null,
-      businessTrip: null,
     },
   },
 };
@@ -99,9 +86,12 @@ const ScheduleManagement = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedShift, setSelectedShift] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
-  const [expandedEmployees, setExpandedEmployees] = useState<Set<number>>(new Set());
-  const [scheduleData, setScheduleData] = useState(mockScheduleData);
-  const [initialScheduleData, setInitialScheduleData] = useState(mockScheduleData);
+  const [employeeWorkScheduleData, setEmployeeWorkScheduleData] = useState(
+    mockEmployeeWorkScheduleData
+  );
+  const [initialEmployeeWorkScheduleData, setInitialEmployeeWorkScheduleData] = useState(
+    mockEmployeeWorkScheduleData
+  );
 
   const { loadAllShifts } = useShift();
 
@@ -120,46 +110,16 @@ const ScheduleManagement = () => {
       loadAllShifts();
       setHasSearched(true);
       // 搜尋班表時，重置為原始模擬資料（深拷貝）
-      const deepCopyData = JSON.parse(JSON.stringify(mockScheduleData));
-      setScheduleData(deepCopyData);
-      setInitialScheduleData(deepCopyData);
+      const deepCopyData = JSON.parse(JSON.stringify(mockEmployeeWorkScheduleData));
+      setEmployeeWorkScheduleData(deepCopyData);
+      setInitialEmployeeWorkScheduleData(deepCopyData);
     }
-  };
-
-  // 使用 dayjs 格式化月份顯示
-  const formatMonthDisplay = (monthValue: string) => {
-    if (!monthValue) return '';
-    return dayjs(monthValue).format('YYYY年MM月');
   };
 
   // 處理月份變更
   const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSelectedMonth(value);
-  };
-
-  // 獲取月份的天數和第一天是星期幾
-  const getMonthDays = (yearMonth: string) => {
-    const [year, month] = yearMonth.split('-').map(Number);
-    const firstDay = dayjs(`${year}-${month}-01`);
-    const lastDay = firstDay.endOf('month');
-    const daysInMonth = lastDay.date();
-    const firstDayOfWeek = firstDay.day(); // 0 = 星期日, 1 = 星期一, ...
-
-    return { daysInMonth, firstDayOfWeek };
-  };
-
-  // 判斷是否為週末
-  const isWeekend = (yearMonth: string, day: number) => {
-    const [year, month] = yearMonth.split('-').map(Number);
-    const date = dayjs(`${year}-${month}-${day}`);
-    const dayOfWeek = date.day();
-    return dayOfWeek === 0 || dayOfWeek === 6; // 0 = 星期日, 6 = 星期六
-  };
-
-  // 獲取員工某天的班次
-  const getEmployeeShift = (employeeName: string, day: number) => {
-    return scheduleData[employeeName as keyof typeof scheduleData]?.[day];
   };
 
   // 處理班表格子點擊
@@ -170,49 +130,27 @@ const ScheduleManagement = () => {
 
       if (selectedShiftInfo) {
         // 更新班表資料（深拷貝）
-        const newScheduleData = JSON.parse(JSON.stringify(scheduleData));
+        const newEmployeeWorkScheduleData = JSON.parse(JSON.stringify(employeeWorkScheduleData));
 
         // 如果該員工的資料不存在，先初始化
-        if (!newScheduleData[employeeName]) {
-          newScheduleData[employeeName] = {};
+        if (!newEmployeeWorkScheduleData[employeeName]) {
+          newEmployeeWorkScheduleData[employeeName] = {};
         }
 
-        // 根據班次 ID 設定時間
-        let startTime = '08:00';
-        let endTime = '17:00';
-
-        switch (selectedShiftInfo.id) {
-          case 2: // 診所早班
-            startTime = '08:00';
-            endTime = '17:00';
-            break;
-          case 3: // 診所晚班
-            startTime = '14:00';
-            endTime = '22:00';
-            break;
-          case 4: // 請假
-            startTime = '00:00';
-            endTime = '00:00';
-            break;
-          default:
-            startTime = '08:00';
-            endTime = '17:00';
-        }
+        // 找到對應的員工 ID
+        const employee = mockEmployees.find(emp => emp.name === employeeName);
+        if (!employee) return;
 
         // 只為點擊的那一天添加班次
-        newScheduleData[employeeName][day] = {
-          shiftId: selectedShiftInfo.id,
-          shiftName: selectedShiftInfo.name,
-          startTime,
-          endTime,
+        newEmployeeWorkScheduleData[employeeName][day] = {
+          employee_id: employee.id,
+          work_schedule_id: selectedShiftInfo.id,
+          date: `${selectedMonth}-${day.toString().padStart(2, '0')}`,
           status: '已確認',
-          leave: null,
-          overtime: null,
-          businessTrip: null,
         };
 
         // 更新狀態
-        setScheduleData(newScheduleData);
+        setEmployeeWorkScheduleData(newEmployeeWorkScheduleData);
 
         // 標記有變更
         setHasChanges(true);
@@ -220,33 +158,14 @@ const ScheduleManagement = () => {
     }
   };
 
-  // 處理員工展開/收合
-  const handleEmployeeToggle = (employeeId: number) => {
-    const newExpanded = new Set(expandedEmployees);
-    if (newExpanded.has(employeeId)) {
-      newExpanded.delete(employeeId);
-    } else {
-      newExpanded.add(employeeId);
-    }
-    setExpandedEmployees(newExpanded);
-  };
-
   // 處理儲存變更
   const handleSaveChanges = () => {
-    // 儲存變更：將 scheduleData 寫回 initialScheduleData（深拷貝）
-    setInitialScheduleData(JSON.parse(JSON.stringify(scheduleData)));
+    // 儲存變更：將 employeeWorkScheduleData 寫回 initialEmployeeWorkScheduleData（深拷貝）
+    setInitialEmployeeWorkScheduleData(JSON.parse(JSON.stringify(employeeWorkScheduleData)));
     setHasChanges(false);
     setIsEditMode(false); // 儲存後退出編輯模式
     setSelectedShift(null); // 清除選中的班次
   };
-
-  // 獲取班次顏色
-  const getShiftColor = (shiftName: string) => {
-    const shift = mockShifts.find(s => s.name === shiftName);
-    return shift?.color || '#6B7280';
-  };
-
-  const { daysInMonth } = getMonthDays(selectedMonth);
 
   return (
     <PageLayout>
@@ -337,14 +256,19 @@ const ScheduleManagement = () => {
                 }`}
                 onClick={() => {
                   if (!isEditMode) {
-                    // 進入編輯模式：把當前 initialScheduleData 寫入 scheduleData 暫存
-                    setScheduleData(JSON.parse(JSON.stringify(initialScheduleData)));
+                    // 進入編輯模式：把當前 initialEmployeeWorkScheduleData 寫入 employeeWorkScheduleData 暫存
+                    setEmployeeWorkScheduleData(
+                      JSON.parse(JSON.stringify(initialEmployeeWorkScheduleData))
+                    );
                     setIsEditMode(true);
                   } else {
-                    // 取消編輯：把 initialScheduleData 返回 scheduleData（深拷貝）
-                    setScheduleData(JSON.parse(JSON.stringify(initialScheduleData)));
+                    // 取消編輯：把 initialEmployeeWorkScheduleData 返回 employeeWorkScheduleData（深拷貝）
+                    setEmployeeWorkScheduleData(
+                      JSON.parse(JSON.stringify(initialEmployeeWorkScheduleData))
+                    );
                     setHasChanges(false);
                     setIsEditMode(false);
+                    setSelectedShift(null); // 清除選中的班次
                   }
                 }}
               >
@@ -366,9 +290,13 @@ const ScheduleManagement = () => {
       )}
 
       {/* 編輯模式提示 */}
-      {isEditMode && selectedShift && (
+      {isEditMode && (
         <div className="mt-6 text-center">
-          <p className="text-white/80 text-sm">已選擇班次，點擊下方班表中的格子來添加班次</p>
+          {selectedShift ? (
+            <p className="text-white/80 text-sm">已選擇班次，點擊下方班表中的格子來排班</p>
+          ) : (
+            <p className="text-white/80 text-sm">請選擇一個班次，然後點擊下方班表中的格子來排班</p>
+          )}
         </div>
       )}
 
@@ -399,178 +327,13 @@ const ScheduleManagement = () => {
           </div>
 
           {/* 班表網格 */}
-          <div className="bg-white/10 border border-white/20 rounded-2xl backdrop-blur-xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-white/5">
-                    <th className="px-4 py-3 text-white font-medium min-w-[200px]">
-                      <div className="flex justify-between items-center">
-                        <span>員工</span>
-                        <span>{dayjs(selectedMonth).format('M')} 月</span>
-                      </div>
-                    </th>
-                    {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => (
-                      <th
-                        key={day}
-                        className="px-2 py-3 text-center text-white font-medium min-w-[40px]"
-                      >
-                        <div
-                          className={`${isWeekend(selectedMonth, day) ? 'text-red-400' : 'text-white'}`}
-                        >
-                          {day}
-                        </div>
-                        <div className="text-xs text-white/60 mt-1">
-                          {dayjs(`${selectedMonth}-${day.toString().padStart(2, '0')}`).format(
-                            'ddd'
-                          )}
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {mockEmployees.map(employee => {
-                    const isExpanded = expandedEmployees.has(employee.id);
-                    return (
-                      <React.Fragment key={employee.id}>
-                        <tr className="border-t border-white/10 hover:bg-white/5">
-                          <td className="px-4 py-3 text-white">
-                            <div className="flex items-center justify-between">
-                              <span>{employee.name}</span>
-                              <button
-                                onClick={() => handleEmployeeToggle(employee.id)}
-                                className="p-1 hover:bg-white/10 rounded transition-colors"
-                              >
-                                {isExpanded ? (
-                                  <ChevronDown className="h-4 w-4 text-white/60" />
-                                ) : (
-                                  <ChevronRight className="h-4 w-4 text-white/60" />
-                                )}
-                              </button>
-                            </div>
-                          </td>
-                          {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
-                            const isWeekendDay = isWeekend(selectedMonth, day);
-                            const shift = getEmployeeShift(employee.name, day);
-
-                            return (
-                              <td
-                                key={day}
-                                className={`px-2 py-3 text-center min-w-[40px] ${
-                                  isWeekendDay ? 'bg-pink-500/10' : ''
-                                } ${isEditMode ? 'cursor-pointer hover:bg-white/10' : ''}`}
-                                onClick={() => handleCellClick(employee.name, day)}
-                              >
-                                {shift && (
-                                  <div
-                                    className="w-3 h-3 rounded-full mx-auto"
-                                    style={{ backgroundColor: getShiftColor(shift.shiftName) }}
-                                    title={shift.shiftName}
-                                  ></div>
-                                )}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                        {/* 展開的詳細資訊 */}
-                        {isExpanded && (
-                          <>
-                            {/* 排班時間 */}
-                            <tr className="bg-white/5 border-t border-white/10">
-                              <td className="px-4 py-2 text-white text-sm font-medium">排班時間</td>
-                              {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
-                                const shift = getEmployeeShift(employee.name, day);
-                                return (
-                                  <td key={day} className="px-2 py-2 text-center min-w-[40px]">
-                                    {shift ? (
-                                      <div className="text-xs text-white/80">
-                                        {shift.startTime}-{shift.endTime}
-                                      </div>
-                                    ) : (
-                                      <div className="text-xs text-white/40">-</div>
-                                    )}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                            {/* 班表狀態 */}
-                            <tr className="bg-white/5 border-t border-white/10">
-                              <td className="px-4 py-2 text-white text-sm font-medium">班表狀態</td>
-                              {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
-                                const shift = getEmployeeShift(employee.name, day);
-                                return (
-                                  <td key={day} className="px-2 py-2 text-center min-w-[40px]">
-                                    {shift ? (
-                                      <div className="text-xs text-green-400">{shift.status}</div>
-                                    ) : (
-                                      <div className="text-xs text-white/40">-</div>
-                                    )}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                            {/* 請假 */}
-                            <tr className="bg-white/5 border-t border-white/10">
-                              <td className="px-4 py-2 text-white text-sm font-medium">請假</td>
-                              {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
-                                const shift = getEmployeeShift(employee.name, day);
-                                return (
-                                  <td key={day} className="px-2 py-2 text-center min-w-[40px]">
-                                    {shift && shift.leave ? (
-                                      <div className="text-xs text-red-400">{shift.leave}</div>
-                                    ) : (
-                                      <div className="text-xs text-white/40">-</div>
-                                    )}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                            {/* 加班 */}
-                            <tr className="bg-white/5 border-t border-white/10">
-                              <td className="px-4 py-2 text-white text-sm font-medium">加班</td>
-                              {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
-                                const shift = getEmployeeShift(employee.name, day);
-                                return (
-                                  <td key={day} className="px-2 py-2 text-center min-w-[40px]">
-                                    {shift && shift.overtime ? (
-                                      <div className="text-xs text-yellow-400">
-                                        {shift.overtime}
-                                      </div>
-                                    ) : (
-                                      <div className="text-xs text-white/40">-</div>
-                                    )}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                            {/* 出差 */}
-                            <tr className="bg-white/5 border-t border-white/10">
-                              <td className="px-4 py-2 text-white text-sm font-medium">出差</td>
-                              {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
-                                const shift = getEmployeeShift(employee.name, day);
-                                return (
-                                  <td key={day} className="px-2 py-2 text-center min-w-[40px]">
-                                    {shift && shift.businessTrip ? (
-                                      <div className="text-xs text-blue-400">
-                                        {shift.businessTrip}
-                                      </div>
-                                    ) : (
-                                      <div className="text-xs text-white/40">-</div>
-                                    )}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                          </>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <ScheduleGrid
+            employees={mockEmployees}
+            employeeWorkScheduleData={employeeWorkScheduleData}
+            selectedMonth={selectedMonth}
+            isEditMode={isEditMode}
+            onCellClick={handleCellClick}
+          />
         </div>
       ) : (
         /* 未搜尋時的提示 */

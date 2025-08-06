@@ -34,3 +34,18 @@ export const calculateOvertimeStartTime = (
   // 格式化為 HH:MM
   return overtimeStartDateTime.format('HH:mm');
 };
+
+/**
+ * 格式化純時間字串 - 將 "HH:MM:SS" 或 "HH:MM" 格式化為 "HH:MM"
+ * @param timeString 時間字串 (格式: "HH:MM:SS" 或 "HH:MM")
+ * @returns 格式化後的時間字串 (格式: "HH:MM")
+ */
+export const formatTimeString = (timeString: string): string => {
+  if (!timeString) return '';
+
+  const timeObj = dayjs(timeString);
+  if (timeObj.isValid()) {
+    return timeObj.format('HH:mm');
+  }
+  return timeString;
+};

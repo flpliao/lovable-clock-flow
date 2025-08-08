@@ -32,7 +32,7 @@ const SelectAllOption = ({
           </div>
         )}
       </div>
-      <Label htmlFor={id} className="text-white text-sm">
+      <Label htmlFor={id} className="text-white text-sm cursor-pointer">
         {label}
       </Label>
     </div>

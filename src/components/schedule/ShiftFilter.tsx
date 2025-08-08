@@ -1,13 +1,11 @@
+import { useShift } from '@/hooks/useShift';
 import { getSelectAllState } from '@/utils/checkboxUtils';
 import SelectAllOption from './SelectAllOption';
 import ShiftOption from './ShiftOption';
 
 interface ShiftFilterState {
   all: boolean;
-  support: boolean;
-  requestLeave: boolean;
-  clinicMorning: boolean;
-  clinicEvening: boolean;
+  [key: string]: boolean; // 動態鍵值，對應每個 shift 的 slug
 }
 
 interface ShiftFilterProps {
@@ -16,25 +14,26 @@ interface ShiftFilterProps {
 }
 
 const ShiftFilter = ({ shiftFilter, onShiftFilterChange }: ShiftFilterProps) => {
-  // 使用 utils 計算全選狀態
-  const visibleOptions = [shiftFilter.clinicMorning, shiftFilter.clinicEvening];
+  const { shifts } = useShift();
+
+  // 使用 shifts 來計算可見選項
+  const visibleOptions = shifts.map(shift => shiftFilter[shift.slug] ?? true);
   const selectAllState = getSelectAllState(visibleOptions);
 
-  const handleFilterChange = (key: keyof ShiftFilterState, checked: boolean) => {
+  const handleFilterChange = (key: string, checked: boolean) => {
     if (key === 'all') {
       // 全選邏輯：將所有可見選項設為相同狀態
-      onShiftFilterChange({
-        ...shiftFilter,
-        clinicMorning: checked,
-        clinicEvening: checked,
-        all: checked,
+      const newFilter = { ...shiftFilter, all: checked };
+      shifts.forEach(shift => {
+        newFilter[shift.slug] = checked;
       });
+      onShiftFilterChange(newFilter);
     } else {
       // 個別選項邏輯
       const newFilter = { ...shiftFilter, [key]: checked };
 
       // 更新全選狀態
-      const newVisibleOptions = [newFilter.clinicMorning, newFilter.clinicEvening];
+      const newVisibleOptions = shifts.map(shift => newFilter[shift.slug] ?? true);
       newFilter.all = newVisibleOptions.every(option => option);
 
       onShiftFilterChange(newFilter);
@@ -52,22 +51,17 @@ const ShiftFilter = ({ shiftFilter, onShiftFilterChange }: ShiftFilterProps) => 
           onCheckedChange={checked => handleFilterChange('all', checked)}
           indeterminate={selectAllState.indeterminate}
         />
-        <ShiftOption
-          id="clinic-morning"
-          label="診所早班"
-          checked={shiftFilter.clinicMorning}
-          onCheckedChange={checked => handleFilterChange('clinicMorning', checked)}
-          showColor={true}
-          color="#10B981"
-        />
-        <ShiftOption
-          id="clinic-evening"
-          label="診所晚班"
-          checked={shiftFilter.clinicEvening}
-          onCheckedChange={checked => handleFilterChange('clinicEvening', checked)}
-          showColor={true}
-          color="#F59E0B"
-        />
+        {shifts.map(shift => (
+          <ShiftOption
+            key={shift.slug}
+            id={shift.slug}
+            label={shift.name}
+            checked={shiftFilter[shift.slug] ?? true}
+            onCheckedChange={checked => handleFilterChange(shift.slug, checked)}
+            showColor={true}
+            color={shift.color}
+          />
+        ))}
       </div>
     </div>
   );

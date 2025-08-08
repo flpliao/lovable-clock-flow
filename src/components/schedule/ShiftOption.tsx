@@ -25,10 +25,10 @@ const ShiftOption = ({
         checked={checked}
         onCheckedChange={checked => onCheckedChange(checked as boolean)}
       />
-      {showColor && color && (
-        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-      )}
-      <Label htmlFor={id} className="text-white text-sm">
+      <Label htmlFor={id} className="text-white text-sm cursor-pointer flex items-center gap-1">
+        {showColor && color && (
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+        )}
         {label}
       </Label>
     </div>

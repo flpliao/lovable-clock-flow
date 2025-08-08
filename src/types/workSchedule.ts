@@ -7,7 +7,6 @@ export enum WorkScheduleStatus {
 }
 
 export interface WorkSchedule {
-  id?: number;
   slug: string;
   shift_id: string;
   shift?: Shift;
@@ -27,7 +26,7 @@ export interface WorkSchedule {
 }
 
 export interface CreateWorkScheduleData {
-  shift_id: string;
+  shift_slug?: string;
   slug?: string;
   status: WorkScheduleStatus;
   clock_in_time: string;

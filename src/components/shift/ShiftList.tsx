@@ -228,10 +228,10 @@ const ShiftList = () => {
       {/* 新增工作時程表單 */}
       {selectedShift && (
         <CreateWorkScheduleForm
-          shiftId={selectedShift.id}
+          shiftSlug={selectedShift.slug}
           open={showCreateWorkScheduleForm}
           onOpenChange={setShowCreateWorkScheduleForm}
-          onSubmit={handleCreateWorkSchedule}
+          onSubmit={workScheduleData => handleCreateWorkSchedule(workScheduleData)}
         />
       )}
 

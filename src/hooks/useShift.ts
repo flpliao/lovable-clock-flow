@@ -87,7 +87,7 @@ export const useShift = () => {
     const newWorkSchedule = await createWorkScheduleService(workScheduleData);
     if (newWorkSchedule) {
       // 更新對應的 shift 中的 work_schedules
-      const shift = shifts.find(s => s.id === workScheduleData.shift_id);
+      const shift = shifts.find(s => s.slug === workScheduleData.shift_slug);
       if (shift) {
         const updatedWorkSchedules = [...(shift.work_schedules || []), newWorkSchedule];
         const updatedShift = {

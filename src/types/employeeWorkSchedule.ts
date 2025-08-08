@@ -1,15 +1,17 @@
+import { Employee } from './employee';
 import { WorkSchedule } from './workSchedule';
 
 export interface EmployeeWorkSchedule {
-  employee_id: number;
-  work_schedule_id: number;
+  employee_slug: string;
+  work_schedule_slug: string;
+  employee?: Employee;
   work_schedule?: WorkSchedule;
   date: string;
   status: string;
 }
 
 export interface EmployeeWorkScheduleData {
-  [employeeName: string]: {
+  [employeeSlug: string]: {
     [date: string]: EmployeeWorkSchedule;
   };
 }

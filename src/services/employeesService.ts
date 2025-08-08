@@ -17,7 +17,7 @@ export const getEmployees = async (params?: {
   page?: number;
   per_page?: number;
   search?: string;
-  department?: string;
+  department_slug?: string;
 }): Promise<Employee[]> => {
   const { data, status } = await callApiAndDecode(
     axiosWithEmployeeAuth().get(apiRoutes.employees.index, { params })

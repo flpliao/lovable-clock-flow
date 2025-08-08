@@ -19,7 +19,7 @@ import { useState } from 'react';
 export const useShift = () => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const { shifts, setShifts, addShift, setShift, removeShift } = useShiftStore();
+  const { shifts, setShifts, addShift, setShift, removeShift, getShiftBySlug } = useShiftStore();
 
   // 載入所有班次
   const loadAllShifts = async () => {
@@ -158,6 +158,7 @@ export const useShift = () => {
     handleCreateShift,
     handleUpdateShift,
     handleDeleteShift,
+    getShiftBySlug,
 
     // 工作時程操作方法
     handleCreateWorkSchedule,

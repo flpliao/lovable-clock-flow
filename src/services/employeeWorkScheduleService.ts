@@ -1,6 +1,7 @@
 import { apiRoutes } from '@/routes/api';
 import { ApiResponseStatus } from '@/types/api';
-import { EmployeeWorkSchedule } from '@/types/employeeWorkSchedule';
+import { Employee } from '@/types/employee';
+import { EmployeeWorkSchedule, EmployeeWorkScheduleData } from '@/types/employeeWorkSchedule';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 
@@ -79,4 +80,29 @@ export const deleteEmployeeWorkSchedule = async (employeeSlug: string): Promise<
     axiosWithEmployeeAuth().delete(apiRoutes.employeeWorkSchedule.destroy(employeeSlug))
   );
   return status === ApiResponseStatus.SUCCESS;
+};
+
+// 將 EmployeeWorkSchedule[] 轉換為 EmployeeWorkScheduleData 格式
+export const convertToEmployeeWorkScheduleData = (
+  schedules: EmployeeWorkSchedule[],
+  employeesBySlug: Record<string, Employee>
+): EmployeeWorkScheduleData => {
+  const data: EmployeeWorkScheduleData = {};
+
+  schedules.forEach(schedule => {
+    // 根據 employee_slug 找到員工
+    const employee = employeesBySlug[schedule.employee_slug];
+    if (!employee) return;
+
+    const employeeSlug = employee.slug;
+    const date = schedule.date;
+
+    if (!data[employeeSlug]) {
+      data[employeeSlug] = {};
+    }
+
+    data[employeeSlug][date] = schedule;
+  });
+
+  return data;
 };

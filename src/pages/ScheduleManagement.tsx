@@ -9,110 +9,103 @@ import {
 } from '@/components/schedule';
 import { Button } from '@/components/ui/button';
 import { useDepartment } from '@/hooks/useDepartment';
+import { useEmployeeWorkSchedule } from '@/hooks/useEmployeeWorkSchedule';
+import { useEmployees } from '@/hooks/useEmployees';
 import { useShift } from '@/hooks/useShift';
-import { Employee, EmployeeWorkScheduleData, ScheduleShift } from '@/types/schedule';
+import { convertToEmployeeWorkScheduleData } from '@/services/employeeWorkScheduleService';
+import { Employee } from '@/types/employee';
+import { EmployeeWorkScheduleData } from '@/types/employeeWorkSchedule';
 import { formatMonthDisplay } from '@/utils/dateUtils';
 import dayjs from 'dayjs';
 import { Calendar, Edit, Save, Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
-// 模擬員工資料
-const mockEmployees: Employee[] = [
-  { id: 1, name: '楊玄琳', department: '診所' },
-  { id: 2, name: '林郁庭', department: '診所' },
-  { id: 3, name: '周荃', department: '診所' },
-  { id: 4, name: '陳玉楓', department: '診所' },
-  { id: 5, name: '廖妍伊', department: '診所' },
-];
-
-// 模擬班次資料
-const mockShifts: ScheduleShift[] = [
-  { id: 2, name: '診所早班', color: '#10B981', code: 'MORNING' },
-  { id: 3, name: '診所晚班', color: '#F59E0B', code: 'EVENING' },
-  { id: 4, name: '請假', color: '#EF4444', code: 'LEAVE' },
-];
-
-// 模擬員工工作排程資料
-const mockEmployeeWorkScheduleData: EmployeeWorkScheduleData = {
-  楊玄琳: {
-    4: {
-      employee_id: 1,
-      work_schedule_id: 3,
-      date: '2024-01-04',
-      status: '已確認',
-    },
-    17: {
-      employee_id: 1,
-      work_schedule_id: 3,
-      date: '2024-01-17',
-      status: '已確認',
-    },
-    20: {
-      employee_id: 1,
-      work_schedule_id: 3,
-      date: '2024-01-20',
-      status: '已確認',
-    },
-    21: {
-      employee_id: 1,
-      work_schedule_id: 3,
-      date: '2024-01-21',
-      status: '已確認',
-    },
-  },
-};
-
 const ScheduleManagement = () => {
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
-  const [_selectedWorkSystem, _setSelectedWorkSystem] = useState<string>('standard');
+  // const [selectedWorkSystem, setSelectedWorkSystem] = useState<string>('standard');
   const [selectedMonth, setSelectedMonth] = useState<string>(dayjs().format('YYYY-MM'));
   const [hasSearched, setHasSearched] = useState<boolean>(false);
   const [personnelFilter, setPersonnelFilter] = useState<'all' | 'workSystem'>('all');
-  const [_leaveFilter, _setLeaveFilter] = useState({
+  // const [leaveFilter, setLeaveFilter] = useState({
+  //   all: true,
+  //   leave: true,
+  //   monthlyLeave: true,
+  //   nationalHoliday: true,
+  //   restDay: true,
+  //   regularHoliday: true,
+  // });
+  const [shiftFilter, setShiftFilter] = useState<{ all: boolean; [key: string]: boolean }>({
     all: true,
-    leave: true,
-    monthlyLeave: true,
-    nationalHoliday: true,
-    restDay: true,
-    regularHoliday: true,
-  });
-  const [shiftFilter, setShiftFilter] = useState({
-    all: true,
-    support: true,
-    requestLeave: true,
-    clinicMorning: true,
-    clinicEvening: true,
   });
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedShift, setSelectedShift] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
-  const [employeeWorkScheduleData, setEmployeeWorkScheduleData] = useState(
-    mockEmployeeWorkScheduleData
-  );
-  const [initialEmployeeWorkScheduleData, setInitialEmployeeWorkScheduleData] = useState(
-    mockEmployeeWorkScheduleData
-  );
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [employeeWorkScheduleData, setEmployeeWorkScheduleData] =
+    useState<EmployeeWorkScheduleData>({});
+  const [initialEmployeeWorkScheduleData, setInitialEmployeeWorkScheduleData] =
+    useState<EmployeeWorkScheduleData>({});
 
-  const { loadAllShifts } = useShift();
+  const { loadAllShifts, getShiftBySlug, shifts } = useShift();
+  const {
+    employeesBySlug,
+    getEmployeesByDepartment,
+    isDepartmentLoaded,
+    loadEmployeesByDepartment,
+  } = useEmployees();
+  const { loadEmployeeWorkSchedules, employeeWorkSchedules } = useEmployeeWorkSchedule();
 
   const { loadDepartments } = useDepartment();
 
   useEffect(() => {
     loadDepartments();
-  }, []);
+    loadAllShifts();
+  }, [loadDepartments, loadAllShifts]);
+
+  // 當 shifts 載入後，初始化 shiftFilter
+  useEffect(() => {
+    if (shifts.length > 0) {
+      const initialShiftFilter: { all: boolean; [key: string]: boolean } = { all: true };
+      shifts.forEach(shift => {
+        initialShiftFilter[shift.slug] = true;
+      });
+      setShiftFilter(initialShiftFilter);
+    }
+  }, [shifts]);
+
+  // 當部門或員工資料變化時，更新員工列表
+  useEffect(() => {
+    if (selectedDepartment && !isDepartmentLoaded(selectedDepartment)) {
+      setHasSearched(false);
+    } else {
+      const departmentEmployees = getEmployeesByDepartment(selectedDepartment);
+      setEmployees(departmentEmployees);
+    }
+  }, [selectedDepartment]);
 
   // 檢查是否已選擇單位和月份
   const isSelectionComplete = selectedDepartment && selectedMonth;
 
   // 處理搜尋班表
-  const handleSearchSchedule = () => {
+  const handleSearchSchedule = async () => {
     if (isSelectionComplete) {
-      loadAllShifts();
-      setHasSearched(true);
-      // 搜尋班表時，重置為原始模擬資料（深拷貝）
-      const deepCopyData = JSON.parse(JSON.stringify(mockEmployeeWorkScheduleData));
+      // 載入部門員工（如果需要）
+      if (selectedDepartment && !isDepartmentLoaded(selectedDepartment)) {
+        const employees = await loadEmployeesByDepartment(selectedDepartment);
+        setEmployees(employees);
+      }
+
+      await loadEmployeeWorkSchedules(selectedMonth);
+
+      // 轉換資料格式
+      const convertedData = convertToEmployeeWorkScheduleData(
+        employeeWorkSchedules,
+        employeesBySlug
+      );
+      const deepCopyData = JSON.parse(JSON.stringify(convertedData));
       setEmployeeWorkScheduleData(deepCopyData);
       setInitialEmployeeWorkScheduleData(deepCopyData);
+      setHasSearched(true);
     }
   };
 
@@ -123,38 +116,55 @@ const ScheduleManagement = () => {
   };
 
   // 處理班表格子點擊
-  const handleCellClick = (employeeName: string, day: number) => {
+  const handleCellClick = (employeeSlug: string, day: number) => {
     if (isEditMode && selectedShift) {
-      // 獲取選中的班次資訊
-      const selectedShiftInfo = mockShifts.find(s => s.id.toString() === selectedShift);
+      // 找到對應的員工
+      const employee = employeesBySlug[employeeSlug];
+      if (!employee) return;
 
-      if (selectedShiftInfo) {
-        // 更新班表資料（深拷貝）
-        const newEmployeeWorkScheduleData = JSON.parse(JSON.stringify(employeeWorkScheduleData));
-
-        // 如果該員工的資料不存在，先初始化
-        if (!newEmployeeWorkScheduleData[employeeName]) {
-          newEmployeeWorkScheduleData[employeeName] = {};
-        }
-
-        // 找到對應的員工 ID
-        const employee = mockEmployees.find(emp => emp.name === employeeName);
-        if (!employee) return;
-
-        // 只為點擊的那一天添加班次
-        newEmployeeWorkScheduleData[employeeName][day] = {
-          employee_id: employee.id,
-          work_schedule_id: selectedShiftInfo.id,
-          date: `${selectedMonth}-${day.toString().padStart(2, '0')}`,
-          status: '已確認',
-        };
-
-        // 更新狀態
-        setEmployeeWorkScheduleData(newEmployeeWorkScheduleData);
-
-        // 標記有變更
-        setHasChanges(true);
+      // 確保 employee.id 存在
+      if (!employee.slug) {
+        console.error('Employee ID is required but not found:', employee);
+        return;
       }
+
+      // 找到選中的班次
+      const shift = getShiftBySlug(selectedShift);
+      if (!shift) return;
+
+      // 找到該班次的第一個工作時程（如果有的話）
+      const workSchedule = shift.work_schedules?.[0];
+      if (!workSchedule) return;
+
+      // 將 shift 資訊塞回 workSchedule
+      const workScheduleWithShift = {
+        ...workSchedule,
+        shift: shift,
+      };
+
+      // 更新班表資料（深拷貝）
+      const newEmployeeWorkScheduleData = JSON.parse(JSON.stringify(employeeWorkScheduleData));
+
+      // 如果該員工的資料不存在，先初始化
+      if (!newEmployeeWorkScheduleData[employeeSlug]) {
+        newEmployeeWorkScheduleData[employeeSlug] = {};
+      }
+
+      // 只為點擊的那一天添加班次
+      newEmployeeWorkScheduleData[employeeSlug][day] = {
+        employee_slug: employee.slug,
+        employee: employee,
+        work_schedule_slug: workSchedule.slug,
+        work_schedule: workScheduleWithShift,
+        date: `${selectedMonth}-${day.toString().padStart(2, '0')}`,
+        status: '已確認',
+      };
+
+      // 更新狀態
+      setEmployeeWorkScheduleData(newEmployeeWorkScheduleData);
+
+      // 標記有變更
+      setHasChanges(true);
     }
   };
 
@@ -165,6 +175,26 @@ const ScheduleManagement = () => {
     setHasChanges(false);
     setIsEditMode(false); // 儲存後退出編輯模式
     setSelectedShift(null); // 清除選中的班次
+  };
+
+  // 處理班次選擇
+  const handleShiftSelect = (shiftSlug: string | null) => {
+    setSelectedShift(shiftSlug);
+  };
+
+  // 處理編輯模式切換
+  const handleEditToggle = () => {
+    if (!isEditMode) {
+      // 進入編輯模式：把當前 initialEmployeeWorkScheduleData 寫入 employeeWorkScheduleData 暫存
+      setEmployeeWorkScheduleData(JSON.parse(JSON.stringify(initialEmployeeWorkScheduleData)));
+      setIsEditMode(true);
+    } else {
+      // 取消編輯：把 initialEmployeeWorkScheduleData 返回 employeeWorkScheduleData（深拷貝）
+      setEmployeeWorkScheduleData(JSON.parse(JSON.stringify(initialEmployeeWorkScheduleData)));
+      setHasChanges(false);
+      setIsEditMode(false);
+      setSelectedShift(null); // 清除選中的班次
+    }
   };
 
   return (
@@ -201,8 +231,8 @@ const ScheduleManagement = () => {
 
           {/* 工時制選擇 */}
           {/* <WorkSystemSelect
-              selectedWorkSystem={_selectedWorkSystem}
-              onWorkSystemChange={_setSelectedWorkSystem}
+              selectedWorkSystem={selectedWorkSystem}
+              onWorkSystemChange={setSelectedWorkSystem}
             /> */}
         </div>
 
@@ -233,13 +263,13 @@ const ScheduleManagement = () => {
 
             {/* 休假選擇 */}
             {/* <LeaveFilter
-                 leaveFilter={_leaveFilter}
-                 onLeaveFilterChange={_setLeaveFilter}
+                 leaveFilter={leaveFilter}
+                 onLeaveFilterChange={setLeaveFilter}
                /> */}
 
             {/* 班次選擇 */}
             {isEditMode ? (
-              <ShiftSelector selectedShift={selectedShift} onShiftSelect={setSelectedShift} />
+              <ShiftSelector selectedShift={selectedShift} onShiftSelect={handleShiftSelect} />
             ) : (
               <ShiftFilter shiftFilter={shiftFilter} onShiftFilterChange={setShiftFilter} />
             )}
@@ -254,23 +284,7 @@ const ScheduleManagement = () => {
                     ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
                     : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
                 }`}
-                onClick={() => {
-                  if (!isEditMode) {
-                    // 進入編輯模式：把當前 initialEmployeeWorkScheduleData 寫入 employeeWorkScheduleData 暫存
-                    setEmployeeWorkScheduleData(
-                      JSON.parse(JSON.stringify(initialEmployeeWorkScheduleData))
-                    );
-                    setIsEditMode(true);
-                  } else {
-                    // 取消編輯：把 initialEmployeeWorkScheduleData 返回 employeeWorkScheduleData（深拷貝）
-                    setEmployeeWorkScheduleData(
-                      JSON.parse(JSON.stringify(initialEmployeeWorkScheduleData))
-                    );
-                    setHasChanges(false);
-                    setIsEditMode(false);
-                    setSelectedShift(null); // 清除選中的班次
-                  }
-                }}
+                onClick={handleEditToggle}
               >
                 <Edit className="h-4 w-4 mr-2" />
                 {isEditMode ? '取消編輯' : '編輯'}
@@ -328,7 +342,7 @@ const ScheduleManagement = () => {
 
           {/* 班表網格 */}
           <ScheduleGrid
-            employees={mockEmployees}
+            employees={employees}
             employeeWorkScheduleData={employeeWorkScheduleData}
             selectedMonth={selectedMonth}
             isEditMode={isEditMode}

@@ -6,10 +6,16 @@ export enum WorkScheduleStatus {
   OFF = 'off',
 }
 
+export interface WorkSchedulePivot {
+  status: string;
+  date: string;
+}
+
 export interface WorkSchedule {
   slug: string;
   shift_id: string;
   shift?: Shift;
+  pivot?: WorkSchedulePivot;
   status: WorkScheduleStatus;
   clock_in_time: string;
   clock_out_time: string;

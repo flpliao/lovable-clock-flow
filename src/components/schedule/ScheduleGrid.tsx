@@ -59,7 +59,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
             </tr>
           </thead>
           <tbody>
-            {Object.values(employees).map(employee => (
+            {employees.map(employee => (
               <EmployeeWorkScheduleRows
                 key={employee.slug}
                 employee={employee}

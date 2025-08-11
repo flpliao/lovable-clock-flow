@@ -1,20 +1,7 @@
 import type { EmployeesBySlug, EmployeeWithWorkSchedules } from '@/types/employee';
 import type { WorkSchedule } from '@/types/workSchedule';
+import { datesToPeriods, dateToPeriod } from '@/utils/dateUtils';
 import { create } from 'zustand';
-
-// 輔助函數：從日期生成時期字串 (YYYY-MM)
-const dateToPeriod = (date: string): string => {
-  return date.substring(0, 7); // 取前7個字符 "YYYY-MM"
-};
-
-// 輔助函數：從日期陣列生成時期字串集合
-const datesToPeriods = (dates: string[]): Set<string> => {
-  const periods = new Set<string>();
-  dates.forEach(date => {
-    periods.add(dateToPeriod(date));
-  });
-  return periods;
-};
 interface EmployeeWorkScheduleState {
   employeesBySlug: EmployeesBySlug;
 
@@ -27,31 +14,77 @@ interface EmployeeWorkScheduleState {
 
   // 基本操作方法
   setEmployees: (employees: EmployeeWithWorkSchedules[]) => void;
-  addEmployeesForDepartment: (
-    departmentSlug: string,
-    employees: EmployeeWithWorkSchedules[],
-    period?: string
-  ) => void;
+  addEmployeesForDepartment: ({
+    departmentSlug,
+    employees,
+    period,
+  }: {
+    departmentSlug: string;
+    employees: EmployeeWithWorkSchedules[];
+    period?: string;
+  }) => void;
 
   // 工作排程相關操作
-  addEmployeeWorkSchedule: (employeeSlug: string, date: string, workSchedule: WorkSchedule) => void;
-  setEmployeeWorkSchedule: (
-    employeeSlug: string,
-    date: string,
-    updates: Partial<WorkSchedule>
-  ) => void;
-  removeEmployeeWorkSchedule: (employeeSlug: string, date: string) => void;
+  addEmployeeWorkSchedule: ({
+    employeeSlug,
+    date,
+    workSchedule,
+  }: {
+    employeeSlug: string;
+    date: string;
+    workSchedule: WorkSchedule;
+  }) => void;
+  setEmployeeWorkSchedule: ({
+    employeeSlug,
+    date,
+    updates,
+  }: {
+    employeeSlug: string;
+    date: string;
+    updates: Partial<WorkSchedule>;
+  }) => void;
+  removeEmployeeWorkSchedule: ({
+    employeeSlug,
+    date,
+  }: {
+    employeeSlug: string;
+    date: string;
+  }) => void;
 
   // 查詢方法
   getEmployeesByDepartment: (departmentSlug: string) => EmployeeWithWorkSchedules[];
   getEmployeeBySlug: (slug: string) => EmployeeWithWorkSchedules;
-  getEmployeeWorkSchedule: (employeeSlug: string, date: string) => WorkSchedule | undefined;
+  getEmployeeWorkSchedule: ({
+    employeeSlug,
+    date,
+  }: {
+    employeeSlug: string;
+    date: string;
+  }) => WorkSchedule | undefined;
   getEmployeeWorkSchedules: (employeeSlug: string) => WorkSchedule[];
   getEmployeeWorkSchedulesByDate: (date: string) => WorkSchedule[];
-  isDepartmentPeriodLoaded: (departmentSlug: string, period: string) => boolean;
+  isDepartmentPeriodLoaded: ({
+    departmentSlug,
+    period,
+  }: {
+    departmentSlug: string;
+    period: string;
+  }) => boolean;
   getLoadedPeriodsForDepartment: (departmentSlug: string) => string[];
-  isDepartmentDateLoaded: (departmentSlug: string, date: string) => boolean;
-  markDepartmentPeriodLoaded: (departmentSlug: string, period: string) => void;
+  isDepartmentDateLoaded: ({
+    departmentSlug,
+    date,
+  }: {
+    departmentSlug: string;
+    date: string;
+  }) => boolean;
+  markDepartmentPeriodLoaded: ({
+    departmentSlug,
+    period,
+  }: {
+    departmentSlug: string;
+    period: string;
+  }) => void;
 
   // 狀態管理
   setIsLoading: (isLoading: boolean) => void;
@@ -103,11 +136,15 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
   },
 
   // 為特定部門新增員工（更新或新增）
-  addEmployeesForDepartment: (
-    departmentSlug: string,
-    employees: EmployeeWithWorkSchedules[],
-    period?: string
-  ) => {
+  addEmployeesForDepartment: ({
+    departmentSlug,
+    employees,
+    period,
+  }: {
+    departmentSlug: string;
+    employees: EmployeeWithWorkSchedules[];
+    period?: string;
+  }) => {
     const { employeesBySlug, loadedDepartmentPeriods } = get();
     const updatedEmployeesBySlug = { ...employeesBySlug };
     const updatedLoadedDepartmentPeriods = { ...loadedDepartmentPeriods };
@@ -154,7 +191,15 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
   },
 
   // 新增員工工作排程
-  addEmployeeWorkSchedule: (employeeSlug: string, date: string, workSchedule: WorkSchedule) => {
+  addEmployeeWorkSchedule: ({
+    employeeSlug,
+    date,
+    workSchedule,
+  }: {
+    employeeSlug: string;
+    date: string;
+    workSchedule: WorkSchedule;
+  }) => {
     const { employeesBySlug } = get();
     const employee = employeesBySlug[employeeSlug];
     if (employee) {
@@ -179,7 +224,15 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
   },
 
   // 更新員工工作排程
-  setEmployeeWorkSchedule: (employeeSlug: string, date: string, updates: Partial<WorkSchedule>) => {
+  setEmployeeWorkSchedule: ({
+    employeeSlug,
+    date,
+    updates,
+  }: {
+    employeeSlug: string;
+    date: string;
+    updates: Partial<WorkSchedule>;
+  }) => {
     const { employeesBySlug } = get();
     const employee = employeesBySlug[employeeSlug];
     if (employee && employee.work_schedules) {
@@ -202,7 +255,7 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
   },
 
   // 移除員工工作排程
-  removeEmployeeWorkSchedule: (employeeSlug: string, date: string) => {
+  removeEmployeeWorkSchedule: ({ employeeSlug, date }: { employeeSlug: string; date: string }) => {
     const { employeesBySlug } = get();
     const employee = employeesBySlug[employeeSlug];
     if (employee && employee.work_schedules) {
@@ -242,7 +295,7 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
   },
 
   // 取得員工工作排程
-  getEmployeeWorkSchedule: (employeeSlug: string, date: string) => {
+  getEmployeeWorkSchedule: ({ employeeSlug, date }: { employeeSlug: string; date: string }) => {
     const { employeesBySlug } = get();
     const employee = employeesBySlug[employeeSlug];
     return employee?.work_schedules?.find(ws => ws.pivot?.date === date);
@@ -273,7 +326,13 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
   },
 
   // 檢查部門的特定時期是否已載入
-  isDepartmentPeriodLoaded: (departmentSlug: string, period: string) => {
+  isDepartmentPeriodLoaded: ({
+    departmentSlug,
+    period,
+  }: {
+    departmentSlug: string;
+    period: string;
+  }) => {
     const { loadedDepartmentPeriods } = get();
     return loadedDepartmentPeriods[departmentSlug]?.has(period) ?? false;
   },
@@ -285,14 +344,20 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
   },
 
   // 檢查部門在指定日期是否已載入 (根據日期推斷期間)
-  isDepartmentDateLoaded: (departmentSlug: string, date: string) => {
+  isDepartmentDateLoaded: ({ departmentSlug, date }: { departmentSlug: string; date: string }) => {
     const period = dateToPeriod(date);
     const { loadedDepartmentPeriods } = get();
     return loadedDepartmentPeriods[departmentSlug]?.has(period) ?? false;
   },
 
   // 手動標記部門時期為已載入
-  markDepartmentPeriodLoaded: (departmentSlug: string, period: string) => {
+  markDepartmentPeriodLoaded: ({
+    departmentSlug,
+    period,
+  }: {
+    departmentSlug: string;
+    period: string;
+  }) => {
     const { loadedDepartmentPeriods } = get();
     const updated = { ...loadedDepartmentPeriods };
     if (!updated[departmentSlug]) {

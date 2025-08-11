@@ -226,3 +226,17 @@ export const getChineseWeekday = (yearMonth: string, day: number): string => {
   const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
   return weekdays[dayOfWeek];
 };
+
+// 從日期生成時期字串 (YYYY-MM)
+export const dateToPeriod = (date: string): string => {
+  return date.substring(0, 7); // 取前7個字符 "YYYY-MM"
+};
+
+// 從日期陣列生成時期字串集合
+export const datesToPeriods = (dates: string[]): Set<string> => {
+  const periods = new Set<string>();
+  dates.forEach(date => {
+    periods.add(dateToPeriod(date));
+  });
+  return periods;
+};

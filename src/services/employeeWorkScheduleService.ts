@@ -13,7 +13,15 @@ export const getAllEmployeeWorkSchedules = async (): Promise<EmployeeWithWorkSch
 };
 
 // 取得員工工作排程列表（分頁）
-export const getEmployeeWithWorkSchedules = async (params?: {
+export const getEmployeeWithWorkSchedules = async ({
+  page,
+  per_page,
+  search,
+  employee_id,
+  department_slug,
+  start_date,
+  end_date,
+}: {
   page?: number;
   per_page?: number;
   search?: string;
@@ -21,15 +29,29 @@ export const getEmployeeWithWorkSchedules = async (params?: {
   department_slug?: string;
   start_date?: string;
   end_date?: string;
-}): Promise<EmployeeWithWorkSchedules[]> => {
+} = {}): Promise<EmployeeWithWorkSchedules[]> => {
   const { data, status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.index, { params })
+    axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.index, {
+      params: {
+        page,
+        per_page,
+        search,
+        employee_id,
+        department_slug,
+        start_date,
+        end_date,
+      },
+    })
   );
   return status === ApiResponseStatus.SUCCESS ? (data as EmployeeWithWorkSchedules[]) : [];
 };
 
 // 批量同步員工工作排程
-export const bulkSyncEmployeeWorkSchedules = async (payload: {
+export const bulkSyncEmployeeWorkSchedules = async ({
+  month,
+  year,
+  schedules,
+}: {
   month: number;
   year: number;
   schedules: Array<{
@@ -38,6 +60,7 @@ export const bulkSyncEmployeeWorkSchedules = async (payload: {
     date: string;
   }>;
 }): Promise<unknown> => {
+  const payload = { month, year, schedules };
   const { data, status } = await callApiAndDecode(
     axiosWithEmployeeAuth().post(apiRoutes.employeeWorkSchedule.bulkSync, payload)
   );

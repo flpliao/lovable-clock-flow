@@ -73,7 +73,7 @@ const ScheduleManagement = () => {
     if (
       selectedDepartment &&
       selectedMonth &&
-      !isDepartmentPeriodLoaded(selectedDepartment, selectedMonth)
+      !isDepartmentPeriodLoaded({ departmentSlug: selectedDepartment, period: selectedMonth })
     ) {
       setHasSearched(false);
     } else {
@@ -92,11 +92,11 @@ const ScheduleManagement = () => {
   const handleSearchSchedule = async () => {
     if (isSelectionComplete) {
       // 載入部門特定月份的員工資料，直接使用返回的資料
-      const departmentEmployees = await loadDepartmentByMonth(
-        selectedDepartment,
-        parseInt(selectedMonth.split('-')[0]), // year
-        parseInt(selectedMonth.split('-')[1]) // month
-      );
+      const departmentEmployees = await loadDepartmentByMonth({
+        departmentSlug: selectedDepartment,
+        year: parseInt(selectedMonth.split('-')[0]),
+        month: parseInt(selectedMonth.split('-')[1]),
+      });
 
       const deepCopyData = JSON.parse(JSON.stringify(departmentEmployees));
       setEmployees(deepCopyData);
@@ -153,7 +153,9 @@ const ScheduleManagement = () => {
       }
 
       // 構建完整的日期字串 (YYYY-MM-DD)
-      const fullDate = `${selectedMonth}-${day.toString().padStart(2, '0')}`;
+      const fullDate = dayjs(`${selectedMonth}-${day.toString().padStart(2, '0')}`).format(
+        'YYYY-MM-DD'
+      );
 
       // 準備新的工作排程（含 pivot.date）
       const newWorkSchedule = {
@@ -183,18 +185,18 @@ const ScheduleManagement = () => {
     const date = dayjs(selectedMonth);
 
     // 使用結構化資料格式進行同步
-    await handleBulkSyncEmployeeWorkSchedules(
+    await handleBulkSyncEmployeeWorkSchedules({
       employees,
-      date.year(),
-      date.month() + 1, // dayjs.month() 回傳 0-11，需要加 1
-      () => {
+      year: date.year(),
+      month: date.month() + 1, // dayjs.month() 回傳 0-11，需要加 1
+      onSuccess: () => {
         // 儲存成功後，將當前狀態設為新的初始狀態
         // 這樣可以正確追蹤後續的變更
         setInitialEmployees(JSON.parse(JSON.stringify(employees)));
         handleEditFinish();
       },
-      () => {}
-    );
+      onError: () => {},
+    });
   };
 
   const handleEditFinish = () => {

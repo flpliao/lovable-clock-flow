@@ -28,39 +28,32 @@ export const useEmployeeWorkSchedule = () => {
     markDepartmentPeriodLoaded,
   } = useEmployeeWorkScheduleStore();
 
-  // 載入員工工作排程資料
-  const loadEmployeeWorkSchedules = async (params?: {
-    date?: string;
-    department_slug?: string;
-  }) => {
-    setIsLoading(true);
-    setError(null);
-    const data = await getEmployeeWithWorkSchedules(params);
-    setEmployees(data);
-    setIsLoading(false);
-    return data;
-  };
-
   // 載入部門的所有員工資料（不指定時期）
-  const loadDepartmentAllEmployees = async (departmentSlug: string) => {
+  const loadDepartmentAllEmployees = async ({ departmentSlug }: { departmentSlug: string }) => {
     setIsLoading(true);
     setError(null);
 
     const employees = await getEmployeeWithWorkSchedules({
       department_slug: departmentSlug,
     });
-    addEmployeesForDepartment(departmentSlug, employees);
+    addEmployeesForDepartment({ departmentSlug, employees });
     setIsLoading(false);
     return employees;
   };
 
   // 載入部門特定時期的員工資料
-  const loadDepartmentByPeriod = async (departmentSlug: string, period: string) => {
+  const loadDepartmentByPeriod = async ({
+    departmentSlug,
+    period,
+  }: {
+    departmentSlug: string;
+    period: string;
+  }) => {
     setIsLoading(true);
     setError(null);
 
     // 如果該時期已經載入，直接返回
-    if (isDepartmentPeriodLoaded(departmentSlug, period)) {
+    if (isDepartmentPeriodLoaded({ departmentSlug, period })) {
       const employees = getEmployeesByDepartment(departmentSlug);
       setIsLoading(false);
       return employees;
@@ -77,18 +70,24 @@ export const useEmployeeWorkSchedule = () => {
       end_date: endDate,
     });
 
-    addEmployeesForDepartment(departmentSlug, employees, period);
+    addEmployeesForDepartment({ departmentSlug, employees, period });
     setIsLoading(false);
     return employees;
   };
 
   // 載入部門特定日期的員工資料
-  const loadDepartmentByDate = async (departmentSlug: string, date: string) => {
+  const loadDepartmentByDate = async ({
+    departmentSlug,
+    date,
+  }: {
+    departmentSlug: string;
+    date: string;
+  }) => {
     setIsLoading(true);
     setError(null);
 
     // 檢查該日期的時期是否已載入
-    if (isDepartmentDateLoaded(departmentSlug, date)) {
+    if (isDepartmentDateLoaded({ departmentSlug, date })) {
       const employees = getEmployeesByDepartment(departmentSlug);
       setIsLoading(false);
       return employees;
@@ -103,17 +102,21 @@ export const useEmployeeWorkSchedule = () => {
 
     // 使用 dayjs 自動推斷時期並標記為已載入
     const period = dayjs(date).format('YYYY-MM');
-    addEmployeesForDepartment(departmentSlug, employees, period);
+    addEmployeesForDepartment({ departmentSlug, employees, period });
     setIsLoading(false);
     return employees;
   };
 
   // 載入部門特定日期範圍的員工資料
-  const loadDepartmentByDateRange = async (
-    departmentSlug: string,
-    startDate: string,
-    endDate: string
-  ) => {
+  const loadDepartmentByDateRange = async ({
+    departmentSlug,
+    startDate,
+    endDate,
+  }: {
+    departmentSlug: string;
+    startDate: string;
+    endDate: string;
+  }) => {
     setIsLoading(true);
     setError(null);
 
@@ -129,10 +132,10 @@ export const useEmployeeWorkSchedule = () => {
 
     // 如果範圍在同一個月內，標記該月為已載入
     if (startPeriod === endPeriod) {
-      addEmployeesForDepartment(departmentSlug, employees, startPeriod);
+      addEmployeesForDepartment({ departmentSlug, employees, period: startPeriod });
     } else {
       // 跨月範圍，不標記特定時期（因為可能不完整）
-      addEmployeesForDepartment(departmentSlug, employees);
+      addEmployeesForDepartment({ departmentSlug, employees });
     }
 
     setIsLoading(false);
@@ -140,31 +143,53 @@ export const useEmployeeWorkSchedule = () => {
   };
 
   // 載入部門特定年月的員工資料
-  const loadDepartmentByMonth = async (departmentSlug: string, year: number, month: number) => {
+  const loadDepartmentByMonth = async ({
+    departmentSlug,
+    year,
+    month,
+  }: {
+    departmentSlug: string;
+    year: number;
+    month: number;
+  }) => {
     const period = dayjs()
       .year(year)
       .month(month - 1)
       .format('YYYY-MM');
-    return loadDepartmentByPeriod(departmentSlug, period);
+    return loadDepartmentByPeriod({ departmentSlug, period });
   };
 
   // 檢查特定年月是否已載入
-  const isDepartmentMonthLoaded = (departmentSlug: string, year: number, month: number) => {
+  const isDepartmentMonthLoaded = ({
+    departmentSlug,
+    year,
+    month,
+  }: {
+    departmentSlug: string;
+    year: number;
+    month: number;
+  }) => {
     const period = dayjs()
       .year(year)
       .month(month - 1)
       .format('YYYY-MM');
-    return isDepartmentPeriodLoaded(departmentSlug, period);
+    return isDepartmentPeriodLoaded({ departmentSlug, period });
   };
 
   // 批量同步員工工作排程
-  const handleBulkSyncEmployeeWorkSchedules = async (
-    employees: EmployeeWithWorkSchedules[],
-    year: number,
-    month: number,
-    onSuccess?: () => void,
-    onError?: () => void
-  ) => {
+  const handleBulkSyncEmployeeWorkSchedules = async ({
+    employees,
+    year,
+    month,
+    onSuccess,
+    onError,
+  }: {
+    employees: EmployeeWithWorkSchedules[];
+    year: number;
+    month: number;
+    onSuccess?: () => void;
+    onError?: () => void;
+  }) => {
     setIsLoading(true);
     setError(null);
 
@@ -197,13 +222,11 @@ export const useEmployeeWorkSchedule = () => {
       }
     });
 
-    const payload = {
+    const result = await bulkSyncEmployeeWorkSchedules({
       month,
       year,
       schedules,
-    };
-
-    const result = await bulkSyncEmployeeWorkSchedules(payload);
+    });
 
     if (result) {
       setIsLoading(false);
@@ -224,7 +247,6 @@ export const useEmployeeWorkSchedule = () => {
     error,
 
     // 操作方法
-    loadEmployeeWorkSchedules,
     loadDepartmentAllEmployees,
     loadDepartmentByPeriod,
     loadDepartmentByDate,

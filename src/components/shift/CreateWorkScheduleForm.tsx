@@ -37,14 +37,14 @@ interface CreateWorkScheduleFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: CreateWorkScheduleData) => Promise<WorkSchedule>;
-  shiftId: string;
+  shiftSlug: string;
 }
 
 const CreateWorkScheduleForm = ({
   open,
   onOpenChange,
   onSubmit,
-  shiftId,
+  shiftSlug,
 }: CreateWorkScheduleFormProps) => {
   const form = useForm<CreateWorkScheduleFormData>({
     resolver: zodResolver(createWorkScheduleSchema),
@@ -66,8 +66,8 @@ const CreateWorkScheduleForm = ({
   const { wrappedAction: handleSubmitAction, isLoading } = useLoadingAction(
     async (data: CreateWorkScheduleFormData) => {
       const workScheduleData: CreateWorkScheduleData = {
-        shift_id: shiftId,
         status: data.status,
+        shift_slug: shiftSlug,
         clock_in_time: data.clock_in_time,
         clock_out_time: data.clock_out_time,
         ot_start_after_hours: data.ot_start_after_hours,

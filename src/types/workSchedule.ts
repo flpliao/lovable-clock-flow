@@ -1,14 +1,21 @@
 import { z } from 'zod';
+import { Shift } from './shift';
 
 export enum WorkScheduleStatus {
   WORK = 'work',
   OFF = 'off',
 }
 
+export interface WorkSchedulePivot {
+  status: string;
+  date: string;
+}
+
 export interface WorkSchedule {
-  id?: number;
   slug: string;
   shift_id: string;
+  shift?: Shift;
+  pivot?: WorkSchedulePivot;
   status: WorkScheduleStatus;
   clock_in_time: string;
   clock_out_time: string;
@@ -25,7 +32,7 @@ export interface WorkSchedule {
 }
 
 export interface CreateWorkScheduleData {
-  shift_id: string;
+  shift_slug?: string;
   slug?: string;
   status: WorkScheduleStatus;
   clock_in_time: string;

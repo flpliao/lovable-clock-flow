@@ -1,125 +1,355 @@
 import PageHeader from '@/components/layout/PageHeader';
 import PageLayout from '@/components/layout/PageLayout';
+import {
+  DepartmentSelect,
+  PersonnelFilter,
+  ScheduleGrid,
+  ShiftFilter,
+  ShiftSelector,
+} from '@/components/schedule';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
-import SearchableSelect from '@/components/ui/SearchableSelect';
 import { useDepartment } from '@/hooks/useDepartment';
-import { useDepartmentStore } from '@/stores/departmentStore';
+import { useEmployeeWorkSchedule } from '@/hooks/useEmployeeWorkSchedule';
+import { useShift } from '@/hooks/useShift';
+import type { Employee } from '@/types/employee';
+
+import { formatMonthDisplay } from '@/utils/dateUtils';
 import dayjs from 'dayjs';
-import { Calendar, Clock, Plus, Search, Settings, Users } from 'lucide-react';
+import { Calendar, Edit, Save, Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 const ScheduleManagement = () => {
-  const [activeView, setActiveView] = useState<'calendar' | 'list' | 'stats'>('calendar');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
+  // const [selectedWorkSystem, setSelectedWorkSystem] = useState<string>('standard');
   const [selectedMonth, setSelectedMonth] = useState<string>(dayjs().format('YYYY-MM'));
+  const [hasSearched, setHasSearched] = useState<boolean>(false);
+  const [personnelFilter, setPersonnelFilter] = useState<{ all: boolean; [key: string]: boolean }>({
+    all: true,
+  });
+  // const [leaveFilter, setLeaveFilter] = useState({
+  //   all: true,
+  //   leave: true,
+  //   monthlyLeave: true,
+  //   nationalHoliday: true,
+  //   restDay: true,
+  //   regularHoliday: true,
+  // });
+  const [shiftFilter, setShiftFilter] = useState<{ all: boolean; [key: string]: boolean }>({
+    all: true,
+  });
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedShift, setSelectedShift] = useState<string | null>(null);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  // const [employeesBySlug, setEmployeesBySlug] = useState<EmployeesBySlug>({});
+  const [initialEmployees, setInitialEmployees] = useState<Employee[]>([]);
 
-  const departments = useDepartmentStore(state => state.departments);
+  const { loadAllShifts, getShiftBySlug, shifts } = useShift();
+  const {
+    getEmployeesByDepartment,
+    isDepartmentPeriodLoaded,
+    loadDepartmentByMonth,
+    handleBulkSyncEmployeeWorkSchedules,
+  } = useEmployeeWorkSchedule();
 
   const { loadDepartments } = useDepartment();
+
   useEffect(() => {
     loadDepartments();
-  }, []);
+    loadAllShifts();
+  }, [loadDepartments, loadAllShifts]);
 
-  // 模擬排班數據
-  const mockSchedules = [
-    {
-      id: 1,
-      employee: '張小明',
-      date: '2024-01-15',
-      startTime: '09:00',
-      endTime: '17:00',
-      status: 'confirmed',
-    },
-    {
-      id: 2,
-      employee: '李小華',
-      date: '2024-01-15',
-      startTime: '10:00',
-      endTime: '18:00',
-      status: 'pending',
-    },
-    {
-      id: 3,
-      employee: '王小美',
-      date: '2024-01-16',
-      startTime: '08:00',
-      endTime: '16:00',
-      status: 'confirmed',
-    },
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+  // 當 shifts 載入後，初始化 shiftFilter
+  useEffect(() => {
+    if (shifts.length > 0) {
+      const initialShiftFilter: { all: boolean; [key: string]: boolean } = { all: true };
+      shifts.forEach(shift => {
+        initialShiftFilter[shift.slug] = true;
+      });
+      setShiftFilter(initialShiftFilter);
     }
-  };
+  }, [shifts]);
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-        return '已確認';
-      case 'pending':
-        return '待確認';
-      default:
-        return '未知';
+  // 當部門或員工資料變化時，更新員工列表
+  useEffect(() => {
+    if (
+      selectedDepartment &&
+      selectedMonth &&
+      !isDepartmentPeriodLoaded({ departmentSlug: selectedDepartment, period: selectedMonth })
+    ) {
+      setHasSearched(false);
+    } else {
+      const departmentEmployees = getEmployeesByDepartment(selectedDepartment);
+      if (departmentEmployees.length > 0) {
+        setEmployees(departmentEmployees);
+        handleSearchSchedule();
+      }
+    }
+  }, [selectedDepartment, selectedMonth, isDepartmentPeriodLoaded, getEmployeesByDepartment]);
+
+  // 當篩選條件變化時，更新員工列表顯示
+  useEffect(() => {
+    applyFilters();
+  }, [shiftFilter, personnelFilter, hasSearched, initialEmployees]);
+
+  // 應用篩選條件到員工列表
+  const applyFilters = () => {
+    if (hasSearched && initialEmployees.length > 0) {
+      // 先應用班次篩選
+      const shiftFilteredEmployees = filterEmployeesByShifts(initialEmployees, shiftFilter);
+
+      // 再應用人員篩選
+      const personnelFilteredEmployees = filterEmployeesByPersonnel(
+        shiftFilteredEmployees,
+        personnelFilter
+      );
+      setEmployees(personnelFilteredEmployees);
     }
   };
 
   // 檢查是否已選擇單位和月份
   const isSelectionComplete = selectedDepartment && selectedMonth;
 
-  // 使用 dayjs 格式化月份顯示
-  const formatMonthDisplay = (monthValue: string) => {
-    if (!monthValue) return '';
-    return dayjs(monthValue).format('YYYY年MM月');
+  // 根據班次篩選條件過濾員工
+  const filterEmployeesByShifts = (
+    allEmployees: Employee[],
+    shiftFilterState: { all: boolean; [key: string]: boolean }
+  ): Employee[] => {
+    // 如果選擇了「全部」，顯示所有員工
+    if (shiftFilterState.all) {
+      return allEmployees;
+    }
+
+    // 過濾出有被選中班次的員工
+    return allEmployees.filter(employee => {
+      // 檢查該員工是否有任何被選中的班次
+      if (!employee.work_schedules || employee.work_schedules.length === 0) {
+        return false; // 沒有班次的員工不顯示
+      }
+
+      // 檢查該員工的班次是否在篩選條件中
+      return employee.work_schedules.some(workSchedule => {
+        const shiftSlug = workSchedule.shift?.slug;
+        return shiftSlug && shiftFilterState[shiftSlug];
+      });
+    });
+  };
+
+  // 根據人員篩選條件過濾員工
+  const filterEmployeesByPersonnel = (
+    allEmployees: Employee[],
+    personnelFilterState: { all: boolean; [key: string]: boolean }
+  ): Employee[] => {
+    // 如果選擇了「全部」，顯示所有員工
+    if (personnelFilterState.all) {
+      return allEmployees;
+    }
+
+    // 過濾出被選中的員工
+    return allEmployees.filter(employee => {
+      return personnelFilterState[employee.slug] ?? true;
+    });
+  };
+
+  // 處理搜尋班表
+  const handleSearchSchedule = async () => {
+    if (isSelectionComplete) {
+      // 載入部門特定月份的員工資料，直接使用返回的資料
+      const departmentEmployees = await loadDepartmentByMonth({
+        departmentSlug: selectedDepartment,
+        year: parseInt(selectedMonth.split('-')[0]),
+        month: parseInt(selectedMonth.split('-')[1]),
+      });
+
+      const deepCopyData = JSON.parse(JSON.stringify(departmentEmployees));
+      setEmployees(deepCopyData);
+      setInitialEmployees(deepCopyData);
+      setHasSearched(true);
+
+      // 初始化人員篩選狀態
+      const initialPersonnelFilter: { all: boolean; [key: string]: boolean } = { all: true };
+      deepCopyData.forEach(employee => {
+        initialPersonnelFilter[employee.slug] = true;
+      });
+      setPersonnelFilter(initialPersonnelFilter);
+    }
   };
 
   // 處理月份變更
   const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSelectedMonth(value);
+    // 當月份變更時，重置搜尋狀態
+    setHasSearched(false);
+    setHasChanges(false);
+    setIsEditMode(false);
+    setSelectedShift(null);
+    // 清空員工資料
+    setEmployees([]);
+    setInitialEmployees([]);
+  };
+
+  // 處理班表格子點擊
+  const handleCellClick = (employeeSlug: string, day: number) => {
+    if (isEditMode && selectedShift) {
+      // 找到對應的員工
+      const employee = employees.find(emp => emp.slug === employeeSlug);
+      if (!employee) return;
+
+      // 找到選中的班次
+      const shift = getShiftBySlug(selectedShift);
+      if (!shift) return;
+
+      // 找到該班次的第一個工作時程（如果有的話）
+      const workSchedule = shift.work_schedules?.[0];
+      if (!workSchedule) return;
+
+      // 構建完整的日期字串 (YYYY-MM-DD)
+      const fullDate = dayjs(`${selectedMonth}-${day.toString().padStart(2, '0')}`).format(
+        'YYYY-MM-DD'
+      );
+
+      // 更新班表資料（深拷貝）
+      const newEmployees = [...employees];
+
+      // 找到員工索引
+      const employeeIndex = newEmployees.findIndex(emp => emp.slug === employeeSlug);
+      if (employeeIndex === -1) return;
+
+      // 如果該員工的 work_schedules 不存在，先初始化為陣列
+      if (!newEmployees[employeeIndex].work_schedules) {
+        newEmployees[employeeIndex].work_schedules = [];
+      }
+
+      // 檢查該日期是否已經有班表
+      const existingScheduleIndex = newEmployees[employeeIndex].work_schedules!.findIndex(
+        ws => ws.pivot?.date === fullDate
+      );
+
+      if (existingScheduleIndex !== -1) {
+        // 如果該日期已有班表，檢查是否為相同班次
+        const existingSchedule = newEmployees[employeeIndex].work_schedules![existingScheduleIndex];
+        const isSameShift = existingSchedule.shift?.slug === shift.slug;
+
+        if (isSameShift) {
+          // 如果是相同班次，則移除它（點擊第二次）
+          const filteredSchedules = newEmployees[employeeIndex].work_schedules!.filter(
+            ws => ws.pivot?.date !== fullDate
+          );
+          newEmployees[employeeIndex].work_schedules = filteredSchedules;
+        } else {
+          // 如果是不同班次，則直接替換
+          const workScheduleWithShift = {
+            ...workSchedule,
+            shift: shift,
+          };
+
+          const newWorkSchedule = {
+            ...workScheduleWithShift,
+            pivot: { ...workScheduleWithShift.pivot, date: fullDate },
+          };
+
+          // 替換現有的班表
+          newEmployees[employeeIndex].work_schedules![existingScheduleIndex] = newWorkSchedule;
+        }
+      } else {
+        // 如果該日期沒有班表，則新增班表（點擊第一次）
+        const workScheduleWithShift = {
+          ...workSchedule,
+          shift: shift,
+        };
+
+        const newWorkSchedule = {
+          ...workScheduleWithShift,
+          pivot: { ...workScheduleWithShift.pivot, date: fullDate },
+        };
+
+        newEmployees[employeeIndex].work_schedules = [
+          ...newEmployees[employeeIndex].work_schedules!,
+          newWorkSchedule,
+        ];
+      }
+
+      // 更新狀態
+      setEmployees(newEmployees);
+
+      // 標記有變更
+      setHasChanges(true);
+    }
+  };
+
+  // 處理儲存變更
+  const handleSaveChanges = async () => {
+    // 儲存變更：使用結構化資料格式進行同步
+    const date = dayjs(selectedMonth);
+
+    // 使用結構化資料格式進行同步
+    await handleBulkSyncEmployeeWorkSchedules({
+      employees,
+      year: date.year(),
+      month: date.month() + 1, // dayjs.month() 回傳 0-11，需要加 1
+      onSuccess: () => {
+        // 儲存成功後，將當前狀態設為新的初始狀態
+        // 這樣可以正確追蹤後續的變更
+        setInitialEmployees(JSON.parse(JSON.stringify(employees)));
+        handleEditFinish();
+      },
+      onError: () => {},
+    });
+  };
+
+  const handleEditFinish = () => {
+    setHasChanges(false);
+    setIsEditMode(false); // 儲存後退出編輯模式
+    setSelectedShift(null); // 清除選中的班次
+  };
+
+  // 處理班次選擇
+  const handleShiftSelect = (shiftSlug: string | null) => {
+    setSelectedShift(shiftSlug);
+  };
+
+  // 處理編輯模式切換
+  const handleEditToggle = () => {
+    if (!isEditMode) {
+      // 進入編輯模式：把當前 initialEmployeesBySlug 寫入 EmployeesBySlug 暫存
+      setEmployees(JSON.parse(JSON.stringify(initialEmployees)));
+      setIsEditMode(true);
+    } else {
+      // 取消編輯：把 initialEmployeesBySlug 返回 EmployeesBySlug（深拷貝）
+      setEmployees(JSON.parse(JSON.stringify(initialEmployees)));
+      setHasChanges(false);
+      setIsEditMode(false);
+      setSelectedShift(null); // 清除選中的班次
+
+      // 重新應用篩選條件，確保顯示狀態與篩選條件一致
+      applyFilters();
+    }
   };
 
   return (
     <PageLayout>
       <PageHeader
         icon={Calendar}
-        title="排班管理"
-        description="用於管理員工工作時間安排"
+        title="班表審核"
+        description="用於審核和管理員工排班表"
         iconBgColor="bg-blue-500"
       />
 
-      {/* 選擇區域 */}
-      <div className="bg-white/10 border border-white/20 rounded-2xl backdrop-blur-xl p-6 space-y-3">
-        <h2 className="text-xl font-semibold text-white">選擇查看條件</h2>
+      {/* 第一階段：班表搜尋條件 */}
+      <div className="bg-white/10 border border-white/20 rounded-2xl backdrop-blur-xl p-6 space-y-6">
+        <h2 className="text-xl font-semibold text-white">班表搜尋條件</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* 單位選擇 */}
-          <div>
-            <label className="block text-white/80 text-sm font-medium mb-2">選擇單位</label>
-            <SearchableSelect
-              className="w-full bg-white/10 border-white/20 text-white rounded-md"
-              options={departments.map(department => ({
-                value: department.slug,
-                label: department.name,
-              }))}
-              value={selectedDepartment}
-              onChange={setSelectedDepartment}
-              placeholder="請選擇單位"
-              searchPlaceholder="搜尋單位..."
-            />
-          </div>
+          <DepartmentSelect
+            selectedDepartment={selectedDepartment}
+            onDepartmentChange={setSelectedDepartment}
+          />
 
-          {/* 月份選擇 */}
+          {/* 年度/月份選擇 */}
           <div>
-            <label className="block text-white/80 text-sm font-medium mb-2">選擇月份</label>
+            <label className="block text-white/80 text-sm font-medium mb-2">年度/月份</label>
             <input
               type="month"
               value={selectedMonth}
@@ -128,238 +358,135 @@ const ScheduleManagement = () => {
               placeholder="請選擇月份"
             />
           </div>
+
+          {/* 工時制選擇 */}
+          {/* <WorkSystemSelect
+              selectedWorkSystem={selectedWorkSystem}
+              onWorkSystemChange={setSelectedWorkSystem}
+            /> */}
         </div>
 
-        {/* 選擇完成提示 */}
-        {isSelectionComplete && (
-          <div className="mt-4 p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span className="text-green-100 text-sm">
-                已選擇：
-                {
-                  departments.find(department => department.slug === selectedDepartment)?.name
-                } - {formatMonthDisplay(selectedMonth)}
-              </span>
-            </div>
-          </div>
-        )}
+        {/* 搜尋按鈕 */}
+        <div className="flex justify-end pt-4 border-t border-white/20">
+          <Button
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-8"
+            onClick={handleSearchSchedule}
+            disabled={!isSelectionComplete}
+          >
+            <Search className="h-4 w-4 mr-2" />
+            搜尋班表
+          </Button>
+        </div>
       </div>
 
-      {/* 只有選擇完成後才顯示儀表板內容 */}
-      {isSelectionComplete ? (
-        <>
+      {/* 第二階段：班表篩選條件 */}
+      {hasSearched && (
+        <div className="bg-white/10 border border-white/20 rounded-2xl backdrop-blur-xl p-6 space-y-6 mt-6">
+          <h2 className="text-xl font-semibold text-white">班表篩選條件</h2>
+
+          <div className="space-y-6">
+            {/* 人員篩選 */}
+            <PersonnelFilter
+              personnelFilter={personnelFilter}
+              onPersonnelFilterChange={setPersonnelFilter}
+              employees={initialEmployees}
+            />
+
+            {/* 休假選擇 */}
+            {/* <LeaveFilter
+                 leaveFilter={leaveFilter}
+                 onLeaveFilterChange={setLeaveFilter}
+               /> */}
+
+            {/* 班次選擇 */}
+            {isEditMode ? (
+              <ShiftSelector selectedShift={selectedShift} onShiftSelect={handleShiftSelect} />
+            ) : (
+              <ShiftFilter shiftFilter={shiftFilter} onShiftFilterChange={setShiftFilter} />
+            )}
+          </div>
+
           {/* 操作按鈕 */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between pt-4 border-t border-white/20">
             <div className="flex gap-3">
               <Button
-                variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                className={`${
+                  isEditMode
+                    ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
+                    : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
+                }`}
+                onClick={handleEditToggle}
               >
-                <Search className="h-4 w-4 mr-2" />
-                搜尋
-              </Button>
-              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                <Plus className="h-4 w-4 mr-2" />
-                新增排班
+                <Edit className="h-4 w-4 mr-2" />
+                {isEditMode ? '取消編輯' : '編輯'}
               </Button>
             </div>
+            {hasChanges && (
+              <Button
+                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                onClick={handleSaveChanges}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                檢查並發佈
+              </Button>
+            )}
           </div>
+        </div>
+      )}
 
-          {/* 統計卡片 */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card className="bg-white/10 border-white/20 backdrop-blur-xl">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white text-lg">總員工數</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-3xl font-bold text-white">24</span>
-                  <Users className="h-8 w-8 text-blue-400" />
-                </div>
-              </CardContent>
-            </Card>
+      {/* 編輯模式提示 */}
+      {isEditMode && (
+        <div className="mt-6 text-center">
+          {selectedShift ? (
+            <p className="text-white/80 text-sm">已選擇班次，點擊下方班表中的格子來排班</p>
+          ) : (
+            <p className="text-white/80 text-sm">請選擇一個班次，然後點擊下方班表中的格子來排班</p>
+          )}
+        </div>
+      )}
 
-            <Card className="bg-white/10 border-white/20 backdrop-blur-xl">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white text-lg">今日排班</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-3xl font-bold text-white">18</span>
-                  <Calendar className="h-8 w-8 text-green-400" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/10 border-white/20 backdrop-blur-xl">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white text-lg">待確認</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-3xl font-bold text-white">3</span>
-                  <Clock className="h-8 w-8 text-yellow-400" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/10 border-white/20 backdrop-blur-xl">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white text-lg">設定</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-3xl font-bold text-white">-</span>
-                  <Settings className="h-8 w-8 text-purple-400" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* 視圖切換 */}
-          <div className="flex gap-2 mb-6">
+      {/* 班表內容 */}
+      {hasSearched ? (
+        <div className="mt-8">
+          {/* 班表標題和操作 */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <h2 className="text-2xl font-bold text-white">
+                {formatMonthDisplay(selectedMonth)} 班表
+              </h2>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                展開全表
+              </Button>
+            </div>
             <Button
-              variant={activeView === 'calendar' ? 'default' : 'outline'}
-              onClick={() => setActiveView('calendar')}
-              className={
-                activeView === 'calendar'
-                  ? 'bg-white text-gray-900'
-                  : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
-              }
+              variant="outline"
+              size="sm"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
             >
-              <Calendar className="h-4 w-4 mr-2" />
-              月曆視圖
-            </Button>
-            <Button
-              variant={activeView === 'list' ? 'default' : 'outline'}
-              onClick={() => setActiveView('list')}
-              className={
-                activeView === 'list'
-                  ? 'bg-white text-gray-900'
-                  : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
-              }
-            >
-              <Users className="h-4 w-4 mr-2" />
-              列表視圖
-            </Button>
-            <Button
-              variant={activeView === 'stats' ? 'default' : 'outline'}
-              onClick={() => setActiveView('stats')}
-              className={
-                activeView === 'stats'
-                  ? 'bg-white text-gray-900'
-                  : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
-              }
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              統計視圖
+              統計資訊
             </Button>
           </div>
 
-          {/* 主要內容區域 */}
-          <div className="bg-white/10 border border-white/20 rounded-2xl backdrop-blur-xl p-6">
-            {activeView === 'calendar' && (
-              <div>
-                <h2 className="text-xl font-semibold text-white mb-4">月曆視圖</h2>
-                <div className="grid grid-cols-7 gap-2 mb-4">
-                  {['日', '一', '二', '三', '四', '五', '六'].map(day => (
-                    <div key={day} className="text-center text-white/70 font-medium py-2">
-                      {day}
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-7 gap-2">
-                  {Array.from({ length: 35 }, (_, i) => (
-                    <div
-                      key={i}
-                      className="h-20 border border-white/10 rounded-lg p-2 text-white/50 text-sm hover:bg-white/5 cursor-pointer"
-                    >
-                      {i + 1}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {activeView === 'list' && (
-              <div>
-                <h2 className="text-xl font-semibold text-white mb-4">排班列表</h2>
-                <div className="space-y-3">
-                  {mockSchedules.map(schedule => (
-                    <div
-                      key={schedule.id}
-                      className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                          <Users className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-white font-medium">{schedule.employee}</h3>
-                          <p className="text-white/60 text-sm">{schedule.date}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-white/80">
-                          {schedule.startTime} - {schedule.endTime}
-                        </div>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(schedule.status)}`}
-                        >
-                          {getStatusText(schedule.status)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {activeView === 'stats' && (
-              <div>
-                <h2 className="text-xl font-semibold text-white mb-4">統計分析</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card className="bg-white/5 border-white/10">
-                    <CardHeader>
-                      <CardTitle className="text-white">每週工作時數</CardTitle>
-                      <CardDescription className="text-white/60">
-                        員工平均工作時數統計
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-32 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg flex items-center justify-center">
-                        <span className="text-white text-2xl font-bold">40.5 小時</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-white/5 border-white/10">
-                    <CardHeader>
-                      <CardTitle className="text-white">排班覆蓋率</CardTitle>
-                      <CardDescription className="text-white/60">
-                        已安排排班的員工比例
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-32 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg flex items-center justify-center">
-                        <span className="text-white text-2xl font-bold">75%</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            )}
-          </div>
-        </>
+          {/* 班表網格 */}
+          <ScheduleGrid
+            employees={employees}
+            selectedMonth={selectedMonth}
+            isEditMode={isEditMode}
+            onCellClick={handleCellClick}
+          />
+        </div>
       ) : (
-        /* 未選擇完成時的提示 */
-        <div className="bg-white/10 border border-white/20 rounded-2xl backdrop-blur-xl p-12 text-center">
+        /* 未搜尋時的提示 */
+        <div className="bg-white/10 border border-white/20 rounded-2xl backdrop-blur-xl p-12 text-center mt-8">
           <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <Calendar className="h-8 w-8 text-white" />
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">請先選擇單位和月份</h3>
-          <p className="text-white/60">選擇完成後即可查看排班資訊</p>
+          <h3 className="text-xl font-semibold text-white mb-2">請先搜尋班表</h3>
+          <p className="text-white/60">選擇單位和月份後，點擊搜尋班表即可查看班表資訊</p>
         </div>
       )}
     </PageLayout>

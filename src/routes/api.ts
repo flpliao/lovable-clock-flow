@@ -53,6 +53,14 @@ export const apiRoutes = {
     updateEmail: `${API_URL}/employee/profile/email`,
     updatePassword: `${API_URL}/employee/profile/password`,
   },
+  employees: {
+    index: `${API_URL}/employee/employees`,
+    all: `${API_URL}/employee/employees/all`,
+    show: (slug: string) => `${API_URL}/employee/employees/${slug}`,
+    store: `${API_URL}/employee/employees`,
+    update: (slug: string) => `${API_URL}/employee/employees/${slug}`,
+    destroy: (slug: string) => `${API_URL}/employee/employees/${slug}`,
+  },
   checkin: {
     index: `${API_URL}/employee/check-in`,
     create: `${API_URL}/employee/check-in`,
@@ -147,11 +155,12 @@ export const apiRoutes = {
     destroy: (slug: string) => `${API_URL}/employee/work-schedules/${slug}`,
   },
   // 員工排班管理
-  employeeSchedule: {
+  employeeWorkSchedule: {
     index: `${API_URL}/employee/employee-schedules`,
     show: (employeeSlug: string) => `${API_URL}/employee/employee-schedules/${employeeSlug}`,
     store: `${API_URL}/employee/employee-schedules`,
-    bulkStore: `${API_URL}/employee/employee-schedules/bulk`,
+    bulkSync: `${API_URL}/employee/employee-schedules/bulk/sync`,
+    bulkStore: `${API_URL}/employee/employee-schedules/bulk/store`,
     update: (employeeSlug: string) =>
       `${API_URL}/employee/employee-schedules/${employeeSlug}/update`,
     destroy: (employeeSlug: string) => `${API_URL}/employee/employee-schedules/${employeeSlug}`,

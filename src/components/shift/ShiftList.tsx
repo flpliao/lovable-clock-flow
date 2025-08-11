@@ -136,74 +136,90 @@ const ShiftList = () => {
       <div className="bg-white/10 border border-white/20 rounded-2xl backdrop-blur-xl p-6">
         <div>
           <h2 className="text-xl font-semibold text-white mb-6">班次列表</h2>
-          <div className="space-y-3">
-            {filteredShifts.map(shift => {
-              const isExpanded = expandedShifts.has(shift.slug);
-              const workSchedules = shift.work_schedules || [];
 
-              return (
-                <div key={shift.slug} className="space-y-2">
-                  {/* 班次主項目 */}
-                  <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors gap-4">
-                    <div className="flex items-center space-x-4">
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: shift.color || '#3B82F6' }}
-                      >
-                        <Clock className="h-5 w-5 text-white" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-white font-medium truncate">{shift.name}</h3>
-                        <p className="text-white/60 text-sm">代碼：{shift.code}</p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-6">
-                      <div className="flex flex-col md:flex-row md:space-x-6 space-y-1 md:space-y-0">
-                        <div className="text-white/80 text-sm flex items-center">
-                          日切時間：{shift.day_cut_time}
+          {/* 如果沒有班次資料，顯示提示訊息 */}
+          {filteredShifts.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gradient-to-r from-gray-500 to-gray-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">暫無班次資料</h3>
+              <p className="text-white/60">
+                {searchTerm
+                  ? `搜尋 "${searchTerm}" 沒有找到符合的班次`
+                  : '目前還沒有建立任何班次，請點擊上方的新增按鈕來建立第一個班次'}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredShifts.map(shift => {
+                const isExpanded = expandedShifts.has(shift.slug);
+                const workSchedules = shift.work_schedules || [];
+
+                return (
+                  <div key={shift.slug} className="space-y-2">
+                    {/* 班次主項目 */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors gap-4">
+                      <div className="flex items-center space-x-4">
+                        <div
+                          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                          style={{ backgroundColor: shift.color || '#3B82F6' }}
+                        >
+                          <Clock className="h-5 w-5 text-white" />
                         </div>
-                        <div className="text-white/80 text-sm flex items-center gap-2">
-                          週期天數：{shift.cycle_days} 天
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleToggleExpand(shift.slug)}
-                            className="h-6 w-6 p-0 text-white/60 hover:text-white hover:bg-white/10"
-                          >
-                            {isExpanded ? (
-                              <ChevronDown className="h-3 w-3" />
-                            ) : (
-                              <ChevronRight className="h-3 w-3" />
-                            )}
-                          </Button>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-white font-medium truncate">{shift.name}</h3>
+                          <p className="text-white/60 text-sm">代碼：{shift.code}</p>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <EditButton
-                          onClick={() => handleEditShift(shift)}
-                          className="flex-1 md:flex-none"
-                        />
-                        <DeleteButton
-                          onClick={() => handleDeleteShiftConfirm(shift.slug)}
-                          className="flex-1 md:flex-none"
-                        />
+                      <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-6">
+                        <div className="flex flex-col md:flex-row md:space-x-6 space-y-1 md:space-y-0">
+                          <div className="text-white/80 text-sm flex items-center">
+                            日切時間：{shift.day_cut_time}
+                          </div>
+                          <div className="text-white/80 text-sm flex items-center gap-2">
+                            週期天數：{shift.cycle_days} 天
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleToggleExpand(shift.slug)}
+                              className="h-6 w-6 p-0 text-white/60 hover:text-white hover:bg-white/10"
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="h-3 w-3" />
+                              ) : (
+                                <ChevronRight className="h-3 w-3" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <EditButton
+                            onClick={() => handleEditShift(shift)}
+                            className="flex-1 md:flex-none"
+                          />
+                          <DeleteButton
+                            onClick={() => handleDeleteShiftConfirm(shift.slug)}
+                            className="flex-1 md:flex-none"
+                          />
+                        </div>
                       </div>
                     </div>
+
+                    {/* 展開的工作時程列表 */}
+                    {isExpanded && (
+                      <WorkScheduleList
+                        workSchedules={workSchedules}
+                        onAddWorkSchedule={() => handleAddWorkSchedule(shift.slug)}
+                        onEditWorkSchedule={handleEditWorkSchedule}
+                        onDeleteWorkSchedule={handleDeleteWorkScheduleConfirm}
+                      />
+                    )}
                   </div>
-
-                  {/* 展開的工作時程列表 */}
-                  {isExpanded && (
-                    <WorkScheduleList
-                      workSchedules={workSchedules}
-                      onAddWorkSchedule={() => handleAddWorkSchedule(shift.slug)}
-                      onEditWorkSchedule={handleEditWorkSchedule}
-                      onDeleteWorkSchedule={handleDeleteWorkScheduleConfirm}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 

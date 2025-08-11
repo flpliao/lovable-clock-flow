@@ -1,32 +1,73 @@
+import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import type { EmployeeWithWorkSchedules } from '@/types/employee';
+import { getSelectAllState } from '@/utils/checkboxUtils';
+import SelectAllOption from './SelectAllOption';
 
-interface PersonnelFilterProps {
-  personnelFilter: 'all' | 'workSystem';
-  onPersonnelFilterChange: (value: 'all' | 'workSystem') => void;
+interface PersonnelFilterState {
+  all: boolean;
+  [key: string]: boolean; // 動態鍵值，對應每個員工的 slug
 }
 
-const PersonnelFilter = ({ personnelFilter, onPersonnelFilterChange }: PersonnelFilterProps) => {
+interface PersonnelFilterProps {
+  personnelFilter: PersonnelFilterState;
+  onPersonnelFilterChange: (filter: PersonnelFilterState) => void;
+  employees: EmployeeWithWorkSchedules[];
+}
+
+const PersonnelFilter = ({
+  personnelFilter,
+  onPersonnelFilterChange,
+  employees,
+}: PersonnelFilterProps) => {
+  // 使用 employees 來計算可見選項
+  const visibleOptions = employees.map(employee => personnelFilter[employee.slug] ?? true);
+  const selectAllState = getSelectAllState(visibleOptions);
+
+  const handleFilterChange = (key: string, checked: boolean) => {
+    if (key === 'all') {
+      // 全選邏輯：將所有可見選項設為相同狀態
+      const newFilter = { ...personnelFilter, all: checked };
+      employees.forEach(employee => {
+        newFilter[employee.slug] = checked;
+      });
+      onPersonnelFilterChange(newFilter);
+    } else {
+      // 個別選項邏輯
+      const newFilter = { ...personnelFilter, [key]: checked };
+
+      // 更新全選狀態
+      const newVisibleOptions = employees.map(employee => newFilter[employee.slug] ?? true);
+      newFilter.all = newVisibleOptions.every(option => option);
+
+      onPersonnelFilterChange(newFilter);
+    }
+  };
+
   return (
     <div>
-      <label className="block text-white/80 text-sm font-medium mb-2">人員篩選</label>
-      <RadioGroup
-        value={personnelFilter}
-        onValueChange={value => onPersonnelFilterChange(value as 'all' | 'workSystem')}
-      >
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="all" id="all" />
-          <Label htmlFor="all" className="text-white text-sm">
-            全部門人員
-          </Label>
-        </div>
-        {/* <div className="flex items-center space-x-2">
-           <RadioGroupItem value="workSystem" id="workSystem" />
-           <Label htmlFor="workSystem" className="text-white text-sm">
-             套用該工時制人員
-           </Label>
-         </div> */}
-      </RadioGroup>
+      <h3 className="text-white font-medium mb-3">人員篩選</h3>
+      <div className="flex flex-wrap gap-4">
+        <SelectAllOption
+          id="personnel-all"
+          label="全選"
+          checked={selectAllState.checked}
+          onCheckedChange={checked => handleFilterChange('all', checked)}
+          indeterminate={selectAllState.indeterminate}
+        />
+        {employees.map(employee => (
+          <div key={employee.slug} className="flex items-center space-x-2">
+            <Checkbox
+              id={employee.slug}
+              checked={personnelFilter[employee.slug] ?? true}
+              onCheckedChange={checked => handleFilterChange(employee.slug, checked as boolean)}
+            />
+            <Label htmlFor={employee.slug} className="text-white text-sm cursor-pointer">
+              {employee.name}
+            </Label>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

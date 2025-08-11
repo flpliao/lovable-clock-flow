@@ -23,7 +23,9 @@ const ScheduleManagement = () => {
   // const [selectedWorkSystem, setSelectedWorkSystem] = useState<string>('standard');
   const [selectedMonth, setSelectedMonth] = useState<string>(dayjs().format('YYYY-MM'));
   const [hasSearched, setHasSearched] = useState<boolean>(false);
-  const [personnelFilter, setPersonnelFilter] = useState<'all' | 'workSystem'>('all');
+  const [personnelFilter, setPersonnelFilter] = useState<{ all: boolean; [key: string]: boolean }>({
+    all: true,
+  });
   // const [leaveFilter, setLeaveFilter] = useState({
   //   all: true,
   //   leave: true,
@@ -85,16 +87,23 @@ const ScheduleManagement = () => {
     }
   }, [selectedDepartment, selectedMonth, isDepartmentPeriodLoaded, getEmployeesByDepartment]);
 
-  // 當班次篩選變化時，更新員工列表顯示
+  // 當篩選條件變化時，更新員工列表顯示
   useEffect(() => {
-    applyShiftFilter();
-  }, [shiftFilter, hasSearched, initialEmployees]);
+    applyFilters();
+  }, [shiftFilter, personnelFilter, hasSearched, initialEmployees]);
 
-  // 應用班次篩選到員工列表
-  const applyShiftFilter = () => {
+  // 應用篩選條件到員工列表
+  const applyFilters = () => {
     if (hasSearched && initialEmployees.length > 0) {
-      const filteredEmployees = filterEmployeesByShifts(initialEmployees, shiftFilter);
-      setEmployees(filteredEmployees);
+      // 先應用班次篩選
+      const shiftFilteredEmployees = filterEmployeesByShifts(initialEmployees, shiftFilter);
+
+      // 再應用人員篩選
+      const personnelFilteredEmployees = filterEmployeesByPersonnel(
+        shiftFilteredEmployees,
+        personnelFilter
+      );
+      setEmployees(personnelFilteredEmployees);
     }
   };
 
@@ -126,6 +135,22 @@ const ScheduleManagement = () => {
     });
   };
 
+  // 根據人員篩選條件過濾員工
+  const filterEmployeesByPersonnel = (
+    allEmployees: EmployeeWithWorkSchedules[],
+    personnelFilterState: { all: boolean; [key: string]: boolean }
+  ): EmployeeWithWorkSchedules[] => {
+    // 如果選擇了「全部」，顯示所有員工
+    if (personnelFilterState.all) {
+      return allEmployees;
+    }
+
+    // 過濾出被選中的員工
+    return allEmployees.filter(employee => {
+      return personnelFilterState[employee.slug] ?? true;
+    });
+  };
+
   // 處理搜尋班表
   const handleSearchSchedule = async () => {
     if (isSelectionComplete) {
@@ -140,6 +165,13 @@ const ScheduleManagement = () => {
       setEmployees(deepCopyData);
       setInitialEmployees(deepCopyData);
       setHasSearched(true);
+
+      // 初始化人員篩選狀態
+      const initialPersonnelFilter: { all: boolean; [key: string]: boolean } = { all: true };
+      deepCopyData.forEach(employee => {
+        initialPersonnelFilter[employee.slug] = true;
+      });
+      setPersonnelFilter(initialPersonnelFilter);
     }
   };
 
@@ -290,8 +322,8 @@ const ScheduleManagement = () => {
       setIsEditMode(false);
       setSelectedShift(null); // 清除選中的班次
 
-      // 重新應用班次篩選，確保顯示狀態與篩選條件一致
-      applyShiftFilter();
+      // 重新應用篩選條件，確保顯示狀態與篩選條件一致
+      applyFilters();
     }
   };
 
@@ -357,6 +389,7 @@ const ScheduleManagement = () => {
             <PersonnelFilter
               personnelFilter={personnelFilter}
               onPersonnelFilterChange={setPersonnelFilter}
+              employees={initialEmployees}
             />
 
             {/* 休假選擇 */}

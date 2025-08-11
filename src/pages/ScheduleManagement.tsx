@@ -134,11 +134,10 @@ const ScheduleManagement = () => {
       const workSchedule = shift.work_schedules?.[0];
       if (!workSchedule) return;
 
-      // 將 shift 資訊塞回 workSchedule
-      const workScheduleWithShift = {
-        ...workSchedule,
-        shift: shift,
-      };
+      // 構建完整的日期字串 (YYYY-MM-DD)
+      const fullDate = dayjs(`${selectedMonth}-${day.toString().padStart(2, '0')}`).format(
+        'YYYY-MM-DD'
+      );
 
       // 更新班表資料（深拷貝）
       const newEmployees = [...employees];
@@ -152,24 +151,54 @@ const ScheduleManagement = () => {
         newEmployees[employeeIndex].work_schedules = [];
       }
 
-      // 構建完整的日期字串 (YYYY-MM-DD)
-      const fullDate = dayjs(`${selectedMonth}-${day.toString().padStart(2, '0')}`).format(
-        'YYYY-MM-DD'
+      // 檢查該日期是否已經有班表
+      const existingScheduleIndex = newEmployees[employeeIndex].work_schedules!.findIndex(
+        ws => ws.pivot?.date === fullDate
       );
 
-      // 準備新的工作排程（含 pivot.date）
-      const newWorkSchedule = {
-        ...workScheduleWithShift,
-        pivot: { ...workScheduleWithShift.pivot, date: fullDate },
-      };
+      if (existingScheduleIndex !== -1) {
+        // 如果該日期已有班表，檢查是否為相同班次
+        const existingSchedule = newEmployees[employeeIndex].work_schedules![existingScheduleIndex];
+        const isSameShift = existingSchedule.shift?.slug === shift.slug;
 
-      // 移除該日期的舊排程
-      const filteredSchedules = newEmployees[employeeIndex].work_schedules!.filter(
-        ws => ws.pivot?.date !== fullDate
-      );
+        if (isSameShift) {
+          // 如果是相同班次，則移除它（點擊第二次）
+          const filteredSchedules = newEmployees[employeeIndex].work_schedules!.filter(
+            ws => ws.pivot?.date !== fullDate
+          );
+          newEmployees[employeeIndex].work_schedules = filteredSchedules;
+        } else {
+          // 如果是不同班次，則直接替換
+          const workScheduleWithShift = {
+            ...workSchedule,
+            shift: shift,
+          };
 
-      // 新增新排程
-      newEmployees[employeeIndex].work_schedules = [...filteredSchedules, newWorkSchedule];
+          const newWorkSchedule = {
+            ...workScheduleWithShift,
+            pivot: { ...workScheduleWithShift.pivot, date: fullDate },
+          };
+
+          // 替換現有的班表
+          newEmployees[employeeIndex].work_schedules![existingScheduleIndex] = newWorkSchedule;
+        }
+      } else {
+        // 如果該日期沒有班表，則新增班表（點擊第一次）
+        const workScheduleWithShift = {
+          ...workSchedule,
+          shift: shift,
+        };
+
+        const newWorkSchedule = {
+          ...workScheduleWithShift,
+          pivot: { ...workScheduleWithShift.pivot, date: fullDate },
+        };
+
+        newEmployees[employeeIndex].work_schedules = [
+          ...newEmployees[employeeIndex].work_schedules!,
+          newWorkSchedule,
+        ];
+      }
 
       // 更新狀態
       setEmployees(newEmployees);

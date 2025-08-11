@@ -4,6 +4,7 @@ import {
 } from '@/services/employeeWorkScheduleService';
 import { useEmployeeWorkScheduleStore } from '@/stores/employeeWorkScheduleStore';
 import { EmployeeWithWorkSchedules } from '@/types/employee';
+import dayjs from 'dayjs';
 
 export const useEmployeeWorkSchedule = () => {
   const { isLoading, setIsLoading, error, setError } = useEmployeeWorkScheduleStore();
@@ -65,11 +66,10 @@ export const useEmployeeWorkSchedule = () => {
       return employees;
     }
 
-    // 從 period (YYYY-MM) 計算該月的開始和結束日期
-    const [year, month] = period.split('-');
-    const startDate = `${year}-${month}-01`;
-    const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
-    const endDate = `${year}-${month}-${daysInMonth.toString().padStart(2, '0')}`;
+    // 使用 dayjs 計算該月的開始和結束日期
+    const periodDate = dayjs(period, 'YYYY-MM');
+    const startDate = periodDate.format('YYYY-MM-DD');
+    const endDate = periodDate.endOf('month').format('YYYY-MM-DD');
 
     const employees = await getEmployeeWithWorkSchedules({
       department_slug: departmentSlug,
@@ -101,8 +101,8 @@ export const useEmployeeWorkSchedule = () => {
       end_date: date,
     });
 
-    // 自動推斷時期並標記為已載入
-    const period = date.substring(0, 7); // YYYY-MM
+    // 使用 dayjs 自動推斷時期並標記為已載入
+    const period = dayjs(date).format('YYYY-MM');
     addEmployeesForDepartment(departmentSlug, employees, period);
     setIsLoading(false);
     return employees;
@@ -123,9 +123,9 @@ export const useEmployeeWorkSchedule = () => {
       end_date: endDate,
     });
 
-    // 推斷涵蓋的時期並標記為已載入
-    const startPeriod = startDate.substring(0, 7);
-    const endPeriod = endDate.substring(0, 7);
+    // 使用 dayjs 推斷涵蓋的時期並標記為已載入
+    const startPeriod = dayjs(startDate).format('YYYY-MM');
+    const endPeriod = dayjs(endDate).format('YYYY-MM');
 
     // 如果範圍在同一個月內，標記該月為已載入
     if (startPeriod === endPeriod) {
@@ -141,13 +141,19 @@ export const useEmployeeWorkSchedule = () => {
 
   // 載入部門特定年月的員工資料
   const loadDepartmentByMonth = async (departmentSlug: string, year: number, month: number) => {
-    const period = `${year}-${month.toString().padStart(2, '0')}`;
+    const period = dayjs()
+      .year(year)
+      .month(month - 1)
+      .format('YYYY-MM');
     return loadDepartmentByPeriod(departmentSlug, period);
   };
 
   // 檢查特定年月是否已載入
   const isDepartmentMonthLoaded = (departmentSlug: string, year: number, month: number) => {
-    const period = `${year}-${month.toString().padStart(2, '0')}`;
+    const period = dayjs()
+      .year(year)
+      .month(month - 1)
+      .format('YYYY-MM');
     return isDepartmentPeriodLoaded(departmentSlug, period);
   };
 
@@ -162,61 +168,49 @@ export const useEmployeeWorkSchedule = () => {
     setIsLoading(true);
     setError(null);
 
-    try {
-      // 轉換資料格式為結構化格式
-      const schedules: Array<{
-        employee_slug: string;
-        work_schedule_slug: string;
-        date: string;
-      }> = [];
+    // 轉換資料格式為結構化格式
+    const schedules: Array<{
+      employee_slug: string;
+      work_schedule_slug: string;
+      date: string;
+    }> = [];
 
-      employees.forEach(employee => {
-        if (employee.work_schedules && Array.isArray(employee.work_schedules)) {
-          employee.work_schedules.forEach(workSchedule => {
-            // 驗證日期格式是否正確 (YYYY-MM-DD)
-            const date = workSchedule.pivot?.date;
-            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-            if (workSchedule.slug && date && dateRegex.test(date)) {
+    employees.forEach(employee => {
+      if (employee.work_schedules && Array.isArray(employee.work_schedules)) {
+        employee.work_schedules.forEach(workSchedule => {
+          const date = workSchedule.pivot?.date;
+
+          // 使用 dayjs 驗證日期格式和有效性
+          if (workSchedule.slug && date) {
+            const parsedDate = dayjs(date, 'YYYY-MM-DD', true);
+            if (parsedDate.isValid()) {
               schedules.push({
                 employee_slug: employee.slug,
                 work_schedule_slug: workSchedule.slug,
                 date: date,
               });
-            } else if (date && !dateRegex.test(date)) {
+            } else {
               console.warn(`無效的日期格式: ${date} (員工: ${employee.slug})`);
             }
-          });
-        }
-      });
-
-      const payload = {
-        month,
-        year,
-        schedules,
-      };
-
-      // 除錯資訊
-      console.log('準備同步的資料:', {
-        month,
-        year,
-        schedulesCount: schedules.length,
-        sampleSchedules: schedules.slice(0, 3), // 顯示前3筆資料作為範例
-      });
-
-      const result = await bulkSyncEmployeeWorkSchedules(payload);
-
-      if (result) {
-        setIsLoading(false);
-        onSuccess?.();
-        return true;
-      } else {
-        setError('批量同步失敗');
-        setIsLoading(false);
-        onError?.();
-        return false;
+          }
+        });
       }
-    } catch (error) {
-      setError(`批量同步失敗: ${error}`);
+    });
+
+    const payload = {
+      month,
+      year,
+      schedules,
+    };
+
+    const result = await bulkSyncEmployeeWorkSchedules(payload);
+
+    if (result) {
+      setIsLoading(false);
+      onSuccess?.();
+      return true;
+    } else {
+      setError('批量同步失敗');
       setIsLoading(false);
       onError?.();
       return false;

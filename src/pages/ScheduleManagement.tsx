@@ -98,18 +98,6 @@ const ScheduleManagement = () => {
         parseInt(selectedMonth.split('-')[1]) // month
       );
 
-      // 除錯：檢查載入後的資料結構
-      console.log('載入的員工資料:', {
-        employeesCount: departmentEmployees.length,
-        firstEmployee: departmentEmployees[0]
-          ? {
-              slug: departmentEmployees[0].slug,
-              workSchedulesCount: departmentEmployees[0].work_schedules?.length || 0,
-              sampleWorkSchedule: departmentEmployees[0].work_schedules?.[0] || null,
-            }
-          : 'no employees',
-      });
-
       const deepCopyData = JSON.parse(JSON.stringify(departmentEmployees));
       setEmployees(deepCopyData);
       setInitialEmployees(deepCopyData);
@@ -194,35 +182,18 @@ const ScheduleManagement = () => {
     // 儲存變更：使用結構化資料格式進行同步
     const date = dayjs(selectedMonth);
 
-    console.log('準備儲存班表:', {
-      selectedMonth,
-      year: date.year(),
-      month: date.month() + 1,
-      employeesCount: employees.length,
-      sampleEmployee: employees[0]
-        ? {
-            slug: employees[0].slug,
-            workSchedulesKeys: employees[0].work_schedules
-              ? Object.keys(employees[0].work_schedules)
-              : [],
-          }
-        : null,
-    });
-
     // 使用結構化資料格式進行同步
     await handleBulkSyncEmployeeWorkSchedules(
       employees,
       date.year(),
       date.month() + 1, // dayjs.month() 回傳 0-11，需要加 1
       () => {
-        console.log('班表儲存成功');
+        // 儲存成功後，將當前狀態設為新的初始狀態
+        // 這樣可以正確追蹤後續的變更
         setInitialEmployees(JSON.parse(JSON.stringify(employees)));
         handleEditFinish();
       },
-      () => {
-        // 錯誤處理 - 可以在這裡添加錯誤提示
-        console.error('儲存班表失敗');
-      }
+      () => {}
     );
   };
 

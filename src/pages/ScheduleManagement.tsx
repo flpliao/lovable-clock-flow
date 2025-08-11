@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { useDepartment } from '@/hooks/useDepartment';
 import { useEmployeeWorkSchedule } from '@/hooks/useEmployeeWorkSchedule';
 import { useShift } from '@/hooks/useShift';
-import type { EmployeeWithWorkSchedules, EmployeesBySlug } from '@/types/employee';
+import type { EmployeeWithWorkSchedules } from '@/types/employee';
 
 import { formatMonthDisplay } from '@/utils/dateUtils';
 import dayjs from 'dayjs';
@@ -40,7 +40,7 @@ const ScheduleManagement = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [employees, setEmployees] = useState<EmployeeWithWorkSchedules[]>([]);
   // const [employeesBySlug, setEmployeesBySlug] = useState<EmployeesBySlug>({});
-  const [initialEmployees, setInitialEmployees] = useState<EmployeesBySlug>({});
+  const [initialEmployees, setInitialEmployees] = useState<EmployeeWithWorkSchedules[]>([]);
 
   const { loadAllShifts, getShiftBySlug, shifts } = useShift();
   const {
@@ -85,8 +85,46 @@ const ScheduleManagement = () => {
     }
   }, [selectedDepartment, selectedMonth, isDepartmentPeriodLoaded, getEmployeesByDepartment]);
 
+  // 當班次篩選變化時，更新員工列表顯示
+  useEffect(() => {
+    applyShiftFilter();
+  }, [shiftFilter, hasSearched, initialEmployees]);
+
+  // 應用班次篩選到員工列表
+  const applyShiftFilter = () => {
+    if (hasSearched && initialEmployees.length > 0) {
+      const filteredEmployees = filterEmployeesByShifts(initialEmployees, shiftFilter);
+      setEmployees(filteredEmployees);
+    }
+  };
+
   // 檢查是否已選擇單位和月份
   const isSelectionComplete = selectedDepartment && selectedMonth;
+
+  // 根據班次篩選條件過濾員工
+  const filterEmployeesByShifts = (
+    allEmployees: EmployeeWithWorkSchedules[],
+    shiftFilterState: { all: boolean; [key: string]: boolean }
+  ): EmployeeWithWorkSchedules[] => {
+    // 如果選擇了「全部」，顯示所有員工
+    if (shiftFilterState.all) {
+      return allEmployees;
+    }
+
+    // 過濾出有被選中班次的員工
+    return allEmployees.filter(employee => {
+      // 檢查該員工是否有任何被選中的班次
+      if (!employee.work_schedules || employee.work_schedules.length === 0) {
+        return false; // 沒有班次的員工不顯示
+      }
+
+      // 檢查該員工的班次是否在篩選條件中
+      return employee.work_schedules.some(workSchedule => {
+        const shiftSlug = workSchedule.shift?.slug;
+        return shiftSlug && shiftFilterState[shiftSlug];
+      });
+    });
+  };
 
   // 處理搜尋班表
   const handleSearchSchedule = async () => {
@@ -116,7 +154,7 @@ const ScheduleManagement = () => {
     setSelectedShift(null);
     // 清空員工資料
     setEmployees([]);
-    setInitialEmployees({});
+    setInitialEmployees([]);
   };
 
   // 處理班表格子點擊
@@ -251,6 +289,9 @@ const ScheduleManagement = () => {
       setHasChanges(false);
       setIsEditMode(false);
       setSelectedShift(null); // 清除選中的班次
+
+      // 重新應用班次篩選，確保顯示狀態與篩選條件一致
+      applyShiftFilter();
     }
   };
 

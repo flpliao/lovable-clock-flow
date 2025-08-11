@@ -1,15 +1,15 @@
 import { apiRoutes } from '@/routes/api';
 import { ApiResponseStatus } from '@/types/api';
-import type { EmployeeWithWorkSchedules } from '@/types/employee';
+import type { Employee } from '@/types/employee';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 
 // 取得所有員工工作排程
-export const getAllEmployeeWorkSchedules = async (): Promise<EmployeeWithWorkSchedules[]> => {
+export const getAllEmployeeWorkSchedules = async (): Promise<Employee[]> => {
   const { data, status } = await callApiAndDecode(
     axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.index)
   );
-  return status === ApiResponseStatus.SUCCESS ? (data as EmployeeWithWorkSchedules[]) : [];
+  return status === ApiResponseStatus.SUCCESS ? (data as Employee[]) : [];
 };
 
 // 取得員工工作排程列表（分頁）
@@ -29,7 +29,7 @@ export const getEmployeeWithWorkSchedules = async ({
   department_slug?: string;
   start_date?: string;
   end_date?: string;
-} = {}): Promise<EmployeeWithWorkSchedules[]> => {
+} = {}): Promise<Employee[]> => {
   const { data, status } = await callApiAndDecode(
     axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.index, {
       params: {
@@ -43,7 +43,7 @@ export const getEmployeeWithWorkSchedules = async ({
       },
     })
   );
-  return status === ApiResponseStatus.SUCCESS ? (data as EmployeeWithWorkSchedules[]) : [];
+  return status === ApiResponseStatus.SUCCESS ? (data as Employee[]) : [];
 };
 
 // 批量同步員工工作排程

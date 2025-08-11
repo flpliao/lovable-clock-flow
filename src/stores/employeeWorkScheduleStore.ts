@@ -1,4 +1,4 @@
-import type { EmployeesBySlug, EmployeeWithWorkSchedules } from '@/types/employee';
+import type { Employee, EmployeesBySlug } from '@/types/employee';
 import type { WorkSchedule } from '@/types/workSchedule';
 import { datesToPeriods, dateToPeriod } from '@/utils/dateUtils';
 import { create } from 'zustand';
@@ -13,14 +13,14 @@ interface EmployeeWorkScheduleState {
   loadedDepartmentPeriods: Record<string, Set<string>>;
 
   // 基本操作方法
-  setEmployees: (employees: EmployeeWithWorkSchedules[]) => void;
+  setEmployees: (employees: Employee[]) => void;
   addEmployeesForDepartment: ({
     departmentSlug,
     employees,
     period,
   }: {
     departmentSlug: string;
-    employees: EmployeeWithWorkSchedules[];
+    employees: Employee[];
     period?: string;
   }) => void;
 
@@ -52,8 +52,8 @@ interface EmployeeWorkScheduleState {
   }) => void;
 
   // 查詢方法
-  getEmployeesByDepartment: (departmentSlug: string) => EmployeeWithWorkSchedules[];
-  getEmployeeBySlug: (slug: string) => EmployeeWithWorkSchedules;
+  getEmployeesByDepartment: (departmentSlug: string) => Employee[];
+  getEmployeeBySlug: (slug: string) => Employee;
   getEmployeeWorkSchedule: ({
     employeeSlug,
     date,
@@ -99,7 +99,7 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
   loadedDepartmentPeriods: {},
 
   // 設定員工資料（全部替換）
-  setEmployees: (employees: EmployeeWithWorkSchedules[]) => {
+  setEmployees: (employees: Employee[]) => {
     const employeesBySlug: EmployeesBySlug = {};
     const loadedDepartmentPeriods: Record<string, Set<string>> = {};
 
@@ -142,7 +142,7 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
     period,
   }: {
     departmentSlug: string;
-    employees: EmployeeWithWorkSchedules[];
+    employees: Employee[];
     period?: string;
   }) => {
     const { employeesBySlug, loadedDepartmentPeriods } = get();
@@ -275,9 +275,9 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
   },
 
   // 取得部門的員工列表
-  getEmployeesByDepartment: (departmentSlug: string): EmployeeWithWorkSchedules[] => {
+  getEmployeesByDepartment: (departmentSlug: string): Employee[] => {
     const { employeesBySlug } = get();
-    const employeesByDepartment: EmployeeWithWorkSchedules[] = [];
+    const employeesByDepartment: Employee[] = [];
 
     Object.values(employeesBySlug).forEach(emp => {
       if (emp.department?.slug === departmentSlug) {
@@ -289,7 +289,7 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
   },
 
   // 根據 slug 取得員工
-  getEmployeeBySlug: (slug: string): EmployeeWithWorkSchedules => {
+  getEmployeeBySlug: (slug: string): Employee => {
     const { employeesBySlug } = get();
     return employeesBySlug[slug];
   },

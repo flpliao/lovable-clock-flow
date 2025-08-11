@@ -13,9 +13,6 @@ export interface Employee {
   work_schedules?: WorkSchedule[];
 }
 
-// 為了向後相容，建立別名
-export type EmployeeWithWorkSchedules = Employee;
-
 export interface EmployeesBySlug {
   [employeeSlug: string]: Employee;
 }

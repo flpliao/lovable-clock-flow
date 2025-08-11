@@ -1,11 +1,11 @@
-import type { EmployeeWithWorkSchedules } from '@/types/employee';
+import type { Employee } from '@/types/employee';
 import { isWeekend } from '@/utils/dateUtils';
 import { getWorkTimeRange } from '@/utils/scheduleUtils';
 import { Check, ChevronDown, ChevronRight } from 'lucide-react';
 import React from 'react';
 
 interface EmployeeWorkScheduleRowsProps {
-  employee: EmployeeWithWorkSchedules;
+  employee: Employee;
   selectedMonth: string;
   isEditMode: boolean;
   daysInMonth: number;

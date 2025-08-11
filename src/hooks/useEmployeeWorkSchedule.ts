@@ -3,7 +3,7 @@ import {
   getEmployeeWithWorkSchedules,
 } from '@/services/employeeWorkScheduleService';
 import { useEmployeeWorkScheduleStore } from '@/stores/employeeWorkScheduleStore';
-import { EmployeeWithWorkSchedules } from '@/types/employee';
+import type { Employee } from '@/types/employee';
 import dayjs from 'dayjs';
 
 export const useEmployeeWorkSchedule = () => {
@@ -184,7 +184,7 @@ export const useEmployeeWorkSchedule = () => {
     onSuccess,
     onError,
   }: {
-    employees: EmployeeWithWorkSchedules[];
+    employees: Employee[];
     year: number;
     month: number;
     onSuccess?: () => void;

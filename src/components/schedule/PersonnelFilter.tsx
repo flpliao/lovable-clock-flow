@@ -1,4 +1,4 @@
-import type { EmployeeWithWorkSchedules } from '@/types/employee';
+import type { Employee } from '@/types/employee';
 import { getSelectAllState } from '@/utils/checkboxUtils';
 import FilterOption from './FilterOption';
 import SelectAllOption from './SelectAllOption';
@@ -11,7 +11,7 @@ interface PersonnelFilterState {
 interface PersonnelFilterProps {
   personnelFilter: PersonnelFilterState;
   onPersonnelFilterChange: (filter: PersonnelFilterState) => void;
-  employees: EmployeeWithWorkSchedules[];
+  employees: Employee[];
 }
 
 const PersonnelFilter = ({

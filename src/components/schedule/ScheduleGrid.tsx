@@ -1,11 +1,11 @@
-import type { EmployeeWithWorkSchedules } from '@/types/employee';
+import type { Employee } from '@/types/employee';
 import { getChineseWeekday, getMonthDays, isWeekend } from '@/utils/dateUtils';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
 import EmployeeWorkScheduleRows from './EmployeeWorkScheduleRows';
 
 interface ScheduleGridProps {
-  employees: EmployeeWithWorkSchedules[];
+  employees: Employee[];
   selectedMonth: string;
   isEditMode: boolean;
   onCellClick: (employeeName: string, day: number) => void;

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { useDepartment } from '@/hooks/useDepartment';
 import { useEmployeeWorkSchedule } from '@/hooks/useEmployeeWorkSchedule';
 import { useShift } from '@/hooks/useShift';
-import type { EmployeeWithWorkSchedules } from '@/types/employee';
+import type { Employee } from '@/types/employee';
 
 import { formatMonthDisplay } from '@/utils/dateUtils';
 import dayjs from 'dayjs';
@@ -40,9 +40,9 @@ const ScheduleManagement = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedShift, setSelectedShift] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
-  const [employees, setEmployees] = useState<EmployeeWithWorkSchedules[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   // const [employeesBySlug, setEmployeesBySlug] = useState<EmployeesBySlug>({});
-  const [initialEmployees, setInitialEmployees] = useState<EmployeeWithWorkSchedules[]>([]);
+  const [initialEmployees, setInitialEmployees] = useState<Employee[]>([]);
 
   const { loadAllShifts, getShiftBySlug, shifts } = useShift();
   const {
@@ -112,9 +112,9 @@ const ScheduleManagement = () => {
 
   // 根據班次篩選條件過濾員工
   const filterEmployeesByShifts = (
-    allEmployees: EmployeeWithWorkSchedules[],
+    allEmployees: Employee[],
     shiftFilterState: { all: boolean; [key: string]: boolean }
-  ): EmployeeWithWorkSchedules[] => {
+  ): Employee[] => {
     // 如果選擇了「全部」，顯示所有員工
     if (shiftFilterState.all) {
       return allEmployees;
@@ -137,9 +137,9 @@ const ScheduleManagement = () => {
 
   // 根據人員篩選條件過濾員工
   const filterEmployeesByPersonnel = (
-    allEmployees: EmployeeWithWorkSchedules[],
+    allEmployees: Employee[],
     personnelFilterState: { all: boolean; [key: string]: boolean }
-  ): EmployeeWithWorkSchedules[] => {
+  ): Employee[] => {
     // 如果選擇了「全部」，顯示所有員工
     if (personnelFilterState.all) {
       return allEmployees;

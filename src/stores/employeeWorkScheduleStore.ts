@@ -150,21 +150,50 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
     const updatedLoadedDepartmentPeriods = { ...loadedDepartmentPeriods };
     const allScheduleDates: string[] = [];
 
-    // 更新員工資料
+    // 更新員工資料 - 合併而不是覆蓋
     for (const emp of employees) {
-      // 處理純陣列格式的 work_schedules
-      if (emp.work_schedules && Array.isArray(emp.work_schedules)) {
-        emp.work_schedules.forEach(ws => {
-          if (ws.pivot?.date) {
-            allScheduleDates.push(ws.pivot.date);
+      const existingEmployee = updatedEmployeesBySlug[emp.slug];
+
+      if (existingEmployee) {
+        // 如果員工已存在，合併 work_schedules
+        const existingSchedules = existingEmployee.work_schedules || [];
+        const newSchedules = emp.work_schedules || [];
+
+        // 合併排程，避免重複日期
+        const mergedSchedules = [...existingSchedules];
+        newSchedules.forEach(newSchedule => {
+          const existingIndex = mergedSchedules.findIndex(
+            existing => existing.pivot?.date === newSchedule.pivot?.date
+          );
+
+          if (existingIndex !== -1) {
+            // 如果日期已存在，更新排程
+            mergedSchedules[existingIndex] = newSchedule;
+          } else {
+            // 如果日期不存在，新增排程
+            mergedSchedules.push(newSchedule);
           }
         });
+
+        updatedEmployeesBySlug[emp.slug] = {
+          ...existingEmployee,
+          work_schedules: mergedSchedules,
+        };
+      } else {
+        // 如果員工不存在，直接新增
+        updatedEmployeesBySlug[emp.slug] = {
+          ...emp,
+          work_schedules: emp.work_schedules || [],
+        };
       }
 
-      updatedEmployeesBySlug[emp.slug] = {
-        ...emp,
-        work_schedules: emp.work_schedules || [],
-      };
+      // 收集所有排程日期用於更新已載入時期
+      const employeeSchedules = updatedEmployeesBySlug[emp.slug].work_schedules || [];
+      employeeSchedules.forEach(ws => {
+        if (ws.pivot?.date) {
+          allScheduleDates.push(ws.pivot.date);
+        }
+      });
     }
 
     // 標記部門的特定時期為已載入

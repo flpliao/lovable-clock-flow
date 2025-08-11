@@ -160,7 +160,6 @@ const ScheduleManagement = () => {
         year: parseInt(selectedMonth.split('-')[0]),
         month: parseInt(selectedMonth.split('-')[1]),
       });
-
       const deepCopyData = JSON.parse(JSON.stringify(departmentEmployees));
       setEmployees(deepCopyData);
       setInitialEmployees(deepCopyData);

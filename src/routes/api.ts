@@ -159,7 +159,8 @@ export const apiRoutes = {
     index: `${API_URL}/employee/employee-schedules`,
     show: (employeeSlug: string) => `${API_URL}/employee/employee-schedules/${employeeSlug}`,
     store: `${API_URL}/employee/employee-schedules`,
-    bulkStore: `${API_URL}/employee/employee-schedules/bulk`,
+    bulkSync: `${API_URL}/employee/employee-schedules/bulk/sync`,
+    bulkStore: `${API_URL}/employee/employee-schedules/bulk/store`,
     update: (employeeSlug: string) =>
       `${API_URL}/employee/employee-schedules/${employeeSlug}/update`,
     destroy: (employeeSlug: string) => `${API_URL}/employee/employee-schedules/${employeeSlug}`,

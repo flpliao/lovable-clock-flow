@@ -1,7 +1,7 @@
 import type { Employee } from '@/types/employee';
 import { getChineseWeekday, getMonthDays, isWeekend } from '@/utils/dateUtils';
 import dayjs from 'dayjs';
-import React, { useState } from 'react';
+import React from 'react';
 import EmployeeWorkScheduleRows from './EmployeeWorkScheduleRows';
 
 interface ScheduleGridProps {
@@ -9,6 +9,8 @@ interface ScheduleGridProps {
   selectedMonth: string;
   isEditMode: boolean;
   onCellClick: (employeeName: string, day: number) => void;
+  expandedEmployees: Set<string>;
+  onEmployeeToggle: (employeeSlug: string) => void;
 }
 
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({
@@ -16,21 +18,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   selectedMonth,
   isEditMode,
   onCellClick,
+  expandedEmployees,
+  onEmployeeToggle,
 }) => {
-  // 內部狀態：展開的員工
-  const [expandedEmployees, setExpandedEmployees] = useState<Set<string>>(new Set());
-
-  // 處理員工展開/收合
-  const handleEmployeeToggle = (employeeSlug: string) => {
-    const newExpanded = new Set(expandedEmployees);
-    if (newExpanded.has(employeeSlug)) {
-      newExpanded.delete(employeeSlug);
-    } else {
-      newExpanded.add(employeeSlug);
-    }
-    setExpandedEmployees(newExpanded);
-  };
-
   const { daysInMonth } = getMonthDays(selectedMonth);
 
   // 如果沒有員工資料，顯示提示訊息
@@ -90,7 +80,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
                 isEditMode={isEditMode}
                 daysInMonth={daysInMonth}
                 expandedEmployees={expandedEmployees}
-                onEmployeeToggle={handleEmployeeToggle}
+                onEmployeeToggle={onEmployeeToggle}
                 onCellClick={onCellClick}
               />
             ))}

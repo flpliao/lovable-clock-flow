@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useDepartment } from '@/hooks/useDepartment';
 import { useEmployeeWorkSchedule } from '@/hooks/useEmployeeWorkSchedule';
+import { useExpandableItems } from '@/hooks/useExpandableItems';
 import { useShift } from '@/hooks/useShift';
 import type { Employee } from '@/types/employee';
 
@@ -43,6 +44,15 @@ const ScheduleManagement = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   // const [employeesBySlug, setEmployeesBySlug] = useState<EmployeesBySlug>({});
   const [initialEmployees, setInitialEmployees] = useState<Employee[]>([]);
+
+  // 使用 useExpandableTable hook 管理展開狀態
+  const {
+    expandedItems: expandedEmployees,
+    toggleItem: handleEmployeeToggle,
+    expandAll: expandAllEmployees,
+    collapseAll: collapseAllEmployees,
+    isAllExpanded,
+  } = useExpandableItems<string>();
 
   const { loadAllShifts, getShiftBySlug, shifts } = useShift();
   const {
@@ -457,8 +467,15 @@ const ScheduleManagement = () => {
                 variant="outline"
                 size="sm"
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                onClick={() => {
+                  if (isAllExpanded(employees.map(emp => emp.slug))) {
+                    collapseAllEmployees();
+                  } else {
+                    expandAllEmployees(employees.map(emp => emp.slug));
+                  }
+                }}
               >
-                展開全表
+                {isAllExpanded(employees.map(emp => emp.slug)) ? '收合全表' : '展開全表'}
               </Button>
             </div>
             <Button
@@ -476,6 +493,8 @@ const ScheduleManagement = () => {
             selectedMonth={selectedMonth}
             isEditMode={isEditMode}
             onCellClick={handleCellClick}
+            expandedEmployees={expandedEmployees}
+            onEmployeeToggle={handleEmployeeToggle}
           />
         </div>
       ) : (

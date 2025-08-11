@@ -10,11 +10,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { useDepartment } from '@/hooks/useDepartment';
 import { useEmployeeWorkSchedule } from '@/hooks/useEmployeeWorkSchedule';
-import { useEmployees } from '@/hooks/useEmployees';
 import { useShift } from '@/hooks/useShift';
-import { convertToEmployeeWorkScheduleData } from '@/services/employeeWorkScheduleService';
-import { Employee } from '@/types/employee';
-import { EmployeeWorkScheduleData } from '@/types/employeeWorkSchedule';
+import type { EmployeeWithWorkSchedules, EmployeesBySlug } from '@/types/employee';
+
 import { formatMonthDisplay } from '@/utils/dateUtils';
 import dayjs from 'dayjs';
 import { Calendar, Edit, Save, Search } from 'lucide-react';
@@ -40,20 +38,17 @@ const ScheduleManagement = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedShift, setSelectedShift] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [employeeWorkScheduleData, setEmployeeWorkScheduleData] =
-    useState<EmployeeWorkScheduleData>({});
-  const [initialEmployeeWorkScheduleData, setInitialEmployeeWorkScheduleData] =
-    useState<EmployeeWorkScheduleData>({});
+  const [employees, setEmployees] = useState<EmployeeWithWorkSchedules[]>([]);
+  // const [employeesBySlug, setEmployeesBySlug] = useState<EmployeesBySlug>({});
+  const [initialEmployees, setInitialEmployees] = useState<EmployeesBySlug>({});
 
   const { loadAllShifts, getShiftBySlug, shifts } = useShift();
   const {
-    employeesBySlug,
     getEmployeesByDepartment,
-    isDepartmentLoaded,
-    loadEmployeesByDepartment,
-  } = useEmployees();
-  const { loadEmployeeWorkSchedules, employeeWorkSchedules } = useEmployeeWorkSchedule();
+    isDepartmentPeriodLoaded,
+    loadDepartmentByMonth,
+    handleBulkSyncEmployeeWorkSchedules,
+  } = useEmployeeWorkSchedule();
 
   const { loadDepartments } = useDepartment();
 
@@ -75,13 +70,20 @@ const ScheduleManagement = () => {
 
   // 當部門或員工資料變化時，更新員工列表
   useEffect(() => {
-    if (selectedDepartment && !isDepartmentLoaded(selectedDepartment)) {
+    if (
+      selectedDepartment &&
+      selectedMonth &&
+      !isDepartmentPeriodLoaded(selectedDepartment, selectedMonth)
+    ) {
       setHasSearched(false);
     } else {
       const departmentEmployees = getEmployeesByDepartment(selectedDepartment);
-      setEmployees(departmentEmployees);
+      if (departmentEmployees.length > 0) {
+        setEmployees(departmentEmployees);
+        setHasSearched(true);
+      }
     }
-  }, [selectedDepartment]);
+  }, [selectedDepartment, selectedMonth, isDepartmentPeriodLoaded, getEmployeesByDepartment]);
 
   // 檢查是否已選擇單位和月份
   const isSelectionComplete = selectedDepartment && selectedMonth;
@@ -89,22 +91,28 @@ const ScheduleManagement = () => {
   // 處理搜尋班表
   const handleSearchSchedule = async () => {
     if (isSelectionComplete) {
-      // 載入部門員工（如果需要）
-      if (selectedDepartment && !isDepartmentLoaded(selectedDepartment)) {
-        const employees = await loadEmployeesByDepartment(selectedDepartment);
-        setEmployees(employees);
-      }
-
-      await loadEmployeeWorkSchedules(selectedMonth);
-
-      // 轉換資料格式
-      const convertedData = convertToEmployeeWorkScheduleData(
-        employeeWorkSchedules,
-        employeesBySlug
+      // 載入部門特定月份的員工資料，直接使用返回的資料
+      const departmentEmployees = await loadDepartmentByMonth(
+        selectedDepartment,
+        parseInt(selectedMonth.split('-')[0]), // year
+        parseInt(selectedMonth.split('-')[1]) // month
       );
-      const deepCopyData = JSON.parse(JSON.stringify(convertedData));
-      setEmployeeWorkScheduleData(deepCopyData);
-      setInitialEmployeeWorkScheduleData(deepCopyData);
+
+      // 除錯：檢查載入後的資料結構
+      console.log('載入的員工資料:', {
+        employeesCount: departmentEmployees.length,
+        firstEmployee: departmentEmployees[0]
+          ? {
+              slug: departmentEmployees[0].slug,
+              workSchedulesCount: departmentEmployees[0].work_schedules?.length || 0,
+              sampleWorkSchedule: departmentEmployees[0].work_schedules?.[0] || null,
+            }
+          : 'no employees',
+      });
+
+      const deepCopyData = JSON.parse(JSON.stringify(departmentEmployees));
+      setEmployees(deepCopyData);
+      setInitialEmployees(deepCopyData);
       setHasSearched(true);
     }
   };
@@ -113,20 +121,22 @@ const ScheduleManagement = () => {
   const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSelectedMonth(value);
+    // 當月份變更時，重置搜尋狀態
+    setHasSearched(false);
+    setHasChanges(false);
+    setIsEditMode(false);
+    setSelectedShift(null);
+    // 清空員工資料
+    setEmployees([]);
+    setInitialEmployees({});
   };
 
   // 處理班表格子點擊
   const handleCellClick = (employeeSlug: string, day: number) => {
     if (isEditMode && selectedShift) {
       // 找到對應的員工
-      const employee = employeesBySlug[employeeSlug];
+      const employee = employees.find(emp => emp.slug === employeeSlug);
       if (!employee) return;
-
-      // 確保 employee.id 存在
-      if (!employee.slug) {
-        console.error('Employee ID is required but not found:', employee);
-        return;
-      }
 
       // 找到選中的班次
       const shift = getShiftBySlug(selectedShift);
@@ -143,25 +153,36 @@ const ScheduleManagement = () => {
       };
 
       // 更新班表資料（深拷貝）
-      const newEmployeeWorkScheduleData = JSON.parse(JSON.stringify(employeeWorkScheduleData));
+      const newEmployees = [...employees];
 
-      // 如果該員工的資料不存在，先初始化
-      if (!newEmployeeWorkScheduleData[employeeSlug]) {
-        newEmployeeWorkScheduleData[employeeSlug] = {};
+      // 找到員工索引
+      const employeeIndex = newEmployees.findIndex(emp => emp.slug === employeeSlug);
+      if (employeeIndex === -1) return;
+
+      // 如果該員工的 work_schedules 不存在，先初始化為陣列
+      if (!newEmployees[employeeIndex].work_schedules) {
+        newEmployees[employeeIndex].work_schedules = [];
       }
 
-      // 只為點擊的那一天添加班次
-      newEmployeeWorkScheduleData[employeeSlug][day] = {
-        employee_slug: employee.slug,
-        employee: employee,
-        work_schedule_slug: workSchedule.slug,
-        work_schedule: workScheduleWithShift,
-        date: `${selectedMonth}-${day.toString().padStart(2, '0')}`,
-        status: '已確認',
+      // 構建完整的日期字串 (YYYY-MM-DD)
+      const fullDate = `${selectedMonth}-${day.toString().padStart(2, '0')}`;
+
+      // 準備新的工作排程（含 pivot.date）
+      const newWorkSchedule = {
+        ...workScheduleWithShift,
+        pivot: { ...workScheduleWithShift.pivot, date: fullDate },
       };
 
+      // 移除該日期的舊排程
+      const filteredSchedules = newEmployees[employeeIndex].work_schedules!.filter(
+        ws => ws.pivot?.date !== fullDate
+      );
+
+      // 新增新排程
+      newEmployees[employeeIndex].work_schedules = [...filteredSchedules, newWorkSchedule];
+
       // 更新狀態
-      setEmployeeWorkScheduleData(newEmployeeWorkScheduleData);
+      setEmployees(newEmployees);
 
       // 標記有變更
       setHasChanges(true);
@@ -169,9 +190,43 @@ const ScheduleManagement = () => {
   };
 
   // 處理儲存變更
-  const handleSaveChanges = () => {
-    // 儲存變更：將 employeeWorkScheduleData 寫回 initialEmployeeWorkScheduleData（深拷貝）
-    setInitialEmployeeWorkScheduleData(JSON.parse(JSON.stringify(employeeWorkScheduleData)));
+  const handleSaveChanges = async () => {
+    // 儲存變更：使用結構化資料格式進行同步
+    const date = dayjs(selectedMonth);
+
+    console.log('準備儲存班表:', {
+      selectedMonth,
+      year: date.year(),
+      month: date.month() + 1,
+      employeesCount: employees.length,
+      sampleEmployee: employees[0]
+        ? {
+            slug: employees[0].slug,
+            workSchedulesKeys: employees[0].work_schedules
+              ? Object.keys(employees[0].work_schedules)
+              : [],
+          }
+        : null,
+    });
+
+    // 使用結構化資料格式進行同步
+    await handleBulkSyncEmployeeWorkSchedules(
+      employees,
+      date.year(),
+      date.month() + 1, // dayjs.month() 回傳 0-11，需要加 1
+      () => {
+        console.log('班表儲存成功');
+        setInitialEmployees(JSON.parse(JSON.stringify(employees)));
+        handleEditFinish();
+      },
+      () => {
+        // 錯誤處理 - 可以在這裡添加錯誤提示
+        console.error('儲存班表失敗');
+      }
+    );
+  };
+
+  const handleEditFinish = () => {
     setHasChanges(false);
     setIsEditMode(false); // 儲存後退出編輯模式
     setSelectedShift(null); // 清除選中的班次
@@ -185,12 +240,12 @@ const ScheduleManagement = () => {
   // 處理編輯模式切換
   const handleEditToggle = () => {
     if (!isEditMode) {
-      // 進入編輯模式：把當前 initialEmployeeWorkScheduleData 寫入 employeeWorkScheduleData 暫存
-      setEmployeeWorkScheduleData(JSON.parse(JSON.stringify(initialEmployeeWorkScheduleData)));
+      // 進入編輯模式：把當前 initialEmployeesBySlug 寫入 EmployeesBySlug 暫存
+      setEmployees(JSON.parse(JSON.stringify(initialEmployees)));
       setIsEditMode(true);
     } else {
-      // 取消編輯：把 initialEmployeeWorkScheduleData 返回 employeeWorkScheduleData（深拷貝）
-      setEmployeeWorkScheduleData(JSON.parse(JSON.stringify(initialEmployeeWorkScheduleData)));
+      // 取消編輯：把 initialEmployeesBySlug 返回 EmployeesBySlug（深拷貝）
+      setEmployees(JSON.parse(JSON.stringify(initialEmployees)));
       setHasChanges(false);
       setIsEditMode(false);
       setSelectedShift(null); // 清除選中的班次
@@ -343,7 +398,6 @@ const ScheduleManagement = () => {
           {/* 班表網格 */}
           <ScheduleGrid
             employees={employees}
-            employeeWorkScheduleData={employeeWorkScheduleData}
             selectedMonth={selectedMonth}
             isEditMode={isEditMode}
             onCellClick={handleCellClick}

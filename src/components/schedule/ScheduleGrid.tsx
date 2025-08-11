@@ -1,13 +1,11 @@
-import { Employee } from '@/types/employee';
-import { EmployeeWorkScheduleData } from '@/types/employeeWorkSchedule';
+import type { EmployeeWithWorkSchedules } from '@/types/employee';
 import { getChineseWeekday, getMonthDays, isWeekend } from '@/utils/dateUtils';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
 import EmployeeWorkScheduleRows from './EmployeeWorkScheduleRows';
 
 interface ScheduleGridProps {
-  employees: Employee[];
-  employeeWorkScheduleData: EmployeeWorkScheduleData;
+  employees: EmployeeWithWorkSchedules[];
   selectedMonth: string;
   isEditMode: boolean;
   onCellClick: (employeeName: string, day: number) => void;
@@ -15,7 +13,6 @@ interface ScheduleGridProps {
 
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   employees,
-  employeeWorkScheduleData,
   selectedMonth,
   isEditMode,
   onCellClick,
@@ -35,7 +32,6 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   };
 
   const { daysInMonth } = getMonthDays(selectedMonth);
-
   return (
     <div className="border border-white/20 rounded-2xl backdrop-blur-xl overflow-hidden">
       <div className="overflow-x-auto">
@@ -63,11 +59,10 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
             </tr>
           </thead>
           <tbody>
-            {employees.map(employee => (
+            {Object.values(employees).map(employee => (
               <EmployeeWorkScheduleRows
                 key={employee.slug}
                 employee={employee}
-                employeeWorkScheduleData={employeeWorkScheduleData}
                 selectedMonth={selectedMonth}
                 isEditMode={isEditMode}
                 daysInMonth={daysInMonth}

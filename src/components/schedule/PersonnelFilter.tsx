@@ -1,7 +1,6 @@
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import type { EmployeeWithWorkSchedules } from '@/types/employee';
 import { getSelectAllState } from '@/utils/checkboxUtils';
+import FilterOption from './FilterOption';
 import SelectAllOption from './SelectAllOption';
 
 interface PersonnelFilterState {
@@ -56,16 +55,13 @@ const PersonnelFilter = ({
           indeterminate={selectAllState.indeterminate}
         />
         {employees.map(employee => (
-          <div key={employee.slug} className="flex items-center space-x-2">
-            <Checkbox
-              id={employee.slug}
-              checked={personnelFilter[employee.slug] ?? true}
-              onCheckedChange={checked => handleFilterChange(employee.slug, checked as boolean)}
-            />
-            <Label htmlFor={employee.slug} className="text-white text-sm cursor-pointer">
-              {employee.name}
-            </Label>
-          </div>
+          <FilterOption
+            key={employee.slug}
+            id={employee.slug}
+            label={employee.name}
+            checked={personnelFilter[employee.slug] ?? true}
+            onCheckedChange={checked => handleFilterChange(employee.slug, checked)}
+          />
         ))}
       </div>
     </div>

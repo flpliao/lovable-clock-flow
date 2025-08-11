@@ -1,7 +1,7 @@
 import { useShift } from '@/hooks/useShift';
 import { getSelectAllState } from '@/utils/checkboxUtils';
+import FilterOption from './FilterOption';
 import SelectAllOption from './SelectAllOption';
-import ShiftOption from './ShiftOption';
 
 interface ShiftFilterState {
   all: boolean;
@@ -52,7 +52,7 @@ const ShiftFilter = ({ shiftFilter, onShiftFilterChange }: ShiftFilterProps) => 
           indeterminate={selectAllState.indeterminate}
         />
         {shifts.map(shift => (
-          <ShiftOption
+          <FilterOption
             key={shift.slug}
             id={shift.slug}
             label={shift.name}

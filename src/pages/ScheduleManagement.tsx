@@ -82,7 +82,7 @@ const ScheduleManagement = () => {
       const departmentEmployees = getEmployeesByDepartment(selectedDepartment);
       if (departmentEmployees.length > 0) {
         setEmployees(departmentEmployees);
-        setHasSearched(true);
+        handleSearchSchedule();
       }
     }
   }, [selectedDepartment, selectedMonth, isDepartmentPeriodLoaded, getEmployeesByDepartment]);

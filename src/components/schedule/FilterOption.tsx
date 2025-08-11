@@ -1,7 +1,7 @@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 
-interface ShiftOptionProps {
+interface FilterOptionProps {
   id: string;
   label: string;
   checked: boolean;
@@ -10,14 +10,14 @@ interface ShiftOptionProps {
   color?: string;
 }
 
-const ShiftOption = ({
+const FilterOption = ({
   id,
   label,
   checked,
   onCheckedChange,
   showColor = false,
   color,
-}: ShiftOptionProps) => {
+}: FilterOptionProps) => {
   return (
     <div className="flex items-center space-x-2">
       <Checkbox
@@ -35,4 +35,4 @@ const ShiftOption = ({
   );
 };
 
-export default ShiftOption;
+export default FilterOption;

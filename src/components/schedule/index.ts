@@ -4,6 +4,5 @@ export { default as PersonnelFilter } from './PersonnelFilter';
 export { default as ScheduleGrid } from './ScheduleGrid';
 export { default as SelectAllOption } from './SelectAllOption';
 export { default as ShiftFilter } from './ShiftFilter';
-export { default as ShiftOption } from './ShiftOption';
 export { default as ShiftSelector } from './ShiftSelector';
 export { default as WorkSystemSelect } from './WorkSystemSelect';

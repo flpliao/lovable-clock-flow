@@ -68,7 +68,7 @@ export const updateLeaveRequest = async (
 // 取消請假申請
 export const cancelLeaveRequest = async (id: string): Promise<boolean> => {
   const { status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().post(apiRoutes.leaveRequest.cancel(id))
+    axiosWithEmployeeAuth().put(apiRoutes.leaveRequest.cancel(id))
   );
 
   return status === ApiResponseStatus.SUCCESS;

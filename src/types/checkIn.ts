@@ -1,10 +1,10 @@
-import type { CheckInMethod, CheckInType } from '@/constants/checkInTypes';
+import type { CheckInMethod, RequestType } from '@/constants/checkInTypes';
 
 // 打卡記錄
 export interface CheckInRecord {
   id?: string;
   employee_id?: string;
-  type: CheckInType;
+  type: RequestType;
   method: CheckInMethod;
   status?: 'success' | 'failed';
   distance?: number;

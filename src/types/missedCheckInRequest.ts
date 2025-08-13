@@ -1,3 +1,5 @@
+import { ApprovalStatus } from '@/constants/approvalStatus';
+
 export interface MissedCheckInRequest {
   id?: string;
   slug: string;
@@ -8,7 +10,7 @@ export interface MissedCheckInRequest {
   check_in_time?: string;
   check_out_time?: string;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: ApprovalStatus;
   approved_at?: string;
   rejected_at?: string;
   rejection_reason?: string;

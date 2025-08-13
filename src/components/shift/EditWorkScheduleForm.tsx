@@ -136,7 +136,7 @@ const EditWorkScheduleForm = ({
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>狀態</FormLabel>
+                      <FormLabel className="text-muted-foreground">狀態</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -163,7 +163,7 @@ const EditWorkScheduleForm = ({
                   name="clock_in_time"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>上班時間</FormLabel>
+                      <FormLabel className="text-muted-foreground">上班時間</FormLabel>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>
@@ -177,7 +177,7 @@ const EditWorkScheduleForm = ({
                   name="clock_out_time"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>下班時間</FormLabel>
+                      <FormLabel className="text-muted-foreground">下班時間</FormLabel>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>
@@ -190,7 +190,7 @@ const EditWorkScheduleForm = ({
 
             {/* 加班設定 */}
             <div className="space-y-4">
-              <h3 className="text-sm font-medium">加班起算時間-下班時間後</h3>
+              <FormLabel>加班起算時間-下班時間後</FormLabel>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
@@ -198,7 +198,7 @@ const EditWorkScheduleForm = ({
                   name="ot_start_after_hours"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>小時</FormLabel>
+                      <FormLabel className="text-muted-foreground">小時</FormLabel>
                       <FormControl>
                         <Input type="number" min="0" max="23" {...field} />
                       </FormControl>
@@ -212,7 +212,7 @@ const EditWorkScheduleForm = ({
                   name="ot_start_after_minutes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>分鐘</FormLabel>
+                      <FormLabel className="text-muted-foreground">分鐘</FormLabel>
                       <FormControl>
                         <Input type="number" min="0" max="59" {...field} />
                       </FormControl>
@@ -234,7 +234,7 @@ const EditWorkScheduleForm = ({
                     name="break1_start"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>開始</FormLabel>
+                        <FormLabel className="text-muted-foreground">開始</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
@@ -248,7 +248,7 @@ const EditWorkScheduleForm = ({
                     name="break1_end"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>結束</FormLabel>
+                        <FormLabel className="text-muted-foreground">結束</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>

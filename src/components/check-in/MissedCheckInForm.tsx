@@ -18,7 +18,6 @@ import dayjs from 'dayjs';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import TimeInput from './TimeInput';
 
 // 表單驗證 schema
 const missedCheckInSchema = z
@@ -108,7 +107,7 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
           name="request_date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-muted-foreground text-sm">申請日期</FormLabel>
+              <FormLabel className="text-muted-foreground">申請日期</FormLabel>
               <FormControl>
                 <Input
                   type="date"
@@ -123,9 +122,11 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
 
         {/* 申請類型顯示（不可編輯） */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">申請類型</label>
+          <FormLabel className="text-muted-foreground">申請類型</FormLabel>
           <div className="p-3 bg-muted rounded-md border">
-            <span className="text-sm font-medium">{REQUEST_TYPE_LABELS[defaultRequestType]}</span>
+            <span className="text-sm text-muted-foreground font-medium">
+              {REQUEST_TYPE_LABELS[defaultRequestType]}
+            </span>
           </div>
         </div>
 
@@ -135,14 +136,12 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
             name="check_in_time"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-muted-foreground text-sm">上班時間</FormLabel>
+                <FormLabel className="text-muted-foreground">上班時間</FormLabel>
                 <FormControl>
-                  <TimeInput
-                    id="check_in_time"
-                    label="上班時間"
-                    value={field.value || ''}
-                    onChange={value => field.onChange(value)}
-                    required={requestType === RequestType.CHECK_IN}
+                  <Input
+                    type="time"
+                    {...field}
+                    className="bg-background border-input text-foreground"
                   />
                 </FormControl>
                 <FormMessage />
@@ -157,14 +156,12 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
             name="check_out_time"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-muted-foreground text-sm">下班時間</FormLabel>
+                <FormLabel className="text-muted-foreground">下班時間</FormLabel>
                 <FormControl>
-                  <TimeInput
-                    id="check_out_time"
-                    label="下班時間"
-                    value={field.value || ''}
-                    onChange={value => field.onChange(value)}
-                    required={requestType === RequestType.CHECK_OUT}
+                  <Input
+                    type="time"
+                    {...field}
+                    className="bg-background border-input text-foreground"
                   />
                 </FormControl>
                 <FormMessage />
@@ -178,7 +175,7 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
           name="reason"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-muted-foreground text-sm">申請原因</FormLabel>
+              <FormLabel className="text-muted-foreground">申請原因</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="請說明忘記打卡的原因..."

@@ -9,7 +9,7 @@ import {
 import { RequestType } from '@/constants/checkInTypes';
 import { Calendar, Clock } from 'lucide-react';
 import React, { useState } from 'react';
-import MissedCheckInForm from './components/MissedCheckInForm';
+import MissedCheckInForm from './MissedCheckInForm';
 
 interface MissedCheckInDialogProps {
   onSubmit?: () => void;

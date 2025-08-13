@@ -1,5 +1,5 @@
+import { EmployeeRole } from '@/constants/employee';
 import useEmployeeStore from '@/stores/employeeStore';
-import { EmployeeRole } from '@/types/auth';
 
 /**
  * 權限控制 hook

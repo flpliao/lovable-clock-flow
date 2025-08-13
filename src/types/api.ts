@@ -1,9 +1,5 @@
 // API 回應相關的類型定義
-
-export enum ApiResponseStatus {
-  SUCCESS = 'success',
-  ERROR = 'error',
-}
+import { ApiResponseStatus } from '@/constants/api';
 
 export type ApiResponse<T = unknown> = {
   data: T;

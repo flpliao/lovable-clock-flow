@@ -1,7 +1,7 @@
 // missedCheckInRequestService: 提供忘記打卡申請相關 API 操作
+import { ApiResponseStatus } from '@/constants/api';
 import { ApprovalStatus } from '@/constants/approvalStatus';
 import { apiRoutes } from '@/routes/api';
-import { ApiResponseStatus } from '@/types/api';
 import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';

@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import { LeaveRequestStatus } from '@/types/leaveRequest';
+import { LeaveRequestStatus } from '@/constants/leave';
 import React from 'react';
 
 interface LeaveStatusBadgeProps {

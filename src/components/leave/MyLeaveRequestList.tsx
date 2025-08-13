@@ -1,6 +1,6 @@
+import { LeaveRequestStatus } from '@/constants/leave';
 import { useMyLeaveRequest } from '@/hooks/useMyLeaveRequest';
 import { useMyLeaveRequestsStore } from '@/stores/leaveRequestStore';
-import { LeaveRequestStatus } from '@/types/leaveRequest';
 import React, { useEffect } from 'react';
 import LeaveRequestItem from './LeaveRequestItem';
 

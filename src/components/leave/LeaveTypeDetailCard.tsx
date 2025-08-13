@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LeaveType, PaidType } from '@/types/leaveType';
+import { PaidType } from '@/constants/leave';
+import { LeaveType } from '@/types/leaveType';
 import classNames from 'classnames';
 import { AlertCircle, DollarSign, FileText } from 'lucide-react';
 

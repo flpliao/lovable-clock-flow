@@ -1,13 +1,12 @@
 // checkInService: 提供打卡相關 API 操作
+import { ApiResponseStatus } from '@/constants/api';
 import { CheckInMethod, RequestType } from '@/constants/checkInTypes';
 import { apiRoutes } from '@/routes/api';
-import { ApiResponseStatus } from '@/types/api';
 import { CheckInRecord } from '@/types/checkIn';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 import { getCurrentIp, getCurrentPosition } from '@/utils/location';
 import dayjs from 'dayjs';
-
 export const getTodayCheckInRecords = async () => {
   const { data, status } = await callApiAndDecode(
     axiosWithEmployeeAuth().get(`${apiRoutes.checkin.index}`, {

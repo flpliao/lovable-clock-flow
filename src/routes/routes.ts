@@ -1,6 +1,7 @@
 // 路由配置
 import LazyWithSuspense from '@/components/common/LazyWithSuspense';
-import { EmployeeRole, RouteConfig } from '@/types/auth';
+import { EmployeeRole } from '@/constants/employee';
+import { RouteConfig } from '@/types/auth';
 import { routes } from './api';
 
 // 動態導入頁面元件

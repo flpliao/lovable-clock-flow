@@ -1,6 +1,6 @@
 // leaveTypeService: 提供請假類型相關 API 操作
+import { ApiResponseStatus } from '@/constants/api';
 import { apiRoutes } from '@/routes/api';
-import { ApiResponseStatus } from '@/types/api';
 import { LeaveType } from '@/types/leaveType';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';

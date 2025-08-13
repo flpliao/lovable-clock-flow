@@ -1,5 +1,5 @@
+import { ApiResponseStatus } from '@/constants/api';
 import { apiRoutes } from '@/routes/api';
-import { ApiResponseStatus } from '@/types/api';
 import { Shift } from '@/types/shift';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';

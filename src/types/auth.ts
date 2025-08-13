@@ -1,3 +1,4 @@
+import { EmployeeRole } from '@/constants/employee';
 import React from 'react';
 
 // 登入請求參數
@@ -21,13 +22,6 @@ export interface Employee {
   role: string;
   created_at: string;
   updated_at: string;
-}
-
-// 角色類型定義
-export enum EmployeeRole {
-  ADMIN = 'admin',
-  MANAGER = 'manager',
-  STAFF = 'staff',
 }
 
 // 路由接口定義

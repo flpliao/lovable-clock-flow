@@ -1,9 +1,8 @@
+import { ApiResponseStatus } from '@/constants/api';
 import { apiRoutes } from '@/routes/api';
-import { ApiResponseStatus } from '@/types/api';
 import { CheckInPoint } from '@/types/checkIn';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
-
 // 取得所有打卡點
 export const getNearbyCheckInPoints = async (
   latitude: number,

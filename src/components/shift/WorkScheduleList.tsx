@@ -1,5 +1,6 @@
 import { AddButton, DeleteButton, EditButton } from '@/components/common/buttons';
-import { WorkSchedule, WorkScheduleStatus } from '@/types/workSchedule';
+import { WorkScheduleStatus } from '@/constants/workSchedule';
+import { WorkSchedule } from '@/types/workSchedule';
 import { calculateOvertimeStartTime } from '@/utils/dateTimeUtils';
 import { Clock, Edit, Trash2 } from 'lucide-react';
 

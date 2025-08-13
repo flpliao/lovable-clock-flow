@@ -1,4 +1,5 @@
-import { LeaveRequest, LeaveRequestStatus } from '@/types/leaveRequest';
+import { LeaveRequestStatus } from '@/constants/leave';
+import { LeaveRequest } from '@/types/leaveRequest';
 import { AlertCircle, Calendar, CheckCircle, Clock, FileText, XCircle } from 'lucide-react';
 import LeaveRequestStatusBadge from '../LeaveRequestStatusBadge';
 import { Button } from '../ui/button';

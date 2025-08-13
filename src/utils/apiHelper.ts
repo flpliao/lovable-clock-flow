@@ -1,6 +1,7 @@
+import { ApiResponseStatus } from '@/constants/api';
 import { isAuthError } from '@/constants/errorCodes';
 import { toast } from '@/hooks/useToast';
-import { ApiResponse, ApiResponseStatus, CallApiOptions, DecodedResponse } from '@/types/api';
+import { ApiResponse, CallApiOptions, DecodedResponse } from '@/types/api';
 import { decodeApiResponse } from '@/utils/responseDecoder';
 
 export async function callApiAndDecode(

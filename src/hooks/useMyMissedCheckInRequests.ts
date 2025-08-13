@@ -5,12 +5,11 @@ import {
 import { useMyMissedCheckInRequestsStore } from '@/stores/missedCheckInRequestStore';
 import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
 import dayjs from 'dayjs';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 export const useMyMissedCheckInRequests = () => {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const { requests, setRequests, addRequest, updateRequest } = useMyMissedCheckInRequestsStore();
+  const { requests, setRequests, addRequest, updateRequest, isLoading, setLoading } =
+    useMyMissedCheckInRequestsStore();
 
   // 過濾今日的忘記打卡申請
   const todayRequests = useMemo(() => {
@@ -21,10 +20,10 @@ export const useMyMissedCheckInRequests = () => {
   const loadMyMissedCheckInRequests = async () => {
     if (requests.length > 0 || isLoading) return;
 
-    setIsLoading(true);
+    setLoading(true);
     const data = await getMyMissedCheckInRequests();
     setRequests(data);
-    setIsLoading(false);
+    setLoading(false);
   };
 
   // 新增忘記打卡申請

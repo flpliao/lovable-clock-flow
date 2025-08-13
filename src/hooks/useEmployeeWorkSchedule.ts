@@ -7,7 +7,7 @@ import type { Employee } from '@/types/employee';
 import dayjs from 'dayjs';
 
 export const useEmployeeWorkSchedule = () => {
-  const { isLoading, setIsLoading, error, setError } = useEmployeeWorkScheduleStore();
+  const { isLoading, setLoading, error, setError } = useEmployeeWorkScheduleStore();
 
   const {
     employeesBySlug,
@@ -30,14 +30,14 @@ export const useEmployeeWorkSchedule = () => {
 
   // 載入部門的所有員工資料（不指定時期）
   const loadDepartmentAllEmployees = async ({ departmentSlug }: { departmentSlug: string }) => {
-    setIsLoading(true);
+    setLoading(true);
     setError(null);
 
     const employees = await getEmployeeWithWorkSchedules({
       department_slug: departmentSlug,
     });
     addEmployeesForDepartment({ departmentSlug, employees });
-    setIsLoading(false);
+    setLoading(false);
     return employees;
   };
 
@@ -49,13 +49,13 @@ export const useEmployeeWorkSchedule = () => {
     departmentSlug: string;
     period: string;
   }) => {
-    setIsLoading(true);
+    setLoading(true);
     setError(null);
 
     // 如果該時期已經載入，直接返回
     if (isDepartmentPeriodLoaded({ departmentSlug, period })) {
       const employees = getEmployeesByDepartment(departmentSlug);
-      setIsLoading(false);
+      setLoading(false);
       return employees;
     }
 
@@ -71,7 +71,7 @@ export const useEmployeeWorkSchedule = () => {
     });
 
     addEmployeesForDepartment({ departmentSlug, employees, period });
-    setIsLoading(false);
+    setLoading(false);
     return employees;
   };
 
@@ -83,13 +83,13 @@ export const useEmployeeWorkSchedule = () => {
     departmentSlug: string;
     date: string;
   }) => {
-    setIsLoading(true);
+    setLoading(true);
     setError(null);
 
     // 檢查該日期的時期是否已載入
     if (isDepartmentDateLoaded({ departmentSlug, date })) {
       const employees = getEmployeesByDepartment(departmentSlug);
-      setIsLoading(false);
+      setLoading(false);
       return employees;
     }
 
@@ -103,7 +103,7 @@ export const useEmployeeWorkSchedule = () => {
     // 使用 dayjs 自動推斷時期並標記為已載入
     const period = dayjs(date).format('YYYY-MM');
     addEmployeesForDepartment({ departmentSlug, employees, period });
-    setIsLoading(false);
+    setLoading(false);
     return employees;
   };
 
@@ -117,7 +117,7 @@ export const useEmployeeWorkSchedule = () => {
     startDate: string;
     endDate: string;
   }) => {
-    setIsLoading(true);
+    setLoading(true);
     setError(null);
 
     const employees = await getEmployeeWithWorkSchedules({
@@ -138,7 +138,7 @@ export const useEmployeeWorkSchedule = () => {
       addEmployeesForDepartment({ departmentSlug, employees });
     }
 
-    setIsLoading(false);
+    setLoading(false);
     return employees;
   };
 
@@ -190,7 +190,7 @@ export const useEmployeeWorkSchedule = () => {
     onSuccess?: () => void;
     onError?: () => void;
   }) => {
-    setIsLoading(true);
+    setLoading(true);
     setError(null);
 
     // 轉換資料格式為結構化格式
@@ -229,12 +229,12 @@ export const useEmployeeWorkSchedule = () => {
     });
 
     if (result) {
-      setIsLoading(false);
+      setLoading(false);
       onSuccess?.();
       return true;
     } else {
       setError('批量同步失敗');
-      setIsLoading(false);
+      setLoading(false);
       onError?.();
       return false;
     }

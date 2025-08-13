@@ -8,16 +8,12 @@ import CheckInStatus from '@/components/check-in/CheckInStatus';
 import MissedCheckInDialog from '@/components/check-in/MissedCheckInDialog';
 import { RequestType } from '@/constants/checkInTypes';
 import { useCheckInPoints } from '@/hooks/useCheckInPoints';
+import { useCheckInRecords } from '@/hooks/useCheckInRecords';
 import { useMyMissedCheckInRequests } from '@/hooks/useMyMissedCheckInRequests';
 import { useToast } from '@/hooks/useToast';
-import {
-  createIpCheckInRecord,
-  createLocationCheckInRecord,
-  getCheckInRecords,
-} from '@/services/checkInService';
+import { createIpCheckInRecord, createLocationCheckInRecord } from '@/services/checkInService';
 import { CheckInRecord } from '@/types';
 
-import dayjs from 'dayjs';
 import { Clock } from 'lucide-react';
 import NearestCheckInPointInfo from './check-in/NearestCheckInPointInfo';
 
@@ -29,18 +25,16 @@ const LocationCheckIn = () => {
   const [type, setType] = useState<RequestType.CHECK_IN | RequestType.CHECK_OUT>(
     RequestType.CHECK_IN
   );
-  const [todayRecords, setTodayRecords] = useState<CheckInRecord[]>([]);
+  const {
+    records: todayRecords,
+    loadTodayCheckInRecords,
+    handleAddCheckInRecord,
+  } = useCheckInRecords();
   const { todayRequests, loadMyMissedCheckInRequests } = useMyMissedCheckInRequests();
 
   // 自動載入今日打卡紀錄和忘記打卡申請
   useEffect(() => {
-    const fetchTodayData = async () => {
-      // 載入今日打卡紀錄
-      const records = await getCheckInRecords(dayjs().format('YYYY-MM-DD'));
-      setTodayRecords(records);
-    };
-
-    fetchTodayData();
+    loadTodayCheckInRecords();
     loadCheckInPoints();
     loadMyMissedCheckInRequests(); // 載入忘記打卡申請
   }, []); // 只在組件掛載時執行一次
@@ -109,8 +103,7 @@ const LocationCheckIn = () => {
 
   const handleCheckIn = (result: CheckInRecord) => {
     // 更新 todayRecords
-    const newRecords = [...todayRecords, result];
-    setTodayRecords(newRecords);
+    handleAddCheckInRecord(result);
 
     toast({
       title: '打卡成功',

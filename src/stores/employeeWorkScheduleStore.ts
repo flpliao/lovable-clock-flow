@@ -87,7 +87,7 @@ interface EmployeeWorkScheduleState {
   }) => void;
 
   // 狀態管理
-  setIsLoading: (isLoading: boolean) => void;
+  setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
 }
@@ -397,7 +397,7 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
   },
 
   // 設定載入狀態
-  setIsLoading: (isLoading: boolean) => set({ isLoading }),
+  setLoading: (isLoading: boolean) => set({ isLoading }),
 
   // 設定錯誤狀態
   setError: (error: string | null) => set({ error }),

@@ -10,7 +10,7 @@ import { Calendar, Clock } from 'lucide-react';
 import React, { useState } from 'react';
 import MissedCheckInForm from './components/MissedCheckInForm';
 
-const MissedCheckinDialog: React.FC = () => {
+const MissedCheckInDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
 
   const handleClose = () => {
@@ -47,4 +47,4 @@ const MissedCheckinDialog: React.FC = () => {
   );
 };
 
-export default MissedCheckinDialog;
+export default MissedCheckInDialog;

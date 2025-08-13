@@ -6,7 +6,7 @@ import CheckInCompletedStatus from '@/components/check-in/CheckInCompletedStatus
 import CheckInMethodSelector from '@/components/check-in/CheckInMethodSelector';
 import CheckInStatus from '@/components/check-in/CheckInStatus';
 import MissedCheckinDialog from '@/components/check-in/MissedCheckinDialog';
-import { CHECK_IN, CHECK_OUT, CheckInType } from '@/constants/checkInTypes';
+import { RequestType } from '@/constants/checkInTypes';
 import { useCheckInPoints } from '@/hooks/useCheckInPoints';
 import { useToast } from '@/hooks/useToast';
 import {
@@ -23,10 +23,12 @@ const LocationCheckIn = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [checkInMethod, setCheckInMethod] = useState<'location' | 'ip'>('location');
-  const [type, setType] = useState<CheckInType>(CHECK_IN);
+  const [type, setType] = useState<RequestType.CHECK_IN | RequestType.CHECK_OUT>(
+    RequestType.CHECK_IN
+  );
   const [todayRecords, setTodayRecords] = useState<{
-    [CHECK_IN]?: CheckInRecord;
-    [CHECK_OUT]?: CheckInRecord;
+    [RequestType.CHECK_IN]?: CheckInRecord;
+    [RequestType.CHECK_OUT]?: CheckInRecord;
   }>({});
 
   // 自動載入今日打卡紀錄
@@ -34,8 +36,12 @@ const LocationCheckIn = () => {
     const fetchTodayRecords = async () => {
       const records = await getTodayCheckInRecords();
       setTodayRecords(records);
-      if (type === CHECK_IN && records?.[CHECK_IN] && !records?.[CHECK_OUT]) {
-        setType(CHECK_OUT);
+      if (
+        type === RequestType.CHECK_IN &&
+        records?.[RequestType.CHECK_IN] &&
+        !records?.[RequestType.CHECK_OUT]
+      ) {
+        setType(RequestType.CHECK_OUT);
       }
     };
 
@@ -88,13 +94,13 @@ const LocationCheckIn = () => {
     const newRecords = { ...todayRecords, [result.type]: result };
     setTodayRecords(newRecords);
 
-    if (result.type === CHECK_IN) {
-      setType(CHECK_OUT);
+    if (result.type === RequestType.CHECK_IN) {
+      setType(RequestType.CHECK_OUT);
     }
 
     toast({
       title: '打卡成功',
-      description: `${type === CHECK_IN ? '上班' : '下班'}打卡完成`,
+      description: `${type === RequestType.CHECK_IN ? '上班' : '下班'}打卡完成`,
     });
   };
 
@@ -102,13 +108,13 @@ const LocationCheckIn = () => {
     checkInMethod === 'location' && (!checkInPoints || checkInPoints.length === 0);
 
   // 如果已完成今日打卡，顯示完成狀態
-  if (todayRecords?.[CHECK_IN] && todayRecords?.[CHECK_OUT]) {
+  if (todayRecords?.[RequestType.CHECK_IN] && todayRecords?.[RequestType.CHECK_OUT]) {
     return (
       <div className="flex justify-center items-center w-full min-h-[180px]">
         <div className="max-w-md w-full mx-4">
           <CheckInCompletedStatus
-            checkIn={todayRecords?.[CHECK_IN]}
-            checkOut={todayRecords?.[CHECK_OUT]}
+            checkIn={todayRecords?.[RequestType.CHECK_IN]}
+            checkOut={todayRecords?.[RequestType.CHECK_OUT]}
           />
         </div>
       </div>
@@ -124,7 +130,7 @@ const LocationCheckIn = () => {
           </div>
           <span className="text-lg font-semibold drop-shadow-md">打卡</span>
         </div>
-        <CheckInStatus checkIn={todayRecords?.[CHECK_IN]} />
+        <CheckInStatus checkIn={todayRecords?.[RequestType.CHECK_IN]} />
         <CheckInMethodSelector
           checkInMethod={checkInMethod}
           setCheckInMethod={setCheckInMethod}

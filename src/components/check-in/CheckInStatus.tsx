@@ -1,4 +1,4 @@
-import { METHOD_IP, METHOD_LOCATION } from '@/constants/checkInTypes';
+import { CheckInMethod } from '@/constants/checkInTypes';
 import { CheckInRecord } from '@/types';
 import dayjs from 'dayjs';
 import { CheckCircle2, Clock, MapPin, Wifi } from 'lucide-react';
@@ -20,7 +20,7 @@ const CheckInStatus: React.FC<CheckInStatusProps> = ({ checkIn }) => {
           </div>
           <div className="flex items-center gap-2 truncate text-sm">
             <span className="font-medium text-blue-900">已打上班卡</span>
-            {checkIn.method === METHOD_LOCATION && checkIn.location_name ? (
+            {checkIn.method === CheckInMethod.LOCATION && checkIn.location_name ? (
               <>
                 <div className="flex items-center gap-1 text-sm text-blue-600 truncate">
                   <MapPin className="h-3.5 w-3.5 shrink-0" />
@@ -28,7 +28,7 @@ const CheckInStatus: React.FC<CheckInStatusProps> = ({ checkIn }) => {
                 </div>
               </>
             ) : (
-              checkIn.method === METHOD_IP && (
+              checkIn.method === CheckInMethod.IP && (
                 <>
                   <div className="flex items-center gap-1 text-sm text-blue-600">
                     <Wifi className="h-3.5 w-3.5 shrink-0" />

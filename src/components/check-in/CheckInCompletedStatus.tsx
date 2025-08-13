@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { METHOD_LOCATION } from '@/constants/checkInTypes';
+import { CheckInMethod } from '@/constants/checkInTypes';
 import { CheckInRecord } from '@/types';
 import dayjs from 'dayjs';
 import { CheckCircle2, LogIn, LogOut, MapPin, Wifi } from 'lucide-react';
@@ -12,7 +12,7 @@ interface CheckInCompletedStatusProps {
 
 const CheckInCompletedStatus: React.FC<CheckInCompletedStatusProps> = ({ checkIn, checkOut }) => {
   const renderCheckInMethod = (record: CheckInRecord) => {
-    if (record.method === METHOD_LOCATION) {
+    if (record.method === CheckInMethod.LOCATION) {
       return (
         <>
           <MapPin className="h-3 w-3 shrink-0" />

@@ -1,11 +1,5 @@
 // checkInService: 提供打卡相關 API 操作
-import {
-  CHECK_IN,
-  CHECK_OUT,
-  CheckInType,
-  METHOD_IP,
-  METHOD_LOCATION,
-} from '@/constants/checkInTypes';
+import { CheckInMethod, RequestType } from '@/constants/checkInTypes';
 import { apiRoutes } from '@/routes/api';
 import { ApiResponseStatus } from '@/types/api';
 import { CheckInRecord } from '@/types/checkIn';
@@ -23,14 +17,14 @@ export const getTodayCheckInRecords = async () => {
 
   return status === ApiResponseStatus.SUCCESS
     ? splitCheckInRecords(data as CheckInRecord[])
-    : { [CHECK_IN]: null, [CHECK_OUT]: null };
+    : { [RequestType.CHECK_IN]: null, [RequestType.CHECK_OUT]: null };
 };
 
 // 前端分組
 export const splitCheckInRecords = (records: CheckInRecord[]) => {
-  const checkIn = records.find(r => r.type === CHECK_IN);
-  const checkOut = records.find(r => r.type === CHECK_OUT);
-  return { [CHECK_IN]: checkIn, [CHECK_OUT]: checkOut };
+  const checkIn = records.find(r => r.type === RequestType.CHECK_IN);
+  const checkOut = records.find(r => r.type === RequestType.CHECK_OUT);
+  return { [RequestType.CHECK_IN]: checkIn, [RequestType.CHECK_OUT]: checkOut };
 };
 
 // 取得打卡記錄
@@ -65,8 +59,8 @@ export const checkIn = async (checkInData: {
 
 // 打卡參數介面
 export interface CheckInParams {
-  type: CheckInType;
-  method: 'ip' | 'location';
+  type: RequestType.CHECK_IN | RequestType.CHECK_OUT;
+  method: CheckInMethod;
   selectedCheckpoint?: {
     latitude: number;
     longitude: number;
@@ -82,7 +76,7 @@ export const createCheckInRecordByMethod = async (
   const { type, method, selectedCheckpoint } = params;
 
   // 位置打卡需要選擇打卡點
-  if (method === METHOD_LOCATION && !selectedCheckpoint) {
+  if (method === CheckInMethod.LOCATION && !selectedCheckpoint) {
     throw new Error('請先選擇打卡地點');
   }
 
@@ -101,8 +95,10 @@ export const createCheckInRecordByMethod = async (
 };
 
 // 向後相容的函數別名
-export const createIpCheckInRecord = async (type: CheckInType): Promise<CheckInRecord> => {
-  return createCheckInRecordByMethod({ type, method: METHOD_IP });
+export const createIpCheckInRecord = async (
+  type: RequestType.CHECK_IN | RequestType.CHECK_OUT
+): Promise<CheckInRecord> => {
+  return createCheckInRecordByMethod({ type, method: CheckInMethod.IP });
 };
 
 export const createLocationCheckInRecord = async (
@@ -110,5 +106,5 @@ export const createLocationCheckInRecord = async (
     selectedCheckpoint: NonNullable<CheckInParams['selectedCheckpoint']>;
   }
 ): Promise<CheckInRecord> => {
-  return createCheckInRecordByMethod({ ...params, method: METHOD_LOCATION });
+  return createCheckInRecordByMethod({ ...params, method: CheckInMethod.LOCATION });
 };

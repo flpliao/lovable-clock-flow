@@ -104,7 +104,7 @@ const EditShiftForm = ({ open, onOpenChange, onSubmit, shift, setShift }: EditSh
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground text-sm">班次名稱</FormLabel>
+                    <FormLabel className="text-muted-foreground">班次名稱</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
@@ -122,7 +122,7 @@ const EditShiftForm = ({ open, onOpenChange, onSubmit, shift, setShift }: EditSh
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground text-sm">班次代碼</FormLabel>
+                    <FormLabel className="text-muted-foreground">班次代碼</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
@@ -143,7 +143,7 @@ const EditShiftForm = ({ open, onOpenChange, onSubmit, shift, setShift }: EditSh
                 name="day_cut_time"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground text-sm">日切時間</FormLabel>
+                    <FormLabel className="text-muted-foreground">日切時間</FormLabel>
                     <FormControl>
                       <Input
                         type="time"
@@ -161,7 +161,7 @@ const EditShiftForm = ({ open, onOpenChange, onSubmit, shift, setShift }: EditSh
                 name="color"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground text-sm">顏色</FormLabel>
+                    <FormLabel className="text-muted-foreground">顏色</FormLabel>
                     <FormControl>
                       <Input
                         type="color"

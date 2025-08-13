@@ -139,7 +139,7 @@ const CreateWorkScheduleForm = ({
                   name="clock_in_time"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>上班時間</FormLabel>
+                      <FormLabel className="text-muted-foreground">上班時間</FormLabel>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>
@@ -153,7 +153,7 @@ const CreateWorkScheduleForm = ({
                   name="clock_out_time"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>下班時間</FormLabel>
+                      <FormLabel className="text-muted-foreground">下班時間</FormLabel>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>
@@ -166,7 +166,7 @@ const CreateWorkScheduleForm = ({
 
             {/* 加班設定 */}
             <div className="space-y-4">
-              <h3 className="text-sm font-medium">加班起算時間-下班時間後</h3>
+              <FormLabel>加班起算時間-下班時間後</FormLabel>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
@@ -174,7 +174,7 @@ const CreateWorkScheduleForm = ({
                   name="ot_start_after_hours"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>小時</FormLabel>
+                      <FormLabel className="text-muted-foreground">小時</FormLabel>
                       <FormControl>
                         <Input type="number" min="0" max="23" {...field} />
                       </FormControl>
@@ -188,7 +188,7 @@ const CreateWorkScheduleForm = ({
                   name="ot_start_after_minutes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>分鐘</FormLabel>
+                      <FormLabel className="text-muted-foreground">分鐘</FormLabel>
                       <FormControl>
                         <Input type="number" min="0" max="59" {...field} />
                       </FormControl>
@@ -201,7 +201,7 @@ const CreateWorkScheduleForm = ({
 
             {/* 休息時間 */}
             <div className="space-y-4">
-              <h3 className="text-sm font-medium">休息時間</h3>
+              <FormLabel>休息時間</FormLabel>
 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -210,7 +210,7 @@ const CreateWorkScheduleForm = ({
                     name="break1_start"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>開始</FormLabel>
+                        <FormLabel className="text-muted-foreground">開始</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
@@ -224,7 +224,7 @@ const CreateWorkScheduleForm = ({
                     name="break1_end"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>結束</FormLabel>
+                        <FormLabel className="text-muted-foreground">結束</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>

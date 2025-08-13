@@ -1,44 +1,46 @@
-
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { RequestType } from '@/constants/checkInTypes';
 import { Calendar, Clock } from 'lucide-react';
-import MissedCheckinFormFields from './components/MissedCheckinFormFields';
-import { useMissedCheckinForm } from './hooks/useMissedCheckinForm';
+import React, { useState } from 'react';
+import MissedCheckInForm from './MissedCheckInForm';
 
-interface MissedCheckinDialogProps {
-  onSuccess: () => void;
+interface MissedCheckInDialogProps {
+  onSubmit?: () => void;
+  // 當前打卡狀態
+  hasCheckInToday: boolean;
 }
 
-const MissedCheckinDialog: React.FC<MissedCheckinDialogProps> = ({ onSuccess }) => {
+const MissedCheckInDialog: React.FC<MissedCheckInDialogProps> = ({ onSubmit, hasCheckInToday }) => {
   const [open, setOpen] = useState(false);
-  
-  const {
-    formData,
-    loading,
-    updateFormData,
-    submitForm,
-    resetForm
-  } = useMissedCheckinForm(() => {
-    setOpen(false);
-    onSuccess();
-  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await submitForm();
+  // 根據當前打卡狀態智能判斷預設申請類型
+  const getDefaultRequestType = (): RequestType => {
+    if (!hasCheckInToday) {
+      return RequestType.CHECK_IN; // 沒有上班卡，預設申請上班打卡
+    } else return RequestType.CHECK_OUT; // 有上班卡但沒有下班卡，預設申請下班打卡
   };
 
   const handleClose = () => {
     setOpen(false);
-    resetForm();
+  };
+
+  const handleSuccess = () => {
+    handleClose();
+    onSubmit?.();
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="sm"
           className="bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200 whitespace-nowrap"
         >
@@ -53,29 +55,15 @@ const MissedCheckinDialog: React.FC<MissedCheckinDialogProps> = ({ onSuccess }) 
             忘記打卡申請
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <MissedCheckinFormFields
-            formData={formData}
-            onFormDataChange={updateFormData}
-          />
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={loading}
-            >
-              取消
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? '提交中...' : '提交申請'}
-            </Button>
-          </div>
-        </form>
+        <MissedCheckInForm
+          onSuccess={handleSuccess}
+          onCancel={handleClose}
+          defaultRequestType={getDefaultRequestType()}
+        />
       </DialogContent>
     </Dialog>
   );
 };
 
-export default MissedCheckinDialog;
+export default MissedCheckInDialog;

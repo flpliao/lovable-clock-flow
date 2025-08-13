@@ -1,8 +1,17 @@
-export const CHECK_IN = 'check_in' as const;
-export const CHECK_OUT = 'check_out' as const;
+// 忘記打卡申請類型
+export enum RequestType {
+  CHECK_IN = 'check_in',
+  CHECK_OUT = 'check_out',
+}
 
-export const METHOD_IP = 'ip' as const;
-export const METHOD_LOCATION = 'location' as const;
+// 申請類型顯示文字
+export const REQUEST_TYPE_LABELS = {
+  [RequestType.CHECK_IN]: '忘記上班打卡',
+  [RequestType.CHECK_OUT]: '忘記下班打卡',
+} as const;
 
-export type CheckInType = typeof CHECK_IN | typeof CHECK_OUT;
-export type CheckInMethod = typeof METHOD_IP | typeof METHOD_LOCATION;
+// 打卡方法類型
+export enum CheckInMethod {
+  IP = 'ip',
+  LOCATION = 'location',
+}

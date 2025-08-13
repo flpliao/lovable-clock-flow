@@ -5,16 +5,15 @@ import CheckInButton from '@/components/check-in/CheckInButton';
 import CheckInCompletedStatus from '@/components/check-in/CheckInCompletedStatus';
 import CheckInMethodSelector from '@/components/check-in/CheckInMethodSelector';
 import CheckInStatus from '@/components/check-in/CheckInStatus';
-import MissedCheckinDialog from '@/components/check-in/MissedCheckinDialog';
-import { CHECK_IN, CHECK_OUT, CheckInType } from '@/constants/checkInTypes';
+import MissedCheckInDialog from '@/components/check-in/MissedCheckInDialog';
+import { RequestType } from '@/constants/checkInTypes';
 import { useCheckInPoints } from '@/hooks/useCheckInPoints';
+import { useCheckInRecords } from '@/hooks/useCheckInRecords';
+import { useMyMissedCheckInRequests } from '@/hooks/useMyMissedCheckInRequests';
 import { useToast } from '@/hooks/useToast';
-import {
-  createIpCheckInRecord,
-  createLocationCheckInRecord,
-  getTodayCheckInRecords,
-} from '@/services/checkInService';
+import { createIpCheckInRecord, createLocationCheckInRecord } from '@/services/checkInService';
 import { CheckInRecord } from '@/types';
+
 import { Clock } from 'lucide-react';
 import NearestCheckInPointInfo from './check-in/NearestCheckInPointInfo';
 
@@ -23,25 +22,44 @@ const LocationCheckIn = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [checkInMethod, setCheckInMethod] = useState<'location' | 'ip'>('location');
-  const [type, setType] = useState<CheckInType>(CHECK_IN);
-  const [todayRecords, setTodayRecords] = useState<{
-    [CHECK_IN]?: CheckInRecord;
-    [CHECK_OUT]?: CheckInRecord;
-  }>({});
+  const [type, setType] = useState<RequestType.CHECK_IN | RequestType.CHECK_OUT>(
+    RequestType.CHECK_IN
+  );
+  const {
+    records: todayRecords,
+    loadTodayCheckInRecords,
+    handleAddCheckInRecord,
+  } = useCheckInRecords();
+  const { todayRequests, loadMyMissedCheckInRequests } = useMyMissedCheckInRequests();
 
-  // 自動載入今日打卡紀錄
+  // 自動載入今日打卡紀錄和忘記打卡申請
   useEffect(() => {
-    const fetchTodayRecords = async () => {
-      const records = await getTodayCheckInRecords();
-      setTodayRecords(records);
-      if (type === CHECK_IN && records?.[CHECK_IN] && !records?.[CHECK_OUT]) {
-        setType(CHECK_OUT);
-      }
-    };
-
-    fetchTodayRecords();
+    loadTodayCheckInRecords();
     loadCheckInPoints();
-  }, []); // 移除不必要的依賴
+    loadMyMissedCheckInRequests(); // 載入忘記打卡申請
+  }, []); // 只在組件掛載時執行一次
+
+  useEffect(() => {
+    determineCheckInType(todayRecords, todayRequests);
+  }, [todayRecords, todayRequests]);
+
+  // 決定打卡類型的邏輯
+  const determineCheckInType = (
+    records: CheckInRecord[],
+    missedRequests: { request_type: string }[]
+  ) => {
+    const hasCheckIn = records.find(r => r.type === RequestType.CHECK_IN);
+
+    // 檢查是否有對應的忘記打卡申請
+    const hasMissedCheckIn = missedRequests.some(req => req.request_type === RequestType.CHECK_IN);
+
+    // 簡化邏輯：有上班相關記錄就顯示下班打卡，否則顯示上班打卡
+    if (hasCheckIn || hasMissedCheckIn) {
+      setType(RequestType.CHECK_OUT);
+    } else {
+      setType(RequestType.CHECK_IN);
+    }
+  };
 
   // 位置打卡
   const handleLocationCheckIn = async () => {
@@ -85,30 +103,36 @@ const LocationCheckIn = () => {
 
   const handleCheckIn = (result: CheckInRecord) => {
     // 更新 todayRecords
-    const newRecords = { ...todayRecords, [result.type]: result };
-    setTodayRecords(newRecords);
-
-    if (result.type === CHECK_IN) {
-      setType(CHECK_OUT);
-    }
+    handleAddCheckInRecord(result);
 
     toast({
       title: '打卡成功',
-      description: `${type === CHECK_IN ? '上班' : '下班'}打卡完成`,
+      description: `${type === RequestType.CHECK_IN ? '上班' : '下班'}打卡完成`,
     });
   };
 
   const noAvailableCheckInPoint =
     checkInMethod === 'location' && (!checkInPoints || checkInPoints.length === 0);
 
+  // 檢查今日是否已完成打卡（包括實際打卡和忘記打卡申請）
+  const hasCompletedToday =
+    (todayRecords.find(r => r.type === RequestType.CHECK_IN) ||
+      todayRequests.some(req => req.request_type === RequestType.CHECK_IN)) &&
+    (todayRecords.find(r => r.type === RequestType.CHECK_OUT) ||
+      todayRequests.some(req => req.request_type === RequestType.CHECK_OUT));
+
   // 如果已完成今日打卡，顯示完成狀態
-  if (todayRecords?.[CHECK_IN] && todayRecords?.[CHECK_OUT]) {
+  if (hasCompletedToday) {
     return (
       <div className="flex justify-center items-center w-full min-h-[180px]">
         <div className="max-w-md w-full mx-4">
           <CheckInCompletedStatus
-            checkIn={todayRecords?.[CHECK_IN]}
-            checkOut={todayRecords?.[CHECK_OUT]}
+            checkIn={todayRecords.find(r => r.type === RequestType.CHECK_IN)}
+            checkOut={todayRecords.find(r => r.type === RequestType.CHECK_OUT)}
+            hasMissedCheckIn={todayRequests.some(req => req.request_type === RequestType.CHECK_IN)}
+            hasMissedCheckOut={todayRequests.some(
+              req => req.request_type === RequestType.CHECK_OUT
+            )}
           />
         </div>
       </div>
@@ -124,7 +148,10 @@ const LocationCheckIn = () => {
           </div>
           <span className="text-lg font-semibold drop-shadow-md">打卡</span>
         </div>
-        <CheckInStatus checkIn={todayRecords?.[CHECK_IN]} />
+        <CheckInStatus
+          checkIn={todayRecords.find(r => r.type === RequestType.CHECK_IN)}
+          hasMissedCheckIn={todayRequests.some(req => req.request_type === RequestType.CHECK_IN)}
+        />
         <CheckInMethodSelector
           checkInMethod={checkInMethod}
           setCheckInMethod={setCheckInMethod}
@@ -140,7 +167,9 @@ const LocationCheckIn = () => {
           disabled={noAvailableCheckInPoint}
         />
         <div className="flex justify-center">
-          <MissedCheckinDialog onSuccess={() => {}} />
+          <MissedCheckInDialog
+            hasCheckInToday={!!todayRecords.find(r => r.type === RequestType.CHECK_IN)}
+          />
         </div>
       </div>
     </div>

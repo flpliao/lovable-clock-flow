@@ -71,6 +71,18 @@ export const apiRoutes = {
     update: (id: string) => `${API_URL}/employee/check-in/points/${id}`,
     delete: (id: string) => `${API_URL}/employee/check-in/points/${id}`,
   },
+  // 錯過打卡申請管理
+  missedCheckInRequest: {
+    index: `${API_URL}/employee/missed-check-in-requests`,
+    show: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}`,
+    store: `${API_URL}/employee/missed-check-in-requests`,
+    update: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}`,
+    destroy: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}`,
+    cancel: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}/cancel`,
+    myRequests: `${API_URL}/employee/missed-check-in-requests/my-requests`,
+    getApprovalsByRequest: (slug: string) =>
+      `${API_URL}/employee/missed-check-in-requests/${slug}/approvals`,
+  },
   leaveRequest: {
     index: `${API_URL}/employee/leave-requests`,
     myRequests: `${API_URL}/employee/leave-requests/my-requests`,

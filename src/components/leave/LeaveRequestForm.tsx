@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/common/buttons';
 import {
   Form,
   FormControl,
@@ -22,7 +22,6 @@ import { LeaveTypeCode } from '@/types/leaveType';
 import { calculateHoursBetween } from '@/utils/dateTimeUtils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import dayjs from 'dayjs';
-import { Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { LeaveTypeDetailCard } from './LeaveTypeDetailCard';
@@ -124,7 +123,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
             name="leave_type_code"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-white font-medium">假別</FormLabel>
+                <FormLabel className="text-white">假別</FormLabel>
                 <FormControl>
                   <SearchableSelect
                     options={leaveTypes.map(type => ({
@@ -158,7 +157,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
               name="start_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel className="text-white font-medium">開始日期時間</FormLabel>
+                  <FormLabel className="text-white">開始日期時間</FormLabel>
                   <FormControl>
                     <input
                       type="datetime-local"
@@ -181,7 +180,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
               name="end_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel className="text-white font-medium">結束日期時間</FormLabel>
+                  <FormLabel className="text-white">結束日期時間</FormLabel>
                   <FormControl>
                     <input
                       type="datetime-local"
@@ -204,8 +203,8 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
           {calculatedHours > 0 && (
             <div className="mt-4 p-3 bg-blue-500/20 border border-blue-300/30 rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-white font-medium">請假時數：</span>
-                <span className="text-blue-200 font-semibold text-lg">{calculatedHours} 小時</span>
+                <span className="text-white">請假時數：</span>
+                <span className="text-blue-200 font-semibold">{calculatedHours} 小時</span>
               </div>
             </div>
           )}
@@ -219,7 +218,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
             name="reason"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-white font-medium">事由說明</FormLabel>
+                <FormLabel className="text-white">事由說明</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="請輸入請假事由..."
@@ -240,7 +239,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
               name="attachment"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">附件上傳</FormLabel>
+                  <FormLabel className="text-white">附件上傳</FormLabel>
                   <FormControl>
                     <input
                       type="file"
@@ -261,20 +260,14 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
 
         {/* 提交按鈕 */}
         <div className="flex justify-end">
-          <Button
-            type="submit"
-            disabled={isSubmitting || isDisabled}
+          <SubmitButton
+            isLoading={isSubmitting}
+            loadingText="提交中..."
+            disabled={isDisabled}
             className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-2 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                提交中...
-              </>
-            ) : (
-              '提交申請'
-            )}
-          </Button>
+            提交申請
+          </SubmitButton>
         </div>
       </form>
     </Form>

@@ -1,6 +1,7 @@
+import { LeaveRequestStatus } from '@/constants/leave';
 import { useMyLeaveRequest } from '@/hooks/useMyLeaveRequest';
 import { useMyLeaveRequestsStore } from '@/stores/leaveRequestStore';
-import { LeaveRequest, LeaveRequestStatus } from '@/types/leaveRequest';
+import { LeaveRequest } from '@/types/leaveRequest';
 import { useEffect, useState } from 'react';
 import {
   AlertDialog,

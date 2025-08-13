@@ -1,10 +1,6 @@
+import { WorkScheduleStatus } from '@/constants/workSchedule';
+import { Shift } from '@/types/shift';
 import { z } from 'zod';
-import { Shift } from './shift';
-
-export enum WorkScheduleStatus {
-  WORK = 'work',
-  OFF = 'off',
-}
 
 export interface WorkSchedulePivot {
   status: string;

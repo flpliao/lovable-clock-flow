@@ -1,23 +1,6 @@
-// 請假類型代碼 enum
-export enum LeaveTypeCode {
-  ANNUAL = 'ANNUAL',
-  SICK = 'SICK',
-  PERSONAL = 'PERSONAL',
-  MARRIAGE = 'MARRIAGE',
-  BEREAVEMENT = 'BEREAVEMENT',
-  MATERNITY = 'MATERNITY',
-  PATERNITY = 'PATERNITY',
-  SPECIAL = 'SPECIAL',
-}
-
-// 薪資類型 enum
-export enum PaidType {
-  UNPAID = 'unpaid',
-  HALF = 'half',
-  PAID = 'paid',
-}
-
 // 請假類型介面定義
+import { LeaveTypeCode, PaidType } from '@/constants/leave';
+
 export interface LeaveType {
   slug: string;
   name: string;

@@ -3,16 +3,12 @@ import CustomFormLabel from '@/components/common/CustomFormLabel';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import { Textarea } from '@/components/ui/textarea';
+import { LeaveRequestStatus, LeaveTypeCode } from '@/constants/leave';
 import { useLeaveType } from '@/hooks/useLeaveType';
 import { useMyLeaveRequest } from '@/hooks/useMyLeaveRequest';
 import useEmployeeStore from '@/stores/employeeStore';
 import useLeaveTypeStore from '@/stores/leaveTypeStore';
-import {
-  leaveRequestFormSchema,
-  LeaveRequestFormValues,
-  LeaveRequestStatus,
-} from '@/types/leaveRequest';
-import { LeaveTypeCode } from '@/types/leaveType';
+import { leaveRequestFormSchema, LeaveRequestFormValues } from '@/types/leaveRequest';
 import { calculateHoursBetween } from '@/utils/dateTimeUtils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import dayjs from 'dayjs';

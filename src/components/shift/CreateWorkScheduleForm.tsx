@@ -23,13 +23,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { WorkScheduleStatus } from '@/constants/workSchedule';
 import useLoadingAction from '@/hooks/useLoadingAction';
 import {
   CreateWorkScheduleData,
+  CreateWorkScheduleFormData,
   createWorkScheduleSchema,
   WorkSchedule,
-  WorkScheduleStatus,
-  type CreateWorkScheduleFormData,
 } from '@/types/workSchedule';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';

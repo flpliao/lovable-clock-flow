@@ -1,10 +1,11 @@
+import { LeaveRequestStatus } from '@/constants/leave';
 import {
   cancelLeaveRequest,
   createLeaveRequest,
   getMyLeaveRequests,
 } from '@/services/leaveRequestService';
 import { useMyLeaveRequestsStore } from '@/stores/leaveRequestStore';
-import { LeaveRequest, LeaveRequestStatus } from '@/types/leaveRequest';
+import { LeaveRequest } from '@/types/leaveRequest';
 import { useState } from 'react';
 
 export const useMyLeaveRequest = () => {

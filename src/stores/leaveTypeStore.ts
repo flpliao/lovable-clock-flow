@@ -1,4 +1,5 @@
-import { LeaveType, PaidType } from '@/types/leaveType';
+import { PaidType } from '@/constants/leave';
+import { LeaveType } from '@/types/leaveType';
 import { create } from 'zustand';
 
 interface LeaveTypeState {

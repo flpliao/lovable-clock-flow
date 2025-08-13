@@ -1,14 +1,7 @@
+import { ApprovalStatus, LeaveRequestStatus } from '@/constants/leave';
 import dayjs from 'dayjs';
 import { z } from 'zod';
 import { LeaveType } from './leaveType';
-
-// 請假申請狀態
-export enum LeaveRequestStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-  CANCELLED = 'cancelled',
-}
 
 // 請假申請記錄
 export interface LeaveRequest {
@@ -29,12 +22,6 @@ export interface LeaveRequest {
   updated_at: string;
 }
 
-// 審核狀態
-export enum ApprovalStatus {
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-}
-
 // 審核記錄
 export interface ApprovalRecord {
   slug: string;
@@ -49,7 +36,6 @@ export interface ApprovalRecord {
 }
 
 // 請假申請表單 Schema
-
 export const leaveRequestFormSchema = z
   .object({
     start_date: z.custom<dayjs.Dayjs>(val => val instanceof dayjs, {

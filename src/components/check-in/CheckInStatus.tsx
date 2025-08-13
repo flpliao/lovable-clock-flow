@@ -1,16 +1,20 @@
+import { ApprovalStatus } from '@/constants/approvalStatus';
 import { CheckInMethod } from '@/constants/checkInTypes';
 import { CheckInRecord } from '@/types';
+import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
+import { getStatusConfig } from '@/utils/statusConfig';
 import dayjs from 'dayjs';
-import { CheckCircle2, Clock, MapPin, Wifi } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Clock, MapPin, Wifi } from 'lucide-react';
 import React from 'react';
 
 interface CheckInStatusProps {
   checkIn?: CheckInRecord;
-  hasMissedCheckIn?: boolean;
+  missedCheckInRequest?: MissedCheckInRequest;
 }
 
-const CheckInStatus: React.FC<CheckInStatusProps> = ({ checkIn, hasMissedCheckIn }) => {
-  if (!checkIn && !hasMissedCheckIn) return null;
+const CheckInStatus: React.FC<CheckInStatusProps> = ({ checkIn, missedCheckInRequest }) => {
+  // 如果沒有打卡記錄且沒有忘記打卡申請，不顯示任何內容
+  if (!checkIn && !missedCheckInRequest) return null;
 
   // 如果有實際打卡記錄，顯示打卡狀態
   if (checkIn) {
@@ -53,25 +57,37 @@ const CheckInStatus: React.FC<CheckInStatusProps> = ({ checkIn, hasMissedCheckIn
     );
   }
 
-  // 如果有忘記打卡申請，顯示申請狀態
-  if (hasMissedCheckIn) {
+  // 如果有忘記打卡申請，根據狀態顯示不同內容
+  if (missedCheckInRequest) {
+    const request = missedCheckInRequest;
+    const status = (request?.status as ApprovalStatus) || ApprovalStatus.PENDING;
+    const statusConfig = getStatusConfig(status);
+
     return (
-      <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-3 border border-orange-200 shadow-sm">
+      <div
+        className={`bg-gradient-to-br ${statusConfig.bgGradient} rounded-lg p-3 border ${statusConfig.borderColor} shadow-sm`}
+      >
         <div className="flex items-center justify-between w-full gap-3">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="bg-orange-100 p-1.5 rounded-full shrink-0">
-              <Clock className="h-5 w-5 text-orange-600" />
+            <div className={`${statusConfig.iconBg} p-1.5 rounded-full shrink-0`}>
+              {status === ApprovalStatus.PENDING ? (
+                <AlertCircle className={`h-5 w-5 ${statusConfig.iconColor}`} />
+              ) : (
+                <CheckCircle2 className={`h-5 w-5 ${statusConfig.iconColor}`} />
+              )}
             </div>
             <div className="flex items-center gap-2 truncate text-sm">
-              <span className="font-medium text-orange-900">上班打卡申請中</span>
-              <div className="flex items-center gap-1 text-sm text-orange-600">
-                <span className="font-medium">等待審核</span>
+              <span className={`font-medium ${statusConfig.textColor}`}>忘打卡申請</span>
+              <div className={`flex items-center gap-1 text-sm ${statusConfig.secondaryTextColor}`}>
+                <span className="font-medium">{statusConfig.statusText}</span>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-1.5 bg-white/80 px-2.5 py-1 rounded-full shrink-0">
-            <Clock className="h-3.5 w-3.5 text-orange-500" />
-            <span className="text-xs text-orange-600 font-medium">申請中</span>
+            <Clock className={`h-3.5 w-3.5 ${statusConfig.iconColor}`} />
+            <span className={`text-xs ${statusConfig.secondaryTextColor} font-medium`}>
+              {dayjs(request.request_date).format('HH:mm:ss')}
+            </span>
           </div>
         </div>
       </div>

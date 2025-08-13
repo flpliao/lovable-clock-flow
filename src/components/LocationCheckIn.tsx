@@ -60,30 +60,15 @@ const LocationCheckIn = () => {
     missedRequests: { request_type: string }[]
   ) => {
     const hasCheckIn = records?.[RequestType.CHECK_IN];
-    const hasCheckOut = records?.[RequestType.CHECK_OUT];
 
     // 檢查是否有對應的忘記打卡申請
     const hasMissedCheckIn = missedRequests.some(req => req.request_type === RequestType.CHECK_IN);
-    const hasMissedCheckOut = missedRequests.some(
-      req => req.request_type === RequestType.CHECK_OUT
-    );
 
-    // 上班卡邏輯
-    if (!hasCheckIn && !hasMissedCheckIn) {
-      // 沒有上班卡也沒有上班忘打卡申請 → 顯示上班打卡
-      setType(RequestType.CHECK_IN);
-    } else if (!hasCheckIn && hasMissedCheckIn) {
-      // 沒有上班卡但有上班忘打卡申請 → 顯示下班打卡
+    // 簡化邏輯：有上班相關記錄就顯示下班打卡，否則顯示上班打卡
+    if (hasCheckIn || hasMissedCheckIn) {
       setType(RequestType.CHECK_OUT);
-    } else if (hasCheckIn) {
-      // 有上班卡 → 檢查下班卡情況
-      if (hasCheckOut || hasMissedCheckOut) {
-        // 有下班卡或有下班忘打卡申請 → 今日已完成打卡
-        setType(RequestType.CHECK_OUT); // 保持下班打卡狀態，但實際不會顯示按鈕
-      } else {
-        // 沒有下班卡也沒有下班忘打卡申請 → 顯示下班打卡
-        setType(RequestType.CHECK_OUT);
-      }
+    } else {
+      setType(RequestType.CHECK_IN);
     }
   };
 

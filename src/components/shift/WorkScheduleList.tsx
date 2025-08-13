@@ -2,13 +2,14 @@ import { AddButton, DeleteButton, EditButton } from '@/components/common/buttons
 import { WorkScheduleStatus } from '@/constants/workSchedule';
 import { WorkSchedule } from '@/types/workSchedule';
 import { calculateOvertimeStartTime } from '@/utils/dateTimeUtils';
-import { Clock, Edit, Trash2 } from 'lucide-react';
+import { Clock, Copy, Edit, Trash2 } from 'lucide-react';
 
 interface WorkScheduleListProps {
   workSchedules: WorkSchedule[];
   onAddWorkSchedule?: () => void;
   onEditWorkSchedule?: (workSchedule: WorkSchedule) => void;
   onDeleteWorkSchedule?: (slug: string) => void;
+  onDuplicateWorkSchedule?: (workSchedule: WorkSchedule) => void; // 新增複製回調
 }
 
 const WorkScheduleList = ({
@@ -16,6 +17,7 @@ const WorkScheduleList = ({
   onAddWorkSchedule,
   onEditWorkSchedule,
   onDeleteWorkSchedule,
+  onDuplicateWorkSchedule,
 }: WorkScheduleListProps) => {
   const getStatusDisplay = (status: WorkScheduleStatus) => {
     switch (status) {
@@ -59,8 +61,8 @@ const WorkScheduleList = ({
                   <th className="px-3 py-2 text-left text-white/80 text-xs font-medium w-32">
                     加班起算時間
                   </th>
-                  {(onEditWorkSchedule || onDeleteWorkSchedule) && (
-                    <th className="px-3 py-2 text-left text-white/80 text-xs font-medium w-20">
+                  {(onEditWorkSchedule || onDeleteWorkSchedule || onDuplicateWorkSchedule) && (
+                    <th className="px-3 py-2 text-left text-white/80 text-xs font-medium w-24">
                       操作
                     </th>
                   )}
@@ -107,9 +109,18 @@ const WorkScheduleList = ({
                           )}
                         </div>
                       </td>
-                      {(onEditWorkSchedule || onDeleteWorkSchedule) && (
+                      {(onEditWorkSchedule || onDeleteWorkSchedule || onDuplicateWorkSchedule) && (
                         <td className="px-3 py-2">
                           <div className="flex gap-2">
+                            {onDuplicateWorkSchedule && (
+                              <button
+                                onClick={() => onDuplicateWorkSchedule(workSchedule)}
+                                className="h-6 w-6 p-0 border border-white/20 bg-transparent hover:bg-white/10 rounded flex items-center justify-center transition-colors"
+                                title="複製工作時程"
+                              >
+                                <Copy className="h-3 w-3 text-white/60 hover:text-white" />
+                              </button>
+                            )}
                             {onEditWorkSchedule && (
                               <EditButton
                                 onClick={() => onEditWorkSchedule(workSchedule)}
@@ -154,8 +165,17 @@ const WorkScheduleList = ({
                         {statusDisplay.text}
                       </span>
                     </div>
-                    {(onEditWorkSchedule || onDeleteWorkSchedule) && (
+                    {(onEditWorkSchedule || onDeleteWorkSchedule || onDuplicateWorkSchedule) && (
                       <div className="flex gap-1">
+                        {onDuplicateWorkSchedule && (
+                          <button
+                            onClick={() => onDuplicateWorkSchedule(workSchedule)}
+                            className="h-6 w-6 border border-white/20 bg-transparent hover:bg-white/10 rounded flex items-center justify-center transition-colors"
+                            title="複製工作時程"
+                          >
+                            <Copy className="h-3 w-3 text-white/60 hover:text-white" />
+                          </button>
+                        )}
                         {onEditWorkSchedule && (
                           <EditButton
                             onClick={() => onEditWorkSchedule(workSchedule)}

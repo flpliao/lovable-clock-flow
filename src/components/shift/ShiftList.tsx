@@ -37,6 +37,7 @@ const ShiftList = () => {
     handleCreateWorkSchedule,
     handleUpdateWorkSchedule,
     handleDeleteWorkSchedule,
+    handleDuplicateWorkSchedule,
   } = useShift();
 
   useEffect(() => {
@@ -213,6 +214,7 @@ const ShiftList = () => {
                         onAddWorkSchedule={() => handleAddWorkSchedule(shift.slug)}
                         onEditWorkSchedule={handleEditWorkSchedule}
                         onDeleteWorkSchedule={handleDeleteWorkScheduleConfirm}
+                        onDuplicateWorkSchedule={handleDuplicateWorkSchedule}
                       />
                     )}
                   </div>

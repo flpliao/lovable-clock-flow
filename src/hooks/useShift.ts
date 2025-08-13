@@ -13,7 +13,7 @@ import {
 } from '@/services/workScheduleService';
 import { useShiftStore } from '@/stores/shiftStore';
 import { CreateShiftData, UpdateShiftData } from '@/types/shift';
-import { CreateWorkScheduleData, UpdateWorkScheduleData } from '@/types/workSchedule';
+import { CreateWorkScheduleData, UpdateWorkScheduleData, WorkSchedule } from '@/types/workSchedule';
 import { useState } from 'react';
 
 export const useShift = () => {
@@ -146,6 +146,39 @@ export const useShift = () => {
     return success;
   };
 
+  // 複製工作時程
+  const handleDuplicateWorkSchedule = async (workSchedule: WorkSchedule) => {
+    // 找到包含此 workSchedule 的 shift
+    const shift = shifts.find(s => s.work_schedules?.some(ws => ws.slug === workSchedule.slug));
+    if (!shift) {
+      throw new Error('找不到對應的班次');
+    }
+
+    // 建立複製的資料，移除 id 和 slug，讓後端生成新的
+    const duplicateData: CreateWorkScheduleData = {
+      shift_slug: shift.slug,
+      clock_in_time: workSchedule.clock_in_time,
+      clock_out_time: workSchedule.clock_out_time,
+      status: workSchedule.status,
+      ot_start_after_hours: workSchedule.ot_start_after_hours,
+      ot_start_after_minutes: workSchedule.ot_start_after_minutes,
+    };
+
+    const newWorkSchedule = await createWorkScheduleService(duplicateData);
+    if (newWorkSchedule) {
+      // 更新對應的 shift 中的 work_schedules
+      const updatedWorkSchedules = [...(shift.work_schedules || []), newWorkSchedule];
+      const updatedShift = {
+        ...shift,
+        work_schedules: updatedWorkSchedules,
+        cycle_days: updatedWorkSchedules.length, // 更新週期天數
+      };
+      setShift(shift.slug, updatedShift);
+    }
+
+    return newWorkSchedule;
+  };
+
   return {
     // 狀態
     shifts,
@@ -164,5 +197,6 @@ export const useShift = () => {
     handleCreateWorkSchedule,
     handleUpdateWorkSchedule,
     handleDeleteWorkSchedule,
+    handleDuplicateWorkSchedule,
   };
 };

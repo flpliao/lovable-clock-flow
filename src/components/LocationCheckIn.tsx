@@ -13,10 +13,11 @@ import { useToast } from '@/hooks/useToast';
 import {
   createIpCheckInRecord,
   createLocationCheckInRecord,
-  getTodayCheckInRecords,
+  getCheckInRecords,
 } from '@/services/checkInService';
 import { CheckInRecord } from '@/types';
 
+import dayjs from 'dayjs';
 import { Clock } from 'lucide-react';
 import NearestCheckInPointInfo from './check-in/NearestCheckInPointInfo';
 
@@ -28,17 +29,14 @@ const LocationCheckIn = () => {
   const [type, setType] = useState<RequestType.CHECK_IN | RequestType.CHECK_OUT>(
     RequestType.CHECK_IN
   );
-  const [todayRecords, setTodayRecords] = useState<{
-    [RequestType.CHECK_IN]?: CheckInRecord;
-    [RequestType.CHECK_OUT]?: CheckInRecord;
-  }>({});
+  const [todayRecords, setTodayRecords] = useState<CheckInRecord[]>([]);
   const { todayRequests, loadMyMissedCheckInRequests } = useMyMissedCheckInRequests();
 
   // 自動載入今日打卡紀錄和忘記打卡申請
   useEffect(() => {
     const fetchTodayData = async () => {
       // 載入今日打卡紀錄
-      const records = await getTodayCheckInRecords();
+      const records = await getCheckInRecords(dayjs().format('YYYY-MM-DD'));
       setTodayRecords(records);
     };
 
@@ -53,13 +51,10 @@ const LocationCheckIn = () => {
 
   // 決定打卡類型的邏輯
   const determineCheckInType = (
-    records: {
-      [RequestType.CHECK_IN]?: CheckInRecord;
-      [RequestType.CHECK_OUT]?: CheckInRecord;
-    },
+    records: CheckInRecord[],
     missedRequests: { request_type: string }[]
   ) => {
-    const hasCheckIn = records?.[RequestType.CHECK_IN];
+    const hasCheckIn = records.find(r => r.type === RequestType.CHECK_IN);
 
     // 檢查是否有對應的忘記打卡申請
     const hasMissedCheckIn = missedRequests.some(req => req.request_type === RequestType.CHECK_IN);
@@ -114,7 +109,7 @@ const LocationCheckIn = () => {
 
   const handleCheckIn = (result: CheckInRecord) => {
     // 更新 todayRecords
-    const newRecords = { ...todayRecords, [result.type]: result };
+    const newRecords = [...todayRecords, result];
     setTodayRecords(newRecords);
 
     toast({
@@ -128,9 +123,9 @@ const LocationCheckIn = () => {
 
   // 檢查今日是否已完成打卡（包括實際打卡和忘記打卡申請）
   const hasCompletedToday =
-    (todayRecords?.[RequestType.CHECK_IN] ||
+    (todayRecords.find(r => r.type === RequestType.CHECK_IN) ||
       todayRequests.some(req => req.request_type === RequestType.CHECK_IN)) &&
-    (todayRecords?.[RequestType.CHECK_OUT] ||
+    (todayRecords.find(r => r.type === RequestType.CHECK_OUT) ||
       todayRequests.some(req => req.request_type === RequestType.CHECK_OUT));
 
   // 如果已完成今日打卡，顯示完成狀態
@@ -139,8 +134,8 @@ const LocationCheckIn = () => {
       <div className="flex justify-center items-center w-full min-h-[180px]">
         <div className="max-w-md w-full mx-4">
           <CheckInCompletedStatus
-            checkIn={todayRecords?.[RequestType.CHECK_IN]}
-            checkOut={todayRecords?.[RequestType.CHECK_OUT]}
+            checkIn={todayRecords.find(r => r.type === RequestType.CHECK_IN)}
+            checkOut={todayRecords.find(r => r.type === RequestType.CHECK_OUT)}
             hasMissedCheckIn={todayRequests.some(req => req.request_type === RequestType.CHECK_IN)}
             hasMissedCheckOut={todayRequests.some(
               req => req.request_type === RequestType.CHECK_OUT
@@ -161,7 +156,7 @@ const LocationCheckIn = () => {
           <span className="text-lg font-semibold drop-shadow-md">打卡</span>
         </div>
         <CheckInStatus
-          checkIn={todayRecords?.[RequestType.CHECK_IN]}
+          checkIn={todayRecords.find(r => r.type === RequestType.CHECK_IN)}
           hasMissedCheckIn={todayRequests.some(req => req.request_type === RequestType.CHECK_IN)}
         />
         <CheckInMethodSelector

@@ -28,10 +28,10 @@ export const splitCheckInRecords = (records: CheckInRecord[]) => {
 };
 
 // 取得打卡記錄
-export const getCheckInRecords = async (date?: string): Promise<CheckInRecord[]> => {
+export const getCheckInRecords = async (created_at?: string): Promise<CheckInRecord[]> => {
   const { data, status } = await callApiAndDecode(
     axiosWithEmployeeAuth().get(`${apiRoutes.checkin.index}`, {
-      params: date ? { date } : {},
+      params: created_at ? { created_at } : {},
     })
   );
   return status === ApiResponseStatus.SUCCESS ? (data as CheckInRecord[]) : [];

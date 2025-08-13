@@ -8,13 +8,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
 import { Textarea } from '@/components/ui/textarea';
 import { REQUEST_TYPE_LABELS, RequestType } from '@/constants/checkInTypes';
 import useLoadingAction from '@/hooks/useLoadingAction';
@@ -56,9 +50,14 @@ export type MissedCheckInFormData = z.infer<typeof missedCheckInSchema>;
 interface MissedCheckInFormProps {
   onSuccess: () => void;
   onCancel: () => void;
+  defaultRequestType?: RequestType;
 }
 
-const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({ onSuccess, onCancel }) => {
+const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
+  onSuccess,
+  onCancel,
+  defaultRequestType = RequestType.CHECK_IN,
+}) => {
   const { handleCreateMyMissedCheckInRequest } = useMyMissedCheckInRequests();
   const { wrappedAction: handleSubmitAction, isLoading } = useLoadingAction(
     async (data: MissedCheckInFormData) => {
@@ -82,12 +81,17 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({ onSuccess, onCanc
     resolver: zodResolver(missedCheckInSchema),
     defaultValues: {
       request_date: dayjs().format('YYYY-MM-DD'),
-      request_type: RequestType.CHECK_IN,
+      request_type: defaultRequestType,
       check_in_time: '',
       check_out_time: '',
       reason: '',
     },
   });
+
+  // 確保表單的 request_type 始終與 defaultRequestType 同步
+  React.useEffect(() => {
+    form.setValue('request_type', defaultRequestType);
+  }, [defaultRequestType, form]);
 
   const handleCancel = () => {
     form.reset();
@@ -117,31 +121,13 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({ onSuccess, onCanc
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="request_type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-muted-foreground text-sm">申請類型</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger className="bg-background border-input text-foreground">
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value={RequestType.CHECK_IN}>
-                    {REQUEST_TYPE_LABELS[RequestType.CHECK_IN]}
-                  </SelectItem>
-                  <SelectItem value={RequestType.CHECK_OUT}>
-                    {REQUEST_TYPE_LABELS[RequestType.CHECK_OUT]}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* 申請類型顯示（不可編輯） */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-muted-foreground">申請類型</label>
+          <div className="p-3 bg-muted rounded-md border">
+            <span className="text-sm font-medium">{REQUEST_TYPE_LABELS[defaultRequestType]}</span>
+          </div>
+        </div>
 
         {requestType === RequestType.CHECK_IN && (
           <FormField

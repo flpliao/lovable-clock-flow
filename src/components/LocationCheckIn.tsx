@@ -167,7 +167,9 @@ const LocationCheckIn = () => {
           disabled={noAvailableCheckInPoint}
         />
         <div className="flex justify-center">
-          <MissedCheckInDialog />
+          <MissedCheckInDialog
+            hasCheckInToday={!!todayRecords.find(r => r.type === RequestType.CHECK_IN)}
+          />
         </div>
       </div>
     </div>

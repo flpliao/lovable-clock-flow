@@ -6,16 +6,26 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { RequestType } from '@/constants/checkInTypes';
 import { Calendar, Clock } from 'lucide-react';
 import React, { useState } from 'react';
 import MissedCheckInForm from './components/MissedCheckInForm';
 
 interface MissedCheckInDialogProps {
   onSubmit?: () => void;
+  // 當前打卡狀態
+  hasCheckInToday: boolean;
 }
 
-const MissedCheckInDialog: React.FC<MissedCheckInDialogProps> = ({ onSubmit }) => {
+const MissedCheckInDialog: React.FC<MissedCheckInDialogProps> = ({ onSubmit, hasCheckInToday }) => {
   const [open, setOpen] = useState(false);
+
+  // 根據當前打卡狀態智能判斷預設申請類型
+  const getDefaultRequestType = (): RequestType => {
+    if (!hasCheckInToday) {
+      return RequestType.CHECK_IN; // 沒有上班卡，預設申請上班打卡
+    } else return RequestType.CHECK_OUT; // 有上班卡但沒有下班卡，預設申請下班打卡
+  };
 
   const handleClose = () => {
     setOpen(false);
@@ -46,7 +56,11 @@ const MissedCheckInDialog: React.FC<MissedCheckInDialogProps> = ({ onSubmit }) =
           </DialogTitle>
         </DialogHeader>
 
-        <MissedCheckInForm onSuccess={handleSuccess} onCancel={handleClose} />
+        <MissedCheckInForm
+          onSuccess={handleSuccess}
+          onCancel={handleClose}
+          defaultRequestType={getDefaultRequestType()}
+        />
       </DialogContent>
     </Dialog>
   );

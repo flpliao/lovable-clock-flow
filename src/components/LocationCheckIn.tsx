@@ -12,7 +12,8 @@ import { useCheckInRecords } from '@/hooks/useCheckInRecords';
 import { useMyMissedCheckInRequests } from '@/hooks/useMyMissedCheckInRequests';
 import { useToast } from '@/hooks/useToast';
 import { createIpCheckInRecord, createLocationCheckInRecord } from '@/services/checkInService';
-import { CheckInRecord } from '@/types';
+import type { CheckInRecord } from '@/types/checkIn';
+import type { MissedCheckInRequest } from '@/types/missedCheckInRequest';
 
 import { Clock } from 'lucide-react';
 import NearestCheckInPointInfo from './check-in/NearestCheckInPointInfo';
@@ -25,6 +26,10 @@ const LocationCheckIn = () => {
   const [type, setType] = useState<RequestType.CHECK_IN | RequestType.CHECK_OUT>(
     RequestType.CHECK_IN
   );
+  const [checkIn, setCheckIn] = useState<CheckInRecord | null>(null);
+  const [checkOut, setCheckOut] = useState<CheckInRecord | null>(null);
+  const [missedCheckIn, setMissedCheckIn] = useState<MissedCheckInRequest | null>(null);
+  const [missedCheckOut, setMissedCheckOut] = useState<MissedCheckInRequest | null>(null);
   const {
     records: todayRecords,
     loadTodayCheckInRecords,
@@ -48,13 +53,21 @@ const LocationCheckIn = () => {
     records: CheckInRecord[],
     missedRequests: { request_type: string }[]
   ) => {
-    const hasCheckIn = records.find(r => r.type === RequestType.CHECK_IN);
+    const checkIn = records.find(r => r.type === RequestType.CHECK_IN);
+    setCheckIn(checkIn);
 
     // 檢查是否有對應的忘記打卡申請
-    const hasMissedCheckIn = missedRequests.some(req => req.request_type === RequestType.CHECK_IN);
+    const missedCheckIn = missedRequests.find(req => req.request_type === RequestType.CHECK_IN);
+    setMissedCheckIn(missedCheckIn as MissedCheckInRequest);
+
+    const checkOut = records.find(r => r.type === RequestType.CHECK_OUT);
+    setCheckOut(checkOut);
+
+    const missedCheckOut = missedRequests.find(req => req.request_type === RequestType.CHECK_OUT);
+    setMissedCheckOut(missedCheckOut as MissedCheckInRequest);
 
     // 簡化邏輯：有上班相關記錄就顯示下班打卡，否則顯示上班打卡
-    if (hasCheckIn || hasMissedCheckIn) {
+    if (checkIn || missedCheckIn) {
       setType(RequestType.CHECK_OUT);
     } else {
       setType(RequestType.CHECK_IN);
@@ -114,25 +127,16 @@ const LocationCheckIn = () => {
   const noAvailableCheckInPoint =
     checkInMethod === 'location' && (!checkInPoints || checkInPoints.length === 0);
 
-  // 檢查今日是否已完成打卡（包括實際打卡和忘記打卡申請）
-  const hasCompletedToday =
-    (todayRecords.find(r => r.type === RequestType.CHECK_IN) ||
-      todayRequests.some(req => req.request_type === RequestType.CHECK_IN)) &&
-    (todayRecords.find(r => r.type === RequestType.CHECK_OUT) ||
-      todayRequests.some(req => req.request_type === RequestType.CHECK_OUT));
-
   // 如果已完成今日打卡，顯示完成狀態
-  if (hasCompletedToday) {
+  if ((checkIn || missedCheckIn) && (checkOut || missedCheckOut)) {
     return (
       <div className="flex justify-center items-center w-full min-h-[180px]">
         <div className="max-w-md w-full mx-4">
           <CheckInCompletedStatus
-            checkIn={todayRecords.find(r => r.type === RequestType.CHECK_IN)}
-            checkOut={todayRecords.find(r => r.type === RequestType.CHECK_OUT)}
-            hasMissedCheckIn={todayRequests.some(req => req.request_type === RequestType.CHECK_IN)}
-            hasMissedCheckOut={todayRequests.some(
-              req => req.request_type === RequestType.CHECK_OUT
-            )}
+            checkIn={checkIn}
+            checkOut={checkOut}
+            missedCheckInRequest={missedCheckIn}
+            missedCheckOutRequest={missedCheckOut}
           />
         </div>
       </div>
@@ -148,10 +152,7 @@ const LocationCheckIn = () => {
           </div>
           <span className="text-lg font-semibold drop-shadow-md">打卡</span>
         </div>
-        <CheckInStatus
-          checkIn={todayRecords.find(r => r.type === RequestType.CHECK_IN)}
-          hasMissedCheckIn={todayRequests.some(req => req.request_type === RequestType.CHECK_IN)}
-        />
+        <CheckInStatus checkIn={checkIn} missedCheckInRequest={missedCheckIn} />
         <CheckInMethodSelector
           checkInMethod={checkInMethod}
           setCheckInMethod={setCheckInMethod}
@@ -167,9 +168,7 @@ const LocationCheckIn = () => {
           disabled={noAvailableCheckInPoint}
         />
         <div className="flex justify-center">
-          <MissedCheckInDialog
-            hasCheckInToday={!!todayRecords.find(r => r.type === RequestType.CHECK_IN)}
-          />
+          <MissedCheckInDialog type={type} />
         </div>
       </div>
     </div>

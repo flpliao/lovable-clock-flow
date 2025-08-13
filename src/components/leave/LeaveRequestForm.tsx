@@ -1,12 +1,6 @@
 import { SubmitButton } from '@/components/common/buttons';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import CustomFormLabel from '@/components/common/CustomFormLabel';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import { Textarea } from '@/components/ui/textarea';
 import { useLeaveType } from '@/hooks/useLeaveType';
@@ -123,7 +117,9 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
             name="leave_type_code"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-white">假別</FormLabel>
+                <CustomFormLabel required className="text-white">
+                  假別
+                </CustomFormLabel>
                 <FormControl>
                   <SearchableSelect
                     options={leaveTypes.map(type => ({
@@ -157,7 +153,9 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
               name="start_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel className="text-white">開始日期時間</FormLabel>
+                  <CustomFormLabel required className="text-white">
+                    開始日期時間
+                  </CustomFormLabel>
                   <FormControl>
                     <input
                       type="datetime-local"
@@ -180,7 +178,9 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
               name="end_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel className="text-white">結束日期時間</FormLabel>
+                  <CustomFormLabel required className="text-white">
+                    結束日期時間
+                  </CustomFormLabel>
                   <FormControl>
                     <input
                       type="datetime-local"
@@ -218,7 +218,9 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
             name="reason"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-white">事由說明</FormLabel>
+                <CustomFormLabel required className="text-white">
+                  事由說明
+                </CustomFormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="請輸入請假事由..."
@@ -239,7 +241,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
               name="attachment"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white">附件上傳</FormLabel>
+                  <CustomFormLabel className="text-white">附件上傳</CustomFormLabel>
                   <FormControl>
                     <input
                       type="file"

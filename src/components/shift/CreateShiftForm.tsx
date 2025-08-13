@@ -1,4 +1,5 @@
 import { CancelButton, SaveButton } from '@/components/common/buttons';
+import CustomFormLabel from '@/components/common/CustomFormLabel';
 import {
   Dialog,
   DialogContent,
@@ -6,14 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import useLoadingAction from '@/hooks/useLoadingAction';
 import { CreateShiftData } from '@/types/shift';
@@ -68,7 +62,7 @@ const CreateShiftForm = ({ open, onOpenChange, onSubmit }: CreateShiftFormProps)
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-base">新增班次</DialogTitle>
@@ -84,7 +78,7 @@ const CreateShiftForm = ({ open, onOpenChange, onSubmit }: CreateShiftFormProps)
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground">班次名稱</FormLabel>
+                    <CustomFormLabel required>班次名稱</CustomFormLabel>
                     <FormControl>
                       <Input
                         {...field}
@@ -102,7 +96,7 @@ const CreateShiftForm = ({ open, onOpenChange, onSubmit }: CreateShiftFormProps)
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground">班次代碼</FormLabel>
+                    <CustomFormLabel required>班次代碼</CustomFormLabel>
                     <FormControl>
                       <Input
                         {...field}
@@ -123,7 +117,7 @@ const CreateShiftForm = ({ open, onOpenChange, onSubmit }: CreateShiftFormProps)
                 name="day_cut_time"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground">日切時間</FormLabel>
+                    <CustomFormLabel required>日切時間</CustomFormLabel>
                     <FormControl>
                       <Input
                         type="time"
@@ -141,12 +135,12 @@ const CreateShiftForm = ({ open, onOpenChange, onSubmit }: CreateShiftFormProps)
                 name="color"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground">顏色</FormLabel>
+                    <CustomFormLabel required>顏色</CustomFormLabel>
                     <FormControl>
                       <Input
                         type="color"
                         {...field}
-                        className="bg-background border-input text-foreground h-12"
+                        className="bg-background border-input text-foreground"
                       />
                     </FormControl>
                     <FormMessage />

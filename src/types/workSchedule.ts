@@ -35,10 +35,10 @@ export interface CreateWorkScheduleData {
   shift_slug?: string;
   slug?: string;
   status: WorkScheduleStatus;
-  clock_in_time: string;
-  clock_out_time: string;
-  ot_start_after_hours: number;
-  ot_start_after_minutes: number;
+  clock_in_time?: string;
+  clock_out_time?: string;
+  ot_start_after_hours?: number;
+  ot_start_after_minutes?: number;
   break1_start?: string;
   break1_end?: string;
   break2_start?: string;
@@ -63,24 +63,37 @@ export interface UpdateWorkScheduleData {
 }
 
 // 表單驗證 Schema
-export const createWorkScheduleSchema = z.object({
-  status: z.enum([WorkScheduleStatus.WORK, WorkScheduleStatus.OFF]),
-  clock_in_time: z.string().min(1, '上班時間為必填'),
-  clock_out_time: z.string().min(1, '下班時間為必填'),
-  ot_start_after_hours: z.coerce
-    .number()
-    .min(0, '加班開始小時不能小於0')
-    .max(23, '加班開始小時不能大於23'),
-  ot_start_after_minutes: z.coerce
-    .number()
-    .min(0, '加班開始分鐘不能小於0')
-    .max(59, '加班開始分鐘不能大於59'),
-  break1_start: z.string().optional(),
-  break1_end: z.string().optional(),
-  break2_start: z.string().optional(),
-  break2_end: z.string().optional(),
-  break3_start: z.string().optional(),
-  break3_end: z.string().optional(),
-});
+export const createWorkScheduleSchema = z
+  .object({
+    status: z.enum([WorkScheduleStatus.WORK, WorkScheduleStatus.OFF]),
+    clock_in_time: z.string().optional(),
+    clock_out_time: z.string().optional(),
+    ot_start_after_hours: z.coerce.number().optional(),
+    ot_start_after_minutes: z.coerce.number().optional(),
+    break1_start: z.string().optional(),
+    break1_end: z.string().optional(),
+    break2_start: z.string().optional(),
+    break2_end: z.string().optional(),
+    break3_start: z.string().optional(),
+    break3_end: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.status === WorkScheduleStatus.WORK) {
+      if (!data.clock_in_time) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '請填寫上班時間',
+          path: ['clock_in_time'],
+        });
+      }
+      if (!data.clock_out_time) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '請填寫下班時間',
+          path: ['clock_out_time'],
+        });
+      }
+    }
+  });
 
 export type CreateWorkScheduleFormData = z.infer<typeof createWorkScheduleSchema>;

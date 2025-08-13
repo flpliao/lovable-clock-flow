@@ -1,0 +1,231 @@
+import { CancelButton, SubmitButton } from '@/components/common/buttons';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { REQUEST_TYPE_LABELS, RequestType } from '@/constants/checkInTypes';
+import useLoadingAction from '@/hooks/useLoadingAction';
+import { createMissedCheckInRequest } from '@/services/missedCheckInRequestService';
+import { zodResolver } from '@hookform/resolvers/zod';
+import dayjs from 'dayjs';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import TimeInput from './TimeInput';
+
+// 表單驗證 schema
+const missedCheckInSchema = z
+  .object({
+    request_date: z.string().min(1, '請選擇申請日期'),
+    request_type: z.nativeEnum(RequestType),
+    check_in_time: z.string().optional(),
+    check_out_time: z.string().optional(),
+    reason: z.string().min(1, '請填寫申請原因'),
+  })
+  .refine(
+    data => {
+      if (data.request_type === RequestType.CHECK_IN && !data.check_in_time) {
+        return false;
+      }
+      if (data.request_type === RequestType.CHECK_OUT && !data.check_out_time) {
+        return false;
+      }
+      if (data.request_type === RequestType.BOTH && (!data.check_in_time || !data.check_out_time)) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: '請填寫對應的時間',
+      path: ['check_in_time', 'check_out_time'],
+    }
+  );
+
+export type MissedCheckInFormData = z.infer<typeof missedCheckInSchema>;
+
+interface MissedCheckInFormProps {
+  onSuccess: () => void;
+  onCancel: () => void;
+}
+
+const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({ onSuccess, onCancel }) => {
+  const { wrappedAction: handleSubmitAction, isLoading } = useLoadingAction(
+    async (data: MissedCheckInFormData) => {
+      // 調用 API 建立忘記打卡申請
+      const result = await createMissedCheckInRequest({
+        request_date: data.request_date,
+        request_type: data.request_type,
+        check_in_time: data.check_in_time,
+        check_out_time: data.check_out_time,
+        reason: data.reason,
+      });
+
+      if (result) {
+        form.reset();
+        onSuccess();
+      }
+    }
+  );
+
+  const form = useForm<MissedCheckInFormData>({
+    resolver: zodResolver(missedCheckInSchema),
+    defaultValues: {
+      request_date: dayjs().format('YYYY-MM-DD'),
+      request_type: RequestType.CHECK_IN,
+      check_in_time: '',
+      check_out_time: '',
+      reason: '',
+    },
+  });
+
+  const handleCancel = () => {
+    form.reset();
+    onCancel();
+  };
+
+  const requestType = form.watch('request_type');
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmitAction)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="request_date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-muted-foreground text-sm">申請日期</FormLabel>
+              <FormControl>
+                <Input
+                  type="date"
+                  {...field}
+                  className="bg-background border-input text-foreground"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="request_type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-muted-foreground text-sm">申請類型</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger className="bg-background border-input text-foreground">
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value={RequestType.CHECK_IN}>
+                    {REQUEST_TYPE_LABELS[RequestType.CHECK_IN]}
+                  </SelectItem>
+                  <SelectItem value={RequestType.CHECK_OUT}>
+                    {REQUEST_TYPE_LABELS[RequestType.CHECK_OUT]}
+                  </SelectItem>
+                  <SelectItem value={RequestType.BOTH}>
+                    {REQUEST_TYPE_LABELS[RequestType.BOTH]}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {(requestType === RequestType.CHECK_IN || requestType === RequestType.BOTH) && (
+          <FormField
+            control={form.control}
+            name="check_in_time"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-muted-foreground text-sm">上班時間</FormLabel>
+                <FormControl>
+                  <TimeInput
+                    id="check_in_time"
+                    label="上班時間"
+                    value={field.value || ''}
+                    onChange={value => field.onChange(value)}
+                    required={
+                      requestType === RequestType.CHECK_IN || requestType === RequestType.BOTH
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {(requestType === RequestType.CHECK_OUT || requestType === RequestType.BOTH) && (
+          <FormField
+            control={form.control}
+            name="check_out_time"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-muted-foreground text-sm">下班時間</FormLabel>
+                <FormControl>
+                  <TimeInput
+                    id="check_out_time"
+                    label="下班時間"
+                    value={field.value || ''}
+                    onChange={value => field.onChange(value)}
+                    required={
+                      requestType === RequestType.CHECK_OUT || requestType === RequestType.BOTH
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        <FormField
+          control={form.control}
+          name="reason"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-muted-foreground text-sm">申請原因</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="請說明忘記打卡的原因..."
+                  {...field}
+                  rows={3}
+                  className="bg-background border-input text-foreground"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex justify-end space-x-2 pt-4">
+          <CancelButton onClick={handleCancel} disabled={isLoading}>
+            取消
+          </CancelButton>
+          <SubmitButton isLoading={isLoading} loadingText="提交中..." disabled={isLoading}>
+            提交申請
+          </SubmitButton>
+        </div>
+      </form>
+    </Form>
+  );
+};
+
+export default MissedCheckInForm;

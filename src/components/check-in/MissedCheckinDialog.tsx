@@ -1,44 +1,31 @@
-
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Calendar, Clock } from 'lucide-react';
-import MissedCheckinFormFields from './components/MissedCheckinFormFields';
-import { useMissedCheckinForm } from './hooks/useMissedCheckinForm';
+import React, { useState } from 'react';
+import MissedCheckInForm from './components/MissedCheckInForm';
 
-interface MissedCheckinDialogProps {
-  onSuccess: () => void;
-}
-
-const MissedCheckinDialog: React.FC<MissedCheckinDialogProps> = ({ onSuccess }) => {
+const MissedCheckinDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
-  
-  const {
-    formData,
-    loading,
-    updateFormData,
-    submitForm,
-    resetForm
-  } = useMissedCheckinForm(() => {
-    setOpen(false);
-    onSuccess();
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await submitForm();
-  };
 
   const handleClose = () => {
     setOpen(false);
-    resetForm();
+  };
+
+  const handleSuccess = () => {
+    handleClose();
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="sm"
           className="bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200 whitespace-nowrap"
         >
@@ -53,26 +40,8 @@ const MissedCheckinDialog: React.FC<MissedCheckinDialogProps> = ({ onSuccess }) 
             忘記打卡申請
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <MissedCheckinFormFields
-            formData={formData}
-            onFormDataChange={updateFormData}
-          />
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={loading}
-            >
-              取消
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? '提交中...' : '提交申請'}
-            </Button>
-          </div>
-        </form>
+        <MissedCheckInForm onSuccess={handleSuccess} onCancel={handleClose} />
       </DialogContent>
     </Dialog>
   );

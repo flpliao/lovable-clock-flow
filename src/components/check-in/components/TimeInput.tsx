@@ -1,8 +1,7 @@
-
-import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Clock } from 'lucide-react';
+import React from 'react';
 
 interface TimeInputProps {
   id: string;
@@ -12,13 +11,7 @@ interface TimeInputProps {
   required?: boolean;
 }
 
-const TimeInput: React.FC<TimeInputProps> = ({
-  id,
-  label,
-  value,
-  onChange,
-  required = false
-}) => {
+const TimeInput: React.FC<TimeInputProps> = ({ id, label, value, onChange, required = false }) => {
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
@@ -27,7 +20,7 @@ const TimeInput: React.FC<TimeInputProps> = ({
           id={id}
           type="time"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={e => onChange(e.target.value)}
           required={required}
           className="pl-10"
         />

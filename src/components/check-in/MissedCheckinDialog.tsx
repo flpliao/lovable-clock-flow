@@ -10,7 +10,11 @@ import { Calendar, Clock } from 'lucide-react';
 import React, { useState } from 'react';
 import MissedCheckInForm from './components/MissedCheckInForm';
 
-const MissedCheckInDialog: React.FC = () => {
+interface MissedCheckInDialogProps {
+  onSubmit?: () => void;
+}
+
+const MissedCheckInDialog: React.FC<MissedCheckInDialogProps> = ({ onSubmit }) => {
   const [open, setOpen] = useState(false);
 
   const handleClose = () => {
@@ -19,6 +23,7 @@ const MissedCheckInDialog: React.FC = () => {
 
   const handleSuccess = () => {
     handleClose();
+    onSubmit?.();
   };
 
   return (

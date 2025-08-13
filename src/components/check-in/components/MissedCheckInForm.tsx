@@ -18,7 +18,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { REQUEST_TYPE_LABELS, RequestType } from '@/constants/checkInTypes';
 import useLoadingAction from '@/hooks/useLoadingAction';
-import { createMissedCheckInRequest } from '@/services/missedCheckInRequestService';
+import { useMyMissedCheckInRequests } from '@/hooks/useMyMissedCheckInRequests';
 import { zodResolver } from '@hookform/resolvers/zod';
 import dayjs from 'dayjs';
 import React from 'react';
@@ -43,9 +43,6 @@ const missedCheckInSchema = z
       if (data.request_type === RequestType.CHECK_OUT && !data.check_out_time) {
         return false;
       }
-      if (data.request_type === RequestType.BOTH && (!data.check_in_time || !data.check_out_time)) {
-        return false;
-      }
       return true;
     },
     {
@@ -62,10 +59,11 @@ interface MissedCheckInFormProps {
 }
 
 const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({ onSuccess, onCancel }) => {
+  const { handleCreateMyMissedCheckInRequest } = useMyMissedCheckInRequests();
   const { wrappedAction: handleSubmitAction, isLoading } = useLoadingAction(
     async (data: MissedCheckInFormData) => {
       // 調用 API 建立忘記打卡申請
-      const result = await createMissedCheckInRequest({
+      const result = await handleCreateMyMissedCheckInRequest({
         request_date: data.request_date,
         request_type: data.request_type,
         check_in_time: data.check_in_time,
@@ -138,9 +136,6 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({ onSuccess, onCanc
                   <SelectItem value={RequestType.CHECK_OUT}>
                     {REQUEST_TYPE_LABELS[RequestType.CHECK_OUT]}
                   </SelectItem>
-                  <SelectItem value={RequestType.BOTH}>
-                    {REQUEST_TYPE_LABELS[RequestType.BOTH]}
-                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -148,7 +143,7 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({ onSuccess, onCanc
           )}
         />
 
-        {(requestType === RequestType.CHECK_IN || requestType === RequestType.BOTH) && (
+        {requestType === RequestType.CHECK_IN && (
           <FormField
             control={form.control}
             name="check_in_time"
@@ -161,9 +156,7 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({ onSuccess, onCanc
                     label="上班時間"
                     value={field.value || ''}
                     onChange={value => field.onChange(value)}
-                    required={
-                      requestType === RequestType.CHECK_IN || requestType === RequestType.BOTH
-                    }
+                    required={requestType === RequestType.CHECK_IN}
                   />
                 </FormControl>
                 <FormMessage />
@@ -172,7 +165,7 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({ onSuccess, onCanc
           />
         )}
 
-        {(requestType === RequestType.CHECK_OUT || requestType === RequestType.BOTH) && (
+        {requestType === RequestType.CHECK_OUT && (
           <FormField
             control={form.control}
             name="check_out_time"
@@ -185,9 +178,7 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({ onSuccess, onCanc
                     label="下班時間"
                     value={field.value || ''}
                     onChange={value => field.onChange(value)}
-                    required={
-                      requestType === RequestType.CHECK_OUT || requestType === RequestType.BOTH
-                    }
+                    required={requestType === RequestType.CHECK_OUT}
                   />
                 </FormControl>
                 <FormMessage />

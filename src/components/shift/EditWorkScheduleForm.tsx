@@ -25,12 +25,8 @@ import {
 } from '@/components/ui/select';
 import { WorkScheduleStatus } from '@/constants/workSchedule';
 import useLoadingAction from '@/hooks/useLoadingAction';
-import {
-  CreateWorkScheduleFormData,
-  createWorkScheduleSchema,
-  UpdateWorkScheduleData,
-  WorkSchedule,
-} from '@/types/workSchedule';
+import { CreateWorkScheduleFormData, createWorkScheduleSchema } from '@/schemas/workSchedule';
+import type { UpdateWorkScheduleData, WorkSchedule } from '@/types/workSchedule';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';

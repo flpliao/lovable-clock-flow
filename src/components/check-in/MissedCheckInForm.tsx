@@ -1,12 +1,6 @@
 import { CancelButton, SubmitButton } from '@/components/common/buttons';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import CustomFormLabel from '@/components/common/CustomFormLabel';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
 import { Textarea } from '@/components/ui/textarea';
@@ -26,23 +20,25 @@ const missedCheckInSchema = z
     request_type: z.nativeEnum(RequestType),
     check_in_time: z.string().optional(),
     check_out_time: z.string().optional(),
-    reason: z.string().min(1, '請填寫申請原因'),
+    reason: z.string().optional(),
   })
-  .refine(
-    data => {
-      if (data.request_type === RequestType.CHECK_IN && !data.check_in_time) {
-        return false;
-      }
-      if (data.request_type === RequestType.CHECK_OUT && !data.check_out_time) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: '請填寫對應的時間',
-      path: ['check_in_time', 'check_out_time'],
+  .superRefine((data, ctx) => {
+    if (data.request_type === RequestType.CHECK_IN && !data.check_in_time) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: '請填寫上班時間',
+        path: ['check_in_time'],
+      });
     }
-  );
+
+    if (data.request_type === RequestType.CHECK_OUT && !data.check_out_time) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: '請填寫下班時間',
+        path: ['check_out_time'],
+      });
+    }
+  });
 
 export type MissedCheckInFormData = z.infer<typeof missedCheckInSchema>;
 
@@ -107,7 +103,7 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
           name="request_date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-muted-foreground">申請日期</FormLabel>
+              <CustomFormLabel required>申請日期</CustomFormLabel>
               <FormControl>
                 <Input
                   type="date"
@@ -122,7 +118,7 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
 
         {/* 申請類型顯示（不可編輯） */}
         <div className="space-y-2">
-          <FormLabel className="text-muted-foreground">申請類型</FormLabel>
+          <CustomFormLabel>申請類型</CustomFormLabel>
           <div className="p-3 bg-muted rounded-md border">
             <span className="text-sm text-muted-foreground font-medium">
               {REQUEST_TYPE_LABELS[defaultRequestType]}
@@ -136,7 +132,7 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
             name="check_in_time"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-muted-foreground">上班時間</FormLabel>
+                <CustomFormLabel required>上班時間</CustomFormLabel>
                 <FormControl>
                   <Input
                     type="time"
@@ -156,7 +152,7 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
             name="check_out_time"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-muted-foreground">下班時間</FormLabel>
+                <CustomFormLabel required>下班時間</CustomFormLabel>
                 <FormControl>
                   <Input
                     type="time"
@@ -175,7 +171,7 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
           name="reason"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-muted-foreground">申請原因</FormLabel>
+              <CustomFormLabel>申請原因</CustomFormLabel>
               <FormControl>
                 <Textarea
                   placeholder="請說明忘記打卡的原因..."

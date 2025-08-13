@@ -1,4 +1,5 @@
 import { CancelButton, SaveButton } from '@/components/common/buttons';
+import CustomFormLabel from '@/components/common/CustomFormLabel';
 import {
   Dialog,
   DialogContent,
@@ -63,6 +64,10 @@ const CreateWorkScheduleForm = ({
     },
   });
 
+  // 監聽狀態變化
+  const watchedStatus = form.watch('status');
+  const isWorkDay = watchedStatus === WorkScheduleStatus.WORK;
+
   const { wrappedAction: handleSubmitAction, isLoading } = useLoadingAction(
     async (data: CreateWorkScheduleFormData) => {
       const workScheduleData: CreateWorkScheduleData = {
@@ -112,7 +117,7 @@ const CreateWorkScheduleForm = ({
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>狀態</FormLabel>
+                      <CustomFormLabel required>狀態</CustomFormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -131,86 +136,16 @@ const CreateWorkScheduleForm = ({
               </div>
             </div>
 
-            {/* 工作時間 */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="clock_in_time"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-muted-foreground">上班時間</FormLabel>
-                      <FormControl>
-                        <Input type="time" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="clock_out_time"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-muted-foreground">下班時間</FormLabel>
-                      <FormControl>
-                        <Input type="time" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* 加班設定 */}
-            <div className="space-y-4">
-              <FormLabel>加班起算時間-下班時間後</FormLabel>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="ot_start_after_hours"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-muted-foreground">小時</FormLabel>
-                      <FormControl>
-                        <Input type="number" min="0" max="23" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="ot_start_after_minutes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-muted-foreground">分鐘</FormLabel>
-                      <FormControl>
-                        <Input type="number" min="0" max="59" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* 休息時間 */}
-            <div className="space-y-4">
-              <FormLabel>休息時間</FormLabel>
-
+            {/* 工作時間 - 僅在工作日顯示 */}
+            {isWorkDay && (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="break1_start"
+                    name="clock_in_time"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-muted-foreground">開始</FormLabel>
+                        <CustomFormLabel required>上班時間</CustomFormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
@@ -221,66 +156,10 @@ const CreateWorkScheduleForm = ({
 
                   <FormField
                     control={form.control}
-                    name="break1_end"
+                    name="clock_out_time"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-muted-foreground">結束</FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="break2_start"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="break2_end"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="break3_start"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="break3_end"
-                    render={({ field }) => (
-                      <FormItem>
+                        <CustomFormLabel required>下班時間</CustomFormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
@@ -290,7 +169,139 @@ const CreateWorkScheduleForm = ({
                   />
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* 加班設定 - 僅在工作日顯示 */}
+            {isWorkDay && (
+              <div className="space-y-4">
+                <FormLabel>加班起算時間-下班時間後</FormLabel>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="ot_start_after_hours"
+                    render={({ field }) => (
+                      <FormItem>
+                        <CustomFormLabel>小時</CustomFormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="23" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="ot_start_after_minutes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <CustomFormLabel>分鐘</CustomFormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="59" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* 休息時間 - 僅在工作日顯示 */}
+            {isWorkDay && (
+              <div className="space-y-4">
+                <FormLabel>休息時間</FormLabel>
+
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="break1_start"
+                      render={({ field }) => (
+                        <FormItem>
+                          <CustomFormLabel>開始</CustomFormLabel>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="break1_end"
+                      render={({ field }) => (
+                        <FormItem>
+                          <CustomFormLabel>結束</CustomFormLabel>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="break2_start"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="break2_end"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="break3_start"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="break3_end"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* 按鈕 */}
             <div className="flex justify-end gap-2">

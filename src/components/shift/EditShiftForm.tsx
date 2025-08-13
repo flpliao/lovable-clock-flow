@@ -10,21 +10,11 @@ import {
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import useLoadingAction from '@/hooks/useLoadingAction';
+import { ShiftFormData, shiftFormSchema } from '@/schemas/shift';
 import { Shift, UpdateShiftData } from '@/types/shift';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-
-// 表單驗證 schema
-const shiftFormSchema = z.object({
-  code: z.string().min(1, '班次代碼為必填項目'),
-  name: z.string().min(1, '班次名稱為必填項目'),
-  day_cut_time: z.string().min(1, '日切時間為必填項目'),
-  color: z.string().min(1, '顏色為必填項目'),
-});
-
-type ShiftFormData = z.infer<typeof shiftFormSchema>;
 
 interface EditShiftFormProps {
   open: boolean;

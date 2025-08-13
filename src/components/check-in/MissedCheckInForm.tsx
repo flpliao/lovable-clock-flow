@@ -2,45 +2,15 @@ import { CancelButton, SubmitButton } from '@/components/common/buttons';
 import CustomFormLabel from '@/components/common/CustomFormLabel';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-
 import { Textarea } from '@/components/ui/textarea';
 import { REQUEST_TYPE_LABELS, RequestType } from '@/constants/checkInTypes';
 import useLoadingAction from '@/hooks/useLoadingAction';
 import { useMyMissedCheckInRequests } from '@/hooks/useMyMissedCheckInRequests';
+import { MissedCheckInFormData, missedCheckInSchema } from '@/schemas/missedCheckIn';
 import { zodResolver } from '@hookform/resolvers/zod';
 import dayjs from 'dayjs';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-
-// 表單驗證 schema
-const missedCheckInSchema = z
-  .object({
-    request_date: z.string().min(1, '請選擇申請日期'),
-    request_type: z.nativeEnum(RequestType),
-    check_in_time: z.string().optional(),
-    check_out_time: z.string().optional(),
-    reason: z.string().optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.request_type === RequestType.CHECK_IN && !data.check_in_time) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: '請填寫上班時間',
-        path: ['check_in_time'],
-      });
-    }
-
-    if (data.request_type === RequestType.CHECK_OUT && !data.check_out_time) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: '請填寫下班時間',
-        path: ['check_out_time'],
-      });
-    }
-  });
-
-export type MissedCheckInFormData = z.infer<typeof missedCheckInSchema>;
 
 interface MissedCheckInFormProps {
   onSuccess: () => void;

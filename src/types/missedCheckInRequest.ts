@@ -1,4 +1,5 @@
 import { ApprovalStatus } from '@/constants/approvalStatus';
+import { RequestType } from '@/constants/checkInTypes';
 
 export interface MissedCheckInRequest {
   id?: string;
@@ -6,7 +7,7 @@ export interface MissedCheckInRequest {
   company_id?: string;
   employee_id?: string;
   request_date: string;
-  request_type: 'check_in' | 'check_out' | 'both';
+  request_type: RequestType;
   check_in_time?: string;
   check_out_time?: string;
   reason: string;

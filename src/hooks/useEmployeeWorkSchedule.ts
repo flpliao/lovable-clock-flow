@@ -198,6 +198,9 @@ export const useEmployeeWorkSchedule = () => {
       employee_slug: string;
       work_schedule_slug: string;
       date: string;
+      clock_in_time: string;
+      clock_out_time: string;
+      comment: string;
     }> = [];
 
     employees.forEach(employee => {
@@ -213,6 +216,9 @@ export const useEmployeeWorkSchedule = () => {
                 employee_slug: employee.slug,
                 work_schedule_slug: workSchedule.slug,
                 date: date,
+                clock_in_time: workSchedule.pivot?.clock_in_time || '',
+                clock_out_time: workSchedule.pivot?.clock_out_time || '',
+                comment: workSchedule.pivot?.comment || '',
               });
             } else {
               console.warn(`無效的日期格式: ${date} (員工: ${employee.slug})`);

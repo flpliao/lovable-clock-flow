@@ -4,6 +4,9 @@ import { Shift } from '@/types/shift';
 export interface WorkSchedulePivot {
   status: string;
   date: string;
+  clock_in_time: string;
+  clock_out_time: string;
+  comment: string;
 }
 
 export interface WorkSchedule {

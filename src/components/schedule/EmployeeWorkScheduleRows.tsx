@@ -1,4 +1,5 @@
 import type { Employee } from '@/types/employee';
+import type { WorkSchedule } from '@/types/workSchedule';
 import { isWeekend } from '@/utils/dateUtils';
 import { getWorkTimeRange } from '@/utils/scheduleUtils';
 import { Check, ChevronDown, ChevronRight } from 'lucide-react';
@@ -12,6 +13,7 @@ interface EmployeeWorkScheduleRowsProps {
   expandedEmployees: Set<string>;
   onEmployeeToggle: (employeeSlug: string) => void;
   onCellClick: (employeeSlug: string, day: number) => void;
+  onContextMenu: (event: React.MouseEvent, employee: Employee, workSchedule?: WorkSchedule) => void;
 }
 
 const EmployeeWorkScheduleRows: React.FC<EmployeeWorkScheduleRowsProps> = ({
@@ -22,6 +24,7 @@ const EmployeeWorkScheduleRows: React.FC<EmployeeWorkScheduleRowsProps> = ({
   expandedEmployees,
   onEmployeeToggle,
   onCellClick,
+  onContextMenu,
 }) => {
   const isExpanded = expandedEmployees.has(employee.slug);
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
@@ -63,6 +66,11 @@ const EmployeeWorkScheduleRows: React.FC<EmployeeWorkScheduleRowsProps> = ({
                 isWeekendDay ? 'bg-pink-500/10' : ''
               } ${isEditMode ? 'cursor-pointer hover:bg-white/10' : ''}`}
               onClick={() => onCellClick(employee.slug, day)}
+              onContextMenu={
+                workSchedule && isEditMode
+                  ? e => onContextMenu(e, employee, workSchedule)
+                  : undefined
+              }
             >
               {workSchedule && shift && (
                 <div
@@ -90,6 +98,11 @@ const EmployeeWorkScheduleRows: React.FC<EmployeeWorkScheduleRowsProps> = ({
                 <td
                   key={`${employee.slug}-worktime-${day}`}
                   className="px-2 py-2 text-center min-w-[40px]"
+                  onContextMenu={
+                    workSchedule && isEditMode
+                      ? e => onContextMenu(e, employee, workSchedule)
+                      : undefined
+                  }
                 >
                   {workSchedule ? (
                     <div className="text-xs text-white/80">{getWorkTimeRange(workSchedule)}</div>
@@ -110,6 +123,11 @@ const EmployeeWorkScheduleRows: React.FC<EmployeeWorkScheduleRowsProps> = ({
                 <td
                   key={`${employee.slug}-status-${day}`}
                   className="px-2 py-2 text-center min-w-[40px]"
+                  onContextMenu={
+                    workSchedule && isEditMode
+                      ? e => onContextMenu(e, employee, workSchedule)
+                      : undefined
+                  }
                 >
                   {workSchedule ? (
                     <div className="flex justify-center">
@@ -132,6 +150,11 @@ const EmployeeWorkScheduleRows: React.FC<EmployeeWorkScheduleRowsProps> = ({
                 <td
                   key={`${employee.slug}-leave-${day}`}
                   className="px-2 py-2 text-center min-w-[40px]"
+                  onContextMenu={
+                    workSchedule && isEditMode
+                      ? e => onContextMenu(e, employee, workSchedule)
+                      : undefined
+                  }
                 >
                   {workSchedule && workSchedule.pivot?.status === '請假' ? (
                     <div className="text-xs text-red-400">請假</div>
@@ -152,6 +175,11 @@ const EmployeeWorkScheduleRows: React.FC<EmployeeWorkScheduleRowsProps> = ({
                 <td
                   key={`${employee.slug}-overtime-${day}`}
                   className="px-2 py-2 text-center min-w-[40px]"
+                  onContextMenu={
+                    workSchedule && isEditMode
+                      ? e => onContextMenu(e, employee, workSchedule)
+                      : undefined
+                  }
                 >
                   {workSchedule && workSchedule.pivot?.status === '加班' ? (
                     <div className="text-xs text-yellow-400">加班</div>
@@ -172,6 +200,11 @@ const EmployeeWorkScheduleRows: React.FC<EmployeeWorkScheduleRowsProps> = ({
                 <td
                   key={`${employee.slug}-trip-${day}`}
                   className="px-2 py-2 text-center min-w-[40px]"
+                  onContextMenu={
+                    workSchedule && isEditMode
+                      ? e => onContextMenu(e, employee, workSchedule)
+                      : undefined
+                  }
                 >
                   {workSchedule && workSchedule.pivot?.status === '出差' ? (
                     <div className="text-xs text-blue-400">出差</div>

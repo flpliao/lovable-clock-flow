@@ -1,27 +1,138 @@
 import type { Employee } from '@/types/employee';
+import type {
+  EditScheduleFormData,
+  ScheduleContextMenuState,
+  ScheduleGridProps,
+} from '@/types/schedule';
+import type { WorkSchedule } from '@/types/workSchedule';
 import { getChineseWeekday, getMonthDays, isWeekend } from '@/utils/dateUtils';
 import dayjs from 'dayjs';
-import React from 'react';
+import React, { useState } from 'react';
+import EditScheduleForm from './EditScheduleForm';
 import EmployeeWorkScheduleRows from './EmployeeWorkScheduleRows';
-
-interface ScheduleGridProps {
-  employees: Employee[];
-  selectedMonth: string;
-  isEditMode: boolean;
-  onCellClick: (employeeName: string, day: number) => void;
-  expandedEmployees: Set<string>;
-  onEmployeeToggle: (employeeSlug: string) => void;
-}
+import ScheduleContextMenu from './ScheduleContextMenu';
 
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   employees,
   selectedMonth,
   isEditMode,
+  setHasChanges,
   onCellClick,
   expandedEmployees,
   onEmployeeToggle,
+  setEmployees,
 }) => {
   const { daysInMonth } = getMonthDays(selectedMonth);
+
+  // 右鍵選單狀態
+  const [contextMenu, setContextMenu] = useState<ScheduleContextMenuState>({
+    isVisible: false,
+    x: 0,
+    y: 0,
+    employee: {} as Employee, // 初始化為空的 Employee 物件
+    workSchedule: undefined,
+  });
+
+  // 編輯表單狀態
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+
+  // 處理右鍵點擊事件
+  const handleContextMenu = (
+    event: React.MouseEvent,
+    employee: Employee,
+    workSchedule?: WorkSchedule
+  ) => {
+    event.preventDefault();
+    setContextMenu({
+      isVisible: true,
+      x: event.clientX,
+      y: event.clientY,
+      employee,
+      workSchedule,
+    });
+  };
+
+  // 關閉右鍵選單
+  const closeContextMenu = () => {
+    setContextMenu(prev => ({ ...prev, isVisible: false }));
+  };
+
+  // 處理選單動作
+  const handleEditSchedule = () => {
+    setIsEditFormOpen(true);
+    closeContextMenu();
+  };
+
+  const handleDeleteSchedule = () => {
+    if (!contextMenu.workSchedule?.pivot?.date || !contextMenu.employee) {
+      console.error('無法刪除班表：缺少必要的資料');
+      closeContextMenu();
+      return;
+    }
+
+    const dateToDelete = contextMenu.workSchedule.pivot.date;
+    const employeeSlug = contextMenu.employee.slug;
+
+    // 直接更新 employees 狀態，刪除指定日期的班表
+    const updatedEmployees = employees.map(employee =>
+      employee.slug === employeeSlug
+        ? {
+            ...employee,
+            work_schedules:
+              employee.work_schedules?.filter(
+                workSchedule => workSchedule.pivot?.date !== dateToDelete
+              ) || [],
+          }
+        : employee
+    );
+
+    setEmployees(updatedEmployees);
+    setHasChanges(true);
+    closeContextMenu();
+  };
+
+  // 處理表單儲存
+  const handleSaveSchedule = (formData: EditScheduleFormData) => {
+    if (!contextMenu.workSchedule || !contextMenu.employee) {
+      console.error('缺少必要的資料來更新排班');
+      return;
+    }
+
+    const employeeSlug = contextMenu.employee.slug;
+    const dateToUpdate = contextMenu.workSchedule.pivot?.date;
+
+    if (!dateToUpdate) {
+      console.error('無法更新班表：缺少日期資訊');
+      return;
+    }
+
+    // 更新 employees 狀態，修改指定日期的班表
+    const updatedEmployees = employees.map(employee =>
+      employee.slug === employeeSlug
+        ? {
+            ...employee,
+            work_schedules:
+              employee.work_schedules?.map(ws =>
+                ws.pivot?.date === dateToUpdate
+                  ? {
+                      ...ws,
+                      pivot: {
+                        ...ws.pivot,
+                        clock_in_time: formData.clock_in_time,
+                        clock_out_time: formData.clock_out_time,
+                        ...(formData.comment && { comment: formData.comment }),
+                      },
+                    }
+                  : ws
+              ) || [],
+          }
+        : employee
+    );
+
+    setEmployees(updatedEmployees);
+    setHasChanges(true);
+    setIsEditFormOpen(false);
+  };
 
   // 如果沒有員工資料，顯示提示訊息
   if (employees.length === 0) {
@@ -46,48 +157,75 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   }
 
   return (
-    <div className="border border-white/20 rounded-2xl backdrop-blur-xl overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-white/5">
-              <th className="px-4 py-3 text-white font-medium min-w-[150px]">
-                <div className="flex justify-between items-center">
-                  <span>員工</span>
-                  <span>{dayjs(selectedMonth).format('M')} 月</span>
-                </div>
-              </th>
-              {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => (
-                <th key={day} className="px-2 py-3 text-center text-white font-medium min-w-[40px]">
-                  <div
-                    className={`${isWeekend(selectedMonth, day) ? 'text-red-400' : 'text-white'}`}
-                  >
-                    {day}
-                  </div>
-                  <div className="text-xs text-white/60 mt-1">
-                    {getChineseWeekday(selectedMonth, day)}
+    <>
+      <div className="border border-white/20 rounded-2xl backdrop-blur-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-white/5">
+                <th className="px-4 py-3 text-white font-medium min-w-[150px]">
+                  <div className="flex justify-between items-center">
+                    <span>員工</span>
+                    <span>{dayjs(selectedMonth).format('M')} 月</span>
                   </div>
                 </th>
+                {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => (
+                  <th
+                    key={day}
+                    className="px-2 py-3 text-center text-white font-medium min-w-[40px]"
+                  >
+                    <div
+                      className={`${isWeekend(selectedMonth, day) ? 'text-red-400' : 'text-white'}`}
+                    >
+                      {day}
+                    </div>
+                    <div className="text-xs text-white/60 mt-1">
+                      {getChineseWeekday(selectedMonth, day)}
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {employees.map(employee => (
+                <EmployeeWorkScheduleRows
+                  key={employee.slug}
+                  employee={employee}
+                  selectedMonth={selectedMonth}
+                  isEditMode={isEditMode}
+                  daysInMonth={daysInMonth}
+                  expandedEmployees={expandedEmployees}
+                  onEmployeeToggle={onEmployeeToggle}
+                  onCellClick={onCellClick}
+                  onContextMenu={handleContextMenu}
+                />
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {employees.map(employee => (
-              <EmployeeWorkScheduleRows
-                key={employee.slug}
-                employee={employee}
-                selectedMonth={selectedMonth}
-                isEditMode={isEditMode}
-                daysInMonth={daysInMonth}
-                expandedEmployees={expandedEmployees}
-                onEmployeeToggle={onEmployeeToggle}
-                onCellClick={onCellClick}
-              />
-            ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+
+      {/* 右鍵選單 */}
+      <ScheduleContextMenu
+        x={contextMenu.x}
+        y={contextMenu.y}
+        isVisible={contextMenu.isVisible}
+        onClose={closeContextMenu}
+        onEdit={handleEditSchedule}
+        onDelete={handleDeleteSchedule}
+        employeeName={contextMenu.employee.name}
+        workSchedule={contextMenu.workSchedule}
+      />
+
+      {/* 編輯表單 */}
+      <EditScheduleForm
+        isOpen={isEditFormOpen}
+        onClose={() => setIsEditFormOpen(false)}
+        onSave={handleSaveSchedule}
+        employee={contextMenu.employee}
+        workSchedule={contextMenu.workSchedule}
+      />
+    </>
   );
 };
 

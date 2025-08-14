@@ -1,6 +1,7 @@
 import { ApprovalStatus } from '@/constants/approvalStatus';
 import { CheckInRecord } from '@/types';
 import { getStatusConfig } from '@/utils/statusConfig';
+import dayjs from 'dayjs';
 import { AlertCircle, LogIn, LogOut } from 'lucide-react';
 import React from 'react';
 
@@ -39,7 +40,9 @@ const MissedCheckInStatusCard: React.FC<MissedCheckInStatusCardProps> = ({
         <span className="font-medium">{type}</span>
       </div>
       <div className="text-center space-y-1.5">
-        <div className={`font-mono ${config.textColor}`}>忘打卡申請</div>
+        <div className={`font-mono ${config.textColor}`}>
+          忘打卡申請 {dayjs(checkInRecord.checked_at).format('HH:mm:ss')}
+        </div>
         <div
           className={`flex items-center justify-center gap-1 ${config.secondaryTextColor} text-xs`}
         >

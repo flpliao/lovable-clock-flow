@@ -32,8 +32,7 @@ export const useMyMissedCheckInRequests = () => {
   const handleCreateMyMissedCheckInRequest = async (requestData: {
     request_date: string;
     request_type: string;
-    check_in_time?: string;
-    check_out_time?: string;
+    checked_at: string;
     reason: string;
   }): Promise<MissedCheckInRequest | null> => {
     const newRequest = await createMissedCheckInRequest(requestData);

@@ -48,7 +48,7 @@ const CheckInStatusCard: React.FC<CheckInStatusCardProps> = ({ record, type }) =
         <span className="font-medium">{type}</span>
       </div>
       <div className="text-center space-y-1.5">
-        <div className="font-mono text-lg text-green-800">
+        <div className="font-mono text-green-800">
           {dayjs(record.checked_at).format('HH:mm:ss')}
         </div>
         <div className="flex items-center justify-center gap-1 text-green-600 text-xs">

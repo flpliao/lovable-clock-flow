@@ -23,7 +23,6 @@ const PersonalAttendance = LazyWithSuspense(() => import('@/pages/PersonalAttend
 const AttendanceRecords = LazyWithSuspense(() => import('@/pages/AttendanceRecordsPage'));
 const OvertimeRequest = LazyWithSuspense(() => import('@/pages/OvertimeRequest'));
 const OvertimeHistory = LazyWithSuspense(() => import('@/pages/OvertimeHistoryPage'));
-const Scheduling = LazyWithSuspense(() => import('@/pages/Scheduling'));
 const ScheduleStatistics = LazyWithSuspense(() => import('@/pages/ScheduleStatistics'));
 const PersonnelManagement = LazyWithSuspense(() => import('@/pages/PersonnelManagement'));
 const RoleManagement = LazyWithSuspense(() => import('@/pages/Role'));
@@ -150,13 +149,6 @@ export const unFinishedRoutes: RouteConfig[] = [
     component: OvertimeHistory,
     icon: 'history',
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER, EmployeeRole.STAFF],
-  },
-  {
-    path: routes.scheduling,
-    name: '排班管理',
-    component: Scheduling,
-    icon: 'calendar',
-    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
   {
     path: routes.scheduleStatistics,

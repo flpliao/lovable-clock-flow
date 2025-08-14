@@ -230,53 +230,28 @@ const ScheduleManagement = () => {
         newEmployees[employeeIndex].work_schedules = [];
       }
 
-      // 檢查該日期是否已經有班表
+      // 構建新的班表資料
+      const workScheduleWithShift = {
+        ...workSchedule,
+        shift: shift,
+      };
+
+      const newWorkSchedule = {
+        ...workScheduleWithShift,
+        pivot: { ...workScheduleWithShift.pivot, date: fullDate },
+      };
+
+      // 檢查該日期是否已經有班表，如果有則替換，沒有則新增
       const existingScheduleIndex = newEmployees[employeeIndex].work_schedules!.findIndex(
         ws => ws.pivot?.date === fullDate
       );
 
       if (existingScheduleIndex !== -1) {
-        // 如果該日期已有班表，檢查是否為相同班次
-        const existingSchedule = newEmployees[employeeIndex].work_schedules![existingScheduleIndex];
-        const isSameShift = existingSchedule.shift?.slug === shift.slug;
-
-        if (isSameShift) {
-          // 如果是相同班次，則移除它（點擊第二次）
-          const filteredSchedules = newEmployees[employeeIndex].work_schedules!.filter(
-            ws => ws.pivot?.date !== fullDate
-          );
-          newEmployees[employeeIndex].work_schedules = filteredSchedules;
-        } else {
-          // 如果是不同班次，則直接替換
-          const workScheduleWithShift = {
-            ...workSchedule,
-            shift: shift,
-          };
-
-          const newWorkSchedule = {
-            ...workScheduleWithShift,
-            pivot: { ...workScheduleWithShift.pivot, date: fullDate },
-          };
-
-          // 替換現有的班表
-          newEmployees[employeeIndex].work_schedules![existingScheduleIndex] = newWorkSchedule;
-        }
+        // 替換現有的班表
+        newEmployees[employeeIndex].work_schedules![existingScheduleIndex] = newWorkSchedule;
       } else {
-        // 如果該日期沒有班表，則新增班表（點擊第一次）
-        const workScheduleWithShift = {
-          ...workSchedule,
-          shift: shift,
-        };
-
-        const newWorkSchedule = {
-          ...workScheduleWithShift,
-          pivot: { ...workScheduleWithShift.pivot, date: fullDate },
-        };
-
-        newEmployees[employeeIndex].work_schedules = [
-          ...newEmployees[employeeIndex].work_schedules!,
-          newWorkSchedule,
-        ];
+        // 新增班表
+        newEmployees[employeeIndex].work_schedules!.push(newWorkSchedule);
       }
 
       // 更新狀態
@@ -490,8 +465,10 @@ const ScheduleManagement = () => {
           {/* 班表網格 */}
           <ScheduleGrid
             employees={employees}
+            setEmployees={setEmployees}
             selectedMonth={selectedMonth}
             isEditMode={isEditMode}
+            setHasChanges={setHasChanges}
             onCellClick={handleCellClick}
             expandedEmployees={expandedEmployees}
             onEmployeeToggle={handleEmployeeToggle}

@@ -1,4 +1,10 @@
-import type { CheckInMethod, RequestType } from '@/constants/checkInTypes';
+import { ApprovalStatus } from '@/constants/approvalStatus';
+import type {
+  CheckInMethod,
+  CheckInSource,
+  CheckInStatus,
+  RequestType,
+} from '@/constants/checkInTypes';
 
 // 打卡記錄
 export interface CheckInRecord {
@@ -6,11 +12,15 @@ export interface CheckInRecord {
   employee_id?: string;
   type: RequestType;
   method: CheckInMethod;
-  status?: 'success' | 'failed';
+  status?: CheckInStatus;
   distance?: number;
   latitude: number;
   longitude: number;
   ip_address: string;
+  source: CheckInSource;
+  approval_status?: ApprovalStatus;
+  is_late?: boolean;
+  is_early_leave?: boolean;
   created_at?: string;
   location_name?: string;
 }

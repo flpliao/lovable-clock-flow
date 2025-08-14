@@ -9,11 +9,9 @@ import MissedCheckInDialog from '@/components/check-in/MissedCheckInDialog';
 import { RequestType } from '@/constants/checkInTypes';
 import { useCheckInPoints } from '@/hooks/useCheckInPoints';
 import { useCheckInRecords } from '@/hooks/useCheckInRecords';
-import { useMyMissedCheckInRequests } from '@/hooks/useMyMissedCheckInRequests';
 import { useToast } from '@/hooks/useToast';
 import { createIpCheckInRecord, createLocationCheckInRecord } from '@/services/checkInService';
 import type { CheckInRecord } from '@/types/checkIn';
-import type { MissedCheckInRequest } from '@/types/missedCheckInRequest';
 
 import { Clock } from 'lucide-react';
 import NearestCheckInPointInfo from './check-in/NearestCheckInPointInfo';
@@ -28,46 +26,35 @@ const LocationCheckIn = () => {
   );
   const [checkIn, setCheckIn] = useState<CheckInRecord | null>(null);
   const [checkOut, setCheckOut] = useState<CheckInRecord | null>(null);
-  const [missedCheckIn, setMissedCheckIn] = useState<MissedCheckInRequest | null>(null);
-  const [missedCheckOut, setMissedCheckOut] = useState<MissedCheckInRequest | null>(null);
   const {
     records: todayRecords,
     loadTodayCheckInRecords,
     handleAddCheckInRecord,
   } = useCheckInRecords();
-  const { todayRequests, loadMyMissedCheckInRequests } = useMyMissedCheckInRequests();
 
-  // 自動載入今日打卡紀錄和忘記打卡申請
+  // 自動載入今日打卡紀錄和打卡點
   useEffect(() => {
     loadTodayCheckInRecords();
     loadCheckInPoints();
-    loadMyMissedCheckInRequests(); // 載入忘記打卡申請
   }, []); // 只在組件掛載時執行一次
 
   useEffect(() => {
-    determineCheckInType(todayRecords, todayRequests);
-  }, [todayRecords, todayRequests]);
+    determineCheckInType(todayRecords);
+  }, [todayRecords]);
 
-  // 決定打卡類型的邏輯
-  const determineCheckInType = (
-    records: CheckInRecord[],
-    missedRequests: { request_type: string }[]
-  ) => {
-    const checkIn = records.find(r => r.type === RequestType.CHECK_IN);
-    setCheckIn(checkIn);
+  // 決定打卡類型的邏輯 - 根據 checkInRecord 判斷
+  const determineCheckInType = (records: CheckInRecord[]) => {
+    // 找出上班和下班打卡記錄
+    const checkInRecord = records.find(r => r.type === RequestType.CHECK_IN);
+    const checkOutRecord = records.find(r => r.type === RequestType.CHECK_OUT);
 
-    // 檢查是否有對應的忘記打卡申請
-    const missedCheckIn = missedRequests.find(req => req.request_type === RequestType.CHECK_IN);
-    setMissedCheckIn(missedCheckIn as MissedCheckInRequest);
+    setCheckIn(checkInRecord);
+    setCheckOut(checkOutRecord);
 
-    const checkOut = records.find(r => r.type === RequestType.CHECK_OUT);
-    setCheckOut(checkOut);
-
-    const missedCheckOut = missedRequests.find(req => req.request_type === RequestType.CHECK_OUT);
-    setMissedCheckOut(missedCheckOut as MissedCheckInRequest);
-
-    // 簡化邏輯：有上班相關記錄就顯示下班打卡，否則顯示上班打卡
-    if (checkIn || missedCheckIn) {
+    // 判斷邏輯：
+    // 1. 如果有上班打卡記錄（無論是正常打卡還是忘記打卡申請產生的），就顯示下班打卡
+    // 2. 否則顯示上班打卡
+    if (checkInRecord) {
       setType(RequestType.CHECK_OUT);
     } else {
       setType(RequestType.CHECK_IN);
@@ -127,17 +114,11 @@ const LocationCheckIn = () => {
   const noAvailableCheckInPoint =
     checkInMethod === 'location' && (!checkInPoints || checkInPoints.length === 0);
 
-  // 如果已完成今日打卡，顯示完成狀態
-  if ((checkIn || missedCheckIn) && (checkOut || missedCheckOut)) {
+  if (checkIn && checkOut) {
     return (
       <div className="flex justify-center items-center w-full min-h-[180px]">
         <div className="max-w-md w-full mx-4">
-          <CheckInCompletedStatus
-            checkIn={checkIn}
-            checkOut={checkOut}
-            missedCheckInRequest={missedCheckIn}
-            missedCheckOutRequest={missedCheckOut}
-          />
+          <CheckInCompletedStatus checkIn={checkIn} checkOut={checkOut} />
         </div>
       </div>
     );
@@ -152,7 +133,7 @@ const LocationCheckIn = () => {
           </div>
           <span className="text-lg font-semibold drop-shadow-md">打卡</span>
         </div>
-        <CheckInStatus checkIn={checkIn} missedCheckInRequest={missedCheckIn} />
+        <CheckInStatus checkIn={checkIn} />
         <CheckInMethodSelector
           checkInMethod={checkInMethod}
           setCheckInMethod={setCheckInMethod}

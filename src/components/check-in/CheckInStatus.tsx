@@ -1,7 +1,6 @@
 import { ApprovalStatus } from '@/constants/approvalStatus';
-import { CheckInMethod } from '@/constants/checkInTypes';
+import { CheckInMethod, CheckInSource } from '@/constants/checkInTypes';
 import { CheckInRecord } from '@/types';
-import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
 import { getStatusConfig } from '@/utils/statusConfig';
 import dayjs from 'dayjs';
 import { AlertCircle, CheckCircle2, Clock, MapPin, Wifi } from 'lucide-react';
@@ -9,15 +8,14 @@ import React from 'react';
 
 interface CheckInStatusProps {
   checkIn?: CheckInRecord;
-  missedCheckInRequest?: MissedCheckInRequest;
 }
 
-const CheckInStatus: React.FC<CheckInStatusProps> = ({ checkIn, missedCheckInRequest }) => {
+const CheckInStatus: React.FC<CheckInStatusProps> = ({ checkIn }) => {
   // 如果沒有打卡記錄且沒有忘記打卡申請，不顯示任何內容
-  if (!checkIn && !missedCheckInRequest) return null;
+  if (!checkIn) return null;
 
   // 如果有實際打卡記錄，顯示打卡狀態
-  if (checkIn) {
+  if (checkIn.source === CheckInSource.NORMAL) {
     return (
       <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200 shadow-sm">
         <div className="flex items-center justify-between w-full gap-3">
@@ -55,12 +53,9 @@ const CheckInStatus: React.FC<CheckInStatusProps> = ({ checkIn, missedCheckInReq
         </div>
       </div>
     );
-  }
-
-  // 如果有忘記打卡申請，根據狀態顯示不同內容
-  if (missedCheckInRequest) {
-    const request = missedCheckInRequest;
-    const status = (request?.status as ApprovalStatus) || ApprovalStatus.PENDING;
+  } else {
+    // 如果有忘記打卡申請，根據狀態顯示不同內容
+    const status = (checkIn?.approval_status as ApprovalStatus) || ApprovalStatus.PENDING;
     const statusConfig = getStatusConfig(status);
 
     return (
@@ -86,15 +81,13 @@ const CheckInStatus: React.FC<CheckInStatusProps> = ({ checkIn, missedCheckInReq
           <div className="flex items-center gap-1.5 bg-white/80 px-2.5 py-1 rounded-full shrink-0">
             <Clock className={`h-3.5 w-3.5 ${statusConfig.iconColor}`} />
             <span className={`text-xs ${statusConfig.secondaryTextColor} font-medium`}>
-              {dayjs(request.request_date).format('HH:mm:ss')}
+              {dayjs(checkIn.created_at).format('HH:mm:ss')}
             </span>
           </div>
         </div>
       </div>
     );
   }
-
-  return null;
 };
 
 export default CheckInStatus;

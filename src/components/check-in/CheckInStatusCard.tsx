@@ -49,7 +49,7 @@ const CheckInStatusCard: React.FC<CheckInStatusCardProps> = ({ record, type }) =
       </div>
       <div className="text-center space-y-1.5">
         <div className="font-mono text-lg text-green-800">
-          {dayjs(record.created_at).format('HH:mm:ss')}
+          {dayjs(record.checked_at).format('HH:mm:ss')}
         </div>
         <div className="flex items-center justify-center gap-1 text-green-600 text-xs">
           {renderCheckInMethod(record)}

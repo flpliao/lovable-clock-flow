@@ -47,7 +47,7 @@ const CheckInStatus: React.FC<CheckInStatusProps> = ({ checkIn }) => {
           <div className="flex items-center gap-1.5 bg-white/80 px-2.5 py-1 rounded-full shrink-0">
             <Clock className="h-3.5 w-3.5 text-blue-500" />
             <span className="text-xs text-blue-600 font-medium">
-              {dayjs(checkIn.created_at).format('HH:mm:ss')}
+              {dayjs(checkIn.checked_at).format('HH:mm:ss')}
             </span>
           </div>
         </div>
@@ -81,7 +81,7 @@ const CheckInStatus: React.FC<CheckInStatusProps> = ({ checkIn }) => {
           <div className="flex items-center gap-1.5 bg-white/80 px-2.5 py-1 rounded-full shrink-0">
             <Clock className={`h-3.5 w-3.5 ${statusConfig.iconColor}`} />
             <span className={`text-xs ${statusConfig.secondaryTextColor} font-medium`}>
-              {dayjs(checkIn.created_at).format('HH:mm:ss')}
+              {dayjs(checkIn.checked_at).format('HH:mm:ss')}
             </span>
           </div>
         </div>

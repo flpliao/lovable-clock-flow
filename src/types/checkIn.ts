@@ -21,7 +21,7 @@ export interface CheckInRecord {
   approval_status?: ApprovalStatus;
   is_late?: boolean;
   is_early_leave?: boolean;
-  created_at?: string;
+  checked_at: string;
   location_name?: string;
 }
 

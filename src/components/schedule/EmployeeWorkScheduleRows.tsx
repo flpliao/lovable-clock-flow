@@ -73,13 +73,19 @@ const EmployeeWorkScheduleRows: React.FC<EmployeeWorkScheduleRowsProps> = ({
               }
             >
               {workSchedule && shift && (
-                <div
-                  className="w-3 h-3 rounded-full mx-auto"
-                  style={{
-                    backgroundColor: shift.color || '#6B7280',
-                  }}
-                  title={shift.name || '未知班次'}
-                ></div>
+                <div className="flex flex-col items-center">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{
+                      backgroundColor: shift.color || '#6B7280',
+                    }}
+                    title={shift.name || '未知班次'}
+                  ></div>
+                  {/* 如果 pivot 中有時間資料，表示這是修改過的排班，顯示一條線 */}
+                  {(workSchedule.pivot?.clock_in_time || workSchedule.pivot?.clock_out_time) && (
+                    <div className="w-4 h-0.5 bg-white/60 mt-1 rounded-full"></div>
+                  )}
+                </div>
               )}
             </td>
           );

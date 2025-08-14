@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { useShift } from '@/hooks/useShift';
 import { Shift } from '@/types/shift';
 import { WorkSchedule } from '@/types/workSchedule';
-import { ChevronDown, ChevronRight, Clock, Search } from 'lucide-react';
+import { Clock, Minus, Plus, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const ShiftList = () => {
@@ -179,7 +179,8 @@ const ShiftList = () => {
                             日切時間：{shift.day_cut_time}
                           </div>
                           <div className="text-white/80 text-sm flex items-center gap-2">
-                            週期天數：{shift.cycle_days} 天
+                            週期天數：
+                            {shift.cycle_days ? shift.cycle_days + ' 天' : '無'}
                             <Button
                               variant="ghost"
                               size="sm"
@@ -187,9 +188,9 @@ const ShiftList = () => {
                               className="h-6 w-6 p-0 text-white/60 hover:text-white hover:bg-white/10"
                             >
                               {isExpanded ? (
-                                <ChevronDown className="h-3 w-3" />
+                                <Minus className="h-3 w-3" />
                               ) : (
-                                <ChevronRight className="h-3 w-3" />
+                                <Plus className="h-3 w-3" />
                               )}
                             </Button>
                           </div>

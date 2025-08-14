@@ -1,13 +1,12 @@
-import { CheckInMethod } from '@/constants/checkInTypes';
+import { CheckInMethod, CheckInSource } from '@/constants/checkInTypes';
 import { CheckInRecord } from '@/types';
-import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
 import dayjs from 'dayjs';
 import { LogIn, LogOut, MapPin, Wifi } from 'lucide-react';
 import React from 'react';
 import MissedCheckInStatusCard from './MissedCheckInStatusCard';
 
 interface CheckInStatusCardProps {
-  record: CheckInRecord | MissedCheckInRequest | undefined;
+  record: CheckInRecord | undefined;
   type: '上班' | '下班';
 }
 
@@ -17,8 +16,8 @@ const CheckInStatusCard: React.FC<CheckInStatusCardProps> = ({ record, type }) =
   }
 
   // 使用類型守衛來判斷是打卡記錄還是忘記打卡申請
-  if ('status' in record) {
-    return <MissedCheckInStatusCard missedRequest={record as MissedCheckInRequest} type={type} />;
+  if (record.source === CheckInSource.MISSED_CHECK_IN) {
+    return <MissedCheckInStatusCard checkInRecord={record} type={type} />;
   }
 
   const renderCheckInMethod = (record: CheckInRecord) => {
@@ -49,8 +48,8 @@ const CheckInStatusCard: React.FC<CheckInStatusCardProps> = ({ record, type }) =
         <span className="font-medium">{type}</span>
       </div>
       <div className="text-center space-y-1.5">
-        <div className="font-mono text-lg text-green-800">
-          {dayjs(record.created_at).format('HH:mm:ss')}
+        <div className="font-mono text-green-800">
+          {dayjs(record.checked_at).format('HH:mm:ss')}
         </div>
         <div className="flex items-center justify-center gap-1 text-green-600 text-xs">
           {renderCheckInMethod(record)}

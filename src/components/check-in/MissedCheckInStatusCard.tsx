@@ -1,20 +1,20 @@
 import { ApprovalStatus } from '@/constants/approvalStatus';
-import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
+import { CheckInRecord } from '@/types';
 import { getStatusConfig } from '@/utils/statusConfig';
+import dayjs from 'dayjs';
 import { AlertCircle, LogIn, LogOut } from 'lucide-react';
 import React from 'react';
 
 interface MissedCheckInStatusCardProps {
-  missedRequest: MissedCheckInRequest;
+  checkInRecord: CheckInRecord;
   type: '上班' | '下班';
 }
 
 const MissedCheckInStatusCard: React.FC<MissedCheckInStatusCardProps> = ({
-  missedRequest,
+  checkInRecord,
   type,
 }) => {
-  const request = missedRequest;
-  const status = (request?.status as ApprovalStatus) || ApprovalStatus.PENDING;
+  const status = (checkInRecord?.approval_status as ApprovalStatus) || ApprovalStatus.PENDING;
 
   // 使用常數檔案中的狀態配置，但調整為適合此組件的樣式
   const baseConfig = getStatusConfig(status);
@@ -40,7 +40,9 @@ const MissedCheckInStatusCard: React.FC<MissedCheckInStatusCardProps> = ({
         <span className="font-medium">{type}</span>
       </div>
       <div className="text-center space-y-1.5">
-        <div className={`font-mono ${config.textColor}`}>忘打卡申請</div>
+        <div className={`font-mono ${config.textColor}`}>
+          忘打卡申請 {dayjs(checkInRecord.checked_at).format('HH:mm:ss')}
+        </div>
         <div
           className={`flex items-center justify-center gap-1 ${config.secondaryTextColor} text-xs`}
         >

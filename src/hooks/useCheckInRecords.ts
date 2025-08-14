@@ -25,13 +25,13 @@ export const useCheckInRecords = () => {
   } = useMyCheckInRecordsStore();
 
   // 載入打卡記錄
-  const loadCheckInRecords = async (created_at?: string) => {
+  const loadCheckInRecords = async (checked_at?: string) => {
     if (isLoading) return;
 
     setLoading(true);
     setError(null);
 
-    const targetDate = created_at || dayjs().format('YYYY-MM-DD');
+    const targetDate = checked_at || dayjs().format('YYYY-MM-DD');
     const data = await getCheckInRecords(targetDate);
     setRecords(data);
 

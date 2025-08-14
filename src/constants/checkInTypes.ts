@@ -15,3 +15,15 @@ export enum CheckInMethod {
   IP = 'ip',
   LOCATION = 'location',
 }
+
+// 打卡狀態
+export enum CheckInStatus {
+  SUCCESS = 'success',
+  FAILED = 'failed',
+}
+
+// 打卡來源
+export enum CheckInSource {
+  NORMAL = 'normal',
+  MISSED_CHECK_IN = 'missed_check_in',
+}

@@ -2,6 +2,7 @@ import {
   createMissedCheckInRequest,
   getMyMissedCheckInRequests,
 } from '@/services/missedCheckInRequestService';
+import { useMyCheckInRecordsStore } from '@/stores/checkInRecordStore';
 import { useMyMissedCheckInRequestsStore } from '@/stores/missedCheckInRequestStore';
 import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
 import dayjs from 'dayjs';
@@ -10,6 +11,7 @@ import { useMemo } from 'react';
 export const useMyMissedCheckInRequests = () => {
   const { requests, setRequests, addRequest, updateRequest, isLoading, setLoading } =
     useMyMissedCheckInRequestsStore();
+  const { addRecord } = useMyCheckInRecordsStore();
 
   // 過濾今日的忘記打卡申請
   const todayRequests = useMemo(() => {
@@ -30,14 +32,14 @@ export const useMyMissedCheckInRequests = () => {
   const handleCreateMyMissedCheckInRequest = async (requestData: {
     request_date: string;
     request_type: string;
-    check_in_time?: string;
-    check_out_time?: string;
+    checked_at: string;
     reason: string;
   }): Promise<MissedCheckInRequest | null> => {
     const newRequest = await createMissedCheckInRequest(requestData);
     console.log('newRequest', newRequest);
     if (newRequest) {
       addRequest(newRequest);
+      addRecord(newRequest.check_in_record);
     }
     return newRequest;
   };

@@ -30,8 +30,7 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
       const result = await handleCreateMyMissedCheckInRequest({
         request_date: data.request_date,
         request_type: data.request_type,
-        check_in_time: data.check_in_time,
-        check_out_time: data.check_out_time,
+        checked_at: data.checked_at,
         reason: data.reason,
       });
 
@@ -47,8 +46,7 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
     defaultValues: {
       request_date: dayjs().format('YYYY-MM-DD'),
       request_type: defaultRequestType,
-      check_in_time: '',
-      check_out_time: '',
+      checked_at: '',
       reason: '',
     },
   });
@@ -62,8 +60,6 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
     form.reset();
     onCancel();
   };
-
-  const requestType = form.watch('request_type');
 
   return (
     <Form {...form}>
@@ -96,46 +92,26 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
           </div>
         </div>
 
-        {requestType === RequestType.CHECK_IN && (
-          <FormField
-            control={form.control}
-            name="check_in_time"
-            render={({ field }) => (
-              <FormItem>
-                <CustomFormLabel required>上班時間</CustomFormLabel>
-                <FormControl>
-                  <Input
-                    type="time"
-                    {...field}
-                    className="bg-background border-input text-foreground"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-
-        {requestType === RequestType.CHECK_OUT && (
-          <FormField
-            control={form.control}
-            name="check_out_time"
-            render={({ field }) => (
-              <FormItem>
-                <CustomFormLabel required>下班時間</CustomFormLabel>
-                <FormControl>
-                  <Input
-                    type="time"
-                    {...field}
-                    className="bg-background border-input text-foreground"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-
+        <FormField
+          control={form.control}
+          name="checked_at"
+          render={({ field }) => (
+            <FormItem>
+              <CustomFormLabel required>
+                {defaultRequestType === RequestType.CHECK_IN && '上班時間'}
+                {defaultRequestType === RequestType.CHECK_OUT && '下班時間'}
+              </CustomFormLabel>
+              <FormControl>
+                <Input
+                  type="time"
+                  {...field}
+                  className="bg-background border-input text-foreground"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="reason"

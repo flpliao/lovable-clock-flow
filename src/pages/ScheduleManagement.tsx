@@ -67,7 +67,7 @@ const ScheduleManagement = () => {
   useEffect(() => {
     loadDepartments();
     loadAllShifts();
-  }, [loadDepartments, loadAllShifts]);
+  }, []);
 
   // 當 shifts 載入後，初始化 shiftFilter
   useEffect(() => {

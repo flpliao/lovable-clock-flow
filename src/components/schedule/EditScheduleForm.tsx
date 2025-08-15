@@ -38,7 +38,7 @@ const EditScheduleForm: React.FC<EditScheduleFormProps> = ({
       form.reset({
         clock_in_time: workSchedule.clock_in_time || '09:00',
         clock_out_time: workSchedule.clock_out_time || '18:00',
-        comment: '',
+        comment: workSchedule.pivot?.comment || '',
       });
     }
   }, [workSchedule, form]);

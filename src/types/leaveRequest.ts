@@ -1,4 +1,5 @@
 import { ApprovalStatus, LeaveRequestStatus } from '@/constants/leave';
+import { Employee } from './employee';
 import { LeaveType } from './leaveType';
 
 // 請假申請記錄
@@ -14,6 +15,7 @@ export interface LeaveRequest {
   reason: string;
   rejection_reason?: string;
   leave_type?: LeaveType;
+  employee?: Employee;
   created_at: string;
   updated_at: string;
 }

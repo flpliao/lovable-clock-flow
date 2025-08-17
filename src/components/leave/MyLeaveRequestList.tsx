@@ -1,19 +1,19 @@
 import { LeaveRequestStatus } from '@/constants/leave';
 import { useMyLeaveRequest } from '@/hooks/useMyLeaveRequest';
-import { useMyLeaveRequestsStore } from '@/stores/leaveRequestStore';
+import useEmployeeStore from '@/stores/employeeStore';
 import React, { useEffect } from 'react';
 import LeaveRequestItem from './LeaveRequestItem';
 
 const MyLeaveRequestList: React.FC = () => {
-  const getRequestsByStatus = useMyLeaveRequestsStore(state => state.getRequestsByStatus);
-  const { isLoading, loadMyLeaveRequests } = useMyLeaveRequest();
+  const { isLoading, loadMyLeaveRequests, getMyRequestsByStatus } = useMyLeaveRequest();
+  const { employee } = useEmployeeStore();
 
   // 初始載入
   useEffect(() => {
-    loadMyLeaveRequests();
-  }, [loadMyLeaveRequests]);
+    loadMyLeaveRequests(employee.slug);
+  }, []);
 
-  const requests = getRequestsByStatus([
+  const requests = getMyRequestsByStatus(employee.slug, [
     LeaveRequestStatus.CANCELLED,
     LeaveRequestStatus.REJECTED,
     LeaveRequestStatus.APPROVED,

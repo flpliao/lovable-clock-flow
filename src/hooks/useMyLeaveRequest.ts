@@ -4,23 +4,29 @@ import {
   createLeaveRequest,
   getMyLeaveRequests,
 } from '@/services/leaveRequestService';
-import { useMyLeaveRequestsStore } from '@/stores/leaveRequestStore';
+import useLeaveRequestsStore from '@/stores/leaveRequestStore';
 import { LeaveRequest } from '@/types/leaveRequest';
-import { useState } from 'react';
 
 export const useMyLeaveRequest = () => {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const { requests, setRequests, addRequest, setRequest } = useMyLeaveRequestsStore();
+  const {
+    requests,
+    getMyRequests,
+    getMyRequestsByStatus,
+    addRequest,
+    updateRequest,
+    mergeRequests,
+    isLoading,
+    setLoading,
+  } = useLeaveRequestsStore();
 
   // 載入我的請假申請
-  const loadMyLeaveRequests = async () => {
-    if (requests.length > 0 || isLoading) return;
+  const loadMyLeaveRequests = async (employeeSlug: string) => {
+    if (getMyRequests(employeeSlug).length > 0 || isLoading) return;
 
-    setIsLoading(true);
+    setLoading(true);
     const data = await getMyLeaveRequests();
-    setRequests(data);
-    setIsLoading(false);
+    mergeRequests(data);
+    setLoading(false);
   };
 
   // 新增請假申請
@@ -39,7 +45,7 @@ export const useMyLeaveRequest = () => {
 
   // 更新請假申請
   const handleUpdateMyLeaveRequest = (slug: string, updates: Partial<LeaveRequest>) => {
-    setRequest(slug, updates);
+    updateRequest(slug, updates);
   };
 
   // 取消請假申請
@@ -47,7 +53,7 @@ export const useMyLeaveRequest = () => {
     const success = await cancelLeaveRequest(slug);
     if (success) {
       // 更新本地狀態為已取消
-      setRequest(slug, { status: LeaveRequestStatus.CANCELLED });
+      updateRequest(slug, { status: LeaveRequestStatus.CANCELLED });
     }
 
     return success;
@@ -60,6 +66,7 @@ export const useMyLeaveRequest = () => {
 
     // 操作方法
     loadMyLeaveRequests,
+    getMyRequestsByStatus,
     handleCreateMyLeaveRequest,
     handleUpdateMyLeaveRequest,
     handleCancelMyLeaveRequest,

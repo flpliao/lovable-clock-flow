@@ -1,6 +1,6 @@
 import { LeaveRequestStatus } from '@/constants/leave';
 import { useMyLeaveRequest } from '@/hooks/useMyLeaveRequest';
-import { useMyLeaveRequestsStore } from '@/stores/leaveRequestStore';
+import useEmployeeStore from '@/stores/employeeStore';
 import { LeaveRequest } from '@/types/leaveRequest';
 import { useEffect, useState } from 'react';
 import {
@@ -16,8 +16,9 @@ import {
 import LeaveRequestItem from './LeaveRequestItem';
 
 export function MyPendingLeaveRequestsList() {
-  const { isLoading, loadMyLeaveRequests, handleCancelMyLeaveRequest } = useMyLeaveRequest();
-  const getRequestByStatus = useMyLeaveRequestsStore(state => state.getRequestsByStatus);
+  const { isLoading, loadMyLeaveRequests, handleCancelMyLeaveRequest, getMyRequestsByStatus } =
+    useMyLeaveRequest();
+  const { employee } = useEmployeeStore();
 
   // 共享的確認對話框狀態
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -25,11 +26,11 @@ export function MyPendingLeaveRequestsList() {
   const [pendingCancelSlug, setPendingCancelSlug] = useState<string | null>(null);
 
   useEffect(() => {
-    loadMyLeaveRequests();
-  }, [loadMyLeaveRequests]);
+    loadMyLeaveRequests(employee.slug);
+  }, []);
 
   // 篩選出待審核的請假申請
-  const pendingRequests = getRequestByStatus(LeaveRequestStatus.PENDING);
+  const pendingRequests = getMyRequestsByStatus(employee.slug, LeaveRequestStatus.PENDING);
 
   // 處理取消請假申請的點擊
   const handleCancelClick = (slug: string) => {

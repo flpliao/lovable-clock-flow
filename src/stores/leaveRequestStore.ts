@@ -1,162 +1,12 @@
 import { LeaveRequest } from '@/types';
 import { create } from 'zustand';
 
-// 所有請假申請 Store (管理員視角)
-interface AllLeaveRequestsState {
+interface LeaveRequestsState {
   requests: LeaveRequest[];
   isLoading: boolean;
 
   setRequests: (requests: LeaveRequest[]) => void;
-  addRequest: (request: LeaveRequest) => void;
-  updateRequest: (slug: string, updates: Partial<LeaveRequest>) => void;
-  removeRequest: (slug: string) => void;
-  getRequestBySlug: (slug: string) => LeaveRequest | undefined;
-  getRequestsByStatus: (status: string | string[]) => LeaveRequest[];
-  getRequestsByType: (leaveType: string) => LeaveRequest[];
-  getRequestCounts: () => { total: number; byStatus: Record<string, number> };
-  setLoading: (loading: boolean) => void;
-  reset: () => void;
-}
-
-export const useAllLeaveRequestsStore = create<AllLeaveRequestsState>((set, get) => ({
-  requests: [],
-  isLoading: false,
-
-  setRequests: requests => set({ requests }),
-
-  addRequest: request => {
-    const { requests } = get();
-    set({ requests: [...requests, request] });
-  },
-
-  updateRequest: (slug, updates) => {
-    const { requests } = get();
-    set({
-      requests: requests.map(request =>
-        request.slug === slug ? { ...request, ...updates } : request
-      ),
-    });
-  },
-
-  removeRequest: slug => {
-    const { requests } = get();
-    set({ requests: requests.filter(request => request.slug !== slug) });
-  },
-
-  getRequestBySlug: slug => {
-    const { requests } = get();
-    return requests.find(request => request.slug === slug);
-  },
-
-  getRequestsByStatus: status => {
-    const { requests } = get();
-    if (Array.isArray(status)) {
-      return requests.filter(request => status.includes(request.status));
-    }
-    return requests.filter(request => request.status === status);
-  },
-
-  getRequestsByType: leaveTypeId => {
-    const { requests } = get();
-    return requests.filter(request => request.leave_type_id === leaveTypeId);
-  },
-
-  getRequestCounts: () => {
-    const { requests } = get();
-    const byStatus = requests.reduce(
-      (acc, request) => {
-        acc[request.status] = (acc[request.status] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
-
-    return { total: requests.length, byStatus };
-  },
-
-  setLoading: loading => set({ isLoading: loading }),
-
-  reset: () => set({ requests: [], isLoading: false }),
-}));
-
-// 我的請假申請 Store (員工視角)
-interface MyLeaveRequestsState {
-  requests: LeaveRequest[];
-  isLoading: boolean;
-
-  setRequests: (requests: LeaveRequest[]) => void;
-  addRequest: (request: LeaveRequest) => void;
-  setRequest: (slug: string, updates: Partial<LeaveRequest>) => void;
-  removeRequest: (slug: string) => void;
-  getRequestBySlug: (slug: string) => LeaveRequest | undefined;
-  getRequestsByStatus: (status: string | string[]) => LeaveRequest[];
-  getRequestCounts: () => { total: number; byStatus: Record<string, number> };
-  setLoading: (loading: boolean) => void;
-  reset: () => void;
-}
-
-export const useMyLeaveRequestsStore = create<MyLeaveRequestsState>((set, get) => ({
-  requests: [],
-  isLoading: false,
-
-  setRequests: requests => set({ requests }),
-
-  addRequest: request => {
-    const { requests } = get();
-    set({ requests: [...requests, request] });
-  },
-
-  setRequest: (slug, updates) => {
-    const { requests } = get();
-    set({
-      requests: requests.map(request =>
-        request.slug === slug ? { ...request, ...updates } : request
-      ),
-    });
-  },
-
-  removeRequest: slug => {
-    const { requests } = get();
-    set({ requests: requests.filter(request => request.slug !== slug) });
-  },
-
-  getRequestBySlug: slug => {
-    const { requests } = get();
-    return requests.find(request => request.slug === slug);
-  },
-
-  getRequestsByStatus: status => {
-    const { requests } = get();
-    if (Array.isArray(status)) {
-      return requests.filter(request => status.includes(request.status));
-    }
-    return requests.filter(request => request.status === status);
-  },
-
-  getRequestCounts: () => {
-    const { requests } = get();
-    const byStatus = requests.reduce(
-      (acc, request) => {
-        acc[request.status] = (acc[request.status] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
-
-    return { total: requests.length, byStatus };
-  },
-
-  setLoading: loading => set({ isLoading: loading }),
-
-  reset: () => set({ requests: [], isLoading: false }),
-}));
-
-// 待審核請假申請 Store (主管視角)
-interface PendingApprovalsState {
-  requests: LeaveRequest[];
-  isLoading: boolean;
-
-  setRequests: (requests: LeaveRequest[]) => void;
+  mergeRequests: (requests: LeaveRequest[]) => void;
   addRequest: (request: LeaveRequest) => void;
   updateRequest: (slug: string, updates: Partial<LeaveRequest>) => void;
   removeRequest: (slug: string) => void;
@@ -165,60 +15,92 @@ interface PendingApprovalsState {
   getRequestCounts: () => { total: number; byStatus: Record<string, number> };
   setLoading: (loading: boolean) => void;
   reset: () => void;
+  getMyRequests: (employeeSlug: string) => LeaveRequest[];
+  getMyRequestsByStatus: (employeeSlug: string, status: string | string[]) => LeaveRequest[];
+  getAllRequests: () => LeaveRequest[];
 }
 
-export const usePendingApprovalsStore = create<PendingApprovalsState>((set, get) => ({
+const useLeaveRequestsStore = create<LeaveRequestsState>((set, get) => ({
   requests: [],
   isLoading: false,
 
+  // 直接覆蓋整個 requests
   setRequests: requests => set({ requests }),
+
+  // 合併資料：若 slug 已存在則更新，不存在則新增
+  mergeRequests: newRequests => {
+    const { requests } = get();
+    const map = new Map(requests.map(r => [r.slug, r]));
+
+    newRequests.forEach(r => {
+      map.set(r.slug, { ...map.get(r.slug), ...r }); // update 或新增
+    });
+
+    set({ requests: Array.from(map.values()) });
+  },
 
   addRequest: request => {
     const { requests } = get();
-    set({ requests: [...requests, request] });
+    if (!requests.some(r => r.slug === request.slug)) {
+      set({ requests: [...requests, request] });
+    }
   },
 
   updateRequest: (slug, updates) => {
     const { requests } = get();
     set({
-      requests: requests.map(request =>
-        request.slug === slug ? { ...request, ...updates } : request
-      ),
+      requests: requests.map(r => (r.slug === slug ? { ...r, ...updates } : r)),
     });
   },
 
   removeRequest: slug => {
     const { requests } = get();
-    set({ requests: requests.filter(request => request.slug !== slug) });
-  },
-
-  getRequestBySlug: slug => {
-    const { requests } = get();
-    return requests.find(request => request.slug === slug);
-  },
-
-  getRequestsByStatus: status => {
-    const { requests } = get();
-    if (Array.isArray(status)) {
-      return requests.filter(request => status.includes(request.status));
-    }
-    return requests.filter(request => request.status === status);
-  },
-
-  getRequestCounts: () => {
-    const { requests } = get();
-    const byStatus = requests.reduce(
-      (acc, request) => {
-        acc[request.status] = (acc[request.status] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
-
-    return { total: requests.length, byStatus };
+    set({ requests: requests.filter(r => r.slug !== slug) });
   },
 
   setLoading: loading => set({ isLoading: loading }),
 
   reset: () => set({ requests: [], isLoading: false }),
+
+  getRequestBySlug: slug => {
+    const { requests } = get();
+    return requests.find(r => r.slug === slug);
+  },
+
+  getRequestsByStatus: status => {
+    const { requests } = get();
+    if (Array.isArray(status)) {
+      return requests.filter(r => status.includes(r.status));
+    }
+    return requests.filter(r => r.status === status);
+  },
+
+  getRequestCounts: () => {
+    const { requests } = get();
+    const byStatus = requests.reduce(
+      (acc, r) => {
+        acc[r.status] = (acc[r.status] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+    return { total: requests.length, byStatus };
+  },
+
+  getMyRequests: (employeeSlug: string) => {
+    const { requests } = get();
+    return requests.filter(r => r.employee?.slug === employeeSlug);
+  },
+
+  getMyRequestsByStatus: (employeeSlug: string, status: string | string[]) => {
+    const { requests } = get();
+    return requests.filter(r => r.employee?.slug === employeeSlug && status.includes(r.status));
+  },
+
+  getAllRequests: () => {
+    const { requests } = get();
+    return requests;
+  },
 }));
+
+export default useLeaveRequestsStore;

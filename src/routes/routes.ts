@@ -99,6 +99,13 @@ export const protectedRoutes: RouteConfig[] = [
     roles: [],
   },
   {
+    path: routes.approvalCenter,
+    name: '審核中心',
+    component: ApprovalCenter,
+    icon: 'checkCircle',
+    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
+  },
+  {
     path: routes.schedule,
     name: '排班審核',
     component: ScheduleManagement,
@@ -183,13 +190,6 @@ export const unFinishedRoutes: RouteConfig[] = [
     name: '人力資源管理',
     component: HrManagement,
     icon: 'users',
-    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
-  },
-  {
-    path: routes.approvalCenter,
-    name: '審核中心',
-    component: ApprovalCenter,
-    icon: 'check-circle',
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
   {

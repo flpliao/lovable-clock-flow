@@ -8,6 +8,8 @@ import { LogOut, Settings, User, X } from 'lucide-react';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
+const EXCLUDE_PATHS = [routes.accountSettings];
+
 const MobileNavigation: React.FC<MobileNavigationProps> = ({
   isOpen,
   employee,
@@ -16,6 +18,9 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
 }) => {
   const location = useLocation();
   const logout = useLogout();
+  const filteredMenuItems = visibleMenuItems.filter(
+    item => !EXCLUDE_PATHS.includes(item.path as (typeof EXCLUDE_PATHS)[number])
+  );
 
   return (
     <>
@@ -73,7 +78,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
             {/* 功能選單 - 格子佈局 */}
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
-                {visibleMenuItems.map(item => (
+                {filteredMenuItems.map(item => (
                   <Link to={item.path} key={item.path} onClick={onClose}>
                     <button
                       key={item.path}

@@ -3,14 +3,14 @@ import {
   getMyMissedCheckInRequests,
 } from '@/services/missedCheckInRequestService';
 import { useMyCheckInRecordsStore } from '@/stores/checkInRecordStore';
-import { useMyMissedCheckInRequestsStore } from '@/stores/missedCheckInRequestStore';
+import useMissedCheckInRequestsStore from '@/stores/missedCheckInRequestStore';
 import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
 import dayjs from 'dayjs';
 import { useMemo } from 'react';
 
 export const useMyMissedCheckInRequests = () => {
   const { requests, setRequests, addRequest, updateRequest, isLoading, setLoading } =
-    useMyMissedCheckInRequestsStore();
+    useMissedCheckInRequestsStore();
   const { addRecord } = useMyCheckInRecordsStore();
 
   // 過濾今日的忘記打卡申請

@@ -1,37 +1,85 @@
+import { FeatureCard, FeatureIcon, FeatureNumber } from '@/components/common/cards';
+import { FileText } from 'lucide-react';
 import React from 'react';
 
 interface ApprovalStatsProps {
   pendingLeave: number;
   pendingMissedCheckin: number;
-  todayApproved: number;
-  todayRejected: number;
+  onPendingLeaveClick?: () => void;
+  onPendingMissedCheckinClick?: () => void;
 }
 
 const ApprovalStats: React.FC<ApprovalStatsProps> = ({
   pendingLeave,
   pendingMissedCheckin,
-  todayApproved,
-  todayRejected,
+  onPendingLeaveClick,
+  onPendingMissedCheckinClick,
 }) => {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 text-center">
-        <div className="text-3xl font-bold text-white mb-2">{pendingLeave}</div>
-        <div className="text-white/80 text-sm font-medium">待審核請假</div>
-      </div>
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 text-center">
-        <div className="text-3xl font-bold text-white mb-2">{pendingMissedCheckin}</div>
-        <div className="text-white/80 text-sm font-medium">待審核打卡</div>
-      </div>
+  const cards = [
+    {
+      title: '待審核請假',
+      description: '點擊前往審核請假申請',
+      rightContent: (
+        <FeatureNumber
+          number={pendingLeave}
+          iconBg={pendingLeave > 0 ? 'bg-red-100' : 'bg-green-100'}
+          iconColor={pendingLeave > 0 ? 'text-red-600' : 'text-green-600'}
+        />
+      ),
+      onClick: onPendingLeaveClick,
+      isClickable: true,
+    },
+    {
+      title: '待審核打卡',
+      description: '點擊前往審核忘打卡申請',
+      rightContent: (
+        <FeatureNumber
+          number={pendingMissedCheckin}
+          iconBg={pendingMissedCheckin > 0 ? 'bg-orange-100' : 'bg-green-100'}
+          iconColor={pendingMissedCheckin > 0 ? 'text-orange-600' : 'text-green-600'}
+        />
+      ),
+      onClick: onPendingMissedCheckinClick,
+      isClickable: true,
+    },
+    {
+      title: '請假紀錄',
+      description: '查看請假申請歷史紀錄',
+      rightContent: (
+        <FeatureIcon
+          icon={<FileText className="h-5 w-5" />}
+          iconBg="bg-blue-100"
+          iconColor="text-blue-600"
+        />
+      ),
+      isClickable: false,
+    },
+    {
+      title: '忘打卡紀錄',
+      description: '查看忘打卡申請歷史紀錄',
+      rightContent: (
+        <FeatureIcon
+          icon={<FileText className="h-5 w-5" />}
+          iconBg="bg-purple-100"
+          iconColor="text-blue-600"
+        />
+      ),
+      isClickable: false,
+    },
+  ];
 
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 text-center">
-        <div className="text-3xl font-bold text-green-300 mb-2">{todayApproved}</div>
-        <div className="text-white/80 text-sm font-medium">今日已核准</div>
-      </div>
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-4 text-center">
-        <div className="text-3xl font-bold text-red-300 mb-2">{todayRejected}</div>
-        <div className="text-white/80 text-sm font-medium">今日已拒絕</div>
-      </div>
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      {cards.map((card, index) => (
+        <FeatureCard
+          key={index}
+          title={card.title}
+          description={card.description}
+          rightContent={card.rightContent}
+          onClick={card.onClick}
+          isClickable={card.isClickable}
+        />
+      ))}
     </div>
   );
 };

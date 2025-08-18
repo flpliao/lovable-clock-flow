@@ -1,4 +1,4 @@
-import { AddButton, DeleteButton, EditButton } from '@/components/common/buttons';
+import { AddButton, DeleteButton, DuplicateButton, EditButton } from '@/components/common/buttons';
 import { WorkScheduleStatus } from '@/constants/workSchedule';
 import { WorkSchedule } from '@/types/workSchedule';
 import { calculateOvertimeStartTime } from '@/utils/dateTimeUtils';
@@ -113,28 +113,29 @@ const WorkScheduleList = ({
                         <td className="px-3 py-2">
                           <div className="flex gap-2">
                             {onDuplicateWorkSchedule && (
-                              <button
+                              <DuplicateButton
                                 onClick={() => onDuplicateWorkSchedule(workSchedule)}
-                                className="h-6 w-6 p-0 border border-white/20 bg-transparent hover:bg-white/10 rounded flex items-center justify-center transition-colors"
+                                size="sm"
+                                className="h-6 w-6 bg-transparent hover:bg-transparent hover:text-green-400"
                                 title="複製工作時程"
                               >
-                                <Copy className="h-3 w-3 text-white/60 hover:text-white" />
-                              </button>
+                                <Copy className="h-3 w-3" />
+                              </DuplicateButton>
                             )}
                             {onEditWorkSchedule && (
                               <EditButton
                                 onClick={() => onEditWorkSchedule(workSchedule)}
                                 size="sm"
-                                className="h-6 w-6 p-0 border-none bg-transparent hover:bg-transparent"
+                                className="h-6 w-6 bg-transparent hover:bg-transparent hover:text-white/80"
                               >
-                                <Edit className="h-3 w-3 mr-1" />
+                                <Edit className="h-3 w-3" />
                               </EditButton>
                             )}
                             {onDeleteWorkSchedule && (
                               <DeleteButton
                                 onClick={() => onDeleteWorkSchedule(workSchedule.slug)}
                                 size="sm"
-                                className="h-6 w-6 p-0"
+                                className="h-6 w-6 bg-transparent hover:bg-transparent hover:text-red-400"
                               >
                                 <Trash2 className="h-3 w-3" />
                               </DeleteButton>
@@ -168,21 +169,22 @@ const WorkScheduleList = ({
                     {(onEditWorkSchedule || onDeleteWorkSchedule || onDuplicateWorkSchedule) && (
                       <div className="flex gap-1">
                         {onDuplicateWorkSchedule && (
-                          <button
+                          <DuplicateButton
                             onClick={() => onDuplicateWorkSchedule(workSchedule)}
-                            className="h-6 w-6 border border-white/20 bg-transparent hover:bg-white/10 rounded flex items-center justify-center transition-colors"
+                            size="sm"
+                            className="h-6 w-6 bg-transparent hover:bg-transparent hover:text-green-400"
                             title="複製工作時程"
                           >
-                            <Copy className="h-3 w-3 text-white/60 hover:text-white" />
-                          </button>
+                            <Copy className="h-3 w-3" />
+                          </DuplicateButton>
                         )}
                         {onEditWorkSchedule && (
                           <EditButton
                             onClick={() => onEditWorkSchedule(workSchedule)}
                             size="sm"
-                            className="h-6 w-6"
+                            className="h-6 w-6 bg-transparent hover:bg-transparent hover:bg-white/20"
                           >
-                            <Edit className="h-3 w-3 mr-1" />
+                            <Edit className="h-3 w-3" />
                           </EditButton>
                         )}
                         {onDeleteWorkSchedule && (

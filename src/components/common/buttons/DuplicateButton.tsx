@@ -2,9 +2,9 @@ import { ButtonLoader } from '@/components/common/ButtonLoader';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ClickableButtonProps } from '@/types/button';
-import { Edit } from 'lucide-react';
+import { Copy } from 'lucide-react';
 
-const EditButton = ({
+const DuplicateButton = ({
   children,
   className,
   size = 'sm',
@@ -18,15 +18,15 @@ const EditButton = ({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'bg-white/10 border-white/20 text-white hover:bg-white/20 font-medium transition-all duration-200',
+        'bg-green-400/20 border-green-400/30 text-green-300 hover:bg-green-400/30 font-medium transition-all duration-200',
         className
       )}
     >
       <ButtonLoader>
         {children || (
           <>
-            <Edit className="h-3 w-3 mr-1" />
-            編輯
+            <Copy className="h-3 w-3 mr-1" />
+            複製
           </>
         )}
       </ButtonLoader>
@@ -34,4 +34,4 @@ const EditButton = ({
   );
 };
 
-export default EditButton;
+export default DuplicateButton;

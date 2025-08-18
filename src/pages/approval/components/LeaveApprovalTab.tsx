@@ -1,14 +1,12 @@
-
-import React from 'react';
-import { CheckCircle, XCircle, User, FileText, Eye } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { format } from 'date-fns';
-import { getLeaveTypeText } from '@/utils/leaveUtils';
+import ApprovalButtons from '@/components/common/buttons/ApprovalActionButtons';
 import { LeaveRequest } from '@/types';
+import dayjs from 'dayjs';
+import { CheckCircle, FileText, User } from 'lucide-react';
+import React from 'react';
 
 interface LeaveRequestWithApplicant extends LeaveRequest {
   applicant_name?: string;
-  approvals?: any[];
+  approvals?: unknown[];
 }
 
 interface LeaveApprovalTabProps {
@@ -24,7 +22,7 @@ const LeaveApprovalTab: React.FC<LeaveApprovalTabProps> = ({
   isLoading,
   onViewDetail,
   onApprove,
-  onReject
+  onReject,
 }) => {
   if (isLoading) {
     return (
@@ -50,33 +48,36 @@ const LeaveApprovalTab: React.FC<LeaveApprovalTabProps> = ({
   return (
     <div className="space-y-4">
       {pendingRequests.map(request => (
-        <div key={request.id} className="bg-white/10 rounded-2xl p-6 border border-white/20">
+        <div key={request.slug} className="bg-white/5 rounded-2xl p-6 border border-white/20">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
                 <User className="h-5 w-5 text-white/80" />
-                <h3 className="text-lg font-semibold text-white">申請人員：{request.applicant_name}</h3>
+                <h3 className="text-lg font-semibold text-white">
+                  申請人員：{request.employee.name}
+                </h3>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="text-white/70">請假類型</span>
-                  <div className="text-white font-medium">{getLeaveTypeText(request.leave_type)}</div>
+                  <div className="text-white font-medium">{request.leave_type.name}</div>
                 </div>
                 <div>
                   <span className="text-white/70">請假期間</span>
                   <div className="text-white font-medium">
-                    {format(new Date(request.start_date), 'MM/dd')} - {format(new Date(request.end_date), 'MM/dd')}
+                    {dayjs(request.start_date).format('MM/DD')} ~{' '}
+                    {dayjs(request.end_date).format('MM/DD')}
                   </div>
                 </div>
                 <div>
                   <span className="text-white/70">請假時數</span>
-                  <div className="text-white font-medium">{request.hours} 小時</div>
+                  <div className="text-white font-medium">{request.duration_hours} 小時</div>
                 </div>
                 <div>
                   <span className="text-white/70">申請時間</span>
                   <div className="text-white font-medium">
-                    {request.created_at ? format(new Date(request.created_at), 'MM/dd HH:mm') : '-'}
+                    {dayjs(request.created_at).format('MM/DD HH:mm')}
                   </div>
                 </div>
               </div>
@@ -92,20 +93,13 @@ const LeaveApprovalTab: React.FC<LeaveApprovalTabProps> = ({
               )}
             </div>
 
-            <div className="flex flex-col gap-2 lg:ml-6">
-              <Button onClick={() => onViewDetail(request)} className="bg-blue-500 hover:bg-blue-600 text-white border-0" size="sm">
-                <Eye className="h-4 w-4 mr-2" />
-                詳細審核
-              </Button>
-              <Button onClick={() => onApprove(request)} className="bg-green-500 hover:bg-green-600 text-white border-0" size="sm">
-                <CheckCircle className="h-4 w-4 mr-2" />
-                快速核准
-              </Button>
-              <Button onClick={() => onReject(request)} variant="destructive" size="sm">
-                <XCircle className="h-4 w-4 mr-2" />
-                快速拒絕
-              </Button>
-            </div>
+            <ApprovalButtons
+              className="lg:ml-6"
+              onViewDetail={() => onViewDetail(request)}
+              onApprove={() => onApprove(request)}
+              onReject={() => onReject(request)}
+              size="sm"
+            />
           </div>
         </div>
       ))}

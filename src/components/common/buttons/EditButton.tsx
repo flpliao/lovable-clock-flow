@@ -5,14 +5,16 @@ import { ClickableButtonProps } from '@/types/button';
 import { Edit } from 'lucide-react';
 
 const EditButton = ({
+  type = 'button',
+  onClick,
   children,
   className,
-  size = 'sm',
-  onClick,
+  size = 'default',
   disabled = false,
 }: ClickableButtonProps) => {
   return (
     <Button
+      type={type}
       variant="destructive"
       size={size}
       onClick={onClick}

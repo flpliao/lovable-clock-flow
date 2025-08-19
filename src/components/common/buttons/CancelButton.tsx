@@ -4,15 +4,16 @@ import { cn } from '@/lib/utils';
 import { ClickableButtonProps } from '@/types/button';
 
 const CancelButton = ({
+  type = 'button',
+  onClick,
   children,
   className,
   size = 'default',
-  onClick,
   disabled = false,
 }: ClickableButtonProps) => {
   return (
     <Button
-      type="button"
+      type={type}
       variant="outline"
       size={size}
       onClick={onClick}

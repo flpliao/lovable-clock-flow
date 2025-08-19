@@ -5,14 +5,16 @@ import { ClickableButtonProps } from '@/types/button';
 import { Copy } from 'lucide-react';
 
 const DuplicateButton = ({
+  type = 'button',
+  onClick,
   children,
   className,
   size = 'sm',
-  onClick,
   disabled = false,
 }: ClickableButtonProps) => {
   return (
     <Button
+      type={type}
       variant="destructive"
       size={size}
       onClick={onClick}

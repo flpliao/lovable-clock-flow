@@ -4,6 +4,8 @@ import { cn } from '@/lib/utils';
 import { SubmitButtonProps } from '@/types/button';
 
 const SubmitButton = ({
+  type = 'submit',
+  onClick,
   children,
   className,
   size = 'default',
@@ -13,7 +15,8 @@ const SubmitButton = ({
 }: SubmitButtonProps) => {
   return (
     <Button
-      type="submit"
+      type={type}
+      onClick={onClick}
       variant="default"
       size={size}
       disabled={disabled || isLoading}

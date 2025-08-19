@@ -171,8 +171,8 @@ const WorkScheduleList = ({
                         {onDuplicateWorkSchedule && (
                           <DuplicateButton
                             onClick={() => onDuplicateWorkSchedule(workSchedule)}
-                            size="sm"
-                            className="h-6 w-6 bg-transparent hover:bg-transparent hover:text-green-400"
+                            size="icon"
+                            className="bg-transparent hover:bg-transparent hover:text-green-400"
                             title="複製工作時程"
                           >
                             <Copy className="h-3 w-3" />
@@ -181,8 +181,8 @@ const WorkScheduleList = ({
                         {onEditWorkSchedule && (
                           <EditButton
                             onClick={() => onEditWorkSchedule(workSchedule)}
-                            size="sm"
-                            className="h-6 w-6 bg-transparent hover:bg-transparent hover:bg-white/20"
+                            size="icon"
+                            className="bg-transparent hover:bg-transparent hover:bg-white/20"
                           >
                             <Edit className="h-3 w-3" />
                           </EditButton>
@@ -190,8 +190,7 @@ const WorkScheduleList = ({
                         {onDeleteWorkSchedule && (
                           <DeleteButton
                             onClick={() => onDeleteWorkSchedule(workSchedule.slug)}
-                            size="sm"
-                            className="h-6 w-6"
+                            size="icon"
                           >
                             <Trash2 className="h-3 w-3" />
                           </DeleteButton>

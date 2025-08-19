@@ -1,25 +1,7 @@
 import { Button } from '@/components/ui/button';
+import { ApprovalButton, ApprovalButtonsProps } from '@/types/button';
 import { CheckCircle, Eye, XCircle } from 'lucide-react';
 import React from 'react';
-
-export interface ApprovalButton {
-  label: string;
-  onClick: () => void;
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-  icon?: React.ReactNode;
-  disabled?: boolean;
-  className?: string;
-}
-
-interface ApprovalButtonsProps {
-  onViewDetail?: () => void;
-  onApprove?: () => void;
-  onReject?: () => void;
-  className?: string;
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-  disabled?: boolean;
-}
 
 const ApprovalButtons: React.FC<ApprovalButtonsProps> = ({
   onViewDetail,

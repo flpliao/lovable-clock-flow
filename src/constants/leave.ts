@@ -1,22 +1,4 @@
 /**
- * 請假申請狀態常數
- */
-export enum LeaveRequestStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-  CANCELLED = 'cancelled',
-}
-
-/**
- * 審核狀態常數
- */
-export enum ApprovalStatus {
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-}
-
-/**
  * 請假類型代碼常數
  */
 export enum LeaveTypeCode {

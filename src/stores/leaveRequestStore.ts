@@ -15,8 +15,6 @@ interface LeaveRequestsState {
   getRequestCounts: () => { total: number; byStatus: Record<string, number> };
   setLoading: (loading: boolean) => void;
   reset: () => void;
-  getMyRequests: (employeeSlug: string) => LeaveRequest[];
-  getMyRequestsByStatus: (employeeSlug: string, status: string | string[]) => LeaveRequest[];
   getAllRequests: () => LeaveRequest[];
 }
 
@@ -69,6 +67,7 @@ const useLeaveRequestsStore = create<LeaveRequestsState>((set, get) => ({
 
   getRequestsByStatus: status => {
     const { requests } = get();
+
     if (Array.isArray(status)) {
       return requests.filter(r => status.includes(r.status));
     }
@@ -85,16 +84,6 @@ const useLeaveRequestsStore = create<LeaveRequestsState>((set, get) => ({
       {} as Record<string, number>
     );
     return { total: requests.length, byStatus };
-  },
-
-  getMyRequests: (employeeSlug: string) => {
-    const { requests } = get();
-    return requests.filter(r => r.employee?.slug === employeeSlug);
-  },
-
-  getMyRequestsByStatus: (employeeSlug: string, status: string | string[]) => {
-    const { requests } = get();
-    return requests.filter(r => r.employee?.slug === employeeSlug && status.includes(r.status));
   },
 
   getAllRequests: () => {

@@ -1,27 +1,20 @@
-import { LeaveRequestStatus } from '@/constants/leave';
+import { RequestStatus } from '@/constants/requestStatus';
 import {
   cancelLeaveRequest,
   createLeaveRequest,
   getMyLeaveRequests,
+  updateLeaveRequest,
 } from '@/services/leaveRequestService';
 import useLeaveRequestsStore from '@/stores/leaveRequestStore';
 import { LeaveRequest } from '@/types/leaveRequest';
 
 export const useMyLeaveRequest = () => {
-  const {
-    requests,
-    getMyRequests,
-    getMyRequestsByStatus,
-    addRequest,
-    updateRequest,
-    mergeRequests,
-    isLoading,
-    setLoading,
-  } = useLeaveRequestsStore();
+  const { requests, addRequest, updateRequest, mergeRequests, isLoading, setLoading } =
+    useLeaveRequestsStore();
 
   // 載入我的請假申請
   const loadMyLeaveRequests = async (employeeSlug: string) => {
-    if (getMyRequests(employeeSlug).length > 0 || isLoading) return;
+    if (requests.filter(r => r.employee?.slug === employeeSlug).length > 0 || isLoading) return;
 
     setLoading(true);
     const data = await getMyLeaveRequests();
@@ -44,8 +37,12 @@ export const useMyLeaveRequest = () => {
   };
 
   // 更新請假申請
-  const handleUpdateMyLeaveRequest = (slug: string, updates: Partial<LeaveRequest>) => {
-    updateRequest(slug, updates);
+  const handleUpdateMyLeaveRequest = async (slug: string, updates: Partial<LeaveRequest>) => {
+    const updatedRequest = await updateLeaveRequest(slug, updates);
+    if (updatedRequest) {
+      updateRequest(slug, updatedRequest);
+    }
+    return updatedRequest;
   };
 
   // 取消請假申請
@@ -53,7 +50,7 @@ export const useMyLeaveRequest = () => {
     const success = await cancelLeaveRequest(slug);
     if (success) {
       // 更新本地狀態為已取消
-      updateRequest(slug, { status: LeaveRequestStatus.CANCELLED });
+      updateRequest(slug, { status: RequestStatus.CANCELLED });
     }
 
     return success;
@@ -66,7 +63,6 @@ export const useMyLeaveRequest = () => {
 
     // 操作方法
     loadMyLeaveRequests,
-    getMyRequestsByStatus,
     handleCreateMyLeaveRequest,
     handleUpdateMyLeaveRequest,
     handleCancelMyLeaveRequest,

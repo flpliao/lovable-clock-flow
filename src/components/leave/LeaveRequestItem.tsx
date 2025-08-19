@@ -1,4 +1,4 @@
-import { LeaveRequestStatus } from '@/constants/leave';
+import { RequestStatus } from '@/constants/requestStatus';
 import { LeaveRequest } from '@/types/leaveRequest';
 import { AlertCircle, Calendar, CheckCircle, Clock, FileText, XCircle } from 'lucide-react';
 import LeaveRequestStatusBadge from '../LeaveRequestStatusBadge';
@@ -98,7 +98,7 @@ export function LeaveRequestItem({ leaveRequest, onCancel }: LeaveRequestItemPro
       </div>
 
       {/* 取消按鈕 - 靠右對齊 */}
-      {leaveRequest.status === LeaveRequestStatus.PENDING && onCancel && (
+      {leaveRequest.status === RequestStatus.PENDING && onCancel && (
         <div className="flex justify-end mt-4">
           <Button
             size="sm"

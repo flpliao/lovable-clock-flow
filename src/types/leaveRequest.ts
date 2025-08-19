@@ -1,4 +1,5 @@
-import { ApprovalStatus, LeaveRequestStatus } from '@/constants/leave';
+import { ApprovalStatus } from '@/constants/approvalStatus';
+import { RequestStatus } from '@/constants/requestStatus';
 import { Employee } from './employee';
 import { LeaveType } from './leaveType';
 
@@ -10,7 +11,7 @@ export interface LeaveRequest {
   end_date: string;
   leave_type_id?: string;
   leave_type_code: string;
-  status: LeaveRequestStatus;
+  status: RequestStatus;
   duration_hours: number;
   reason: string;
   rejection_reason?: string;

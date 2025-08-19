@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import { LeaveRequestStatus } from '@/constants/leave';
+import { RequestStatus } from '@/constants/requestStatus';
 import React from 'react';
 
 interface LeaveStatusBadgeProps {
@@ -8,7 +8,7 @@ interface LeaveStatusBadgeProps {
 }
 
 const statusConfig: Record<
-  LeaveRequestStatus,
+  RequestStatus,
   { variant: 'default' | 'secondary' | 'destructive'; text: string }
 > = {
   approved: { variant: 'default', text: '已核准' },
@@ -18,7 +18,7 @@ const statusConfig: Record<
 };
 
 const LeaveRequestStatusBadge: React.FC<LeaveStatusBadgeProps> = ({ status, className }) => {
-  const { variant, text } = statusConfig[status as LeaveRequestStatus];
+  const { variant, text } = statusConfig[status as RequestStatus];
   return (
     <Badge variant={variant} className={className}>
       {text}

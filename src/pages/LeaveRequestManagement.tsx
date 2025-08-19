@@ -5,11 +5,36 @@ import LeaveRequestForm from '@/components/leave/LeaveRequestForm';
 import MyLeaveRequestList from '@/components/leave/MyLeaveRequestList';
 import MyPendingLeaveRequestsList from '@/components/leave/MyPendingLeaveRequestsList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RequestStatus } from '@/constants/requestStatus';
+import { useMyLeaveRequest } from '@/hooks/useMyLeaveRequest';
+import useEmployeeStore from '@/stores/employeeStore';
 import { FileText, History } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const LeaveRequestManagement = () => {
   const [activeTab, setActiveTab] = useState<string>('request');
+  const { employee } = useEmployeeStore();
+  const { requests, isLoading, loadMyLeaveRequests } = useMyLeaveRequest();
+
+  // 初始載入
+  useEffect(() => {
+    loadMyLeaveRequests(employee.slug);
+  }, []);
+
+  const pendingRequests = useMemo(() => {
+    return requests.filter(
+      r => r.status === RequestStatus.PENDING && r.employee?.slug === employee.slug
+    );
+  }, [requests, employee.slug]);
+
+  const historyRequests = useMemo(() => {
+    return requests.filter(
+      r =>
+        [RequestStatus.CANCELLED, RequestStatus.REJECTED, RequestStatus.APPROVED].includes(
+          r.status
+        ) && r.employee?.slug === employee.slug
+    );
+  }, [requests, employee.slug]);
 
   // 處理請假申請成功
   const handleLeaveRequestSuccess = () => {
@@ -59,7 +84,7 @@ const LeaveRequestManagement = () => {
               </div>
               <h3 className="text-lg font-semibold text-white drop-shadow-md">查看請假</h3>
             </div>
-            <MyPendingLeaveRequestsList />
+            <MyPendingLeaveRequestsList requests={pendingRequests} isLoading={isLoading} />
           </div>
         </TabsContent>
 
@@ -71,7 +96,7 @@ const LeaveRequestManagement = () => {
               </div>
               <h3 className="text-lg font-semibold text-white drop-shadow-md">請假紀錄</h3>
             </div>
-            <MyLeaveRequestList />
+            <MyLeaveRequestList requests={historyRequests} isLoading={isLoading} />
           </div>
         </TabsContent>
       </Tabs>

@@ -75,6 +75,24 @@ export const deleteMissedCheckInRequest = async (slug: string): Promise<boolean>
   return status === ApiResponseStatus.SUCCESS;
 };
 
+// 核准忘記打卡申請
+export const approveMissedCheckInRequest = async (slug: string): Promise<boolean> => {
+  const { status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().put(apiRoutes.missedCheckInRequest.approve(slug))
+  );
+
+  return status === ApiResponseStatus.SUCCESS;
+};
+
+// 拒絕忘記打卡申請
+export const rejectMissedCheckInRequest = async (slug: string): Promise<boolean> => {
+  const { status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().put(apiRoutes.missedCheckInRequest.reject(slug))
+  );
+
+  return status === ApiResponseStatus.SUCCESS;
+};
+
 // 取消忘記打卡申請
 export const cancelMissedCheckInRequest = async (slug: string): Promise<boolean> => {
   const { status } = await callApiAndDecode(

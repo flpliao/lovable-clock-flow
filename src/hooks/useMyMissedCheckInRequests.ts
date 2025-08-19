@@ -1,6 +1,9 @@
+import { RequestStatus } from '@/constants/requestStatus';
 import {
+  cancelMissedCheckInRequest,
   createMissedCheckInRequest,
   getMyMissedCheckInRequests,
+  updateMissedCheckInRequest,
 } from '@/services/missedCheckInRequestService';
 import { useMyCheckInRecordsStore } from '@/stores/checkInRecordStore';
 import useMissedCheckInRequestsStore from '@/stores/missedCheckInRequestStore';
@@ -9,7 +12,7 @@ import dayjs from 'dayjs';
 import { useMemo } from 'react';
 
 export const useMyMissedCheckInRequests = () => {
-  const { requests, setRequests, addRequest, updateRequest, isLoading, setLoading } =
+  const { requests, mergeRequests, addRequest, updateRequest, isLoading, setLoading } =
     useMissedCheckInRequestsStore();
   const { addRecord } = useMyCheckInRecordsStore();
 
@@ -24,7 +27,7 @@ export const useMyMissedCheckInRequests = () => {
 
     setLoading(true);
     const data = await getMyMissedCheckInRequests();
-    setRequests(data);
+    mergeRequests(data);
     setLoading(false);
   };
 
@@ -36,7 +39,6 @@ export const useMyMissedCheckInRequests = () => {
     reason: string;
   }): Promise<MissedCheckInRequest | null> => {
     const newRequest = await createMissedCheckInRequest(requestData);
-    console.log('newRequest', newRequest);
     if (newRequest) {
       addRequest(newRequest);
       addRecord(newRequest.check_in_record);
@@ -45,23 +47,23 @@ export const useMyMissedCheckInRequests = () => {
   };
 
   // 更新忘記打卡申請
-  const handleUpdateMyMissedCheckInRequest = (
-    id: string,
+  const handleUpdateMyMissedCheckInRequest = async (
+    slug: string,
     updates: Partial<MissedCheckInRequest>
   ) => {
-    updateRequest(id, updates);
+    const data = await updateMissedCheckInRequest(slug, updates);
+    if (data) {
+      updateRequest(slug, updates);
+    }
   };
 
   // 取消忘記打卡申請
-  const handleCancelMyMissedCheckInRequest = async (_id: string) => {
-    // TODO: 實作 cancelMissedCheckInRequest API
-    // const success = await cancelMissedCheckInRequest(id);
-    // if (success) {
-    //   // 更新本地狀態為已取消
-    //   updateRequest(id, { status: 'cancelled' });
-    // }
-    // return success;
-    return false;
+  const handleCancelMyMissedCheckInRequest = async (slug: string) => {
+    const success = await cancelMissedCheckInRequest(slug);
+    if (success) {
+      updateRequest(slug, { status: RequestStatus.CANCELLED });
+    }
+    return success;
   };
 
   return {

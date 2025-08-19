@@ -78,6 +78,8 @@ export const apiRoutes = {
     store: `${API_URL}/employee/missed-check-in-requests`,
     update: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}`,
     destroy: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}`,
+    approve: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}/approve`,
+    reject: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}/reject`,
     cancel: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}/cancel`,
     myRequests: `${API_URL}/employee/missed-check-in-requests/my-requests`,
     getApprovalsByRequest: (slug: string) =>

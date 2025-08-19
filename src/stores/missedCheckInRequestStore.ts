@@ -3,29 +3,27 @@ import { create } from 'zustand';
 
 interface MissedCheckInRequestsState {
   requests: MissedCheckInRequest[];
+  loadedStatuses: Record<string, boolean>;
   isLoading: boolean;
 
   setRequests: (requests: MissedCheckInRequest[]) => void;
   mergeRequests: (requests: MissedCheckInRequest[]) => void;
   addRequest: (request: MissedCheckInRequest) => void;
-  updateRequest: (id: string, updates: Partial<MissedCheckInRequest>) => void;
-  removeRequest: (id: string) => void;
-  getRequestById: (id: string) => MissedCheckInRequest | undefined;
+  updateRequest: (slug: string, updates: Partial<MissedCheckInRequest>) => void;
+  removeRequest: (slug: string) => void;
+  getRequestBySlug: (slug: string) => MissedCheckInRequest | undefined;
   getRequestsByStatus: (status: string | string[]) => MissedCheckInRequest[];
   getRequestsByType: (missedType: string) => MissedCheckInRequest[];
   getRequestCounts: () => { total: number; byStatus: Record<string, number> };
   setLoading: (loading: boolean) => void;
   reset: () => void;
   getMyRequests: (employeeSlug: string) => MissedCheckInRequest[];
-  getMyRequestsByStatus: (
-    employeeSlug: string,
-    status: string | string[]
-  ) => MissedCheckInRequest[];
   getAllRequests: () => MissedCheckInRequest[];
 }
 
 const useMissedCheckInRequestsStore = create<MissedCheckInRequestsState>((set, get) => ({
   requests: [],
+  loadedStatuses: {},
   isLoading: false,
 
   // 直接覆蓋整個 requests
@@ -34,10 +32,10 @@ const useMissedCheckInRequestsStore = create<MissedCheckInRequestsState>((set, g
   // 合併資料：若 id 已存在則更新，不存在則新增
   mergeRequests: newRequests => {
     const { requests } = get();
-    const map = new Map(requests.map(r => [r.id, r]));
+    const map = new Map(requests.map(r => [r.slug, r]));
 
     newRequests.forEach(r => {
-      map.set(r.id, { ...map.get(r.id), ...r }); // update 或新增
+      map.set(r.slug, { ...map.get(r.slug), ...r }); // update 或新增
     });
 
     set({ requests: Array.from(map.values()) });
@@ -45,26 +43,26 @@ const useMissedCheckInRequestsStore = create<MissedCheckInRequestsState>((set, g
 
   addRequest: request => {
     const { requests } = get();
-    if (!requests.some(r => r.id === request.id)) {
+    if (!requests.some(r => r.slug === request.slug)) {
       set({ requests: [...requests, request] });
     }
   },
 
-  updateRequest: (id, updates) => {
+  updateRequest: (slug, updates) => {
     const { requests } = get();
     set({
-      requests: requests.map(r => (r.id === id ? { ...r, ...updates } : r)),
+      requests: requests.map(r => (r.slug === slug ? { ...r, ...updates } : r)),
     });
   },
 
-  removeRequest: id => {
+  removeRequest: slug => {
     const { requests } = get();
-    set({ requests: requests.filter(r => r.id !== id) });
+    set({ requests: requests.filter(r => r.slug !== slug) });
   },
 
-  getRequestById: id => {
+  getRequestBySlug: slug => {
     const { requests } = get();
-    return requests.find(r => r.id === id);
+    return requests.find(r => r.slug === slug);
   },
 
   getRequestsByStatus: status => {
@@ -95,16 +93,17 @@ const useMissedCheckInRequestsStore = create<MissedCheckInRequestsState>((set, g
 
   setLoading: loading => set({ isLoading: loading }),
 
-  reset: () => set({ requests: [], isLoading: false }),
+  reset: () => set({ requests: [], isLoading: false, loadedStatuses: {} }),
 
-  getMyRequests: (employeeId: string) => {
-    const { requests } = get();
-    return requests.filter(r => r.employee_id === employeeId);
+  setLoadedStatus: (status: string, loaded: boolean) => {
+    set(state => ({
+      loadedStatuses: { ...state.loadedStatuses, [status]: loaded },
+    }));
   },
 
-  getMyRequestsByStatus: (employeeId: string, status: string | string[]) => {
+  getMyRequests: (employeeSlug: string) => {
     const { requests } = get();
-    return requests.filter(r => r.employee_id === employeeId && status.includes(r.status));
+    return requests.filter(r => r.employee.slug === employeeSlug);
   },
 
   getAllRequests: () => {

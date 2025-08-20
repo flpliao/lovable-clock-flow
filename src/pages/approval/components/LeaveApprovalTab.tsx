@@ -1,29 +1,32 @@
 import ApprovalButtons from '@/components/common/buttons/ApprovalActionButtons';
+import ApproveDialog from '@/components/common/dialogs/ApproveDialog';
+import RejectDialog from '@/components/common/dialogs/RejectDialog';
+import { useToast } from '@/hooks/useToast';
 import { LeaveRequest } from '@/types';
 import dayjs from 'dayjs';
 import { CheckCircle, FileText, User } from 'lucide-react';
-import React from 'react';
-
-interface LeaveRequestWithApplicant extends LeaveRequest {
-  applicant_name?: string;
-  approvals?: unknown[];
-}
+import React, { useState } from 'react';
 
 interface LeaveApprovalTabProps {
-  pendingRequests: LeaveRequestWithApplicant[];
+  requests: LeaveRequest[];
   isLoading: boolean;
-  onViewDetail: (request: LeaveRequestWithApplicant) => void;
-  onApprove: (request: LeaveRequestWithApplicant) => Promise<void>;
-  onReject: (request: LeaveRequestWithApplicant) => Promise<void>;
+  onApprove: (request: LeaveRequest) => Promise<boolean>;
+  onReject: (request: LeaveRequest) => Promise<boolean>;
 }
 
 const LeaveApprovalTab: React.FC<LeaveApprovalTabProps> = ({
-  pendingRequests,
+  requests,
   isLoading,
-  onViewDetail,
   onApprove,
   onReject,
 }) => {
+  const { toast } = useToast();
+  const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
+  const [showApproveDialog, setShowApproveDialog] = useState(false);
+  const [approveComment, setApproveComment] = useState('');
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+
   if (isLoading) {
     return (
       <div className="text-center py-8">
@@ -33,7 +36,7 @@ const LeaveApprovalTab: React.FC<LeaveApprovalTabProps> = ({
     );
   }
 
-  if (pendingRequests.length === 0) {
+  if (requests.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="w-16 h-16 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -45,9 +48,41 @@ const LeaveApprovalTab: React.FC<LeaveApprovalTabProps> = ({
     );
   }
 
+  const handleApprove = async (request: LeaveRequest) => {
+    request.approve_comment = approveComment;
+    const result = await onApprove(request);
+    if (result) {
+      setShowApproveDialog(false);
+      toast({
+        title: '核准成功',
+        description: '忘記打卡申請已核准',
+      });
+
+      setApproveComment('');
+    }
+
+    return result;
+  };
+
+  const handleReject = async (request: LeaveRequest) => {
+    request.rejection_reason = rejectionReason;
+    const result = await onReject(request);
+    if (result) {
+      setShowRejectDialog(false);
+      toast({
+        title: '拒絕成功',
+        description: '忘記打卡申請已拒絕',
+      });
+
+      setRejectionReason('');
+    }
+
+    return result;
+  };
+
   return (
     <div className="space-y-4">
-      {pendingRequests.map(request => (
+      {requests.map(request => (
         <div key={request.slug} className="bg-white/5 rounded-2xl p-6 border border-white/20">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="flex-1">
@@ -75,9 +110,9 @@ const LeaveApprovalTab: React.FC<LeaveApprovalTabProps> = ({
                   <div className="text-white font-medium">{request.duration_hours} 小時</div>
                 </div>
                 <div>
-                  <span className="text-white/70">申請時間</span>
+                  <span className="text-white/70">申請日期</span>
                   <div className="text-white font-medium">
-                    {dayjs(request.created_at).format('MM/DD HH:mm')}
+                    {dayjs(request.created_at).format('YYYY/MM/DD')}
                   </div>
                 </div>
               </div>
@@ -95,14 +130,39 @@ const LeaveApprovalTab: React.FC<LeaveApprovalTabProps> = ({
 
             <ApprovalButtons
               className="lg:ml-6"
-              onViewDetail={() => onViewDetail(request)}
-              onApprove={() => onApprove(request)}
-              onReject={() => onReject(request)}
+              onApprove={() => {
+                setSelectedRequest(request);
+                setShowApproveDialog(true);
+              }}
+              onReject={() => {
+                setSelectedRequest(request);
+                setShowRejectDialog(true);
+              }}
               size="sm"
             />
           </div>
         </div>
       ))}
+
+      <ApproveDialog
+        open={showApproveDialog}
+        onOpenChange={setShowApproveDialog}
+        onConfirm={() => handleApprove(selectedRequest)}
+        approveComment={approveComment}
+        onApproveCommentChange={setApproveComment}
+        title="確認核准"
+        description="確定要核准此忘打卡申請嗎？"
+      />
+
+      <RejectDialog
+        open={showRejectDialog}
+        onOpenChange={setShowRejectDialog}
+        onConfirm={() => handleReject(selectedRequest)}
+        rejectionReason={rejectionReason}
+        onRejectionReasonChange={setRejectionReason}
+        title="確認拒絕"
+        description="確定要拒絕此忘打卡申請嗎？"
+      />
     </div>
   );
 };

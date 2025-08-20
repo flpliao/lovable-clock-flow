@@ -60,3 +60,8 @@ export const getStatusConfig = (status: ApprovalStatus): StatusConfig => {
       };
   }
 };
+
+export const getStatusColors = (count: number, dangerColor: string) => ({
+  iconBg: count > 0 ? `bg-${dangerColor}-100` : 'bg-green-100',
+  iconColor: count > 0 ? `text-${dangerColor}-600` : 'text-green-600',
+});

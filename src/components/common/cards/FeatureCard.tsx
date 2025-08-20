@@ -1,20 +1,9 @@
+import { FeatureCardProps } from '@/types/featureCard';
 import React from 'react';
 
-interface FeatureCardProps {
-  title: string;
-  description: string;
-  rightContent: React.ReactNode;
-  onClick?: () => void;
-  isClickable?: boolean;
-}
+const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, rightContent, onClick }) => {
+  const isClickable = onClick !== undefined;
 
-const FeatureCard: React.FC<FeatureCardProps> = ({
-  title,
-  description,
-  rightContent,
-  onClick,
-  isClickable = false,
-}) => {
   const cardClasses = `group rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative w-full ${
     isClickable ? 'cursor-pointer' : ''
   }`;

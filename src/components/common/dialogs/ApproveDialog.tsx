@@ -60,13 +60,13 @@ const ApproveDialog = ({
         {onApproveCommentChange && (
           <div className="space-y-2">
             <label htmlFor="approve-comment" className="text-sm text-muted-foreground">
-              註解
+              備註
             </label>
             <textarea
               id="approve-comment"
               value={approveComment}
               onChange={e => onApproveCommentChange(e.target.value)}
-              placeholder="如需要，請在此填寫註解"
+              placeholder="如需要，請在此填寫備註"
               className="w-full min-h-[80px] p-3 text-sm border border-input rounded-md bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
               disabled={isLoading}
             />

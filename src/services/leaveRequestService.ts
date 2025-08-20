@@ -87,18 +87,25 @@ export const updateLeaveRequest = async (
 };
 
 // 核准請假申請
-export const approveLeaveRequest = async (slug: string): Promise<boolean> => {
+export const approveLeaveRequest = async (slug: string, comment: string): Promise<boolean> => {
   const { status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().put(apiRoutes.leaveRequest.approve(slug))
+    axiosWithEmployeeAuth().put(apiRoutes.leaveRequest.approve(slug), {
+      comment: comment,
+    })
   );
 
   return status === ApiResponseStatus.SUCCESS;
 };
 
 // 拒絕請假申請
-export const rejectLeaveRequest = async (slug: string): Promise<boolean> => {
+export const rejectLeaveRequest = async (
+  slug: string,
+  rejectionReason: string
+): Promise<boolean> => {
   const { status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().put(apiRoutes.leaveRequest.reject(slug))
+    axiosWithEmployeeAuth().put(apiRoutes.leaveRequest.reject(slug), {
+      rejection_reason: rejectionReason,
+    })
   );
 
   return status === ApiResponseStatus.SUCCESS;

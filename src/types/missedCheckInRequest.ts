@@ -17,6 +17,7 @@ export interface MissedCheckInRequest {
   approved_at?: string;
   rejected_at?: string;
   rejection_reason?: string;
+  approve_comment?: string;
   check_in_record?: CheckInRecord;
   created_at: string;
   updated_at: string;

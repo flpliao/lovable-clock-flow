@@ -15,6 +15,7 @@ export interface LeaveRequest {
   duration_hours: number;
   reason: string;
   rejection_reason?: string;
+  approve_comment?: string;
   leave_type?: LeaveType;
   employee?: Employee;
   created_at: string;

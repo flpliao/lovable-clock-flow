@@ -86,18 +86,28 @@ export const deleteMissedCheckInRequest = async (slug: string): Promise<boolean>
 };
 
 // 核准忘記打卡申請
-export const approveMissedCheckInRequest = async (slug: string): Promise<boolean> => {
+export const approveMissedCheckInRequest = async (
+  slug: string,
+  comment: string
+): Promise<boolean> => {
   const { status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().put(apiRoutes.missedCheckInRequest.approve(slug))
+    axiosWithEmployeeAuth().put(apiRoutes.missedCheckInRequest.approve(slug), {
+      comment: comment,
+    })
   );
 
   return status === ApiResponseStatus.SUCCESS;
 };
 
 // 拒絕忘記打卡申請
-export const rejectMissedCheckInRequest = async (slug: string): Promise<boolean> => {
+export const rejectMissedCheckInRequest = async (
+  slug: string,
+  rejectionReason: string
+): Promise<boolean> => {
   const { status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().put(apiRoutes.missedCheckInRequest.reject(slug))
+    axiosWithEmployeeAuth().put(apiRoutes.missedCheckInRequest.reject(slug), {
+      rejection_reason: rejectionReason,
+    })
   );
 
   return status === ApiResponseStatus.SUCCESS;

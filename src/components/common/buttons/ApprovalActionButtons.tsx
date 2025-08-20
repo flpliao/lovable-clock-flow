@@ -16,7 +16,7 @@ const ApprovalButtons: React.FC<ApprovalButtonsProps> = ({
   // 只有傳入對應的事件才添加按鈕
   if (onViewDetail) {
     buttons.push({
-      label: '詳細審核',
+      label: '查看',
       onClick: onViewDetail,
       icon: <Eye className="h-4 w-4 mr-2" />,
       className: 'bg-blue-500 hover:bg-blue-600 text-white border-0',
@@ -27,7 +27,7 @@ const ApprovalButtons: React.FC<ApprovalButtonsProps> = ({
 
   if (onApprove) {
     buttons.push({
-      label: '快速核准',
+      label: '核准',
       onClick: onApprove,
       icon: <CheckCircle className="h-4 w-4 mr-2" />,
       className: 'bg-green-500 hover:bg-green-600 text-white border-0',
@@ -38,7 +38,7 @@ const ApprovalButtons: React.FC<ApprovalButtonsProps> = ({
 
   if (onReject) {
     buttons.push({
-      label: '快速拒絕',
+      label: '拒絕',
       onClick: onReject,
       icon: <XCircle className="h-4 w-4 mr-2" />,
       variant: 'destructive',

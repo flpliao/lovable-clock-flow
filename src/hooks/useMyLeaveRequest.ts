@@ -3,22 +3,63 @@ import {
   cancelLeaveRequest,
   createLeaveRequest,
   getMyLeaveRequests,
+  getMyLeaveRequestsByStatus,
   updateLeaveRequest,
 } from '@/services/leaveRequestService';
+import useEmployeeStore from '@/stores/employeeStore';
 import useLeaveRequestsStore from '@/stores/leaveRequestStore';
 import { LeaveRequest } from '@/types/leaveRequest';
+import { useMemo } from 'react';
 
 export const useMyLeaveRequest = () => {
-  const { requests, addRequest, updateRequest, mergeRequests, isLoading, setLoading } =
-    useLeaveRequestsStore();
+  const {
+    requestsBySlug,
+    addRequest,
+    addRequestToMy,
+    updateRequest,
+    isLoading,
+    isMyLoaded,
+    addRequestsToMy,
+    addRequests,
+    setMyLoaded,
+    setLoading,
+  } = useLeaveRequestsStore();
 
   // 載入我的請假申請
-  const loadMyLeaveRequests = async (employeeSlug: string) => {
-    if (requests.filter(r => r.employee?.slug === employeeSlug).length > 0 || isLoading) return;
+  const loadMyLeaveRequests = async () => {
+    const statuses = Object.values(RequestStatus);
+    if (isMyLoaded(statuses) || isLoading) return;
 
     setLoading(true);
     const data = await getMyLeaveRequests();
-    mergeRequests(data);
+    if (data.length > 0) {
+      addRequests(data);
+      addRequestsToMy(data);
+      setMyLoaded(statuses);
+    }
+    setLoading(false);
+  };
+
+  const loadMyPendingRequests = async () => {
+    const statuses = [RequestStatus.PENDING];
+    return loadMyRequestsByStatus(statuses);
+  };
+
+  const loadMyCompletedRequests = async () => {
+    const statuses = [RequestStatus.CANCELLED, RequestStatus.REJECTED, RequestStatus.APPROVED];
+    return loadMyRequestsByStatus(statuses);
+  };
+
+  const loadMyRequestsByStatus = async (statuses: RequestStatus[] | RequestStatus) => {
+    const statusArray = Array.isArray(statuses) ? statuses : [statuses];
+    if (isMyLoaded(statusArray) || isLoading) return;
+    setLoading(true);
+    const data = await getMyLeaveRequestsByStatus(statusArray);
+    if (data.length > 0) {
+      addRequests(data);
+      addRequestsToMy(data);
+      setMyLoaded(statusArray);
+    }
     setLoading(false);
   };
 
@@ -32,6 +73,7 @@ export const useMyLeaveRequest = () => {
     const newRequest = await createLeaveRequest(requestData);
     if (newRequest) {
       addRequest(newRequest);
+      addRequestToMy(newRequest);
     }
     return newRequest;
   };
@@ -58,13 +100,25 @@ export const useMyLeaveRequest = () => {
 
   return {
     // 狀態
-    requests,
+    requests: requestsBySlug,
     isLoading,
 
     // 操作方法
     loadMyLeaveRequests,
+    loadMyRequestsByStatus,
+    loadMyPendingRequests,
+    loadMyCompletedRequests,
     handleCreateMyLeaveRequest,
     handleUpdateMyLeaveRequest,
     handleCancelMyLeaveRequest,
   };
+};
+
+export const useMyLeaveRequestByStatus = (statuses: RequestStatus[] | RequestStatus) => {
+  const { requestsBySlug: requests, getRequestsByStatus } = useLeaveRequestsStore();
+  const { employee } = useEmployeeStore();
+  const statusArray = Array.isArray(statuses) ? statuses : [statuses];
+  return useMemo(() => {
+    return getRequestsByStatus(statusArray, true).filter(r => r.employee?.slug === employee.slug);
+  }, [requests, employee.slug, statusArray]);
 };

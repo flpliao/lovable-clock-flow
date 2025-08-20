@@ -1,63 +1,101 @@
-import { ApprovalStatus } from '@/constants/approvalStatus';
-import { useToast } from '@/hooks/useToast';
-import { getAllMissedCheckInRequests } from '@/services/missedCheckInRequestService';
+import { RequestStatus } from '@/constants/requestStatus';
+import {
+  approveMissedCheckInRequest,
+  getCompletedMissedCheckInRequests,
+  getPendingMissedCheckInRequests,
+  rejectMissedCheckInRequest,
+} from '@/services/missedCheckInRequestService';
+import useEmployeeStore from '@/stores/employeeStore';
 import useMissedCheckInRequestsStore from '@/stores/missedCheckInRequestStore';
 import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
+import { useMemo } from 'react';
 
 export const useMissedCheckInRequests = () => {
-  const { toast } = useToast();
+  const {
+    isLoading,
+    updateRequest,
+    setLoading,
+    addRequests,
+    setAllLoaded,
+    isAllLoaded,
+    addRequestsToMy,
+    setMyLoaded,
+  } = useMissedCheckInRequestsStore();
+  const { employee } = useEmployeeStore();
 
-  const { isLoading, mergeRequests, updateRequest, getRequestsByStatus, setLoading } =
-    useMissedCheckInRequestsStore();
+  const loadPendingMissedCheckInRequests = async () => {
+    const statuses = [RequestStatus.PENDING];
 
-  // 獲取待審核的忘記打卡申請
-  const missedCheckinRequests = getRequestsByStatus(ApprovalStatus.PENDING);
-
-  // 載入待審核的忘記打卡申請
-  const loadMissedCheckinRequests = async () => {
-    if (getRequestsByStatus(ApprovalStatus.PENDING).length > 0 || isLoading) return;
-
+    if (isAllLoaded(statuses) || isLoading) return;
     setLoading(true);
-    const data = await getAllMissedCheckInRequests();
-    console.log('missedCheckin data', data);
-    mergeRequests(data);
+    const data = await getPendingMissedCheckInRequests();
+    if (data.length > 0) {
+      addRequests(data);
+      setAllLoaded(statuses);
+
+      const myRequests = data.filter(r => r.employee?.slug === employee?.slug);
+      addRequestsToMy(myRequests);
+      setMyLoaded(statuses);
+    }
+    setLoading(false);
+  };
+
+  const loadCompletedMissedCheckInRequests = async () => {
+    const statuses = [RequestStatus.CANCELLED, RequestStatus.REJECTED, RequestStatus.APPROVED];
+    if (isAllLoaded(statuses) || isLoading) return;
+    setLoading(true);
+    const data = await getCompletedMissedCheckInRequests();
+    if (data.length > 0) {
+      addRequests(data);
+      setAllLoaded(statuses);
+
+      const myRequests = data.filter(r => r.employee?.slug === employee?.slug);
+      addRequestsToMy(myRequests);
+      setMyLoaded(statuses);
+    }
     setLoading(false);
   };
 
   // 核准忘記打卡申請
-  const handleMissedCheckinApproval = async (request: MissedCheckInRequest) => {
-    // 更新 store 中的狀態
-    updateRequest(request.id || request.slug, {
-      status: ApprovalStatus.APPROVED,
-    });
+  const handleMissedCheckInApproval = async (request: MissedCheckInRequest) => {
+    const success = await approveMissedCheckInRequest(request.slug, request.approve_comment);
 
-    toast({
-      title: '核准成功',
-      description: '忘記打卡申請已核准',
-    });
+    if (success) {
+      // 更新 store 中的狀態
+      updateRequest(request.slug, {
+        status: RequestStatus.APPROVED,
+      });
+    }
+
+    return success;
   };
 
   // 拒絕忘記打卡申請
-  const handleMissedCheckinRejection = async (request: MissedCheckInRequest) => {
+  const handleMissedCheckInRejection = async (request: MissedCheckInRequest) => {
     // 更新 store 中的狀態
-    updateRequest(request.id || request.slug, {
-      status: ApprovalStatus.REJECTED,
-    });
+    const result = await rejectMissedCheckInRequest(request.slug, request.rejection_reason);
+    if (result) {
+      updateRequest(request.slug, {
+        status: RequestStatus.REJECTED,
+        rejection_reason: request.rejection_reason,
+      });
+    }
 
-    toast({
-      title: '拒絕成功',
-      description: '忘記打卡申請已拒絕',
-    });
+    return result;
   };
 
   return {
-    // 狀態
-    missedCheckinRequests,
     isLoading,
-
-    // 操作方法
-    loadMissedCheckinRequests,
-    handleMissedCheckinApproval,
-    handleMissedCheckinRejection,
+    loadPendingMissedCheckInRequests,
+    loadCompletedMissedCheckInRequests,
+    handleMissedCheckInApproval,
+    handleMissedCheckInRejection,
   };
+};
+
+export const useMissedCheckInPendingRequests = () => {
+  const { requestsBySlug: requests, getRequestsByStatus } = useMissedCheckInRequestsStore();
+  return useMemo(() => {
+    return getRequestsByStatus(RequestStatus.PENDING);
+  }, [requests]);
 };

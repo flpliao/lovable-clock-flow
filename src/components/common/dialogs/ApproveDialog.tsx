@@ -17,6 +17,8 @@ interface ApproveDialogProps {
   onSuccess?: () => void;
   title?: string;
   description?: string;
+  approveComment?: string;
+  onApproveCommentChange?: (comment: string) => void;
 }
 
 const ApproveDialog = ({
@@ -26,6 +28,8 @@ const ApproveDialog = ({
   onSuccess,
   title = '確認核准',
   description = '確定要核准此申請嗎？',
+  approveComment = '',
+  onApproveCommentChange,
 }: ApproveDialogProps) => {
   const { wrappedAction: handleConfirm, isLoading } = useLoadingAction(async () => {
     const result = await onConfirm();
@@ -51,6 +55,23 @@ const ApproveDialog = ({
             </div>
           </div>
         </DialogHeader>
+
+        {/* 核准原因輸入框 */}
+        {onApproveCommentChange && (
+          <div className="space-y-2">
+            <label htmlFor="approve-comment" className="text-sm text-muted-foreground">
+              註解
+            </label>
+            <textarea
+              id="approve-comment"
+              value={approveComment}
+              onChange={e => onApproveCommentChange(e.target.value)}
+              placeholder="如需要，請在此填寫註解"
+              className="w-full min-h-[80px] p-3 text-sm border border-input rounded-md bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+              disabled={isLoading}
+            />
+          </div>
+        )}
 
         <DialogFooter>
           <CancelButton

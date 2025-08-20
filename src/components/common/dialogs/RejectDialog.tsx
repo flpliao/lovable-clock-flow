@@ -60,13 +60,13 @@ const RejectDialog = ({
         {onRejectionReasonChange && (
           <div className="space-y-2">
             <label htmlFor="rejection-reason" className="text-sm text-muted-foreground">
-              拒絕原因
+              拒絕理由 (必填)
             </label>
             <textarea
               id="rejection-reason"
               value={rejectionReason}
               onChange={e => onRejectionReasonChange(e.target.value)}
-              placeholder="請填寫拒絕原因..."
+              placeholder="請填寫拒絕理由"
               className="w-full min-h-[80px] p-3 text-sm border border-input rounded-md bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
               disabled={isLoading}
             />

@@ -1,12 +1,22 @@
 // leaveRequestService: 提供請假申請相關 API 操作
 import { ApiResponseStatus } from '@/constants/api';
+import { RequestStatus } from '@/constants/requestStatus';
 import { apiRoutes } from '@/routes/api';
 import { LeaveRequest } from '@/types';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 import dayjs from 'dayjs';
-// 獲取所有請假申請
-export const getAllLeaveRequests = async (): Promise<LeaveRequest[]> => {
+
+// 獲取待審核的請假申請
+export const getPendingLeaveRequests = async (): Promise<LeaveRequest[]> => {
+  const { data, status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.leaveRequest.pendingApprovals)
+  );
+
+  return status === ApiResponseStatus.SUCCESS ? (data as LeaveRequest[]) : [];
+};
+// 獲取已審核的請假申請
+export const getCompletedLeaveRequests = async (): Promise<LeaveRequest[]> => {
   const { data, status } = await callApiAndDecode(
     axiosWithEmployeeAuth().get(apiRoutes.leaveRequest.index)
   );
@@ -27,6 +37,18 @@ export const getMyLeaveRequests = async (): Promise<LeaveRequest[]> => {
   }));
 
   return status === ApiResponseStatus.SUCCESS ? (requests as LeaveRequest[]) : [];
+};
+
+export const getMyLeaveRequestsByStatus = async (
+  statuses: RequestStatus[] | RequestStatus
+): Promise<LeaveRequest[]> => {
+  const { data, status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.leaveRequest.myRequests, {
+      params: { statuses },
+    })
+  );
+
+  return status === ApiResponseStatus.SUCCESS ? (data as LeaveRequest[]) : [];
 };
 
 // 獲取待審核的請假申請
@@ -54,29 +76,47 @@ export const createLeaveRequest = async (
 
 // 更新請假申請
 export const updateLeaveRequest = async (
-  id: string,
+  slug: string,
   leaveRequestData: Partial<LeaveRequest>
 ): Promise<LeaveRequest> => {
   const { data, status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().put(apiRoutes.leaveRequest.update(id), leaveRequestData)
+    axiosWithEmployeeAuth().put(apiRoutes.leaveRequest.update(slug), leaveRequestData)
   );
 
   return status === ApiResponseStatus.SUCCESS ? (data as LeaveRequest) : null;
 };
 
-// 取消請假申請
-export const cancelLeaveRequest = async (id: string): Promise<boolean> => {
+// 核准請假申請
+export const approveLeaveRequest = async (slug: string): Promise<boolean> => {
   const { status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().put(apiRoutes.leaveRequest.cancel(id))
+    axiosWithEmployeeAuth().put(apiRoutes.leaveRequest.approve(slug))
+  );
+
+  return status === ApiResponseStatus.SUCCESS;
+};
+
+// 拒絕請假申請
+export const rejectLeaveRequest = async (slug: string): Promise<boolean> => {
+  const { status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().put(apiRoutes.leaveRequest.reject(slug))
+  );
+
+  return status === ApiResponseStatus.SUCCESS;
+};
+
+// 取消請假申請
+export const cancelLeaveRequest = async (slug: string): Promise<boolean> => {
+  const { status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().put(apiRoutes.leaveRequest.cancel(slug))
   );
 
   return status === ApiResponseStatus.SUCCESS;
 };
 
 // 刪除請假申請
-export const deleteLeaveRequest = async (id: string): Promise<boolean> => {
+export const deleteLeaveRequest = async (slug: string): Promise<boolean> => {
   const { status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().delete(apiRoutes.leaveRequest.destroy(id))
+    axiosWithEmployeeAuth().delete(apiRoutes.leaveRequest.destroy(slug))
   );
 
   return status === ApiResponseStatus.SUCCESS;

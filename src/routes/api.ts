@@ -74,6 +74,7 @@ export const apiRoutes = {
   // 錯過打卡申請管理
   missedCheckInRequest: {
     index: `${API_URL}/employee/missed-check-in-requests`,
+    pendingApprovals: `${API_URL}/employee/missed-check-in-requests/pending-approvals`,
     show: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}`,
     store: `${API_URL}/employee/missed-check-in-requests`,
     update: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}`,

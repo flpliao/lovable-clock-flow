@@ -1,114 +1,180 @@
+import { RequestStatus } from '@/constants/requestStatus';
 import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
 import { create } from 'zustand';
+type LoadStatus = Record<RequestStatus, boolean>;
 
 interface MissedCheckInRequestsState {
-  requests: MissedCheckInRequest[];
-  loadedStatuses: Record<string, boolean>;
+  requestsBySlug: Record<string, MissedCheckInRequest>;
+  allSlugs: string[];
+  mySlugs: string[];
+  isLoaded: {
+    all: Record<string, boolean>;
+    my: Record<string, boolean>;
+  };
   isLoading: boolean;
 
-  setRequests: (requests: MissedCheckInRequest[]) => void;
-  mergeRequests: (requests: MissedCheckInRequest[]) => void;
+  addRequests: (requests: MissedCheckInRequest[]) => void;
+  addRequestsToMy: (requests: MissedCheckInRequest[]) => void;
   addRequest: (request: MissedCheckInRequest) => void;
+  addRequestToMy: (request: MissedCheckInRequest) => void;
   updateRequest: (slug: string, updates: Partial<MissedCheckInRequest>) => void;
   removeRequest: (slug: string) => void;
   getRequestBySlug: (slug: string) => MissedCheckInRequest | undefined;
-  getRequestsByStatus: (status: string | string[]) => MissedCheckInRequest[];
-  getRequestsByType: (missedType: string) => MissedCheckInRequest[];
-  getRequestCounts: () => { total: number; byStatus: Record<string, number> };
+  getRequestsByStatus: (status: string, forMy?: boolean) => MissedCheckInRequest[];
   setLoading: (loading: boolean) => void;
   reset: () => void;
-  getMyRequests: (employeeSlug: string) => MissedCheckInRequest[];
-  getAllRequests: () => MissedCheckInRequest[];
+  getAllRequests: (forMy?: boolean) => MissedCheckInRequest[];
+  isAllLoaded: (statuses: RequestStatus[]) => boolean;
+  isMyLoaded: (statuses: RequestStatus[]) => boolean;
+  setMyLoaded: (statuses: RequestStatus[]) => void;
+  setAllLoaded: (statuses: RequestStatus[]) => void;
 }
 
 const useMissedCheckInRequestsStore = create<MissedCheckInRequestsState>((set, get) => ({
-  requests: [],
-  loadedStatuses: {},
+  requestsBySlug: {},
+  allSlugs: [],
+  mySlugs: [],
+  isLoaded: {
+    all: Object.values(RequestStatus).reduce(
+      (acc, status) => {
+        acc[status] = false;
+        return acc;
+      },
+      {} as Record<string, boolean>
+    ),
+    my: Object.values(RequestStatus).reduce(
+      (acc, status) => {
+        acc[status] = false;
+        return acc;
+      },
+      {} as Record<string, boolean>
+    ),
+  },
   isLoading: false,
 
-  // 直接覆蓋整個 requests
-  setRequests: requests => set({ requests }),
-
-  // 合併資料：若 id 已存在則更新，不存在則新增
-  mergeRequests: newRequests => {
-    const { requests } = get();
-    const map = new Map(requests.map(r => [r.slug, r]));
-
-    newRequests.forEach(r => {
-      map.set(r.slug, { ...map.get(r.slug), ...r }); // update 或新增
+  addRequests: requests => {
+    const { requestsBySlug, allSlugs } = get();
+    const newRequestsBySlug = { ...requestsBySlug };
+    const allSlugsSet = new Set(allSlugs);
+    requests.forEach(r => {
+      newRequestsBySlug[r.slug] = r;
+      allSlugsSet.add(r.slug);
     });
 
-    set({ requests: Array.from(map.values()) });
+    set({ requestsBySlug: newRequestsBySlug, allSlugs: Array.from(allSlugsSet) });
+  },
+
+  // 更新自己請假
+  addRequestsToMy: requests => {
+    const { mySlugs } = get();
+    const newMySlugsSet = new Set(mySlugs);
+    requests.forEach(r => newMySlugsSet.add(r.slug));
+
+    set({ mySlugs: Array.from(newMySlugsSet) });
   },
 
   addRequest: request => {
-    const { requests } = get();
-    if (!requests.some(r => r.slug === request.slug)) {
-      set({ requests: [...requests, request] });
-    }
+    const { requestsBySlug, allSlugs } = get();
+    if (requestsBySlug[request.slug]) return;
+
+    const newRequestsBySlug = { ...requestsBySlug, [request.slug]: request };
+    const newAllSlugs = [...allSlugs, request.slug];
+
+    set({ requestsBySlug: newRequestsBySlug, allSlugs: newAllSlugs });
+  },
+
+  addRequestToMy: request => {
+    const { mySlugs } = get();
+    if (mySlugs.includes(request.slug)) return;
+
+    const newMySlugs = [...mySlugs, request.slug];
+    set({ mySlugs: newMySlugs });
   },
 
   updateRequest: (slug, updates) => {
-    const { requests } = get();
+    const { requestsBySlug } = get();
+    if (!requestsBySlug[slug]) return;
     set({
-      requests: requests.map(r => (r.slug === slug ? { ...r, ...updates } : r)),
+      requestsBySlug: { ...requestsBySlug, [slug]: { ...requestsBySlug[slug], ...updates } },
     });
   },
 
   removeRequest: slug => {
-    const { requests } = get();
-    set({ requests: requests.filter(r => r.slug !== slug) });
+    const { requestsBySlug, allSlugs, mySlugs } = get();
+    const { [slug]: _removed, ...rest } = requestsBySlug;
+
+    set({
+      requestsBySlug: rest,
+      allSlugs: allSlugs.filter(s => s !== slug),
+      mySlugs: mySlugs.filter(s => s !== slug),
+    });
+  },
+
+  getRequests: (forMy = false) => {
+    const { requestsBySlug, allSlugs, mySlugs } = get();
+    const slugs = forMy ? mySlugs : allSlugs;
+    return slugs.map(slug => requestsBySlug[slug]).filter(r => r);
   },
 
   getRequestBySlug: slug => {
-    const { requests } = get();
-    return requests.find(r => r.slug === slug);
+    const { requestsBySlug } = get();
+    return requestsBySlug[slug];
   },
 
-  getRequestsByStatus: status => {
-    const { requests } = get();
-    if (Array.isArray(status)) {
-      return requests.filter(r => status.includes(r.status));
-    }
-    return requests.filter(r => r.status === status);
-  },
-
-  getRequestsByType: requestType => {
-    const { requests } = get();
-    return requests.filter(r => r.request_type === requestType);
-  },
-
-  getRequestCounts: () => {
-    const { requests } = get();
-    const byStatus = requests.reduce(
-      (acc, r) => {
-        acc[r.status] = (acc[r.status] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
-
-    return { total: requests.length, byStatus };
+  getRequestsByStatus: (status, forMy = false) => {
+    const { requestsBySlug, allSlugs, mySlugs } = get();
+    const slugs = forMy ? mySlugs : allSlugs;
+    return slugs.map(slug => requestsBySlug[slug]).filter(r => r && r.status === status);
   },
 
   setLoading: loading => set({ isLoading: loading }),
 
-  reset: () => set({ requests: [], isLoading: false, loadedStatuses: {} }),
+  reset: () => {
+    const resetStatus = Object.values(RequestStatus).reduce((acc, status) => {
+      acc[status] = false;
+      return acc;
+    }, {} as LoadStatus);
 
-  setLoadedStatus: (status: string, loaded: boolean) => {
-    set(state => ({
-      loadedStatuses: { ...state.loadedStatuses, [status]: loaded },
-    }));
+    set({
+      requestsBySlug: {},
+      allSlugs: [],
+      mySlugs: [],
+      isLoaded: {
+        all: resetStatus,
+        my: resetStatus,
+      },
+      isLoading: false,
+    });
   },
 
-  getMyRequests: (employeeSlug: string) => {
-    const { requests } = get();
-    return requests.filter(r => r.employee.slug === employeeSlug);
+  getAllRequests: (forMy = false) => {
+    const { requestsBySlug, allSlugs, mySlugs } = get();
+    const slugs = forMy ? mySlugs : allSlugs;
+    return slugs.map(slug => requestsBySlug[slug]);
   },
 
-  getAllRequests: () => {
-    const { requests } = get();
-    return requests;
+  isAllLoaded: (statuses: RequestStatus[]) => {
+    const { isLoaded } = get();
+    return statuses.every(status => isLoaded.all[status]);
+  },
+
+  isMyLoaded: (statuses: RequestStatus[]) => {
+    const { isLoaded } = get();
+    return statuses.every(status => isLoaded.my[status]);
+  },
+
+  setMyLoaded: (statuses: RequestStatus[]) => {
+    const { isLoaded } = get();
+    const newIsLoaded = { ...isLoaded };
+    statuses.forEach(status => (newIsLoaded.my[status] = true));
+    set({ isLoaded: newIsLoaded });
+  },
+
+  setAllLoaded: (statuses: RequestStatus[]) => {
+    const { isLoaded } = get();
+    const newIsLoaded = { ...isLoaded };
+    statuses.forEach(status => (newIsLoaded.all[status] = true));
+    set({ isLoaded: newIsLoaded });
   },
 }));
 

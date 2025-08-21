@@ -1,5 +1,5 @@
+import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
-import { useToast } from '@/hooks/useToast';
 import { staffService } from '@/services/staffService';
 import { Staff } from '../types';
 import { useStaffValidation } from './useStaffValidation';

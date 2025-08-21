@@ -1,8 +1,8 @@
 
-import { useToast } from '@/hooks/useToast';
+import { useCallback } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckInRecord } from '@/types';
-import { useCallback } from 'react';
 
 export const useCheckInCreator = () => {
   const { toast } = useToast();

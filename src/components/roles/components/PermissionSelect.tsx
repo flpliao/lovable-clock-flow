@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/use-toast';
 import { permissionService } from '@/services/permissionService';
 import { usePermissionStore } from '@/stores/permissionStore';
 import { X } from 'lucide-react';

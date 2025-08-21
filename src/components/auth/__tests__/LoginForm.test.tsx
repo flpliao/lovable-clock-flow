@@ -1,7 +1,7 @@
-import { AuthService } from '@/services/authServiceOld';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import LoginForm from '../LoginForm';
+import { AuthService } from '@/services/authService';
 
 // Mock the AuthService
 jest.mock('@/services/authService', () => ({

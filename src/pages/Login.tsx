@@ -1,8 +1,50 @@
 import LoginForm from '@/components/auth/LoginForm';
+import {
+  useAuthenticated,
+  useAuthInitializing,
+  useCurrentUser,
+  useUserLoaded,
+} from '@/hooks/useStores';
 import { User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
+  // 認證系統已在 App.tsx 中初始化，此處不需要重複初始化
+
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+  const isAuthenticated = useAuthenticated();
+  const isUserLoaded = useUserLoaded();
+  const isInitializing = useAuthInitializing();
+
+  const navigate = useNavigate();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // 檢查已登入用戶並固定重定向到首頁
+  useEffect(() => {
+    if (isUserLoaded && isAuthenticated && currentUser && !isRedirecting) {
+      console.log('🔐 Login: 用戶已登入，重定向到首頁，用戶:', currentUser.name);
+      setIsRedirecting(true);
+
+      // 固定跳轉到首頁
+      navigate('/', { replace: true });
+    }
+  }, [isUserLoaded, isAuthenticated, currentUser, navigate, isRedirecting]);
+
+  // 載入中狀態（避免閃爍）：若已驗證則直接顯示「正在跳轉」
+  if (isInitializing || !isUserLoaded) {
+    const loadingText = isAuthenticated ? '正在跳轉...' : '載入中...';
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
+        <div className="bg-white/20 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-white/30 border-t-white mx-auto mb-4"></div>
+          <p className="text-white text-lg font-medium">{loadingText}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden">
       {/* 動態背景漸層 */}
@@ -40,17 +82,20 @@ const Login = () => {
           <LoginForm />
 
           <div className="text-center space-y-2">
-            {/* <Link
+            <Link
               to="/magic-link"
               className="text-sm text-white/80 hover:text-white underline block font-medium"
             >
               🪄 使用 Magic Link 登入（無需密碼）
-            </Link> */}
+            </Link>
             <Link
               to="/forgot-password"
               className="text-sm text-white/80 hover:text-white underline block"
             >
               忘記密碼？
+            </Link>
+            <Link to="/register" className="text-sm text-white/80 hover:text-white underline block">
+              還沒有帳號？立即註冊
             </Link>
           </div>
         </div>

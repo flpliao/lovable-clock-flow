@@ -8,8 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useCheckInPoints } from '@/hooks/useCheckInPoints';
-import type { CheckInPoint } from '@/types/checkIn';
+import { useCheckpoints } from '@/hooks/useCheckpoints';
+import type { Checkpoint } from '@/services/checkpointService';
 import React, { useEffect, useState } from 'react';
 
 const EditCheckpointDialog = ({
@@ -20,10 +20,10 @@ const EditCheckpointDialog = ({
 }: {
   open: boolean;
   onClose: () => void;
-  checkpoint: CheckInPoint | null;
+  checkpoint: Checkpoint | null;
   onSuccess?: () => void;
 }) => {
-  const { handleUpdateCheckInPoint } = useCheckInPoints();
+  const { updateCheckpoint } = useCheckpoints();
   const [name, setName] = useState('');
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
@@ -45,7 +45,7 @@ const EditCheckpointDialog = ({
     e.preventDefault();
     setLoading(true);
     try {
-      await handleUpdateCheckInPoint(checkpoint!.id, {
+      await updateCheckpoint(checkpoint!.id, {
         name,
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),

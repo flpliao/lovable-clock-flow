@@ -9,8 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 import { useBranches } from '@/hooks/useBranches';
-import { useToast } from '@/hooks/useToast';
 import { useCompanyStore } from '@/stores/companyStore';
 import { NewBranch } from '@/types/company';
 import React, { useState } from 'react';

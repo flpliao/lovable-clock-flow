@@ -1,6 +1,6 @@
 
-import { useToast } from '@/hooks/useToast';
 import { PayrollService } from '@/services/payrollService';
+import { useToast } from '@/hooks/use-toast';
 
 export const usePayrollOperations = (
   loadPayrolls: () => Promise<void>,

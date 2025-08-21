@@ -1,7 +1,8 @@
 
+import { useState } from 'react';
 import { Notification } from '@/components/notifications/NotificationItem';
-import { toast } from '@/hooks/useToast';
 import { NotificationDatabaseOperations } from '@/services/notifications';
+import { toast } from '@/hooks/use-toast';
 
 export const useNotificationActions = (
   currentUserId: string | null,

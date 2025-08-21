@@ -1,6 +1,6 @@
 
-import { useToast } from '@/hooks/useToast';
-import { useCallback, useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 interface RLSOptimizationData {
   table_name: string;

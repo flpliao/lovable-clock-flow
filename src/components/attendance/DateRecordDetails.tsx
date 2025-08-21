@@ -1,27 +1,27 @@
-import type { MissedCheckinFormData } from '@/components/check-in/components/MissedCheckinFormFields';
-import MissedCheckinFormFields from '@/components/check-in/components/MissedCheckinFormFields';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { useCurrentUser } from '@/hooks/useStores';
-import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
-import { MissedCheckinValidationService } from '@/services/missedCheckinValidationService';
-import { Schedule } from '@/services/scheduleService';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CheckInRecord } from '@/types';
 import { MissedCheckinRequest } from '@/types/missedCheckin';
+import { Schedule } from '@/services/scheduleService';
+import { MissedCheckinValidationService } from '@/services/missedCheckinValidationService';
 import { formatTime } from '@/utils/checkInUtils';
-import { formatTimeString } from '@/utils/dateTimeUtils';
 import { format, isFuture } from 'date-fns';
+import { useCurrentUser } from '@/hooks/useStores';
+import { useToast } from '@/hooks/use-toast';
+import React from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import MissedCheckinFormFields from '@/components/check-in/components/MissedCheckinFormFields';
+import { supabase } from '@/integrations/supabase/client';
+import type { MissedCheckinFormData } from '@/components/check-in/components/MissedCheckinFormFields';
 
 interface DateRecordDetailsProps {
   date: Date;
@@ -298,6 +298,19 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
     let missed_type: 'check_in' | 'check_out' = 'check_in';
     let requested_check_in_time = '';
     let requested_check_out_time = '';
+
+    // 格式化時間字符串，確保符合 HH:mm 格式
+    const formatTimeString = (timeStr: string) => {
+      if (!timeStr) return '';
+      // 移除可能的秒數部分，只保留 HH:mm
+      const timeParts = timeStr.split(':');
+      if (timeParts.length >= 2) {
+        const hours = timeParts[0].padStart(2, '0');
+        const minutes = timeParts[1].padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+      return timeStr;
+    };
 
     if (missedType) {
       // 如果指定了類型，使用指定的類型

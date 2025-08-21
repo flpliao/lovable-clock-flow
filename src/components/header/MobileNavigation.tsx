@@ -1,26 +1,36 @@
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { routes } from '@/routes/api';
-import { useLogout } from '@/services/authService';
-import { MobileNavigationProps } from '@/types/navigation';
+import { User as UserType } from '@/stores/userStore';
 import { LogOut, Settings, User, X } from 'lucide-react';
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { MenuItem } from './menuConfig';
 
-const EXCLUDE_PATHS = [routes.accountSettings];
+interface MobileNavigationProps {
+  isOpen: boolean;
+  currentUser: UserType | null;
+  isAuthenticated: boolean;
+  isLoginPage: boolean;
+  visibleMenuItems: MenuItem[];
+  onNavigation: (path: string) => void;
+  onLogout: () => void;
+  onLogin: () => void;
+  onClose: () => void;
+}
 
 const MobileNavigation: React.FC<MobileNavigationProps> = ({
   isOpen,
-  employee,
+  currentUser,
+  isAuthenticated,
+  isLoginPage,
   visibleMenuItems,
+  onNavigation,
+  onLogout,
+  onLogin,
   onClose,
 }) => {
   const location = useLocation();
-  const logout = useLogout();
-  const filteredMenuItems = visibleMenuItems.filter(
-    item => !EXCLUDE_PATHS.includes(item.path as (typeof EXCLUDE_PATHS)[number])
-  );
 
   return (
     <>
@@ -40,50 +50,56 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
       `}
       >
         <ScrollArea className="h-full">
-          <div className="p-4 space-y-4">
-            {/* 頂部用戶資訊和關閉按鈕 */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-3">
-                <div className="bg-blue-100 rounded-full p-2">
-                  <User className="h-6 w-6 text-blue-600" />
+          {isAuthenticated && currentUser ? (
+            <div className="p-4 space-y-4">
+              {/* 頂部用戶資訊和關閉按鈕 */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-blue-100 rounded-full p-2">
+                    <User className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <div className="text-gray-900 font-semibold text-sm">{currentUser.name}</div>
+                    <div className="text-gray-600 text-xs">{currentUser.email}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-gray-900 font-semibold text-sm">{employee.name}</div>
-                  <div className="text-gray-600 text-xs">{employee.email}</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                {/* 個人設定齒輪圖示按鈕 */}
-                <Link to={routes.accountSettings} onClick={onClose}>
+                <div className="flex items-center space-x-2">
+                  {/* 個人設定齒輪圖示按鈕 */}
                   <Button
+                    onClick={() => {
+                      onNavigation('/account-settings');
+                      onClose();
+                    }}
                     variant="ghost"
                     size="icon"
                     className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 p-2"
                   >
                     <Settings className="h-5 w-5" />
                   </Button>
-                </Link>
-                {/* 關閉按鈕 */}
-                <Button
-                  onClick={onClose}
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-600 hover:text-gray-800 hover:bg-gray-200 p-2"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
+                  {/* 關閉按鈕 */}
+                  <Button
+                    onClick={onClose}
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-200 p-2"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
               </div>
-            </div>
 
-            {/* 功能選單 - 格子佈局 */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
-                {filteredMenuItems.map(item => (
-                  <Link to={item.path} key={item.path} onClick={onClose}>
+              {/* 功能選單 - 格子佈局 */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  {visibleMenuItems.map(item => (
                     <button
                       key={item.path}
+                      onClick={() => {
+                        onNavigation(item.path);
+                        onClose();
+                      }}
                       className={`
-                        flex flex-col items-center justify-center p-4 rounded-lg w-full
+                        flex flex-col items-center justify-center p-4 rounded-lg
                         transition-all duration-200 hover:bg-blue-50 hover:shadow-md
                         ${location.pathname === item.path ? 'bg-blue-100 shadow-md' : 'bg-gray-50'}
                       `}
@@ -94,7 +110,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                         ${location.pathname === item.path ? 'bg-blue-500 text-white' : 'bg-white text-blue-600'}
                       `}
                       >
-                        {item.iconComponent && <item.iconComponent className="h-6 w-6" />}
+                        <item.icon className="h-6 w-6" />
                       </div>
                       <span
                         className={`
@@ -102,32 +118,59 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                         ${location.pathname === item.path ? 'text-blue-700' : 'text-gray-700'}
                       `}
                       >
-                        {item.name}
+                        {item.label}
                       </span>
                     </button>
-                  </Link>
-                ))}
+                  ))}
+                </div>
+              </div>
+
+              <Separator className="bg-gray-300 my-6" />
+
+              {/* 底部功能 */}
+              <div className="space-y-3">
+                {/* 登出按鈕 */}
+                <Button
+                  onClick={() => {
+                    onLogout();
+                    onClose();
+                  }}
+                  variant="ghost"
+                  className="w-full justify-start text-red-700 font-medium hover:text-red-800 hover:bg-red-50 transition-all duration-200 p-4 rounded-lg text-base border border-red-200"
+                >
+                  <LogOut className="h-5 w-5 mr-3 text-red-600" />
+                  <span>登出</span>
+                </Button>
               </div>
             </div>
-
-            <Separator className="bg-gray-300 my-6" />
-
-            {/* 底部功能 */}
-            <div className="space-y-3">
-              {/* 登出按鈕 */}
-              <Button
-                onClick={() => {
-                  logout();
-                  onClose();
-                }}
-                variant="ghost"
-                className="w-full justify-start text-red-700 font-medium hover:text-red-800 hover:bg-red-50 transition-all duration-200 p-4 rounded-lg text-base border border-red-200"
-              >
-                <LogOut className="h-5 w-5 mr-3 text-red-600" />
-                <span>登出</span>
-              </Button>
-            </div>
-          </div>
+          ) : (
+            !isLoginPage && (
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-gray-800 font-semibold text-lg">請登入</h3>
+                  <Button
+                    onClick={onClose}
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-200 p-2"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+                <Button
+                  onClick={() => {
+                    onLogin();
+                    onClose();
+                  }}
+                  variant="ghost"
+                  className="w-full justify-start text-gray-800 font-semibold hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 p-4 rounded-lg text-base"
+                >
+                  <User className="h-5 w-5 mr-3 text-gray-700" />
+                  <span>登入</span>
+                </Button>
+              </div>
+            )
+          )}
         </ScrollArea>
       </div>
     </>

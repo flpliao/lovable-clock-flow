@@ -21,11 +21,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 import { useCheckInRecordManager } from '@/hooks/useCheckInRecordManager';
 import { useCurrentUser } from '@/hooks/useStores';
-import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
-import { useToast } from '@/hooks/useToast';
 import { permissionService } from '@/services/simplifiedPermissionService';
+import { useSupabaseCheckIn } from '@/hooks/useSupabaseCheckIn';
 import { CheckInRecord } from '@/types';
 import { formatDate, formatTime } from '@/utils/checkInUtils';
 import {

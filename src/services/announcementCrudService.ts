@@ -1,5 +1,5 @@
 
-import { toast } from '@/hooks/useToast';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { CompanyAnnouncement } from '@/types/announcement';
 

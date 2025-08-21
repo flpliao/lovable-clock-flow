@@ -1,8 +1,8 @@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
 import { useIsAdmin } from '@/hooks/useStores';
-import { useToast } from '@/hooks/useToast';
 import { Clock, Edit, Trash2 } from 'lucide-react';
 import React from 'react';
 

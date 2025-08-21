@@ -1,6 +1,4 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import dayjs from 'dayjs';
-import 'dayjs/locale/zh-tw';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
@@ -23,7 +21,6 @@ if (!container) {
 }
 
 const root = createRoot(container);
-dayjs.locale('zh-tw');
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>

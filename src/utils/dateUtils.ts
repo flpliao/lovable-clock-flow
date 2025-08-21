@@ -1,13 +1,8 @@
+import dayjs from 'dayjs';
 
 // 格式化日期的函數 - 使用台灣時區 (UTC+8)
-export const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('zh-TW', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    timeZone: 'Asia/Taipei'
-  });
+export const formatDate = (dateString: string) => {
+  return dayjs(dateString).format('YYYY/MM/DD');
 };
 
 // 格式化時間的函數 - 使用台灣時區 (UTC+8)
@@ -17,34 +12,26 @@ export const formatTime = (dateString: string): string => {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-    timeZone: 'Asia/Taipei'
+    timeZone: 'Asia/Taipei',
   });
 };
 
 // 格式化完整日期時間 - 使用台灣時區 (UTC+8)
-export const formatDateTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleString('zh-TW', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'Asia/Taipei'
-  });
+export const formatDateTime = (dateString: string) => {
+  return dayjs(dateString).format('YYYY/MM/DD HH:mm');
 };
 
 // 將日期轉換為 YYYY-MM-DD 格式 - 確保使用台灣時區
 export const formatDateForDatabase = (date: Date): string => {
   // 建立一個新的 Date 物件，確保使用台灣時區
-  const taipeiDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000) + (8 * 3600000));
-  
+  const taipeiDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000 + 8 * 3600000);
+
   const year = taipeiDate.getUTCFullYear();
   const month = String(taipeiDate.getUTCMonth() + 1).padStart(2, '0');
   const day = String(taipeiDate.getUTCDate()).padStart(2, '0');
-  
+
   const result = `${year}-${month}-${day}`;
-  
+
   console.log('formatDateForDatabase - 台灣時區日期轉換:', {
     inputDate: date,
     inputDateString: date.toString(),
@@ -54,9 +41,9 @@ export const formatDateForDatabase = (date: Date): string => {
     taipeiMonth: month,
     taipeiDay: day,
     result: result,
-    userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
-  
+
   return result;
 };
 
@@ -66,7 +53,7 @@ export const parseDateFromDatabase = (dateString: string): Date => {
   const [year, month, day] = dateString.split('-').map(Number);
   // 建立本地時區的日期物件，避免 UTC 轉換
   const date = new Date(year, month - 1, day);
-  
+
   console.log('parseDateFromDatabase - 資料庫日期解析:', {
     inputString: dateString,
     parsedYear: year,
@@ -74,20 +61,22 @@ export const parseDateFromDatabase = (dateString: string): Date => {
     parsedDay: day,
     resultDate: date,
     resultDateString: date.toString(),
-    resultDateISO: date.toISOString()
+    resultDateISO: date.toISOString(),
   });
-  
+
   return date;
 };
 
 // 確保日期顯示使用台灣時區格式
 export const formatDisplayDate = (date: Date): string => {
-  return date.toLocaleDateString('zh-TW', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    timeZone: 'Asia/Taipei'
-  }).replace(/\//g, '/');
+  return date
+    .toLocaleDateString('zh-TW', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      timeZone: 'Asia/Taipei',
+    })
+    .replace(/\//g, '/');
 };
 
 // 專門用於請假記錄顯示的日期格式化 - 修正時區問題
@@ -96,29 +85,31 @@ export const formatLeaveRecordDate = (dateString: string): string => {
   if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
     const [year, month, day] = dateString.split('-').map(Number);
     const date = new Date(year, month - 1, day);
-    
+
     const formattedDate = `${year}/${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}`;
-    
+
     console.log('formatLeaveRecordDate - 請假記錄日期格式化:', {
       inputString: dateString,
       parsedYear: year,
       parsedMonth: month,
       parsedDay: day,
       createdDate: date,
-      formattedResult: formattedDate
+      formattedResult: formattedDate,
     });
-    
+
     return formattedDate;
   }
-  
+
   // 如果是其他格式，使用原來的邏輯但確保台灣時區
   const date = new Date(dateString);
-  return date.toLocaleDateString('zh-TW', {
-    year: 'numeric',
-    month: '2-digit', 
-    day: '2-digit',
-    timeZone: 'Asia/Taipei'
-  }).replace(/\//g, '/');
+  return date
+    .toLocaleDateString('zh-TW', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      timeZone: 'Asia/Taipei',
+    })
+    .replace(/\//g, '/');
 };
 
 // 獲取當前台灣時區的日期
@@ -133,7 +124,7 @@ export const getCurrentTaipeiDate = (): Date => {
 export const isToday = (date: Date): boolean => {
   const today = getCurrentTaipeiDate();
   const targetDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
-  
+
   return targetDate.toDateString() === today.toDateString();
 };
 
@@ -141,7 +132,7 @@ export const isToday = (date: Date): boolean => {
 export const ensureLocalDate = (date: Date): Date => {
   // 轉換為台灣時區的日期物件
   const taipeiDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
-  
+
   console.log('ensureLocalDate - 確保台灣時區日期:', {
     inputDate: date,
     inputDateString: date.toString(),
@@ -149,9 +140,9 @@ export const ensureLocalDate = (date: Date): Date => {
     taipeiDate: taipeiDate,
     taipeiDateString: taipeiDate.toString(),
     taipeiDateISO: taipeiDate.toISOString(),
-    isSameDay: date.getUTCDate() === taipeiDate.getDate()
+    isSameDay: date.getUTCDate() === taipeiDate.getDate(),
   });
-  
+
   return taipeiDate;
 };
 
@@ -161,9 +152,9 @@ export const datePickerToDatabase = (pickerDate: Date): string => {
   const year = pickerDate.getFullYear();
   const month = String(pickerDate.getMonth() + 1).padStart(2, '0');
   const day = String(pickerDate.getDate()).padStart(2, '0');
-  
+
   const result = `${year}-${month}-${day}`;
-  
+
   console.log('datePickerToDatabase - 日期選擇器轉資料庫:', {
     pickerDate: pickerDate,
     pickerDateString: pickerDate.toString(),
@@ -171,9 +162,9 @@ export const datePickerToDatabase = (pickerDate: Date): string => {
     extractedYear: year,
     extractedMonth: month,
     extractedDay: day,
-    result: result
+    result: result,
   });
-  
+
   return result;
 };
 
@@ -186,6 +177,67 @@ export const formatLeaveRecordCreatedTime = (dateTimeString: string): string => 
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: 'Asia/Taipei'
+    timeZone: 'Asia/Taipei',
   });
+};
+
+// 格式化月份顯示 - 使用 dayjs 格式化為 YYYY年MM月 格式
+export const formatMonthDisplay = (monthValue: string): string => {
+  if (!monthValue) return '';
+  return dayjs(monthValue).format('YYYY年MM月');
+};
+
+// 獲取指定月份的天數
+export const getMonthDays = (yearMonth: string): { daysInMonth: number } => {
+  const [year, month] = yearMonth.split('-').map(Number);
+  const firstDay = dayjs(`${year}-${month}-01`);
+  const lastDay = firstDay.endOf('month');
+  const daysInMonth = lastDay.date();
+  return { daysInMonth };
+};
+
+// 判斷指定日期是否為週末
+export const isWeekend = (yearMonth: string, day: number): boolean => {
+  const [year, month] = yearMonth.split('-').map(Number);
+  const date = dayjs(`${year}-${month}-${day}`);
+  const dayOfWeek = date.day();
+  return dayOfWeek === 0 || dayOfWeek === 6; // 0 = 星期日, 6 = 星期六
+};
+
+// 將日期轉換為中文的「一至日」格式
+export const getChineseWeekday = (yearMonth: string, day: number): string => {
+  const [year, month] = yearMonth.split('-').map(Number);
+  const date = dayjs(`${year}-${month}-${day}`);
+  const dayOfWeek = date.day();
+  const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+  return weekdays[dayOfWeek];
+};
+
+// 從日期生成時期字串 (YYYY-MM)
+export const dateToPeriod = (date: string): string => {
+  return date.substring(0, 7); // 取前7個字符 "YYYY-MM"
+};
+
+// 從日期陣列生成時期字串集合
+export const datesToPeriods = (dates: string[]): Set<string> => {
+  const periods = new Set<string>();
+  dates.forEach(date => {
+    periods.add(dateToPeriod(date));
+  });
+  return periods;
+};
+
+/**
+ * 將日期時間分段顯示，用於表格中的時間欄位
+ * @param dateString 日期時間字串
+ * @returns 包含日期和時間的字串陣列
+ */
+export const formatDateTimeSplit = (dateString: string): { date: string; time: string } | null => {
+  if (!dateString) return null;
+
+  const split = formatDateTime(dateString).split(' ');
+  const date = split[0];
+  const time = split[1];
+
+  return { date, time };
 };

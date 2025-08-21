@@ -1,6 +1,5 @@
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
 import { Notification } from '@/components/notifications/NotificationItem';
+import { supabase } from '@/integrations/supabase/client';
 
 // Define User interface for this service
 interface User {

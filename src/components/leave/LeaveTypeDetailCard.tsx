@@ -1,51 +1,21 @@
-
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getLeaveTypeById } from '@/utils/leaveTypes';
-import { AlertCircle, FileText, Calendar, DollarSign } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PaidType } from '@/constants/leave';
+import { LeaveType } from '@/types/leaveType';
+import classNames from 'classnames';
+import { AlertCircle, DollarSign, FileText } from 'lucide-react';
 
 interface LeaveTypeDetailCardProps {
-  leaveType: string;
-  remainingDays?: number;
-  usedDays?: number; // 新增已使用天數參數
+  leaveType: LeaveType;
 }
 
-export function LeaveTypeDetailCard({ leaveType, remainingDays, usedDays = 0 }: LeaveTypeDetailCardProps) {
-  const typeInfo = getLeaveTypeById(leaveType);
-  
-  if (!typeInfo) {
-    return null;
-  }
-
-  const getSalaryStatus = () => {
-    if (leaveType === 'sick') {
-      return { status: '半薪', color: 'bg-yellow-500/20 text-yellow-700' };
-    }
-    return typeInfo.isPaid 
-      ? { status: '有薪', color: 'bg-green-500/20 text-green-700' }
-      : { status: '無薪', color: 'bg-red-500/20 text-red-700' };
-  };
-
-  const salaryInfo = getSalaryStatus();
-
-  // 計算剩餘次數邏輯：年度上限減去已使用次數
-  const calculateRemainingDays = () => {
-    if (typeInfo.maxDaysPerYear) {
-      const remaining = typeInfo.maxDaysPerYear - usedDays;
-      return Math.max(0, remaining); // 確保不會顯示負數
-    }
-    return remainingDays;
-  };
-
-  const calculatedRemainingDays = calculateRemainingDays();
-
+export function LeaveTypeDetailCard({ leaveType }: LeaveTypeDetailCardProps) {
   return (
     <Card className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg">
       <CardHeader>
         <CardTitle className="text-white text-lg flex items-center gap-2">
           <AlertCircle className="h-5 w-5" />
-          {typeInfo.name} - 詳細資訊
+          {leaveType.name} - 詳細資訊
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -53,8 +23,18 @@ export function LeaveTypeDetailCard({ leaveType, remainingDays, usedDays = 0 }: 
         <div className="flex items-center gap-2">
           <DollarSign className="h-4 w-4 text-white/80" />
           <span className="text-white/80 text-sm">薪資狀況：</span>
-          <Badge className={`${salaryInfo.color} border-0`}>
-            {salaryInfo.status}
+          <Badge
+            className={classNames('border-0', {
+              'bg-yellow-500/20 text-yellow-700': leaveType.paid_type === PaidType.HALF,
+              'bg-green-500/20 text-green-700': leaveType.paid_type === PaidType.PAID,
+              'bg-red-500/20 text-red-700': leaveType.paid_type === PaidType.UNPAID,
+            })}
+          >
+            {leaveType.paid_type === PaidType.HALF
+              ? '半薪'
+              : leaveType.paid_type === PaidType.PAID
+                ? '有薪'
+                : '無薪'}
           </Badge>
         </div>
 
@@ -65,50 +45,27 @@ export function LeaveTypeDetailCard({ leaveType, remainingDays, usedDays = 0 }: 
             <span className="text-white/80 text-sm">說明：</span>
           </div>
           <div className="bg-white/10 rounded-lg p-3">
-            <p className="text-white/90 text-sm leading-relaxed">
-              {typeInfo.description}
-            </p>
+            <p className="text-white/90 text-sm leading-relaxed">{leaveType.description}</p>
           </div>
         </div>
 
         {/* 附件要求 */}
-        <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-white/80" />
-          <span className="text-white/80 text-sm">是否需要上傳附件：</span>
-          <Badge className={typeInfo.requiresAttachment 
-            ? 'bg-orange-500/20 text-orange-700 border-0' 
-            : 'bg-gray-500/20 text-gray-700 border-0'
-          }>
-            {typeInfo.requiresAttachment ? '需要' : '不需要'}
-          </Badge>
-        </div>
+        {/* {leaveType.required_attachment && (
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-white/80" />
+            <span className="text-white/80 text-sm">是否需要上傳附件：</span>
+            <Badge className="bg-orange-500/20 text-orange-700 border-0">需要</Badge>
+          </div>
+        )} */}
 
-        {/* 剩餘次數/天數 - 更新計算邏輯 */}
-        <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-white/80" />
+        {/* 剩餘次數/天數 */}
+        {/* <div className="flex items-center gap-2">
+          <CalendarIcon2 className="h-4 w-4 text-white/80" />
           <span className="text-white/80 text-sm">剩餘次數：</span>
           <Badge className="bg-blue-500/20 text-blue-700 border-0">
-            {typeInfo.maxDaysPerYear 
-              ? `${calculatedRemainingDays} 天 (年度上限 ${typeInfo.maxDaysPerYear} 天)`
-              : calculatedRemainingDays !== undefined 
-                ? `${calculatedRemainingDays} 天` 
-                : '無限制'
-            }
+            {leaveType.max_per_year ? `${leaveType.max_per_year} 天 (年度上限)` : '無限制'}
           </Badge>
-        </div>
-
-        {/* 特殊提醒 */}
-        {leaveType === 'sick' && (
-          <div className="bg-yellow-500/10 border border-yellow-300/30 rounded-lg p-3">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-yellow-300 mt-0.5" />
-              <div className="text-yellow-100 text-sm">
-                <p className="font-medium">重要提醒：</p>
-                <p>病假前30天給半薪，超過30天後視情況可申請留職停薪</p>
-              </div>
-            </div>
-          </div>
-        )}
+        </div> */}
       </CardContent>
     </Card>
   );

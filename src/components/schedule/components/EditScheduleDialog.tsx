@@ -1,18 +1,18 @@
 
-import React, { useState } from 'react';
+import { useTimeSlotOperations } from '@/components/timeslot/hooks/useTimeSlotOperations';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertTriangle, Clock, Trash2, User, Calendar } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useTimeSlotOperations } from '@/components/timeslot/hooks/useTimeSlotOperations';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/useToast';
+import { Calendar, Clock, Trash2, User } from 'lucide-react';
+import React, { useState } from 'react';
 
 interface EditScheduleDialogProps {
   isOpen: boolean;

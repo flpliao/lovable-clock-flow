@@ -1,5 +1,5 @@
-import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useStores';
+import { useToast } from '@/hooks/useToast';
 import { CreateTimeSlot, TimeSlot, timeSlotService } from '@/services/timeSlotService';
 import { useEffect, useState } from 'react';
 

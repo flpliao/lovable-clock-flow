@@ -1,3 +1,26 @@
+// 重新導出 API 相關類型
+export type { ApiResponse, CallApiOptions, DecodedResponse, DecodeOptions } from '@/types/api';
+
+// 重新導出考勤相關類型
+export type { AttendanceException, Overtime, ReminderSetting } from '@/types/attendance';
+
+// 重新導出打卡相關類型
+export type { CheckInPoint, CheckInRecord } from '@/types/checkIn';
+
+// 重新導出請假申請相關類型
+export type { ApprovalRecord, LeaveRequest } from '@/types/leaveRequest';
+
+// 重新導出按鈕相關類型
+export type {
+  AddButtonProps,
+  BaseButtonProps,
+  ClickableButtonProps,
+  ClickableLoadingButtonProps,
+  SubmitButtonProps,
+} from '@/types/button';
+
+export type { WorkSchedule } from '@/types/workSchedule';
+
 export interface User {
   id: string;
   name: string;
@@ -31,37 +54,6 @@ export interface Attendance {
   status: 'normal' | 'abnormal';
 }
 
-export interface LeaveRequest {
-  id: string;
-  user_id: string;
-  start_date: string;
-  end_date: string;
-  leave_type: 'annual' | 'sick' | 'personal' | 'marriage' | 'bereavement' | 'maternity' | 'paternity' | 'parental' | 'occupational' | 'menstrual' | 'other';
-  status: 'pending' | 'approved' | 'rejected';
-  hours: number;
-  reason: string;
-  attachment_url?: string;
-  approvals?: ApprovalRecord[];
-  current_approver?: string;
-  approval_level?: number;
-  rejection_reason?: string;
-  approved_by?: string; // 新增核准人欄位
-  approved_at?: string; // 新增核准時間欄位
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface ApprovalRecord {
-  id: string;
-  leave_request_id: string;
-  approver_id: string;
-  approver_name: string;
-  status: 'pending' | 'approved' | 'rejected';
-  comment?: string;
-  approval_date?: string;
-  level: number;
-}
-
 export interface Shift {
   id: string;
   user_id: string;
@@ -75,25 +67,4 @@ export interface Approver {
   name: string;
   position: string;
   level: number;
-}
-
-// Check-in record type
-export interface CheckInRecord {
-  id: string;
-  userId: string;
-  timestamp: string;
-  type: 'location' | 'ip';
-  status: 'success' | 'failed';
-  action: 'check-in' | 'check-out';
-  details: {
-    latitude?: number;
-    longitude?: number;
-    distance?: number;
-    ip?: string;
-    locationName?: string;
-    departmentLatitude?: number;
-    departmentLongitude?: number;
-    departmentName?: string;
-    gpsComparisonResult?: any;
-  };
 }

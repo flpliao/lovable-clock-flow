@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { permissionService } from '@/services/simplifiedPermissionService';
 import { useSupabaseAnnouncements } from '@/hooks/useSupabaseAnnouncements';
+import { useToast } from '@/hooks/useToast';
+import { permissionService } from '@/services/simplifiedPermissionService';
 import { CompanyAnnouncement } from '@/types/announcement';
 import { Plus } from 'lucide-react';
 import React, { useState } from 'react';

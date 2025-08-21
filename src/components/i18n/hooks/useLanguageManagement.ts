@@ -1,12 +1,12 @@
 
-import { useState, useEffect } from 'react';
-import { 
-  languagePreferenceService, 
+import { useToast } from '@/hooks/useToast';
+import { useEffect, useState } from 'react';
+import {
   getDefaultLanguageByCountry,
-  SUPPORTED_COUNTRIES 
+  languagePreferenceService,
+  SUPPORTED_COUNTRIES
 } from '../services/languageService';
 import { UserLanguagePreference } from '../types';
-import { useToast } from '@/hooks/use-toast';
 
 export const useLanguageManagement = () => {
   const [selectedCountry, setSelectedCountry] = useState<string>('');

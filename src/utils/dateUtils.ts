@@ -1,14 +1,8 @@
 import dayjs from 'dayjs';
 
 // 格式化日期的函數 - 使用台灣時區 (UTC+8)
-export const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('zh-TW', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    timeZone: 'Asia/Taipei',
-  });
+export const formatDate = (dateString: string) => {
+  return dayjs(dateString).format('YYYY/MM/DD');
 };
 
 // 格式化時間的函數 - 使用台灣時區 (UTC+8)
@@ -23,16 +17,8 @@ export const formatTime = (dateString: string): string => {
 };
 
 // 格式化完整日期時間 - 使用台灣時區 (UTC+8)
-export const formatDateTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleString('zh-TW', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'Asia/Taipei',
-  });
+export const formatDateTime = (dateString: string) => {
+  return dayjs(dateString).format('YYYY/MM/DD HH:mm');
 };
 
 // 將日期轉換為 YYYY-MM-DD 格式 - 確保使用台灣時區
@@ -239,4 +225,19 @@ export const datesToPeriods = (dates: string[]): Set<string> => {
     periods.add(dateToPeriod(date));
   });
   return periods;
+};
+
+/**
+ * 將日期時間分段顯示，用於表格中的時間欄位
+ * @param dateString 日期時間字串
+ * @returns 包含日期和時間的字串陣列
+ */
+export const formatDateTimeSplit = (dateString: string): { date: string; time: string } | null => {
+  if (!dateString) return null;
+
+  const split = formatDateTime(dateString).split(' ');
+  const date = split[0];
+  const time = split[1];
+
+  return { date, time };
 };

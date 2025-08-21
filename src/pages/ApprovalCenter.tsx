@@ -2,8 +2,13 @@ import { FeatureIcon, FeatureNumber } from '@/components/common/cards';
 import PageHeader from '@/components/layout/PageHeader';
 import PageLayout from '@/components/layout/PageLayout';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { useLeavePendingRequests, useLeaveRequests } from '@/hooks/useLeaveRequests';
 import {
+  useLeaveCompletedRequests,
+  useLeavePendingRequests,
+  useLeaveRequests,
+} from '@/hooks/useLeaveRequests';
+import {
+  useMissedCheckInCompletedRequests,
   useMissedCheckInPendingRequests,
   useMissedCheckInRequests,
 } from '@/hooks/useMissedCheckInRequests';
@@ -12,7 +17,9 @@ import { CheckCircle, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import ApprovalStats from './approval/components/ApprovalStats';
 import LeaveApprovalTab from './approval/components/LeaveApprovalTab';
+import LeaveHistoryTable from './approval/components/LeaveHistoryTable';
 import MissedCheckinApprovalTab from './approval/components/MissedCheckinApprovalTab';
+import MissedCheckInHistoryTable from './approval/components/MissedCheckInHistoryTable';
 
 const ApprovalCenter = () => {
   const [activeTab, setActiveTab] = useState<string>('');
@@ -38,7 +45,8 @@ const ApprovalCenter = () => {
 
   const pendingLeaveRequests = useLeavePendingRequests();
   const pendingMissedCheckInRequests = useMissedCheckInPendingRequests();
-
+  const completedLeaveRequests = useLeaveCompletedRequests();
+  const completedMissedCheckInRequests = useMissedCheckInCompletedRequests();
   // // 修復：使用具體的 LeaveRequest 類型
   // const handleViewDetail = (request: LeaveRequest) => {
   //   setSelectedRequest(request);
@@ -160,8 +168,21 @@ const ApprovalCenter = () => {
               />
             </TabsContent>
 
-            <TabsContent value="leave-history" className="mt-0" />
-            <TabsContent value="missed-checkin-history" className="mt-0" />
+            <TabsContent value="leave-history" className="mt-0">
+              <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">
+                請假申請歷史紀錄
+              </h2>
+              <LeaveHistoryTable requests={completedLeaveRequests} isLoading={isLeaveLoading} />
+            </TabsContent>
+            <TabsContent value="missed-checkin-history" className="mt-0">
+              <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">
+                忘打卡申請歷史紀錄
+              </h2>
+              <MissedCheckInHistoryTable
+                requests={completedMissedCheckInRequests}
+                isLoading={isMissedCheckInLoading}
+              />
+            </TabsContent>
           </Tabs>
         </div>
       )}

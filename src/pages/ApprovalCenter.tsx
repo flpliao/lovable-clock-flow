@@ -47,29 +47,6 @@ const ApprovalCenter = () => {
   const pendingMissedCheckInRequests = useMissedCheckInPendingRequests();
   const completedLeaveRequests = useLeaveCompletedRequests();
   const completedMissedCheckInRequests = useMissedCheckInCompletedRequests();
-  // // 修復：使用具體的 LeaveRequest 類型
-  // const handleViewDetail = (request: LeaveRequest) => {
-  //   setSelectedRequest(request);
-  // };
-
-  // const handleBackToList = () => {
-  //   setSelectedRequest(null);
-  // };
-
-  // const handleApprovalComplete = () => {
-  //   setSelectedRequest(null);
-  //   loadPendingRequests();
-  // };
-
-  // if (selectedRequest) {
-  //   return (
-  //     <LeaveApprovalDetail
-  //       request={selectedRequest}
-  //       onBack={handleBackToList}
-  //       onApprovalComplete={handleApprovalComplete}
-  //     />
-  //   );
-  // }
 
   return (
     <PageLayout>

@@ -1,60 +1,12 @@
 // checkInService: 提供打卡相關 API 操作
 import { ApiResponseStatus } from '@/constants/api';
-import { CheckInMethod, RequestType } from '@/constants/checkInTypes';
+import { CheckInMethod, CheckInSource, RequestType } from '@/constants/checkInTypes';
 import { apiRoutes } from '@/routes/api';
-import { CheckInRecord } from '@/types/checkIn';
+import { CheckInRecord, CreateCheckInPayload } from '@/types/checkIn';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 import { getCurrentIp, getCurrentPosition } from '@/utils/location';
 import dayjs from 'dayjs';
-export const getTodayCheckInRecords = async () => {
-  const { data, status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().get(`${apiRoutes.checkin.index}`, {
-      params: { created_at: dayjs().format('YYYY-MM-DD') },
-    })
-  );
-
-  return status === ApiResponseStatus.SUCCESS
-    ? splitCheckInRecords(data as CheckInRecord[])
-    : { [RequestType.CHECK_IN]: null, [RequestType.CHECK_OUT]: null };
-};
-
-// 前端分組
-export const splitCheckInRecords = (records: CheckInRecord[]) => {
-  const checkIn = records.find(r => r.type === RequestType.CHECK_IN);
-  const checkOut = records.find(r => r.type === RequestType.CHECK_OUT);
-  return { [RequestType.CHECK_IN]: checkIn, [RequestType.CHECK_OUT]: checkOut };
-};
-
-// 取得打卡記錄
-export const getCheckInRecords = async (created_at?: string): Promise<CheckInRecord[]> => {
-  const { data, status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().get(`${apiRoutes.checkin.index}`, {
-      params: created_at ? { created_at } : {},
-    })
-  );
-  return status === ApiResponseStatus.SUCCESS ? (data as CheckInRecord[]) : [];
-};
-
-// 建立打卡紀錄
-export const createCheckInRecord = async (checkInData: CheckInRecord) => {
-  const { data, status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().post(`${apiRoutes.checkin.create}`, checkInData)
-  );
-  return status === ApiResponseStatus.SUCCESS ? (data as CheckInRecord) : null;
-};
-
-// 打卡
-export const checkIn = async (checkInData: {
-  latitude: number;
-  longitude: number;
-  type: 'in' | 'out';
-}): Promise<CheckInRecord> => {
-  const { data, status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().post(`${apiRoutes.checkin.create}`, checkInData)
-  );
-  return status === ApiResponseStatus.SUCCESS ? (data as CheckInRecord) : null;
-};
 
 // 打卡參數介面
 export interface CheckInParams {
@@ -67,43 +19,112 @@ export interface CheckInParams {
     name: string;
   };
 }
+export class CheckInService {
+  static async getTodayCheckInRecords() {
+    const { data, status, message } = await callApiAndDecode(
+      axiosWithEmployeeAuth().get(`${apiRoutes.checkin.index}`, {
+        params: { created_at: dayjs().format('YYYY-MM-DD') },
+      })
+    );
 
-// 統一的打卡記錄建立函數
-export const createCheckInRecordByMethod = async (
-  params: CheckInParams
-): Promise<CheckInRecord> => {
-  const { type, method, selectedCheckpoint } = params;
+    if (status !== ApiResponseStatus.SUCCESS) {
+      throw new Error(`載入打卡記錄失敗: ${message}`);
+    }
 
-  // 位置打卡需要選擇打卡點
-  if (method === CheckInMethod.LOCATION && !selectedCheckpoint) {
-    throw new Error('請先選擇打卡地點');
+    return CheckInService.splitCheckInRecords(data as CheckInRecord[]);
   }
 
-  const ip = await getCurrentIp();
-  const { latitude, longitude } = await getCurrentPosition();
-
-  const checkInData: CheckInRecord = {
-    type,
-    method: method,
-    latitude,
-    longitude,
-    ip_address: ip,
+  // 前端分組
+  static splitCheckInRecords = (records: CheckInRecord[]) => {
+    const checkIn = records.find(r => r.type === RequestType.CHECK_IN);
+    const checkOut = records.find(r => r.type === RequestType.CHECK_OUT);
+    return { [RequestType.CHECK_IN]: checkIn, [RequestType.CHECK_OUT]: checkOut };
   };
 
-  return await createCheckInRecord(checkInData);
-};
+  // 取得打卡記錄
+  static async getCheckInRecords(created_at?: string): Promise<CheckInRecord[]> {
+    const { data, status, message } = await callApiAndDecode(
+      axiosWithEmployeeAuth().get(`${apiRoutes.checkin.index}`, {
+        params: created_at ? { created_at } : {},
+      })
+    );
 
-// 向後相容的函數別名
-export const createIpCheckInRecord = async (
-  type: RequestType.CHECK_IN | RequestType.CHECK_OUT
-): Promise<CheckInRecord> => {
-  return createCheckInRecordByMethod({ type, method: CheckInMethod.IP });
-};
+    if (status !== ApiResponseStatus.SUCCESS) {
+      throw new Error(`載入打卡記錄失敗: ${message}`);
+    }
 
-export const createLocationCheckInRecord = async (
-  params: Omit<CheckInParams, 'method'> & {
-    selectedCheckpoint: NonNullable<CheckInParams['selectedCheckpoint']>;
+    return data as CheckInRecord[];
   }
-): Promise<CheckInRecord> => {
-  return createCheckInRecordByMethod({ ...params, method: CheckInMethod.LOCATION });
-};
+
+  // 建立打卡紀錄
+  static async createCheckInRecord(checkInData: CreateCheckInPayload) {
+    const { data, status, message } = await callApiAndDecode(
+      axiosWithEmployeeAuth().post(`${apiRoutes.checkin.create}`, checkInData)
+    );
+
+    if (status !== ApiResponseStatus.SUCCESS) {
+      throw new Error(`建立打卡記錄失敗: ${message}`);
+    }
+
+    return data as CheckInRecord;
+  }
+
+  // 打卡
+  static async checkIn(checkInData: {
+    latitude: number;
+    longitude: number;
+    type: 'in' | 'out';
+  }): Promise<CheckInRecord> {
+    const { data, status, message } = await callApiAndDecode(
+      axiosWithEmployeeAuth().post(`${apiRoutes.checkin.create}`, checkInData)
+    );
+
+    if (status !== ApiResponseStatus.SUCCESS) {
+      throw new Error(`打卡失敗: ${message}`);
+    }
+
+    return data as CheckInRecord;
+  }
+
+  // 統一的打卡記錄建立函數
+  static async createCheckInRecordByMethod(params: CheckInParams): Promise<CheckInRecord> {
+    const { type, method, selectedCheckpoint } = params;
+
+    // 位置打卡需要選擇打卡點
+    if (method === CheckInMethod.LOCATION && !selectedCheckpoint) {
+      throw new Error('請先選擇打卡地點');
+    }
+
+    const ip = await getCurrentIp();
+    const { latitude, longitude } = await getCurrentPosition();
+
+    const checkInData: CreateCheckInPayload = {
+      type,
+      source: CheckInSource.NORMAL,
+      method: method,
+      latitude,
+      longitude,
+      ip_address: ip,
+    };
+
+    return await CheckInService.createCheckInRecord(checkInData);
+  }
+
+  // 向後相容的函數別名
+  static async createIpCheckInRecord(
+    type: RequestType.CHECK_IN | RequestType.CHECK_OUT
+  ): Promise<CheckInRecord> {
+    return CheckInService.createCheckInRecordByMethod({ type, method: CheckInMethod.IP });
+  }
+
+  static async createLocationCheckInRecord(
+    params: Omit<CheckInParams, 'method'> & {
+      selectedCheckpoint: NonNullable<CheckInParams['selectedCheckpoint']>;
+    }
+  ): Promise<CheckInRecord> {
+    return CheckInService.createCheckInRecordByMethod({
+      ...params,
+      method: CheckInMethod.LOCATION,
+    });
+  }
+}

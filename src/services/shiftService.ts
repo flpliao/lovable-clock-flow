@@ -4,63 +4,90 @@ import { Shift } from '@/types/shift';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 
-// 取得所有班次
-export const getAllShifts = async (): Promise<Shift[]> => {
-  const { data, status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().get(apiRoutes.shift.getAll)
-  );
+export class ShiftService {
+  static async getAllShifts(): Promise<Shift[]> {
+    const { data, status, message } = await callApiAndDecode(
+      axiosWithEmployeeAuth().get(apiRoutes.shift.getAll)
+    );
 
-  const shifts = (data as Shift[]).map(shift => ({
-    ...shift,
-    cycle_days: shift.work_schedules?.length ?? 0,
-  }));
+    if (status !== ApiResponseStatus.SUCCESS) {
+      throw new Error(`載入班次列表失敗: ${message}`);
+    }
 
-  return status === ApiResponseStatus.SUCCESS ? shifts : [];
-};
+    const shifts = (data as Shift[]).map(shift => ({
+      ...shift,
+      cycle_days: shift.work_schedules?.length ?? 0,
+    }));
 
-// 取得班次列表（分頁）
-export const getShifts = async (params?: {
-  page?: number;
-  per_page?: number;
-  search?: string;
-}): Promise<Shift[]> => {
-  const { data, status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().get(apiRoutes.shift.index, { params })
-  );
-  return status === ApiResponseStatus.SUCCESS ? (data as Shift[]) : [];
-};
+    return shifts;
+  }
 
-// 取得單一班次
-export const getShift = async (slug: string): Promise<Shift | null> => {
-  const { data, status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().get(apiRoutes.shift.show(slug))
-  );
-  return status === ApiResponseStatus.SUCCESS ? (data as Shift) : null;
-};
+  // 取得班次列表（分頁）
+  static async getShifts(params?: {
+    page?: number;
+    per_page?: number;
+    search?: string;
+  }): Promise<Shift[]> {
+    const { data, status, message } = await callApiAndDecode(
+      axiosWithEmployeeAuth().get(apiRoutes.shift.index, { params })
+    );
 
-// 建立班次
-export const createShift = async (shiftData: Omit<Shift, 'slug'>): Promise<Shift | null> => {
-  const { data, status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().post(apiRoutes.shift.store, shiftData)
-  );
-  return status === ApiResponseStatus.SUCCESS ? (data as Shift) : null;
-};
+    if (status !== ApiResponseStatus.SUCCESS) {
+      throw new Error(`載入班次列表失敗: ${message}`);
+    }
 
-// 更新班次
-export const updateShift = async (
-  slug: string,
-  shiftData: Partial<Omit<Shift, 'slug'>>
-): Promise<Shift | null> => {
-  const { data, status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().put(apiRoutes.shift.update(slug), shiftData)
-  );
-  return status === ApiResponseStatus.SUCCESS ? (data as Shift) : null;
-};
+    return data as Shift[];
+  }
 
-// 刪除班次
-export const deleteShift = async (slug: string): Promise<boolean> => {
-  const { status } = await callApiAndDecode(
-    axiosWithEmployeeAuth().delete(apiRoutes.shift.destroy(slug))
-  );
-  return status === ApiResponseStatus.SUCCESS;
-};
+  // 取得單一班次
+  static async getShift(slug: string): Promise<Shift> {
+    const { data, status, message } = await callApiAndDecode(
+      axiosWithEmployeeAuth().get(apiRoutes.shift.show(slug))
+    );
+
+    if (status !== ApiResponseStatus.SUCCESS) {
+      throw new Error(`載入班次失敗: ${message}`);
+    }
+
+    return data as Shift;
+  }
+
+  // 建立班次
+  static async createShift(shiftData: Omit<Shift, 'slug'>): Promise<Shift> {
+    const { data, status, message } = await callApiAndDecode(
+      axiosWithEmployeeAuth().post(apiRoutes.shift.store, shiftData)
+    );
+
+    if (status !== ApiResponseStatus.SUCCESS) {
+      throw new Error(`建立班次失敗: ${message}`);
+    }
+
+    return data as Shift;
+  }
+
+  // 更新班次
+  static async updateShift(slug: string, shiftData: Partial<Omit<Shift, 'slug'>>): Promise<Shift> {
+    const { data, status, message } = await callApiAndDecode(
+      axiosWithEmployeeAuth().put(apiRoutes.shift.update(slug), shiftData)
+    );
+
+    if (status !== ApiResponseStatus.SUCCESS) {
+      throw new Error(`更新班次失敗: ${message}`);
+    }
+
+    return data as Shift;
+  }
+
+  // 刪除班次
+  static async deleteShift(slug: string): Promise<boolean> {
+    const { status, message } = await callApiAndDecode(
+      axiosWithEmployeeAuth().delete(apiRoutes.shift.destroy(slug))
+    );
+
+    if (status !== ApiResponseStatus.SUCCESS) {
+      throw new Error(`刪除班次失敗: ${message}`);
+    }
+
+    return true;
+  }
+}

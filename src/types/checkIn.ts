@@ -36,3 +36,5 @@ export interface CheckInPoint {
   disabled_at: string | null;
   distance?: number;
 }
+
+export type CreateCheckInPayload = Omit<CheckInRecord, 'checked_at' | 'id' | 'created_at'>;

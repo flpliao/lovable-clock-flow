@@ -10,7 +10,7 @@ import { RequestType } from '@/constants/checkInTypes';
 import { useCheckInPoints } from '@/hooks/useCheckInPoints';
 import { useCheckInRecords } from '@/hooks/useCheckInRecords';
 import { useToast } from '@/hooks/useToast';
-import { createIpCheckInRecord, createLocationCheckInRecord } from '@/services/checkInService';
+import { CheckInService } from '@/services/checkInService';
 import type { CheckInRecord } from '@/types/checkIn';
 
 import { Clock } from 'lucide-react';
@@ -76,7 +76,7 @@ const LocationCheckIn = () => {
       return;
     }
 
-    const result = await createLocationCheckInRecord({
+    const result = await CheckInService.createLocationCheckInRecord({
       type,
       selectedCheckpoint: checkInPoints[0],
     });
@@ -93,7 +93,7 @@ const LocationCheckIn = () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    const result = await createIpCheckInRecord(type);
+    const result = await CheckInService.createIpCheckInRecord(type);
     if (result) {
       handleCheckIn(result);
     }

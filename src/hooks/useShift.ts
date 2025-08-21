@@ -1,19 +1,9 @@
-import {
-  createShift as createShiftService,
-  deleteShift as deleteShiftService,
-  getAllShifts,
-  getShift,
-  getShifts,
-  updateShift as updateShiftService,
-} from '@/services/shiftService';
-import {
-  createWorkSchedule as createWorkScheduleService,
-  deleteWorkSchedule as deleteWorkScheduleService,
-  updateWorkSchedule as updateWorkScheduleService,
-} from '@/services/workScheduleService';
+import { ShiftService } from '@/services/shiftService';
+import { WorkScheduleService } from '@/services/workScheduleService';
 import { useShiftStore } from '@/stores/shiftStore';
 import { CreateShiftData, UpdateShiftData } from '@/types/shift';
 import { CreateWorkScheduleData, UpdateWorkScheduleData, WorkSchedule } from '@/types/workSchedule';
+import { showError } from '@/utils/toast';
 import { useState } from 'react';
 
 export const useShift = () => {
@@ -26,67 +16,77 @@ export const useShift = () => {
     if (isLoading || shifts.length > 0) return;
 
     setIsLoading(true);
+    try {
+      const data = await ShiftService.getAllShifts();
+      setShifts(data);
+      setIsLoading(false);
+    } catch (error) {
+      showError(error.message);
 
-    const data = await getAllShifts();
-    setShifts(data);
-    setIsLoading(false);
-    return data;
+      setShifts([]);
+      setIsLoading(false);
+    }
   };
 
   // 載入班次列表（分頁）
   const loadShifts = async (params?: { page?: number; per_page?: number; search?: string }) => {
     setIsLoading(true);
 
-    const data = await getShifts(params);
-    setShifts(data);
-    setIsLoading(false);
-    return data;
+    try {
+      const data = await ShiftService.getShifts(params);
+      setShifts(data);
+      setIsLoading(false);
+    } catch (error) {
+      showError(error.message);
+    }
   };
 
   // 載入單一班次
   const loadShift = async (slug: string) => {
     setIsLoading(true);
 
-    const data = await getShift(slug);
-    setIsLoading(false);
-    return data;
+    try {
+      await ShiftService.getShift(slug);
+      setIsLoading(false);
+    } catch (error) {
+      showError(error.message);
+    }
   };
 
   // 建立班次
   const handleCreateShift = async (shiftData: CreateShiftData) => {
-    const newShift = await createShiftService(shiftData);
-    if (newShift) {
+    try {
+      const newShift = await ShiftService.createShift(shiftData);
       addShift(newShift);
+    } catch (error) {
+      showError(error.message);
     }
-
-    return newShift;
   };
 
   // 更新班次
   const handleUpdateShift = async (slug: string, shiftData: UpdateShiftData) => {
-    const updatedShift = await updateShiftService(slug, shiftData);
-    if (updatedShift) {
+    try {
+      const updatedShift = await ShiftService.updateShift(slug, shiftData);
       setShift(slug, updatedShift);
+    } catch (error) {
+      showError(error.message);
     }
-
-    return updatedShift;
   };
 
   // 刪除班次
   const handleDeleteShift = async (slug: string) => {
-    const success = await deleteShiftService(slug);
-    if (success) {
+    try {
+      await ShiftService.deleteShift(slug);
       removeShift(slug);
+    } catch (error) {
+      showError(error.message);
     }
-
-    return success;
   };
 
   // 建立工作時程
   const handleCreateWorkSchedule = async (workScheduleData: CreateWorkScheduleData) => {
-    const newWorkSchedule = await createWorkScheduleService(workScheduleData);
-    if (newWorkSchedule) {
-      // 更新對應的 shift 中的 work_schedules
+    try {
+      const newWorkSchedule = await WorkScheduleService.createWorkSchedule(workScheduleData);
       const shift = shifts.find(s => s.slug === workScheduleData.shift_slug);
       if (shift) {
         const updatedWorkSchedules = [...(shift.work_schedules || []), newWorkSchedule];
@@ -97,9 +97,9 @@ export const useShift = () => {
         };
         setShift(shift.slug, updatedShift);
       }
+    } catch (error) {
+      showError(error.message);
     }
-
-    return newWorkSchedule;
   };
 
   // 更新工作時程
@@ -107,9 +107,11 @@ export const useShift = () => {
     slug: string,
     workScheduleData: UpdateWorkScheduleData
   ) => {
-    const updatedWorkSchedule = await updateWorkScheduleService(slug, workScheduleData);
-    if (updatedWorkSchedule) {
-      // 更新對應的 shift 中的 work_schedules
+    try {
+      const updatedWorkSchedule = await WorkScheduleService.updateWorkSchedule(
+        slug,
+        workScheduleData
+      );
       const shift = shifts.find(s => s.work_schedules?.some(ws => ws.slug === slug));
       if (shift) {
         const updatedWorkSchedules =
@@ -121,15 +123,15 @@ export const useShift = () => {
         };
         setShift(shift.slug, updatedShift);
       }
+    } catch (error) {
+      showError(error.message);
     }
-
-    return updatedWorkSchedule;
   };
 
   // 刪除工作時程
   const handleDeleteWorkSchedule = async (slug: string) => {
-    const success = await deleteWorkScheduleService(slug);
-    if (success) {
+    try {
+      await WorkScheduleService.deleteWorkSchedule(slug);
       // 從對應的 shift 中移除 work_schedule
       const shift = shifts.find(s => s.work_schedules?.some(ws => ws.slug === slug));
       if (shift) {
@@ -141,42 +143,44 @@ export const useShift = () => {
         };
         setShift(shift.slug, updatedShift);
       }
+    } catch (error) {
+      showError(error.message);
     }
-
-    return success;
   };
 
   // 複製工作時程
   const handleDuplicateWorkSchedule = async (workSchedule: WorkSchedule) => {
-    // 找到包含此 workSchedule 的 shift
-    const shift = shifts.find(s => s.work_schedules?.some(ws => ws.slug === workSchedule.slug));
-    if (!shift) {
-      throw new Error('找不到對應的班次');
-    }
+    try {
+      // 找到包含此 workSchedule 的 shift
+      const shift = shifts.find(s => s.work_schedules?.some(ws => ws.slug === workSchedule.slug));
+      if (!shift) {
+        throw new Error('找不到對應的班次');
+      }
 
-    // 建立複製的資料，移除 id 和 slug，讓後端生成新的
-    const duplicateData: CreateWorkScheduleData = {
-      shift_slug: shift.slug,
-      clock_in_time: workSchedule.clock_in_time,
-      clock_out_time: workSchedule.clock_out_time,
-      status: workSchedule.status,
-      ot_start_after_hours: workSchedule.ot_start_after_hours,
-      ot_start_after_minutes: workSchedule.ot_start_after_minutes,
-    };
-
-    const newWorkSchedule = await createWorkScheduleService(duplicateData);
-    if (newWorkSchedule) {
-      // 更新對應的 shift 中的 work_schedules
-      const updatedWorkSchedules = [...(shift.work_schedules || []), newWorkSchedule];
-      const updatedShift = {
-        ...shift,
-        work_schedules: updatedWorkSchedules,
-        cycle_days: updatedWorkSchedules.length, // 更新週期天數
+      // 建立複製的資料，移除 id 和 slug，讓後端生成新的
+      const duplicateData: CreateWorkScheduleData = {
+        shift_slug: shift.slug,
+        clock_in_time: workSchedule.clock_in_time,
+        clock_out_time: workSchedule.clock_out_time,
+        status: workSchedule.status,
+        ot_start_after_hours: workSchedule.ot_start_after_hours,
+        ot_start_after_minutes: workSchedule.ot_start_after_minutes,
       };
-      setShift(shift.slug, updatedShift);
-    }
 
-    return newWorkSchedule;
+      const newWorkSchedule = await WorkScheduleService.createWorkSchedule(duplicateData);
+      if (newWorkSchedule) {
+        // 更新對應的 shift 中的 work_schedules
+        const updatedWorkSchedules = [...(shift.work_schedules || []), newWorkSchedule];
+        const updatedShift = {
+          ...shift,
+          work_schedules: updatedWorkSchedules,
+          cycle_days: updatedWorkSchedules.length, // 更新週期天數
+        };
+        setShift(shift.slug, updatedShift);
+      }
+    } catch (error) {
+      showError(error.message);
+    }
   };
 
   return {

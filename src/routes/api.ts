@@ -30,7 +30,6 @@ export const routes = {
   systemSettings: '/system-settings',
   holidayManagement: '/holiday-management',
   leaveTypeManagement: '/leave-type-management',
-  missedCheckinManagement: '/missed-checkin-management',
   overtimeManagement: '/overtime-management',
   overtimeManagementPage: '/overtime-management-page',
   overtimeRequestPage: '/overtime-request-page',

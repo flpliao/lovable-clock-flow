@@ -30,7 +30,6 @@ export const routes = {
   systemSettings: '/system-settings',
   holidayManagement: '/holiday-management',
   leaveTypeManagement: '/leave-type-management',
-  missedCheckinManagement: '/missed-checkin-management',
   overtimeManagement: '/overtime-management',
   overtimeManagementPage: '/overtime-management-page',
   overtimeRequestPage: '/overtime-request-page',
@@ -74,10 +73,13 @@ export const apiRoutes = {
   // 錯過打卡申請管理
   missedCheckInRequest: {
     index: `${API_URL}/employee/missed-check-in-requests`,
+    pendingApprovals: `${API_URL}/employee/missed-check-in-requests/pending-approvals`,
     show: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}`,
     store: `${API_URL}/employee/missed-check-in-requests`,
     update: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}`,
     destroy: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}`,
+    approve: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}/approve`,
+    reject: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}/reject`,
     cancel: (slug: string) => `${API_URL}/employee/missed-check-in-requests/${slug}/cancel`,
     myRequests: `${API_URL}/employee/missed-check-in-requests/my-requests`,
     getApprovalsByRequest: (slug: string) =>

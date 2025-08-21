@@ -5,13 +5,36 @@ import LeaveRequestForm from '@/components/leave/LeaveRequestForm';
 import MyLeaveRequestList from '@/components/leave/MyLeaveRequestList';
 import MyPendingLeaveRequestsList from '@/components/leave/MyPendingLeaveRequestsList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RequestStatus } from '@/constants/requestStatus';
+import { useMyLeaveRequest, useMyLeaveRequestByStatus } from '@/hooks/useMyLeaveRequest';
 import { FileText, History } from 'lucide-react';
 import { useState } from 'react';
 
 const LeaveRequestManagement = () => {
   const [activeTab, setActiveTab] = useState<string>('request');
+  const { isLoading, loadMyPendingRequests, loadMyCompletedRequests } = useMyLeaveRequest();
+
+  const pendingRequests = useMyLeaveRequestByStatus(RequestStatus.PENDING);
+  const completedRequests = useMyLeaveRequestByStatus([
+    RequestStatus.CANCELLED,
+    RequestStatus.REJECTED,
+    RequestStatus.APPROVED,
+  ]);
 
   // 處理請假申請成功
+
+  const handleSetActiveTab = (tab: string) => {
+    setActiveTab(tab);
+    switch (tab) {
+      case 'view':
+        loadMyPendingRequests();
+        break;
+      case 'history':
+        loadMyCompletedRequests();
+        break;
+    }
+  };
+
   const handleLeaveRequestSuccess = () => {
     setActiveTab('view');
   };
@@ -26,7 +49,7 @@ const LeaveRequestManagement = () => {
       />
       {/* Main Content */}
       <EmployeeInfoCard />
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+      <Tabs value={activeTab} onValueChange={handleSetActiveTab} className="w-full space-y-6">
         <TabsList className="grid w-full grid-cols-3 backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-1 h-12">
           <TabsTrigger
             value="request"
@@ -59,7 +82,7 @@ const LeaveRequestManagement = () => {
               </div>
               <h3 className="text-lg font-semibold text-white drop-shadow-md">查看請假</h3>
             </div>
-            <MyPendingLeaveRequestsList />
+            <MyPendingLeaveRequestsList requests={pendingRequests} isLoading={isLoading} />
           </div>
         </TabsContent>
 
@@ -71,7 +94,7 @@ const LeaveRequestManagement = () => {
               </div>
               <h3 className="text-lg font-semibold text-white drop-shadow-md">請假紀錄</h3>
             </div>
-            <MyLeaveRequestList />
+            <MyLeaveRequestList requests={completedRequests} isLoading={isLoading} />
           </div>
         </TabsContent>
       </Tabs>

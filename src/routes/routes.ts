@@ -32,7 +32,6 @@ const ApprovalCenter = LazyWithSuspense(() => import('@/pages/ApprovalCenter'));
 const SystemSettings = LazyWithSuspense(() => import('@/pages/SystemSettings'));
 const HolidayManagement = LazyWithSuspense(() => import('@/pages/HolidayManagement'));
 const LeaveTypeManagement = LazyWithSuspense(() => import('@/pages/LeaveTypeManagement'));
-const MissedCheckinManagement = LazyWithSuspense(() => import('@/pages/MissedCheckinManagement'));
 const OvertimeManagement = LazyWithSuspense(() => import('@/pages/OvertimeManagement'));
 const OvertimeManagementPage = LazyWithSuspense(() => import('@/pages/OvertimeManagementPage'));
 const OvertimeRequestPage = LazyWithSuspense(() => import('@/pages/OvertimeRequestPage'));
@@ -97,6 +96,13 @@ export const protectedRoutes: RouteConfig[] = [
     component: AccountSettings,
     icon: 'settings',
     roles: [],
+  },
+  {
+    path: routes.approvalCenter,
+    name: '審核中心',
+    component: ApprovalCenter,
+    icon: 'checkCircle',
+    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
   {
     path: routes.schedule,
@@ -186,13 +192,6 @@ export const unFinishedRoutes: RouteConfig[] = [
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
   {
-    path: routes.approvalCenter,
-    name: '審核中心',
-    component: ApprovalCenter,
-    icon: 'check-circle',
-    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
-  },
-  {
     path: routes.systemSettings,
     name: '系統設定',
     component: SystemSettings,
@@ -211,13 +210,6 @@ export const unFinishedRoutes: RouteConfig[] = [
     name: '請假類型管理',
     component: LeaveTypeManagement,
     icon: 'file-text',
-    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
-  },
-  {
-    path: routes.missedCheckinManagement,
-    name: '漏打卡管理',
-    component: MissedCheckinManagement,
-    icon: 'exclamation-triangle',
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
   {

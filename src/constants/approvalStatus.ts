@@ -5,7 +5,6 @@ export enum ApprovalStatus {
   PENDING = 'pending',
   APPROVED = 'approved',
   REJECTED = 'rejected',
-  CANCELLED = 'cancelled',
 }
 
 /**
@@ -15,5 +14,4 @@ export const APPROVAL_STATUS_LABELS: Record<ApprovalStatus, string> = {
   [ApprovalStatus.PENDING]: '等待審核',
   [ApprovalStatus.APPROVED]: '已核准',
   [ApprovalStatus.REJECTED]: '已拒絕',
-  [ApprovalStatus.CANCELLED]: '已取消',
 };

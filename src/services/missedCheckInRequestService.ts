@@ -1,6 +1,6 @@
 // missedCheckInRequestService: 提供忘記打卡申請相關 API 操作
 import { ApiResponseStatus } from '@/constants/api';
-import { ApprovalStatus } from '@/constants/approvalStatus';
+import { RequestStatus } from '@/constants/requestStatus';
 import { apiRoutes } from '@/routes/api';
 import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
 import { callApiAndDecode } from '@/utils/apiHelper';
@@ -21,8 +21,8 @@ export const createMissedCheckInRequest = async (requestData: {
   return status === ApiResponseStatus.SUCCESS ? (data as MissedCheckInRequest) : null;
 };
 
-// 獲取所有忘記打卡申請
-export const getAllMissedCheckInRequests = async (): Promise<MissedCheckInRequest[]> => {
+// 獲取已審核的忘記打卡申請
+export const getCompletedMissedCheckInRequests = async (): Promise<MissedCheckInRequest[]> => {
   const { data, status } = await callApiAndDecode(
     axiosWithEmployeeAuth().get(apiRoutes.missedCheckInRequest.index)
   );
@@ -30,12 +30,22 @@ export const getAllMissedCheckInRequests = async (): Promise<MissedCheckInReques
   return status === ApiResponseStatus.SUCCESS ? (data as MissedCheckInRequest[]) : [];
 };
 
+export const getPendingMissedCheckInRequests = async (): Promise<MissedCheckInRequest[]> => {
+  const { data, status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.missedCheckInRequest.pendingApprovals)
+  );
+
+  return status === ApiResponseStatus.SUCCESS ? (data as MissedCheckInRequest[]) : [];
+};
+
 // 獲取我的忘記打卡申請
-export const getMyMissedCheckInRequests = async (): Promise<MissedCheckInRequest[]> => {
+export const getMyMissedCheckInRequestsByStatus = async (
+  statuses: RequestStatus[]
+): Promise<MissedCheckInRequest[]> => {
   const { data, status } = await callApiAndDecode(
     axiosWithEmployeeAuth().get(apiRoutes.missedCheckInRequest.myRequests, {
       params: {
-        status: [ApprovalStatus.PENDING, ApprovalStatus.APPROVED],
+        statuses,
       },
     })
   );
@@ -70,6 +80,34 @@ export const updateMissedCheckInRequest = async (
 export const deleteMissedCheckInRequest = async (slug: string): Promise<boolean> => {
   const { status } = await callApiAndDecode(
     axiosWithEmployeeAuth().delete(apiRoutes.missedCheckInRequest.destroy(slug))
+  );
+
+  return status === ApiResponseStatus.SUCCESS;
+};
+
+// 核准忘記打卡申請
+export const approveMissedCheckInRequest = async (
+  slug: string,
+  comment: string
+): Promise<boolean> => {
+  const { status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().put(apiRoutes.missedCheckInRequest.approve(slug), {
+      comment: comment,
+    })
+  );
+
+  return status === ApiResponseStatus.SUCCESS;
+};
+
+// 拒絕忘記打卡申請
+export const rejectMissedCheckInRequest = async (
+  slug: string,
+  rejectionReason: string
+): Promise<boolean> => {
+  const { status } = await callApiAndDecode(
+    axiosWithEmployeeAuth().put(apiRoutes.missedCheckInRequest.reject(slug), {
+      rejection_reason: rejectionReason,
+    })
   );
 
   return status === ApiResponseStatus.SUCCESS;

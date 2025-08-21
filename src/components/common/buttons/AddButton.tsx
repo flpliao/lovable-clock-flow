@@ -5,16 +5,18 @@ import { AddButtonProps } from '@/types/button';
 import { Plus } from 'lucide-react';
 
 const AddButton = ({
+  type = 'button',
+  onClick,
   children,
   buttonText = '新增',
   className,
   size = 'default',
-  onClick,
   disabled = false,
   isLoading = false,
 }: AddButtonProps) => {
   return (
     <Button
+      type={type}
       variant="default"
       size={size}
       onClick={onClick}

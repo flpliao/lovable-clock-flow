@@ -1,7 +1,8 @@
-import { LeaveRequestStatus } from '@/constants/leave';
+import { RequestStatus } from '@/constants/requestStatus';
 import { LeaveRequest } from '@/types/leaveRequest';
+import { formatDate } from '@/utils/dateUtils';
 import { AlertCircle, Calendar, CheckCircle, Clock, FileText, XCircle } from 'lucide-react';
-import LeaveRequestStatusBadge from '../LeaveRequestStatusBadge';
+import StatusBadge from '../common/StatusBadge';
 import { Button } from '../ui/button';
 
 // 狀態配置對象
@@ -61,7 +62,7 @@ export function LeaveRequestItem({ leaveRequest, onCancel }: LeaveRequestItemPro
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <LeaveRequestStatusBadge status={leaveRequest.status} className="text-sm" />
+          <StatusBadge status={leaveRequest.status} />
         </div>
       </div>
 
@@ -69,8 +70,7 @@ export function LeaveRequestItem({ leaveRequest, onCancel }: LeaveRequestItemPro
         <div className="flex items-center gap-3">
           <Calendar className="h-5 w-5" />
           <span className="font-medium">
-            {leaveRequest.start?.format('YYYY/MM/DD HH:mm')} -{' '}
-            {leaveRequest.end?.format('YYYY/MM/DD HH:mm')}
+            {formatDate(leaveRequest.start_date)} - {formatDate(leaveRequest.end_date)}
           </span>
         </div>
 
@@ -98,7 +98,7 @@ export function LeaveRequestItem({ leaveRequest, onCancel }: LeaveRequestItemPro
       </div>
 
       {/* 取消按鈕 - 靠右對齊 */}
-      {leaveRequest.status === LeaveRequestStatus.PENDING && onCancel && (
+      {leaveRequest.status === RequestStatus.PENDING && onCancel && (
         <div className="flex justify-end mt-4">
           <Button
             size="sm"

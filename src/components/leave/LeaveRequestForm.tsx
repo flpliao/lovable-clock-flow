@@ -3,7 +3,8 @@ import CustomFormLabel from '@/components/common/CustomFormLabel';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import { Textarea } from '@/components/ui/textarea';
-import { LeaveRequestStatus, LeaveTypeCode } from '@/constants/leave';
+import { LeaveTypeCode } from '@/constants/leave';
+import { RequestStatus } from '@/constants/requestStatus';
 import { useLeaveType } from '@/hooks/useLeaveType';
 import { useMyLeaveRequest } from '@/hooks/useMyLeaveRequest';
 import { leaveRequestFormSchema, LeaveRequestFormValues } from '@/schemas/leaveRequest';
@@ -35,7 +36,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
       leave_type_code: '',
       reason: '',
       duration_hours: 0,
-      status: LeaveRequestStatus.PENDING,
+      status: RequestStatus.PENDING,
       attachment: null,
     },
   });
@@ -79,7 +80,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
       leave_type_code: currentLeaveType.code,
       duration_hours: calculatedHours,
       reason: data.reason,
-      status: LeaveRequestStatus.PENDING,
+      status: RequestStatus.PENDING,
     };
 
     const result = await handleCreateMyLeaveRequest(leaveRequestData);

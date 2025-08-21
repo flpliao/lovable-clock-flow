@@ -1,24 +1,11 @@
-import { LeaveRequestStatus } from '@/constants/leave';
-import { useMyLeaveRequest } from '@/hooks/useMyLeaveRequest';
-import { useMyLeaveRequestsStore } from '@/stores/leaveRequestStore';
-import React, { useEffect } from 'react';
+import { LeaveRequest } from '@/types/leaveRequest';
+import React from 'react';
 import LeaveRequestItem from './LeaveRequestItem';
 
-const MyLeaveRequestList: React.FC = () => {
-  const getRequestsByStatus = useMyLeaveRequestsStore(state => state.getRequestsByStatus);
-  const { isLoading, loadMyLeaveRequests } = useMyLeaveRequest();
-
-  // 初始載入
-  useEffect(() => {
-    loadMyLeaveRequests();
-  }, [loadMyLeaveRequests]);
-
-  const requests = getRequestsByStatus([
-    LeaveRequestStatus.CANCELLED,
-    LeaveRequestStatus.REJECTED,
-    LeaveRequestStatus.APPROVED,
-  ]);
-
+const MyLeaveRequestList: React.FC<{
+  requests: LeaveRequest[];
+  isLoading: boolean;
+}> = ({ requests, isLoading }) => {
   if (isLoading) {
     return (
       <div className="text-center py-8">

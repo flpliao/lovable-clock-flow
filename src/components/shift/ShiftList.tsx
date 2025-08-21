@@ -1,11 +1,11 @@
 import { AddButton, DeleteButton, EditButton } from '@/components/common/buttons';
+import DeleteDialog from '@/components/common/dialogs/DeleteDialog';
 import CreateShiftForm from '@/components/shift/CreateShiftForm';
 import CreateWorkScheduleForm from '@/components/shift/CreateWorkScheduleForm';
 import EditShiftForm from '@/components/shift/EditShiftForm';
 import EditWorkScheduleForm from '@/components/shift/EditWorkScheduleForm';
 import WorkScheduleList from '@/components/shift/WorkScheduleList';
 import { Button } from '@/components/ui/button';
-import DeleteDialog from '@/components/ui/DeleteDialog';
 import { Input } from '@/components/ui/input';
 import { useShift } from '@/hooks/useShift';
 import { Shift } from '@/types/shift';

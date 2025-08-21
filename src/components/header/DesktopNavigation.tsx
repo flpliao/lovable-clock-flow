@@ -10,7 +10,7 @@ const NAVIGATION_ITEMS = [
   routes.home,
   // routes.personalAttendance,
   routes.leaveRequest,
-  // routes.overtimeRequest,
+  routes.approvalCenter,
 ];
 
 const EXCLUDE_PATHS = [routes.accountSettings];
@@ -35,7 +35,7 @@ const DesktopNavigation: React.FC<DesktopNavigationProps> = ({ visibleMenuItems 
   );
 
   return (
-    <nav className="flex items-center space-x-6">
+    <nav className="flex items-center space-x-2">
       {/* 主要選單項目 - 固定4個 */}
       {fixedItems.map(item => (
         <Link key={item.path} to={item.path}>

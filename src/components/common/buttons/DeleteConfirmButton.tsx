@@ -5,15 +5,17 @@ import { ClickableLoadingButtonProps } from '@/types/button';
 import { Trash2 } from 'lucide-react';
 
 const DeleteConfirmButton = ({
+  type = 'button',
+  onClick,
   children,
   className,
   size = 'default',
-  onClick,
   disabled = false,
   isLoading = false,
 }: ClickableLoadingButtonProps) => {
   return (
     <Button
+      type={type}
       variant="destructive"
       size={size}
       onClick={onClick}

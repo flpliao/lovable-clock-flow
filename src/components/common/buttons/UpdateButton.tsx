@@ -4,6 +4,8 @@ import { cn } from '@/lib/utils';
 import { SubmitButtonProps } from '@/types/button';
 
 const UpdateButton = ({
+  type = 'submit',
+  onClick,
   children,
   className,
   size = 'default',
@@ -13,8 +15,9 @@ const UpdateButton = ({
 }: SubmitButtonProps) => {
   return (
     <Button
-      type="submit"
+      type={type}
       variant="default"
+      onClick={onClick}
       size={size}
       disabled={disabled || isLoading}
       className={cn('text-sm', className)}

@@ -1,8 +1,6 @@
-import { LeaveRequestStatus } from '@/constants/leave';
 import { useMyLeaveRequest } from '@/hooks/useMyLeaveRequest';
-import { useMyLeaveRequestsStore } from '@/stores/leaveRequestStore';
 import { LeaveRequest } from '@/types/leaveRequest';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,21 +13,18 @@ import {
 } from '../ui/alert-dialog';
 import LeaveRequestItem from './LeaveRequestItem';
 
-export function MyPendingLeaveRequestsList() {
-  const { isLoading, loadMyLeaveRequests, handleCancelMyLeaveRequest } = useMyLeaveRequest();
-  const getRequestByStatus = useMyLeaveRequestsStore(state => state.getRequestsByStatus);
-
+export function MyPendingLeaveRequestsList({
+  requests,
+  isLoading,
+}: {
+  requests: LeaveRequest[];
+  isLoading: boolean;
+}) {
   // 共享的確認對話框狀態
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [pendingCancelSlug, setPendingCancelSlug] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadMyLeaveRequests();
-  }, [loadMyLeaveRequests]);
-
-  // 篩選出待審核的請假申請
-  const pendingRequests = getRequestByStatus(LeaveRequestStatus.PENDING);
+  const { handleCancelMyLeaveRequest } = useMyLeaveRequest();
 
   // 處理取消請假申請的點擊
   const handleCancelClick = (slug: string) => {
@@ -59,7 +54,7 @@ export function MyPendingLeaveRequestsList() {
     );
   }
 
-  if (pendingRequests.length === 0) {
+  if (requests.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="w-16 h-16 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -88,7 +83,7 @@ export function MyPendingLeaveRequestsList() {
   return (
     <>
       <div className="space-y-3">
-        {pendingRequests.map((leaveRequest: LeaveRequest) => (
+        {requests.map((leaveRequest: LeaveRequest) => (
           <LeaveRequestItem
             key={leaveRequest.slug}
             leaveRequest={leaveRequest}

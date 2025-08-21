@@ -4,6 +4,8 @@ import { cn } from '@/lib/utils';
 import { SubmitButtonProps } from '@/types/button';
 
 const SaveButton = ({
+  type = 'submit',
+  onClick,
   children,
   className,
   size = 'default',
@@ -13,11 +15,12 @@ const SaveButton = ({
 }: SubmitButtonProps) => {
   return (
     <Button
-      type="submit"
+      type={type}
       variant="default"
       size={size}
       disabled={disabled || isLoading}
       className={cn('text-sm', className)}
+      onClick={onClick}
     >
       <ButtonLoader isLoading={isLoading} loadingText={loadingText}>
         {children || '儲存'}

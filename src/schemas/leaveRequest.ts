@@ -1,4 +1,4 @@
-import { LeaveRequestStatus } from '@/constants/leave';
+import { RequestStatus } from '@/constants/requestStatus';
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
@@ -20,7 +20,7 @@ export const leaveRequestFormSchema = z
     duration_hours: z.number().min(0, {
       message: '請假時數不能為負數',
     }),
-    status: z.nativeEnum(LeaveRequestStatus).default(LeaveRequestStatus.PENDING),
+    status: z.nativeEnum(RequestStatus).default(RequestStatus.PENDING),
     attachment: z.any().optional(),
   })
   .refine(data => data.end_date.isAfter(data.start_date) || data.end_date.isSame(data.start_date), {

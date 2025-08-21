@@ -44,19 +44,6 @@ export const getStatusConfig = (status: ApprovalStatus): StatusConfig => {
         statusTextColor: 'text-red-600',
         iconName: 'XCircle',
       };
-    case ApprovalStatus.CANCELLED:
-      return {
-        bgGradient: 'from-gray-50 to-gray-100',
-        borderColor: 'border-gray-200',
-        iconBg: 'bg-gray-100',
-        iconColor: 'text-gray-600',
-        textColor: 'text-gray-900',
-        secondaryTextColor: 'text-gray-600',
-        statusText: APPROVAL_STATUS_LABELS[ApprovalStatus.CANCELLED],
-        statusBg: 'bg-gray-500',
-        statusTextColor: 'text-gray-600',
-        iconName: 'XCircle',
-      };
     case ApprovalStatus.PENDING:
     default:
       return {
@@ -73,3 +60,8 @@ export const getStatusConfig = (status: ApprovalStatus): StatusConfig => {
       };
   }
 };
+
+export const getStatusColors = (count: number, dangerColor: string) => ({
+  iconBg: count > 0 ? `bg-${dangerColor}-100` : 'bg-green-100',
+  iconColor: count > 0 ? `text-${dangerColor}-600` : 'text-green-600',
+});

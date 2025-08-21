@@ -1,4 +1,6 @@
-import { ApprovalStatus, LeaveRequestStatus } from '@/constants/leave';
+import { ApprovalStatus } from '@/constants/approvalStatus';
+import { RequestStatus } from '@/constants/requestStatus';
+import { Employee } from './employee';
 import { LeaveType } from './leaveType';
 
 // 請假申請記錄
@@ -9,21 +11,24 @@ export interface LeaveRequest {
   end_date: string;
   leave_type_id?: string;
   leave_type_code: string;
-  status: LeaveRequestStatus;
+  status: RequestStatus;
   duration_hours: number;
   reason: string;
   rejection_reason?: string;
+  approve_comment?: string;
+  approvals?: ApprovalHistory[];
   leave_type?: LeaveType;
+  employee?: Employee;
   created_at: string;
   updated_at: string;
 }
 
 // 審核記錄
-export interface ApprovalRecord {
+export interface ApprovalHistory {
   slug: string;
-  leave_request_id: string;
-  approver_id: string;
-  approver_name: string;
+  application_id?: string;
+  approver_id?: string;
+  approver?: Employee;
   status: ApprovalStatus;
   level: number;
   comment?: string;

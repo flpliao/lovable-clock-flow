@@ -103,6 +103,7 @@ export const apiRoutes = {
     store: `${API_URL}/employee/leave-types`,
     update: (slug: string) => `${API_URL}/employee/leave-types/${slug}`,
     destroy: (slug: string) => `${API_URL}/employee/leave-types/${slug}`,
+    syncFromDefaults: `${API_URL}/employee/leave-types/sync-from-defaults`,
   },
   schedule: {
     index: `${API_URL}/employee/schedules`,

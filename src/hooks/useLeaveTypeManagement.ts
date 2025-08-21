@@ -1,6 +1,6 @@
 import { useToast } from '@/hooks/useToast';
 import { LeaveTypeService } from '@/services/payroll/leaveTypeService';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface LeaveType {
   id: string;
@@ -21,7 +21,7 @@ export function useLeaveTypeManagement() {
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
   const { toast } = useToast();
 
-  const loadLeaveTypes = async () => {
+  const loadLeaveTypes = useCallback(async () => {
     try {
       const data = await LeaveTypeService.getLeaveTypes();
       setLeaveTypes(data || []);
@@ -33,7 +33,7 @@ export function useLeaveTypeManagement() {
         variant: 'destructive',
       });
     }
-  };
+  }, [toast]);
 
   const handleSave = async (data: Partial<LeaveType>, selectedLeaveType: LeaveType | null) => {
     try {
@@ -74,13 +74,21 @@ export function useLeaveTypeManagement() {
     }
 
     try {
-      await LeaveTypeService.deleteLeaveType(leaveType.id);
-      toast({
-        title: '刪除成功',
-        description: '假別已刪除',
-      });
-      loadLeaveTypes();
-      return true;
+      if (await LeaveTypeService.deleteLeaveType(leaveType.id)) {
+        toast({
+          title: '刪除成功',
+          description: '假別已刪除',
+        });
+        loadLeaveTypes();
+        return true;
+      } else {
+        toast({
+          title: '刪除失敗',
+          description: '無法刪除假別',
+          variant: 'destructive',
+        });
+        return false;
+      }
     } catch (error) {
       console.error('刪除假別失敗:', error);
       toast({
@@ -94,12 +102,28 @@ export function useLeaveTypeManagement() {
 
   useEffect(() => {
     loadLeaveTypes();
-  }, []);
+  }, [loadLeaveTypes]);
+
+  const handleSyncDefaults = async () => {
+    try {
+      const ok = await LeaveTypeService.syncFromDefaults();
+      if (ok) {
+        toast({ title: '同步成功', description: '已同步系統預設假別' });
+        await loadLeaveTypes();
+      } else {
+        toast({ title: '同步失敗', description: '無法同步預設假別', variant: 'destructive' });
+      }
+    } catch (error) {
+      console.error('同步預設假別失敗:', error);
+      toast({ title: '同步失敗', description: '無法同步預設假別', variant: 'destructive' });
+    }
+  };
 
   return {
     leaveTypes,
     loadLeaveTypes,
     handleSave,
     handleDelete,
+    handleSyncDefaults,
   };
 }

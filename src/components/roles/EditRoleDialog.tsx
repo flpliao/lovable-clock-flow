@@ -10,8 +10,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 import { useRoles } from '@/hooks/useRoles';
-import { useToast } from '@/hooks/useToast';
 import { permissionService } from '@/services/permissionService';
 import { Role } from '@/types/role';
 import React, { useEffect, useState } from 'react';

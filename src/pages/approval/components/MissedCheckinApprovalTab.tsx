@@ -1,45 +1,36 @@
-import ApprovalButtons from '@/components/common/buttons/ApprovalActionButtons';
-import ApproveDialog from '@/components/common/dialogs/ApproveDialog';
-import RejectDialog from '@/components/common/dialogs/RejectDialog';
-import { RequestType } from '@/constants/checkInTypes';
-import { RequestStatus } from '@/constants/requestStatus';
-import { useToast } from '@/hooks/useToast';
-import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
+import React from 'react';
+import { CheckCircle, XCircle, User, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import dayjs from 'dayjs';
-import { CheckCircle, FileText, User } from 'lucide-react';
-import React, { useState } from 'react';
+import { MissedCheckinRequest } from '@/types/missedCheckin';
+import MissedCheckinApprovalProcess from '@/components/check-in/components/MissedCheckinApprovalProcess';
 
 interface MissedCheckinApprovalTabProps {
-  requests: MissedCheckInRequest[];
-  isLoading: boolean;
-  onApprove: (request: MissedCheckInRequest) => Promise<boolean>;
-  onReject: (request: MissedCheckInRequest) => Promise<boolean>;
+  missedCheckinRequests: MissedCheckinRequest[];
+  onApproval: (requestId: string, action: 'approved' | 'rejected') => void;
 }
 
 const MissedCheckinApprovalTab: React.FC<MissedCheckinApprovalTabProps> = ({
-  requests,
-  isLoading,
-  onApprove,
-  onReject,
+  missedCheckinRequests,
+  onApproval,
 }) => {
-  const [selectedRequest, setSelectedRequest] = useState<MissedCheckInRequest | null>(null);
-  const [showRejectDialog, setShowRejectDialog] = useState(false);
-  const [showApproveDialog, setShowApproveDialog] = useState(false);
-  const [rejectionReason, setRejectionReason] = useState('');
-  const [approveComment, setApproveComment] = useState('');
-  const { toast } = useToast();
+  const getMissedTypeText = (type: string) => {
+    switch (type) {
+      case 'check_in':
+        return '忘記上班打卡';
+      case 'check_out':
+        return '忘記下班打卡';
+      default:
+        return type;
+    }
+  };
 
-  if (isLoading) {
-    return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-        <p className="text-white/80">載入中...</p>
-      </div>
-    );
-  }
+  const formatTime = (timeString?: string) => {
+    if (!timeString) return '-';
+    return format(new Date(timeString), 'HH:mm');
+  };
 
-  if (requests.length === 0) {
+  if (missedCheckinRequests.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="w-16 h-16 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -53,51 +44,16 @@ const MissedCheckinApprovalTab: React.FC<MissedCheckinApprovalTabProps> = ({
     );
   }
 
-  const handleApprove = async (request: MissedCheckInRequest) => {
-    request.approve_comment = approveComment;
-    const result = await onApprove(request);
-    if (result) {
-      setShowApproveDialog(false);
-      toast({
-        title: '核准成功',
-        description: '忘記打卡申請已核准',
-      });
-
-      setApproveComment('');
-    }
-
-    return result;
-  };
-
-  const handleReject = async (request: MissedCheckInRequest) => {
-    request.rejection_reason = rejectionReason;
-    const result = await onReject(request);
-    if (result) {
-      setShowRejectDialog(false);
-      toast({
-        title: '拒絕成功',
-        description: '忘記打卡申請已拒絕',
-      });
-
-      setRejectionReason('');
-    }
-
-    return result;
-  };
-
   return (
     <div className="space-y-4">
-      {requests.map(request => (
-        <div
-          key={request.id || request.slug}
-          className="bg-white/10 rounded-2xl p-6 border border-white/20"
-        >
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      {missedCheckinRequests.map(request => (
+        <div key={request.id} className="bg-white/10 rounded-2xl p-6 border border-white/20">
+          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
                 <User className="h-5 w-5 text-white/80" />
                 <h3 className="text-lg font-semibold text-white">
-                  申請人員：{request.employee.name}
+                  申請人員：{request.staff?.name || '未知申請人'}
                 </h3>
               </div>
 
@@ -105,13 +61,7 @@ const MissedCheckinApprovalTab: React.FC<MissedCheckinApprovalTabProps> = ({
                 <div>
                   <span className="text-white/70">申請類型</span>
                   <div className="text-white font-medium">
-                    {request.request_type === RequestType.CHECK_IN ? '上班打卡' : '下班打卡'}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-white/70">打卡時間</span>
-                  <div className="text-white font-medium">
-                    {dayjs(request.checked_at).format('HH:mm')}
+                    {getMissedTypeText(request.missed_type)}
                   </div>
                 </div>
                 <div>
@@ -120,6 +70,22 @@ const MissedCheckinApprovalTab: React.FC<MissedCheckinApprovalTabProps> = ({
                     {format(new Date(request.request_date), 'yyyy/MM/dd')}
                   </div>
                 </div>
+                {request.requested_check_in_time && (
+                  <div>
+                    <span className="text-white/70">上班時間</span>
+                    <div className="text-white font-medium">
+                      {formatTime(request.requested_check_in_time)}
+                    </div>
+                  </div>
+                )}
+                {request.requested_check_out_time && (
+                  <div>
+                    <span className="text-white/70">下班時間</span>
+                    <div className="text-white font-medium">
+                      {formatTime(request.requested_check_out_time)}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {request.reason && (
@@ -131,44 +97,41 @@ const MissedCheckinApprovalTab: React.FC<MissedCheckinApprovalTabProps> = ({
                   <p className="text-white text-sm">{request.reason}</p>
                 </div>
               )}
+
+              {/* 審核過程 */}
+              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                <MissedCheckinApprovalProcess
+                  status={request.status}
+                  approvedByName={request.approved_by_name}
+                  approvalDate={request.approval_date}
+                  approvalComment={request.approval_comment}
+                  rejectionReason={request.rejection_reason}
+                  missedCheckinApprovalRecords={request.missed_checkin_approval_records}
+                />
+              </div>
             </div>
 
-            <ApprovalButtons
-              className="lg:ml-6"
-              onApprove={() => {
-                setSelectedRequest(request);
-                setShowApproveDialog(true);
-              }}
-              onReject={() => {
-                setSelectedRequest(request);
-                setShowRejectDialog(true);
-              }}
-              size="sm"
-              disabled={request.status !== RequestStatus.PENDING}
-            />
+            <div className="flex flex-col gap-2 lg:ml-6">
+              <Button
+                onClick={() => onApproval(request.id, 'approved')}
+                className="bg-green-500 hover:bg-green-600 text-white border-0"
+                size="sm"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                核准
+              </Button>
+              <Button
+                onClick={() => onApproval(request.id, 'rejected')}
+                variant="destructive"
+                size="sm"
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                拒絕
+              </Button>
+            </div>
           </div>
         </div>
       ))}
-
-      <ApproveDialog
-        open={showApproveDialog}
-        onOpenChange={setShowApproveDialog}
-        onConfirm={() => handleApprove(selectedRequest)}
-        approveComment={approveComment}
-        onApproveCommentChange={setApproveComment}
-        title="確認核准"
-        description="確定要核准此忘打卡申請嗎？"
-      />
-
-      <RejectDialog
-        open={showRejectDialog}
-        onOpenChange={setShowRejectDialog}
-        onConfirm={() => handleReject(selectedRequest)}
-        rejectionReason={rejectionReason}
-        onRejectionReasonChange={setRejectionReason}
-        title="確認拒絕"
-        description="確定要拒絕此忘打卡申請嗎？"
-      />
     </div>
   );
 };

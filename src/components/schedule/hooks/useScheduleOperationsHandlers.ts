@@ -1,4 +1,4 @@
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/use-toast';
 import { CreateSchedule, scheduleService } from '@/services/scheduleService';
 
 interface UseScheduleOperationsHandlersProps {

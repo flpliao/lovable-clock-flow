@@ -1,9 +1,9 @@
-import { useCurrentUser } from '@/hooks/useStores';
-import { useToast } from '@/hooks/useToast';
+import { useState, useCallback } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { NotificationDatabaseOperations } from '@/services/notifications';
 import { MissedCheckinRequest } from '@/types/missedCheckin';
-import { useCallback, useState } from 'react';
+import { useCurrentUser } from '@/hooks/useStores';
+import { NotificationDatabaseOperations } from '@/services/notifications';
 
 export const useMissedCheckinRequests = () => {
   const { toast } = useToast();

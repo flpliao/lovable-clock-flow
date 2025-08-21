@@ -1,3 +1,4 @@
+
 export interface LeaveType {
   id: string;
   code: string;
@@ -8,7 +9,6 @@ export interface LeaveType {
   max_days_per_year?: number;
   requires_attachment: boolean;
   description?: string;
-  is_system_default: boolean;
   is_active: boolean;
   sort_order: number;
   created_at: string;
@@ -23,8 +23,8 @@ export interface SalaryStructure {
   base_salary: number;
   overtime_rate: number;
   holiday_rate: number;
-  allowances: Record<string, number | string | boolean>; // 津貼項目，例如：交通津貼、餐費津貼等
-  benefits: Record<string, number | string | boolean>; // 福利項目，例如：保險、獎金等
+  allowances: any; // 使用 any 以配合 Supabase 的 Json 類型
+  benefits: any; // 使用 any 以配合 Supabase 的 Json 類型
   is_active: boolean;
   effective_date: string;
   created_at: string;

@@ -1,7 +1,7 @@
-import { useToast } from '@/hooks/useToast';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckInRecord } from '@/types';
-import { useCallback, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export const useCheckInRecordManager = () => {
   const [loading, setLoading] = useState(false);

@@ -1,9 +1,32 @@
+
 // Re-export all utilities from their respective modules
-export { formatDate, formatTime } from './dateUtils';
+export {
+  COMPANY_LOCATION,
+  ALLOWED_DISTANCE,
+  calculateDistance
+} from './geolocation';
 
 export {
-  getCheckInRecords,
+  getCurrentPosition
+} from './geolocationUtils';
+
+export {
+  getUserIP
+} from './networkUtils';
+
+export {
+  handleLocationCheckIn,
+  handleIpCheckIn
+} from './checkIn';
+
+export {
+  formatDate,
+  formatTime
+} from './dateUtils';
+
+export {
   getUserCheckInRecords,
+  getCheckInRecords,
   getUserTodayRecords,
-  saveCheckInRecord,
+  saveCheckInRecord
 } from './localStorageUtils';

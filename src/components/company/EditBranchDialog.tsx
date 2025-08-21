@@ -1,8 +1,8 @@
-import CustomFormLabel from '@/components/common/CustomFormLabel';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import RequiredLabel from '@/components/ui/RequiredLabel';
 import {
   Select,
   SelectContent,
@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/use-toast';
 import { branchService } from '@/services/branchService';
 import { useBranchStore } from '@/stores/branchStore';
 import { Branch } from '@/types/company';
@@ -115,7 +115,7 @@ const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <CustomFormLabel htmlFor="name">單位名稱</CustomFormLabel>
+              <RequiredLabel htmlFor="name">單位名稱</RequiredLabel>
               <Input
                 id="name"
                 value={editedBranch.name}
@@ -125,7 +125,7 @@ const EditBranchDialog = ({ open, onClose, branch }: EditBranchDialogProps) => {
               />
             </div>
             <div className="space-y-2">
-              <CustomFormLabel htmlFor="code">單位代碼</CustomFormLabel>
+              <RequiredLabel htmlFor="code">單位代碼</RequiredLabel>
               <Input
                 id="code"
                 value={editedBranch.code}

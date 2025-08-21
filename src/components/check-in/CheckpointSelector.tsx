@@ -5,32 +5,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useCheckInPoints } from '@/hooks/useCheckInPoints';
+import { useCheckpoints } from '@/hooks/useCheckpoints';
 import { MapPin } from 'lucide-react';
 import React, { useEffect } from 'react';
 
 interface CheckpointSelectorProps {
-  selectedCheckpointId: string | null;
-  onCheckpointChange: (checkpointId: string | null) => void;
+  selectedCheckpointId: number | null;
+  onCheckpointChange: (checkpointId: number | null) => void;
 }
 
 const CheckpointSelector: React.FC<CheckpointSelectorProps> = ({
   selectedCheckpointId,
   onCheckpointChange,
 }) => {
-  const { data: checkInPoints, loadCheckInPoints, isLoading } = useCheckInPoints();
+  const { data: checkpoints, loadCheckpoints, loading } = useCheckpoints();
 
   useEffect(() => {
-    loadCheckInPoints();
+    loadCheckpoints();
   }, []);
 
   // 預設選擇第一個 checkpoint
   useEffect(() => {
-    if (selectedCheckpointId === null && checkInPoints && checkInPoints.length > 0) {
-      onCheckpointChange(checkInPoints[0].id);
+    if (selectedCheckpointId === null && checkpoints && checkpoints.length > 0) {
+      onCheckpointChange(checkpoints[0].id);
     }
     // 只在 checkpoints 載入或 selectedCheckpointId 變動時觸發
-  }, [selectedCheckpointId, checkInPoints, onCheckpointChange]);
+  }, [selectedCheckpointId, checkpoints, onCheckpointChange]);
 
   return (
     <div className="space-y-2">
@@ -42,18 +42,18 @@ const CheckpointSelector: React.FC<CheckpointSelectorProps> = ({
         value={
           selectedCheckpointId !== null
             ? String(selectedCheckpointId)
-            : checkInPoints[0]
-              ? String(checkInPoints[0].id)
+            : checkpoints[0]
+              ? String(checkpoints[0].id)
               : 'none'
         }
-        onValueChange={value => onCheckpointChange(value === 'none' ? null : value)}
-        disabled={isLoading}
+        onValueChange={value => onCheckpointChange(value === 'none' ? null : Number(value))}
+        disabled={loading}
       >
         <SelectTrigger className="bg-white/20 border-white/30 text-white">
           <SelectValue placeholder="選擇打卡點" />
         </SelectTrigger>
         <SelectContent className="bg-white border border-gray-200 max-h-60 overflow-y-auto">
-          {checkInPoints
+          {checkpoints
             .filter(cp => !cp.disabled_at && cp.latitude && cp.longitude)
             .map(cp => (
               <SelectItem key={cp.id} value={String(cp.id)}>

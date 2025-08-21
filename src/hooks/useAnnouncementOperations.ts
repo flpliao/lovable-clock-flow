@@ -1,5 +1,5 @@
+import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
-import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { AnnouncementCrudService } from '@/services/announcementCrudService';
 import { NotificationBulkOperations } from '@/services/notifications/notificationBulkOperations';

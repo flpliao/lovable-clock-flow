@@ -1,10 +1,11 @@
 
-import { Badge } from '@/components/ui/badge';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/useToast';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, MapPin, Globe, Clock, Filter } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar, Clock, Filter, Globe, MapPin } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Holiday {
   id: string;

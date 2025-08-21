@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { AuthService } from '@/services/authServiceOld';
+import { AuthService } from '@/services/authService';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { User, useUserStore } from './userStore';

@@ -1,7 +1,7 @@
 
-import { useToast } from '@/hooks/useToast';
+import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useEffect, useState } from 'react';
 
 interface UseCredentialsProps {
   userId?: string;

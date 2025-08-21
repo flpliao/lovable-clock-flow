@@ -1,27 +1,27 @@
 import { Button } from '@/components/ui/button';
-import { useCheckInPoints } from '@/hooks/useCheckInPoints';
-import type { CheckInPoint } from '@/types/checkIn';
+import { useCheckpoints } from '@/hooks/useCheckpoints';
+import type { Checkpoint } from '@/services/checkpointService';
 import { Clock, Edit, MapPin, Trash2 } from 'lucide-react';
 import { useEffect } from 'react';
 
 interface Props {
-  data: CheckInPoint[];
+  data: Checkpoint[];
   loading: boolean;
   refresh: () => void;
-  onEdit?: (checkpoint: CheckInPoint) => void;
+  onEdit?: (checkpoint: Checkpoint) => void;
 }
 
 const CheckpointTable = ({ data, loading, refresh, onEdit }: Props) => {
-  const { loadCheckInPoints, handleDeleteCheckInPoint } = useCheckInPoints();
+  const { loadCheckpoints, deleteCheckpoint } = useCheckpoints();
 
   useEffect(() => {
-    loadCheckInPoints();
+    loadCheckpoints();
   }, []);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (!window.confirm('確定要刪除此打卡點嗎？')) return;
     try {
-      await handleDeleteCheckInPoint(id);
+      await deleteCheckpoint(id);
       refresh();
     } catch {
       alert('刪除失敗');

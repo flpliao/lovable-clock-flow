@@ -1,4 +1,5 @@
 
+import React from 'react';
 import {
   Dialog,
   DialogContent,
@@ -6,10 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/useToast';
-import React from 'react';
 import CredentialManagement from './CredentialManagement';
 import { Staff } from './types';
+import { useToast } from '@/hooks/use-toast';
 
 interface CredentialManagementDialogProps {
   staff: Staff;

@@ -1,192 +1,201 @@
-import { FeatureIcon, FeatureNumber } from '@/components/common/cards';
-import PageHeader from '@/components/layout/PageHeader';
-import PageLayout from '@/components/layout/PageLayout';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
-import {
-  useLeaveCompletedRequests,
-  useLeavePendingRequests,
-  useLeaveRequests,
-} from '@/hooks/useLeaveRequests';
-import {
-  useMissedCheckInCompletedRequests,
-  useMissedCheckInPendingRequests,
-  useMissedCheckInRequests,
-} from '@/hooks/useMissedCheckInRequests';
-import { getStatusColors } from '@/utils/statusConfig';
-import { CheckCircle, FileText } from 'lucide-react';
+import LeaveApprovalDetail from '@/components/leave/LeaveApprovalDetail';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useCurrentUser } from '@/hooks/useStores';
+import { LeaveRequest } from '@/types';
+import type { MyApplication } from '@/types/myApplication';
 import { useEffect, useState } from 'react';
+import ApprovalHeader from './approval/components/ApprovalHeader';
 import ApprovalStats from './approval/components/ApprovalStats';
 import LeaveApprovalTab from './approval/components/LeaveApprovalTab';
-import LeaveHistoryTable from './approval/components/LeaveHistoryTable';
 import MissedCheckinApprovalTab from './approval/components/MissedCheckinApprovalTab';
-import MissedCheckInHistoryTable from './approval/components/MissedCheckInHistoryTable';
+import MyApplicationsTab from './approval/components/MyApplicationsTab';
+import OvertimeApprovalTab from './approval/components/OvertimeApprovalTab';
+import { useApprovalStats } from './approval/hooks/useApprovalStats';
+import { useLeaveRequests } from './approval/hooks/useLeaveRequests';
+import { useMissedCheckinRequests } from './approval/hooks/useMissedCheckinRequests';
+import { useMyApplications } from './approval/hooks/useMyApplications';
+import { useOvertimeRequests } from './approval/hooks/useOvertimeRequests';
 
 const ApprovalCenter = () => {
-  const [activeTab, setActiveTab] = useState<string>('');
+  // 使用新的 Zustand hooks
+  const currentUser = useCurrentUser();
+
+  const [activeTab, setActiveTab] = useState<string>('my-applications');
+  // 修復：使用具體的 LeaveRequest 類型而不是通用類型
+  const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
+
+  // Custom hooks for data management
+  const { approvalStats, loadApprovalStats } = useApprovalStats();
   const {
-    isLoading: isLeaveLoading,
-    loadPendingLeaveRequests,
-    loadCompletedLeaveRequests,
-    handleLeaveRequestApprove,
-    handleLeaveRequestReject,
+    pendingRequests,
+    isLoading,
+    refreshing,
+    loadPendingRequests,
+    handleApprove,
+    handleReject,
   } = useLeaveRequests();
+  const { missedCheckinRequests, loadMissedCheckinRequests, handleMissedCheckinApproval } =
+    useMissedCheckinRequests();
+  const { overtimeRequests, loadOvertimeRequests, handleOvertimeApproval } = useOvertimeRequests();
   const {
-    isLoading: isMissedCheckInLoading,
-    loadPendingMissedCheckInRequests,
-    loadCompletedMissedCheckInRequests,
-    handleMissedCheckInApproval,
-    handleMissedCheckInRejection,
-  } = useMissedCheckInRequests();
+    myApplications,
+    isLoading: myApplicationsLoading,
+    loadMyApplications,
+  } = useMyApplications();
 
   useEffect(() => {
-    loadPendingLeaveRequests();
-    loadPendingMissedCheckInRequests();
-  }, []);
+    if (currentUser?.id) {
+      loadPendingRequests();
+      loadMissedCheckinRequests();
+      loadOvertimeRequests();
+      loadApprovalStats();
+      loadMyApplications();
+    }
+  }, [
+    currentUser?.id,
+    loadPendingRequests,
+    loadMissedCheckinRequests,
+    loadOvertimeRequests,
+    loadApprovalStats,
+    loadMyApplications,
+  ]);
 
-  const pendingLeaveRequests = useLeavePendingRequests();
-  const pendingMissedCheckInRequests = useMissedCheckInPendingRequests();
-  const completedLeaveRequests = useLeaveCompletedRequests();
-  const completedMissedCheckInRequests = useMissedCheckInCompletedRequests();
-  // // 修復：使用具體的 LeaveRequest 類型
-  // const handleViewDetail = (request: LeaveRequest) => {
-  //   setSelectedRequest(request);
-  // };
+  // 修復：使用具體的 LeaveRequest 類型
+  const handleViewDetail = (request: LeaveRequest) => {
+    setSelectedRequest(request);
+  };
 
-  // const handleBackToList = () => {
-  //   setSelectedRequest(null);
-  // };
+  const handleBackToList = () => {
+    setSelectedRequest(null);
+  };
 
-  // const handleApprovalComplete = () => {
-  //   setSelectedRequest(null);
-  //   loadPendingRequests();
-  // };
+  const handleApprovalComplete = () => {
+    setSelectedRequest(null);
+    loadPendingRequests();
+    loadApprovalStats();
+  };
 
-  // if (selectedRequest) {
-  //   return (
-  //     <LeaveApprovalDetail
-  //       request={selectedRequest}
-  //       onBack={handleBackToList}
-  //       onApprovalComplete={handleApprovalComplete}
-  //     />
-  //   );
-  // }
+  const refreshData = () => {
+    loadPendingRequests();
+    loadMissedCheckinRequests();
+    loadOvertimeRequests();
+    loadApprovalStats();
+    loadMyApplications();
+  };
+
+  // If viewing detail page, show detailed approval page
+  if (selectedRequest) {
+    return (
+      <LeaveApprovalDetail
+        request={selectedRequest}
+        onBack={handleBackToList}
+        onApprovalComplete={handleApprovalComplete}
+      />
+    );
+  }
+
+  const totalApproved =
+    approvalStats.todayApproved +
+    approvalStats.missedCheckinApproved +
+    approvalStats.overtimeApproved;
+  const totalRejected =
+    approvalStats.todayRejected +
+    approvalStats.missedCheckinRejected +
+    approvalStats.overtimeRejected;
 
   return (
-    <PageLayout>
-      <PageHeader
-        icon={CheckCircle}
-        title="審核中心"
-        description="管理員工審核申請"
-        iconBgColor="bg-purple-500"
-      />
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 pt-32 md:pt-36 py-[50px]">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pb-6">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Page Header */}
+          <ApprovalHeader refreshData={refreshData} refreshing={refreshing} />
 
-      {/* Statistics */}
-      <ApprovalStats
-        cards={[
-          {
-            title: '待審核請假',
-            description: '點擊前往審核請假申請',
-            rightContent: (
-              <FeatureNumber
-                number={pendingLeaveRequests.length}
-                iconBg={getStatusColors(pendingLeaveRequests.length, 'red').iconBg}
-                iconColor={getStatusColors(pendingLeaveRequests.length, 'red').iconColor}
-              />
-            ),
-            onClick: () => setActiveTab('pending-leave'),
-          },
-          {
-            title: '待審核打卡',
-            description: '點擊前往審核忘打卡申請',
-            rightContent: (
-              <FeatureNumber
-                number={pendingMissedCheckInRequests.length}
-                iconBg={getStatusColors(pendingMissedCheckInRequests.length, 'red').iconBg}
-                iconColor={getStatusColors(pendingMissedCheckInRequests.length, 'red').iconColor}
-              />
-            ),
-            onClick: () => setActiveTab('pending-missed-checkin'),
-          },
-          {
-            title: '請假紀錄',
-            description: '查看請假申請歷史紀錄',
-            rightContent: (
-              <FeatureIcon
-                icon={<FileText className="h-5 w-5" />}
-                iconBg="bg-blue-100"
-                iconColor="text-blue-600"
-              />
-            ),
-            onClick: () => {
-              setActiveTab('leave-history');
-              loadCompletedLeaveRequests();
-            },
-          },
-          {
-            title: '忘打卡紀錄',
-            description: '查看忘打卡申請歷史紀錄',
-            rightContent: (
-              <FeatureIcon
-                icon={<FileText className="h-5 w-5" />}
-                iconBg="bg-purple-100"
-                iconColor="text-blue-600"
-              />
-            ),
-            onClick: () => {
-              setActiveTab('missed-checkin-history');
-              loadCompletedMissedCheckInRequests();
-            },
-          },
-        ]}
-      />
+          {/* Statistics */}
+          <ApprovalStats
+            pendingLeave={pendingRequests.length}
+            pendingMissedCheckin={missedCheckinRequests.length}
+            pendingOvertime={overtimeRequests.length}
+            todayApproved={totalApproved}
+            todayRejected={totalRejected}
+          />
 
-      {/* Main Content Area */}
-      {activeTab && (
-        <div className="backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
-          <Tabs value={activeTab} className="w-full">
-            <TabsContent value="pending-leave" className="mt-0">
-              <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">
-                待審核請假申請
-              </h2>
-              <LeaveApprovalTab
-                requests={pendingLeaveRequests}
-                isLoading={isLeaveLoading}
-                onApprove={handleLeaveRequestApprove}
-                onReject={handleLeaveRequestReject}
-              />
-            </TabsContent>
+          {/* Main Content Area */}
+          <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-4 backdrop-blur-xl bg-white/30 border border-white/30 rounded-xl p-1 h-12 mb-6">
+                <TabsTrigger
+                  value="my-applications"
+                  className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-3 text-sm data-[state=active]:backdrop-blur-xl"
+                >
+                  我的申請 ({myApplications.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="leave"
+                  className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-3 text-sm data-[state=active]:backdrop-blur-xl"
+                >
+                  請假審核 ({pendingRequests.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="missed-checkin"
+                  className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-3 text-sm data-[state=active]:backdrop-blur-xl"
+                >
+                  忘記打卡 ({missedCheckinRequests.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="overtime"
+                  className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-3 text-sm data-[state=active]:backdrop-blur-xl"
+                >
+                  加班審核 ({overtimeRequests.length})
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="pending-missed-checkin" className="mt-0">
-              <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">
-                待審核忘記打卡申請
-              </h2>
-              <MissedCheckinApprovalTab
-                requests={pendingMissedCheckInRequests}
-                isLoading={isMissedCheckInLoading}
-                onApprove={handleMissedCheckInApproval}
-                onReject={handleMissedCheckInRejection}
-              />
-            </TabsContent>
+              <TabsContent value="my-applications" className="mt-0">
+                <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">
+                  我的申請記錄
+                </h2>
+                <MyApplicationsTab
+                  applications={myApplications as MyApplication[]}
+                  isLoading={myApplicationsLoading}
+                />
+              </TabsContent>
 
-            <TabsContent value="leave-history" className="mt-0">
-              <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">
-                請假申請歷史紀錄
-              </h2>
-              <LeaveHistoryTable requests={completedLeaveRequests} isLoading={isLeaveLoading} />
-            </TabsContent>
-            <TabsContent value="missed-checkin-history" className="mt-0">
-              <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">
-                忘打卡申請歷史紀錄
-              </h2>
-              <MissedCheckInHistoryTable
-                requests={completedMissedCheckInRequests}
-                isLoading={isMissedCheckInLoading}
-              />
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="leave" className="mt-0">
+                <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">
+                  待審核請假申請
+                </h2>
+                <LeaveApprovalTab
+                  pendingRequests={pendingRequests}
+                  isLoading={isLoading}
+                  onViewDetail={handleViewDetail}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                />
+              </TabsContent>
+
+              <TabsContent value="missed-checkin" className="mt-0">
+                <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">
+                  待審核忘記打卡申請
+                </h2>
+                <MissedCheckinApprovalTab
+                  missedCheckinRequests={missedCheckinRequests}
+                  onApproval={handleMissedCheckinApproval}
+                />
+              </TabsContent>
+
+              <TabsContent value="overtime" className="mt-0">
+                <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">
+                  待審核加班申請
+                </h2>
+                <OvertimeApprovalTab
+                  overtimeRequests={overtimeRequests}
+                  onApproval={handleOvertimeApproval}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
-      )}
-    </PageLayout>
+      </div>
+    </div>
   );
 };
 

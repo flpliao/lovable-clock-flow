@@ -1,70 +1,53 @@
-import dayjs from 'dayjs';
+
+import { differenceInMonths, differenceInYears, format } from 'date-fns';
 
 /**
- * 計算年資（基於到職日期）
- * @param startDate 到職日期字串
- * @returns 年資字串，例如 "2年3個月" 或 "未設定"
+ * 根據入職日期計算年資（月數）
  */
-export function calculateYearsOfService(startDate: string | null | undefined): string {
-  if (!startDate) return '未設定';
-
-  const start = dayjs(startDate);
-  const currentDate = dayjs();
-  const years = currentDate.diff(start, 'year');
-  const months = currentDate.diff(start, 'month') % 12;
-
-  if (years === 0) {
-    return `${months}個月`;
-  } else if (months === 0) {
-    return `${years}年`;
-  } else {
-    return `${years}年${months}個月`;
-  }
+export function calculateYearsOfService(hireDate: Date): number {
+  const now = new Date();
+  const months = differenceInMonths(now, hireDate);
+  return months / 12;
 }
 
 /**
- * 計算特休時數
- * @param startDate 到職日期字串
- * @returns 特休時數物件，包含總時數、已用時數、剩餘時數
+ * 根據台灣勞基法計算特休天數
  */
-export function calculateAnnualLeaveHours(startDate: string | null | undefined): {
-  total: number;
-  used: number;
-  remaining: number;
-} {
-  if (!startDate) return { total: 0, used: 0, remaining: 0 };
-
-  const start = dayjs(startDate);
-  const currentDate = dayjs();
-  const diffDays = currentDate.diff(start, 'day');
-  const years = Math.floor(diffDays / 365);
-
-  let totalDays = 0;
-  if (years >= 1) {
-    if (years < 2) totalDays = 7;
-    else if (years < 3) totalDays = 10;
-    else if (years < 5) totalDays = 14;
-    else if (years < 10) totalDays = 15;
-    else totalDays = Math.min(30, 15 + (years - 10));
+export function calculateAnnualLeaveDays(hireDate: Date): number {
+  const now = new Date();
+  const months = differenceInMonths(now, hireDate);
+  const years = differenceInYears(now, hireDate);
+  
+  // 根據勞基法第38條規定
+  if (months < 6) {
+    return 0; // 未滿6個月無特休
+  } else if (months >= 6 && months < 12) {
+    return 3; // 滿6個月，3天
+  } else if (years >= 1 && years < 2) {
+    return 7; // 滿1年，7天
+  } else if (years >= 2 && years < 3) {
+    return 10; // 滿2年，10天
+  } else if (years >= 3 && years < 5) {
+    return 14; // 滿3年，14天
+  } else if (years >= 5 && years < 10) {
+    return 15; // 滿5年，15天
+  } else if (years >= 10) {
+    // 滿10年後，每滿1年加1天，最高30天
+    const additionalYears = years - 10;
+    return Math.min(30, 15 + additionalYears);
   }
-
-  // 將天數轉換為時數（每工作日8小時）
-  const totalHours = totalDays * 8;
-  const usedHours = 0; // 暫時設為 0，後續可從資料庫獲取
-  const remainingHours = totalHours - usedHours;
-
-  return { total: totalHours, used: usedHours, remaining: remainingHours };
+  
+  return 0;
 }
 
 /**
  * 格式化年資顯示
  */
 export function formatYearsOfService(hireDate: Date): string {
-  const now = dayjs();
-  const start = dayjs(hireDate);
-  const years = now.diff(start, 'year');
-  const months = now.diff(start, 'month') % 12;
-
+  const now = new Date();
+  const years = differenceInYears(now, hireDate);
+  const months = differenceInMonths(now, hireDate) % 12;
+  
   if (years === 0) {
     return `${months}個月`;
   } else if (months === 0) {
@@ -79,18 +62,16 @@ export function formatYearsOfService(hireDate: Date): string {
  */
 export function calculateWorkDays(startDate: Date, endDate: Date): number {
   let count = 0;
-  let current = dayjs(startDate);
-  const end = dayjs(endDate);
-
-  while (current.isBefore(end) || current.isSame(end, 'day')) {
-    const dayOfWeek = current.day();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-      // 排除週日(0)和週六(6)
+  const current = new Date(startDate);
+  
+  while (current <= endDate) {
+    const dayOfWeek = current.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // 排除週日(0)和週六(6)
       count++;
     }
-    current = current.add(1, 'day');
+    current.setDate(current.getDate() + 1);
   }
-
+  
   return count;
 }
 

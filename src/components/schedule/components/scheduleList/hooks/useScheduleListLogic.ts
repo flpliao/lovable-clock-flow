@@ -1,7 +1,7 @@
 import { Staff } from '@/components/staff/types';
 import { Schedule } from '@/contexts/scheduling/types';
+import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser, useIsAdmin } from '@/hooks/useStores';
-import { useToast } from '@/hooks/useToast';
 import { useEffect, useState } from 'react';
 
 type ScheduleViewType = 'my' | 'subordinates' | 'all';

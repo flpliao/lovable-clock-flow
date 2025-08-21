@@ -96,6 +96,13 @@ export const useMissedCheckInRequests = () => {
 export const useMissedCheckInPendingRequests = () => {
   const { requestsBySlug: requests, getRequestsByStatus } = useMissedCheckInRequestsStore();
   return useMemo(() => {
-    return getRequestsByStatus(RequestStatus.PENDING);
+    return getRequestsByStatus([RequestStatus.PENDING]);
+  }, [requests]);
+};
+
+export const useMissedCheckInCompletedRequests = () => {
+  const { requestsBySlug: requests, getRequestsByStatus } = useMissedCheckInRequestsStore();
+  return useMemo(() => {
+    return getRequestsByStatus([RequestStatus.REJECTED, RequestStatus.APPROVED]);
   }, [requests]);
 };

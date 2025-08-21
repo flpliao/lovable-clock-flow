@@ -2,32 +2,43 @@ import { RequestStatus } from '@/constants/requestStatus';
 import {
   cancelMissedCheckInRequest,
   createMissedCheckInRequest,
-  getMyMissedCheckInRequests,
+  getCompletedMyMissedCheckInRequests,
   updateMissedCheckInRequest,
 } from '@/services/missedCheckInRequestService';
 import { useMyCheckInRecordsStore } from '@/stores/checkInRecordStore';
 import useMissedCheckInRequestsStore from '@/stores/missedCheckInRequestStore';
 import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
-import dayjs from 'dayjs';
-import { useMemo } from 'react';
 
 export const useMyMissedCheckInRequests = () => {
-  const { requests, mergeRequests, addRequest, updateRequest, isLoading, setLoading } =
-    useMissedCheckInRequestsStore();
+  const {
+    requestsBySlug,
+    addRequests,
+    addRequestsToMy,
+    addRequest,
+    updateRequest,
+    isMyLoaded,
+    isLoading,
+    setMyLoaded,
+    setLoading,
+  } = useMissedCheckInRequestsStore();
   const { addRecord } = useMyCheckInRecordsStore();
-
-  // 過濾今日的忘記打卡申請
-  const todayRequests = useMemo(() => {
-    return requests.filter(request => dayjs(request.request_date).isSame(dayjs(), 'day'));
-  }, [requests]);
 
   // 載入我的忘記打卡申請
   const loadMyMissedCheckInRequests = async () => {
-    if (requests.length > 0 || isLoading) return;
+    if (
+      isMyLoaded([RequestStatus.APPROVED, RequestStatus.REJECTED, RequestStatus.CANCELLED]) ||
+      isLoading
+    )
+      return;
 
     setLoading(true);
-    const data = await getMyMissedCheckInRequests();
-    mergeRequests(data);
+    const data = await getCompletedMyMissedCheckInRequests();
+    if (data.length > 0) {
+      addRequests(data);
+
+      addRequestsToMy(data);
+      setMyLoaded([RequestStatus.APPROVED, RequestStatus.REJECTED, RequestStatus.CANCELLED]);
+    }
     setLoading(false);
   };
 
@@ -68,8 +79,7 @@ export const useMyMissedCheckInRequests = () => {
 
   return {
     // 狀態
-    requests,
-    todayRequests,
+    requests: requestsBySlug,
     isLoading,
 
     // 操作方法

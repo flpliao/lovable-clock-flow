@@ -16,6 +16,7 @@ export interface LeaveRequest {
   reason: string;
   rejection_reason?: string;
   approve_comment?: string;
+  approvals?: ApprovalHistory[];
   leave_type?: LeaveType;
   employee?: Employee;
   created_at: string;
@@ -23,11 +24,11 @@ export interface LeaveRequest {
 }
 
 // 審核記錄
-export interface ApprovalRecord {
+export interface ApprovalHistory {
   slug: string;
-  leave_request_id: string;
-  approver_id: string;
-  approver_name: string;
+  application_id?: string;
+  approver_id?: string;
+  approver?: Employee;
   status: ApprovalStatus;
   level: number;
   comment?: string;

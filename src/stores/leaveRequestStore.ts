@@ -1,8 +1,8 @@
 import { RequestStatus } from '@/constants/requestStatus';
 import { LeaveRequest } from '@/types/leaveRequest';
+import { LoadStatus } from '@/types/store';
 import { create } from 'zustand';
 
-type LoadStatus = Record<RequestStatus, boolean>;
 interface LeaveRequestsState {
   requestsBySlug: Record<string, LeaveRequest>;
   allSlugs: string[];

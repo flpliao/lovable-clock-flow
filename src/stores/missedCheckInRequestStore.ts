@@ -1,15 +1,15 @@
 import { RequestStatus } from '@/constants/requestStatus';
 import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
+import { LoadStatus } from '@/types/store';
 import { create } from 'zustand';
-type LoadStatus = Record<RequestStatus, boolean>;
 
 interface MissedCheckInRequestsState {
   requestsBySlug: Record<string, MissedCheckInRequest>;
   allSlugs: string[];
   mySlugs: string[];
   isLoaded: {
-    all: Record<string, boolean>;
-    my: Record<string, boolean>;
+    all: LoadStatus;
+    my: LoadStatus;
   };
   isLoading: boolean;
 
@@ -20,7 +20,7 @@ interface MissedCheckInRequestsState {
   updateRequest: (slug: string, updates: Partial<MissedCheckInRequest>) => void;
   removeRequest: (slug: string) => void;
   getRequestBySlug: (slug: string) => MissedCheckInRequest | undefined;
-  getRequestsByStatus: (status: string, forMy?: boolean) => MissedCheckInRequest[];
+  getRequestsByStatus: (statuses: RequestStatus[], forMy?: boolean) => MissedCheckInRequest[];
   setLoading: (loading: boolean) => void;
   reset: () => void;
   getAllRequests: (forMy?: boolean) => MissedCheckInRequest[];
@@ -35,20 +35,14 @@ const useMissedCheckInRequestsStore = create<MissedCheckInRequestsState>((set, g
   allSlugs: [],
   mySlugs: [],
   isLoaded: {
-    all: Object.values(RequestStatus).reduce(
-      (acc, status) => {
-        acc[status] = false;
-        return acc;
-      },
-      {} as Record<string, boolean>
-    ),
-    my: Object.values(RequestStatus).reduce(
-      (acc, status) => {
-        acc[status] = false;
-        return acc;
-      },
-      {} as Record<string, boolean>
-    ),
+    all: Object.values(RequestStatus).reduce((acc, status) => {
+      acc[status] = false;
+      return acc;
+    }, {} as LoadStatus),
+    my: Object.values(RequestStatus).reduce((acc, status) => {
+      acc[status] = false;
+      return acc;
+    }, {} as LoadStatus),
   },
   isLoading: false,
 
@@ -121,10 +115,10 @@ const useMissedCheckInRequestsStore = create<MissedCheckInRequestsState>((set, g
     return requestsBySlug[slug];
   },
 
-  getRequestsByStatus: (status, forMy = false) => {
+  getRequestsByStatus: (statuses, forMy = false) => {
     const { requestsBySlug, allSlugs, mySlugs } = get();
     const slugs = forMy ? mySlugs : allSlugs;
-    return slugs.map(slug => requestsBySlug[slug]).filter(r => r && r.status === status);
+    return slugs.map(slug => requestsBySlug[slug]).filter(r => r && statuses.includes(r.status));
   },
 
   setLoading: loading => set({ isLoading: loading }),

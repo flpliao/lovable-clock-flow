@@ -118,6 +118,13 @@ export const protectedRoutes: RouteConfig[] = [
     icon: 'clock',
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER], // 只有管理員和經理可訪問
   },
+  {
+    path: routes.leaveTypeManagement,
+    name: '請假類型管理',
+    component: LeaveTypeManagement,
+    icon: 'fileText',
+    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
+  },
 ];
 
 export const unFinishedRoutes: RouteConfig[] = [

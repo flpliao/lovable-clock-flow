@@ -28,14 +28,33 @@ export default function LeaveTypeManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedLeaveType, setSelectedLeaveType] = useState<LeaveType | null>(null);
   const [deleteLeaveType, setDeleteLeaveType] = useState<LeaveType | null>(null);
-  const { leaveTypes, handleSave, handleDelete } = useLeaveTypeManagement();
+  const { leaveTypes, handleSave, handleDelete, handleSyncDefaults } = useLeaveTypeManagement();
+
+  // 系統預設假別代碼
+  const defaultLeaveTypeCodes = new Set([
+    'ANNUAL',
+    'SICK',
+    'PERSONAL',
+    'MARRIAGE',
+    'BEREAVEMENT_L1',
+    'BEREAVEMENT_L2',
+    'BEREAVEMENT_L3',
+    'MATERNITY',
+    'PATERNITY',
+  ]);
+
+  // 將符合預設清單的假別標記為系統預設
+  const enhancedLeaveTypes = leaveTypes.map(type => ({
+    ...type,
+    is_system_default: defaultLeaveTypeCodes.has((type.code || '').toUpperCase()),
+  }));
 
   // 統計數據
   const stats = {
-    total: leaveTypes.length,
-    active: leaveTypes.filter(type => type.is_active).length,
-    paid: leaveTypes.filter(type => type.is_paid && type.is_active).length,
-    systemDefault: leaveTypes.filter(type => type.is_system_default).length,
+    total: enhancedLeaveTypes.length,
+    active: enhancedLeaveTypes.filter(type => type.is_active).length,
+    paid: enhancedLeaveTypes.filter(type => type.is_paid && type.is_active).length,
+    systemDefault: enhancedLeaveTypes.filter(type => type.is_system_default).length,
   };
 
   const handleAdd = () => {
@@ -98,7 +117,15 @@ export default function LeaveTypeManagement() {
           <LeaveTypeStatsCards stats={stats} />
 
           {/* 操作按鈕區域 */}
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-3">
+            <Button
+              onClick={async () => {
+                await handleSyncDefaults();
+              }}
+              className="bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-6 py-2.5 font-semibold"
+            >
+              同步預設假別
+            </Button>
             <Button
               onClick={handleAdd}
               className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-6 py-2.5 font-semibold"
@@ -109,7 +136,7 @@ export default function LeaveTypeManagement() {
           </div>
 
           <LeaveTypeTable
-            leaveTypes={leaveTypes}
+            leaveTypes={enhancedLeaveTypes}
             onEdit={handleEdit}
             onDelete={handleDeleteClick}
           />

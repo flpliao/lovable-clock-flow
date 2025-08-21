@@ -1,13 +1,9 @@
 import { RequestStatus } from '@/constants/requestStatus';
-import {
-  approveMissedCheckInRequest,
-  getCompletedMissedCheckInRequests,
-  getPendingMissedCheckInRequests,
-  rejectMissedCheckInRequest,
-} from '@/services/missedCheckInRequestService';
+import { MissedCheckInRequestService } from '@/services/missedCheckInRequestService';
 import useEmployeeStore from '@/stores/employeeStore';
 import useMissedCheckInRequestsStore from '@/stores/missedCheckInRequestStore';
 import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
+import { showError, showSuccess } from '@/utils/toast';
 import { useMemo } from 'react';
 
 export const useMissedCheckInRequests = () => {
@@ -28,60 +24,81 @@ export const useMissedCheckInRequests = () => {
 
     if (isAllLoaded(statuses) || isLoading) return;
     setLoading(true);
-    const data = await getPendingMissedCheckInRequests();
-    if (data.length > 0) {
+    try {
+      const data = await MissedCheckInRequestService.getPendingMissedCheckInRequests();
       addRequests(data);
       setAllLoaded(statuses);
 
       const myRequests = data.filter(r => r.employee?.slug === employee?.slug);
       addRequestsToMy(myRequests);
       setMyLoaded(statuses);
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const loadCompletedMissedCheckInRequests = async () => {
     const statuses = [RequestStatus.CANCELLED, RequestStatus.REJECTED, RequestStatus.APPROVED];
     if (isAllLoaded(statuses) || isLoading) return;
     setLoading(true);
-    const data = await getCompletedMissedCheckInRequests();
-    if (data.length > 0) {
+    try {
+      const data = await MissedCheckInRequestService.getCompletedMissedCheckInRequests();
       addRequests(data);
       setAllLoaded(statuses);
 
       const myRequests = data.filter(r => r.employee?.slug === employee?.slug);
       addRequestsToMy(myRequests);
       setMyLoaded(statuses);
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   // 核准忘記打卡申請
   const handleMissedCheckInApproval = async (request: MissedCheckInRequest) => {
-    const success = await approveMissedCheckInRequest(request.slug, request.approve_comment);
+    try {
+      await MissedCheckInRequestService.approveMissedCheckInRequest(
+        request.slug,
+        request.approve_comment
+      );
 
-    if (success) {
       // 更新 store 中的狀態
       updateRequest(request.slug, {
         status: RequestStatus.APPROVED,
       });
-    }
 
-    return success;
+      showSuccess('核准成功');
+      return true;
+    } catch (error) {
+      showError(error.message);
+      return false;
+    }
   };
 
   // 拒絕忘記打卡申請
   const handleMissedCheckInRejection = async (request: MissedCheckInRequest) => {
-    // 更新 store 中的狀態
-    const result = await rejectMissedCheckInRequest(request.slug, request.rejection_reason);
-    if (result) {
+    try {
+      // 更新 store 中的狀態
+      await MissedCheckInRequestService.rejectMissedCheckInRequest(
+        request.slug,
+        request.rejection_reason
+      );
+
       updateRequest(request.slug, {
         status: RequestStatus.REJECTED,
         rejection_reason: request.rejection_reason,
       });
-    }
 
-    return result;
+      showSuccess('拒絕成功');
+      return true;
+    } catch (error) {
+      showError(error.message);
+      return false;
+    }
   };
 
   return {

@@ -1,6 +1,7 @@
-import { getCheckInRecords } from '@/services/checkInService';
+import { CheckInService } from '@/services/checkInService';
 import { useMyCheckInRecordsStore } from '@/stores/checkInRecordStore';
 import { CheckInRecord } from '@/types/checkIn';
+import { showError } from '@/utils/toast';
 import dayjs from 'dayjs';
 
 export const useCheckInRecords = () => {
@@ -32,15 +33,24 @@ export const useCheckInRecords = () => {
     setError(null);
 
     const targetDate = checked_at || dayjs().format('YYYY-MM-DD');
-    const data = await getCheckInRecords(targetDate);
-    setRecords(data);
-
-    setLoading(false);
+    try {
+      const data = await CheckInService.getCheckInRecords(targetDate);
+      setRecords(data);
+    } catch (error) {
+      setError(error.message);
+      showError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 載入今日打卡記錄
   const loadTodayCheckInRecords = async () => {
-    await loadCheckInRecords(dayjs().format('YYYY-MM-DD'));
+    try {
+      await loadCheckInRecords(dayjs().format('YYYY-MM-DD'));
+    } catch (error) {
+      showError(error.message);
+    }
   };
 
   // 新增打卡記錄

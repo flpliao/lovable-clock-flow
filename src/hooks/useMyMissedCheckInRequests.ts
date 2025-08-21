@@ -1,13 +1,8 @@
 import { RequestStatus } from '@/constants/requestStatus';
-import {
-  cancelMissedCheckInRequest,
-  createMissedCheckInRequest,
-  getCompletedMyMissedCheckInRequests,
-  updateMissedCheckInRequest,
-} from '@/services/missedCheckInRequestService';
+import { MissedCheckInRequestService } from '@/services/missedCheckInRequestService';
 import { useMyCheckInRecordsStore } from '@/stores/checkInRecordStore';
 import useMissedCheckInRequestsStore from '@/stores/missedCheckInRequestStore';
-import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
+import { showError } from '@/utils/toast';
 
 export const useMyMissedCheckInRequests = () => {
   const {
@@ -32,14 +27,16 @@ export const useMyMissedCheckInRequests = () => {
       return;
 
     setLoading(true);
-    const data = await getCompletedMyMissedCheckInRequests();
-    if (data.length > 0) {
+    try {
+      const data = await MissedCheckInRequestService.getCompletedMyMissedCheckInRequests();
       addRequests(data);
-
       addRequestsToMy(data);
       setMyLoaded([RequestStatus.APPROVED, RequestStatus.REJECTED, RequestStatus.CANCELLED]);
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   // 新增忘記打卡申請
@@ -48,33 +45,26 @@ export const useMyMissedCheckInRequests = () => {
     request_type: string;
     checked_at: string;
     reason: string;
-  }): Promise<MissedCheckInRequest | null> => {
-    const newRequest = await createMissedCheckInRequest(requestData);
-    if (newRequest) {
+  }): Promise<boolean> => {
+    try {
+      const newRequest = await MissedCheckInRequestService.createMissedCheckInRequest(requestData);
       addRequest(newRequest);
       addRecord(newRequest.check_in_record);
-    }
-    return newRequest;
-  };
-
-  // 更新忘記打卡申請
-  const handleUpdateMyMissedCheckInRequest = async (
-    slug: string,
-    updates: Partial<MissedCheckInRequest>
-  ) => {
-    const data = await updateMissedCheckInRequest(slug, updates);
-    if (data) {
-      updateRequest(slug, updates);
+      return true;
+    } catch (error) {
+      showError(error.message);
+      return false;
     }
   };
 
   // 取消忘記打卡申請
   const handleCancelMyMissedCheckInRequest = async (slug: string) => {
-    const success = await cancelMissedCheckInRequest(slug);
-    if (success) {
+    try {
+      await MissedCheckInRequestService.cancelMissedCheckInRequest(slug);
       updateRequest(slug, { status: RequestStatus.CANCELLED });
+    } catch (error) {
+      showError(error.message);
     }
-    return success;
   };
 
   return {
@@ -85,7 +75,6 @@ export const useMyMissedCheckInRequests = () => {
     // 操作方法
     loadMyMissedCheckInRequests,
     handleCreateMyMissedCheckInRequest,
-    handleUpdateMyMissedCheckInRequest,
     handleCancelMyMissedCheckInRequest,
   };
 };

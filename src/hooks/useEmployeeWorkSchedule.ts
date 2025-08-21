@@ -1,9 +1,7 @@
-import {
-  bulkSyncEmployeeWorkSchedules,
-  getEmployeeWithWorkSchedules,
-} from '@/services/employeeWorkScheduleService';
+import { EmployeeWorkScheduleService } from '@/services/employeeWorkScheduleService';
 import { useEmployeeWorkScheduleStore } from '@/stores/employeeWorkScheduleStore';
 import type { Employee } from '@/types/employee';
+import { showError } from '@/utils/toast';
 import dayjs from 'dayjs';
 
 export const useEmployeeWorkSchedule = () => {
@@ -33,12 +31,17 @@ export const useEmployeeWorkSchedule = () => {
     setLoading(true);
     setError(null);
 
-    const employees = await getEmployeeWithWorkSchedules({
-      department_slug: departmentSlug,
-    });
-    addEmployeesForDepartment({ departmentSlug, employees });
-    setLoading(false);
-    return employees;
+    try {
+      const employees = await EmployeeWorkScheduleService.getEmployeeWithWorkSchedules({
+        department_slug: departmentSlug,
+      });
+      addEmployeesForDepartment({ departmentSlug, employees });
+    } catch (error) {
+      setError(error.message);
+      showError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 載入部門特定時期的員工資料
@@ -64,15 +67,20 @@ export const useEmployeeWorkSchedule = () => {
     const startDate = periodDate.format('YYYY-MM-DD');
     const endDate = periodDate.endOf('month').format('YYYY-MM-DD');
 
-    const employees = await getEmployeeWithWorkSchedules({
-      department_slug: departmentSlug,
-      start_date: startDate,
-      end_date: endDate,
-    });
+    try {
+      const employees = await EmployeeWorkScheduleService.getEmployeeWithWorkSchedules({
+        department_slug: departmentSlug,
+        start_date: startDate,
+        end_date: endDate,
+      });
 
-    addEmployeesForDepartment({ departmentSlug, employees, period });
-    setLoading(false);
-    return employees;
+      addEmployeesForDepartment({ departmentSlug, employees, period });
+    } catch (error) {
+      setError(error.message);
+      showError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 載入部門特定日期的員工資料
@@ -94,17 +102,23 @@ export const useEmployeeWorkSchedule = () => {
     }
 
     // 載入該日期所在的整天資料（使用 start_date 和 end_date）
-    const employees = await getEmployeeWithWorkSchedules({
-      department_slug: departmentSlug,
-      start_date: date,
-      end_date: date,
-    });
+    try {
+      const employees = await EmployeeWorkScheduleService.getEmployeeWithWorkSchedules({
+        department_slug: departmentSlug,
+        start_date: date,
+        end_date: date,
+      });
 
-    // 使用 dayjs 自動推斷時期並標記為已載入
-    const period = dayjs(date).format('YYYY-MM');
-    addEmployeesForDepartment({ departmentSlug, employees, period });
-    setLoading(false);
-    return employees;
+      // 使用 dayjs 自動推斷時期並標記為已載入
+      const period = dayjs(date).format('YYYY-MM');
+      addEmployeesForDepartment({ departmentSlug, employees, period });
+      setLoading(false);
+    } catch (error) {
+      setError(error.message);
+      showError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 載入部門特定日期範圍的員工資料
@@ -120,26 +134,30 @@ export const useEmployeeWorkSchedule = () => {
     setLoading(true);
     setError(null);
 
-    const employees = await getEmployeeWithWorkSchedules({
-      department_slug: departmentSlug,
-      start_date: startDate,
-      end_date: endDate,
-    });
+    try {
+      const employees = await EmployeeWorkScheduleService.getEmployeeWithWorkSchedules({
+        department_slug: departmentSlug,
+        start_date: startDate,
+        end_date: endDate,
+      });
 
-    // 使用 dayjs 推斷涵蓋的時期並標記為已載入
-    const startPeriod = dayjs(startDate).format('YYYY-MM');
-    const endPeriod = dayjs(endDate).format('YYYY-MM');
+      // 使用 dayjs 推斷涵蓋的時期並標記為已載入
+      const startPeriod = dayjs(startDate).format('YYYY-MM');
+      const endPeriod = dayjs(endDate).format('YYYY-MM');
 
-    // 如果範圍在同一個月內，標記該月為已載入
-    if (startPeriod === endPeriod) {
-      addEmployeesForDepartment({ departmentSlug, employees, period: startPeriod });
-    } else {
-      // 跨月範圍，不標記特定時期（因為可能不完整）
-      addEmployeesForDepartment({ departmentSlug, employees });
+      // 如果範圍在同一個月內，標記該月為已載入
+      if (startPeriod === endPeriod) {
+        addEmployeesForDepartment({ departmentSlug, employees, period: startPeriod });
+      } else {
+        // 跨月範圍，不標記特定時期（因為可能不完整）
+        addEmployeesForDepartment({ departmentSlug, employees });
+      }
+    } catch (error) {
+      setError(error.message);
+      showError(error.message);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-    return employees;
   };
 
   // 載入部門特定年月的員工資料
@@ -228,21 +246,21 @@ export const useEmployeeWorkSchedule = () => {
       }
     });
 
-    const result = await bulkSyncEmployeeWorkSchedules({
-      month,
-      year,
-      schedules,
-    });
+    try {
+      await EmployeeWorkScheduleService.bulkSyncEmployeeWorkSchedules({
+        month,
+        year,
+        schedules,
+      });
 
-    if (result) {
       setLoading(false);
       onSuccess?.();
-      return true;
-    } else {
-      setError('批量同步失敗');
-      setLoading(false);
+    } catch (error) {
+      setError(error.message);
+      showError(error.message);
       onError?.();
-      return false;
+    } finally {
+      setLoading(false);
     }
   };
 

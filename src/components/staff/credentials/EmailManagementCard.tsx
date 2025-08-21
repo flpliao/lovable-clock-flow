@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/useToast';
-import { updateEmployeeEmail } from '@/services/employeeService';
+import { EmployeeService } from '@/services/employeeService';
 import { Edit2, Mail, Save, X } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -24,7 +24,7 @@ const EmailManagementCard: React.FC<EmailManagementCardProps> = ({
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      await updateEmployeeEmail(currentEmail, newEmail);
+      await EmployeeService.updateEmployeeEmail(currentEmail, newEmail);
       setIsEditing(false);
 
       // 通知外部更新電子郵件

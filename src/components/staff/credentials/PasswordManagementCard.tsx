@@ -10,7 +10,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/useToast';
-import { updateEmployeePassword } from '@/services/employeeService';
+import { EmployeeService } from '@/services/employeeService';
 import { Eye, EyeOff, Key, ShieldAlert } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -30,7 +30,7 @@ const PasswordManagementCard: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await updateEmployeePassword(currentPassword, newPassword, confirmPassword);
+      await EmployeeService.updateEmployeePassword(currentPassword, newPassword, confirmPassword);
 
       // 重設表單
       setCurrentPassword('');

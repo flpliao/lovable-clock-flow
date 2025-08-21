@@ -1,19 +1,12 @@
 import { RequestStatus } from '@/constants/requestStatus';
-import { useToast } from '@/hooks/useToast';
-import {
-  approveLeaveRequest,
-  getCompletedLeaveRequests,
-  getPendingLeaveRequests,
-  rejectLeaveRequest,
-} from '@/services/leaveRequestService';
+import { LeaveRequestService } from '@/services/leaveRequestService';
 import useEmployeeStore from '@/stores/employeeStore';
 import useLeaveRequestsStore from '@/stores/leaveRequestStore';
 import { LeaveRequest } from '@/types';
+import { showError, showSuccess } from '@/utils/toast';
 import { useMemo } from 'react';
 
 export const useLeaveRequests = () => {
-  const { toast } = useToast();
-
   const {
     requestsBySlug: requests,
     isAllLoaded,
@@ -32,69 +25,76 @@ export const useLeaveRequests = () => {
     const statuses = [RequestStatus.PENDING];
     if (isAllLoaded(statuses) || isLoading) return;
     setLoading(true);
-    const data = await getPendingLeaveRequests();
-    if (data.length > 0) {
+
+    try {
+      const data = await LeaveRequestService.getPendingLeaveRequests();
       addRequests(data);
       setAllLoaded(statuses);
 
       const myRequests = data.filter(r => r.employee?.slug === employee?.slug);
       addRequestsToMy(myRequests);
       setMyLoaded(statuses);
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    return data;
   };
 
   const loadCompletedLeaveRequests = async () => {
     const statuses = [RequestStatus.CANCELLED, RequestStatus.REJECTED, RequestStatus.APPROVED];
     if (isAllLoaded(statuses) || isLoading) return;
     setLoading(true);
-    const data = await getCompletedLeaveRequests();
-    if (data.length > 0) {
+
+    try {
+      const data = await LeaveRequestService.getCompletedLeaveRequests();
       addRequests(data);
       setAllLoaded(statuses);
 
       const myRequests = data.filter(r => r.employee?.slug === employee?.slug);
       addRequestsToMy(myRequests);
       setMyLoaded(statuses);
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   // 核准請假申請
   const handleLeaveRequestApprove = async (request: LeaveRequest) => {
-    const success = await approveLeaveRequest(request.slug, request.approve_comment);
-    if (success) {
+    try {
+      await LeaveRequestService.approveLeaveRequest(request.slug, request.approve_comment);
+
       // 更新 store 中的狀態
       updateRequest(request.slug, {
         status: RequestStatus.APPROVED,
       });
 
-      toast({
-        title: '核准成功',
-        description: '請假申請已核准',
-      });
+      showSuccess('核准成功');
+      return true;
+    } catch (error) {
+      showError(error.message);
+      return false;
     }
-    return success;
   };
 
   // 拒絕請假申請
   const handleLeaveRequestReject = async (request: LeaveRequest) => {
-    const success = await rejectLeaveRequest(request.slug, request.rejection_reason);
+    try {
+      await LeaveRequestService.rejectLeaveRequest(request.slug, request.rejection_reason);
 
-    if (success) {
       // 更新 store 中的狀態
       updateRequest(request.slug, {
         status: RequestStatus.REJECTED,
       });
 
-      toast({
-        title: '拒絕成功',
-        description: '請假申請已拒絕',
-      });
+      showSuccess('拒絕成功');
+      return true;
+    } catch (error) {
+      showError(error.message);
+      return false;
     }
-
-    return success;
   };
 
   return {

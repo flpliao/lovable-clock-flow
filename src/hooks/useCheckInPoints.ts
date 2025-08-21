@@ -1,12 +1,8 @@
-import {
-  createCheckInPoint,
-  deleteCheckInPoint,
-  getNearbyCheckInPoints,
-  updateCheckInPoint,
-} from '@/services/checkInPointService';
+import { CheckInPointService } from '@/services/checkInPointService';
 import { useCheckInPointStore } from '@/stores/checkInPointStore';
 import { CheckInPoint } from '@/types/checkIn';
 import { getCurrentPosition } from '@/utils/location';
+import { showError } from '@/utils/toast';
 import { useState } from 'react';
 
 export function useCheckInPoints() {
@@ -28,29 +24,42 @@ export function useCheckInPoints() {
     setIsLoading(true);
     const { latitude, longitude } = await getCurrentPosition();
     setCurrentPos({ latitude, longitude });
-    const checkInPoints = await getNearbyCheckInPoints(latitude, longitude);
-    setCheckInPoints(checkInPoints);
+
+    try {
+      const checkInPoints = await CheckInPointService.getNearbyCheckInPoints(latitude, longitude);
+      setCheckInPoints(checkInPoints);
+    } catch (error) {
+      showError(error.message);
+    }
+
     setIsLoading(false);
   };
 
   const handleCreateCheckInPoint = async (checkpoint: Omit<CheckInPoint, 'id' | 'created_at'>) => {
-    const newCheckInPoints = await createCheckInPoint(checkpoint);
-    addCheckInPoint(newCheckInPoints);
+    try {
+      const newCheckInPoints = await CheckInPointService.createCheckInPoint(checkpoint);
+      addCheckInPoint(newCheckInPoints);
+    } catch (error) {
+      showError(error.message);
+    }
   };
 
   const handleUpdateCheckInPoint = async (id: string, checkpoint: Partial<CheckInPoint>) => {
-    const updatedCheckInPoints = await updateCheckInPoint(id, checkpoint);
-    setCheckInPoint(id, updatedCheckInPoints);
+    try {
+      const updatedCheckInPoints = await CheckInPointService.updateCheckInPoint(id, checkpoint);
+      setCheckInPoint(id, updatedCheckInPoints);
+    } catch (error) {
+      showError(error.message);
+    }
   };
 
   const handleDeleteCheckInPoint = async (id: string) => {
-    const success = await deleteCheckInPoint(id);
-
-    if (success) {
+    try {
+      await CheckInPointService.deleteCheckInPoint(id);
       removeCheckInPoint(id);
+    } catch (error) {
+      showError(error.message);
     }
-
-    return success;
   };
 
   return {

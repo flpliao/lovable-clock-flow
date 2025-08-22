@@ -14,7 +14,7 @@ const EmployeeInfoCard = () => {
   const hasStartDate = Boolean(employee.start_date);
 
   return (
-    <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-xl p-6">
+    <div className="backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
       <div className="flex items-center gap-2 mb-4">
         <User className="h-5 w-5 text-white" />
         <h3 className="text-lg font-semibold text-white drop-shadow-md">員工資料</h3>
@@ -28,7 +28,7 @@ const EmployeeInfoCard = () => {
           </div>
           <div className="flex justify-between items-center text-white">
             <span className="font-medium">部門：</span>
-            <span className="text-white/90">{employee.department || '未設定'}</span>
+            <span className="text-white/90">{employee.department?.name || '未設定'}</span>
           </div>
           <div className="flex justify-between items-center text-white">
             <span className="font-medium">職位：</span>

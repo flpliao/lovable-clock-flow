@@ -37,7 +37,7 @@ export function LeaveTypeTable({ leaveTypes, onEdit, onDelete }: LeaveTypeTableP
               <TableHeader>
                 <TableRow className="border-white/30 hover:bg-white/20 transition-colors">
                   <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[100px] whitespace-nowrap">
-                    假別代碼
+                    假別類型
                   </TableHead>
                   <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[120px] whitespace-nowrap">
                     名稱

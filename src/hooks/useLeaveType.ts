@@ -98,15 +98,6 @@ export const useLeaveType = () => {
     }
   };
 
-  // 管理方法 - 統一的儲存處理（新增或更新）
-  const handleSave = async (data: Partial<LeaveType>, selectedLeaveType: LeaveType | null) => {
-    if (selectedLeaveType) {
-      return await handleUpdateLeaveType(selectedLeaveType.slug, data);
-    } else {
-      return await handleCreateLeaveType(data);
-    }
-  };
-
   // 管理方法 - 刪除處理
   const handleDelete = async (leaveType: LeaveType) => {
     return await handleDeleteLeaveType(leaveType.slug);
@@ -138,7 +129,6 @@ export const useLeaveType = () => {
     handleDeleteLeaveType,
 
     // 管理方法
-    handleSave,
     handleDelete,
   };
 };

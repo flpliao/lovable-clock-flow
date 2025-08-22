@@ -1,5 +1,6 @@
 import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
-import { LeaveTypeDialog } from '@/components/leave/LeaveTypeDialog';
+import { CreateLeaveTypeDialog } from '@/components/leave/CreateLeaveTypeDialog';
+import { EditLeaveTypeDialog } from '@/components/leave/EditLeaveTypeDialog';
 import { LeaveTypeStatsCards } from '@/components/leave/LeaveTypeStatsCards';
 import { LeaveTypeTable } from '@/components/leave/LeaveTypeTable';
 import { Button } from '@/components/ui/button';
@@ -24,11 +25,12 @@ type LeaveTypeFormData = {
 };
 
 export default function LeaveTypeManagement() {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedLeaveType, setSelectedLeaveType] = useState<LeaveType | null>(null);
   const [deleteLeaveType, setDeleteLeaveType] = useState<LeaveType | null>(null);
-  const { leaveTypes, handleSave, handleDelete } = useLeaveType();
+  const { leaveTypes, handleCreateLeaveType, handleUpdateLeaveType, handleDelete } = useLeaveType();
 
   // 統計數據
   const stats = {
@@ -38,13 +40,12 @@ export default function LeaveTypeManagement() {
   };
 
   const handleAdd = () => {
-    setSelectedLeaveType(null);
-    setDialogOpen(true);
+    setCreateDialogOpen(true);
   };
 
   const handleEdit = (leaveType: LeaveType) => {
     setSelectedLeaveType(leaveType);
-    setDialogOpen(true);
+    setEditDialogOpen(true);
   };
 
   const handleDeleteClick = (leaveType: LeaveType) => {
@@ -61,8 +62,8 @@ export default function LeaveTypeManagement() {
     }
   };
 
-  // 適配器函數：將表單數據轉換為 API 期望的格式
-  const onSave = async (formData: LeaveTypeFormData) => {
+  // 新增假別處理函數
+  const onCreateSave = async (formData: LeaveTypeFormData): Promise<boolean> => {
     const apiData: Partial<LeaveType> = {
       code: formData.code,
       name: formData.name,
@@ -74,10 +75,23 @@ export default function LeaveTypeManagement() {
       description: formData.description,
     };
 
-    const success = await handleSave(apiData, selectedLeaveType);
-    if (success) {
-      setDialogOpen(false);
-    }
+    return await handleCreateLeaveType(apiData);
+  };
+
+  // 編輯假別處理函數
+  const onEditSave = async (slug: string, formData: LeaveTypeFormData): Promise<boolean> => {
+    const apiData: Partial<LeaveType> = {
+      code: formData.code,
+      name: formData.name,
+      paid_type: formData.paid_type,
+      annual_reset: formData.annual_reset,
+      max_per_year: formData.max_per_year || undefined,
+      required_attachment: formData.required_attachment,
+      is_active: formData.is_active,
+      description: formData.description,
+    };
+
+    return await handleUpdateLeaveType(slug, apiData);
   };
 
   return (
@@ -106,11 +120,17 @@ export default function LeaveTypeManagement() {
         <LeaveTypeTable leaveTypes={leaveTypes} onEdit={handleEdit} onDelete={handleDeleteClick} />
 
         {/* 對話框 */}
-        <LeaveTypeDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
+        <CreateLeaveTypeDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          onSave={onCreateSave}
+        />
+
+        <EditLeaveTypeDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
           leaveType={selectedLeaveType}
-          onSave={onSave}
+          onSave={onEditSave}
         />
 
         <DeleteConfirmDialog

@@ -1,5 +1,10 @@
 import { RequestStatus } from '@/constants/requestStatus';
-import { MissedCheckInRequestService } from '@/services/missedCheckInRequestService';
+import {
+  approveMissedCheckInRequest,
+  getCompletedMissedCheckInRequests,
+  getPendingMissedCheckInRequests,
+  rejectMissedCheckInRequest,
+} from '@/services/missedCheckInRequestService';
 import useEmployeeStore from '@/stores/employeeStore';
 import useMissedCheckInRequestsStore from '@/stores/missedCheckInRequestStore';
 import { MissedCheckInRequest } from '@/types/missedCheckInRequest';
@@ -25,7 +30,7 @@ export const useMissedCheckInRequests = () => {
     if (isAllLoaded(statuses) || isLoading) return;
     setLoading(true);
     try {
-      const data = await MissedCheckInRequestService.getPendingMissedCheckInRequests();
+      const data = await getPendingMissedCheckInRequests();
       addRequests(data);
       setAllLoaded(statuses);
 
@@ -44,7 +49,7 @@ export const useMissedCheckInRequests = () => {
     if (isAllLoaded(statuses) || isLoading) return;
     setLoading(true);
     try {
-      const data = await MissedCheckInRequestService.getCompletedMissedCheckInRequests();
+      const data = await getCompletedMissedCheckInRequests();
       addRequests(data);
       setAllLoaded(statuses);
 
@@ -61,10 +66,7 @@ export const useMissedCheckInRequests = () => {
   // 核准忘記打卡申請
   const handleMissedCheckInApproval = async (request: MissedCheckInRequest) => {
     try {
-      await MissedCheckInRequestService.approveMissedCheckInRequest(
-        request.slug,
-        request.approve_comment
-      );
+      await approveMissedCheckInRequest(request.slug, request.approve_comment);
 
       // 更新 store 中的狀態
       updateRequest(request.slug, {
@@ -83,10 +85,7 @@ export const useMissedCheckInRequests = () => {
   const handleMissedCheckInRejection = async (request: MissedCheckInRequest) => {
     try {
       // 更新 store 中的狀態
-      await MissedCheckInRequestService.rejectMissedCheckInRequest(
-        request.slug,
-        request.rejection_reason
-      );
+      await rejectMissedCheckInRequest(request.slug, request.rejection_reason);
 
       updateRequest(request.slug, {
         status: RequestStatus.REJECTED,

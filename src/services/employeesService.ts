@@ -4,90 +4,88 @@ import { Employee } from '@/types/employee';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 
-export class EmployeesService {
-  // 取得所有員工
-  static async getAllEmployees(): Promise<Employee[]> {
-    const { data, status, message } = await callApiAndDecode(
-      axiosWithEmployeeAuth().get(apiRoutes.employees.all)
-    );
+// 取得所有員工
+export const getAllEmployees = async (): Promise<Employee[]> => {
+  const { data, status, message } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.employees.all)
+  );
 
-    if (status !== ApiResponseStatus.SUCCESS) {
-      throw new Error(`載入員工失敗: ${message}`);
-    }
-
-    return data as Employee[];
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`載入員工失敗: ${message}`);
   }
 
-  // 取得員工列表（分頁）
-  static async getEmployees(params?: {
-    page?: number;
-    per_page?: number;
-    search?: string;
-    department_slug?: string;
-  }): Promise<Employee[]> {
-    const { data, status, message } = await callApiAndDecode(
-      axiosWithEmployeeAuth().get(apiRoutes.employees.index, { params })
-    );
+  return data as Employee[];
+};
 
-    if (status !== ApiResponseStatus.SUCCESS) {
-      throw new Error(`載入員工失敗: ${message}`);
-    }
+// 取得員工列表（分頁）
+export const getEmployees = async (params?: {
+  page?: number;
+  per_page?: number;
+  search?: string;
+  department_slug?: string;
+}): Promise<Employee[]> => {
+  const { data, status, message } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.employees.index, { params })
+  );
 
-    return data as Employee[];
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`載入員工失敗: ${message}`);
   }
 
-  // 取得單一員工
-  static async getEmployee(slug: string): Promise<Employee> {
-    const { data, status, message } = await callApiAndDecode(
-      axiosWithEmployeeAuth().get(apiRoutes.employees.show(slug))
-    );
+  return data as Employee[];
+};
 
-    if (status !== ApiResponseStatus.SUCCESS) {
-      throw new Error(`載入員工失敗: ${message}`);
-    }
+// 取得單一員工
+export const getEmployee = async (slug: string): Promise<Employee> => {
+  const { data, status, message } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.employees.show(slug))
+  );
 
-    return data as Employee;
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`載入員工失敗: ${message}`);
   }
 
-  // 建立員工
-  static async createEmployee(employeeData: Omit<Employee, 'slug'>): Promise<Employee> {
-    const { data, status, message } = await callApiAndDecode(
-      axiosWithEmployeeAuth().post(apiRoutes.employees.store, employeeData)
-    );
+  return data as Employee;
+};
 
-    if (status !== ApiResponseStatus.SUCCESS) {
-      throw new Error(`建立員工失敗: ${message}`);
-    }
+// 建立員工
+export const createEmployee = async (employeeData: Omit<Employee, 'slug'>): Promise<Employee> => {
+  const { data, status, message } = await callApiAndDecode(
+    axiosWithEmployeeAuth().post(apiRoutes.employees.store, employeeData)
+  );
 
-    return data as Employee;
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`建立員工失敗: ${message}`);
   }
 
-  // 更新員工
-  static async updateEmployee(
-    slug: string,
-    employeeData: Partial<Omit<Employee, 'slug'>>
-  ): Promise<Employee> {
-    const { data, status, message } = await callApiAndDecode(
-      axiosWithEmployeeAuth().put(apiRoutes.employees.update(slug), employeeData)
-    );
+  return data as Employee;
+};
 
-    if (status !== ApiResponseStatus.SUCCESS) {
-      throw new Error(`更新員工失敗: ${message}`);
-    }
+// 更新員工
+export const updateEmployee = async (
+  slug: string,
+  employeeData: Partial<Omit<Employee, 'slug'>>
+): Promise<Employee> => {
+  const { data, status, message } = await callApiAndDecode(
+    axiosWithEmployeeAuth().put(apiRoutes.employees.update(slug), employeeData)
+  );
 
-    return data as Employee;
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`更新員工失敗: ${message}`);
   }
 
-  // 刪除員工
-  static async deleteEmployee(slug: string): Promise<boolean> {
-    const { status, message } = await callApiAndDecode(
-      axiosWithEmployeeAuth().delete(apiRoutes.employees.destroy(slug))
-    );
+  return data as Employee;
+};
 
-    if (status !== ApiResponseStatus.SUCCESS) {
-      throw new Error(`刪除員工失敗: ${message}`);
-    }
+// 刪除員工
+export const deleteEmployee = async (slug: string): Promise<boolean> => {
+  const { status, message } = await callApiAndDecode(
+    axiosWithEmployeeAuth().delete(apiRoutes.employees.destroy(slug))
+  );
 
-    return true;
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`刪除員工失敗: ${message}`);
   }
-}
+
+  return true;
+};

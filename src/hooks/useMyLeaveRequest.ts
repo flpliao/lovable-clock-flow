@@ -1,5 +1,11 @@
 import { RequestStatus } from '@/constants/requestStatus';
-import { LeaveRequestService } from '@/services/leaveRequestService';
+import {
+  cancelLeaveRequest,
+  createLeaveRequest,
+  getMyLeaveRequests,
+  getMyLeaveRequestsByStatus,
+  updateLeaveRequest,
+} from '@/services/leaveRequestService';
 import useEmployeeStore from '@/stores/employeeStore';
 import useLeaveRequestsStore from '@/stores/leaveRequestStore';
 import { LeaveRequest } from '@/types/leaveRequest';
@@ -28,7 +34,7 @@ export const useMyLeaveRequest = () => {
     setLoading(true);
 
     try {
-      const data = await LeaveRequestService.getMyLeaveRequests();
+      const data = await getMyLeaveRequests();
 
       addRequests(data);
       addRequestsToMy(data);
@@ -56,7 +62,7 @@ export const useMyLeaveRequest = () => {
     setLoading(true);
 
     try {
-      const data = await LeaveRequestService.getMyLeaveRequestsByStatus(statusArray);
+      const data = await getMyLeaveRequestsByStatus(statusArray);
 
       addRequests(data);
       addRequestsToMy(data);
@@ -76,7 +82,7 @@ export const useMyLeaveRequest = () => {
     >
   ): Promise<boolean> => {
     try {
-      const newRequest = await LeaveRequestService.createLeaveRequest(requestData);
+      const newRequest = await createLeaveRequest(requestData);
       addRequest(newRequest);
       addRequestToMy(newRequest);
 
@@ -90,7 +96,7 @@ export const useMyLeaveRequest = () => {
   // 更新請假申請
   const handleUpdateMyLeaveRequest = async (slug: string, updates: Partial<LeaveRequest>) => {
     try {
-      const updatedRequest = await LeaveRequestService.updateLeaveRequest(slug, updates);
+      const updatedRequest = await updateLeaveRequest(slug, updates);
       updateRequest(slug, updatedRequest);
     } catch (error) {
       showError(error.message);
@@ -100,7 +106,7 @@ export const useMyLeaveRequest = () => {
   // 取消請假申請
   const handleCancelMyLeaveRequest = async (slug: string): Promise<boolean> => {
     try {
-      await LeaveRequestService.cancelLeaveRequest(slug);
+      await cancelLeaveRequest(slug);
       // 更新本地狀態為已取消
       updateRequest(slug, { status: RequestStatus.CANCELLED });
     } catch (error) {

@@ -1,5 +1,10 @@
 import { RequestStatus } from '@/constants/requestStatus';
-import { LeaveRequestService } from '@/services/leaveRequestService';
+import {
+  approveLeaveRequest,
+  getCompletedLeaveRequests,
+  getPendingLeaveRequests,
+  rejectLeaveRequest,
+} from '@/services/leaveRequestService';
 import useEmployeeStore from '@/stores/employeeStore';
 import useLeaveRequestsStore from '@/stores/leaveRequestStore';
 import { LeaveRequest } from '@/types';
@@ -27,7 +32,7 @@ export const useLeaveRequests = () => {
     setLoading(true);
 
     try {
-      const data = await LeaveRequestService.getPendingLeaveRequests();
+      const data = await getPendingLeaveRequests();
       addRequests(data);
       setAllLoaded(statuses);
 
@@ -47,7 +52,7 @@ export const useLeaveRequests = () => {
     setLoading(true);
 
     try {
-      const data = await LeaveRequestService.getCompletedLeaveRequests();
+      const data = await getCompletedLeaveRequests();
       addRequests(data);
       setAllLoaded(statuses);
 
@@ -64,7 +69,7 @@ export const useLeaveRequests = () => {
   // 核准請假申請
   const handleLeaveRequestApprove = async (request: LeaveRequest) => {
     try {
-      await LeaveRequestService.approveLeaveRequest(request.slug, request.approve_comment);
+      await approveLeaveRequest(request.slug, request.approve_comment);
 
       // 更新 store 中的狀態
       updateRequest(request.slug, {
@@ -82,7 +87,7 @@ export const useLeaveRequests = () => {
   // 拒絕請假申請
   const handleLeaveRequestReject = async (request: LeaveRequest) => {
     try {
-      await LeaveRequestService.rejectLeaveRequest(request.slug, request.rejection_reason);
+      await rejectLeaveRequest(request.slug, request.rejection_reason);
 
       // 更新 store 中的狀態
       updateRequest(request.slug, {

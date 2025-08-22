@@ -5,45 +5,45 @@ import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 // 建立工作時程
 
-export class WorkScheduleService {
-  static async createWorkSchedule(workScheduleData: CreateWorkScheduleData): Promise<WorkSchedule> {
-    const { data, status, message } = await callApiAndDecode(
-      axiosWithEmployeeAuth().post(apiRoutes.workSchedule.store, workScheduleData)
-    );
+export const createWorkSchedule = async (
+  workScheduleData: CreateWorkScheduleData
+): Promise<WorkSchedule> => {
+  const { data, status, message } = await callApiAndDecode(
+    axiosWithEmployeeAuth().post(apiRoutes.workSchedule.store, workScheduleData)
+  );
 
-    if (status !== ApiResponseStatus.SUCCESS) {
-      throw new Error(`建立工作時程失敗: ${message}`);
-    }
-
-    return data as WorkSchedule;
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`建立工作時程失敗: ${message}`);
   }
 
-  // 更新工作時程
-  static async updateWorkSchedule(
-    slug: string,
-    workScheduleData: UpdateWorkScheduleData
-  ): Promise<WorkSchedule> {
-    const { data, status, message } = await callApiAndDecode(
-      axiosWithEmployeeAuth().put(apiRoutes.workSchedule.update(slug), workScheduleData)
-    );
+  return data as WorkSchedule;
+};
 
-    if (status !== ApiResponseStatus.SUCCESS) {
-      throw new Error(`更新工作時程失敗: ${message}`);
-    }
+// 更新工作時程
+export const updateWorkSchedule = async (
+  slug: string,
+  workScheduleData: UpdateWorkScheduleData
+): Promise<WorkSchedule> => {
+  const { data, status, message } = await callApiAndDecode(
+    axiosWithEmployeeAuth().put(apiRoutes.workSchedule.update(slug), workScheduleData)
+  );
 
-    return data as WorkSchedule;
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`更新工作時程失敗: ${message}`);
   }
 
-  // 刪除工作時程
-  static async deleteWorkSchedule(slug: string): Promise<boolean> {
-    const { status, message } = await callApiAndDecode(
-      axiosWithEmployeeAuth().delete(apiRoutes.workSchedule.destroy(slug))
-    );
+  return data as WorkSchedule;
+};
 
-    if (status !== ApiResponseStatus.SUCCESS) {
-      throw new Error(`刪除工作時程失敗: ${message}`);
-    }
+// 刪除工作時程
+export const deleteWorkSchedule = async (slug: string): Promise<boolean> => {
+  const { status, message } = await callApiAndDecode(
+    axiosWithEmployeeAuth().delete(apiRoutes.workSchedule.destroy(slug))
+  );
 
-    return true;
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`刪除工作時程失敗: ${message}`);
   }
-}
+
+  return true;
+};

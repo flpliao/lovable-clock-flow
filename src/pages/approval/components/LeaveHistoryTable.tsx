@@ -45,8 +45,8 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({ requests, isLoadi
         <div className="w-16 h-16 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-4">
           <FileText className="h-8 w-8 text-white/60" />
         </div>
-        <h3 className="text-lg font-semibold text-white mb-2">尚無請假紀錄</h3>
-        <p className="text-white/60">目前沒有任何請假申請紀錄</p>
+        <h3 className="text-lg font-semibold text-white mb-2">尚無請假記錄</h3>
+        <p className="text-white/60">目前沒有任何請假申請記錄</p>
       </div>
     );
   }
@@ -73,7 +73,7 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({ requests, isLoadi
         </div>
       </div>
 
-      {/* 請假紀錄表格 */}
+      {/* 請假記錄表格 */}
       <div className="bg-white/5 rounded-2xl border border-white/20 overflow-hidden">
         <div className="overflow-x-auto">
           <Table>

@@ -85,7 +85,7 @@ const ApprovalCenter = () => {
             onClick: () => setActiveTab('pending-missed-checkin'),
           },
           {
-            title: '請假紀錄',
+            title: '請假記錄',
             description: '查看請假申請歷史紀錄',
             rightContent: (
               <FeatureIcon
@@ -100,7 +100,7 @@ const ApprovalCenter = () => {
             },
           },
           {
-            title: '忘打卡紀錄',
+            title: '忘打卡記錄',
             description: '查看忘打卡申請歷史紀錄',
             rightContent: (
               <FeatureIcon

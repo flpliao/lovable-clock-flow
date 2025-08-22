@@ -67,7 +67,7 @@ const LeaveRequestManagement = () => {
             value="history"
             className="text-gray-800 data-[state=active]:bg-white/40 data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-lg font-medium transition-all duration-200 py-2 px-4"
           >
-            請假紀錄
+            請假記錄
           </TabsTrigger>
         </TabsList>
         <TabsContent value="request" className="mt-0">
@@ -92,7 +92,7 @@ const LeaveRequestManagement = () => {
               <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
                 <History className="h-4 w-4 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-white drop-shadow-md">請假紀錄</h3>
+              <h3 className="text-lg font-semibold text-white drop-shadow-md">請假記錄</h3>
             </div>
             <MyLeaveRequestList requests={completedRequests} isLoading={isLoading} />
           </div>

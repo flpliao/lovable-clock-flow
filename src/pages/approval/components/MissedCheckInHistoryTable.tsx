@@ -70,8 +70,8 @@ const MissedCheckInHistoryTable: React.FC<MissedCheckInHistoryTableProps> = ({
         <div className="w-16 h-16 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-4">
           <AlertCircle className="h-8 w-8 text-white/60" />
         </div>
-        <h3 className="text-lg font-semibold text-white mb-2">尚無忘打卡紀錄</h3>
-        <p className="text-white/60">目前沒有任何忘打卡申請紀錄</p>
+        <h3 className="text-lg font-semibold text-white mb-2">尚無忘打卡記錄</h3>
+        <p className="text-white/60">目前沒有任何忘打卡申請記錄</p>
       </div>
     );
   }
@@ -98,7 +98,7 @@ const MissedCheckInHistoryTable: React.FC<MissedCheckInHistoryTableProps> = ({
         </div>
       </div>
 
-      {/* 忘打卡紀錄表格 */}
+      {/* 忘打卡記錄表格 */}
       <div className="bg-white/5 rounded-2xl border border-white/20 overflow-hidden">
         <div className="overflow-x-auto">
           <Table>

@@ -27,7 +27,7 @@ export const menuItems: MenuItem[] = [
   { path: '/personal-attendance', label: '個人出勤', icon: Clock, public: false },
   { path: '/leave-request', label: '請假申請', icon: FileText, public: false },
   { path: '/approval-center', label: '核准中心', icon: CheckCircle, public: false },
-  { path: '/attendance-records', label: '打卡紀錄', icon: Clock, public: false },
+  { path: '/attendance-records', label: '打卡記錄', icon: Clock, public: false },
   { path: '/scheduling', label: '排班管理', icon: Calendar, public: false },
   { path: '/overtime-management', label: '加班管理', icon: Briefcase, public: false },
   {

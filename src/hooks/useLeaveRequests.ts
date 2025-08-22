@@ -125,6 +125,10 @@ export const useLeavePendingRequests = () => {
 export const useLeaveCompletedRequests = () => {
   const { requestsBySlug: requests, getRequestsByStatus } = useLeaveRequestsStore();
   return useMemo(() => {
-    return getRequestsByStatus([RequestStatus.APPROVED, RequestStatus.REJECTED]);
+    return getRequestsByStatus([
+      RequestStatus.APPROVED,
+      RequestStatus.REJECTED,
+      RequestStatus.CANCELLED,
+    ]);
   }, [requests]);
 };

@@ -174,7 +174,7 @@ const CheckInHistory: React.FC = () => {
         if (success) {
           toast({
             title: '記錄已刪除',
-            description: '紀錄已刪除，請通知該員工重新補打卡',
+            description: '記錄已刪除，請通知該員工重新補打卡',
           });
           // 重新載入記錄
           await loadRecordsByView(activeView);

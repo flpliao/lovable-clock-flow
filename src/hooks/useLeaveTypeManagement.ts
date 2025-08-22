@@ -1,21 +1,7 @@
 import { useToast } from '@/hooks/useToast';
 import { LeaveTypeService } from '@/services/payroll/leaveTypeService';
+import type { LeaveType } from '@/types/leaveType';
 import { useCallback, useEffect, useState } from 'react';
-
-interface LeaveType {
-  id: string;
-  code: string;
-  name_zh: string;
-  name_en: string;
-  is_paid: boolean;
-  annual_reset: boolean;
-  max_days_per_year?: number;
-  requires_attachment: boolean;
-  is_system_default: boolean;
-  is_active: boolean;
-  sort_order: number;
-  description?: string;
-}
 
 export function useLeaveTypeManagement() {
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
@@ -38,7 +24,7 @@ export function useLeaveTypeManagement() {
   const handleSave = async (data: Partial<LeaveType>, selectedLeaveType: LeaveType | null) => {
     try {
       if (selectedLeaveType) {
-        await LeaveTypeService.updateLeaveType(selectedLeaveType.id, data);
+        await LeaveTypeService.updateLeaveType(selectedLeaveType.slug, data);
         toast({
           title: '更新成功',
           description: '假別已更新',
@@ -74,7 +60,7 @@ export function useLeaveTypeManagement() {
     }
 
     try {
-      if (await LeaveTypeService.deleteLeaveType(leaveType.id)) {
+      if (await LeaveTypeService.deleteLeaveType(leaveType.slug)) {
         toast({
           title: '刪除成功',
           description: '假別已刪除',

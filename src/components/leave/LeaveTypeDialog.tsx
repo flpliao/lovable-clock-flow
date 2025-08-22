@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,15 +23,23 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import type { LeaveType } from '@/types/leaveType';
+import { PaidType, LeaveTypeCode } from '@/constants/leave';
 
 const leaveTypeSchema = z.object({
-  code: z.string().min(1, '假別代碼不能為空').max(20, '假別代碼最多20個字元'),
-  name_zh: z.string().min(1, '中文名稱不能為空').max(50, '中文名稱最多50個字元'),
-  name_en: z.string().min(1, '英文名稱不能為空').max(50, '英文名稱最多50個字元'),
-  is_paid: z.boolean(),
+  code: z.nativeEnum(LeaveTypeCode),
+  name: z.string().min(1, '名稱不能為空').max(50, '名稱最多50個字元'),
+  paid_type: z.nativeEnum(PaidType),
   annual_reset: z.boolean(),
-  max_days_per_year: z.coerce.number().nullable().optional(),
-  requires_attachment: z.boolean(),
+  max_per_year: z.coerce.number().nullable().optional(),
+  required_attachment: z.boolean(),
   is_active: z.boolean(),
   description: z.string().optional(),
 });
@@ -42,26 +49,20 @@ type LeaveTypeFormData = z.infer<typeof leaveTypeSchema>;
 interface LeaveTypeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  leaveType?: any;
+  leaveType?: LeaveType;
   onSave: (data: LeaveTypeFormData) => void;
 }
 
-export function LeaveTypeDialog({ 
-  open, 
-  onOpenChange, 
-  leaveType, 
-  onSave 
-}: LeaveTypeDialogProps) {
+export function LeaveTypeDialog({ open, onOpenChange, leaveType, onSave }: LeaveTypeDialogProps) {
   const form = useForm<LeaveTypeFormData>({
     resolver: zodResolver(leaveTypeSchema),
     defaultValues: {
-      code: '',
-      name_zh: '',
-      name_en: '',
-      is_paid: false,
+      code: LeaveTypeCode.ANNUAL,
+      name: '',
+      paid_type: PaidType.UNPAID,
       annual_reset: true,
-      max_days_per_year: undefined,
-      requires_attachment: false,
+      max_per_year: undefined,
+      required_attachment: false,
       is_active: true,
       description: '',
     },
@@ -73,26 +74,24 @@ export function LeaveTypeDialog({
       if (leaveType) {
         // 編輯模式：填入現有資料
         form.reset({
-          code: leaveType.code || '',
-          name_zh: leaveType.name_zh || '',
-          name_en: leaveType.name_en || '',
-          is_paid: leaveType.is_paid || false,
+          code: leaveType.code || LeaveTypeCode.ANNUAL,
+          name: leaveType.name || '',
+          paid_type: leaveType.paid_type || PaidType.UNPAID,
           annual_reset: leaveType.annual_reset !== undefined ? leaveType.annual_reset : true,
-          max_days_per_year: leaveType.max_days_per_year || undefined,
-          requires_attachment: leaveType.requires_attachment || false,
+          max_per_year: leaveType.max_per_year || undefined,
+          required_attachment: leaveType.required_attachment || false,
           is_active: leaveType.is_active !== undefined ? leaveType.is_active : true,
           description: leaveType.description || '',
         });
       } else {
         // 新增模式：重置為預設值
         form.reset({
-          code: '',
-          name_zh: '',
-          name_en: '',
-          is_paid: false,
+          code: LeaveTypeCode.ANNUAL,
+          name: '',
+          paid_type: PaidType.UNPAID,
           annual_reset: true,
-          max_days_per_year: undefined,
-          requires_attachment: false,
+          max_per_year: undefined,
+          required_attachment: false,
           is_active: true,
           description: '',
         });
@@ -104,8 +103,8 @@ export function LeaveTypeDialog({
     // 處理空值轉換
     const processedData = {
       ...data,
-      max_days_per_year: data.max_days_per_year || null,
-      description: data.description || null,
+      max_per_year: data.max_per_year || undefined,
+      description: data.description || undefined,
     };
     onSave(processedData);
   };
@@ -118,12 +117,8 @@ export function LeaveTypeDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>
-            {leaveType ? '編輯假別' : '新增假別'}
-          </DialogTitle>
-          <DialogDescription>
-            {leaveType ? '修改假別設定' : '新增一個假別類型'}
-          </DialogDescription>
+          <DialogTitle>{leaveType ? '編輯假別' : '新增假別'}</DialogTitle>
+          <DialogDescription>{leaveType ? '修改假別設定' : '新增一個假別類型'}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -136,16 +131,26 @@ export function LeaveTypeDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>假別代碼 *</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="例如：sick" 
-                        {...field}
-                        disabled={leaveType?.is_system_default}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      英文代碼，系統內唯一識別
-                    </FormDescription>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="選擇假別代碼" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value={LeaveTypeCode.ANNUAL}>年假 (ANNUAL)</SelectItem>
+                        <SelectItem value={LeaveTypeCode.SICK}>病假 (SICK)</SelectItem>
+                        <SelectItem value={LeaveTypeCode.PERSONAL}>事假 (PERSONAL)</SelectItem>
+                        <SelectItem value={LeaveTypeCode.MARRIAGE}>婚假 (MARRIAGE)</SelectItem>
+                        <SelectItem value={LeaveTypeCode.BEREAVEMENT}>
+                          喪假 (BEREAVEMENT)
+                        </SelectItem>
+                        <SelectItem value={LeaveTypeCode.MATERNITY}>產假 (MATERNITY)</SelectItem>
+                        <SelectItem value={LeaveTypeCode.PATERNITY}>陪產假 (PATERNITY)</SelectItem>
+                        <SelectItem value={LeaveTypeCode.SPECIAL}>特休 (SPECIAL)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>選擇假別代碼類型</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -153,10 +158,10 @@ export function LeaveTypeDialog({
 
               <FormField
                 control={form.control}
-                name="name_zh"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>中文名稱 *</FormLabel>
+                    <FormLabel>假別名稱 *</FormLabel>
                     <FormControl>
                       <Input placeholder="例如：病假" {...field} />
                     </FormControl>
@@ -168,30 +173,12 @@ export function LeaveTypeDialog({
 
             <FormField
               control={form.control}
-              name="name_en"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>英文名稱 *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="例如：Sick Leave" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>說明</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="假別說明和規則"
-                      className="min-h-[80px]"
-                      {...field}
-                    />
+                    <Textarea placeholder="假別說明和規則" className="min-h-[80px]" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -201,21 +188,44 @@ export function LeaveTypeDialog({
             {/* 數值設定 */}
             <FormField
               control={form.control}
-              name="max_days_per_year"
+              name="max_per_year"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>每年最大天數</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
+                    <Input
+                      type="number"
                       placeholder="留空表示無限制"
                       {...field}
                       value={field.value || ''}
                     />
                   </FormControl>
-                  <FormDescription>
-                    設定每年最多可請的天數，留空表示無限制
-                  </FormDescription>
+                  <FormDescription>設定每年最多可請的天數，留空表示無限制</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* 薪資設定 */}
+            <FormField
+              control={form.control}
+              name="paid_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>薪資類型 *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="選擇薪資類型" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={PaidType.PAID}>有薪</SelectItem>
+                      <SelectItem value={PaidType.HALF}>半薪</SelectItem>
+                      <SelectItem value={PaidType.UNPAID}>無薪</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>選擇此假別的薪資計算方式</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -225,41 +235,15 @@ export function LeaveTypeDialog({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
-                name="is_paid"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">有薪假</FormLabel>
-                      <FormDescription>
-                        此假別是否為有薪假
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="annual_reset"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">年度重置</FormLabel>
-                      <FormDescription>
-                        是否每年重新計算額度
-                      </FormDescription>
+                      <FormDescription>是否每年重新計算額度</FormDescription>
                     </div>
                     <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -267,20 +251,15 @@ export function LeaveTypeDialog({
 
               <FormField
                 control={form.control}
-                name="requires_attachment"
+                name="required_attachment"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">需要附件</FormLabel>
-                      <FormDescription>
-                        申請此假別是否需要上傳附件
-                      </FormDescription>
+                      <FormDescription>申請此假別是否需要上傳附件</FormDescription>
                     </div>
                     <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -293,15 +272,10 @@ export function LeaveTypeDialog({
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">啟用狀態</FormLabel>
-                      <FormDescription>
-                        是否啟用此假別
-                      </FormDescription>
+                      <FormDescription>是否啟用此假別</FormDescription>
                     </div>
                     <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -312,9 +286,7 @@ export function LeaveTypeDialog({
               <Button type="button" variant="outline" onClick={handleClose}>
                 取消
               </Button>
-              <Button type="submit">
-                {leaveType ? '更新' : '新增'}
-              </Button>
+              <Button type="submit">{leaveType ? '更新' : '新增'}</Button>
             </DialogFooter>
           </form>
         </Form>

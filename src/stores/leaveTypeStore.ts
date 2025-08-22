@@ -4,21 +4,40 @@ import { create } from 'zustand';
 
 interface LeaveTypeState {
   leaveTypes: LeaveType[];
+  isLoading: boolean;
+  isLoaded: boolean;
+  error: string | null;
+
+  // 基本操作
   setLeaveTypes: (leaveTypes: LeaveType[]) => void;
   addLeaveType: (leaveType: LeaveType) => void;
   setLeaveType: (leaveTypeSlug: string, leaveTypeData: Partial<LeaveType>) => void;
   removeLeaveType: (leaveTypeSlug: string) => void;
+
+  // 載入狀態管理
+  setLoading: (loading: boolean) => void;
+  setLoaded: (loaded: boolean) => void;
+  setError: (error: string | null) => void;
+
+  // 查詢方法
   getLeaveTypeBySlug: (slug: string) => LeaveType | undefined;
   getPaidLeaveTypes: () => LeaveType[];
   getLeaveTypesRequiringAttachment: () => LeaveType[];
   getLeaveTypeByName: (name: string) => LeaveType | undefined;
+  getActiveLeaveTypes: () => LeaveType[];
+
+  // 重置
   reset: () => void;
 }
 
 const useLeaveTypeStore = create<LeaveTypeState>()((set, get) => ({
   leaveTypes: [],
+  isLoading: false,
+  isLoaded: false,
+  error: null,
 
-  setLeaveTypes: (leaveTypes: LeaveType[]) => set({ leaveTypes }),
+  // 基本操作
+  setLeaveTypes: (leaveTypes: LeaveType[]) => set({ leaveTypes, isLoaded: true, error: null }),
 
   addLeaveType: (leaveType: LeaveType) => {
     const { leaveTypes } = get();
@@ -39,6 +58,12 @@ const useLeaveTypeStore = create<LeaveTypeState>()((set, get) => ({
     set({ leaveTypes: filteredLeaveTypes });
   },
 
+  // 載入狀態管理
+  setLoading: (isLoading: boolean) => set({ isLoading }),
+  setLoaded: (isLoaded: boolean) => set({ isLoaded }),
+  setError: (error: string | null) => set({ error }),
+
+  // 查詢方法
   getLeaveTypeBySlug: (slug: string) => {
     const { leaveTypes } = get();
     return leaveTypes.find(leaveType => leaveType.slug === slug);
@@ -61,7 +86,18 @@ const useLeaveTypeStore = create<LeaveTypeState>()((set, get) => ({
     return leaveTypes.find(leaveType => leaveType.name === name);
   },
 
-  reset: () => set({ leaveTypes: [] }),
+  getActiveLeaveTypes: () => {
+    const { leaveTypes } = get();
+    return leaveTypes.filter(leaveType => leaveType.is_active !== false);
+  },
+
+  reset: () =>
+    set({
+      leaveTypes: [],
+      isLoading: false,
+      isLoaded: false,
+      error: null,
+    }),
 }));
 
 export default useLeaveTypeStore;

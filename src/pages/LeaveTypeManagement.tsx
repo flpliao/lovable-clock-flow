@@ -36,7 +36,9 @@ export default function LeaveTypeManagement() {
     LeaveTypeCode.SICK,
     LeaveTypeCode.PERSONAL,
     LeaveTypeCode.MARRIAGE,
-    LeaveTypeCode.BEREAVEMENT,
+    LeaveTypeCode.BEREAVEMENT_L1,
+    LeaveTypeCode.BEREAVEMENT_L2,
+    LeaveTypeCode.BEREAVEMENT_L3,
     LeaveTypeCode.MATERNITY,
     LeaveTypeCode.PATERNITY,
   ]);

@@ -3,55 +3,104 @@ import {
   deleteLeaveType,
   getAllLeaveTypes,
   updateLeaveType,
+  syncFromDefaults,
 } from '@/services/leaveTypeService';
 import useLeaveTypeStore from '@/stores/leaveTypeStore';
 import { LeaveType } from '@/types/leaveType';
-import { showError } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
 
 export const useLeaveType = () => {
-  const { leaveTypes, setLeaveTypes, addLeaveType, setLeaveType, removeLeaveType } =
-    useLeaveTypeStore();
+  const {
+    leaveTypes,
+    isLoading,
+    isLoaded,
+    error,
+    setLeaveTypes,
+    addLeaveType,
+    setLeaveType,
+    removeLeaveType,
+    setLoading,
+    setError,
+    getLeaveTypeBySlug,
+    getPaidLeaveTypes,
+    getLeaveTypesRequiringAttachment,
+    getLeaveTypeByName,
+    getActiveLeaveTypes,
+  } = useLeaveTypeStore();
 
-  // 載入所有請假類型
-  const loadLeaveTypes = async () => {
-    if (leaveTypes.length > 0) return;
+  // 載入所有請假類型（避免重複請求）
+  const loadLeaveTypes = async (forceReload = false) => {
+    // 如果已經載入且不是強制重新載入，則跳過
+    if (isLoaded && !forceReload) return leaveTypes;
+
+    // 如果正在載入中，則跳過
+    if (isLoading) return leaveTypes;
+
+    setLoading(true);
+    setError(null);
 
     try {
       const fetchedLeaveTypes = await getAllLeaveTypes();
       setLeaveTypes(fetchedLeaveTypes);
       return fetchedLeaveTypes;
     } catch (error) {
+      setError(error.message);
       showError(error.message);
+      return [];
+    } finally {
+      setLoading(false);
     }
   };
 
   // 新增請假類型
-  const handleCreateLeaveType = async (
-    leaveTypeData: Omit<LeaveType, 'id' | 'slug' | 'created_at' | 'updated_at'>
-  ) => {
+  const handleCreateLeaveType = async (leaveTypeData: Partial<LeaveType>): Promise<boolean> => {
     try {
       const newLeaveType = await createLeaveType(leaveTypeData);
       addLeaveType(newLeaveType);
+      showSuccess('請假類型建立成功');
+      return true;
     } catch (error) {
       showError(error.message);
+      return false;
     }
   };
 
   // 更新請假類型
-  const handleUpdateLeaveType = async (slug: string, leaveTypeData: Partial<LeaveType>) => {
+  const handleUpdateLeaveType = async (
+    slug: string,
+    leaveTypeData: Partial<LeaveType>
+  ): Promise<boolean> => {
     try {
       const updatedLeaveType = await updateLeaveType(slug, leaveTypeData);
       setLeaveType(slug, updatedLeaveType);
+      showSuccess('請假類型更新成功');
+      return true;
     } catch (error) {
       showError(error.message);
+      return false;
     }
   };
 
   // 刪除請假類型
-  const handleDeleteLeaveType = async (slug: string) => {
+  const handleDeleteLeaveType = async (slug: string): Promise<boolean> => {
     try {
       await deleteLeaveType(slug);
       removeLeaveType(slug);
+      showSuccess('請假類型刪除成功');
+      return true;
+    } catch (error) {
+      showError(error.message);
+      return false;
+    }
+  };
+
+  // 同步系統預設假別
+  const handleSyncDefaults = async (): Promise<boolean> => {
+    try {
+      await syncFromDefaults();
+      showSuccess('同步系統預設假別成功');
+      // 重新載入資料
+      await loadLeaveTypes(true);
       return true;
     } catch (error) {
       showError(error.message);
@@ -62,11 +111,22 @@ export const useLeaveType = () => {
   return {
     // 狀態
     leaveTypes,
+    isLoading,
+    isLoaded,
+    error,
 
-    // 操作
+    // 查詢方法
+    getLeaveTypeBySlug,
+    getPaidLeaveTypes,
+    getLeaveTypesRequiringAttachment,
+    getLeaveTypeByName,
+    getActiveLeaveTypes,
+
+    // 操作方法
     loadLeaveTypes,
     handleCreateLeaveType,
     handleUpdateLeaveType,
     handleDeleteLeaveType,
+    handleSyncDefaults,
   };
 };

@@ -1,10 +1,11 @@
-
 import { PayrollRecordService } from './payroll/payrollRecordService';
 import { SalaryStructureService } from './payroll/salaryStructureService';
-import { LeaveTypeService } from './payroll/leaveTypeService';
+import { getAllLeaveTypes, createLeaveType, updateLeaveType } from './leaveTypeService';
 import { PayrollStatsService } from './payroll/payrollStatsService';
 import { PayrollApprovalService } from './payroll/payrollApprovalService';
 import { PayrollPaymentService } from './payroll/payrollPaymentService';
+import { Payroll, SalaryStructure } from '@/types/hr';
+import { LeaveType } from '@/types/leaveType';
 
 export class PayrollService {
   // 薪資發放記錄相關操作
@@ -12,11 +13,11 @@ export class PayrollService {
     return PayrollRecordService.getPayrolls();
   }
 
-  static async createPayroll(payrollData: any) {
+  static async createPayroll(payrollData: Omit<Payroll, 'id' | 'created_at' | 'updated_at'>) {
     return PayrollRecordService.createPayroll(payrollData);
   }
 
-  static async updatePayroll(id: string, updates: any) {
+  static async updatePayroll(id: string, updates: Partial<Payroll>) {
     return PayrollRecordService.updatePayroll(id, updates);
   }
 
@@ -29,11 +30,13 @@ export class PayrollService {
     return SalaryStructureService.getSalaryStructures();
   }
 
-  static async createSalaryStructure(structureData: any) {
+  static async createSalaryStructure(
+    structureData: Omit<SalaryStructure, 'id' | 'created_at' | 'updated_at'>
+  ) {
     return SalaryStructureService.createSalaryStructure(structureData);
   }
 
-  static async updateSalaryStructure(id: string, updates: any) {
+  static async updateSalaryStructure(id: string, updates: Partial<SalaryStructure>) {
     return SalaryStructureService.updateSalaryStructure(id, updates);
   }
 
@@ -43,15 +46,15 @@ export class PayrollService {
 
   // 請假類型相關操作
   static async getLeaveTypes() {
-    return LeaveTypeService.getLeaveTypes();
+    return getAllLeaveTypes();
   }
 
-  static async createLeaveType(leaveTypeData: any) {
-    return LeaveTypeService.createLeaveType(leaveTypeData);
+  static async createLeaveType(leaveTypeData: Partial<LeaveType>) {
+    return createLeaveType(leaveTypeData);
   }
 
-  static async updateLeaveType(id: string, updates: any) {
-    return LeaveTypeService.updateLeaveType(id, updates);
+  static async updateLeaveType(id: string, updates: Partial<LeaveType>) {
+    return updateLeaveType(id, updates);
   }
 
   // 統計相關
@@ -60,11 +63,21 @@ export class PayrollService {
   }
 
   // 核准相關操作
-  static async approvePayroll(payrollId: string, approverId: string, approverName: string, comment?: string) {
+  static async approvePayroll(
+    payrollId: string,
+    approverId: string,
+    approverName: string,
+    comment?: string
+  ) {
     return PayrollApprovalService.approvePayroll(payrollId, approverId, approverName, comment);
   }
 
-  static async rejectPayroll(payrollId: string, approverId: string, approverName: string, comment: string) {
+  static async rejectPayroll(
+    payrollId: string,
+    approverId: string,
+    approverName: string,
+    comment: string
+  ) {
     return PayrollApprovalService.rejectPayroll(payrollId, approverId, approverName, comment);
   }
 
@@ -74,9 +87,9 @@ export class PayrollService {
 
   // 發放相關操作
   static async markAsPaid(
-    payrollId: string, 
-    paidBy: string, 
-    paidByName: string, 
+    payrollId: string,
+    paidBy: string,
+    paidByName: string,
     paymentData: {
       paymentMethod: string;
       paymentReference?: string;

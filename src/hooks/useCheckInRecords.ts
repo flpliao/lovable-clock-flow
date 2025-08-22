@@ -1,4 +1,4 @@
-import { CheckInService } from '@/services/checkInService';
+import { getCheckInRecords } from '@/services/checkInService';
 import { useMyCheckInRecordsStore } from '@/stores/checkInRecordStore';
 import { CheckInRecord } from '@/types/checkIn';
 import { showError } from '@/utils/toast';
@@ -34,7 +34,7 @@ export const useCheckInRecords = () => {
 
     const targetDate = checked_at || dayjs().format('YYYY-MM-DD');
     try {
-      const data = await CheckInService.getCheckInRecords(targetDate);
+      const data = await getCheckInRecords(targetDate);
       setRecords(data);
     } catch (error) {
       setError(error.message);

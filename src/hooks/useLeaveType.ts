@@ -1,4 +1,9 @@
-import { LeaveTypeService } from '@/services/leaveTypeService';
+import {
+  createLeaveType,
+  deleteLeaveType,
+  getAllLeaveTypes,
+  updateLeaveType,
+} from '@/services/leaveTypeService';
 import useLeaveTypeStore from '@/stores/leaveTypeStore';
 import { LeaveType } from '@/types/leaveType';
 import { showError } from '@/utils/toast';
@@ -12,7 +17,7 @@ export const useLeaveType = () => {
     if (leaveTypes.length > 0) return;
 
     try {
-      const fetchedLeaveTypes = await LeaveTypeService.getAllLeaveTypes();
+      const fetchedLeaveTypes = await getAllLeaveTypes();
       setLeaveTypes(fetchedLeaveTypes);
       return fetchedLeaveTypes;
     } catch (error) {
@@ -25,7 +30,7 @@ export const useLeaveType = () => {
     leaveTypeData: Omit<LeaveType, 'id' | 'slug' | 'created_at' | 'updated_at'>
   ) => {
     try {
-      const newLeaveType = await LeaveTypeService.createLeaveType(leaveTypeData);
+      const newLeaveType = await createLeaveType(leaveTypeData);
       addLeaveType(newLeaveType);
     } catch (error) {
       showError(error.message);
@@ -35,7 +40,7 @@ export const useLeaveType = () => {
   // 更新請假類型
   const handleUpdateLeaveType = async (slug: string, leaveTypeData: Partial<LeaveType>) => {
     try {
-      const updatedLeaveType = await LeaveTypeService.updateLeaveType(slug, leaveTypeData);
+      const updatedLeaveType = await updateLeaveType(slug, leaveTypeData);
       setLeaveType(slug, updatedLeaveType);
     } catch (error) {
       showError(error.message);
@@ -45,7 +50,7 @@ export const useLeaveType = () => {
   // 刪除請假類型
   const handleDeleteLeaveType = async (slug: string) => {
     try {
-      await LeaveTypeService.deleteLeaveType(slug);
+      await deleteLeaveType(slug);
       removeLeaveType(slug);
       return true;
     } catch (error) {

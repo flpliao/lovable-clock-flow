@@ -1,4 +1,7 @@
-import { EmployeeWorkScheduleService } from '@/services/employeeWorkScheduleService';
+import {
+  bulkSyncEmployeeWorkSchedules,
+  getEmployeeWithWorkSchedules,
+} from '@/services/employeeWorkScheduleService';
 import { useEmployeeWorkScheduleStore } from '@/stores/employeeWorkScheduleStore';
 import type { Employee } from '@/types/employee';
 import { showError } from '@/utils/toast';
@@ -32,7 +35,7 @@ export const useEmployeeWorkSchedule = () => {
     setError(null);
 
     try {
-      const employees = await EmployeeWorkScheduleService.getEmployeeWithWorkSchedules({
+      const employees = await getEmployeeWithWorkSchedules({
         department_slug: departmentSlug,
       });
       addEmployeesForDepartment({ departmentSlug, employees });
@@ -68,7 +71,7 @@ export const useEmployeeWorkSchedule = () => {
     const endDate = periodDate.endOf('month').format('YYYY-MM-DD');
 
     try {
-      const employees = await EmployeeWorkScheduleService.getEmployeeWithWorkSchedules({
+      const employees = await getEmployeeWithWorkSchedules({
         department_slug: departmentSlug,
         start_date: startDate,
         end_date: endDate,
@@ -103,7 +106,7 @@ export const useEmployeeWorkSchedule = () => {
 
     // 載入該日期所在的整天資料（使用 start_date 和 end_date）
     try {
-      const employees = await EmployeeWorkScheduleService.getEmployeeWithWorkSchedules({
+      const employees = await getEmployeeWithWorkSchedules({
         department_slug: departmentSlug,
         start_date: date,
         end_date: date,
@@ -135,7 +138,7 @@ export const useEmployeeWorkSchedule = () => {
     setError(null);
 
     try {
-      const employees = await EmployeeWorkScheduleService.getEmployeeWithWorkSchedules({
+      const employees = await getEmployeeWithWorkSchedules({
         department_slug: departmentSlug,
         start_date: startDate,
         end_date: endDate,
@@ -247,7 +250,7 @@ export const useEmployeeWorkSchedule = () => {
     });
 
     try {
-      await EmployeeWorkScheduleService.bulkSyncEmployeeWorkSchedules({
+      await bulkSyncEmployeeWorkSchedules({
         month,
         year,
         schedules,

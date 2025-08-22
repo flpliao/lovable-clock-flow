@@ -1,4 +1,9 @@
-import { DepartmentService } from '@/services/departmentService';
+import {
+  createDepartment,
+  deleteDepartment,
+  getAllDepartments,
+  updateDepartment as updateDepartmentService,
+} from '@/services/departmentService';
 import { useDepartmentStore } from '@/stores/departmentStore';
 import { Department } from '@/types/department';
 import { showError } from '@/utils/toast';
@@ -16,7 +21,7 @@ export const useDepartment = () => {
 
     setIsLoading(true);
     try {
-      const data = await DepartmentService.getAllDepartments();
+      const data = await getAllDepartments();
       setDepartments(data);
     } catch (error) {
       showError(error.message);
@@ -31,7 +36,7 @@ export const useDepartment = () => {
   ): Promise<Department> => {
     setIsLoading(true);
     try {
-      const newDepartment = await DepartmentService.createDepartment(departmentData);
+      const newDepartment = await createDepartment(departmentData);
       addDepartment(newDepartment);
       return newDepartment;
     } catch (error) {
@@ -48,7 +53,7 @@ export const useDepartment = () => {
   ): Promise<Department | null> => {
     setIsLoading(true);
     try {
-      const updatedDepartment = await DepartmentService.updateDepartment(slug, departmentData);
+      const updatedDepartment = await updateDepartmentService(slug, departmentData);
       updateDepartment(updatedDepartment.slug, updatedDepartment);
       return updatedDepartment;
     } catch (error) {
@@ -62,7 +67,7 @@ export const useDepartment = () => {
   const handleDeleteDepartment = async (slug: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      await DepartmentService.deleteDepartment(slug);
+      await deleteDepartment(slug);
       removeDepartment(slug);
 
       return true;

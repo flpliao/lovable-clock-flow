@@ -1,5 +1,9 @@
 import { RequestStatus } from '@/constants/requestStatus';
-import { MissedCheckInRequestService } from '@/services/missedCheckInRequestService';
+import {
+  cancelMissedCheckInRequest,
+  createMissedCheckInRequest,
+  getCompletedMyMissedCheckInRequests,
+} from '@/services/missedCheckInRequestService';
 import { useMyCheckInRecordsStore } from '@/stores/checkInRecordStore';
 import useMissedCheckInRequestsStore from '@/stores/missedCheckInRequestStore';
 import { showError } from '@/utils/toast';
@@ -28,7 +32,7 @@ export const useMyMissedCheckInRequests = () => {
 
     setLoading(true);
     try {
-      const data = await MissedCheckInRequestService.getCompletedMyMissedCheckInRequests();
+      const data = await getCompletedMyMissedCheckInRequests();
       addRequests(data);
       addRequestsToMy(data);
       setMyLoaded([RequestStatus.APPROVED, RequestStatus.REJECTED, RequestStatus.CANCELLED]);
@@ -47,7 +51,7 @@ export const useMyMissedCheckInRequests = () => {
     reason: string;
   }): Promise<boolean> => {
     try {
-      const newRequest = await MissedCheckInRequestService.createMissedCheckInRequest(requestData);
+      const newRequest = await createMissedCheckInRequest(requestData);
       addRequest(newRequest);
       addRecord(newRequest.check_in_record);
       return true;
@@ -60,7 +64,7 @@ export const useMyMissedCheckInRequests = () => {
   // 取消忘記打卡申請
   const handleCancelMyMissedCheckInRequest = async (slug: string) => {
     try {
-      await MissedCheckInRequestService.cancelMissedCheckInRequest(slug);
+      await cancelMissedCheckInRequest(slug);
       updateRequest(slug, { status: RequestStatus.CANCELLED });
     } catch (error) {
       showError(error.message);

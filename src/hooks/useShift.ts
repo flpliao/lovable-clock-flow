@@ -1,5 +1,16 @@
-import { ShiftService } from '@/services/shiftService';
-import { WorkScheduleService } from '@/services/workScheduleService';
+import {
+  createShift,
+  deleteShift,
+  getAllShifts,
+  getShift,
+  getShifts,
+  updateShift,
+} from '@/services/shiftService';
+import {
+  createWorkSchedule,
+  deleteWorkSchedule,
+  updateWorkSchedule,
+} from '@/services/workScheduleService';
 import { useShiftStore } from '@/stores/shiftStore';
 import { CreateShiftData, UpdateShiftData } from '@/types/shift';
 import { CreateWorkScheduleData, UpdateWorkScheduleData, WorkSchedule } from '@/types/workSchedule';
@@ -17,7 +28,7 @@ export const useShift = () => {
 
     setIsLoading(true);
     try {
-      const data = await ShiftService.getAllShifts();
+      const data = await getAllShifts();
       setShifts(data);
       setIsLoading(false);
     } catch (error) {
@@ -33,7 +44,7 @@ export const useShift = () => {
     setIsLoading(true);
 
     try {
-      const data = await ShiftService.getShifts(params);
+      const data = await getShifts(params);
       setShifts(data);
       setIsLoading(false);
     } catch (error) {
@@ -46,7 +57,7 @@ export const useShift = () => {
     setIsLoading(true);
 
     try {
-      await ShiftService.getShift(slug);
+      await getShift(slug);
       setIsLoading(false);
     } catch (error) {
       showError(error.message);
@@ -56,7 +67,7 @@ export const useShift = () => {
   // 建立班次
   const handleCreateShift = async (shiftData: CreateShiftData) => {
     try {
-      const newShift = await ShiftService.createShift(shiftData);
+      const newShift = await createShift(shiftData);
       addShift(newShift);
     } catch (error) {
       showError(error.message);
@@ -66,7 +77,7 @@ export const useShift = () => {
   // 更新班次
   const handleUpdateShift = async (slug: string, shiftData: UpdateShiftData) => {
     try {
-      const updatedShift = await ShiftService.updateShift(slug, shiftData);
+      const updatedShift = await updateShift(slug, shiftData);
       setShift(slug, updatedShift);
     } catch (error) {
       showError(error.message);
@@ -76,7 +87,7 @@ export const useShift = () => {
   // 刪除班次
   const handleDeleteShift = async (slug: string) => {
     try {
-      await ShiftService.deleteShift(slug);
+      await deleteShift(slug);
       removeShift(slug);
     } catch (error) {
       showError(error.message);
@@ -86,7 +97,7 @@ export const useShift = () => {
   // 建立工作時程
   const handleCreateWorkSchedule = async (workScheduleData: CreateWorkScheduleData) => {
     try {
-      const newWorkSchedule = await WorkScheduleService.createWorkSchedule(workScheduleData);
+      const newWorkSchedule = await createWorkSchedule(workScheduleData);
       const shift = shifts.find(s => s.slug === workScheduleData.shift_slug);
       if (shift) {
         const updatedWorkSchedules = [...(shift.work_schedules || []), newWorkSchedule];
@@ -108,10 +119,7 @@ export const useShift = () => {
     workScheduleData: UpdateWorkScheduleData
   ) => {
     try {
-      const updatedWorkSchedule = await WorkScheduleService.updateWorkSchedule(
-        slug,
-        workScheduleData
-      );
+      const updatedWorkSchedule = await updateWorkSchedule(slug, workScheduleData);
       const shift = shifts.find(s => s.work_schedules?.some(ws => ws.slug === slug));
       if (shift) {
         const updatedWorkSchedules =
@@ -131,7 +139,7 @@ export const useShift = () => {
   // 刪除工作時程
   const handleDeleteWorkSchedule = async (slug: string) => {
     try {
-      await WorkScheduleService.deleteWorkSchedule(slug);
+      await deleteWorkSchedule(slug);
       // 從對應的 shift 中移除 work_schedule
       const shift = shifts.find(s => s.work_schedules?.some(ws => ws.slug === slug));
       if (shift) {
@@ -167,7 +175,7 @@ export const useShift = () => {
         ot_start_after_minutes: workSchedule.ot_start_after_minutes,
       };
 
-      const newWorkSchedule = await WorkScheduleService.createWorkSchedule(duplicateData);
+      const newWorkSchedule = await createWorkSchedule(duplicateData);
       if (newWorkSchedule) {
         // 更新對應的 shift 中的 work_schedules
         const updatedWorkSchedules = [...(shift.work_schedules || []), newWorkSchedule];

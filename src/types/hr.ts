@@ -1,19 +1,4 @@
-export interface LeaveType {
-  id: string;
-  code: string;
-  name_zh: string;
-  name_en: string;
-  is_paid: boolean;
-  annual_reset: boolean;
-  max_days_per_year?: number;
-  requires_attachment: boolean;
-  description?: string;
-  is_system_default: boolean;
-  is_active: boolean;
-  sort_order: number;
-  created_at: string;
-  updated_at: string;
-}
+// LeaveType interface moved to @/types/leaveType for consistency
 
 export interface SalaryStructure {
   id: string;

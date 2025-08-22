@@ -1,13 +1,8 @@
-// Define the leave type structure
-export interface LeaveType {
-  id: string;
-  name: string;
-  name_en: string; // English name for internal use
-  isPaid: boolean;
-  annualReset: boolean;
-  maxDaysPerYear?: number;
-  requiresAttachment: boolean;
-  description: string;
+import { LeaveType } from '@/types/leaveType';
+import { LeaveTypeCode, PaidType } from '@/constants/leave';
+
+// Extended leave type structure for mock data with validation rules
+export interface ExtendedLeaveType extends LeaveType {
   validationRules?: {
     genderRestriction?: 'male' | 'female';
     onceOnly?: boolean;
@@ -20,141 +15,153 @@ export interface LeaveType {
 }
 
 // Taiwan Labor Law leave types - 符合勞基法規定
-export const LEAVE_TYPES: LeaveType[] = [
+export const LEAVE_TYPES: ExtendedLeaveType[] = [
   {
-    id: 'annual',
+    slug: 'annual',
     name: '特別休假',
-    name_en: 'annual',
-    isPaid: true,
-    annualReset: true,
-    requiresAttachment: false,
+    code: LeaveTypeCode.ANNUAL,
+    paid_type: PaidType.PAID,
+    annual_reset: true,
+    required_attachment: false,
     description: '視年資自動計算剩餘天數（每年3～30日）',
+    is_active: true,
   },
   {
-    id: 'personal',
-    name: '事假（無薪）',
-    name_en: 'personal',
-    isPaid: false,
-    annualReset: true,
-    maxDaysPerYear: 14,
-    requiresAttachment: false,
+    slug: 'personal',
+    name: '事假',
+    code: LeaveTypeCode.PERSONAL,
+    paid_type: PaidType.UNPAID,
+    annual_reset: true,
+    max_per_year: 14,
+    required_attachment: false,
     description: '每年最多14天，超過部分無薪',
+    is_active: true,
   },
   {
-    id: 'sick',
-    name: '病假（依勞基法規定）',
-    name_en: 'sick',
-    isPaid: true, // 前30天半薪
-    annualReset: true,
-    maxDaysPerYear: 30,
-    requiresAttachment: true,
-    description: '每年最多30天，30天內依法給半薪，超過後可視為留職停薪，與生理假合併計算',
-    validationRules: {
-      combinedWith: ['menstrual'],
-    },
+    slug: 'sick',
+    name: '病假',
+    code: LeaveTypeCode.SICK,
+    paid_type: PaidType.HALF,
+    annual_reset: true,
+    max_per_year: 30,
+    required_attachment: true,
+    description: '每年最多30天，30天內依法給半薪，超過後可視為留職停薪',
+    is_active: true,
   },
   {
-    id: 'menstrual',
-    name: '生理假（女性員工適用）',
-    name_en: 'menstrual',
-    isPaid: true, // 半薪
-    annualReset: true,
-    maxDaysPerYear: 12, // 每月1日
-    requiresAttachment: false,
-    description: '每月可請1日，僅限女性員工，與病假天數併計，總和以30日為限',
-    validationRules: {
-      genderRestriction: 'female',
-      monthlyLimit: 1,
-      combinedWith: ['sick'],
-    },
-  },
-  {
-    id: 'marriage',
+    slug: 'marriage',
     name: '婚假',
-    name_en: 'marriage',
-    isPaid: true,
-    annualReset: false,
-    maxDaysPerYear: 8,
-    requiresAttachment: true,
+    code: LeaveTypeCode.MARRIAGE,
+    paid_type: PaidType.PAID,
+    annual_reset: false,
+    max_per_year: 8,
+    required_attachment: true,
     description: '僅限一次，8日內，須於結婚後1年內請完',
+    is_active: true,
     validationRules: {
       onceOnly: true,
     },
   },
   {
-    id: 'bereavement',
-    name: '喪假',
-    name_en: 'bereavement',
-    isPaid: true,
-    annualReset: true,
-    requiresAttachment: true,
-    description: '根據親屬關係：父母/配偶8日、祖父母/兄弟姊妹6日、其他3日',
+    slug: 'bereavement-l1',
+    name: '一等親喪假',
+    code: LeaveTypeCode.BEREAVEMENT_L1,
+    paid_type: PaidType.PAID,
+    annual_reset: false,
+    max_per_year: 8,
+    required_attachment: true,
+    description: '父母、配偶過世時享有之有薪喪假，8天',
+    is_active: true,
     validationRules: {
       relationshipRequired: true,
     },
   },
   {
-    id: 'maternity',
+    slug: 'bereavement-l2',
+    name: '二等親喪假',
+    code: LeaveTypeCode.BEREAVEMENT_L2,
+    paid_type: PaidType.PAID,
+    annual_reset: false,
+    max_per_year: 6,
+    required_attachment: true,
+    description: '祖父母、兄弟姊妹、岳父母等二等親過世時享有之有薪喪假，6天',
+    is_active: true,
+    validationRules: {
+      relationshipRequired: true,
+    },
+  },
+  {
+    slug: 'bereavement-l3',
+    name: '三等親喪假',
+    code: LeaveTypeCode.BEREAVEMENT_L3,
+    paid_type: PaidType.PAID,
+    annual_reset: false,
+    max_per_year: 3,
+    required_attachment: true,
+    description: '伯叔父母、姑丈嬸母等三等親過世時享有之有薪喪假，3天',
+    is_active: true,
+    validationRules: {
+      relationshipRequired: true,
+    },
+  },
+  {
+    slug: 'maternity',
     name: '產假',
-    name_en: 'maternity',
-    isPaid: true,
-    annualReset: true,
-    maxDaysPerYear: 56, // 8週
-    requiresAttachment: true,
-    description: '固定8週（56天），女性員工限定',
+    code: LeaveTypeCode.MATERNITY,
+    paid_type: PaidType.PAID,
+    annual_reset: false,
+    max_per_year: 56,
+    required_attachment: true,
+    description: '女性員工生產時享有之有薪產假，56天（8週）',
+    is_active: true,
     validationRules: {
       genderRestriction: 'female',
     },
   },
   {
-    id: 'paternity',
+    slug: 'paternity',
     name: '陪產假',
-    name_en: 'paternity',
-    isPaid: true,
-    annualReset: true,
-    maxDaysPerYear: 7,
-    requiresAttachment: false,
-    description: '固定7天，全薪，男性員工限定，配偶懷孕期間申請',
+    code: LeaveTypeCode.PATERNITY,
+    paid_type: PaidType.PAID,
+    annual_reset: false,
+    max_per_year: 5,
+    required_attachment: true,
+    description: '男性員工配偶生產時享有之有薪陪產假，5天',
+    is_active: true,
     validationRules: {
       genderRestriction: 'male',
     },
   },
   {
-    id: 'parental',
-    name: '育嬰留停（無薪）',
-    name_en: 'parental',
-    isPaid: false,
-    annualReset: false,
-    requiresAttachment: true,
-    description: '每名子女最長2年，需於子女滿3歲前結束',
-    validationRules: {
-      maxYearsPerChild: 2,
-      ageRestriction: { maxChildAge: 3 },
-    },
+    slug: 'special',
+    name: '特殊假',
+    code: LeaveTypeCode.SPECIAL,
+    paid_type: PaidType.UNPAID,
+    annual_reset: true,
+    required_attachment: false,
+    description: '特殊情況請假，需主管核准',
+    is_active: true,
   },
   {
-    id: 'occupational',
-    name: '公傷病假',
-    name_en: 'occupational',
-    isPaid: true,
-    annualReset: false,
-    requiresAttachment: true,
-    description: '不限制天數，需檢附職災證明，不併入病假計算',
-  },
-  {
-    id: 'other',
-    name: '其他（無薪）',
-    name_en: 'other',
-    isPaid: false,
-    annualReset: true,
-    requiresAttachment: false,
+    slug: 'other',
+    name: '其他',
+    code: LeaveTypeCode.OTHER,
+    paid_type: PaidType.UNPAID,
+    annual_reset: true,
+    required_attachment: false,
     description: '自訂請假類型，需填寫詳細原因，由主管人工審核',
+    is_active: true,
   },
 ];
 
-// Helper to get leave type by id
-export const getLeaveTypeById = (id: string): LeaveType | undefined => {
-  return LEAVE_TYPES.find(type => type.id === id);
+// Helper to get leave type by slug
+export const getLeaveTypeBySlug = (slug: string): ExtendedLeaveType | undefined => {
+  return LEAVE_TYPES.find(type => type.slug === slug);
+};
+
+// Backward compatibility - helper to get leave type by id (now slug)
+export const getLeaveTypeById = (id: string): ExtendedLeaveType | undefined => {
+  return getLeaveTypeBySlug(id);
 };
 
 // Enhanced leave type text helper

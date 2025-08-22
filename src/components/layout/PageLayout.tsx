@@ -35,7 +35,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children, className = '' }) => 
       ></div>
 
       <div className={`relative z-10 w-full min-h-screen md:pt-12 ${className}`}>
-        <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6 pb-6">{children}</div>
+        <div className="px-4 sm:px-6 lg:px-8 max-w-[1500px] mx-auto space-y-6 pb-6">{children}</div>
       </div>
     </div>
   );

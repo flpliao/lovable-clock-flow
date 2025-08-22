@@ -57,7 +57,7 @@ export function LeaveTypeDialog({ open, onOpenChange, leaveType, onSave }: Leave
   const form = useForm<LeaveTypeFormData>({
     resolver: zodResolver(leaveTypeSchema),
     defaultValues: {
-      code: LeaveTypeCode.ANNUAL,
+      code: LeaveTypeCode.OTHER,
       name: '',
       paid_type: PaidType.UNPAID,
       annual_reset: true,
@@ -74,7 +74,7 @@ export function LeaveTypeDialog({ open, onOpenChange, leaveType, onSave }: Leave
       if (leaveType) {
         // 編輯模式：填入現有資料
         form.reset({
-          code: leaveType.code || LeaveTypeCode.ANNUAL,
+          code: leaveType.code || LeaveTypeCode.OTHER,
           name: leaveType.name || '',
           paid_type: leaveType.paid_type || PaidType.UNPAID,
           annual_reset: leaveType.annual_reset !== undefined ? leaveType.annual_reset : true,
@@ -86,7 +86,7 @@ export function LeaveTypeDialog({ open, onOpenChange, leaveType, onSave }: Leave
       } else {
         // 新增模式：重置為預設值
         form.reset({
-          code: LeaveTypeCode.ANNUAL,
+          code: LeaveTypeCode.OTHER,
           name: '',
           paid_type: PaidType.UNPAID,
           annual_reset: true,
@@ -138,12 +138,19 @@ export function LeaveTypeDialog({ open, onOpenChange, leaveType, onSave }: Leave
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value={LeaveTypeCode.OTHER}>其他 (OTHER)</SelectItem>
                         <SelectItem value={LeaveTypeCode.ANNUAL}>年假 (ANNUAL)</SelectItem>
                         <SelectItem value={LeaveTypeCode.SICK}>病假 (SICK)</SelectItem>
                         <SelectItem value={LeaveTypeCode.PERSONAL}>事假 (PERSONAL)</SelectItem>
                         <SelectItem value={LeaveTypeCode.MARRIAGE}>婚假 (MARRIAGE)</SelectItem>
-                        <SelectItem value={LeaveTypeCode.BEREAVEMENT}>
-                          喪假 (BEREAVEMENT)
+                        <SelectItem value={LeaveTypeCode.BEREAVEMENT_L1}>
+                          一等親喪假 (BEREAVEMENT_L1)
+                        </SelectItem>
+                        <SelectItem value={LeaveTypeCode.BEREAVEMENT_L2}>
+                          二等親喪假 (BEREAVEMENT_L2)
+                        </SelectItem>
+                        <SelectItem value={LeaveTypeCode.BEREAVEMENT_L3}>
+                          三等親喪假 (BEREAVEMENT_L3)
                         </SelectItem>
                         <SelectItem value={LeaveTypeCode.MATERNITY}>產假 (MATERNITY)</SelectItem>
                         <SelectItem value={LeaveTypeCode.PATERNITY}>陪產假 (PATERNITY)</SelectItem>

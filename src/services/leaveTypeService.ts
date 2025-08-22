@@ -19,7 +19,6 @@ export const getAllLeaveTypes = async (): Promise<LeaveType[]> => {
   return (data as LeaveType[]).map(item => ({
     ...item,
     is_active: item.is_active ?? true,
-    is_system_default: item.is_system_default ?? false,
   }));
 };
 
@@ -43,7 +42,6 @@ export const createLeaveType = async (leaveTypeData: Partial<LeaveType>): Promis
   return {
     ...result,
     is_active: result.is_active ?? true,
-    is_system_default: result.is_system_default ?? false,
   };
 };
 
@@ -65,7 +63,6 @@ export const updateLeaveType = async (
   return {
     ...result,
     is_active: result.is_active ?? true,
-    is_system_default: result.is_system_default ?? false,
   };
 };
 
@@ -88,17 +85,4 @@ export const getLeaveTypeByCode = async (code: string): Promise<LeaveType | null
   const list = await getAllLeaveTypes();
   const found = list.find((x: LeaveType) => x.code === code);
   return found ?? null;
-};
-
-// 同步系統預設假別
-export const syncFromDefaults = async (): Promise<boolean> => {
-  const { status, message } = await callApiAndDecode(
-    axiosWithEmployeeAuth().post(apiRoutes.leaveType.syncFromDefaults)
-  );
-
-  if (status !== ApiResponseStatus.SUCCESS) {
-    throw new Error(`同步系統預設假別失敗: ${message}`);
-  }
-
-  return true;
 };

@@ -123,25 +123,15 @@ export function LeaveTypeTable({ leaveTypes, onEdit, onDelete }: LeaveTypeTableP
                       </Badge>
                     </TableCell>
                     <TableCell className="py-3 px-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2 flex-nowrap">
-                        <Badge
-                          className={
-                            leaveType.is_active
-                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium px-2 py-1 rounded-lg'
-                              : 'bg-slate-100 text-slate-700 border border-slate-200 font-medium px-2 py-1 rounded-lg'
-                          }
-                        >
-                          {leaveType.is_active ? '啟用' : '停用'}
-                        </Badge>
-                        {leaveType.is_system_default && (
-                          <Badge
-                            variant="outline"
-                            className="text-violet-800 border-violet-300 bg-violet-50 font-medium px-2 py-1 rounded-lg flex-shrink-0"
-                          >
-                            系統預設
-                          </Badge>
-                        )}
-                      </div>
+                      <Badge
+                        className={
+                          leaveType.is_active
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium px-2 py-1 rounded-lg'
+                            : 'bg-slate-100 text-slate-700 border border-slate-200 font-medium px-2 py-1 rounded-lg'
+                        }
+                      >
+                        {leaveType.is_active ? '啟用' : '停用'}
+                      </Badge>
                     </TableCell>
                     <TableCell className="py-3 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-1 flex-nowrap">
@@ -149,7 +139,6 @@ export function LeaveTypeTable({ leaveTypes, onEdit, onDelete }: LeaveTypeTableP
                           variant="ghost"
                           size="sm"
                           onClick={() => onEdit(leaveType)}
-                          disabled={leaveType.is_system_default}
                           className="hover:bg-blue-100 text-blue-700 hover:text-blue-800 rounded-lg border border-transparent hover:border-blue-200 transition-all duration-200 flex-shrink-0"
                         >
                           <Edit className="h-4 w-4" />
@@ -158,7 +147,6 @@ export function LeaveTypeTable({ leaveTypes, onEdit, onDelete }: LeaveTypeTableP
                           variant="ghost"
                           size="sm"
                           onClick={() => onDelete(leaveType)}
-                          disabled={leaveType.is_system_default}
                           className="hover:bg-red-100 text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg border border-transparent hover:border-red-200 transition-all duration-200 flex-shrink-0"
                         >
                           <Trash2 className="h-4 w-4" />

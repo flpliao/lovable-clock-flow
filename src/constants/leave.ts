@@ -2,6 +2,7 @@
  * 請假類型代碼常數
  */
 export enum LeaveTypeCode {
+  OTHER = 'OTHER',
   ANNUAL = 'ANNUAL',
   SICK = 'SICK',
   PERSONAL = 'PERSONAL',

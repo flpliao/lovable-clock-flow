@@ -1,17 +1,22 @@
-
-import React from 'react';
-import { LeaveRequest } from '@/types';
+import React, { useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { EditLeaveDatePicker } from './EditLeaveDatePicker';
+import useDefaultLeaveTypeStore from '@/stores/defaultLeaveTypeStore';
 
 interface EditLeaveFormFieldsProps {
   formData: {
     start_date: string;
     end_date: string;
-    leave_type: LeaveRequest['leave_type'];
+    leave_type: string;
     hours: number;
     reason: string;
     status: 'pending' | 'approved' | 'rejected';
@@ -29,47 +34,47 @@ export const EditLeaveFormFields: React.FC<EditLeaveFormFieldsProps> = ({
   endDateObj,
   onFormDataChange,
   onStartDateChange,
-  onEndDateChange
+  onEndDateChange,
 }) => {
+  const { defaultLeaveTypes, isLoading, isLoaded, fetchDefaultLeaveTypes } =
+    useDefaultLeaveTypeStore();
+
+  // 載入預設假別類型資料
+  useEffect(() => {
+    if (!isLoaded && !isLoading) {
+      fetchDefaultLeaveTypes().catch(console.error);
+    }
+  }, [isLoaded, isLoading, fetchDefaultLeaveTypes]);
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <EditLeaveDatePicker
-          label="開始日期"
-          value={startDateObj}
-          onChange={onStartDateChange}
-        />
-        
-        <EditLeaveDatePicker
-          label="結束日期"
-          value={endDateObj}
-          onChange={onEndDateChange}
-        />
+        <EditLeaveDatePicker label="開始日期" value={startDateObj} onChange={onStartDateChange} />
+
+        <EditLeaveDatePicker label="結束日期" value={endDateObj} onChange={onEndDateChange} />
       </div>
 
       <div className="space-y-2">
         <Label>請假類型</Label>
-        <Select 
-          value={formData.leave_type} 
-          onValueChange={(value: LeaveRequest['leave_type']) => 
-            onFormDataChange({ leave_type: value })
-          }
+        <Select
+          value={formData.leave_type}
+          onValueChange={(value: string) => onFormDataChange({ leave_type: value })}
         >
           <SelectTrigger>
             <SelectValue placeholder="選擇請假類型" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="annual">特別休假</SelectItem>
-            <SelectItem value="sick">病假</SelectItem>
-            <SelectItem value="personal">事假</SelectItem>
-            <SelectItem value="marriage">婚假</SelectItem>
-            <SelectItem value="bereavement">喪假</SelectItem>
-            <SelectItem value="maternity">產假</SelectItem>
-            <SelectItem value="paternity">陪產假</SelectItem>
-            <SelectItem value="parental">育嬰假</SelectItem>
-            <SelectItem value="occupational">公傷假</SelectItem>
-            <SelectItem value="menstrual">生理假</SelectItem>
-            <SelectItem value="other">其他</SelectItem>
+            {isLoading && (
+              <SelectItem value="" disabled>
+                載入中...
+              </SelectItem>
+            )}
+            {!isLoading &&
+              defaultLeaveTypes.map(type => (
+                <SelectItem key={type.code} value={type.code.toLowerCase()}>
+                  {type.name}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
       </div>
@@ -79,7 +84,7 @@ export const EditLeaveFormFields: React.FC<EditLeaveFormFieldsProps> = ({
         <Input
           type="number"
           value={formData.hours}
-          onChange={(e) => onFormDataChange({ hours: Number(e.target.value) })}
+          onChange={e => onFormDataChange({ hours: Number(e.target.value) })}
           min="0"
           step="0.5"
         />
@@ -87,9 +92,9 @@ export const EditLeaveFormFields: React.FC<EditLeaveFormFieldsProps> = ({
 
       <div className="space-y-2">
         <Label>狀態</Label>
-        <Select 
-          value={formData.status} 
-          onValueChange={(value: 'pending' | 'approved' | 'rejected') => 
+        <Select
+          value={formData.status}
+          onValueChange={(value: 'pending' | 'approved' | 'rejected') =>
             onFormDataChange({ status: value })
           }
         >
@@ -108,7 +113,7 @@ export const EditLeaveFormFields: React.FC<EditLeaveFormFieldsProps> = ({
         <Label>請假原因</Label>
         <Textarea
           value={formData.reason}
-          onChange={(e) => onFormDataChange({ reason: e.target.value })}
+          onChange={e => onFormDataChange({ reason: e.target.value })}
           placeholder="請輸入請假原因"
           rows={3}
         />

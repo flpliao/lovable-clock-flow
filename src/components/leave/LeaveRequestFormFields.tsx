@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import {
@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CalendarIcon, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 import { UserStaffData } from '@/services/staffDataService';
+import useDefaultLeaveTypeStore from '@/stores/defaultLeaveTypeStore';
 
 interface LeaveRequestFormFieldsProps {
   form: UseFormReturn<{
@@ -30,20 +31,6 @@ interface LeaveRequestFormFieldsProps {
   userStaffData: UserStaffData | null;
 }
 
-const leaveTypes = [
-  { value: 'annual', label: '特別休假' },
-  { value: 'personal', label: '事假（無薪）' },
-  { value: 'sick', label: '病假（依勞基法）' },
-  { value: 'marriage', label: '婚假' },
-  { value: 'bereavement', label: '喪假' },
-  { value: 'maternity', label: '產假' },
-  { value: 'paternity', label: '陪產假' },
-  { value: 'menstrual', label: '生理假（女性限定）' },
-  { value: 'occupational', label: '公傷病假' },
-  { value: 'parental', label: '育嬰留停（無薪）' },
-  { value: 'other', label: '其他（無薪）' },
-];
-
 export function LeaveRequestFormFields({
   form,
   calculatedHours,
@@ -51,7 +38,23 @@ export function LeaveRequestFormFields({
   hasHireDate,
   userStaffData,
 }: LeaveRequestFormFieldsProps) {
+  const { defaultLeaveTypes, isLoading, isLoaded, fetchDefaultLeaveTypes } =
+    useDefaultLeaveTypeStore();
+
   const watchedLeaveType = form.watch('leave_type');
+
+  // 載入預設假別類型資料
+  useEffect(() => {
+    if (!isLoaded && !isLoading) {
+      fetchDefaultLeaveTypes().catch(console.error);
+    }
+  }, [isLoaded, isLoading, fetchDefaultLeaveTypes]);
+
+  // 將 API 資料轉換為 UI 需要的格式
+  const leaveTypes = defaultLeaveTypes.map(type => ({
+    value: type.code.toLowerCase(),
+    label: type.name,
+  }));
 
   return (
     <>

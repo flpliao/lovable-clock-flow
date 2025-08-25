@@ -1,41 +1,54 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { UserStaffData } from '@/services/staffDataService';
+import useDefaultLeaveTypeStore from '@/stores/defaultLeaveTypeStore';
 
 interface LeaveTypeSelectorProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<{
+    leave_type: string;
+    start_date: Date;
+    end_date: Date;
+    reason: string;
+  }>;
   selectedLeaveType?: string;
   calculatedDays?: number;
   hasHireDate?: boolean;
   userStaffData?: UserStaffData | null;
 }
 
-const leaveTypes = [
-  { value: 'annual', label: '特別休假', requiresHireDate: true },
-  { value: 'personal', label: '事假（無薪）', requiresHireDate: false },
-  { value: 'sick', label: '病假（依勞基法）', requiresHireDate: false },
-  { value: 'marriage', label: '婚假', requiresHireDate: false },
-  { value: 'bereavement', label: '喪假', requiresHireDate: false },
-  { value: 'maternity', label: '產假', requiresHireDate: false },
-  { value: 'paternity', label: '陪產假', requiresHireDate: false },
-  { value: 'menstrual', label: '生理假（女性限定）', requiresHireDate: false },
-  { value: 'occupational', label: '公傷病假', requiresHireDate: false },
-  { value: 'parental', label: '育嬰留停（無薪）', requiresHireDate: false },
-  { value: 'other', label: '其他（無薪）', requiresHireDate: false },
-];
-
-export function LeaveTypeSelector({ 
-  form, 
+export function LeaveTypeSelector({
+  form,
   selectedLeaveType,
   calculatedDays = 0,
   hasHireDate = false,
-  userStaffData 
+  userStaffData,
 }: LeaveTypeSelectorProps) {
-  
+  const { defaultLeaveTypes, isLoading, isLoaded, fetchDefaultLeaveTypes } =
+    useDefaultLeaveTypeStore();
+
+  // 載入預設假別類型資料
+  useEffect(() => {
+    if (!isLoaded && !isLoading) {
+      fetchDefaultLeaveTypes().catch(console.error);
+    }
+  }, [isLoaded, isLoading, fetchDefaultLeaveTypes]);
+
+  // 將 API 資料轉換為 UI 需要的格式，並添加 requiresHireDate 邏輯
+  const leaveTypes = defaultLeaveTypes.map(type => ({
+    value: type.code.toLowerCase(),
+    label: type.name,
+    requiresHireDate: type.code === 'ANNUAL', // 只有特休需要入職日期
+  }));
+
   const renderLeaveTypeStatus = (leaveType: string) => {
     if (leaveType === 'annual') {
       if (!hasHireDate) {
@@ -56,7 +69,7 @@ export function LeaveTypeSelector({
         const remainingDays = userStaffData.remainingAnnualLeaveDays;
         const totalDays = userStaffData.totalAnnualLeaveDays;
         const usedDays = userStaffData.usedAnnualLeaveDays;
-        
+
         return (
           <div className="mt-2 space-y-2">
             <div className="p-3 bg-green-500/20 border border-green-300/30 rounded-lg">
@@ -65,15 +78,13 @@ export function LeaveTypeSelector({
                 <div>
                   <p className="text-sm font-medium">特別休假可申請</p>
                   <p className="text-xs mt-1 text-green-200">
-                    年資：{userStaffData.yearsOfService} | 
-                    特休餘額：{remainingDays} 天 | 
-                    年度總計：{totalDays} 天 | 
-                    已使用：{usedDays} 天
+                    年資：{userStaffData.yearsOfService} | 特休餘額：{remainingDays} 天 | 年度總計：
+                    {totalDays} 天 | 已使用：{usedDays} 天
                   </p>
                 </div>
               </div>
             </div>
-            
+
             {calculatedDays > 0 && (
               <div className="p-3 bg-blue-500/20 border border-blue-300/30 rounded-lg">
                 <div className="flex items-start gap-2 text-blue-100">
@@ -96,7 +107,7 @@ export function LeaveTypeSelector({
         );
       }
     }
-    
+
     return null;
   };
 
@@ -115,19 +126,13 @@ export function LeaveTypeSelector({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {leaveTypes.map((type) => {
+                {leaveTypes.map(type => {
                   const isDisabled = type.requiresHireDate && !hasHireDate;
                   return (
-                    <SelectItem 
-                      key={type.value} 
-                      value={type.value}
-                      disabled={isDisabled}
-                    >
+                    <SelectItem key={type.value} value={type.value} disabled={isDisabled}>
                       <div className="flex items-center gap-2">
                         {type.label}
-                        {isDisabled && (
-                          <AlertTriangle className="h-3 w-3 text-orange-500" />
-                        )}
+                        {isDisabled && <AlertTriangle className="h-3 w-3 text-orange-500" />}
                       </div>
                     </SelectItem>
                   );
@@ -138,7 +143,7 @@ export function LeaveTypeSelector({
           </FormItem>
         )}
       />
-      
+
       {/* 顯示選擇的假別狀態 */}
       {selectedLeaveType && renderLeaveTypeStatus(selectedLeaveType)}
     </div>

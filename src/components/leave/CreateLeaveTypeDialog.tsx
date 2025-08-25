@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -30,7 +30,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PaidType, LeaveTypeCode, LEAVE_TYPE_DEFAULTS } from '@/constants/leave';
+import { PaidType, LeaveTypeCode } from '@/constants/leave';
+import useDefaultLeaveTypeStore from '@/stores/defaultLeaveTypeStore';
 
 const createLeaveTypeSchema = z.object({
   code: z.nativeEnum(LeaveTypeCode),
@@ -52,6 +53,14 @@ interface CreateLeaveTypeDialogProps {
 }
 
 export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeaveTypeDialogProps) {
+  const {
+    defaultLeaveTypes,
+    isLoading,
+    isLoaded,
+    fetchDefaultLeaveTypes,
+    getDefaultLeaveTypeByCode,
+  } = useDefaultLeaveTypeStore();
+
   const form = useForm<CreateLeaveTypeFormData>({
     resolver: zodResolver(createLeaveTypeSchema),
     defaultValues: {
@@ -66,9 +75,16 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
     },
   });
 
+  // 載入預設假別類型資料
+  useEffect(() => {
+    if (!isLoaded && !isLoading) {
+      fetchDefaultLeaveTypes().catch(console.error);
+    }
+  }, [isLoaded, isLoading, fetchDefaultLeaveTypes]);
+
   // 當選擇假別類型時，自動填入預設值
   const handleLeaveTypeChange = (selectedCode: LeaveTypeCode) => {
-    const defaults = LEAVE_TYPE_DEFAULTS[selectedCode];
+    const defaults = getDefaultLeaveTypeByCode(selectedCode);
     if (defaults) {
       form.setValue('code', selectedCode);
       form.setValue('name', defaults.name);
@@ -76,7 +92,7 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
       form.setValue('annual_reset', defaults.annual_reset);
       form.setValue('max_per_year', defaults.max_per_year);
       form.setValue('required_attachment', defaults.required_attachment);
-      form.setValue('description', defaults.description);
+      form.setValue('description', defaults.detailed_description);
     }
   };
 
@@ -125,22 +141,17 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value={LeaveTypeCode.OTHER}>其他 (OTHER)</SelectItem>
-                        <SelectItem value={LeaveTypeCode.ANNUAL}>特休 (ANNUAL)</SelectItem>
-                        <SelectItem value={LeaveTypeCode.SICK}>病假 (SICK)</SelectItem>
-                        <SelectItem value={LeaveTypeCode.PERSONAL}>事假 (PERSONAL)</SelectItem>
-                        <SelectItem value={LeaveTypeCode.MARRIAGE}>婚假 (MARRIAGE)</SelectItem>
-                        <SelectItem value={LeaveTypeCode.BEREAVEMENT_L1}>
-                          一等親喪假 (BEREAVEMENT_L1)
-                        </SelectItem>
-                        <SelectItem value={LeaveTypeCode.BEREAVEMENT_L2}>
-                          二等親喪假 (BEREAVEMENT_L2)
-                        </SelectItem>
-                        <SelectItem value={LeaveTypeCode.BEREAVEMENT_L3}>
-                          三等親喪假 (BEREAVEMENT_L3)
-                        </SelectItem>
-                        <SelectItem value={LeaveTypeCode.MATERNITY}>產假 (MATERNITY)</SelectItem>
-                        <SelectItem value={LeaveTypeCode.PATERNITY}>陪產假 (PATERNITY)</SelectItem>
+                        {isLoading && (
+                          <SelectItem value="" disabled>
+                            載入中...
+                          </SelectItem>
+                        )}
+                        {!isLoading &&
+                          defaultLeaveTypes.map(type => (
+                            <SelectItem key={type.code} value={type.code}>
+                              {type.name} ({type.code})
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                     <FormDescription>選擇假別類型類型</FormDescription>

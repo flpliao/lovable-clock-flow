@@ -15,3 +15,17 @@ export interface LeaveType {
   // UI 擴展欄位（如果 API 沒有提供，可以在前端補充預設值）
   is_active?: boolean;
 }
+
+// 預設假別類型介面定義（從 API 獲取）
+export interface DefaultLeaveType {
+  id: number;
+  slug: string;
+  name: string;
+  code: LeaveTypeCode;
+  paid_type: PaidType;
+  max_per_year?: number;
+  description: string;
+  detailed_description: string;
+  annual_reset: boolean;
+  required_attachment: boolean;
+}

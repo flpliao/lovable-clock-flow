@@ -31,7 +31,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { LeaveType } from '@/types/leaveType';
-import { PaidType, LeaveTypeCode, LEAVE_TYPE_DEFAULTS } from '@/constants/leave';
+import { PaidType, LeaveTypeCode } from '@/constants/leave';
+import useDefaultLeaveTypeStore from '@/stores/defaultLeaveTypeStore';
 
 const editLeaveTypeSchema = z.object({
   code: z.nativeEnum(LeaveTypeCode),
@@ -59,6 +60,14 @@ export function EditLeaveTypeDialog({
   leaveType,
   onSave,
 }: EditLeaveTypeDialogProps) {
+  const {
+    defaultLeaveTypes,
+    isLoading,
+    isLoaded,
+    fetchDefaultLeaveTypes,
+    getDefaultLeaveTypeByCode,
+  } = useDefaultLeaveTypeStore();
+
   const form = useForm<EditLeaveTypeFormData>({
     resolver: zodResolver(editLeaveTypeSchema),
     defaultValues: {
@@ -73,16 +82,23 @@ export function EditLeaveTypeDialog({
     },
   });
 
+  // 載入預設假別類型資料
+  useEffect(() => {
+    if (!isLoaded && !isLoading) {
+      fetchDefaultLeaveTypes().catch(console.error);
+    }
+  }, [isLoaded, isLoading, fetchDefaultLeaveTypes]);
+
   // 當選擇假別類型時，自動填入預設值（但保留現有的自定義值）
   const handleLeaveTypeChange = (selectedCode: LeaveTypeCode) => {
-    const defaults = LEAVE_TYPE_DEFAULTS[selectedCode];
+    const defaults = getDefaultLeaveTypeByCode(selectedCode);
     if (defaults) {
       // 只更新代碼，其他欄位保留用戶可能已經修改的值
       form.setValue('code', selectedCode);
 
       // 如果名稱為空或者是舊的預設名稱，則更新為新的預設名稱
       const currentName = form.getValues('name');
-      if (!currentName || Object.values(LEAVE_TYPE_DEFAULTS).some(d => d.name === currentName)) {
+      if (!currentName || defaultLeaveTypes.some(d => d.name === currentName)) {
         form.setValue('name', defaults.name);
       }
 
@@ -96,7 +112,7 @@ export function EditLeaveTypeDialog({
       const currentDescription = form.getValues('description');
       if (
         !currentDescription ||
-        Object.values(LEAVE_TYPE_DEFAULTS).some(d => d.description === currentDescription)
+        defaultLeaveTypes.some(d => d.description === currentDescription)
       ) {
         form.setValue('description', defaults.description);
       }
@@ -166,22 +182,17 @@ export function EditLeaveTypeDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value={LeaveTypeCode.OTHER}>其他 (OTHER)</SelectItem>
-                        <SelectItem value={LeaveTypeCode.ANNUAL}>特休 (ANNUAL)</SelectItem>
-                        <SelectItem value={LeaveTypeCode.SICK}>病假 (SICK)</SelectItem>
-                        <SelectItem value={LeaveTypeCode.PERSONAL}>事假 (PERSONAL)</SelectItem>
-                        <SelectItem value={LeaveTypeCode.MARRIAGE}>婚假 (MARRIAGE)</SelectItem>
-                        <SelectItem value={LeaveTypeCode.BEREAVEMENT_L1}>
-                          一等親喪假 (BEREAVEMENT_L1)
-                        </SelectItem>
-                        <SelectItem value={LeaveTypeCode.BEREAVEMENT_L2}>
-                          二等親喪假 (BEREAVEMENT_L2)
-                        </SelectItem>
-                        <SelectItem value={LeaveTypeCode.BEREAVEMENT_L3}>
-                          三等親喪假 (BEREAVEMENT_L3)
-                        </SelectItem>
-                        <SelectItem value={LeaveTypeCode.MATERNITY}>產假 (MATERNITY)</SelectItem>
-                        <SelectItem value={LeaveTypeCode.PATERNITY}>陪產假 (PATERNITY)</SelectItem>
+                        {isLoading && (
+                          <SelectItem value="" disabled>
+                            載入中...
+                          </SelectItem>
+                        )}
+                        {!isLoading &&
+                          defaultLeaveTypes.map(type => (
+                            <SelectItem key={type.code} value={type.code}>
+                              {type.name} ({type.code})
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                     <FormDescription>選擇假別類型類型</FormDescription>

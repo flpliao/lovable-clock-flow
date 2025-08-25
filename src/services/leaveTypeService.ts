@@ -1,7 +1,7 @@
 // leaveTypeService: 提供請假類型相關 API 操作
 import { ApiResponseStatus } from '@/constants/api';
 import { apiRoutes } from '@/routes/api';
-import { LeaveType } from '@/types/leaveType';
+import { LeaveType, DefaultLeaveType } from '@/types/leaveType';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 
@@ -85,4 +85,17 @@ export const getLeaveTypeByCode = async (code: string): Promise<LeaveType | null
   const list = await getAllLeaveTypes();
   const found = list.find((x: LeaveType) => x.code === code);
   return found ?? null;
+};
+
+// 獲取所有預設假別類型
+export const getDefaultLeaveTypes = async (): Promise<DefaultLeaveType[]> => {
+  const { data, status, message } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.leaveType.defaults)
+  );
+
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`載入預設假別類型失敗: ${message}`);
+  }
+
+  return data as DefaultLeaveType[];
 };

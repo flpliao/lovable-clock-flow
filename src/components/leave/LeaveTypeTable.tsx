@@ -36,9 +36,6 @@ export function LeaveTypeTable({ leaveTypes, onEdit, onDelete }: LeaveTypeTableP
             <Table>
               <TableHeader>
                 <TableRow className="border-white/30 hover:bg-white/20 transition-colors">
-                  <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[100px] whitespace-nowrap">
-                    假別類型
-                  </TableHead>
                   <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[120px] whitespace-nowrap">
                     名稱
                   </TableHead>
@@ -68,11 +65,6 @@ export function LeaveTypeTable({ leaveTypes, onEdit, onDelete }: LeaveTypeTableP
                     key={leaveType.slug}
                     className="border-white/30 hover:bg-white/40 transition-all duration-200"
                   >
-                    <TableCell className="py-3 px-4 whitespace-nowrap">
-                      <code className="bg-slate-800/90 text-white px-2 py-1 rounded-lg text-sm font-mono shadow-sm">
-                        {leaveType.code}
-                      </code>
-                    </TableCell>
                     <TableCell className="font-semibold text-slate-800 py-3 px-4 whitespace-nowrap">
                       <span className="truncate block max-w-[120px]" title={leaveType.name}>
                         {leaveType.name}

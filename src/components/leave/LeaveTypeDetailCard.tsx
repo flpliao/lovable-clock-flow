@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PaidType } from '@/constants/leave';
 import { LeaveType } from '@/types/leaveType';
 import classNames from 'classnames';
@@ -11,7 +11,7 @@ interface LeaveTypeDetailCardProps {
 
 export function LeaveTypeDetailCard({ leaveType }: LeaveTypeDetailCardProps) {
   return (
-    <Card className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-lg">
+    <div className="backdrop-blur-xl border border-white/30 rounded-2xl shadow-lg">
       <CardHeader>
         <CardTitle className="text-white text-lg flex items-center gap-2">
           <AlertCircle className="h-5 w-5" />
@@ -67,6 +67,6 @@ export function LeaveTypeDetailCard({ leaveType }: LeaveTypeDetailCardProps) {
           </Badge>
         </div> */}
       </CardContent>
-    </Card>
+    </div>
   );
 }

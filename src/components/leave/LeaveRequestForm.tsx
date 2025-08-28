@@ -230,31 +230,31 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
               </FormItem>
             )}
           />
+        </div>
 
-          {/* 附件欄位 */}
-          {currentLeaveType?.required_attachment && (
-            <FormField
-              control={form.control}
-              name="attachment"
-              render={({ field }) => (
-                <FormItem>
-                  <CustomFormLabel className="text-white">附件上傳</CustomFormLabel>
-                  <FormControl>
-                    <input
-                      type="file"
-                      className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white"
-                      onChange={e => {
-                        if (e.target.files?.[0]) {
-                          field.onChange(e.target.files[0]);
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+        {/* 附件欄位 */}
+        <div className="backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
+          <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">附件上傳</h3>
+          <FormField
+            control={form.control}
+            name="attachment"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <input
+                    type="file"
+                    className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white"
+                    onChange={e => {
+                      if (e.target.files?.[0]) {
+                        field.onChange(e.target.files[0]);
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         {/* 提交按鈕 */}

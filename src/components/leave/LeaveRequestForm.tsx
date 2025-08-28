@@ -16,6 +16,8 @@ import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { LeaveTypeDetailCard } from './LeaveTypeDetailCard';
+import LeaveTypeExtraFields from './LeaveTypeExtraFields';
+import { requiresReferenceDate } from '@/utils/leaveTypeUtils';
 
 interface LeaveRequestFormProps {
   onSuccess?: () => void;
@@ -38,12 +40,13 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
       duration_hours: 0,
       status: RequestStatus.PENDING,
       attachment: null,
+      reference_date: null,
     },
   });
 
   useEffect(() => {
     loadLeaveTypes();
-  }, []);
+  }, [loadLeaveTypes]);
 
   const watchedLeaveType = form.watch('leave_type_code');
   const watchedStartDate = form.watch('start_date');
@@ -52,6 +55,16 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
   const currentLeaveType = useMemo(() => {
     return watchedLeaveType ? getLeaveTypeBySlug(watchedLeaveType) : null;
   }, [watchedLeaveType, getLeaveTypeBySlug]);
+
+  // 當請假類型改變時，清除額外欄位
+  useEffect(() => {
+    if (currentLeaveType) {
+      const needsReferenceDate = requiresReferenceDate(currentLeaveType.code);
+      if (!needsReferenceDate) {
+        form.setValue('reference_date', null);
+      }
+    }
+  }, [currentLeaveType, form]);
 
   // 計算請假時數（當開始和結束日期都存在時）
   const calculatedHours = useMemo(() => {
@@ -81,6 +94,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
       duration_hours: calculatedHours,
       reason: data.reason,
       status: RequestStatus.PENDING,
+      ...(data.reference_date && { reference_date: data.reference_date.format('YYYY-MM-DD') }),
     };
 
     const result = await handleCreateMyLeaveRequest(leaveRequestData);
@@ -91,7 +105,16 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
         onSuccess();
       }
       // 重置表單
-      form.reset();
+      form.reset({
+        start_date: null,
+        end_date: null,
+        leave_type_code: '',
+        reason: '',
+        duration_hours: 0,
+        status: RequestStatus.PENDING,
+        attachment: null,
+        reference_date: null,
+      });
     } else {
       // 提交失敗
       alert('請假申請提交失敗，請稍後再試');
@@ -140,6 +163,11 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
 
         {/* 請假類型詳細資訊 */}
         {currentLeaveType && <LeaveTypeDetailCard leaveType={currentLeaveType} />}
+
+        {/* 額外欄位（根據請假類型） */}
+        {currentLeaveType && requiresReferenceDate(currentLeaveType.code) && (
+          <LeaveTypeExtraFields form={form} leaveTypeCode={currentLeaveType.code} />
+        )}
 
         {/* 請假日期時間 */}
         <div className="backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">

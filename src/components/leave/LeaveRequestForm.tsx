@@ -16,13 +16,15 @@ import {
   validateLeaveTimeWithSchedule,
 } from '@/utils/leaveHoursCalculator';
 import { useEmployeeSchedule } from '@/hooks/useEmployeeSchedule';
+import { getSmartDefaultTime } from '@/utils/scheduleTimeUtils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import dayjs from 'dayjs';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { LeaveTypeDetailCard } from './LeaveTypeDetailCard';
 import LeaveTypeExtraFields from './LeaveTypeExtraFields';
 import { requiresReferenceDate } from '@/utils/leaveTypeUtils';
+import { LeaveTimeInput } from './LeaveTimeInput';
 
 interface LeaveRequestFormProps {
   onSuccess?: () => void;
@@ -31,6 +33,7 @@ interface LeaveRequestFormProps {
 const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [scheduleValidationError, setScheduleValidationError] = useState<string | null>(null);
+  const hasTriggeredInitialFullDay = useRef(false);
   const { leaveTypes, loadLeaveTypes } = useLeaveType();
   const getLeaveTypeBySlug = useLeaveTypeStore(state => state.getLeaveTypeBySlug);
   const { handleCreateMyLeaveRequest } = useMyLeaveRequest();
@@ -58,7 +61,11 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
 
   useEffect(() => {
     loadLeaveTypes();
-  }, [loadLeaveTypes]);
+
+    // 自動載入今天的班表資料
+    const today = dayjs().format('YYYY-MM-DD');
+    loadScheduleForDateRange(today, today);
+  }, [loadLeaveTypes, loadScheduleForDateRange]);
 
   const watchedLeaveType = form.watch('leave_type_code');
   const watchedStartDate = form.watch('start_date');
@@ -83,11 +90,41 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
     if (watchedStartDate && watchedEndDate) {
       const startDate = dayjs(watchedStartDate).format('YYYY-MM-DD');
       const endDate = dayjs(watchedEndDate).format('YYYY-MM-DD');
+      const today = dayjs().format('YYYY-MM-DD');
 
-      // 載入日期範圍內的班表資料
-      loadScheduleForDateRange(startDate, endDate);
+      // 檢查是否需要載入額外的日期範圍
+      const needsAdditionalLoad = startDate !== today || endDate !== today;
+
+      if (needsAdditionalLoad) {
+        // 擴展日期範圍以包含今天（如果還沒有的話）
+        const startDayjs = dayjs(startDate);
+        const endDayjs = dayjs(endDate);
+        const todayDayjs = dayjs(today);
+
+        const finalStartDate = startDayjs.isBefore(todayDayjs) ? startDate : today;
+        const finalEndDate = endDayjs.isAfter(todayDayjs) ? endDate : today;
+
+        loadScheduleForDateRange(finalStartDate, finalEndDate);
+      }
     }
   }, [watchedStartDate, watchedEndDate, loadScheduleForDateRange]);
+
+  // 設定今日全天時間的獨立函數
+  const setTodayFullDay = useCallback(() => {
+    const today = dayjs();
+    const startTime = getSmartDefaultTime(today, workSchedules, false);
+    const endTime = getSmartDefaultTime(today, workSchedules, true);
+    form.setValue('start_date', dayjs(startTime));
+    form.setValue('end_date', dayjs(endTime));
+  }, [workSchedules, form]);
+
+  // 監聽班表載入狀態，當載入完成時自動設定今日全天（僅第一次）
+  useEffect(() => {
+    if (!isLoadingSchedules && workSchedules.length > 0 && !hasTriggeredInitialFullDay.current) {
+      setTodayFullDay();
+      hasTriggeredInitialFullDay.current = true;
+    }
+  }, [isLoadingSchedules, workSchedules, setTodayFullDay]);
 
   // 計算請假時數（當開始和結束日期都存在時）
   const calculatedHours = useMemo(() => {
@@ -212,29 +249,52 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
         {/* 請假日期時間 */}
         <div className="backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
           <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假日期時間</h3>
+
+          {/* 快速選擇按鈕 */}
+          <div className="mb-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                const today = dayjs();
+                const startTime = getSmartDefaultTime(today, workSchedules, false);
+                form.setValue('start_date', dayjs(startTime));
+              }}
+              className="px-3 py-1 text-sm bg-blue-500/30 hover:bg-blue-500/50 text-white rounded-lg border border-blue-300/30 transition-colors"
+            >
+              今日上班時間
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const today = dayjs();
+                const endTime = getSmartDefaultTime(today, workSchedules, true);
+                form.setValue('end_date', dayjs(endTime));
+              }}
+              className="px-3 py-1 text-sm bg-purple-500/30 hover:bg-purple-500/50 text-white rounded-lg border border-purple-300/30 transition-colors"
+            >
+              今日下班時間
+            </button>
+            <button
+              type="button"
+              onClick={setTodayFullDay}
+              className="px-3 py-1 text-sm bg-green-500/30 hover:bg-green-500/50 text-white rounded-lg border border-green-300/30 transition-colors"
+            >
+              今日全天
+            </button>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="start_date"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <CustomFormLabel required className="text-white">
-                    開始日期時間
-                  </CustomFormLabel>
-                  <FormControl>
-                    <input
-                      type="datetime-local"
-                      step="1800"
-                      className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:bg-white/30 transition-colors duration-200"
-                      value={field.value ? field.value.format('YYYY-MM-DDTHH:mm') : ''}
-                      onChange={e => {
-                        const date = e.target.value ? dayjs(e.target.value) : null;
-                        field.onChange(date);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                <LeaveTimeInput
+                  form={form}
+                  field={field}
+                  workSchedules={workSchedules}
+                  label="開始日期時間"
+                  isEndTime={false}
+                />
               )}
             />
 
@@ -242,24 +302,13 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
               control={form.control}
               name="end_date"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <CustomFormLabel required className="text-white">
-                    結束日期時間
-                  </CustomFormLabel>
-                  <FormControl>
-                    <input
-                      type="datetime-local"
-                      step="1800"
-                      className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:bg-white/30 transition-colors duration-200"
-                      value={field.value ? field.value.format('YYYY-MM-DDTHH:mm') : ''}
-                      onChange={e => {
-                        const date = e.target.value ? dayjs(e.target.value) : null;
-                        field.onChange(date);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                <LeaveTimeInput
+                  form={form}
+                  field={field}
+                  workSchedules={workSchedules}
+                  label="結束日期時間"
+                  isEndTime={true}
+                />
               )}
             />
           </div>

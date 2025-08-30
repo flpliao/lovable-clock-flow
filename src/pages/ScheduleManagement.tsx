@@ -17,7 +17,7 @@ import type { Employee } from '@/types/employee';
 import { formatMonthDisplay } from '@/utils/dateUtils';
 import dayjs from 'dayjs';
 import { Calendar, Edit, Save, Search } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const ScheduleManagement = () => {
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
@@ -64,52 +64,10 @@ const ScheduleManagement = () => {
 
   const { loadDepartments } = useDepartment();
 
-  // 檢查是否已選擇單位和月份
-  const isSelectionComplete = selectedDepartment && selectedMonth;
-
-  // 應用篩選條件到員工列表
-  const applyFilters = useCallback(() => {
-    if (hasSearched && initialEmployees.length > 0) {
-      // 先應用班次篩選
-      const shiftFilteredEmployees = filterEmployeesByShifts(initialEmployees, shiftFilter);
-
-      // 再應用人員篩選
-      const personnelFilteredEmployees = filterEmployeesByPersonnel(
-        shiftFilteredEmployees,
-        personnelFilter
-      );
-      setEmployees(personnelFilteredEmployees);
-    }
-  }, [hasSearched, initialEmployees, shiftFilter, personnelFilter]);
-
-  // 處理搜尋班表
-  const handleSearchSchedule = useCallback(async () => {
-    if (isSelectionComplete) {
-      // 載入部門特定月份的員工資料，直接使用返回的資料
-      const departmentEmployees = await loadDepartmentByMonth({
-        departmentSlug: selectedDepartment,
-        year: parseInt(selectedMonth.split('-')[0]),
-        month: parseInt(selectedMonth.split('-')[1]),
-      });
-      const deepCopyData = structuredClone(departmentEmployees);
-      console.log('deepCopyData', departmentEmployees);
-      setEmployees(deepCopyData);
-      setInitialEmployees(deepCopyData);
-      setHasSearched(true);
-
-      // 初始化人員篩選狀態
-      const initialPersonnelFilter: { all: boolean; [key: string]: boolean } = { all: true };
-      deepCopyData.forEach(employee => {
-        initialPersonnelFilter[employee.slug] = true;
-      });
-      setPersonnelFilter(initialPersonnelFilter);
-    }
-  }, [selectedDepartment, selectedMonth, loadDepartmentByMonth, isSelectionComplete]);
-
   useEffect(() => {
     loadDepartments();
     loadAllShifts();
-  }, [loadDepartments, loadAllShifts]);
+  }, []);
 
   // 當 shifts 載入後，初始化 shiftFilter
   useEffect(() => {
@@ -137,18 +95,30 @@ const ScheduleManagement = () => {
         handleSearchSchedule();
       }
     }
-  }, [
-    selectedDepartment,
-    selectedMonth,
-    isDepartmentPeriodLoaded,
-    getEmployeesByDepartment,
-    handleSearchSchedule,
-  ]);
+  }, [selectedDepartment, selectedMonth, isDepartmentPeriodLoaded, getEmployeesByDepartment]);
 
   // 當篩選條件變化時，更新員工列表顯示
   useEffect(() => {
     applyFilters();
-  }, [applyFilters]);
+  }, [shiftFilter, personnelFilter, hasSearched, initialEmployees]);
+
+  // 應用篩選條件到員工列表
+  const applyFilters = () => {
+    if (hasSearched && initialEmployees.length > 0) {
+      // 先應用班次篩選
+      const shiftFilteredEmployees = filterEmployeesByShifts(initialEmployees, shiftFilter);
+
+      // 再應用人員篩選
+      const personnelFilteredEmployees = filterEmployeesByPersonnel(
+        shiftFilteredEmployees,
+        personnelFilter
+      );
+      setEmployees(personnelFilteredEmployees);
+    }
+  };
+
+  // 檢查是否已選擇單位和月份
+  const isSelectionComplete = selectedDepartment && selectedMonth;
 
   // 根據班次篩選條件過濾員工
   const filterEmployeesByShifts = (
@@ -189,6 +159,29 @@ const ScheduleManagement = () => {
     return allEmployees.filter(employee => {
       return personnelFilterState[employee.slug] ?? true;
     });
+  };
+
+  // 處理搜尋班表
+  const handleSearchSchedule = async () => {
+    if (isSelectionComplete) {
+      // 載入部門特定月份的員工資料，直接使用返回的資料
+      const departmentEmployees = await loadDepartmentByMonth({
+        departmentSlug: selectedDepartment,
+        year: parseInt(selectedMonth.split('-')[0]),
+        month: parseInt(selectedMonth.split('-')[1]),
+      });
+      const deepCopyData = JSON.parse(JSON.stringify(departmentEmployees));
+      setEmployees(deepCopyData);
+      setInitialEmployees(deepCopyData);
+      setHasSearched(true);
+
+      // 初始化人員篩選狀態
+      const initialPersonnelFilter: { all: boolean; [key: string]: boolean } = { all: true };
+      deepCopyData.forEach(employee => {
+        initialPersonnelFilter[employee.slug] = true;
+      });
+      setPersonnelFilter(initialPersonnelFilter);
+    }
   };
 
   // 處理月份變更

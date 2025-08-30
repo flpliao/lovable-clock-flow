@@ -14,6 +14,7 @@ export interface LeaveRequest {
   status: RequestStatus;
   duration_hours: number;
   reason: string;
+  reference_date?: string; // 指定日期：如登記日/死亡日/產檢日/待產日等
   rejection_reason?: string;
   approve_comment?: string;
   approvals?: ApprovalHistory[];

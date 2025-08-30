@@ -78,6 +78,7 @@ export const useEmployeeWorkSchedule = () => {
       });
 
       addEmployeesForDepartment({ departmentSlug, employees, period });
+      return employees;
     } catch (error) {
       setError(error.message);
       showError(error.message);

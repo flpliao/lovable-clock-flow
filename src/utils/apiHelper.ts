@@ -1,5 +1,5 @@
 import { ApiResponseStatus } from '@/constants/api';
-import { ApiResponse, CallApiOptions, DecodedResponse } from '@/types/api';
+import { CallApiOptions, DecodedResponse } from '@/types/api';
 import { decodeApiResponse } from '@/utils/responseDecoder';
 
 export async function callApiAndDecode(
@@ -10,7 +10,7 @@ export async function callApiAndDecode(
 
   try {
     const response = await promise;
-    return decodeApiResponse(response as ApiResponse, decodeOptions);
+    return decodeApiResponse(response, decodeOptions);
   } catch (error) {
     const errorMessage = error.response ? error.response.data.message : error.message;
 

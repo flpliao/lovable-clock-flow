@@ -18,7 +18,7 @@ function flattenData<T>(data: T): T {
 function validateDataType(data: unknown, expectDataType: string): void {
   if (expectDataType === 'any') return;
 
-  const actualType = Array.isArray(data) ? 'array' : typeof data;
+  const actualType = typeof data;
   if (actualType !== expectDataType) {
     throw new Error(`預期 data 為 ${expectDataType}，實際為 ${actualType}`);
   }

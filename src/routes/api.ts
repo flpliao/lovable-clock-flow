@@ -136,12 +136,21 @@ export const apiRoutes = {
     index: (calendarSlug: string) => `${API_URL}/employee/calendar-days/calendar/${calendarSlug}`,
     statistics: (calendarSlug: string) =>
       `${API_URL}/employee/calendar-days/calendar/${calendarSlug}/statistics`,
-    show: (slug: string) => `${API_URL}/employee/calendar-days/${slug}`,
+    // 依月份取得日期
+    getMonthDays: (calendarSlug: string) =>
+      `${API_URL}/employee/calendar-days/calendar/${calendarSlug}/month`,
+    show: (calendarSlug: string) => `${API_URL}/employee/calendar-days/calendar/${calendarSlug}`,
     store: (calendarSlug: string) => `${API_URL}/employee/calendar-days/calendar/${calendarSlug}`,
-    update: (slug: string) => `${API_URL}/employee/calendar-days/${slug}`,
-    destroy: (slug: string) => `${API_URL}/employee/calendar-days/${slug}`,
+    update: (calendarSlug: string) => `${API_URL}/employee/calendar-days/calendar/${calendarSlug}`,
+    destroy: (calendarSlug: string) => `${API_URL}/employee/calendar-days/calendar/${calendarSlug}`,
     batchUpdate: (calendarSlug: string) =>
       `${API_URL}/employee/calendar-days/calendar/${calendarSlug}/batch-update`,
+    // 生成全年日期
+    generateYear: (calendarSlug: string) =>
+      `${API_URL}/employee/calendar-days/calendar/${calendarSlug}/generate-year`,
+    // 清除全部日期
+    clearAll: (calendarSlug: string) =>
+      `${API_URL}/employee/calendar-days/calendar/${calendarSlug}/clear-all`,
   },
   // 班次管理
   shift: {

@@ -125,6 +125,13 @@ export const protectedRoutes: RouteConfig[] = [
     icon: 'fileText',
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
+  {
+    path: routes.personnelManagement,
+    name: '人事管理',
+    component: PersonnelManagement,
+    icon: 'users',
+    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
+  },
 ];
 
 export const unFinishedRoutes: RouteConfig[] = [
@@ -168,13 +175,6 @@ export const unFinishedRoutes: RouteConfig[] = [
     name: '排班統計',
     component: ScheduleStatistics,
     icon: 'chart-bar',
-    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
-  },
-  {
-    path: routes.personnelManagement,
-    name: '人事管理',
-    component: PersonnelManagement,
-    icon: 'users',
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
   {

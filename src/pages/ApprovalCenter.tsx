@@ -1,6 +1,6 @@
 import { FeatureIcon, FeatureNumber } from '@/components/common/cards';
-import PageHeader from '@/components/layout/PageHeader';
-import PageLayout from '@/components/layout/PageLayout';
+import PageHeader from '@/components/layouts/PageHeader';
+import PageLayout from '@/components/layouts/PageLayout';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import {
   useLeaveCompletedRequests,

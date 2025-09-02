@@ -1,5 +1,5 @@
-import PageHeader from '@/components/layout/PageHeader';
-import PageLayout from '@/components/layout/PageLayout';
+import PageHeader from '@/components/layouts/PageHeader';
+import PageLayout from '@/components/layouts/PageLayout';
 import {
   DepartmentSelect,
   PersonnelFilter,

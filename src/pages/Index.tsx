@@ -1,7 +1,7 @@
 import FeatureCards from '@/components/FeatureCards';
 import LocationCheckIn from '@/components/LocationCheckIn';
 import WelcomeSection from '@/components/WelcomeSection';
-import PageLayout from '@/components/layout/PageLayout';
+import PageLayout from '@/components/layouts/PageLayout';
 import useEmployeeStore from '@/stores/employeeStore';
 
 const Index = () => {

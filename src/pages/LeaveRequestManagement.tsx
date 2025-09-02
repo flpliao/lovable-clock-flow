@@ -1,5 +1,5 @@
-import PageHeader from '@/components/layout/PageHeader';
-import PageLayout from '@/components/layout/PageLayout';
+import PageHeader from '@/components/layouts/PageHeader';
+import PageLayout from '@/components/layouts/PageLayout';
 import EmployeeInfoCard from '@/components/leave/EmployeeInfoCard';
 import LeaveRequestForm from '@/components/leave/LeaveRequestForm';
 import MyLeaveRequestList from '@/components/leave/MyLeaveRequestList';

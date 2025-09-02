@@ -25,8 +25,9 @@ export const useEmployeeWorkSchedule = () => {
     getEmployeeWorkSchedulesByDate,
     isDepartmentPeriodLoaded,
     isDepartmentDateLoaded,
+    isEmployeeDateRangeLoaded,
     getLoadedPeriodsForDepartment,
-    markDepartmentPeriodLoaded,
+    getEmployeeLoadedRanges,
   } = useEmployeeWorkScheduleStore();
 
   // 載入部門的所有員工資料（不指定時期）
@@ -38,7 +39,7 @@ export const useEmployeeWorkSchedule = () => {
       const employees = await getEmployeeWithWorkSchedules({
         department_slug: departmentSlug,
       });
-      addEmployeesForDepartment({ departmentSlug, employees });
+      addEmployeesForDepartment({ employees });
     } catch (error) {
       setError(error.message);
       showError(error.message);
@@ -77,7 +78,11 @@ export const useEmployeeWorkSchedule = () => {
         end_date: endDate,
       });
 
-      addEmployeesForDepartment({ departmentSlug, employees, period });
+      addEmployeesForDepartment({
+        employees,
+        startDate,
+        endDate,
+      });
       return employees;
     } catch (error) {
       setError(error.message);
@@ -113,9 +118,7 @@ export const useEmployeeWorkSchedule = () => {
         end_date: date,
       });
 
-      // 使用 dayjs 自動推斷時期並標記為已載入
-      const period = dayjs(date).format('YYYY-MM');
-      addEmployeesForDepartment({ departmentSlug, employees, period });
+      addEmployeesForDepartment({ employees, startDate: date, endDate: date });
       setLoading(false);
     } catch (error) {
       setError(error.message);
@@ -151,10 +154,10 @@ export const useEmployeeWorkSchedule = () => {
 
       // 如果範圍在同一個月內，標記該月為已載入
       if (startPeriod === endPeriod) {
-        addEmployeesForDepartment({ departmentSlug, employees, period: startPeriod });
+        addEmployeesForDepartment({ employees, startDate, endDate });
       } else {
         // 跨月範圍，不標記特定時期（因為可能不完整）
-        addEmployeesForDepartment({ departmentSlug, employees });
+        addEmployeesForDepartment({ employees, startDate, endDate });
       }
     } catch (error) {
       setError(error.message);
@@ -291,8 +294,9 @@ export const useEmployeeWorkSchedule = () => {
     isDepartmentPeriodLoaded,
     isDepartmentDateLoaded,
     isDepartmentMonthLoaded,
+    isEmployeeDateRangeLoaded,
     getLoadedPeriodsForDepartment,
-    markDepartmentPeriodLoaded,
+    getEmployeeLoadedRanges,
 
     // 直接操作方法（用於本地狀態管理）
     setEmployees,

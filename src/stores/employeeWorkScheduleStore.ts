@@ -1,6 +1,7 @@
 import type { Employee, EmployeesBySlug } from '@/types/employee';
 import type { WorkSchedule } from '@/types/workSchedule';
-import { datesToPeriods, dateToPeriod } from '@/utils/dateUtils';
+import { dateToPeriod } from '@/utils/dateUtils';
+import dayjs from 'dayjs';
 import { create } from 'zustand';
 interface EmployeeWorkScheduleState {
   employeesBySlug: EmployeesBySlug;
@@ -9,19 +10,19 @@ interface EmployeeWorkScheduleState {
   isLoading: boolean;
   error: string | null;
 
-  // 已載入的部門與時間週期記錄 (departmentSlug -> Set of periods "YYYY-MM")
-  loadedDepartmentPeriods: Record<string, Set<string>>;
+  // 記錄員工的實際載入範圍 (employeeSlug -> { startDate, endDate }[])
+  loadedEmployeeRanges: Record<string, { startDate: string; endDate: string }[]>;
 
   // 基本操作方法
   setEmployees: (employees: Employee[]) => void;
   addEmployeesForDepartment: ({
-    departmentSlug,
     employees,
-    period,
+    startDate,
+    endDate,
   }: {
-    departmentSlug: string;
     employees: Employee[];
-    period?: string;
+    startDate?: string;
+    endDate?: string;
   }) => void;
 
   // 工作排程相關操作
@@ -63,6 +64,13 @@ interface EmployeeWorkScheduleState {
   }) => WorkSchedule | undefined;
   getEmployeeWorkSchedules: (employeeSlug: string) => WorkSchedule[];
   getEmployeeWorkSchedulesByDate: (date: string) => WorkSchedule[];
+  isDepartmentDateLoaded: ({
+    departmentSlug,
+    date,
+  }: {
+    departmentSlug: string;
+    date: string;
+  }) => boolean;
   isDepartmentPeriodLoaded: ({
     departmentSlug,
     period,
@@ -71,20 +79,16 @@ interface EmployeeWorkScheduleState {
     period: string;
   }) => boolean;
   getLoadedPeriodsForDepartment: (departmentSlug: string) => string[];
-  isDepartmentDateLoaded: ({
-    departmentSlug,
-    date,
+  isEmployeeDateRangeLoaded: ({
+    employeeSlug,
+    startDate,
+    endDate,
   }: {
-    departmentSlug: string;
-    date: string;
+    employeeSlug: string;
+    startDate: string;
+    endDate: string;
   }) => boolean;
-  markDepartmentPeriodLoaded: ({
-    departmentSlug,
-    period,
-  }: {
-    departmentSlug: string;
-    period: string;
-  }) => void;
+  getEmployeeLoadedRanges: (employeeSlug: string) => { startDate: string; endDate: string }[];
 
   // 狀態管理
   setLoading: (isLoading: boolean) => void;
@@ -96,59 +100,35 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
   employeesBySlug: {},
   isLoading: false,
   error: null,
-  loadedDepartmentPeriods: {},
+  loadedEmployeeRanges: {},
 
   // 設定員工資料（全部替換）
   setEmployees: (employees: Employee[]) => {
     const employeesBySlug: EmployeesBySlug = {};
-    const loadedDepartmentPeriods: Record<string, Set<string>> = {};
 
     for (const emp of employees) {
-      const scheduleDates: string[] = [];
-
-      // 處理純陣列格式的 work_schedules
-      if (emp.work_schedules && Array.isArray(emp.work_schedules)) {
-        emp.work_schedules.forEach(ws => {
-          if (ws.pivot?.date) {
-            scheduleDates.push(ws.pivot.date);
-          }
-        });
-      }
-
       employeesBySlug[emp.slug] = {
         ...emp,
         work_schedules: emp.work_schedules || [],
       };
-
-      // 記錄該員工部門的已載入時期
-      if (emp.department?.slug && scheduleDates.length > 0) {
-        if (!loadedDepartmentPeriods[emp.department.slug]) {
-          loadedDepartmentPeriods[emp.department.slug] = new Set();
-        }
-        const periods = datesToPeriods(scheduleDates);
-        periods.forEach(period => {
-          loadedDepartmentPeriods[emp.department.slug].add(period);
-        });
-      }
     }
 
-    set({ employeesBySlug, loadedDepartmentPeriods, error: null });
+    set({ employeesBySlug, error: null });
   },
 
   // 為特定部門新增員工（更新或新增）
   addEmployeesForDepartment: ({
-    departmentSlug,
     employees,
-    period,
+    startDate,
+    endDate,
   }: {
-    departmentSlug: string;
     employees: Employee[];
-    period?: string;
+    startDate?: string;
+    endDate?: string;
   }) => {
-    const { employeesBySlug, loadedDepartmentPeriods } = get();
+    const { employeesBySlug, loadedEmployeeRanges } = get();
     const updatedEmployeesBySlug = { ...employeesBySlug };
-    const updatedLoadedDepartmentPeriods = { ...loadedDepartmentPeriods };
-    const allScheduleDates: string[] = [];
+    const updatedLoadedEmployeeRanges = { ...loadedEmployeeRanges };
 
     // 更新員工資料 - 合併而不是覆蓋
     for (const emp of employees) {
@@ -186,35 +166,29 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
           work_schedules: emp.work_schedules || [],
         };
       }
+    }
 
-      // 收集所有排程日期用於更新已載入時期
-      const employeeSchedules = updatedEmployeesBySlug[emp.slug].work_schedules || [];
-      employeeSchedules.forEach(ws => {
-        if (ws.pivot?.date) {
-          allScheduleDates.push(ws.pivot.date);
+    // 記錄每個員工的實際載入日期範圍
+    if (startDate && endDate) {
+      employees.forEach(emp => {
+        if (!updatedLoadedEmployeeRanges[emp.slug]) {
+          updatedLoadedEmployeeRanges[emp.slug] = [];
         }
-      });
-    }
 
-    // 標記部門的特定時期為已載入
-    if (!updatedLoadedDepartmentPeriods[departmentSlug]) {
-      updatedLoadedDepartmentPeriods[departmentSlug] = new Set();
-    }
+        // 檢查是否已存在相同的範圍，避免重複
+        const existingRange = updatedLoadedEmployeeRanges[emp.slug].find(
+          range => range.startDate === startDate && range.endDate === endDate
+        );
 
-    if (period) {
-      // 如果提供了明確的時期，直接標記
-      updatedLoadedDepartmentPeriods[departmentSlug].add(period);
-    } else if (allScheduleDates.length > 0) {
-      // 如果沒有提供時期，從工作排程推斷
-      const periods = datesToPeriods(allScheduleDates);
-      periods.forEach(p => {
-        updatedLoadedDepartmentPeriods[departmentSlug].add(p);
+        if (!existingRange) {
+          updatedLoadedEmployeeRanges[emp.slug].push({ startDate, endDate });
+        }
       });
     }
 
     set({
       employeesBySlug: updatedEmployeesBySlug,
-      loadedDepartmentPeriods: updatedLoadedDepartmentPeriods,
+      loadedEmployeeRanges: updatedLoadedEmployeeRanges,
       error: null,
     });
   },
@@ -354,7 +328,7 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
     return workSchedules;
   },
 
-  // 檢查部門的特定時期是否已載入
+  // 檢查部門的特定時期是否已載入（基於員工範圍）
   isDepartmentPeriodLoaded: ({
     departmentSlug,
     period,
@@ -362,38 +336,86 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
     departmentSlug: string;
     period: string;
   }) => {
-    const { loadedDepartmentPeriods } = get();
-    return loadedDepartmentPeriods[departmentSlug]?.has(period) ?? false;
+    // 檢查該部門的所有員工是否都已載入該時期
+    const employees = get().getEmployeesByDepartment(departmentSlug);
+    if (employees.length === 0) return false;
+
+    const startDate = period + '-01';
+    const endDate = dayjs(period, 'YYYY-MM').endOf('month').format('YYYY-MM-DD');
+
+    // 檢查所有員工是否都已載入該時期
+    return employees.every(emp => {
+      const employeeRanges = get().loadedEmployeeRanges[emp.slug] || [];
+      return employeeRanges.some(range => startDate >= range.startDate && endDate <= range.endDate);
+    });
   },
 
-  // 取得部門已載入的時期列表
+  // 取得部門已載入的時期列表（基於員工範圍）
   getLoadedPeriodsForDepartment: (departmentSlug: string) => {
-    const { loadedDepartmentPeriods } = get();
-    return Array.from(loadedDepartmentPeriods[departmentSlug] ?? []);
+    const employees = get().getEmployeesByDepartment(departmentSlug);
+    const allPeriods = new Set<string>();
+
+    employees.forEach(emp => {
+      const employeeRanges = get().loadedEmployeeRanges[emp.slug] || [];
+      employeeRanges.forEach(range => {
+        // 計算範圍內的所有月份
+        const startDate = dayjs(range.startDate);
+        const endDate = dayjs(range.endDate);
+
+        let currentDate = startDate.startOf('month');
+        const endMonth = endDate.startOf('month');
+
+        while (currentDate.isSameOrBefore(endMonth)) {
+          const period = currentDate.format('YYYY-MM');
+          allPeriods.add(period);
+          currentDate = currentDate.add(1, 'month');
+        }
+      });
+    });
+
+    return Array.from(allPeriods);
   },
 
   // 檢查部門在指定日期是否已載入 (根據日期推斷期間)
   isDepartmentDateLoaded: ({ departmentSlug, date }: { departmentSlug: string; date: string }) => {
+    // 檢查該部門的所有員工是否都已載入該日期
+    const employees = get().getEmployeesByDepartment(departmentSlug);
+    if (employees.length === 0) return false;
+
     const period = dateToPeriod(date);
-    const { loadedDepartmentPeriods } = get();
-    return loadedDepartmentPeriods[departmentSlug]?.has(period) ?? false;
+    const startDate = period + '-01';
+    const endDate = dayjs(period, 'YYYY-MM').endOf('month').format('YYYY-MM-DD');
+
+    // 檢查所有員工是否都已載入該時期
+    return employees.every(emp => {
+      const employeeRanges = get().loadedEmployeeRanges[emp.slug] || [];
+      return employeeRanges.some(range => startDate >= range.startDate && endDate <= range.endDate);
+    });
   },
 
-  // 手動標記部門時期為已載入
-  markDepartmentPeriodLoaded: ({
-    departmentSlug,
-    period,
+  // 檢查員工的特定日期範圍是否已載入
+  isEmployeeDateRangeLoaded: ({
+    employeeSlug,
+    startDate,
+    endDate,
   }: {
-    departmentSlug: string;
-    period: string;
+    employeeSlug: string;
+    startDate: string;
+    endDate: string;
   }) => {
-    const { loadedDepartmentPeriods } = get();
-    const updated = { ...loadedDepartmentPeriods };
-    if (!updated[departmentSlug]) {
-      updated[departmentSlug] = new Set();
-    }
-    updated[departmentSlug].add(period);
-    set({ loadedDepartmentPeriods: updated });
+    const { loadedEmployeeRanges } = get();
+    const loadedRanges = loadedEmployeeRanges[employeeSlug];
+
+    if (!loadedRanges || loadedRanges.length === 0) return false;
+
+    // 檢查請求的範圍是否完全包含在任何一個已載入的範圍內
+    return loadedRanges.some(range => startDate >= range.startDate && endDate <= range.endDate);
+  },
+
+  // 取得員工已載入的日期範圍列表
+  getEmployeeLoadedRanges: (employeeSlug: string) => {
+    const { loadedEmployeeRanges } = get();
+    return loadedEmployeeRanges[employeeSlug] || [];
   },
 
   // 設定載入狀態
@@ -406,7 +428,7 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
   reset: () => {
     set({
       employeesBySlug: {},
-      loadedDepartmentPeriods: {},
+      loadedEmployeeRanges: {},
       isLoading: false,
       error: null,
     });

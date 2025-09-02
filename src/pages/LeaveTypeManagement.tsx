@@ -1,16 +1,16 @@
 import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
+import PageHeader from '@/components/layouts/PageHeader';
+import PageLayout from '@/components/layouts/PageLayout';
 import { CreateLeaveTypeDialog } from '@/components/leave/CreateLeaveTypeDialog';
 import { EditLeaveTypeDialog } from '@/components/leave/EditLeaveTypeDialog';
 import { LeaveTypeStatsCards } from '@/components/leave/LeaveTypeStatsCards';
 import { LeaveTypeTable } from '@/components/leave/LeaveTypeTable';
 import { Button } from '@/components/ui/button';
-import { useLeaveType } from '@/hooks/useLeaveType';
-import { Plus, Calendar } from 'lucide-react';
-import { useState } from 'react';
-import PageLayout from '@/components/layout/PageLayout';
-import PageHeader from '@/components/layout/PageHeader';
-import { LeaveType } from '@/types/leaveType';
 import { LeaveTypeCode, PaidType } from '@/constants/leave';
+import { useLeaveType } from '@/hooks/useLeaveType';
+import { LeaveType } from '@/types/leaveType';
+import { Calendar, Plus } from 'lucide-react';
+import { useState } from 'react';
 
 // 適配器類型，用於處理表單數據和 API 數據之間的轉換
 type LeaveTypeFormData = {

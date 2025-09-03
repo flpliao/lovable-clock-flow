@@ -26,14 +26,14 @@ import {
 import { WorkScheduleStatus } from '@/constants/workSchedule';
 import useLoadingAction from '@/hooks/useLoadingAction';
 import { CreateWorkScheduleFormData, createWorkScheduleSchema } from '@/schemas/workSchedule';
-import type { CreateWorkScheduleData, WorkSchedule } from '@/types/workSchedule';
+import type { CreateWorkScheduleData } from '@/types/workSchedule';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
 interface CreateWorkScheduleFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: CreateWorkScheduleData) => Promise<WorkSchedule>;
+  onSubmit: (data: CreateWorkScheduleData) => Promise<boolean>;
   shiftSlug: string;
 }
 

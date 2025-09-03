@@ -89,13 +89,17 @@ export const useShift = () => {
     try {
       await deleteShift(slug);
       removeShift(slug);
+      return true;
     } catch (error) {
       showError(error.message);
+      return false;
     }
   };
 
   // 建立工作時程
-  const handleCreateWorkSchedule = async (workScheduleData: CreateWorkScheduleData) => {
+  const handleCreateWorkSchedule = async (
+    workScheduleData: CreateWorkScheduleData
+  ): Promise<boolean> => {
     try {
       const newWorkSchedule = await createWorkSchedule(workScheduleData);
       const shift = shifts.find(s => s.slug === workScheduleData.shift_slug);
@@ -108,8 +112,10 @@ export const useShift = () => {
         };
         setShift(shift.slug, updatedShift);
       }
+      return true;
     } catch (error) {
       showError(error.message);
+      return false;
     }
   };
 
@@ -117,7 +123,7 @@ export const useShift = () => {
   const handleUpdateWorkSchedule = async (
     slug: string,
     workScheduleData: UpdateWorkScheduleData
-  ) => {
+  ): Promise<boolean> => {
     try {
       const updatedWorkSchedule = await updateWorkSchedule(slug, workScheduleData);
       const shift = shifts.find(s => s.work_schedules?.some(ws => ws.slug === slug));
@@ -131,13 +137,15 @@ export const useShift = () => {
         };
         setShift(shift.slug, updatedShift);
       }
+      return true;
     } catch (error) {
       showError(error.message);
+      return false;
     }
   };
 
   // 刪除工作時程
-  const handleDeleteWorkSchedule = async (slug: string) => {
+  const handleDeleteWorkSchedule = async (slug: string): Promise<boolean> => {
     try {
       await deleteWorkSchedule(slug);
       // 從對應的 shift 中移除 work_schedule
@@ -151,8 +159,10 @@ export const useShift = () => {
         };
         setShift(shift.slug, updatedShift);
       }
+      return true;
     } catch (error) {
       showError(error.message);
+      return false;
     }
   };
 

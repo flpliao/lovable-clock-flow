@@ -34,7 +34,7 @@ import { useForm } from 'react-hook-form';
 interface EditWorkScheduleFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (slug: string, data: UpdateWorkScheduleData) => Promise<WorkSchedule>;
+  onSubmit: (slug: string, data: UpdateWorkScheduleData) => Promise<boolean>;
   workSchedule: WorkSchedule | null;
   setWorkSchedule: (workSchedule: WorkSchedule | null) => void;
 }

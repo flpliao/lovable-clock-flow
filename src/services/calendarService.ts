@@ -7,7 +7,14 @@ import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 // 行事曆列表（支援 filter.year/name 與 all=true 回傳全部）
 export async function getCalendars(params?: CalendarIndexParams): Promise<{
   items: CalendarItem[];
-  pagination?: unknown;
+  pagination?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+  };
 }> {
   const result = await callApiAndDecode(
     axiosWithEmployeeAuth().get(apiRoutes.calendar.index, { params })
@@ -22,14 +29,31 @@ export async function getCalendars(params?: CalendarIndexParams): Promise<{
   if (Array.isArray(data)) {
     return { items: data as CalendarItem[] };
   }
+
   const payload = data as {
     data?: CalendarItem[];
     items?: CalendarItem[];
-    meta?: unknown;
-    links?: unknown;
+    current_page?: number;
+    last_page?: number;
+    per_page?: number;
+    total?: number;
+    from?: number;
+    to?: number;
   };
+
   const items = payload?.data || payload?.items || [];
-  return { items, pagination: payload?.meta || payload?.links };
+  const pagination = payload.current_page
+    ? {
+        current_page: payload.current_page,
+        last_page: payload.last_page || 1,
+        per_page: payload.per_page || 10,
+        total: payload.total || 0,
+        from: payload.from || 0,
+        to: payload.to || 0,
+      }
+    : undefined;
+
+  return { items, pagination };
 }
 
 export async function getCalendar(slug: string): Promise<CalendarItem> {
@@ -157,7 +181,9 @@ export async function saveMonthDays(
   // 批次刪除 workdays（需要逐一刪除，因為後端沒有批次刪除API）
   for (const slug of datesToDelete) {
     try {
-      await axiosWithEmployeeAuth().delete(apiRoutes.calendarDay.destroy(calendarSlug, slug));
+      await axiosWithEmployeeAuth().delete(
+        `${apiRoutes.calendarDay.destroy(calendarSlug)}/${slug}`
+      );
       results.deleted++;
     } catch (e) {
       console.warn('刪除日期失敗:', slug, e);

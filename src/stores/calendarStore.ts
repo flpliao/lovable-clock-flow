@@ -1,9 +1,19 @@
 import { create } from 'zustand';
 import { CalendarItem, CalendarDayItem } from '@/types/calendar';
 
+interface CalendarPagination {
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+  from: number;
+  to: number;
+}
+
 interface CalendarState {
   // 行事曆列表
   calendars: CalendarItem[];
+  pagination: CalendarPagination | null;
 
   // 行事曆日期資料 (calendarSlug -> year-month -> CalendarDayItem[])
   calendarDays: Record<string, Record<string, CalendarDayItem[]>>;
@@ -16,7 +26,7 @@ interface CalendarState {
   loadedCalendarMonths: Record<string, Set<string>>;
 
   // 基本操作方法
-  setCalendars: (calendars: CalendarItem[]) => void;
+  setCalendars: (calendars: CalendarItem[], pagination?: CalendarPagination | null) => void;
   addCalendar: (calendar: CalendarItem) => void;
   updateCalendar: (slug: string, updates: Partial<CalendarItem>) => void;
   removeCalendar: (slug: string) => void;
@@ -50,14 +60,15 @@ interface CalendarState {
 
 export const useCalendarStore = create<CalendarState>((set, get) => ({
   calendars: [],
+  pagination: null,
   calendarDays: {},
   isLoading: false,
   error: null,
   loadedCalendarMonths: {},
 
   // 設定行事曆列表
-  setCalendars: (calendars: CalendarItem[]) => {
-    set({ calendars, error: null });
+  setCalendars: (calendars: CalendarItem[], pagination?: CalendarPagination | null) => {
+    set({ calendars, pagination: pagination || null, error: null });
   },
 
   // 新增行事曆
@@ -234,6 +245,7 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
   reset: () =>
     set({
       calendars: [],
+      pagination: null,
       calendarDays: {},
       isLoading: false,
       error: null,

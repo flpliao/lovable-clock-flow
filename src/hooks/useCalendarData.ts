@@ -19,6 +19,7 @@ import { showError } from '@/utils/toast';
 export const useCalendarData = () => {
   const {
     calendars,
+    pagination,
     isLoading,
     error,
     setCalendars,
@@ -43,7 +44,7 @@ export const useCalendarData = () => {
 
       try {
         const result = await getCalendars(params);
-        setCalendars(result.items);
+        setCalendars(result.items, result.pagination);
         return result.items;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '載入行事曆失敗';
@@ -409,6 +410,7 @@ export const useCalendarData = () => {
   return {
     // === 狀態 ===
     calendars,
+    pagination,
     isLoading,
     error,
 

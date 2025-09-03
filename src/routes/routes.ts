@@ -132,6 +132,13 @@ export const protectedRoutes: RouteConfig[] = [
     icon: 'users',
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
+  {
+    path: routes.holidayManagement,
+    name: '假日管理',
+    component: HolidayManagement,
+    icon: 'calendarDays',
+    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
+  },
 ];
 
 export const unFinishedRoutes: RouteConfig[] = [

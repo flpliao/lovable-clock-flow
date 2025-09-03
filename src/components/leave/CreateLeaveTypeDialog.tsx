@@ -1,7 +1,5 @@
-import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { CancelButton, SaveButton } from '@/components/common/buttons';
+import CustomFormLabel from '@/components/common/CustomFormLabel';
 import {
   Dialog,
   DialogContent,
@@ -16,13 +14,9 @@ import {
   FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -30,49 +24,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PaidType, LeaveTypeCode } from '@/constants/leave';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { LeaveTypeCode, PaidType } from '@/constants/leave';
+import useLoadingAction from '@/hooks/useLoadingAction';
+import {
+  leaveTypeFormDefaultValues,
+  leaveTypeFormSchema,
+  type LeaveTypeFormData,
+} from '@/schemas/leaveType';
 import useDefaultLeaveTypeStore from '@/stores/defaultLeaveTypeStore';
-
-const createLeaveTypeSchema = z.object({
-  code: z.nativeEnum(LeaveTypeCode),
-  name: z.string().min(1, '名稱不能為空').max(50, '名稱最多50個字元'),
-  paid_type: z.nativeEnum(PaidType),
-  annual_reset: z.boolean(),
-  max_per_year: z.coerce.number().nullable().optional(),
-  required_attachment: z.boolean(),
-  is_active: z.boolean(),
-  description: z.string().optional(),
-});
-
-type CreateLeaveTypeFormData = z.infer<typeof createLeaveTypeSchema>;
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { DefaultLeaveTypeSelect } from './DefaultLeaveTypeSelect';
 
 interface CreateLeaveTypeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: CreateLeaveTypeFormData) => Promise<boolean>;
+  onSave: (data: LeaveTypeFormData) => Promise<boolean>;
 }
 
 export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeaveTypeDialogProps) {
-  const {
-    defaultLeaveTypes,
-    isLoading,
-    isLoaded,
-    fetchDefaultLeaveTypes,
-    getDefaultLeaveTypeByCode,
-  } = useDefaultLeaveTypeStore();
+  const { isLoaded, isLoading, fetchDefaultLeaveTypes, getDefaultLeaveTypeByCode } =
+    useDefaultLeaveTypeStore();
 
-  const form = useForm<CreateLeaveTypeFormData>({
-    resolver: zodResolver(createLeaveTypeSchema),
-    defaultValues: {
-      code: LeaveTypeCode.OTHER,
-      name: '',
-      paid_type: PaidType.UNPAID,
-      annual_reset: true,
-      max_per_year: undefined,
-      required_attachment: false,
-      is_active: true,
-      description: '',
-    },
+  const form = useForm<LeaveTypeFormData>({
+    resolver: zodResolver(leaveTypeFormSchema),
+    defaultValues: leaveTypeFormDefaultValues,
   });
 
   // 載入預設假別類型資料
@@ -96,20 +75,25 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
     }
   };
 
-  const handleSubmit = async (data: CreateLeaveTypeFormData) => {
-    // 處理空值轉換
-    const processedData = {
-      ...data,
-      max_per_year: data.max_per_year || undefined,
-      description: data.description || undefined,
-    };
+  const { wrappedAction: handleSubmit, isLoading: isSaving } = useLoadingAction(
+    async (data: LeaveTypeFormData) => {
+      const leaveTypeData: LeaveTypeFormData = {
+        code: data.code,
+        name: data.name,
+        paid_type: data.paid_type,
+        annual_reset: data.annual_reset,
+        max_per_year: data.max_per_year,
+        required_attachment: data.required_attachment,
+        is_active: data.is_active,
+        description: data.description,
+      };
 
-    const success = await onSave(processedData);
-    if (success) {
-      form.reset();
-      onOpenChange(false);
+      const success = await onSave(leaveTypeData);
+      if (success) {
+        handleClose();
+      }
     }
-  };
+  );
 
   const handleClose = () => {
     form.reset();
@@ -133,27 +117,15 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>假別類型 *</FormLabel>
-                    <Select onValueChange={handleLeaveTypeChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="選擇假別類型" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {isLoading && (
-                          <SelectItem value="" disabled>
-                            載入中...
-                          </SelectItem>
-                        )}
-                        {!isLoading &&
-                          defaultLeaveTypes.map(type => (
-                            <SelectItem key={type.code} value={type.code}>
-                              {type.name} ({type.code})
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
+                    <CustomFormLabel required>假別類型</CustomFormLabel>
+                    <FormControl>
+                      <DefaultLeaveTypeSelect
+                        value={field.value}
+                        onChange={field.onChange}
+                        onValueChange={handleLeaveTypeChange}
+                        className="w-full"
+                      />
+                    </FormControl>
                     <FormDescription>選擇假別類型類型</FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -165,7 +137,7 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>假別名稱 *</FormLabel>
+                    <CustomFormLabel required>假別名稱</CustomFormLabel>
                     <FormControl>
                       <Input placeholder="例如：病假" {...field} />
                     </FormControl>
@@ -180,7 +152,7 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>說明</FormLabel>
+                  <CustomFormLabel>說明</CustomFormLabel>
                   <FormControl>
                     <Textarea placeholder="假別說明和規則" className="min-h-[80px]" {...field} />
                   </FormControl>
@@ -195,7 +167,7 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
               name="max_per_year"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>每年最大天數</FormLabel>
+                  <CustomFormLabel required>每年最大天數</CustomFormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -216,7 +188,7 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
               name="paid_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>薪資類型 *</FormLabel>
+                  <CustomFormLabel required>薪資類型</CustomFormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -243,7 +215,7 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">年度重置</FormLabel>
+                      <CustomFormLabel>年度重置</CustomFormLabel>
                       <FormDescription>是否每年重新計算額度</FormDescription>
                     </div>
                     <FormControl>
@@ -259,7 +231,7 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">需要附件</FormLabel>
+                      <CustomFormLabel>需要附件</CustomFormLabel>
                       <FormDescription>申請此假別是否需要上傳附件</FormDescription>
                     </div>
                     <FormControl>
@@ -275,7 +247,7 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">啟用狀態</FormLabel>
+                      <CustomFormLabel>啟用狀態</CustomFormLabel>
                       <FormDescription>是否啟用此假別</FormDescription>
                     </div>
                     <FormControl>
@@ -287,10 +259,8 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose}>
-                取消
-              </Button>
-              <Button type="submit">新增</Button>
+              <CancelButton onClick={handleClose} />
+              <SaveButton isLoading={isSaving} />
             </DialogFooter>
           </form>
         </Form>

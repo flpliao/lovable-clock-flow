@@ -31,6 +31,7 @@ const HrManagement = LazyWithSuspense(() => import('@/pages/HRManagement'));
 const ApprovalCenter = LazyWithSuspense(() => import('@/pages/ApprovalCenter'));
 const SystemSettings = LazyWithSuspense(() => import('@/pages/SystemSettings'));
 const HolidayManagement = LazyWithSuspense(() => import('@/pages/HolidayManagement'));
+import { CalendarEditor } from '@/pages/calendar/CalendarEditor';
 const LeaveTypeManagement = LazyWithSuspense(() => import('@/pages/LeaveTypeManagement'));
 const OvertimeManagement = LazyWithSuspense(() => import('@/pages/OvertimeManagement'));
 const OvertimeManagementPage = LazyWithSuspense(() => import('@/pages/OvertimeManagementPage'));
@@ -137,6 +138,13 @@ export const protectedRoutes: RouteConfig[] = [
     name: '假日管理',
     component: HolidayManagement,
     icon: 'calendarDays',
+    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
+  },
+  {
+    path: `${routes.calendarEditor}/:slug`,
+    name: '行事曆編輯',
+    component: CalendarEditor,
+    icon: 'calendar',
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
 ];

@@ -2,7 +2,7 @@ import { Employee } from '@/types/employee';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-interface EmployeeStore {
+interface EmployeeState {
   employee: Employee | null;
   token: string | null;
   isAuthenticated: boolean;
@@ -11,7 +11,7 @@ interface EmployeeStore {
   reset: () => void;
 }
 
-const useEmployeeStore = create<EmployeeStore>()(
+const useEmployeeStore = create<EmployeeState>()(
   persist(
     (set, get) => ({
       employee: null,

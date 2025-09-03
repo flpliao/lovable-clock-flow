@@ -1,24 +1,26 @@
+import { useAuth } from '@/hooks/useAuth';
 import { protectedRoutes } from '@/routes';
-import { MenuItemWithIcon } from '@/types/menu';
-import { useEffect, useState } from 'react';
 import { iconMap } from './iconMap';
 
 export const useMenuItems = () => {
-  const [visibleItems, setVisibleItems] = useState<MenuItemWithIcon[]>([]);
+  const { canAccessRoute } = useAuth();
 
-  useEffect(() => {
-    const filterMenuItems = async () => {
-      // 為每個路由項目加入對應的 icon 元件
-      const itemsWithIcons: MenuItemWithIcon[] = protectedRoutes.map(route => ({
-        ...route,
-        iconComponent: route.icon ? iconMap[route.icon as keyof typeof iconMap] : undefined,
-      }));
+  // 根據用戶權限過濾路由項目
+  const filteredRoutes = protectedRoutes.filter(route => {
+    // 如果路由沒有設定角色限制，則所有已登入用戶都可訪問
+    if (!route.roles || route.roles.length === 0) {
+      return true;
+    }
 
-      setVisibleItems(itemsWithIcons);
-    };
+    // 檢查用戶是否有權限訪問此路由
+    return canAccessRoute(route.roles);
+  });
 
-    filterMenuItems();
-  }, []);
+  // 為過濾後的路由項目加入對應的 icon 元件
+  const visibleMenuItems = filteredRoutes.map(route => ({
+    ...route,
+    iconComponent: route.icon ? iconMap[route.icon as keyof typeof iconMap] : undefined,
+  }));
 
-  return { visibleMenuItems: visibleItems };
+  return { visibleMenuItems };
 };

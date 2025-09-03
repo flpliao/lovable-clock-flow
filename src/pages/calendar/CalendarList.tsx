@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,11 +21,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { CalendarPlus, Edit, Plus, RefreshCcw, Trash2 } from 'lucide-react';
+import { RefreshCcw } from 'lucide-react';
 import { CalendarItem } from '@/types/calendar';
 import { useCalendarData } from '@/hooks/useCalendarData';
 import { useToast } from '@/components/ui/use-toast';
 import { CalendarEditor } from './CalendarEditor';
+import { AddButton, EditButton, DeleteButton } from '@/components/common/buttons';
 
 export function CalendarList() {
   const { toast } = useToast();
@@ -39,6 +40,8 @@ export function CalendarList() {
     name: '',
     description: '',
   });
+  const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   // 使用行事曆 store
   const {
@@ -47,10 +50,9 @@ export function CalendarList() {
     loadCalendars,
     createCalendarItem,
     deleteCalendarItem,
-    copyCalendarToYearData,
   } = useCalendarData();
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const params = year === 'all' ? { filter: { all: true } } : { filter: { year } };
       await loadCalendars(params);
@@ -58,11 +60,11 @@ export function CalendarList() {
       const errorMessage = e instanceof Error ? e.message : '讀取失敗';
       toast({ title: '讀取失敗', description: errorMessage, variant: 'destructive' });
     }
-  };
+  }, [year, loadCalendars, toast]);
 
   useEffect(() => {
     load();
-  }, [year, load]);
+  }, [load]);
 
   const filtered = useMemo(
     () => items.filter(i => i.name.toLowerCase().includes(keyword.toLowerCase())),
@@ -75,6 +77,7 @@ export function CalendarList() {
       return;
     }
 
+    setCreating(true);
     try {
       await createCalendarItem({
         year: newCalendar.year,
@@ -87,26 +90,21 @@ export function CalendarList() {
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '建立失敗';
       toast({ title: '建立失敗', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setCreating(false);
     }
   };
 
   const onDelete = async (slug: string) => {
+    setDeleting(slug);
     try {
       await deleteCalendarItem(slug);
       toast({ title: '刪除成功' });
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '刪除失敗';
       toast({ title: '刪除失敗', description: errorMessage, variant: 'destructive' });
-    }
-  };
-
-  const onCopy = async (slug: string, newYear: number) => {
-    try {
-      await copyCalendarToYearData(slug, newYear);
-      toast({ title: '複製成功' });
-    } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : '複製失敗';
-      toast({ title: '複製失敗', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -116,9 +114,14 @@ export function CalendarList() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-white">行事曆列表</CardTitle>
           <div className="flex gap-2">
-            <Button variant="secondary" className="bg-white/60" onClick={() => setCreateOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" /> 新增行事曆
-            </Button>
+            <AddButton
+              className="bg-white/60"
+              onClick={() => setCreateOpen(true)}
+              disabled={loading}
+              isLoading={false}
+            >
+              新增行事曆
+            </AddButton>
             <Button variant="ghost" className="text-white" onClick={load} disabled={loading}>
               <RefreshCcw className="h-4 w-4" />
             </Button>
@@ -131,6 +134,7 @@ export function CalendarList() {
               <Select
                 value={String(year)}
                 onValueChange={v => setYear(v === 'all' ? 'all' : parseInt(v))}
+                disabled={loading}
               >
                 <SelectTrigger className="h-9 bg-white/40 text-white">
                   <SelectValue />
@@ -152,6 +156,7 @@ export function CalendarList() {
                 onChange={e => setKeyword(e.target.value)}
                 className="bg-white/40 text-white placeholder:text-white/70"
                 placeholder="輸入關鍵字"
+                disabled={loading}
               />
             </div>
           </div>
@@ -165,19 +170,17 @@ export function CalendarList() {
                     {item.name}（{item.year}）
                   </CardTitle>
                   <div className="flex gap-2">
-                    <Button
+                    <EditButton
                       size="sm"
-                      variant="secondary"
                       className="bg-white/70"
                       onClick={() => setEditing(item)}
+                      disabled={loading}
                     >
-                      <Edit className="h-4 w-4 mr-1" /> 編輯
-                    </Button>
+                      編輯
+                    </EditButton>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button size="sm" variant="destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <DeleteButton size="sm" disabled={loading || deleting === item.slug} />
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
@@ -197,18 +200,7 @@ export function CalendarList() {
                     </AlertDialog>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="bg-white"
-                      onClick={() => onCopy(item.slug, item.year + 1)}
-                    >
-                      <CalendarPlus className="h-4 w-4 mr-1" /> 複製到 {item.year + 1}
-                    </Button>
-                  </div>
-                </CardContent>
+                <CardContent></CardContent>
               </Card>
             ))}
           </div>
@@ -225,6 +217,7 @@ export function CalendarList() {
             <Select
               value={String(newCalendar.year)}
               onValueChange={v => setNewCalendar(prev => ({ ...prev, year: parseInt(v) }))}
+              disabled={loading}
             >
               <SelectTrigger className="h-9 bg-white/60">
                 <SelectValue />
@@ -242,17 +235,24 @@ export function CalendarList() {
               value={newCalendar.name}
               onChange={e => setNewCalendar(prev => ({ ...prev, name: e.target.value }))}
               className="bg-white/60"
+              disabled={loading}
             />
             <Input
               placeholder="描述（選填）"
               value={newCalendar.description}
               onChange={e => setNewCalendar(prev => ({ ...prev, description: e.target.value }))}
               className="bg-white/60"
+              disabled={loading}
             />
             <div className="md:col-span-3 flex gap-2">
-              <Button onClick={onCreate} className="bg-green-500">
-                <Plus className="h-4 w-4 mr-1" /> 建立
-              </Button>
+              <AddButton
+                onClick={onCreate}
+                className="bg-green-500"
+                disabled={loading}
+                isLoading={creating}
+              >
+                建立
+              </AddButton>
               <Button
                 variant="ghost"
                 className="text-white"
@@ -260,6 +260,7 @@ export function CalendarList() {
                   setCreateOpen(false);
                   setNewCalendar({ year: currentYear, name: '', description: '' });
                 }}
+                disabled={loading}
               >
                 取消
               </Button>

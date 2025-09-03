@@ -14,6 +14,7 @@ import {
   copyCalendarToYear,
 } from '@/services/calendarService';
 import { CalendarDayItem, CalendarIndexParams } from '@/types/calendar';
+import { showError } from '@/utils/toast';
 
 export const useCalendarData = () => {
   const {
@@ -32,18 +33,22 @@ export const useCalendarData = () => {
     getCalendarDays: getCalendarDaysFromStore,
   } = useCalendarStore();
 
+  // === 行事曆基本操作 ===
+
   // 載入行事曆列表
   const loadCalendars = useCallback(
     async (params?: CalendarIndexParams) => {
       setLoading(true);
       setError(null);
+
       try {
         const result = await getCalendars(params);
         setCalendars(result.items);
         return result.items;
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : '載入行事曆失敗';
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '載入行事曆失敗';
         setError(errorMessage);
+        showError(errorMessage);
         throw new Error(errorMessage);
       } finally {
         setLoading(false);
@@ -57,8 +62,10 @@ export const useCalendarData = () => {
     async (slug: string) => {
       setLoading(true);
       setError(null);
+
       try {
         const calendar = await getCalendar(slug);
+
         // 更新 store 中的行事曆資料
         const existingIndex = calendars.findIndex(cal => cal.slug === slug);
         if (existingIndex === -1) {
@@ -66,10 +73,12 @@ export const useCalendarData = () => {
         } else {
           updateCalendarInStore(slug, calendar);
         }
+
         return calendar;
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : '載入行事曆失敗';
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '載入行事曆失敗';
         setError(errorMessage);
+        showError(errorMessage);
         throw new Error(errorMessage);
       } finally {
         setLoading(false);
@@ -83,13 +92,15 @@ export const useCalendarData = () => {
     async (payload: { year: number; name: string; description?: string | null }) => {
       setLoading(true);
       setError(null);
+
       try {
         const calendar = await createCalendar(payload);
         addCalendar(calendar);
         return calendar;
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : '建立行事曆失敗';
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '建立行事曆失敗';
         setError(errorMessage);
+        showError(errorMessage);
         throw new Error(errorMessage);
       } finally {
         setLoading(false);
@@ -110,13 +121,15 @@ export const useCalendarData = () => {
     ) => {
       setLoading(true);
       setError(null);
+
       try {
         const calendar = await updateCalendar(slug, payload);
         updateCalendarInStore(slug, calendar);
         return calendar;
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : '更新行事曆失敗';
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '更新行事曆失敗';
         setError(errorMessage);
+        showError(errorMessage);
         throw new Error(errorMessage);
       } finally {
         setLoading(false);
@@ -130,12 +143,14 @@ export const useCalendarData = () => {
     async (slug: string) => {
       setLoading(true);
       setError(null);
+
       try {
         await deleteCalendar(slug);
         removeCalendarFromStore(slug);
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : '刪除行事曆失敗';
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '刪除行事曆失敗';
         setError(errorMessage);
+        showError(errorMessage);
         throw new Error(errorMessage);
       } finally {
         setLoading(false);
@@ -144,7 +159,31 @@ export const useCalendarData = () => {
     [removeCalendarFromStore, setLoading, setError]
   );
 
-  // 載入行事曆日期
+  // 複製行事曆到新年份
+  const copyCalendarToYearData = useCallback(
+    async (slug: string, newYear: number) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const calendar = await copyCalendarToYear(slug, newYear);
+        addCalendar(calendar);
+        return calendar;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '複製行事曆失敗';
+        setError(errorMessage);
+        showError(errorMessage);
+        throw new Error(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [addCalendar, setLoading, setError]
+  );
+
+  // === 行事曆日期操作 ===
+
+  // 載入行事曆日期（支援快取和強制重新載入）
   const loadCalendarDays = useCallback(
     async (
       calendarSlug: string,
@@ -153,6 +192,7 @@ export const useCalendarData = () => {
     ) => {
       setLoading(true);
       setError(null);
+
       try {
         // 如果強制重新載入，直接從 API 取得資料
         if (forceReload) {
@@ -190,9 +230,10 @@ export const useCalendarData = () => {
         }
 
         return days;
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : '載入行事曆日期失敗';
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '載入行事曆日期失敗';
         setError(errorMessage);
+        showError(errorMessage);
         throw new Error(errorMessage);
       } finally {
         setLoading(false);
@@ -206,6 +247,7 @@ export const useCalendarData = () => {
     async (calendarSlug: string, payload: { updates: CalendarDayItem[] }) => {
       setLoading(true);
       setError(null);
+
       try {
         const result = await batchUpdateCalendarDays(calendarSlug, payload);
 
@@ -231,9 +273,10 @@ export const useCalendarData = () => {
         }
 
         return result;
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : '批次更新行事曆日期失敗';
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '批次更新行事曆日期失敗';
         setError(errorMessage);
+        showError(errorMessage);
         throw new Error(errorMessage);
       } finally {
         setLoading(false);
@@ -247,6 +290,7 @@ export const useCalendarData = () => {
     async (calendarSlug: string, monthData: Record<string, CalendarDayItem>, yearMonth: string) => {
       setLoading(true);
       setError(null);
+
       try {
         const result = await saveMonthDays(calendarSlug, monthData, yearMonth);
 
@@ -257,9 +301,10 @@ export const useCalendarData = () => {
         setCalendarDays(calendarSlug, yearMonth, daysArray);
 
         return result;
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : '儲存月份資料失敗';
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '儲存月份資料失敗';
         setError(errorMessage);
+        showError(errorMessage);
         throw new Error(errorMessage);
       } finally {
         setLoading(false);
@@ -273,6 +318,7 @@ export const useCalendarData = () => {
     async (calendarSlug: string, payload: { year: number }) => {
       setLoading(true);
       setError(null);
+
       try {
         const result = await generateYearDays(calendarSlug, payload);
 
@@ -283,9 +329,10 @@ export const useCalendarData = () => {
         }
 
         return result;
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : '生成全年日期失敗';
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '生成全年日期失敗';
         setError(errorMessage);
+        showError(errorMessage);
         throw new Error(errorMessage);
       } finally {
         setLoading(false);
@@ -294,31 +341,12 @@ export const useCalendarData = () => {
     [setCalendarDays, setLoading, setError]
   );
 
-  // 複製行事曆到新年份
-  const copyCalendarToYearData = useCallback(
-    async (slug: string, newYear: number) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const calendar = await copyCalendarToYear(slug, newYear);
-        addCalendar(calendar);
-        return calendar;
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : '複製行事曆失敗';
-        setError(errorMessage);
-        throw new Error(errorMessage);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [addCalendar, setLoading, setError]
-  );
-
   // 清除全部日期
   const clearAllDaysData = useCallback(
     async (calendarSlug: string) => {
       setLoading(true);
       setError(null);
+
       try {
         await clearAllDays(calendarSlug);
 
@@ -326,9 +354,10 @@ export const useCalendarData = () => {
         // 注意：這裡需要清除所有已載入的月份資料
         // 由於 clearAllDays 會清除所有資料，我們可以重置該行事曆的載入狀態
         // 實際實作可能需要更複雜的邏輯來處理部分清除
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : '清除全部日期失敗';
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '清除全部日期失敗';
         setError(errorMessage);
+        showError(errorMessage);
         throw new Error(errorMessage);
       } finally {
         setLoading(false);
@@ -336,6 +365,8 @@ export const useCalendarData = () => {
     },
     [setLoading, setError]
   );
+
+  // === 查詢方法 ===
 
   // 檢查月份是否已載入
   const isMonthLoaded = useCallback(
@@ -353,27 +384,61 @@ export const useCalendarData = () => {
     [getCalendarDaysFromStore]
   );
 
+  // 取得行事曆
+  const getCalendarItem = useCallback(
+    (slug: string) => {
+      return calendars.find(cal => cal.slug === slug);
+    },
+    [calendars]
+  );
+
+  // 取得已載入的月份列表
+  const getLoadedMonthsForCalendar = useCallback(
+    (calendarSlug: string) => {
+      // 這裡需要從 store 取得已載入的月份
+      // 由於 store 中沒有直接的方法，我們可以從 calendarDays 推斷
+      const calendarData = calendars.find(cal => cal.slug === calendarSlug);
+      if (!calendarData) return [];
+
+      // 這裡可以實作更複雜的邏輯來取得已載入的月份
+      return [];
+    },
+    [calendars]
+  );
+
   return {
-    // 狀態
+    // === 狀態 ===
     calendars,
     isLoading,
     error,
 
-    // 操作方法
+    // === 基本操作方法 ===
     loadCalendars,
     loadCalendar,
     createCalendarItem,
     updateCalendarItem,
     deleteCalendarItem,
+    copyCalendarToYearData,
+
+    // === 日期操作方法 ===
     loadCalendarDays,
     batchUpdateCalendarDaysData,
     saveMonthDaysData,
     generateYearDaysData,
     clearAllDaysData,
-    copyCalendarToYearData,
 
-    // 查詢方法
+    // === 查詢方法 ===
+    getCalendarItem,
     isMonthLoaded,
     getCalendarDaysFromStoreData,
+    getLoadedMonthsForCalendar,
+
+    // === 直接操作方法（用於本地狀態管理） ===
+    setCalendars,
+    addCalendar,
+    updateCalendar: updateCalendarInStore,
+    removeCalendar: removeCalendarFromStore,
+    setCalendarDays,
+    batchUpdateCalendarDays: batchUpdateCalendarDaysInStore,
   };
 };

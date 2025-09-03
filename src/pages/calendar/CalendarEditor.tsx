@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -27,7 +27,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -38,7 +37,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { CalendarItem, CalendarDayItem, CalendarDayType } from '@/types/calendar';
 import { useCalendarData } from '@/hooks/useCalendarData';
-import { Calendar, Save, X, Edit3, MessageSquare, RefreshCcw } from 'lucide-react';
+import { Calendar, X, Edit3, MessageSquare, RefreshCcw } from 'lucide-react';
+import { SaveButton, UpdateButton, DeleteConfirmButton } from '@/components/common/buttons';
 
 interface Props {
   calendar: CalendarItem;
@@ -56,12 +56,14 @@ function MonthGrid({
   days,
   onChange,
   onEditNote,
+  disabled = false,
 }: {
   year: number;
   month: number; // 1-12
   days: Record<string, CalendarDayItem>;
   onChange: (date: string, nextType: CalendarDayType) => void;
   onEditNote: (date: string, currentNote?: string) => void;
+  disabled?: boolean;
 }) {
   const first = new Date(year, month - 1, 1);
   const last = new Date(year, month, 0);
@@ -93,7 +95,8 @@ function MonthGrid({
             <ContextMenuTrigger asChild>
               <button
                 onClick={() => onChange(key, nextType(type))}
-                className={`h-10 rounded-md border border-white/30 text-xs text-white flex flex-col items-center justify-center hover:opacity-90 transition ${typeConf?.className}`}
+                disabled={disabled}
+                className={`h-10 rounded-md border border-white/30 text-xs text-white flex flex-col items-center justify-center hover:opacity-90 transition ${typeConf?.className} ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
                 title={`${key} ${typeConf.label}`}
               >
                 <span>{date.getDate()}</span>
@@ -145,45 +148,49 @@ export function CalendarEditor({ calendar, onClose }: Props) {
     generateYearDaysData,
     clearAllDaysData,
     getCalendarDaysFromStoreData,
+    isLoading,
   } = useCalendarData();
 
-  const loadMonth = async (forceReload: boolean = false) => {
-    const yearMonth = `${year}-${String(selectedMonth).padStart(2, '0')}`;
+  const loadMonth = useCallback(
+    async (forceReload: boolean = false) => {
+      const yearMonth = `${year}-${String(selectedMonth).padStart(2, '0')}`;
 
-    // 1. 先檢查 store 中是否有該月份的資料
-    const cachedDays = getCalendarDaysFromStoreData(calendar.slug, yearMonth);
+      // 1. 先檢查 store 中是否有該月份的資料
+      const cachedDays = getCalendarDaysFromStoreData(calendar.slug, yearMonth);
 
-    // 2. 如果有快取資料且不強制重新載入，先顯示快取資料
-    if (cachedDays.length > 0 && !forceReload) {
-      const map: Record<string, CalendarDayItem> = {};
-      cachedDays.forEach(d => (map[d.date] = d));
-      setDaysMap(map);
+      // 2. 如果有快取資料且不強制重新載入，先顯示快取資料
+      if (cachedDays.length > 0 && !forceReload) {
+        const map: Record<string, CalendarDayItem> = {};
+        cachedDays.forEach(d => (map[d.date] = d));
+        setDaysMap(map);
 
-      // 如果已經有快取資料，不需要再載入
-      return;
-    }
+        // 如果已經有快取資料，不需要再載入
+        return;
+      }
 
-    // 3. 如果沒有快取資料或需要重新載入，則從 API 載入
-    try {
-      const list = await loadCalendarDays(
-        calendar.slug,
-        { month: selectedMonth, year },
-        forceReload
-      );
+      // 3. 如果沒有快取資料或需要重新載入，則從 API 載入
+      try {
+        const list = await loadCalendarDays(
+          calendar.slug,
+          { month: selectedMonth, year },
+          forceReload
+        );
 
-      // 更新本地狀態
-      const map: Record<string, CalendarDayItem> = {};
-      list.forEach(d => (map[d.date] = d));
-      setDaysMap(map);
-    } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : '載入月份資料失敗';
-      toast({ title: '載入月份資料失敗', description: errorMessage, variant: 'destructive' });
-    }
-  };
+        // 更新本地狀態
+        const map: Record<string, CalendarDayItem> = {};
+        list.forEach(d => (map[d.date] = d));
+        setDaysMap(map);
+      } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : '載入月份資料失敗';
+        toast({ title: '載入月份資料失敗', description: errorMessage, variant: 'destructive' });
+      }
+    },
+    [year, selectedMonth, calendar.slug, getCalendarDaysFromStoreData, loadCalendarDays, toast]
+  );
 
   useEffect(() => {
     loadMonth();
-  }, [selectedMonth, calendar.slug, year, loadMonth]);
+  }, [loadMonth]);
 
   const onCellChange = (date: string, next: CalendarDayType) => {
     setDaysMap(prev => {
@@ -248,16 +255,20 @@ export function CalendarEditor({ calendar, onClose }: Props) {
   };
 
   const onSaveMeta = async () => {
+    setUpdating(true);
     try {
       await updateCalendarItem(calendar.slug, { name: meta.name, description: meta.description });
       toast({ title: '基本資料已更新' });
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '更新失敗';
       toast({ title: '更新失敗', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setUpdating(false);
     }
   };
 
   const onGenerateYear = async () => {
+    setGenerating(true);
     try {
       await generateYearDaysData(calendar.slug, { year });
       toast({ title: '已生成全年工作日/假日' });
@@ -265,17 +276,29 @@ export function CalendarEditor({ calendar, onClose }: Props) {
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '生成失敗';
       toast({ title: '生成失敗', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setGenerating(false);
     }
   };
 
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [updating, setUpdating] = useState(false);
+
   const onClearAll = async () => {
+    setClearing(true);
     try {
       await clearAllDaysData(calendar.slug);
       setDaysMap({});
       toast({ title: '已清除所有日期' });
+      setClearDialogOpen(false); // 清除成功後才關閉對話框
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '清除失敗';
       toast({ title: '清除失敗', description: errorMessage, variant: 'destructive' });
+      // 清除失敗時不關閉對話框，讓用戶重試
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -286,12 +309,19 @@ export function CalendarEditor({ calendar, onClose }: Props) {
           <Calendar className="h-5 w-5" /> 編輯：{calendar.name}（{year}）
         </CardTitle>
         <div className="flex gap-2">
-          <Button variant="secondary" className="bg-white/70" onClick={onGenerateYear}>
-            生成全年
+          <Button
+            variant="secondary"
+            className="bg-white/70"
+            onClick={onGenerateYear}
+            disabled={isLoading}
+          >
+            {generating ? '生成中...' : '生成全年'}
           </Button>
-          <AlertDialog>
+          <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive">清除全部</Button>
+              <Button variant="destructive" disabled={isLoading}>
+                清除全部
+              </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -301,8 +331,10 @@ export function CalendarEditor({ calendar, onClose }: Props) {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>取消</AlertDialogCancel>
-                <AlertDialogAction onClick={onClearAll}>確認清除</AlertDialogAction>
+                <AlertDialogCancel disabled={clearing}>取消</AlertDialogCancel>
+                <DeleteConfirmButton onClick={onClearAll} disabled={clearing} isLoading={clearing}>
+                  確認清除
+                </DeleteConfirmButton>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -311,6 +343,7 @@ export function CalendarEditor({ calendar, onClose }: Props) {
             className="text-white"
             onClick={() => loadMonth(true)}
             title="重新載入月份資料"
+            disabled={isLoading}
           >
             <RefreshCcw className="h-4 w-4" />
           </Button>
@@ -326,18 +359,24 @@ export function CalendarEditor({ calendar, onClose }: Props) {
             onChange={e => setMeta(v => ({ ...v, name: e.target.value }))}
             className="bg-white/60 w-56"
             placeholder="名稱"
+            disabled={updating || isLoading}
           />
           <Input
             value={meta.description}
             onChange={e => setMeta(v => ({ ...v, description: e.target.value }))}
             className="bg-white/60 w-72"
             placeholder="描述（選填）"
+            disabled={updating || isLoading}
           />
-          <Button variant="outline" className="bg-white" onClick={onSaveMeta}>
+          <UpdateButton className="" onClick={onSaveMeta} disabled={isLoading} isLoading={updating}>
             更新資料
-          </Button>
+          </UpdateButton>
           <div className="flex-1" />
-          <Select value={String(selectedMonth)} onValueChange={v => setSelectedMonth(parseInt(v))}>
+          <Select
+            value={String(selectedMonth)}
+            onValueChange={v => setSelectedMonth(parseInt(v))}
+            disabled={generating || isLoading}
+          >
             <SelectTrigger className="h-9 bg-white/60 w-40">
               <SelectValue />
             </SelectTrigger>
@@ -354,9 +393,14 @@ export function CalendarEditor({ calendar, onClose }: Props) {
               <Badge key={t.value} className={t.className}>{t.label}</Badge>
             ))}
           </div> */}
-          <Button onClick={onSave} disabled={saving} className="bg-green-500">
-            <Save className="h-4 w-4 mr-1" /> 儲存當月
-          </Button>
+          <SaveButton
+            onClick={onSave}
+            disabled={isLoading}
+            isLoading={saving}
+            className="bg-green-500"
+          >
+            儲存當月
+          </SaveButton>
         </div>
 
         <MonthGrid
@@ -365,6 +409,7 @@ export function CalendarEditor({ calendar, onClose }: Props) {
           days={daysMap}
           onChange={onCellChange}
           onEditNote={onEditNote}
+          disabled={generating || isLoading}
         />
       </CardContent>
 
@@ -383,16 +428,20 @@ export function CalendarEditor({ calendar, onClose }: Props) {
               onChange={e => setNoteDialog(prev => ({ ...prev, note: e.target.value }))}
               placeholder="輸入備註..."
               className="min-h-[100px]"
+              disabled={isLoading}
             />
           </div>
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setNoteDialog({ open: false, date: '', note: '' })}
+              disabled={isLoading}
             >
               取消
             </Button>
-            <Button onClick={onSaveNote}>確定</Button>
+            <Button onClick={onSaveNote} disabled={isLoading}>
+              確定
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

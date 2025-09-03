@@ -1,7 +1,5 @@
-import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { CancelButton, UpdateButton } from '@/components/common/buttons';
+import CustomFormLabel from '@/components/common/CustomFormLabel';
 import {
   Dialog,
   DialogContent,
@@ -16,13 +14,9 @@ import {
   FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -30,28 +24,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { LeaveType } from '@/types/leaveType';
-import { PaidType, LeaveTypeCode } from '@/constants/leave';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { LeaveTypeCode, PaidType } from '@/constants/leave';
+import useLoadingAction from '@/hooks/useLoadingAction';
+import {
+  leaveTypeFormDefaultValues,
+  leaveTypeFormSchema,
+  type LeaveTypeFormData,
+} from '@/schemas/leaveType';
 import useDefaultLeaveTypeStore from '@/stores/defaultLeaveTypeStore';
-
-const editLeaveTypeSchema = z.object({
-  code: z.nativeEnum(LeaveTypeCode),
-  name: z.string().min(1, '名稱不能為空').max(50, '名稱最多50個字元'),
-  paid_type: z.nativeEnum(PaidType),
-  annual_reset: z.boolean(),
-  max_per_year: z.coerce.number().nullable().optional(),
-  required_attachment: z.boolean(),
-  is_active: z.boolean(),
-  description: z.string().optional(),
-});
-
-type EditLeaveTypeFormData = z.infer<typeof editLeaveTypeSchema>;
+import type { LeaveType } from '@/types/leaveType';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { DefaultLeaveTypeSelect } from './DefaultLeaveTypeSelect';
 
 interface EditLeaveTypeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   leaveType: LeaveType | null;
-  onSave: (slug: string, data: EditLeaveTypeFormData) => Promise<boolean>;
+  onSave: (slug: string, data: LeaveTypeFormData) => Promise<boolean>;
 }
 
 export function EditLeaveTypeDialog({
@@ -60,26 +53,11 @@ export function EditLeaveTypeDialog({
   leaveType,
   onSave,
 }: EditLeaveTypeDialogProps) {
-  const {
-    defaultLeaveTypes,
-    isLoading,
-    isLoaded,
-    fetchDefaultLeaveTypes,
-    getDefaultLeaveTypeByCode,
-  } = useDefaultLeaveTypeStore();
+  const { isLoaded, isLoading, fetchDefaultLeaveTypes } = useDefaultLeaveTypeStore();
 
-  const form = useForm<EditLeaveTypeFormData>({
-    resolver: zodResolver(editLeaveTypeSchema),
-    defaultValues: {
-      code: LeaveTypeCode.OTHER,
-      name: '',
-      paid_type: PaidType.UNPAID,
-      annual_reset: true,
-      max_per_year: undefined,
-      required_attachment: false,
-      is_active: true,
-      description: '',
-    },
+  const form = useForm<LeaveTypeFormData>({
+    resolver: zodResolver(leaveTypeFormSchema),
+    defaultValues: leaveTypeFormDefaultValues,
   });
 
   // 載入預設假別類型資料
@@ -88,36 +66,6 @@ export function EditLeaveTypeDialog({
       fetchDefaultLeaveTypes().catch(console.error);
     }
   }, [isLoaded, isLoading, fetchDefaultLeaveTypes]);
-
-  // 當選擇假別類型時，自動填入預設值（但保留現有的自定義值）
-  const handleLeaveTypeChange = (selectedCode: LeaveTypeCode) => {
-    const defaults = getDefaultLeaveTypeByCode(selectedCode);
-    if (defaults) {
-      // 只更新代碼，其他欄位保留用戶可能已經修改的值
-      form.setValue('code', selectedCode);
-
-      // 如果名稱為空或者是舊的預設名稱，則更新為新的預設名稱
-      const currentName = form.getValues('name');
-      if (!currentName || defaultLeaveTypes.some(d => d.name === currentName)) {
-        form.setValue('name', defaults.name);
-      }
-
-      // 更新其他預設值，但讓用戶可以手動覆蓋
-      form.setValue('paid_type', defaults.paid_type);
-      form.setValue('annual_reset', defaults.annual_reset);
-      form.setValue('max_per_year', defaults.max_per_year);
-      form.setValue('required_attachment', defaults.required_attachment);
-
-      // 如果說明為空或者是舊的預設說明，則更新為新的預設說明
-      const currentDescription = form.getValues('description');
-      if (
-        !currentDescription ||
-        defaultLeaveTypes.some(d => d.description === currentDescription)
-      ) {
-        form.setValue('description', defaults.description);
-      }
-    }
-  };
 
   // 當 leaveType 或 open 狀態改變時重新設定表單值
   useEffect(() => {
@@ -135,23 +83,26 @@ export function EditLeaveTypeDialog({
     }
   }, [leaveType, open, form]);
 
-  const handleSubmit = async (data: EditLeaveTypeFormData) => {
-    if (!leaveType) return;
+  const { wrappedAction: handleSubmit, isLoading: isSaving } = useLoadingAction(
+    async (data: LeaveTypeFormData) => {
+      if (!leaveType) return;
 
-    // 處理空值轉換
-    const processedData = {
-      ...data,
-      max_per_year: data.max_per_year || undefined,
-      description: data.description || undefined,
-    };
+      // 處理空值轉換
+      const processedData = {
+        ...data,
+        max_per_year: data.max_per_year || undefined,
+        description: data.description || undefined,
+      };
 
-    const success = await onSave(leaveType.slug, processedData);
-    if (success) {
-      onOpenChange(false);
+      const success = await onSave(leaveType.slug, processedData);
+      if (success) {
+        handleClose();
+      }
     }
-  };
+  );
 
   const handleClose = () => {
+    form.reset();
     onOpenChange(false);
   };
 
@@ -174,28 +125,15 @@ export function EditLeaveTypeDialog({
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>假別類型 *</FormLabel>
-                    <Select onValueChange={handleLeaveTypeChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="選擇假別類型" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {isLoading && (
-                          <SelectItem value="" disabled>
-                            載入中...
-                          </SelectItem>
-                        )}
-                        {!isLoading &&
-                          defaultLeaveTypes.map(type => (
-                            <SelectItem key={type.code} value={type.code}>
-                              {type.name} ({type.code})
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>選擇假別類型類型</FormDescription>
+                    <CustomFormLabel required>假別類型</CustomFormLabel>
+                    <FormControl>
+                      <DefaultLeaveTypeSelect
+                        value={field.value}
+                        onChange={field.onChange}
+                        className="w-full"
+                      />
+                    </FormControl>
+                    <FormDescription>選擇假別類型</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -206,7 +144,7 @@ export function EditLeaveTypeDialog({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>假別名稱 *</FormLabel>
+                    <CustomFormLabel required>假別名稱</CustomFormLabel>
                     <FormControl>
                       <Input placeholder="例如：病假" {...field} />
                     </FormControl>
@@ -221,7 +159,7 @@ export function EditLeaveTypeDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>說明</FormLabel>
+                  <CustomFormLabel>說明</CustomFormLabel>
                   <FormControl>
                     <Textarea placeholder="假別說明和規則" className="min-h-[80px]" {...field} />
                   </FormControl>
@@ -236,7 +174,7 @@ export function EditLeaveTypeDialog({
               name="max_per_year"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>每年最大天數</FormLabel>
+                  <CustomFormLabel required>每年最大天數</CustomFormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -257,7 +195,7 @@ export function EditLeaveTypeDialog({
               name="paid_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>薪資類型 *</FormLabel>
+                  <CustomFormLabel required>薪資類型</CustomFormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -284,7 +222,7 @@ export function EditLeaveTypeDialog({
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">年度重置</FormLabel>
+                      <CustomFormLabel>年度重置</CustomFormLabel>
                       <FormDescription>是否每年重新計算額度</FormDescription>
                     </div>
                     <FormControl>
@@ -300,7 +238,7 @@ export function EditLeaveTypeDialog({
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">需要附件</FormLabel>
+                      <CustomFormLabel>需要附件</CustomFormLabel>
                       <FormDescription>申請此假別是否需要上傳附件</FormDescription>
                     </div>
                     <FormControl>
@@ -316,7 +254,7 @@ export function EditLeaveTypeDialog({
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">啟用狀態</FormLabel>
+                      <CustomFormLabel>啟用狀態</CustomFormLabel>
                       <FormDescription>是否啟用此假別</FormDescription>
                     </div>
                     <FormControl>
@@ -328,10 +266,8 @@ export function EditLeaveTypeDialog({
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose}>
-                取消
-              </Button>
-              <Button type="submit">更新</Button>
+              <CancelButton onClick={handleClose} />
+              <UpdateButton isLoading={isSaving} />
             </DialogFooter>
           </form>
         </Form>

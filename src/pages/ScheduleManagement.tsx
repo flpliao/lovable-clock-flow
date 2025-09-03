@@ -326,10 +326,14 @@ const ScheduleManagement = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* 單位選擇 */}
-          <DepartmentSelect
-            selectedDepartment={selectedDepartment}
-            onDepartmentChange={setSelectedDepartment}
-          />
+          <div>
+            <label className="block text-white/80 text-sm font-medium mb-2">單位</label>
+            <DepartmentSelect
+              className="w-full bg-white/10 border-white/20 text-white rounded-md [&>span]:text-white"
+              selectedDepartment={selectedDepartment}
+              onDepartmentChange={setSelectedDepartment}
+            />
+          </div>
 
           {/* 年度/月份選擇 */}
           <div>

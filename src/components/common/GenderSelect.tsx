@@ -6,6 +6,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Gender } from '@/constants/gender';
+import { cn } from '@/lib/utils';
 
 interface GenderSelectProps {
   value?: string;
@@ -24,7 +25,7 @@ const GenderSelect = ({
 }: GenderSelectProps) => {
   return (
     <Select value={value} onValueChange={onValueChange} disabled={disabled}>
-      <SelectTrigger className={className}>
+      <SelectTrigger className={cn(className, !value && '[&>span]:text-muted-foreground')}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

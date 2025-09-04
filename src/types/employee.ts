@@ -1,5 +1,6 @@
 import { Gender } from '@/constants/gender';
 import type { Department } from './department';
+import type { Role } from './role';
 import type { WorkSchedule } from './workSchedule';
 
 export interface Employee {
@@ -7,10 +8,10 @@ export interface Employee {
   name: string;
   no: string;
   email: string;
-  department_id?: string;
+  department_slug?: string;
   department?: Department;
   start_date?: string;
-  roles?: string[];
+  roles?: Role[];
   work_schedules?: WorkSchedule[];
   identity_number?: string;
   phone?: string;
@@ -22,6 +23,8 @@ export interface Employee {
   gender: Gender;
   city?: string;
   address?: string;
+  password?: string;
+  password_confirmation?: string;
 }
 
 export interface EmployeesBySlug {

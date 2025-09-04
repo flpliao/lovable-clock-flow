@@ -127,7 +127,7 @@ export const protectedRoutes: RouteConfig[] = [
   },
   {
     path: routes.personnelManagement,
-    name: '人事管理',
+    name: '人員管理',
     component: PersonnelManagement,
     icon: 'users',
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],

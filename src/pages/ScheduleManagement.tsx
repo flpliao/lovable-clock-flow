@@ -1,14 +1,8 @@
+import DepartmentSelect from '@/components/common/DepartmentSelect';
 import PageHeader from '@/components/layouts/PageHeader';
 import PageLayout from '@/components/layouts/PageLayout';
-import {
-  DepartmentSelect,
-  PersonnelFilter,
-  ScheduleGrid,
-  ShiftFilter,
-  ShiftSelector,
-} from '@/components/schedule';
+import { PersonnelFilter, ScheduleGrid, ShiftFilter, ShiftSelector } from '@/components/schedule';
 import { Button } from '@/components/ui/button';
-import { useDepartment } from '@/hooks/useDepartment';
 import { useEmployeeWorkSchedule } from '@/hooks/useEmployeeWorkSchedule';
 import { useExpandableItems } from '@/hooks/useExpandableItems';
 import { useShift } from '@/hooks/useShift';
@@ -62,10 +56,7 @@ const ScheduleManagement = () => {
     handleBulkSyncEmployeeWorkSchedules,
   } = useEmployeeWorkSchedule();
 
-  const { loadDepartments } = useDepartment();
-
   useEffect(() => {
-    loadDepartments();
     loadAllShifts();
   }, []);
 

@@ -1,4 +1,3 @@
-export { default as DepartmentSelect } from './DepartmentSelect';
 export { default as LeaveFilter } from './LeaveFilter';
 export { default as PersonnelFilter } from './PersonnelFilter';
 export { default as ScheduleGrid } from './ScheduleGrid';

@@ -1,5 +1,5 @@
 import { AddButton, DeleteButton, EditButton } from '@/components/common/buttons';
-import DeleteDialog from '@/components/common/dialogs/DeleteDialog';
+import DeleteConfirmDialog from '@/components/common/dialogs/DeleteConfirmDialog';
 import CreateShiftForm from '@/components/shift/CreateShiftForm';
 import CreateWorkScheduleForm from '@/components/shift/CreateWorkScheduleForm';
 import EditShiftForm from '@/components/shift/EditShiftForm';
@@ -266,7 +266,7 @@ const ShiftList = () => {
       )}
 
       {/* 刪除確認對話框 */}
-      <DeleteDialog
+      <DeleteConfirmDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
         onConfirm={() => handleDeleteShift(shiftToDelete)}
@@ -278,7 +278,7 @@ const ShiftList = () => {
       />
 
       {/* 刪除工作時程確認對話框 */}
-      <DeleteDialog
+      <DeleteConfirmDialog
         open={showDeleteWorkScheduleDialog}
         onOpenChange={setShowDeleteWorkScheduleDialog}
         onConfirm={() => handleDeleteWorkSchedule(workScheduleToDelete)}

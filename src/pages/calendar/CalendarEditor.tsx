@@ -53,6 +53,8 @@ function CalendarEditor() {
     handleConfirmOverwrite,
     onSave,
     formatDate,
+    hasUnsavedChanges,
+    getChangeStats,
     setEditDialog,
     setConfirmDialog,
   } = useCalendarEditor();
@@ -73,6 +75,10 @@ function CalendarEditor() {
   const getDayTypeInfo = (type: CalendarDayType) => {
     return DAY_TYPES.find(dt => dt.value === type) || DAY_TYPES[0];
   };
+
+  // 取得變更統計
+  const changeStats = getChangeStats();
+  const hasChanges = hasUnsavedChanges();
 
   if (loading) {
     return (
@@ -119,6 +125,15 @@ function CalendarEditor() {
               <p className="text-white/80 text-lg font-medium drop-shadow-md">
                 年份：{calendar.year} | 管理所有日期設定
               </p>
+              {hasChanges && (
+                <div className="mt-2 flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                  <span className="text-yellow-200 text-sm font-medium">
+                    有未儲存的變更：新增 {changeStats.new} 筆，修改 {changeStats.modified} 筆，刪除{' '}
+                    {changeStats.deleted} 筆
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -134,13 +149,13 @@ function CalendarEditor() {
                   新增日期
                 </AddButton>
                 <SaveButton
-                  className="bg-white/60"
+                  className={`${hasChanges ? 'bg-green-500/80 hover:bg-green-500' : 'bg-white/60'} ${hasChanges ? 'animate-pulse' : ''}`}
                   onClick={onSave}
-                  disabled={saving}
+                  disabled={saving || !hasChanges}
                   isLoading={saving}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  儲存變更
+                  {hasChanges ? '儲存變更' : '已儲存'}
                 </SaveButton>
               </div>
             </CardHeader>
@@ -164,14 +179,31 @@ function CalendarEditor() {
                       </TableRow>
                     ) : (
                       days
+                        .filter(day => !day._isDeleted) // 過濾掉已標記刪除的項目
                         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                         .map(day => {
                           const dayTypeInfo = getDayTypeInfo(day.type);
+                          const isModified = day._isNew || day._isModified;
 
                           return (
-                            <TableRow key={day.date} className="border-white/10 hover:bg-white/5">
+                            <TableRow
+                              key={day.date}
+                              className={`border-white/10 hover:bg-white/5 ${isModified ? 'bg-yellow-500/10' : ''}`}
+                            >
                               <TableCell className="text-white font-medium">
-                                {formatDate(day.date)}
+                                <div className="flex items-center space-x-2">
+                                  {formatDate(day.date)}
+                                  {day._isNew && (
+                                    <Badge className="bg-green-500/80 text-white text-xs">
+                                      新增
+                                    </Badge>
+                                  )}
+                                  {day._isModified && !day._isNew && (
+                                    <Badge className="bg-blue-500/80 text-white text-xs">
+                                      修改
+                                    </Badge>
+                                  )}
+                                </div>
                               </TableCell>
                               <TableCell>
                                 <Badge className={dayTypeInfo.className}>{dayTypeInfo.label}</Badge>

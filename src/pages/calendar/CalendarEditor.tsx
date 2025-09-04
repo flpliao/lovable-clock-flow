@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -26,12 +25,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { useToast } from '@/components/ui/use-toast';
-import { CalendarItem, CalendarDayItem, CalendarDayType } from '@/types/calendar';
-import { useCalendarData } from '@/hooks/useCalendarData';
+import { CalendarDayType } from '@/types/calendar';
 import { ArrowLeft, Save, Calendar, Plus, Edit, Trash2 } from 'lucide-react';
 import { SaveButton, AddButton, EditButton, DeleteButton } from '@/components/common/buttons';
 import { ConfirmDialog } from '@/components/common/dialogs';
+import { useCalendarEditor } from '@/hooks/useCalendarEditor';
 
 const DAY_TYPES: { value: CalendarDayType; label: string; className: string }[] = [
   { value: 'workday', label: '工作日', className: 'bg-green-100 text-green-800' },
@@ -39,59 +37,29 @@ const DAY_TYPES: { value: CalendarDayType; label: string; className: string }[] 
 ];
 
 export function CalendarEditor() {
-  const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [calendar, setCalendar] = useState<CalendarItem | null>(null);
-  const [days, setDays] = useState<CalendarDayItem[]>([]);
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [editDialog, setEditDialog] = useState<{
-    open: boolean;
-    day: CalendarDayItem | null;
-    isNew: boolean;
-  }>({
-    open: false,
-    day: null,
-    isNew: false,
-  });
-  const [confirmDialog, setConfirmDialog] = useState<{
-    open: boolean;
-    day: CalendarDayItem | null;
-  }>({
-    open: false,
-    day: null,
-  });
-
-  // 使用行事曆 store
-  const { loadCalendar, loadCalendarDays, batchUpdateCalendarDaysData } = useCalendarData();
+  const {
+    slug,
+    calendar,
+    days,
+    saving,
+    loading,
+    editDialog,
+    confirmDialog,
+    loadCalendarData,
+    handleAddNew,
+    handleEdit,
+    handleDelete,
+    handleSaveEdit,
+    handleConfirmOverwrite,
+    onSave,
+    formatDate,
+    setEditDialog,
+    setConfirmDialog,
+  } = useCalendarEditor();
 
   useEffect(() => {
-    // 如果沒有 slug，直接返回
-    if (!slug) return;
-
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        // 載入行事曆資料
-        const calendarData = await loadCalendar(slug);
-        setCalendar(calendarData);
-
-        // 載入行事曆日期
-        const daysData = await loadCalendarDays(slug);
-        setDays(Array.isArray(daysData) ? daysData : []);
-      } catch (e: unknown) {
-        const errorMessage = e instanceof Error ? e.message : '載入失敗';
-        toast({ title: '載入失敗', description: errorMessage, variant: 'destructive' });
-        navigate('/holiday-management');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]); // 只依賴 slug，避免無限循環
+    loadCalendarData();
+  }, [loadCalendarData]);
 
   // 如果沒有 slug，直接返回錯誤
   if (!slug) {
@@ -101,115 +69,6 @@ export function CalendarEditor() {
       </div>
     );
   }
-
-  const handleAddNew = () => {
-    const currentYear = calendar?.year || new Date().getFullYear();
-    setEditDialog({
-      open: true,
-      day: {
-        date: `${currentYear}-01-01`,
-        type: 'holiday',
-        note: null,
-      },
-      isNew: true,
-    });
-  };
-
-  const handleEdit = (day: CalendarDayItem) => {
-    setEditDialog({
-      open: true,
-      day: { ...day },
-      isNew: false,
-    });
-  };
-
-  const handleDelete = (date: string) => {
-    setDays(prev => prev.filter(day => day.date !== date));
-  };
-
-  const handleSaveEdit = () => {
-    const { day, isNew } = editDialog;
-    if (!day) return;
-
-    // 檢查是否已存在相同日期的資料
-    const existingDay = days.find(d => d.date === day.date);
-
-    if (existingDay && isNew) {
-      // 如果是新增且已存在相同日期，顯示確認對話框
-      setConfirmDialog({ open: true, day });
-      return;
-    }
-
-    // 直接保存（編輯或新增不重複的日期）
-    saveDayData(day, isNew);
-  };
-
-  const saveDayData = (day: CalendarDayItem, isNew: boolean) => {
-    setDays(prev => {
-      if (isNew) {
-        // 新增時，如果已存在則覆蓋，否則新增
-        const existingIndex = prev.findIndex(d => d.date === day.date);
-        if (existingIndex >= 0) {
-          // 覆蓋現有資料
-          const newDays = [...prev];
-          newDays[existingIndex] = day;
-          return newDays;
-        } else {
-          // 新增資料
-          return [...prev, day];
-        }
-      } else {
-        // 編輯時，直接更新
-        return prev.map(d => (d.date === day.date ? day : d));
-      }
-    });
-
-    // 顯示成功提醒
-    toast({
-      title: isNew ? '新增成功' : '編輯成功',
-      description: `日期 ${formatDate(day.date)} 已${isNew ? '新增' : '更新'}`,
-    });
-
-    setEditDialog({ open: false, day: null, isNew: false });
-  };
-
-  const handleConfirmOverwrite = () => {
-    const { day } = confirmDialog;
-    if (!day) return;
-
-    // 覆蓋現有資料
-    saveDayData(day, true);
-    setConfirmDialog({ open: false, day: null });
-  };
-
-  const onSave = async () => {
-    if (!slug) return;
-
-    setSaving(true);
-    try {
-      await batchUpdateCalendarDaysData(slug, { updates: days });
-      toast({
-        title: '已儲存',
-        description: '行事曆日期已成功更新',
-      });
-    } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : '儲存失敗';
-      toast({ title: '儲存失敗', description: errorMessage, variant: 'destructive' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date
-      .toLocaleDateString('zh-TW', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      })
-      .replace(/\//g, '/');
-  };
 
   const getDayTypeInfo = (type: CalendarDayType) => {
     return DAY_TYPES.find(dt => dt.value === type) || DAY_TYPES[0];
@@ -245,7 +104,7 @@ export function CalendarEditor() {
             <Button
               variant="ghost"
               className="text-white hover:bg-white/20"
-              onClick={() => navigate('/holiday-management')}
+              onClick={() => window.history.back()}
             >
               <ArrowLeft className="h-5 w-5 mr-2" />
               返回

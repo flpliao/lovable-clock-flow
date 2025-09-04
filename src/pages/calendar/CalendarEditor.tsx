@@ -1,15 +1,17 @@
-import { useEffect } from 'react';
+import { AddButton, DeleteButton, EditButton, SaveButton } from '@/components/common/buttons';
+import { ConfirmDialog } from '@/components/common/dialogs';
+import PageHeader from '@/components/layouts/PageHeader';
+import PageLayout from '@/components/layouts/PageLayout';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -19,17 +21,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { CalendarDayType } from '@/types/calendar';
-import { ArrowLeft, Save, Calendar, Plus, Edit, Trash2 } from 'lucide-react';
-import { SaveButton, AddButton, EditButton, DeleteButton } from '@/components/common/buttons';
-import { ConfirmDialog } from '@/components/common/dialogs';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useCalendarEditor } from '@/hooks/useCalendarEditor';
+import { cn } from '@/lib/utils';
+import { CalendarDayType } from '@/types/calendar';
+import { formatDate } from '@/utils/dateUtils';
+import { ArrowLeft, Calendar, Edit, Plus, Save, Trash2 } from 'lucide-react';
+import { useEffect } from 'react';
 
 const DAY_TYPES: { value: CalendarDayType; label: string; className: string }[] = [
   { value: 'workday', label: '工作日', className: 'bg-green-100 text-green-800' },
@@ -52,7 +56,6 @@ function CalendarEditor() {
     handleSaveEdit,
     handleConfirmOverwrite,
     onSave,
-    formatDate,
     hasUnsavedChanges,
     getChangeStats,
     setEditDialog,
@@ -66,9 +69,11 @@ function CalendarEditor() {
   // 如果沒有 slug，直接返回錯誤
   if (!slug) {
     return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
-        <div className="text-white text-xl">無效的行事曆 ID</div>
-      </div>
+      <PageLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-white text-xl">無效的行事曆 ID</div>
+        </div>
+      </PageLayout>
     );
   }
 
@@ -82,162 +87,147 @@ function CalendarEditor() {
 
   if (loading) {
     return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
-        <div className="text-white text-xl">載入中...</div>
-      </div>
+      <PageLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-white text-xl">載入中...</div>
+        </div>
+      </PageLayout>
     );
   }
 
   if (!calendar) {
     return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
-        <div className="text-white text-xl">找不到行事曆</div>
-      </div>
+      <PageLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-white text-xl">找不到行事曆</div>
+        </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden">
-      {/* 動態背景漸層 */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-purple-400/20 via-transparent to-transparent"></div>
-
-      <div className="relative z-10 w-full">
-        {/* 頁面標題區域 */}
-        <div className="w-full px-4 lg:px-8 pt-32 md:pt-36 pb-8">
-          <div className="flex items-center space-x-4 mb-6">
-            <Button
-              variant="ghost"
-              className="text-white hover:bg-white/20"
-              onClick={() => window.history.back()}
-            >
-              <ArrowLeft className="h-5 w-5 mr-2" />
-              返回
-            </Button>
-            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/30 shadow-lg">
-              <Calendar className="h-8 w-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">
-                編輯行事曆 - {calendar.name}
-              </h1>
-              <p className="text-white/80 text-lg font-medium drop-shadow-md">
-                年份：{calendar.year} | 管理所有日期設定
-              </p>
-              {hasChanges && (
-                <div className="mt-2 flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                  <span className="text-yellow-200 text-sm font-medium">
-                    有未儲存的變更：新增 {changeStats.new} 筆，修改 {changeStats.modified} 筆，刪除{' '}
-                    {changeStats.deleted} 筆
-                  </span>
-                </div>
-              )}
-            </div>
+    <PageLayout>
+      {/* 頁面標題區域 */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            className="text-white hover:bg-white/20"
+            onClick={() => window.history.back()}
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            返回
+          </Button>
+          <PageHeader
+            icon={Calendar}
+            title={`編輯行事曆 - ${calendar.name}`}
+            description={`年份：${calendar.year} | 管理所有日期設定`}
+            iconBgColor="bg-white/20"
+          />
+        </div>
+        {hasChanges && (
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+            <span className="text-yellow-200 text-sm font-medium">
+              有未儲存的變更：新增 {changeStats.new} 筆，修改 {changeStats.modified} 筆，刪除{' '}
+              {changeStats.deleted} 筆
+            </span>
           </div>
-        </div>
-
-        {/* 主要內容 */}
-        <div className="w-full px-4 lg:px-8 pb-8">
-          <Card className="bg-white/30 backdrop-blur-xl border-white/40">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-white">行事曆日期列表</CardTitle>
-              <div className="flex gap-2">
-                <AddButton className="bg-white/60" onClick={handleAddNew} disabled={saving}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  新增日期
-                </AddButton>
-                <SaveButton
-                  className={`${hasChanges ? 'bg-green-500/80 hover:bg-green-500' : 'bg-white/60'} ${hasChanges ? 'animate-pulse' : ''}`}
-                  onClick={onSave}
-                  disabled={saving || !hasChanges}
-                  isLoading={saving}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {hasChanges ? '儲存變更' : '已儲存'}
-                </SaveButton>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-white/20 bg-white/10">
-                      <TableHead className="text-white font-semibold">日期</TableHead>
-                      <TableHead className="text-white font-semibold">類型</TableHead>
-                      <TableHead className="text-white font-semibold">備註</TableHead>
-                      <TableHead className="text-white font-semibold">操作</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {days.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center text-white/60 py-8">
-                          尚無日期資料
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      days
-                        .filter(day => !day._isDeleted) // 過濾掉已標記刪除的項目
-                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                        .map(day => {
-                          const dayTypeInfo = getDayTypeInfo(day.type);
-                          const isModified = day._isNew || day._isModified;
-
-                          return (
-                            <TableRow
-                              key={day.date}
-                              className={`border-white/10 hover:bg-white/5 ${isModified ? 'bg-yellow-500/10' : ''}`}
-                            >
-                              <TableCell className="text-white font-medium">
-                                <div className="flex items-center space-x-2">
-                                  {formatDate(day.date)}
-                                  {day._isNew && (
-                                    <Badge className="bg-green-500/80 text-white text-xs">
-                                      新增
-                                    </Badge>
-                                  )}
-                                  {day._isModified && !day._isNew && (
-                                    <Badge className="bg-blue-500/80 text-white text-xs">
-                                      修改
-                                    </Badge>
-                                  )}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <Badge className={dayTypeInfo.className}>{dayTypeInfo.label}</Badge>
-                              </TableCell>
-                              <TableCell className="text-white/80">{day.note || '-'}</TableCell>
-                              <TableCell>
-                                <div className="flex items-center space-x-2">
-                                  <EditButton
-                                    size="sm"
-                                    className="bg-white/70"
-                                    onClick={() => handleEdit(day)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </EditButton>
-                                  <DeleteButton
-                                    size="sm"
-                                    className="bg-red-500/20 hover:bg-red-500/30"
-                                    onClick={() => handleDelete(day.date)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </DeleteButton>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        )}
       </div>
+
+      {/* 主要內容 */}
+      <Card className="bg-white/0 backdrop-blur-xl border-white/40">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-white">行事曆日期列表</CardTitle>
+          <div className="flex gap-2">
+            <AddButton className="bg-white/60" onClick={handleAddNew} disabled={saving}>
+              <Plus className="h-4 w-4 mr-2" />
+              新增日期
+            </AddButton>
+            <SaveButton
+              className={`${hasChanges ? 'bg-green-500/80 hover:bg-green-500' : 'bg-white/60'} ${hasChanges ? 'animate-pulse' : ''}`}
+              onClick={onSave}
+              disabled={saving || !hasChanges}
+              isLoading={saving}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {hasChanges ? '儲存變更' : '已儲存'}
+            </SaveButton>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-white/20 bg-white/10">
+                  <TableHead className="text-white font-semibold">日期</TableHead>
+                  <TableHead className="text-white font-semibold">類型</TableHead>
+                  <TableHead className="text-white font-semibold">備註</TableHead>
+                  <TableHead className="text-white font-semibold">操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {days.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-white/60 py-8">
+                      尚無日期資料
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  days
+                    .filter(day => !day._isDeleted) // 過濾掉已標記刪除的項目
+                    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                    .map(day => {
+                      const dayTypeInfo = getDayTypeInfo(day.type);
+                      const isModified = day._isNew || day._isModified;
+
+                      return (
+                        <TableRow
+                          key={day.date}
+                          className={cn(
+                            'border-white/10 hover:bg-white/5',
+                            isModified && 'bg-yellow-500/10'
+                          )}
+                        >
+                          <TableCell className="text-white font-medium">
+                            <div className="flex items-center space-x-2">
+                              {formatDate(day.date)}
+                              {day._isNew && (
+                                <Badge className="bg-green-500/80 text-white text-xs">新增</Badge>
+                              )}
+                              {day._isModified && !day._isNew && (
+                                <Badge className="bg-blue-500/80 text-white text-xs">修改</Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={dayTypeInfo.className}>{dayTypeInfo.label}</Badge>
+                          </TableCell>
+                          <TableCell className="text-white/80">{day.note || '-'}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <EditButton size="sm" onClick={() => handleEdit(day)}>
+                                <Edit className="h-4 w-4" />
+                              </EditButton>
+                              <DeleteButton
+                                size="sm"
+                                className="bg-red-500/20 hover:bg-red-500/30"
+                                onClick={() => handleDelete(day.date)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </DeleteButton>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 編輯對話框 */}
       <Dialog
@@ -329,7 +319,7 @@ function CalendarEditor() {
         cancelText="取消"
         variant="warning"
       />
-    </div>
+    </PageLayout>
   );
 }
 

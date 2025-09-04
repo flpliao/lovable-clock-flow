@@ -1,4 +1,3 @@
-import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,29 +9,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { RefreshCcw, Calendar, Trash2, Edit3 } from 'lucide-react';
-import { CalendarItem } from '@/types/calendar';
 import { useCalendarData } from '@/hooks/useCalendarData';
-import { useToast } from '@/components/ui/use-toast';
+import { CalendarItem } from '@/types/calendar';
+import { Calendar, Edit3, RefreshCcw, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { CalendarCreateDialog } from '@/components/calendar/CalendarCreateDialog';
-import PaginationControl from '@/components/PaginationControl';
 import { AddButton, DeleteButton, EditButton } from '@/components/common/buttons';
+import DeleteConfirmDialog from '@/components/common/dialogs/DeleteConfirmDialog';
+import PaginationControl from '@/components/PaginationControl';
+import { showError, showSuccess } from '@/utils/toast';
 
 export function CalendarList() {
-  const { toast } = useToast();
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState<number | 'all'>(currentYear);
@@ -40,6 +29,8 @@ export function CalendarList() {
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<CalendarItem | null>(null);
 
   // 分頁狀態
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,9 +56,9 @@ export function CalendarList() {
       await loadCalendars(params);
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '讀取失敗';
-      toast({ title: '讀取失敗', description: errorMessage, variant: 'destructive' });
+      showError(errorMessage);
     }
-  }, [year, keyword, currentPage, pageSize, loadCalendars, toast]);
+  }, [year, keyword, currentPage, pageSize, loadCalendars]);
 
   useEffect(() => {
     load();
@@ -78,14 +69,23 @@ export function CalendarList() {
     setCurrentPage(1);
   }, [year, keyword]);
 
-  const onDelete = async (slug: string) => {
-    setDeleting(slug);
+  const handleDeleteClick = (item: CalendarItem) => {
+    setDeleteTarget(item);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async (): Promise<boolean> => {
+    if (!deleteTarget) return false;
+
+    setDeleting(deleteTarget.slug);
     try {
-      await deleteCalendarItem(slug);
-      toast({ title: '刪除成功' });
+      await deleteCalendarItem(deleteTarget.slug);
+      showSuccess('刪除成功');
+      return true;
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '刪除失敗';
-      toast({ title: '刪除失敗', description: errorMessage, variant: 'destructive' });
+      showError(errorMessage);
+      return false;
     } finally {
       setDeleting(null);
     }
@@ -96,12 +96,12 @@ export function CalendarList() {
   };
 
   const handleEdit = (calendar: CalendarItem) => {
-    navigate(`/calendar-editor/${calendar.slug}`);
+    navigate(`/calendar/edit/${calendar.slug}`);
   };
 
   return (
     <div className="space-y-4">
-      <Card className="bg-white/30 backdrop-blur-xl border-white/40">
+      <Card className="bg-white/0 backdrop-blur-xl border-white/40">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-white">行事曆列表</CardTitle>
           <div className="flex gap-2">
@@ -183,40 +183,17 @@ export function CalendarList() {
                         <span>年份：{item.year}</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <EditButton
-                          size="sm"
-                          className="bg-white/70"
-                          onClick={() => handleEdit(item)}
-                          disabled={loading}
-                        >
+                        <EditButton size="sm" onClick={() => handleEdit(item)} disabled={loading}>
                           <Edit3 className="h-4 w-4" />
                         </EditButton>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <DeleteButton
-                              size="sm"
-                              disabled={loading || deleting === item.slug}
-                              className="bg-red-500/20 hover:bg-red-500/30"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </DeleteButton>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>確認刪除</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                您確定要刪除行事曆「{item.name}（{item.year}
-                                ）」嗎？此操作會同時刪除所有相關的日期設定，且無法復原。
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>取消</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => onDelete(item.slug)}>
-                                確認刪除
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <DeleteButton
+                          size="sm"
+                          disabled={loading || deleting === item.slug}
+                          className="bg-red-500/20 hover:bg-red-500/30"
+                          onClick={() => handleDeleteClick(item)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </DeleteButton>
                       </div>
                     </div>
                   </div>
@@ -240,6 +217,19 @@ export function CalendarList() {
 
       {/* 新增行事曆彈出視窗 */}
       <CalendarCreateDialog isOpen={createDialogOpen} onClose={() => setCreateDialogOpen(false)} />
+
+      {/* 刪除確認對話框 */}
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="確認刪除"
+        description={
+          deleteTarget
+            ? `您確定要刪除行事曆「${deleteTarget.name}（${deleteTarget.year}）」嗎？此操作會同時刪除所有相關的日期設定，且無法復原。`
+            : '確定要刪除此項目嗎？此操作無法復原。'
+        }
+      />
     </div>
   );
 }

@@ -74,7 +74,7 @@ export const publicRoutes: RouteConfig[] = [
     component: AuthCallback,
   },
   {
-    path: `${routes.calendarEditor}/:slug`,
+    path: `${routes.editCalendar}/:slug`,
     name: '行事曆編輯',
     component: CalendarEditor,
     icon: 'calendar',

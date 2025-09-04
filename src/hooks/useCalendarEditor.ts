@@ -1,8 +1,10 @@
-import { useCallback, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getCalendar, getCalendarDays, batchUpdateCalendarDays } from '@/services/calendarService';
-import { CalendarItem, CalendarDayItem } from '@/types/calendar';
+import { batchUpdateCalendarDays, getCalendar, getCalendarDays } from '@/services/calendarService';
+import { CalendarDayItem, CalendarItem } from '@/types/calendar';
+import { formatDate } from '@/utils/dateUtils';
 import { showError, showSuccess } from '@/utils/toast';
+import dayjs from 'dayjs';
+import { useCallback, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface EditDialogState {
   open: boolean;
@@ -45,18 +47,6 @@ export const useCalendarEditor = () => {
     day: null,
   });
 
-  // 格式化日期
-  const formatDate = useCallback((dateStr: string) => {
-    const date = new Date(dateStr);
-    return date
-      .toLocaleDateString('zh-TW', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      })
-      .replace(/\//g, '/');
-  }, []);
-
   // 載入行事曆資料
   const loadCalendarData = useCallback(async () => {
     if (!slug) return;
@@ -96,7 +86,7 @@ export const useCalendarEditor = () => {
 
   // 新增日期
   const handleAddNew = useCallback(() => {
-    const currentYear = calendar?.year || new Date().getFullYear();
+    const currentYear = calendar?.year || dayjs().year();
     setEditDialog({
       open: true,
       day: {
@@ -118,69 +108,57 @@ export const useCalendarEditor = () => {
   }, []);
 
   // 刪除日期（暫存模式）
-  const handleDelete = useCallback(
-    (date: string) => {
-      setDays(prev => prev.map(day => (day.date === date ? { ...day, _isDeleted: true } : day)));
-      showSuccess(`日期 ${formatDate(date)} 已標記為刪除`, '已標記刪除');
-    },
-    [formatDate]
-  );
+  const handleDelete = useCallback((date: string) => {
+    setDays(prev => prev.map(day => (day.date === date ? { ...day, _isDeleted: true } : day)));
+    showSuccess(`日期 ${formatDate(date)} 已標記為刪除`, '已標記刪除');
+  }, []);
 
   // 保存日期資料（暫存模式）
-  const saveDayData = useCallback(
-    (day: CalendarDayItem, isNew: boolean) => {
-      setDays(prev => {
-        if (isNew) {
-          // 新增時，如果已存在則覆蓋，否則新增
-          const existingIndex = prev.findIndex(d => d.date === day.date && !d._isDeleted);
-          if (existingIndex >= 0) {
-            // 覆蓋現有資料
-            const newDays = [...prev];
-            newDays[existingIndex] = {
-              ...day,
-              _isNew: true,
-              _isModified: false,
-              _isDeleted: false,
-              _originalData: newDays[existingIndex]._originalData,
-            };
-            return newDays;
-          } else {
-            // 新增資料
-            const newDay: StagedCalendarDayItem = {
-              ...day,
-              _isNew: true,
-              _isModified: false,
-              _isDeleted: false,
-              _originalData: undefined,
-            };
-            return [...prev, newDay];
-          }
+  const saveDayData = useCallback((day: CalendarDayItem, isNew: boolean) => {
+    setDays(prev => {
+      if (isNew) {
+        // 新增時，如果已存在則覆蓋，否則新增
+        const existingIndex = prev.findIndex(d => d.date === day.date && !d._isDeleted);
+        if (existingIndex >= 0) {
+          // 覆蓋現有資料
+          const newDays = [...prev];
+          newDays[existingIndex] = {
+            ...day,
+            _isNew: true,
+            _isModified: false,
+            _isDeleted: false,
+            _originalData: newDays[existingIndex]._originalData,
+          };
+          return newDays;
         } else {
-          // 編輯時，標記為修改
-          return prev.map(d =>
-            d.date === day.date
-              ? {
-                  ...day,
-                  _isNew: false,
-                  _isModified: true,
-                  _isDeleted: false,
-                  _originalData: d._originalData || d,
-                }
-              : d
-          );
+          // 新增資料
+          const newDay: StagedCalendarDayItem = {
+            ...day,
+            _isNew: true,
+            _isModified: false,
+            _isDeleted: false,
+            _originalData: undefined,
+          };
+          return [...prev, newDay];
         }
-      });
+      } else {
+        // 編輯時，標記為修改
+        return prev.map(d =>
+          d.date === day.date
+            ? {
+                ...day,
+                _isNew: false,
+                _isModified: true,
+                _isDeleted: false,
+                _originalData: d._originalData || d,
+              }
+            : d
+        );
+      }
+    });
 
-      // 顯示成功提醒
-      showSuccess(
-        `日期 ${formatDate(day.date)} 已${isNew ? '新增' : '更新'}（暫存）`,
-        isNew ? '新增成功' : '編輯成功'
-      );
-
-      setEditDialog({ open: false, day: null, isNew: false });
-    },
-    [formatDate]
-  );
+    setEditDialog({ open: false, day: null, isNew: false });
+  }, []);
 
   // 保存編輯
   const handleSaveEdit = useCallback(() => {
@@ -312,7 +290,6 @@ export const useCalendarEditor = () => {
     handleSaveEdit,
     handleConfirmOverwrite,
     onSave,
-    formatDate,
 
     // 變更狀態檢查
     hasUnsavedChanges,

@@ -1,6 +1,15 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -9,14 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-import { useToast } from '@/components/ui/use-toast';
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from '@/components/ui/context-menu';
 import {
   Dialog,
   DialogContent,
@@ -24,427 +25,312 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { CalendarItem, CalendarDayItem, CalendarDayType } from '@/types/calendar';
-import { useCalendarData } from '@/hooks/useCalendarData';
-import { Calendar, X, Edit3, MessageSquare, RefreshCcw } from 'lucide-react';
-import { SaveButton, UpdateButton, DeleteConfirmButton } from '@/components/common/buttons';
-
-interface Props {
-  calendar: CalendarItem;
-  onClose: () => void;
-}
+import { CalendarDayType } from '@/types/calendar';
+import { ArrowLeft, Save, Calendar, Plus, Edit, Trash2 } from 'lucide-react';
+import { SaveButton, AddButton, EditButton, DeleteButton } from '@/components/common/buttons';
+import { ConfirmDialog } from '@/components/common/dialogs';
+import { useCalendarEditor } from '@/hooks/useCalendarEditor';
 
 const DAY_TYPES: { value: CalendarDayType; label: string; className: string }[] = [
-  { value: 'workday', label: '工作日', className: 'bg-emerald-400 text-emerald-800' },
-  { value: 'holiday', label: '假日', className: 'bg-red-300 text-red-800' },
+  { value: 'workday', label: '工作日', className: 'bg-green-100 text-green-800' },
+  { value: 'holiday', label: '假日', className: 'bg-red-100 text-red-800' },
 ];
 
-function MonthGrid({
-  year,
-  month,
-  days,
-  onChange,
-  onEditNote,
-  disabled = false,
-}: {
-  year: number;
-  month: number; // 1-12
-  days: Record<string, CalendarDayItem>;
-  onChange: (date: string, nextType: CalendarDayType) => void;
-  onEditNote: (date: string, currentNote?: string) => void;
-  disabled?: boolean;
-}) {
-  const first = new Date(year, month - 1, 1);
-  const last = new Date(year, month, 0);
-  const cells: (Date | null)[] = [];
-  const startOffset = first.getDay(); // 以週日為首，週日=0，週一=1...週六=6
-  for (let i = 0; i < startOffset; i++) cells.push(null);
-  for (let d = 1; d <= last.getDate(); d++) cells.push(new Date(year, month - 1, d));
-
-  const nextType = (current?: CalendarDayType): CalendarDayType => {
-    // 只在 workday 和 holiday 之間切換
-    return current === 'holiday' ? 'workday' : 'holiday';
-  };
-
-  return (
-    <div className="grid grid-cols-7 gap-1">
-      {['日', '一', '二', '三', '四', '五', '六'].map(d => (
-        <div key={d} className="text-center text-white/80 text-xs py-1">
-          {d}
-        </div>
-      ))}
-      {cells.map((date, i) => {
-        if (!date) return <div key={i} className="h-10" />;
-        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-        const item = days[key];
-        const type = item?.type || 'workday';
-        const typeConf = DAY_TYPES.find(t => t.value === type)!;
-        return (
-          <ContextMenu key={key}>
-            <ContextMenuTrigger asChild>
-              <button
-                onClick={() => onChange(key, nextType(type))}
-                disabled={disabled}
-                className={`h-10 rounded-md border border-white/30 text-xs text-white flex flex-col items-center justify-center hover:opacity-90 transition ${typeConf?.className} ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
-                title={`${key} ${typeConf.label}`}
-              >
-                <span>{date.getDate()}</span>
-                {item?.note && (
-                  <span className="text-xs text-white/80 leading-tight truncate max-w-full">
-                    {item.note}
-                  </span>
-                )}
-              </button>
-            </ContextMenuTrigger>
-            <ContextMenuContent>
-              <ContextMenuItem onClick={() => onChange(key, nextType(type))}>
-                <Edit3 className="h-4 w-4 mr-2" />
-                切換為{nextType(type) === 'holiday' ? '假日' : '工作日'}
-              </ContextMenuItem>
-              <ContextMenuItem onClick={() => onEditNote(key, item?.note || '')}>
-                <MessageSquare className="h-4 w-4 mr-2" />
-                {item?.note ? '編輯備註' : '添加備註'}
-              </ContextMenuItem>
-            </ContextMenuContent>
-          </ContextMenu>
-        );
-      })}
-    </div>
-  );
-}
-
-export function CalendarEditor({ calendar, onClose }: Props) {
-  const { toast } = useToast();
-  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
-  const [daysMap, setDaysMap] = useState<Record<string, CalendarDayItem>>({});
-  const [saving, setSaving] = useState(false);
-  const [meta, setMeta] = useState({
-    name: calendar.name,
-    description: calendar.description || '',
-  });
-  const [noteDialog, setNoteDialog] = useState<{ open: boolean; date: string; note: string }>({
-    open: false,
-    date: '',
-    note: '',
-  });
-  const year = calendar.year;
-
-  // 使用行事曆 store
+function CalendarEditor() {
   const {
-    loadCalendarDays,
-    saveMonthDaysData,
-    updateCalendarItem,
-    generateYearDaysData,
-    clearAllDaysData,
-    getCalendarDaysFromStoreData,
-    isLoading,
-  } = useCalendarData();
-
-  const loadMonth = useCallback(
-    async (forceReload: boolean = false) => {
-      const yearMonth = `${year}-${String(selectedMonth).padStart(2, '0')}`;
-
-      // 1. 先檢查 store 中是否有該月份的資料
-      const cachedDays = getCalendarDaysFromStoreData(calendar.slug, yearMonth);
-
-      // 2. 如果有快取資料且不強制重新載入，先顯示快取資料
-      if (cachedDays.length > 0 && !forceReload) {
-        const map: Record<string, CalendarDayItem> = {};
-        cachedDays.forEach(d => (map[d.date] = d));
-        setDaysMap(map);
-
-        // 如果已經有快取資料，不需要再載入
-        return;
-      }
-
-      // 3. 如果沒有快取資料或需要重新載入，則從 API 載入
-      try {
-        const list = await loadCalendarDays(
-          calendar.slug,
-          { month: selectedMonth, year },
-          forceReload
-        );
-
-        // 更新本地狀態
-        const map: Record<string, CalendarDayItem> = {};
-        list.forEach(d => (map[d.date] = d));
-        setDaysMap(map);
-      } catch (e: unknown) {
-        const errorMessage = e instanceof Error ? e.message : '載入月份資料失敗';
-        toast({ title: '載入月份資料失敗', description: errorMessage, variant: 'destructive' });
-      }
-    },
-    [year, selectedMonth, calendar.slug, getCalendarDaysFromStoreData, loadCalendarDays, toast]
-  );
+    slug,
+    calendar,
+    days,
+    saving,
+    loading,
+    editDialog,
+    confirmDialog,
+    loadCalendarData,
+    handleAddNew,
+    handleEdit,
+    handleDelete,
+    handleSaveEdit,
+    handleConfirmOverwrite,
+    onSave,
+    formatDate,
+    hasUnsavedChanges,
+    getChangeStats,
+    setEditDialog,
+    setConfirmDialog,
+  } = useCalendarEditor();
 
   useEffect(() => {
-    loadMonth();
-  }, [loadMonth]);
+    loadCalendarData();
+  }, [loadCalendarData]);
 
-  const onCellChange = (date: string, next: CalendarDayType) => {
-    setDaysMap(prev => {
-      const newMap = { ...prev };
-      if (next === 'workday') {
-        // workday 不需要儲存，從 map 中移除
-        delete newMap[date];
-      } else {
-        // holiday 需要儲存
-        newMap[date] = { ...(prev[date] || { date }), type: next };
-      }
-      return newMap;
-    });
+  // 如果沒有 slug，直接返回錯誤
+  if (!slug) {
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
+        <div className="text-white text-xl">無效的行事曆 ID</div>
+      </div>
+    );
+  }
+
+  const getDayTypeInfo = (type: CalendarDayType) => {
+    return DAY_TYPES.find(dt => dt.value === type) || DAY_TYPES[0];
   };
 
-  const onEditNote = (date: string, currentNote: string) => {
-    setNoteDialog({
-      open: true,
-      date,
-      note: currentNote,
-    });
-  };
+  // 取得變更統計
+  const changeStats = getChangeStats();
+  const hasChanges = hasUnsavedChanges();
 
-  const onSaveNote = () => {
-    const { date, note } = noteDialog;
-    setDaysMap(prev => {
-      const newMap = { ...prev };
-      if (note.trim()) {
-        // 有備註時保存
-        newMap[date] = {
-          ...(prev[date] || { date, type: 'workday' }),
-          note: note.trim(),
-        };
-      } else {
-        // 備註為空時，如果是workday則移除，holiday則保留但清空note
-        if (prev[date]?.type === 'workday') {
-          delete newMap[date];
-        } else {
-          newMap[date] = { ...prev[date], note: null };
-        }
-      }
-      return newMap;
-    });
-    setNoteDialog({ open: false, date: '', note: '' });
-  };
+  if (loading) {
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
+        <div className="text-white text-xl">載入中...</div>
+      </div>
+    );
+  }
 
-  const onSave = async () => {
-    setSaving(true);
-    try {
-      const yearMonth = `${year}-${String(selectedMonth).padStart(2, '0')}`;
-      const result = await saveMonthDaysData(calendar.slug, daysMap, yearMonth);
-      toast({
-        title: '已儲存',
-        description: result.message,
-      });
-    } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : '儲存失敗';
-      toast({ title: '儲存失敗', description: errorMessage, variant: 'destructive' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const onSaveMeta = async () => {
-    setUpdating(true);
-    try {
-      await updateCalendarItem(calendar.slug, { name: meta.name, description: meta.description });
-      toast({ title: '基本資料已更新' });
-    } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : '更新失敗';
-      toast({ title: '更新失敗', description: errorMessage, variant: 'destructive' });
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const onGenerateYear = async () => {
-    setGenerating(true);
-    try {
-      await generateYearDaysData(calendar.slug, { year });
-      toast({ title: '已生成全年工作日/假日' });
-      loadMonth();
-    } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : '生成失敗';
-      toast({ title: '生成失敗', description: errorMessage, variant: 'destructive' });
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const [clearDialogOpen, setClearDialogOpen] = useState(false);
-  const [clearing, setClearing] = useState(false);
-  const [generating, setGenerating] = useState(false);
-  const [updating, setUpdating] = useState(false);
-
-  const onClearAll = async () => {
-    setClearing(true);
-    try {
-      await clearAllDaysData(calendar.slug);
-      setDaysMap({});
-      toast({ title: '已清除所有日期' });
-      setClearDialogOpen(false); // 清除成功後才關閉對話框
-    } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : '清除失敗';
-      toast({ title: '清除失敗', description: errorMessage, variant: 'destructive' });
-      // 清除失敗時不關閉對話框，讓用戶重試
-    } finally {
-      setClearing(false);
-    }
-  };
+  if (!calendar) {
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 flex items-center justify-center">
+        <div className="text-white text-xl">找不到行事曆</div>
+      </div>
+    );
+  }
 
   return (
-    <Card className="bg-white/30 border-white/40">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-white text-xl flex items-center gap-2">
-          <Calendar className="h-5 w-5" /> 編輯：{calendar.name}（{year}）
-        </CardTitle>
-        <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            className="bg-white/70"
-            onClick={onGenerateYear}
-            disabled={isLoading}
-          >
-            {generating ? '生成中...' : '生成全年'}
-          </Button>
-          <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" disabled={isLoading}>
-                清除全部
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>確認清除</AlertDialogTitle>
-                <AlertDialogDescription>
-                  您確定要清除「{calendar.name}」的所有日期設定嗎？此操作無法復原。
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={clearing}>取消</AlertDialogCancel>
-                <DeleteConfirmButton onClick={onClearAll} disabled={clearing} isLoading={clearing}>
-                  確認清除
-                </DeleteConfirmButton>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <Button
-            variant="ghost"
-            className="text-white"
-            onClick={() => loadMonth(true)}
-            title="重新載入月份資料"
-            disabled={isLoading}
-          >
-            <RefreshCcw className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" className="text-white" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-3 flex-wrap">
-          <Input
-            value={meta.name}
-            onChange={e => setMeta(v => ({ ...v, name: e.target.value }))}
-            className="bg-white/60 w-56"
-            placeholder="名稱"
-            disabled={updating || isLoading}
-          />
-          <Input
-            value={meta.description}
-            onChange={e => setMeta(v => ({ ...v, description: e.target.value }))}
-            className="bg-white/60 w-72"
-            placeholder="描述（選填）"
-            disabled={updating || isLoading}
-          />
-          <UpdateButton className="" onClick={onSaveMeta} disabled={isLoading} isLoading={updating}>
-            更新資料
-          </UpdateButton>
-          <div className="flex-1" />
-          <Select
-            value={String(selectedMonth)}
-            onValueChange={v => setSelectedMonth(parseInt(v))}
-            disabled={generating || isLoading}
-          >
-            <SelectTrigger className="h-9 bg-white/60 w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-                <SelectItem key={m} value={String(m)}>
-                  {m} 月
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {/* <div className="flex gap-2">
-            {DAY_TYPES.map(t => (
-              <Badge key={t.value} className={t.className}>{t.label}</Badge>
-            ))}
-          </div> */}
-          <SaveButton
-            onClick={onSave}
-            disabled={isLoading}
-            isLoading={saving}
-            className="bg-green-500"
-          >
-            儲存當月
-          </SaveButton>
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden">
+      {/* 動態背景漸層 */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-purple-400/20 via-transparent to-transparent"></div>
+
+      <div className="relative z-10 w-full">
+        {/* 頁面標題區域 */}
+        <div className="w-full px-4 lg:px-8 pt-32 md:pt-36 pb-8">
+          <div className="flex items-center space-x-4 mb-6">
+            <Button
+              variant="ghost"
+              className="text-white hover:bg-white/20"
+              onClick={() => window.history.back()}
+            >
+              <ArrowLeft className="h-5 w-5 mr-2" />
+              返回
+            </Button>
+            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/30 shadow-lg">
+              <Calendar className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">
+                編輯行事曆 - {calendar.name}
+              </h1>
+              <p className="text-white/80 text-lg font-medium drop-shadow-md">
+                年份：{calendar.year} | 管理所有日期設定
+              </p>
+              {hasChanges && (
+                <div className="mt-2 flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                  <span className="text-yellow-200 text-sm font-medium">
+                    有未儲存的變更：新增 {changeStats.new} 筆，修改 {changeStats.modified} 筆，刪除{' '}
+                    {changeStats.deleted} 筆
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        <MonthGrid
-          year={year}
-          month={selectedMonth}
-          days={daysMap}
-          onChange={onCellChange}
-          onEditNote={onEditNote}
-          disabled={generating || isLoading}
-        />
-      </CardContent>
+        {/* 主要內容 */}
+        <div className="w-full px-4 lg:px-8 pb-8">
+          <Card className="bg-white/30 backdrop-blur-xl border-white/40">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-white">行事曆日期列表</CardTitle>
+              <div className="flex gap-2">
+                <AddButton className="bg-white/60" onClick={handleAddNew} disabled={saving}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  新增日期
+                </AddButton>
+                <SaveButton
+                  className={`${hasChanges ? 'bg-green-500/80 hover:bg-green-500' : 'bg-white/60'} ${hasChanges ? 'animate-pulse' : ''}`}
+                  onClick={onSave}
+                  disabled={saving || !hasChanges}
+                  isLoading={saving}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {hasChanges ? '儲存變更' : '已儲存'}
+                </SaveButton>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-white/20 bg-white/10">
+                      <TableHead className="text-white font-semibold">日期</TableHead>
+                      <TableHead className="text-white font-semibold">類型</TableHead>
+                      <TableHead className="text-white font-semibold">備註</TableHead>
+                      <TableHead className="text-white font-semibold">操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {days.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-white/60 py-8">
+                          尚無日期資料
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      days
+                        .filter(day => !day._isDeleted) // 過濾掉已標記刪除的項目
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                        .map(day => {
+                          const dayTypeInfo = getDayTypeInfo(day.type);
+                          const isModified = day._isNew || day._isModified;
 
-      {/* 備註編輯對話框 */}
+                          return (
+                            <TableRow
+                              key={day.date}
+                              className={`border-white/10 hover:bg-white/5 ${isModified ? 'bg-yellow-500/10' : ''}`}
+                            >
+                              <TableCell className="text-white font-medium">
+                                <div className="flex items-center space-x-2">
+                                  {formatDate(day.date)}
+                                  {day._isNew && (
+                                    <Badge className="bg-green-500/80 text-white text-xs">
+                                      新增
+                                    </Badge>
+                                  )}
+                                  {day._isModified && !day._isNew && (
+                                    <Badge className="bg-blue-500/80 text-white text-xs">
+                                      修改
+                                    </Badge>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className={dayTypeInfo.className}>{dayTypeInfo.label}</Badge>
+                              </TableCell>
+                              <TableCell className="text-white/80">{day.note || '-'}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center space-x-2">
+                                  <EditButton
+                                    size="sm"
+                                    className="bg-white/70"
+                                    onClick={() => handleEdit(day)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </EditButton>
+                                  <DeleteButton
+                                    size="sm"
+                                    className="bg-red-500/20 hover:bg-red-500/30"
+                                    onClick={() => handleDelete(day.date)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </DeleteButton>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* 編輯對話框 */}
       <Dialog
-        open={noteDialog.open}
-        onOpenChange={open => setNoteDialog(prev => ({ ...prev, open }))}
+        open={editDialog.open}
+        onOpenChange={open => setEditDialog(prev => ({ ...prev, open }))}
       >
-        <DialogContent>
+        <DialogContent className="bg-white/95 backdrop-blur-xl">
           <DialogHeader>
-            <DialogTitle>編輯備註 - {noteDialog.date}</DialogTitle>
+            <DialogTitle>{editDialog.isNew ? '新增日期' : '編輯日期'}</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
-            <Textarea
-              value={noteDialog.note}
-              onChange={e => setNoteDialog(prev => ({ ...prev, note: e.target.value }))}
-              placeholder="輸入備註..."
-              className="min-h-[100px]"
-              disabled={isLoading}
-            />
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">日期</label>
+              <Input
+                type="date"
+                value={editDialog.day?.date || ''}
+                min={`${calendar?.year || new Date().getFullYear()}-01-01`}
+                max={`${calendar?.year || new Date().getFullYear()}-12-31`}
+                onChange={e =>
+                  setEditDialog(prev => ({
+                    ...prev,
+                    day: prev.day ? { ...prev.day, date: e.target.value } : null,
+                  }))
+                }
+                className="mt-1"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                年份固定為 {calendar?.year || new Date().getFullYear()}
+              </p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">類型</label>
+              <Select
+                value={editDialog.day?.type || 'holiday'}
+                onValueChange={(value: CalendarDayType) =>
+                  setEditDialog(prev => ({
+                    ...prev,
+                    day: prev.day ? { ...prev.day, type: value } : null,
+                  }))
+                }
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DAY_TYPES.map(type => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium">備註</label>
+              <Input
+                value={editDialog.day?.note || ''}
+                onChange={e =>
+                  setEditDialog(prev => ({
+                    ...prev,
+                    day: prev.day ? { ...prev.day, note: e.target.value } : null,
+                  }))
+                }
+                placeholder="輸入備註..."
+                className="mt-1"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setNoteDialog({ open: false, date: '', note: '' })}
-              disabled={isLoading}
+              onClick={() => setEditDialog({ open: false, day: null, isNew: false })}
             >
               取消
             </Button>
-            <Button onClick={onSaveNote} disabled={isLoading}>
-              確定
-            </Button>
+            <SaveButton onClick={handleSaveEdit}>{editDialog.isNew ? '新增' : '儲存'}</SaveButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+
+      {/* 覆蓋確認對話框 */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={open => setConfirmDialog(prev => ({ ...prev, open }))}
+        onConfirm={handleConfirmOverwrite}
+        title="日期已存在"
+        description={`日期 ${confirmDialog.day ? formatDate(confirmDialog.day.date) : ''} 已存在，是否要覆蓋現有資料？`}
+        confirmText="覆蓋"
+        cancelText="取消"
+        variant="warning"
+      />
+    </div>
   );
 }
+
+export default CalendarEditor;

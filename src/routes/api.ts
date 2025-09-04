@@ -29,6 +29,7 @@ export const routes = {
   approvalCenter: '/approval-center',
   systemSettings: '/system-settings',
   holidayManagement: '/holiday-management',
+  calendarEditor: '/calendar-editor',
   leaveTypeManagement: '/leave-type-management',
   overtimeManagement: '/overtime-management',
   overtimeManagementPage: '/overtime-management-page',

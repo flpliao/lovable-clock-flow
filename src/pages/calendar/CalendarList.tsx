@@ -21,22 +21,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { RefreshCcw, Calendar, Edit3, Trash2 } from 'lucide-react';
+import { RefreshCcw, Calendar, Trash2, Edit3 } from 'lucide-react';
 import { CalendarItem } from '@/types/calendar';
 import { useCalendarData } from '@/hooks/useCalendarData';
 import { useToast } from '@/components/ui/use-toast';
-import { CalendarEditDialog } from '@/components/calendar/CalendarEditDialog';
+import { useNavigate } from 'react-router-dom';
+
 import { CalendarCreateDialog } from '@/components/calendar/CalendarCreateDialog';
 import PaginationControl from '@/components/PaginationControl';
-import { AddButton, EditButton, DeleteButton } from '@/components/common/buttons';
+import { AddButton, DeleteButton, EditButton } from '@/components/common/buttons';
 
 export function CalendarList() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState<number | 'all'>(currentYear);
   const [keyword, setKeyword] = useState('');
-  const [editing, setEditing] = useState<CalendarItem | null>(null);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
 
@@ -90,18 +91,12 @@ export function CalendarList() {
     }
   };
 
-  const handleEdit = (calendar: CalendarItem) => {
-    setEditing(calendar);
-    setEditDialogOpen(true);
-  };
-
-  const handleCloseEdit = () => {
-    setEditDialogOpen(false);
-    setEditing(null);
-  };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleEdit = (calendar: CalendarItem) => {
+    navigate(`/calendar-editor/${calendar.slug}`);
   };
 
   return (
@@ -245,9 +240,6 @@ export function CalendarList() {
 
       {/* 新增行事曆彈出視窗 */}
       <CalendarCreateDialog isOpen={createDialogOpen} onClose={() => setCreateDialogOpen(false)} />
-
-      {/* 編輯彈出視窗 */}
-      <CalendarEditDialog calendar={editing} isOpen={editDialogOpen} onClose={handleCloseEdit} />
     </div>
   );
 }

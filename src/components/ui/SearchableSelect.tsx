@@ -54,7 +54,9 @@ const SearchableSelect = ({
           className={cn('justify-between w-full', className)}
           disabled={disabled}
         >
-          {selectedOption ? selectedOption.label : placeholder}
+          <span className={cn(!selectedOption && 'text-muted-foreground')}>
+            {selectedOption ? selectedOption.label : placeholder}
+          </span>
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>

@@ -1,8 +1,8 @@
 import { Badge } from '@/components/ui/badge';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PaidType } from '@/constants/leave';
+import { cn } from '@/lib/utils';
 import { LeaveType } from '@/types/leaveType';
-import classNames from 'classnames';
 import { AlertCircle, DollarSign, FileText } from 'lucide-react';
 
 interface LeaveTypeDetailCardProps {
@@ -24,11 +24,12 @@ export function LeaveTypeDetailCard({ leaveType }: LeaveTypeDetailCardProps) {
           <DollarSign className="h-4 w-4 text-white/80" />
           <span className="text-white/80 text-sm">薪資狀況：</span>
           <Badge
-            className={classNames('border-0', {
-              'bg-yellow-500/20 text-yellow-700': leaveType.paid_type === PaidType.HALF,
-              'bg-green-500/20 text-green-700': leaveType.paid_type === PaidType.PAID,
-              'bg-red-500/20 text-red-700': leaveType.paid_type === PaidType.UNPAID,
-            })}
+            className={cn(
+              'border-0',
+              leaveType.paid_type === PaidType.HALF && 'bg-yellow-500/20 text-yellow-700',
+              leaveType.paid_type === PaidType.PAID && 'bg-green-500/20 text-green-700',
+              leaveType.paid_type === PaidType.UNPAID && 'bg-red-500/20 text-red-700'
+            )}
           >
             {leaveType.paid_type === PaidType.HALF
               ? '半薪'

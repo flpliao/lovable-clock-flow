@@ -1,5 +1,5 @@
 import { AddButton } from '@/components/common/buttons';
-import DeleteDialog from '@/components/common/dialogs/DeleteDialog';
+import DeleteConfirmDialog from '@/components/common/dialogs/DeleteConfirmDialog';
 import PageHeader from '@/components/layouts/PageHeader';
 import PageLayout from '@/components/layouts/PageLayout';
 import { CreateLeaveTypeDialog } from '@/components/leave/CreateLeaveTypeDialog';
@@ -76,7 +76,7 @@ export default function LeaveTypeManagement() {
         onSave={handleUpdateLeaveType}
       />
 
-      <DeleteDialog
+      <DeleteConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={() => handleDelete(deleteLeaveType)}

@@ -36,7 +36,7 @@ const DAY_TYPES: { value: CalendarDayType; label: string; className: string }[] 
   { value: 'holiday', label: '假日', className: 'bg-red-100 text-red-800' },
 ];
 
-export function CalendarEditor() {
+function CalendarEditor() {
   const {
     slug,
     calendar,
@@ -300,3 +300,5 @@ export function CalendarEditor() {
     </div>
   );
 }
+
+export default CalendarEditor;

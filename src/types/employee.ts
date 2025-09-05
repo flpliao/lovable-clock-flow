@@ -10,6 +10,8 @@ export interface Employee {
   email: string;
   department_slug?: string;
   department?: Department;
+  role_name?: string;
+  role?: Role;
   start_date?: string;
   roles?: Role[];
   work_schedules?: WorkSchedule[];

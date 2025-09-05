@@ -2,6 +2,7 @@ import { CancelButton, UpdateButton } from '@/components/common/buttons';
 import CustomFormLabel from '@/components/common/CustomFormLabel';
 import DepartmentSelect from '@/components/common/DepartmentSelect';
 import GenderSelect from '@/components/common/GenderSelect';
+import RolesSelect from '@/components/common/RolesSelect';
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ const employeeFormSchema = z.object({
   department_slug: z.string().min(1, '請選擇部門'),
   start_date: z.string().optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
+  role_name: z.string().min(1, '請選擇權限'),
 });
 
 type EmployeeFormData = z.infer<typeof employeeFormSchema>;
@@ -59,18 +61,21 @@ const EditEmployeeForm = ({
       department_slug: employee?.department?.slug || '',
       start_date: employee?.start_date || '',
       phone: employee?.phone || '',
+      role_name: employee?.roles?.[0]?.name || '',
     },
   });
 
   // 當 employee 資料變更時，更新表單預設值
   useEffect(() => {
     if (employee) {
+      console.log(employee);
       form.reset({
         no: employee.no,
         gender: employee.gender,
         name: employee.name,
         email: employee.email,
         department_slug: employee.department?.slug,
+        role_name: employee.roles?.[0]?.name || '',
         start_date: employee.start_date || '',
         phone: employee.phone || '',
       });
@@ -88,6 +93,7 @@ const EditEmployeeForm = ({
         name: data.name,
         email: data.email,
         department_slug: data.department_slug,
+        role_name: data.role_name,
         start_date: data.start_date,
         phone: data.phone,
       };
@@ -192,7 +198,7 @@ const EditEmployeeForm = ({
               />
             </div>
 
-            {/* 電子郵件 */}
+            {/* 電子郵件和職位並排 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -206,6 +212,24 @@ const EditEmployeeForm = ({
                         {...field}
                         className="bg-background border-input text-foreground"
                         placeholder="請輸入電子郵件"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="role_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <CustomFormLabel required>權限</CustomFormLabel>
+                    <FormControl>
+                      <RolesSelect
+                        selectedRole={field.value}
+                        onRoleChange={field.onChange}
+                        className="w-full"
                       />
                     </FormControl>
                     <FormMessage />

@@ -49,6 +49,13 @@ export const apiRoutes = {
     me: `${API_URL}/employee/auth/me`,
     forgotPassword: `${API_URL}/employee/auth/forgot-password`,
   },
+  role: {
+    index: `${API_URL}/employee/roles`,
+    show: (slug: string) => `${API_URL}/employee/roles/${slug}`,
+    store: `${API_URL}/employee/roles`,
+    update: (slug: string) => `${API_URL}/employee/roles/${slug}`,
+    destroy: (slug: string) => `${API_URL}/employee/roles/${slug}`,
+  },
   employee: {
     updateEmail: `${API_URL}/employee/profile/email`,
     updatePassword: `${API_URL}/employee/profile/password`,

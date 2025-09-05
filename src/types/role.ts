@@ -7,19 +7,14 @@ export interface Permission {
 }
 
 export interface Role {
-  id: string;
+  id: number;
   name: string;
-  description?: string | null;
   created_at?: string;
   updated_at?: string;
-  is_system_role?: boolean;
   permissions?: Permission[];
 }
 
 export interface NewRole {
-  id: string;
   name: string;
-  description?: string | null;
-  is_system_role?: boolean;
   permissions?: Permission[];
 }

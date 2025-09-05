@@ -29,9 +29,9 @@ const employeeFormSchema = z.object({
   name: z.string().min(1, '姓名不能為空').max(50, '姓名最多50個字元'),
   email: z.string().email('請輸入有效的電子郵件').min(1, '電子郵件不能為空'),
   department_slug: z.string().min(1, '請選擇部門'),
+  role_name: z.string().min(1, '請選擇權限'),
   start_date: z.string().optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
-  role_name: z.string().min(1, '請選擇權限'),
 });
 
 type EmployeeFormData = z.infer<typeof employeeFormSchema>;
@@ -59,16 +59,15 @@ const EditEmployeeForm = ({
       name: employee?.name || '',
       email: employee?.email || '',
       department_slug: employee?.department?.slug || '',
+      role_name: employee?.roles?.[0]?.name || '',
       start_date: employee?.start_date || '',
       phone: employee?.phone || '',
-      role_name: employee?.roles?.[0]?.name || '',
     },
   });
 
   // 當 employee 資料變更時，更新表單預設值
   useEffect(() => {
     if (employee) {
-      console.log(employee);
       form.reset({
         no: employee.no,
         gender: employee.gender,
@@ -97,6 +96,7 @@ const EditEmployeeForm = ({
         start_date: data.start_date,
         phone: data.phone,
       };
+
       const result = await onSubmit(employee.slug, employeeData);
       if (result) {
         handleClose();

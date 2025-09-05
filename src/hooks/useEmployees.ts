@@ -78,6 +78,28 @@ export function useEmployees() {
     }
   };
 
+  const handleChangePassword = async ({
+    slug,
+    password,
+    password_confirmation,
+  }: {
+    slug: string;
+    password: string;
+    password_confirmation: string;
+  }) => {
+    try {
+      // 使用 updateEmployee 來更新密碼
+      await updateEmployee(slug, {
+        password: password,
+        password_confirmation: password_confirmation,
+      });
+      return true;
+    } catch (error) {
+      showError(error.message);
+      return false;
+    }
+  };
+
   return {
     employees,
     isLoading,
@@ -85,6 +107,7 @@ export function useEmployees() {
     handleCreateEmployee,
     handleUpdateEmployee,
     handleDeleteEmployee,
+    handleChangePassword,
     getEmployeeBySlug,
   };
 }

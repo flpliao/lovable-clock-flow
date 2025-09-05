@@ -1,7 +1,9 @@
 import { CancelButton, UpdateButton } from '@/components/common/buttons';
 import CustomFormLabel from '@/components/common/CustomFormLabel';
 import DepartmentSelect from '@/components/common/DepartmentSelect';
+import EmployeeSelect from '@/components/common/EmployeeSelect';
 import GenderSelect from '@/components/common/GenderSelect';
+import RolesSelect from '@/components/common/RolesSelect';
 import {
   Dialog,
   DialogContent,
@@ -28,6 +30,8 @@ const employeeFormSchema = z.object({
   name: z.string().min(1, '姓名不能為空').max(50, '姓名最多50個字元'),
   email: z.string().email('請輸入有效的電子郵件').min(1, '電子郵件不能為空'),
   department_slug: z.string().min(1, '請選擇部門'),
+  role_name: z.string().min(1, '請選擇權限'),
+  direct_manager_slug: z.string().optional().or(z.literal('')),
   start_date: z.string().optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
 });
@@ -57,6 +61,8 @@ const EditEmployeeForm = ({
       name: employee?.name || '',
       email: employee?.email || '',
       department_slug: employee?.department?.slug || '',
+      role_name: employee?.roles?.[0]?.name || '',
+      direct_manager_slug: employee?.direct_manager?.slug || '',
       start_date: employee?.start_date || '',
       phone: employee?.phone || '',
     },
@@ -71,6 +77,8 @@ const EditEmployeeForm = ({
         name: employee.name,
         email: employee.email,
         department_slug: employee.department?.slug,
+        role_name: employee.roles?.[0]?.name || '',
+        direct_manager_slug: employee.direct_manager?.slug || '',
         start_date: employee.start_date || '',
         phone: employee.phone || '',
       });
@@ -88,9 +96,12 @@ const EditEmployeeForm = ({
         name: data.name,
         email: data.email,
         department_slug: data.department_slug,
+        role_name: data.role_name,
+        direct_manager_slug: data.direct_manager_slug,
         start_date: data.start_date,
         phone: data.phone,
       };
+
       const result = await onSubmit(employee.slug, employeeData);
       if (result) {
         handleClose();
@@ -192,7 +203,7 @@ const EditEmployeeForm = ({
               />
             </div>
 
-            {/* 電子郵件 */}
+            {/* 電子郵件和職位並排 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -212,10 +223,50 @@ const EditEmployeeForm = ({
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="role_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <CustomFormLabel required>權限</CustomFormLabel>
+                    <FormControl>
+                      <RolesSelect
+                        selectedRole={field.value}
+                        onRoleChange={field.onChange}
+                        className="w-full"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
-            {/* 到職日期和聯絡電話並排 */}
+            {/* 直屬主管和到職日期並排 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="direct_manager_slug"
+                render={({ field }) => (
+                  <FormItem>
+                    <CustomFormLabel>直屬主管</CustomFormLabel>
+                    <FormControl>
+                      <EmployeeSelect
+                        selectedEmployee={field.value}
+                        onEmployeeChange={field.onChange}
+                        className="w-full"
+                        placeholder="請選擇直屬主管"
+                        searchPlaceholder="搜尋主管姓名..."
+                        includeRoles={['admin', 'manager']}
+                        excludeEmployeeSlug={employee?.slug}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="start_date"
@@ -233,7 +284,10 @@ const EditEmployeeForm = ({
                   </FormItem>
                 )}
               />
+            </div>
 
+            {/* 聯絡電話 */}
+            <div className="grid grid-cols-1 gap-4">
               <FormField
                 control={form.control}
                 name="phone"

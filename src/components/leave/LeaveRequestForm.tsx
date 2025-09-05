@@ -130,7 +130,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         {/* 請假類型選擇 */}
-        <div className="backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
           <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假類型</h3>
           <FormField
             control={form.control}
@@ -170,7 +170,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
         )}
 
         {/* 請假日期時間 */}
-        <div className="backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
           <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假日期時間</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
@@ -236,7 +236,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
         </div>
 
         {/* 請假原因 */}
-        <div className="backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
           <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">請假原因</h3>
           <FormField
             control={form.control}
@@ -261,7 +261,7 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
         </div>
 
         {/* 附件欄位 */}
-        <div className="backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
           <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">附件上傳</h3>
           <FormField
             control={form.control}

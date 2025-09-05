@@ -101,7 +101,7 @@ export function CalendarList() {
 
   return (
     <div className="space-y-4">
-      <Card className="bg-white/0 backdrop-blur-xl border-white/40">
+      <Card className="bg-white/10 backdrop-blur-xl border-white/40">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-white">行事曆列表</CardTitle>
           <div className="flex gap-2">

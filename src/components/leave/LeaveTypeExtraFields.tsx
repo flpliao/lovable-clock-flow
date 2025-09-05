@@ -18,7 +18,7 @@ const LeaveTypeExtraFields = ({ form, leaveTypeCode }: LeaveTypeExtraFieldsProps
   }
 
   return (
-    <div className="backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
+    <div className="bg-white/10 backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
       <h3 className="text-lg font-semibold text-white drop-shadow-md mb-4">額外資訊</h3>
       <FormField
         control={form.control}

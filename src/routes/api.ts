@@ -64,6 +64,7 @@ export const apiRoutes = {
   checkin: {
     index: `${API_URL}/employee/check-in`,
     create: `${API_URL}/employee/check-in`,
+    monthlyAttendance: `${API_URL}/employee/check-in/monthly-attendance`,
   },
   checkinPoint: {
     index: `${API_URL}/employee/check-in/points`,

@@ -43,9 +43,21 @@ export const calculateOvertimeStartTime = (
 export const formatTimeString = (timeString: string): string => {
   if (!timeString) return '';
 
+  // 如果已經是 HH:MM 格式，直接返回
+  if (/^\d{2}:\d{2}$/.test(timeString)) {
+    return timeString;
+  }
+
+  // 如果是 HH:MM:SS 格式，取前5個字符
+  if (/^\d{2}:\d{2}:\d{2}$/.test(timeString)) {
+    return timeString.substring(0, 5);
+  }
+
+  // 嘗試使用 dayjs 解析
   const timeObj = dayjs(timeString);
   if (timeObj.isValid()) {
     return timeObj.format('HH:mm');
   }
+
   return timeString;
 };

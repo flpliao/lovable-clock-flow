@@ -1,5 +1,3 @@
-import type { MissedCheckinFormData } from '@/components/check-in/components/MissedCheckinFormFields';
-import MissedCheckinFormFields from '@/components/check-in/components/MissedCheckinFormFields';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -9,19 +7,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useCurrentUser } from '@/hooks/useStores';
-import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
-import { MissedCheckinValidationService } from '@/services/missedCheckinValidationService';
 import { Schedule } from '@/services/scheduleService';
 import { CheckInRecord } from '@/types';
-import { MissedCheckinRequest } from '@/types/missedCheckin';
-import { formatTime } from '@/utils/checkInUtils';
-import { formatTimeString } from '@/utils/dateTimeUtils';
+import { MissedCheckinRequest } from '@/services/missedCheckinService';
 import { format, isFuture } from 'date-fns';
 import { ChevronRight } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import MissedCheckinFormDialog from './MissedCheckinFormDialog';
 
 interface DateRecordDetailsProps {
   date: Date;
@@ -52,8 +45,6 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   getScheduleForDate,
   onDataRefresh,
 }) => {
-  const currentUser = useCurrentUser();
-  const { toast } = useToast();
   const isFutureDay = isFuture(date);
   const dateStr = format(date, 'yyyy-MM-dd');
   const hasSchedule = hasScheduleForDate(dateStr);
@@ -67,15 +58,8 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
 
   const [openDialog, setOpenDialog] = useState<null | 'checkin' | 'checkout'>(null);
   const navigate = useNavigate();
-  const [showMissedDialog, setShowMissedDialog] = useState(false);
-  const [missedFormData, setMissedFormData] = useState<MissedCheckinFormData>({
-    request_date: '',
-    missed_type: 'check_in',
-    requested_check_in_time: '',
-    requested_check_out_time: '',
-    reason: '',
-  });
-  const [missedLoading, setMissedLoading] = useState(false);
+  const [showMissedFormDialog, setShowMissedFormDialog] = useState(false);
+  const [missedType, setMissedType] = useState<'check_in' | 'check_out'>('check_in');
 
   // 卡片陣列
   const cards: React.ReactNode[] = [];
@@ -106,7 +90,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   else {
     // 上班未打卡
     if (!hasCheckIn) {
-      const approvedCheckIn = approvedMissedRecords.find(r => r.missed_type === 'check_in');
+      const approvedCheckIn = approvedMissedRecords.find(r => r.request_type === 'check_in');
       if (!approvedCheckIn) {
         // 重新設計異常判斷邏輯 - 檢查是否需要檢查上班記錄
         const today = new Date();
@@ -160,7 +144,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
               <div className="font-medium text-gray-900">簽核中</div>
               <div className="text-xs text-gray-500 mt-1">
                 忘打卡申請（
-                {record.missed_type === 'check_in' ? '上班' : '下班'}）
+                {record.request_type === 'check_in' ? '上班' : '下班'}）
               </div>
             </div>
           </div>
@@ -170,7 +154,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
 
     // 下班未打卡
     if (!hasCheckOut) {
-      const approvedCheckOut = approvedMissedRecords.find(r => r.missed_type === 'check_out');
+      const approvedCheckOut = approvedMissedRecords.find(r => r.request_type === 'check_out');
       if (!approvedCheckOut) {
         // 重新設計異常判斷邏輯 - 檢查是否需要檢查下班記錄
         const today = new Date();
@@ -222,13 +206,13 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
             <Dot color="#2563eb" />
             <span className="font-medium text-gray-900">上班</span>
             <span className="ml-auto text-gray-700 font-bold">
-              {formatTime(selectedDateRecords.checkIn.timestamp)}
+              {selectedDateRecords.checkIn.checked_at}
             </span>
           </div>
           <div className="text-xs text-gray-500 mt-1">
-            {selectedDateRecords.checkIn.type === 'location'
-              ? `其他-${selectedDateRecords.checkIn.details.locationName}-定位打卡`
-              : `IP打卡 - ${selectedDateRecords.checkIn.details.ip}`}
+            {selectedDateRecords.checkIn.method === 'location'
+              ? `其他-${selectedDateRecords.checkIn.location_name || '未知位置'}-定位打卡`
+              : `IP打卡 - ${selectedDateRecords.checkIn.ip_address}`}
           </div>
         </div>
       );
@@ -245,13 +229,13 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
             <Dot color="#2563eb" />
             <span className="font-medium text-gray-900">下班</span>
             <span className="ml-auto text-gray-700 font-bold">
-              {formatTime(selectedDateRecords.checkOut.timestamp)}
+              {selectedDateRecords.checkOut.checked_at}
             </span>
           </div>
           <div className="text-xs text-gray-500 mt-1">
-            {selectedDateRecords.checkOut.type === 'location'
-              ? `其他-${selectedDateRecords.checkOut.details.locationName}-定位打卡`
-              : `IP打卡 - ${selectedDateRecords.checkOut.details.ip}`}
+            {selectedDateRecords.checkOut.method === 'location'
+              ? `其他-${selectedDateRecords.checkOut.location_name || '未知位置'}-定位打卡`
+              : `IP打卡 - ${selectedDateRecords.checkOut.ip_address}`}
           </div>
         </div>
       );
@@ -259,7 +243,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
 
     // 無下班卡片但有已核准的下班忘打卡
     if (!hasCheckOut) {
-      const approvedCheckOut = approvedMissedRecords.find(r => r.missed_type === 'check_out');
+      const approvedCheckOut = approvedMissedRecords.find(r => r.request_type === 'check_out');
       if (approvedCheckOut) {
         cards.push(
           <div
@@ -275,7 +259,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
 
     // 無上班卡片但有已核准的上班忘打卡
     if (!hasCheckIn) {
-      const approvedCheckIn = approvedMissedRecords.find(r => r.missed_type === 'check_in');
+      const approvedCheckIn = approvedMissedRecords.find(r => r.request_type === 'check_in');
       if (approvedCheckIn) {
         cards.push(
           <div
@@ -290,161 +274,10 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
     }
   }
 
-  // 彈窗開啟時自動帶入日期與未打卡範圍
-  const handleOpenMissedDialog = (missedType?: 'check_in' | 'check_out') => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-
-    // 根據傳入的類型或當前狀態決定忘打卡類型
-    let missed_type: 'check_in' | 'check_out' = 'check_in';
-    let requested_check_in_time = '';
-    let requested_check_out_time = '';
-
-    if (missedType) {
-      // 如果指定了類型，使用指定的類型
-      missed_type = missedType;
-      if (missedType === 'check_in') {
-        requested_check_in_time = formatTimeString(schedule?.start_time || '09:30');
-      } else {
-        requested_check_out_time = formatTimeString(schedule?.end_time || '17:30');
-      }
-    } else {
-      // 原本的邏輯：根據現有記錄判斷
-      if (!selectedDateRecords.checkIn) {
-        missed_type = 'check_in';
-        requested_check_in_time = formatTimeString(schedule?.start_time || '09:30');
-      } else if (!selectedDateRecords.checkOut) {
-        missed_type = 'check_out';
-        requested_check_out_time = formatTimeString(schedule?.end_time || '17:30');
-      }
-    }
-
-    setMissedFormData({
-      request_date: dateStr,
-      missed_type,
-      requested_check_in_time,
-      requested_check_out_time,
-      reason: '',
-    });
-    setShowMissedDialog(true);
-  };
-
-  const handleSubmitMissedCheckin = async (formData: MissedCheckinFormData) => {
-    if (!currentUser?.id) {
-      console.error('無法獲取用戶ID');
-      toast({
-        title: '提交失敗',
-        description: '無法獲取用戶資訊，請重新登入',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // 驗證必填欄位
-    if (!formData.reason.trim()) {
-      toast({
-        title: '提交失敗',
-        description: '請填寫申請原因',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (formData.missed_type === 'check_in' && !formData.requested_check_in_time) {
-      toast({
-        title: '提交失敗',
-        description: '請選擇上班時間',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (formData.missed_type === 'check_out' && !formData.requested_check_out_time) {
-      toast({
-        title: '提交失敗',
-        description: '請選擇下班時間',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setMissedLoading(true);
-    try {
-      // 檢查是否已有重複申請
-      const validationResult = await MissedCheckinValidationService.checkDuplicateRequest(
-        currentUser.id,
-        formData.request_date,
-        formData.missed_type
-      );
-
-      if (!validationResult.canSubmit) {
-        toast({
-          title: '無法提交申請',
-          description: validationResult.errorMessage,
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      // 驗證和格式化時間
-      let formattedCheckInTime = null;
-      let formattedCheckOutTime = null;
-
-      if (formData.requested_check_in_time) {
-        const checkInTimeStr = `${formData.request_date}T${formData.requested_check_in_time}:00`;
-        const checkInDate = new Date(checkInTimeStr);
-        if (isNaN(checkInDate.getTime())) {
-          throw new Error('上班時間格式不正確');
-        }
-        formattedCheckInTime = checkInDate.toISOString();
-      }
-
-      if (formData.requested_check_out_time) {
-        const checkOutTimeStr = `${formData.request_date}T${formData.requested_check_out_time}:00`;
-        const checkOutDate = new Date(checkOutTimeStr);
-        if (isNaN(checkOutDate.getTime())) {
-          throw new Error('下班時間格式不正確');
-        }
-        formattedCheckOutTime = checkOutDate.toISOString();
-      }
-
-      const { error } = await supabase.from('missed_checkin_requests').insert([
-        {
-          staff_id: currentUser.id,
-          request_date: formData.request_date,
-          missed_type: formData.missed_type,
-          requested_check_in_time: formattedCheckInTime,
-          requested_check_out_time: formattedCheckOutTime,
-          reason: formData.reason,
-        },
-      ]);
-
-      if (error) {
-        console.error('Supabase 錯誤:', error);
-        throw new Error(error.message || '資料庫操作失敗');
-      }
-
-      // 提交成功
-      toast({
-        title: '申請已提交',
-        description: `忘打卡申請已成功提交，等待主管審核`,
-      });
-
-      setShowMissedDialog(false);
-
-      // 重新載入資料
-      if (onDataRefresh) {
-        await onDataRefresh();
-      }
-    } catch (error) {
-      console.error('提交忘打卡申請失敗:', error);
-      toast({
-        title: '提交失敗',
-        description: error instanceof Error ? error.message : '未知錯誤，請稍後再試',
-        variant: 'destructive',
-      });
-    } finally {
-      setMissedLoading(false);
-    }
+  // 處理忘打卡申請
+  const handleMissedCheckinRequest = (type: 'check_in' | 'check_out') => {
+    setMissedType(type);
+    setShowMissedFormDialog(true);
   };
 
   return (
@@ -490,7 +323,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
                 setOpenDialog(null);
                 // 根據當前的 openDialog 狀態傳遞對應的類型
                 const missedType = openDialog === 'checkin' ? 'check_in' : 'check_out';
-                handleOpenMissedDialog(missedType);
+                handleMissedCheckinRequest(missedType);
               }}
               type="button"
             >
@@ -507,48 +340,16 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
         </DialogContent>
       </Dialog>
 
-      {/* 忘打卡申請自訂 Dialog */}
-      <Dialog
-        open={showMissedDialog}
-        onOpenChange={v => {
-          if (!v) setShowMissedDialog(false);
-        }}
-      >
-        <DialogContent className="max-w-md w-full rounded-t-2xl rounded-2xl p-0 overflow-hidden">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold px-6 pt-6 pb-2">忘記打卡申請</DialogTitle>
-          </DialogHeader>
-          <form
-            className="space-y-4 px-6 pb-6 pt-2"
-            onSubmit={async e => {
-              e.preventDefault();
-              await handleSubmitMissedCheckin(missedFormData);
-            }}
-          >
-            <MissedCheckinFormFields
-              formData={missedFormData}
-              onFormDataChange={updates => setMissedFormData(prev => ({ ...prev, ...updates }))}
-              disabledFields={{
-                request_date: true, // 申請日期自動填入且不可修改
-                missed_type: true, // 申請類型自動填入且不可修改
-              }}
-            />
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowMissedDialog(false)}
-                disabled={missedLoading}
-              >
-                取消
-              </Button>
-              <Button type="submit" disabled={missedLoading}>
-                {missedLoading ? '提交中...' : '提交申請'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {/* 忘打卡申請表單彈窗 */}
+      <MissedCheckinFormDialog
+        open={showMissedFormDialog}
+        onOpenChange={setShowMissedFormDialog}
+        date={date}
+        missedType={missedType}
+        scheduleStartTime={schedule?.start_time}
+        scheduleEndTime={schedule?.end_time}
+        onSuccess={onDataRefresh}
+      />
     </div>
   );
 };

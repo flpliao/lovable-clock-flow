@@ -137,7 +137,7 @@ function CalendarEditor() {
       </div>
 
       {/* 主要內容 */}
-      <Card className="bg-white/10 backdrop-blur-xl border-white/40">
+      <Card className="bg-transparent backdrop-blur-xl border-white/40">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-white">行事曆日期列表</CardTitle>
           <div className="flex gap-2">

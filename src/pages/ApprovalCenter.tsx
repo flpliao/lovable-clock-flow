@@ -119,7 +119,7 @@ const ApprovalCenter = () => {
 
       {/* Main Content Area */}
       {activeTab && (
-        <div className="bg-white/10 backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
+        <div className="backdrop-blur-xl border border-white/30 rounded-3xl shadow-xl p-6">
           <Tabs value={activeTab} className="w-full">
             <TabsContent value="pending-leave" className="mt-0">
               <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">

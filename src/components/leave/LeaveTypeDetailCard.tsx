@@ -11,7 +11,7 @@ interface LeaveTypeDetailCardProps {
 
 export function LeaveTypeDetailCard({ leaveType }: LeaveTypeDetailCardProps) {
   return (
-    <div className="bg-white/10 backdrop-blur-xl border border-white/30 rounded-2xl shadow-lg">
+    <div className="backdrop-blur-xl border border-white/30 rounded-2xl shadow-lg">
       <CardHeader>
         <CardTitle className="text-white text-lg flex items-center gap-2">
           <AlertCircle className="h-5 w-5" />

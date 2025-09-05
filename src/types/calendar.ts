@@ -15,7 +15,7 @@ export interface CalendarItem {
   year: number;
   name: string;
   description?: string | null;
-  calendarDays?: CalendarDayItem[];
+  calendar_days?: CalendarDayItem[];
 }
 
 export interface CalendarIndexParams {

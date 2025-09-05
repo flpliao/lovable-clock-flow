@@ -234,7 +234,7 @@ export const useCalendarEditor = () => {
         });
 
       // 執行批次更新
-      const result = await batchUpdateCalendarDays(slug, { updates: updatesToSave });
+      await batchUpdateCalendarDays(slug, { updates: updatesToSave });
 
       // 更新本地狀態，移除暫存標記
       setDays(prev =>
@@ -260,10 +260,7 @@ export const useCalendarEditor = () => {
           return cleanDay;
         });
 
-      showSuccess(
-        `成功儲存：新增 ${result.created_count} 筆，更新 ${result.updated_count} 筆`,
-        '已儲存'
-      );
+      showSuccess(``, '已儲存');
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '儲存失敗';
       showError(errorMessage, '儲存失敗');

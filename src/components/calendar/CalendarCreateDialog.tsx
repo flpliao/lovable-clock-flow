@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useCalendarData } from '@/hooks/useCalendarData';
+import { useHolidayManagement } from '@/hooks/useHolidayManagement';
 import { useToast } from '@/components/ui/use-toast';
 import { AddButton, CancelButton } from '@/components/common/buttons';
 
@@ -35,7 +35,7 @@ export function CalendarCreateDialog({ isOpen, onClose }: Props) {
   });
   const [creating, setCreating] = useState(false);
 
-  const { createCalendarItem } = useCalendarData();
+  const { createCalendarItem } = useHolidayManagement();
 
   const onCreate = async () => {
     if (!newCalendar.name.trim()) {

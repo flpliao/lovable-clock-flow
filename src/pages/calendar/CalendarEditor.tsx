@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useCalendarEditor } from '@/hooks/useCalendarEditor';
+import { useHolidayEditor } from '@/hooks/useHolidayEditor';
 import { cn } from '@/lib/utils';
 import { CalendarDayType } from '@/types/calendar';
 import { formatDate } from '@/utils/dateUtils';
@@ -60,7 +60,7 @@ function CalendarEditor() {
     getChangeStats,
     setEditDialog,
     setConfirmDialog,
-  } = useCalendarEditor();
+  } = useHolidayEditor();
 
   useEffect(() => {
     loadCalendarData();

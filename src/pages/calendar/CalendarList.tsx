@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { useCalendarData } from '@/hooks/useCalendarData';
+import { useHolidayManagement } from '@/hooks/useHolidayManagement';
 import { CalendarItem } from '@/types/calendar';
 import { Calendar, Edit3, RefreshCcw, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
@@ -36,14 +36,14 @@ export function CalendarList() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  // 使用行事曆 store
+  // 使用假日管理 hook
   const {
     calendars: items,
     pagination,
     isLoading: loading,
     loadCalendars,
     deleteCalendarItem,
-  } = useCalendarData();
+  } = useHolidayManagement();
 
   const load = useCallback(async () => {
     try {

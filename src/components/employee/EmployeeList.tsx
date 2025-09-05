@@ -52,6 +52,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
             <TableHead>Email</TableHead>
             <TableHead>職位</TableHead>
             <TableHead>角色</TableHead>
+            <TableHead>直屬主管</TableHead>
             <TableHead className="text-right">操作</TableHead>
           </TableRow>
         </TableHeader>
@@ -63,6 +64,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
               <TableCell>{employee.email || '未設定'}</TableCell>
               <TableCell>{employee.position || '未設定'}</TableCell>
               <TableCell>{employee.roles?.map(role => role.name).join(', ') || '未設定'}</TableCell>
+              <TableCell>{employee.direct_manager?.name || '未設定'}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end space-x-2">
                   <Button

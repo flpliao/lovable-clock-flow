@@ -146,8 +146,8 @@ export const approveMissedCheckInRequest = async (
 export const rejectMissedCheckInRequest = async (
   slug: string,
   rejectionReason: string
-): Promise<boolean> => {
-  const { status, message } = await callApiAndDecode(
+): Promise<MissedCheckInRequest> => {
+  const { data, status, message } = await callApiAndDecode(
     axiosWithEmployeeAuth().put(apiRoutes.missedCheckInRequest.reject(slug), {
       rejection_reason: rejectionReason,
     })
@@ -157,12 +157,12 @@ export const rejectMissedCheckInRequest = async (
     throw new Error(`拒絕忘記打卡申請失敗: ${message}`);
   }
 
-  return true;
+  return data as MissedCheckInRequest;
 };
 
 // 取消忘記打卡申請
-export const cancelMissedCheckInRequest = async (slug: string): Promise<boolean> => {
-  const { status, message } = await callApiAndDecode(
+export const cancelMissedCheckInRequest = async (slug: string): Promise<MissedCheckInRequest> => {
+  const { data, status, message } = await callApiAndDecode(
     axiosWithEmployeeAuth().post(apiRoutes.missedCheckInRequest.cancel(slug))
   );
 
@@ -170,5 +170,5 @@ export const cancelMissedCheckInRequest = async (slug: string): Promise<boolean>
     throw new Error(`取消忘記打卡申請失敗: ${message}`);
   }
 
-  return true;
+  return data as MissedCheckInRequest;
 };

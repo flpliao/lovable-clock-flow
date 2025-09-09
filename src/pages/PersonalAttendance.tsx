@@ -1,109 +1,118 @@
-import AttendanceCalendarView from '@/components/attendance/AttendanceCalendarView';
-import { useAttendanceRecords } from '@/hooks/useAttendanceRecords';
-import { useMissedCheckinRecords } from '@/hooks/useMissedCheckinRecords';
-import { useUserSchedules } from '@/hooks/useUserSchedules';
-import { useCurrentUser } from '@/hooks/useStores';
-import { useCallback, useEffect } from 'react';
+import React from 'react';
 import { Calendar } from 'lucide-react';
+import PageLayout from '@/components/layouts/PageLayout';
+import AttendanceCalendar from '@/components/attendance/AttendanceCalendar';
+import DateRecordDetails from '@/components/attendance/DateRecordDetails';
+import { useAttendanceData } from '@/hooks/useAttendanceData';
 
-const PersonalAttendance = () => {
-  // 使用新的 Zustand hooks
-  const currentUser = useCurrentUser();
-
-  const { date, setDate, selectedDateRecords, checkInRecords, refreshData } =
-    useAttendanceRecords();
-
-  const { missedCheckinRecords, loadMissedCheckinRecords, refreshMissedCheckinRecords } =
-    useMissedCheckinRecords();
-
+const PersonalAttendance: React.FC = () => {
   const {
-    userSchedules,
-    loadUserSchedules,
-    refreshUserSchedules,
-    hasScheduleForDate,
-    getScheduleForDate,
-  } = useUserSchedules();
-
-  // 載入頁面時重新整理資料
-  const handleDataRefresh = useCallback(async () => {
-    if (currentUser?.id) {
-      console.log('載入月曆視圖，重新整理資料');
-      await refreshData();
-      await refreshMissedCheckinRecords();
-      await refreshUserSchedules(date);
-    }
-  }, [currentUser?.id, refreshData, refreshMissedCheckinRecords, refreshUserSchedules, date]);
-
-  useEffect(() => {
-    handleDataRefresh();
-  }, [handleDataRefresh]);
-
-  // 載入忘打卡記錄
-  useEffect(() => {
-    if (currentUser?.id) {
-      loadMissedCheckinRecords();
-    }
-  }, [currentUser?.id, loadMissedCheckinRecords]);
-
-  // 載入排班記錄
-  useEffect(() => {
-    if (currentUser?.id) {
-      loadUserSchedules(date);
-    }
-  }, [currentUser?.id, loadUserSchedules, date]);
+    selectedDate,
+    setSelectedDate,
+    currentYear,
+    currentMonth,
+    changeMonth,
+    highlightedDates,
+    selectedDateAttendance,
+    monthlyData,
+    loading,
+    error,
+    fetchMonthlyData,
+  } = useAttendanceData();
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 relative overflow-hidden mobile-fullscreen">
-      {/* 動態背景漸層 */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-blue-400/80 via-blue-500/60 to-purple-600/80" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-purple-400/20 via-transparent to-transparent" />
+    <PageLayout>
+      <div className="space-y-6">
+        {/* 標題 */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center shadow-lg">
+            <Calendar className="h-5 w-5 text-white" />
+          </div>
+          <h2 className="text-xl font-semibold text-white drop-shadow-md">打卡記錄</h2>
+        </div>
 
-      {/* 浮動光點效果 */}
-      <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-white/30 rounded-full animate-pulse" />
-      <div
-        className="absolute top-3/5 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse"
-        style={{ animationDelay: '2s' }}
-      />
-      <div
-        className="absolute top-1/2 left-2/3 w-1 h-1 bg-white/50 rounded-full animate-pulse"
-        style={{ animationDelay: '4s' }}
-      />
-      <div
-        className="absolute top-1/3 right-1/4 w-2 h-2 bg-blue-200/40 rounded-full animate-pulse"
-        style={{ animationDelay: '6s' }}
-      />
+        {/* 主要內容區域 */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {/* 月曆區域 */}
+          <div className="flex justify-center ">
+            <AttendanceCalendar
+              selectedDate={selectedDate}
+              onDateSelect={setSelectedDate}
+              currentMonth={currentMonth}
+              currentYear={currentYear}
+              onMonthChange={changeMonth}
+              highlightedDates={highlightedDates}
+              monthlyData={monthlyData}
+              loading={loading}
+            />
+          </div>
 
-      <div className="relative z-10 w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-8 pb-6 py-[50px]">
-          <div className="space-y-6">
-            {/* 標題 */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-500/80 rounded-xl flex items-center justify-center shadow-lg">
-                <Calendar className="h-5 w-5 text-white" />
-              </div>
-              <h2 className="text-xl font-semibold text-white drop-shadow-md">打卡記錄</h2>
-            </div>
-
-            {/* 月曆視圖內容 */}
-            <div className="mt-6">
-              <AttendanceCalendarView
-                date={date}
-                setDate={setDate}
-                selectedDateRecords={selectedDateRecords}
-                checkInRecords={checkInRecords}
-                missedCheckinRecords={missedCheckinRecords}
-                userSchedules={userSchedules}
-                hasScheduleForDate={hasScheduleForDate}
-                getScheduleForDate={getScheduleForDate}
-                onMonthChange={handleDataRefresh}
-                onDataRefresh={handleDataRefresh}
+          {/* 狀態區域 */}
+          <div className="space-y-4">
+            {/* 選中日期詳細資訊 */}
+            {selectedDate && (
+              <DateRecordDetails
+                date={selectedDate}
+                selectedDateRecords={{
+                  checkIn: selectedDateAttendance?.check_in_records.find(
+                    record => record.type === 'check_in' && record.status === 'success'
+                  ),
+                  checkOut: selectedDateAttendance?.check_in_records.find(
+                    record => record.type === 'check_out' && record.status === 'success'
+                  ),
+                }}
+                recordsCount={selectedDateAttendance ? 1 : 0}
+                missedCheckinRecords={[]} // 這裡需要從 hook 中獲取
+                hasScheduleForDate={(_dateStr: string) => {
+                  // 檢查是否有排班
+                  return selectedDateAttendance?.is_workday || false;
+                }}
+                getScheduleForDate={(_dateStr: string) => {
+                  // 返回排班資訊
+                  return selectedDateAttendance?.work_schedule
+                    ? {
+                        id: selectedDateAttendance.work_schedule.id.toString(),
+                        user_id: '',
+                        work_date: _dateStr,
+                        start_time: selectedDateAttendance.work_schedule.clock_in_time,
+                        end_time: selectedDateAttendance.work_schedule.clock_out_time,
+                        time_slot: '',
+                        created_by: '',
+                        created_at: '',
+                        updated_at: '',
+                      }
+                    : undefined;
+                }}
+                onDataRefresh={async () => {
+                  // 重新載入資料
+                  await fetchMonthlyData(currentYear, currentMonth);
+                }}
               />
-            </div>
+            )}
+
+            {/* 載入狀態 */}
+            {loading && (
+              <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-4">
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                  <span className="ml-2 text-white">載入中...</span>
+                </div>
+              </div>
+            )}
+
+            {/* 錯誤狀態 */}
+            {error && (
+              <div className="bg-red-100/20 backdrop-blur-2xl rounded-2xl border border-red-300/30 shadow-lg p-4">
+                <div className="text-red-700">
+                  <p className="font-medium">載入失敗</p>
+                  <p className="text-sm mt-1">{error}</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

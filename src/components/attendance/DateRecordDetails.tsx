@@ -15,6 +15,7 @@ import { ChevronRight } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MissedCheckinFormDialog from './MissedCheckinFormDialog';
+import dayjs from 'dayjs';
 
 interface DateRecordDetailsProps {
   date: Date;
@@ -89,7 +90,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   // 有排班的工作日
   else {
     // 上班未打卡
-    if (!hasCheckIn) {
+    if (!hasCheckIn || (hasCheckIn && selectedDateRecords.checkIn.status === 'failed')) {
       const approvedCheckIn = approvedMissedRecords.find(r => r.request_type === 'check_in');
       if (!approvedCheckIn) {
         // 重新設計異常判斷邏輯 - 檢查是否需要檢查上班記錄
@@ -196,7 +197,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
     }
 
     // 上班卡片
-    if (hasCheckIn) {
+    if (hasCheckIn && selectedDateRecords.checkIn.status === 'success') {
       cards.push(
         <div
           key="checkin"
@@ -206,12 +207,12 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
             <Dot color="#2563eb" />
             <span className="font-medium text-gray-900">上班</span>
             <span className="ml-auto text-gray-700 font-bold">
-              {selectedDateRecords.checkIn.checked_at}
+              {dayjs(selectedDateRecords.checkIn.checked_at).format('HH:mm:ss')}
             </span>
           </div>
           <div className="text-xs text-gray-500 mt-1">
             {selectedDateRecords.checkIn.method === 'location'
-              ? `其他-${selectedDateRecords.checkIn.location_name || '未知位置'}-定位打卡`
+              ? `定位打卡-${selectedDateRecords.checkIn.location_name || '未知位置'}`
               : `IP打卡 - ${selectedDateRecords.checkIn.ip_address}`}
           </div>
         </div>
@@ -229,12 +230,12 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
             <Dot color="#2563eb" />
             <span className="font-medium text-gray-900">下班</span>
             <span className="ml-auto text-gray-700 font-bold">
-              {selectedDateRecords.checkOut.checked_at}
+              {dayjs(selectedDateRecords.checkOut.checked_at).format('HH:mm:ss')}
             </span>
           </div>
           <div className="text-xs text-gray-500 mt-1">
             {selectedDateRecords.checkOut.method === 'location'
-              ? `其他-${selectedDateRecords.checkOut.location_name || '未知位置'}-定位打卡`
+              ? `定位打卡-${selectedDateRecords.checkOut.location_name || '未知位置'}`
               : `IP打卡 - ${selectedDateRecords.checkOut.ip_address}`}
           </div>
         </div>
@@ -283,7 +284,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   return (
     <div className="space-y-3">
       {cards.length > 0 ? (
-        cards.map((card, index) => <React.Fragment key={index}>{card}</React.Fragment>)
+        cards.map((card, index) => <div key={index}>{card}</div>)
       ) : (
         <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6">
           <span className="font-medium text-gray-900">無相關記錄</span>

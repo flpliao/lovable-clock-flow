@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import {
   AttendanceRecord,
-  ApiCheckInRecord,
   fetchMonthlyAttendance,
   fetchCheckInRecords,
   clearMonthlyCache,
 } from '@/services/attendanceService';
+import { CheckInRecord } from '@/types';
 
 interface AttendanceState {
   // 月曆資料
@@ -14,7 +14,7 @@ interface AttendanceState {
   currentMonth: number;
 
   // 打卡記錄
-  checkInRecords: ApiCheckInRecord[];
+  checkInRecords: CheckInRecord[];
 
   // 載入狀態
   loading: boolean;

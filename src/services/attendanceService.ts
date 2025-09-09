@@ -1,6 +1,7 @@
 import { apiRoutes } from '@/routes';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 import { attendanceCache } from './attendanceCache';
+import { CheckInRecord } from '@/types';
 
 export interface AttendanceRecord {
   date: string;
@@ -26,6 +27,7 @@ export interface AttendanceRecord {
     | 'scheduled'
     | 'pending'
     | 'in_progress';
+  check_in_records: CheckInRecord[];
   check_in_time: string | null;
   check_out_time: string | null;
   is_late: boolean;
@@ -38,21 +40,6 @@ export interface MonthlyAttendanceResponse {
   year: number;
   month: number;
   attendance_records: Record<string, AttendanceRecord>;
-}
-
-export interface ApiCheckInRecord {
-  id: number;
-  employee_id: number;
-  type: 'check_in' | 'check_out';
-  status: 'success' | 'failed';
-  latitude: string;
-  longitude: string;
-  distance: number | null;
-  ip_address: string;
-  method: 'ip' | 'location';
-  location_name: string | null;
-  created_at: string;
-  updated_at: string;
 }
 
 /**
@@ -86,11 +73,11 @@ export const fetchMonthlyAttendance = async (
 /**
  * 取得員工打卡紀錄
  */
-export const fetchCheckInRecords = async (): Promise<ApiCheckInRecord[]> => {
+export const fetchCheckInRecords = async (): Promise<CheckInRecord[]> => {
   const cacheKey = attendanceCache.generateKey('checkin');
 
   // 檢查快取
-  const cachedData = attendanceCache.get<ApiCheckInRecord[]>(cacheKey);
+  const cachedData = attendanceCache.get<CheckInRecord[]>(cacheKey);
   if (cachedData) {
     console.log('使用快取的打卡記錄');
     return cachedData;

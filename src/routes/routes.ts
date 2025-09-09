@@ -19,7 +19,7 @@ const ScheduleManagement = LazyWithSuspense(() => import('@/pages/ScheduleManage
 const ShiftManagement = LazyWithSuspense(() => import('@/pages/ShiftManagement'));
 
 const StaffDashboard = LazyWithSuspense(() => import('@/pages/StaffDashboard'));
-const PersonalAttendance = LazyWithSuspense(() => import('@/pages/PersonalAttendancePage'));
+const PersonalAttendance = LazyWithSuspense(() => import('@/pages/PersonalAttendance'));
 const AttendanceRecords = LazyWithSuspense(() => import('@/pages/AttendanceRecordsPage'));
 const OvertimeRequest = LazyWithSuspense(() => import('@/pages/OvertimeRequest'));
 const OvertimeHistory = LazyWithSuspense(() => import('@/pages/OvertimeHistoryPage'));

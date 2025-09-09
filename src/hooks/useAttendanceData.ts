@@ -60,7 +60,6 @@ export const useAttendanceData = () => {
 
     Object.entries(monthlyData).forEach(([dateStr, record]) => {
       const recordDate = new Date(dateStr);
-
       // 只對今天和過去日期顯示異常狀態
       if (
         recordDate <= today &&

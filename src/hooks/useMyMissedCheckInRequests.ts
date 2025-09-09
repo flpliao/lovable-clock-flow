@@ -20,6 +20,7 @@ export const useMyMissedCheckInRequests = () => {
     setMyLoaded,
     setLoading,
   } = useMissedCheckInRequestsStore();
+  const { removeRecord } = useMyCheckInRecordsStore();
   const { addRecord } = useMyCheckInRecordsStore();
 
   // 載入我的忘記打卡申請
@@ -64,8 +65,9 @@ export const useMyMissedCheckInRequests = () => {
   // 取消忘記打卡申請
   const handleCancelMyMissedCheckInRequest = async (slug: string) => {
     try {
-      await cancelMissedCheckInRequest(slug);
+      const missedCheckInRequest = await cancelMissedCheckInRequest(slug);
       updateRequest(slug, { status: RequestStatus.CANCELLED });
+      removeRecord(missedCheckInRequest.check_in_record.id);
     } catch (error) {
       showError(error.message);
     }

@@ -1,4 +1,5 @@
 import { CheckInRecord } from '@/types/checkIn';
+import dayjs from 'dayjs';
 import { create } from 'zustand';
 
 // 打卡記錄 Store
@@ -204,7 +205,7 @@ export const useMyCheckInRecordsStore = create<MyCheckInRecordsState>((set, get)
   getRecordsByDate: date => {
     const { records } = get();
     return records.filter(record => {
-      const recordDate = new Date(record.created_at || '').toISOString().split('T')[0];
+      const recordDate = dayjs(record.checked_at).format('YYYY-MM-DD');
       return recordDate === date;
     });
   },
@@ -213,7 +214,7 @@ export const useMyCheckInRecordsStore = create<MyCheckInRecordsState>((set, get)
     const { records } = get();
     const today = new Date().toISOString().split('T')[0];
     return records.filter(record => {
-      const recordDate = new Date(record.created_at || '').toISOString().split('T')[0];
+      const recordDate = dayjs(record.checked_at).format('YYYY-MM-DD');
       return recordDate === today;
     });
   },
@@ -223,8 +224,8 @@ export const useMyCheckInRecordsStore = create<MyCheckInRecordsState>((set, get)
     if (records.length === 0) return undefined;
 
     return records.reduce((latest, current) => {
-      const latestTime = new Date(latest.created_at || '').getTime();
-      const currentTime = new Date(current.created_at || '').getTime();
+      const latestTime = dayjs(latest.checked_at).valueOf();
+      const currentTime = dayjs(current.checked_at).valueOf();
       return currentTime > latestTime ? current : latest;
     });
   },
@@ -233,7 +234,7 @@ export const useMyCheckInRecordsStore = create<MyCheckInRecordsState>((set, get)
     const { records } = get();
     const today = new Date().toISOString().split('T')[0];
     return records.some(record => {
-      const recordDate = new Date(record.created_at || '').toISOString().split('T')[0];
+      const recordDate = dayjs(record.checked_at).format('YYYY-MM-DD');
       return recordDate === today && record.type === 'check_in';
     });
   },
@@ -242,7 +243,7 @@ export const useMyCheckInRecordsStore = create<MyCheckInRecordsState>((set, get)
     const { records } = get();
     const today = new Date().toISOString().split('T')[0];
     return records.some(record => {
-      const recordDate = new Date(record.created_at || '').toISOString().split('T')[0];
+      const recordDate = dayjs(record.checked_at).format('YYYY-MM-DD');
       return recordDate === today && record.type === 'check_out';
     });
   },
@@ -251,7 +252,7 @@ export const useMyCheckInRecordsStore = create<MyCheckInRecordsState>((set, get)
     const { records } = get();
     const today = new Date().toISOString().split('T')[0];
     const todayRecords = records.filter(record => {
-      const recordDate = new Date(record.created_at || '').toISOString().split('T')[0];
+      const recordDate = dayjs(record.checked_at).format('YYYY-MM-DD');
       return recordDate === today;
     });
 

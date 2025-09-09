@@ -9,10 +9,9 @@ import {
 } from '@/components/ui/dialog';
 import { Schedule } from '@/services/scheduleService';
 import { CheckInRecord } from '@/types';
-import { MissedCheckinRequest } from '@/services/missedCheckinService';
 import { format, isFuture } from 'date-fns';
 import { ChevronRight } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MissedCheckinFormDialog from './MissedCheckinFormDialog';
 import dayjs from 'dayjs';
@@ -24,7 +23,6 @@ interface DateRecordDetailsProps {
     checkOut?: CheckInRecord;
   };
   recordsCount: number;
-  missedCheckinRecords?: MissedCheckinRequest[];
   hasScheduleForDate: (date: string) => boolean;
   getScheduleForDate: (date: string) => Schedule | undefined;
   onDataRefresh?: () => Promise<void>;
@@ -41,7 +39,6 @@ const Dot = ({ color }: { color: string }) => (
 const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   date,
   selectedDateRecords,
-  missedCheckinRecords = [],
   hasScheduleForDate,
   getScheduleForDate,
   onDataRefresh,
@@ -50,230 +47,231 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   const dateStr = format(date, 'yyyy-MM-dd');
   const hasSchedule = hasScheduleForDate(dateStr);
   const schedule = getScheduleForDate(dateStr);
-  const hasCheckIn = !!selectedDateRecords.checkIn;
-  const hasCheckOut = !!selectedDateRecords.checkOut;
-
-  const dayMissedRecords = missedCheckinRecords.filter(record => record.request_date === dateStr);
-  const pendingMissedRecords = dayMissedRecords.filter(record => record.status === 'pending');
-  const approvedMissedRecords = dayMissedRecords.filter(record => record.status === 'approved');
+  const { checkIn: checkInRecord, checkOut: checkOutRecord } = selectedDateRecords;
+  const hasCheckIn = !!checkInRecord;
+  const hasCheckOut = !!checkOutRecord;
 
   const [openDialog, setOpenDialog] = useState<null | 'checkin' | 'checkout'>(null);
   const navigate = useNavigate();
   const [showMissedFormDialog, setShowMissedFormDialog] = useState(false);
   const [missedType, setMissedType] = useState<'check_in' | 'check_out'>('check_in');
 
-  // 卡片陣列
-  const cards: React.ReactNode[] = [];
+  // 提取時間判斷邏輯
+  const timeValidation = useMemo(() => {
+    const today = new Date();
+    const isToday = today.toDateString() === date.toDateString();
+    const now = new Date();
 
-  // 如果是未來日期
-  if (isFutureDay) {
-    cards.push(
-      <div
-        key="future"
-        className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6"
-      >
-        <span className="font-medium text-gray-900">未來日期</span>
-      </div>
-    );
-  }
-  // 如果沒有排班（休假）
-  else if (!hasSchedule) {
-    cards.push(
-      <div
-        key="holiday"
-        className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6"
-      >
-        <span className="font-medium text-gray-900">休假日（無排班）</span>
-      </div>
-    );
-  }
-  // 有排班的工作日
-  else {
-    // 上班未打卡
-    if (!hasCheckIn || (hasCheckIn && selectedDateRecords.checkIn.status === 'failed')) {
-      const approvedCheckIn = approvedMissedRecords.find(r => r.request_type === 'check_in');
-      if (!approvedCheckIn) {
-        // 重新設計異常判斷邏輯 - 檢查是否需要檢查上班記錄
-        const today = new Date();
-        const isToday = today.toDateString() === date.toDateString();
-        const now = new Date();
-
-        const shouldCheckIn = (() => {
-          if (isToday) {
-            // 當天：只有當前時間超過上班時間時才需要檢查
-            if (!schedule?.start_time) return false;
-            const [startHour, startMinute] = schedule.start_time.split(':').map(Number);
-            const workStartTime = new Date();
-            workStartTime.setHours(startHour, startMinute, 0, 0);
-            return now > workStartTime;
-          } else {
-            // 過去日期：一定要有上班記錄
-            return true;
-          }
-        })();
-
-        if (shouldCheckIn) {
-          cards.push(
-            <div
-              key="no-checkin"
-              className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6 cursor-pointer hover:bg-blue-100/40 transition"
-              onClick={() => setOpenDialog('checkin')}
-            >
-              <div className="flex items-center justify-between w-full">
-                <span className="flex items-center">
-                  <Dot color="#ef4444" />
-                  <span className="font-medium text-gray-900">上班未打卡</span>
-                </span>
-                <ChevronRight className="h-5 w-5 text-gray-900" />
-              </div>
-            </div>
-          );
-        }
+    const shouldCheckTime = (timeStr: string | undefined) => {
+      if (!timeStr) return false;
+      if (isToday) {
+        const [hour, minute] = timeStr.split(':').map(Number);
+        const workTime = new Date();
+        workTime.setHours(hour, minute, 0, 0);
+        return now > workTime;
       }
+      return true; // 過去日期一定要檢查
+    };
+
+    return {
+      shouldCheckIn: shouldCheckTime(schedule?.start_time),
+      shouldCheckOut: shouldCheckTime(schedule?.end_time),
+    };
+  }, [date, schedule]);
+
+  // 提取打卡狀態判斷邏輯
+  const checkStatus = useMemo(() => {
+    const isApprovedMissedCheckIn =
+      checkInRecord?.source === 'missed_check_in' && checkInRecord?.approval_status === 'approved';
+    const isApprovedMissedCheckOut =
+      checkOutRecord?.source === 'missed_check_in' &&
+      checkOutRecord?.approval_status === 'approved';
+    const isPendingMissedCheckIn =
+      checkInRecord?.source === 'missed_check_in' && checkInRecord?.approval_status === 'pending';
+    const isPendingMissedCheckOut =
+      checkOutRecord?.source === 'missed_check_in' && checkOutRecord?.approval_status === 'pending';
+
+    return {
+      isApprovedMissedCheckIn,
+      isApprovedMissedCheckOut,
+      isPendingMissedCheckIn,
+      isPendingMissedCheckOut,
+      hasValidCheckIn: hasCheckIn && checkInRecord?.status === 'success',
+      hasValidCheckOut: hasCheckOut && checkOutRecord?.status === 'success',
+    };
+  }, [checkInRecord, checkOutRecord, hasCheckIn, hasCheckOut]);
+
+  // 共用卡片生成函數
+  const createCard = (
+    key: string,
+    content: React.ReactNode,
+    onClick?: () => void,
+    className?: string
+  ) => (
+    <div
+      key={key}
+      className={`bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6 ${
+        onClick ? 'cursor-pointer hover:bg-blue-100/40 transition' : ''
+      } ${className || ''}`}
+      onClick={onClick}
+    >
+      {content}
+    </div>
+  );
+
+  const createStatusCard = (title: string, subtitle?: string, color = '#ef4444') => (
+    <div className="flex items-center">
+      <Dot color={color} />
+      <span className="font-medium text-gray-900">{title}</span>
+      {subtitle && <div className="text-xs text-gray-500 mt-1 ml-2">{subtitle}</div>}
+    </div>
+  );
+
+  const createCheckRecordCard = (
+    record: CheckInRecord,
+    type: 'checkin' | 'checkout',
+    isApprovedMissed: boolean
+  ) => (
+    <div className="flex items-center">
+      <Dot color="#2563eb" />
+      <span className="font-medium text-gray-900">
+        {isApprovedMissed
+          ? `${type === 'checkin' ? '上班' : '下班'}（忘打卡已核准）`
+          : type === 'checkin'
+            ? '上班'
+            : '下班'}
+      </span>
+      <span className="ml-auto text-gray-700 font-bold">
+        {dayjs(record.checked_at).format('HH:mm:ss')}
+      </span>
+    </div>
+  );
+
+  const createCheckRecordSubtitle = (record: CheckInRecord) => (
+    <div className="text-xs text-gray-500 mt-1">
+      {record.method === 'location'
+        ? `定位打卡-${record.location_name || '未知位置'}`
+        : `IP打卡 - ${record.ip_address}`}
+    </div>
+  );
+
+  // 生成卡片陣列
+  const cards = useMemo(() => {
+    const cardList: React.ReactNode[] = [];
+
+    // 未來日期
+    if (isFutureDay) {
+      cardList.push(createCard('future', createStatusCard('未來日期')));
+      return cardList;
     }
 
-    // 忘打卡申請（簽核中）卡片
-    if (pendingMissedRecords.length > 0) {
-      pendingMissedRecords.forEach((record, idx) => {
-        cards.push(
-          <div
-            key={`pending-missed-${idx}`}
-            className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6"
-          >
-            <Dot color="#ef4444" />
-            <div>
-              <div className="font-medium text-gray-900">簽核中</div>
-              <div className="text-xs text-gray-500 mt-1">
-                忘打卡申請（
-                {record.request_type === 'check_in' ? '上班' : '下班'}）
-              </div>
-            </div>
-          </div>
-        );
-      });
+    // 休假日
+    if (!hasSchedule) {
+      cardList.push(createCard('holiday', createStatusCard('休假日（無排班）')));
+      return cardList;
+    }
+
+    // 有排班的工作日
+    const {
+      isApprovedMissedCheckIn,
+      isApprovedMissedCheckOut,
+      isPendingMissedCheckIn,
+      isPendingMissedCheckOut,
+      hasValidCheckIn,
+      hasValidCheckOut,
+    } = checkStatus;
+
+    // 上班未打卡
+    if (!hasValidCheckIn && !isApprovedMissedCheckIn && timeValidation.shouldCheckIn) {
+      cardList.push(
+        createCard(
+          'no-checkin',
+          <div className="flex items-center justify-between w-full">
+            {createStatusCard('上班未打卡')}
+            <ChevronRight className="h-5 w-5 text-gray-900" />
+          </div>,
+          () => setOpenDialog('checkin')
+        )
+      );
     }
 
     // 下班未打卡
-    if (!hasCheckOut) {
-      const approvedCheckOut = approvedMissedRecords.find(r => r.request_type === 'check_out');
-      if (!approvedCheckOut) {
-        // 重新設計異常判斷邏輯 - 檢查是否需要檢查下班記錄
-        const today = new Date();
-        const isToday = today.toDateString() === date.toDateString();
-        const now = new Date();
-
-        const shouldCheckOut = (() => {
-          if (isToday) {
-            // 當天：只有當前時間超過下班時間時才需要檢查
-            if (!schedule?.end_time) return false;
-            const [endHour, endMinute] = schedule.end_time.split(':').map(Number);
-            const workEndTime = new Date();
-            workEndTime.setHours(endHour, endMinute, 0, 0);
-            return now > workEndTime;
-          } else {
-            // 過去日期：一定要有下班記錄
-            return true;
-          }
-        })();
-
-        if (shouldCheckOut) {
-          cards.push(
-            <div
-              key="no-checkout"
-              className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6 cursor-pointer hover:bg-blue-100/40 transition"
-              onClick={() => setOpenDialog('checkout')}
-            >
-              <div className="flex items-center justify-between w-full">
-                <span className="flex items-center">
-                  <Dot color="#ef4444" />
-                  <span className="font-medium text-gray-900">下班未打卡</span>
-                </span>
-                <ChevronRight className="h-5 w-5 text-gray-900" />
-              </div>
-            </div>
-          );
-        }
-      }
-    }
-
-    // 上班卡片
-    if (hasCheckIn && selectedDateRecords.checkIn.status === 'success') {
-      cards.push(
-        <div
-          key="checkin"
-          className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6"
-        >
-          <div className="flex items-center">
-            <Dot color="#2563eb" />
-            <span className="font-medium text-gray-900">上班</span>
-            <span className="ml-auto text-gray-700 font-bold">
-              {dayjs(selectedDateRecords.checkIn.checked_at).format('HH:mm:ss')}
-            </span>
-          </div>
-          <div className="text-xs text-gray-500 mt-1">
-            {selectedDateRecords.checkIn.method === 'location'
-              ? `定位打卡-${selectedDateRecords.checkIn.location_name || '未知位置'}`
-              : `IP打卡 - ${selectedDateRecords.checkIn.ip_address}`}
-          </div>
-        </div>
+    if (!hasValidCheckOut && !isApprovedMissedCheckOut && timeValidation.shouldCheckOut) {
+      cardList.push(
+        createCard(
+          'no-checkout',
+          <div className="flex items-center justify-between w-full">
+            {createStatusCard('下班未打卡')}
+            <ChevronRight className="h-5 w-5 text-gray-900" />
+          </div>,
+          () => setOpenDialog('checkout')
+        )
       );
     }
 
-    // 下班卡片
-    if (hasCheckOut) {
-      cards.push(
-        <div
-          key="checkout"
-          className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6"
-        >
-          <div className="flex items-center">
-            <Dot color="#2563eb" />
-            <span className="font-medium text-gray-900">下班</span>
-            <span className="ml-auto text-gray-700 font-bold">
-              {dayjs(selectedDateRecords.checkOut.checked_at).format('HH:mm:ss')}
-            </span>
+    // 忘打卡申請（簽核中）
+    if (isPendingMissedCheckIn) {
+      cardList.push(
+        createCard(
+          'pending-missed-checkin',
+          <div>
+            {createStatusCard('簽核中')}
+            <div className="text-xs text-gray-500 mt-1">忘打卡申請（上班）</div>
           </div>
-          <div className="text-xs text-gray-500 mt-1">
-            {selectedDateRecords.checkOut.method === 'location'
-              ? `定位打卡-${selectedDateRecords.checkOut.location_name || '未知位置'}`
-              : `IP打卡 - ${selectedDateRecords.checkOut.ip_address}`}
-          </div>
-        </div>
+        )
       );
     }
 
-    // 無下班卡片但有已核准的下班忘打卡
-    if (!hasCheckOut) {
-      const approvedCheckOut = approvedMissedRecords.find(r => r.request_type === 'check_out');
-      if (approvedCheckOut) {
-        cards.push(
-          <div
-            key="approved-missed-checkout"
-            className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6"
-          >
-            <Dot color="#22d3ee" />
-            <span className="font-medium text-gray-900">下班（忘打卡已核准）</span>
+    if (isPendingMissedCheckOut) {
+      cardList.push(
+        createCard(
+          'pending-missed-checkout',
+          <div>
+            {createStatusCard('簽核中')}
+            <div className="text-xs text-gray-500 mt-1">忘打卡申請（下班）</div>
           </div>
-        );
-      }
+        )
+      );
     }
 
-    // 無上班卡片但有已核准的上班忘打卡
-    if (!hasCheckIn) {
-      const approvedCheckIn = approvedMissedRecords.find(r => r.request_type === 'check_in');
-      if (approvedCheckIn) {
-        cards.push(
-          <div
-            key="approved-missed-checkin"
-            className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6"
-          >
-            <Dot color="#22d3ee" />
-            <span className="font-medium text-gray-900">上班（忘打卡已核准）</span>
+    // 上班記錄
+    if (
+      hasValidCheckIn &&
+      checkInRecord &&
+      (checkInRecord.source === 'normal' || isApprovedMissedCheckIn)
+    ) {
+      cardList.push(
+        createCard(
+          'checkin',
+          <div>
+            {createCheckRecordCard(checkInRecord, 'checkin', isApprovedMissedCheckIn)}
+            {createCheckRecordSubtitle(checkInRecord)}
           </div>
-        );
-      }
+        )
+      );
     }
-  }
+
+    // 下班記錄
+    if (
+      hasValidCheckOut &&
+      checkOutRecord &&
+      (checkOutRecord.source === 'normal' || isApprovedMissedCheckOut)
+    ) {
+      cardList.push(
+        createCard(
+          'checkout',
+          <div>
+            {createCheckRecordCard(checkOutRecord, 'checkout', isApprovedMissedCheckOut)}
+            {createCheckRecordSubtitle(checkOutRecord)}
+          </div>
+        )
+      );
+    }
+
+    return cardList.length > 0
+      ? cardList
+      : [createCard('no-records', createStatusCard('無相關記錄'))];
+  }, [isFutureDay, hasSchedule, checkStatus, timeValidation, checkInRecord, checkOutRecord]);
 
   // 處理忘打卡申請
   const handleMissedCheckinRequest = (type: 'check_in' | 'check_out') => {
@@ -283,13 +281,9 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
 
   return (
     <div className="space-y-3">
-      {cards.length > 0 ? (
-        cards.map((card, index) => <div key={index}>{card}</div>)
-      ) : (
-        <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6">
-          <span className="font-medium text-gray-900">無相關記錄</span>
-        </div>
-      )}
+      {cards.map((card, index) => (
+        <div key={index}>{card}</div>
+      ))}
 
       {/* 忘打卡申請彈窗 */}
       <Dialog

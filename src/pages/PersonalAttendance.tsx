@@ -62,7 +62,6 @@ const PersonalAttendance: React.FC = () => {
                   ),
                 }}
                 recordsCount={selectedDateAttendance ? 1 : 0}
-                missedCheckinRecords={[]} // 這裡需要從 hook 中獲取
                 hasScheduleForDate={(_dateStr: string) => {
                   // 檢查是否有排班
                   return selectedDateAttendance?.is_workday || false;

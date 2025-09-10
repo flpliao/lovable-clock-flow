@@ -3,7 +3,7 @@ import { Calendar } from 'lucide-react';
 import PageLayout from '@/components/layouts/PageLayout';
 import AttendanceCalendar from '@/components/attendance/AttendanceCalendar';
 import DateRecordDetails from '@/components/attendance/DateRecordDetails';
-import { useAttendanceData } from '@/hooks/useAttendanceData';
+import { useCheckInRecords } from '@/hooks/useCheckInRecords';
 
 const PersonalAttendance: React.FC = () => {
   const {
@@ -15,10 +15,10 @@ const PersonalAttendance: React.FC = () => {
     highlightedDates,
     selectedDateAttendance,
     monthlyData,
-    loading,
-    error,
-    fetchMonthlyData,
-  } = useAttendanceData();
+    monthlyLoading,
+    monthlyError,
+    loadMonthlyData,
+  } = useCheckInRecords();
 
   return (
     <PageLayout>
@@ -43,7 +43,7 @@ const PersonalAttendance: React.FC = () => {
               onMonthChange={changeMonth}
               highlightedDates={highlightedDates}
               monthlyData={monthlyData}
-              loading={loading}
+              loading={monthlyLoading}
             />
           </div>
 
@@ -84,13 +84,13 @@ const PersonalAttendance: React.FC = () => {
                 }}
                 onDataRefresh={async () => {
                   // 重新載入資料
-                  await fetchMonthlyData(currentYear, currentMonth);
+                  await loadMonthlyData(currentYear, currentMonth);
                 }}
               />
             )}
 
             {/* 載入狀態 */}
-            {loading && (
+            {monthlyLoading && (
               <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-4">
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
@@ -100,11 +100,11 @@ const PersonalAttendance: React.FC = () => {
             )}
 
             {/* 錯誤狀態 */}
-            {error && (
+            {monthlyError && (
               <div className="bg-red-100/20 backdrop-blur-2xl rounded-2xl border border-red-300/30 shadow-lg p-4">
                 <div className="text-red-700">
                   <p className="font-medium">載入失敗</p>
-                  <p className="text-sm mt-1">{error}</p>
+                  <p className="text-sm mt-1">{monthlyError}</p>
                 </div>
               </div>
             )}

@@ -4,7 +4,7 @@ import {
   fetchMonthlyAttendance,
   fetchCheckInRecords,
   clearMonthlyCache,
-} from '@/services/attendanceService';
+} from '@/services/checkInService';
 import { CheckInRecord } from '@/types';
 
 interface AttendanceState {

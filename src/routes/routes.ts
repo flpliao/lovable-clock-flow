@@ -27,7 +27,7 @@ const ScheduleStatistics = LazyWithSuspense(() => import('@/pages/ScheduleStatis
 const PersonnelManagement = LazyWithSuspense(() => import('@/pages/PersonnelManagement'));
 const RoleManagement = LazyWithSuspense(() => import('@/pages/Role'));
 const CompanyBranchManagement = LazyWithSuspense(() => import('@/pages/CompanyBranchManagement'));
-const HrManagement = LazyWithSuspense(() => import('@/pages/HRManagement'));
+const SalaryManagement = LazyWithSuspense(() => import('@/pages/SalaryManagement'));
 const ApprovalCenter = LazyWithSuspense(() => import('@/pages/ApprovalCenter'));
 const SystemSettings = LazyWithSuspense(() => import('@/pages/SystemSettings'));
 const HolidayManagement = LazyWithSuspense(() => import('@/pages/HolidayManagement'));
@@ -141,6 +141,13 @@ export const protectedRoutes: RouteConfig[] = [
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
   {
+    path: routes.salaryManagement,
+    name: '薪資管理',
+    component: SalaryManagement,
+    icon: 'dollarSign',
+    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
+  },
+  {
     path: routes.holidayManagement,
     name: '假日管理',
     component: HolidayManagement,
@@ -205,13 +212,6 @@ export const unFinishedRoutes: RouteConfig[] = [
     component: CompanyBranchManagement,
     icon: 'building',
     roles: [EmployeeRole.ADMIN],
-  },
-  {
-    path: routes.hrManagement,
-    name: '人力資源管理',
-    component: HrManagement,
-    icon: 'users',
-    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
   {
     path: routes.systemSettings,

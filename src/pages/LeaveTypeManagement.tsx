@@ -6,6 +6,7 @@ import { CreateLeaveTypeDialog } from '@/components/leave/CreateLeaveTypeDialog'
 import { EditLeaveTypeDialog } from '@/components/leave/EditLeaveTypeDialog';
 import { LeaveTypeStatsCards } from '@/components/leave/LeaveTypeStatsCards';
 import { LeaveTypeTable } from '@/components/leave/LeaveTypeTable';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLeaveType } from '@/hooks/useLeaveType';
 import { LeaveType } from '@/types/leaveType';
 import { Calendar } from 'lucide-react';
@@ -51,16 +52,27 @@ export default function LeaveTypeManagement() {
 
       <LeaveTypeStatsCards stats={stats} />
 
-      {/* 操作按鈕區域 */}
-      <div className="flex justify-end gap-3">
-        <AddButton
-          onClick={handleAdd}
-          buttonText="新增假別"
-          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-6 py-2.5 font-semibold"
-        />
-      </div>
-
-      <LeaveTypeTable leaveTypes={leaveTypes} onEdit={handleEdit} onDelete={handleDeleteClick} />
+      {/* 假別列表 */}
+      <Card className="backdrop-blur-sm bg-white/80 border border-white/40 shadow-md rounded-xl overflow-hidden">
+        <CardHeader className="bg-white/60 border-b border-white/30 pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-slate-800 text-xl font-bold">假別列表</CardTitle>
+              <CardDescription className="text-slate-600 font-medium">
+                管理系統中的所有請假類型
+              </CardDescription>
+            </div>
+            <AddButton onClick={handleAdd} buttonText="新增假別" className="" />
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <LeaveTypeTable
+            leaveTypes={leaveTypes}
+            onEdit={handleEdit}
+            onDelete={handleDeleteClick}
+          />
+        </CardContent>
+      </Card>
 
       {/* 對話框 */}
       <CreateLeaveTypeDialog

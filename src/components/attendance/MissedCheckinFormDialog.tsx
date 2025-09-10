@@ -10,7 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/useToast';
-import { submitMissedCheckinRequest, checkDuplicateRequest } from '@/services/missedCheckinService';
+import {
+  createMissedCheckInRequest,
+  getMyPendingMissedCheckInRequests,
+} from '@/services/missedCheckInRequestService';
 import { format } from 'date-fns';
 import { formatTimeString } from '@/utils/dateTimeUtils';
 import React, { useState } from 'react';
@@ -60,21 +63,26 @@ const MissedCheckinFormDialog: React.FC<MissedCheckinFormDialogProps> = ({
     setLoading(true);
     try {
       // 檢查重複申請
-      const duplicateCheck = await checkDuplicateRequest(dateStr, missedType);
-      if (!duplicateCheck.canSubmit) {
+      const pendingRequests = await getMyPendingMissedCheckInRequests();
+      const hasDuplicate = pendingRequests.some(
+        request => request.request_date === dateStr && request.request_type === missedType
+      );
+
+      if (hasDuplicate) {
         toast({
           title: '無法提交申請',
-          description: duplicateCheck.errorMessage || '已有重複的申請',
+          description: '該日期已有相同類型的待審核申請',
           variant: 'destructive',
         });
         return;
       }
 
       // 提交申請
-      await submitMissedCheckinRequest({
+      await createMissedCheckInRequest({
         request_date: dateStr,
         request_type: missedType,
-        checked_at: defaultTime,
+        check_in_time: missedType === 'check_in' ? defaultTime : undefined,
+        check_out_time: missedType === 'check_out' ? defaultTime : undefined,
         reason: reason.trim(),
       });
 

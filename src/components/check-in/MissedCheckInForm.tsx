@@ -7,6 +7,7 @@ import { REQUEST_TYPE_LABELS, RequestType } from '@/constants/checkInTypes';
 import useLoadingAction from '@/hooks/useLoadingAction';
 import { useMyMissedCheckInRequests } from '@/hooks/useMyMissedCheckInRequests';
 import { MissedCheckInFormData, missedCheckInSchema } from '@/schemas/missedCheckIn';
+import { formatTimeString } from '@/utils/dateTimeUtils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import dayjs from 'dayjs';
 import React from 'react';
@@ -16,12 +17,21 @@ interface MissedCheckInFormProps {
   onSuccess: () => void;
   onCancel: () => void;
   defaultRequestType?: RequestType;
+  // 新增：自動帶入參數
+  defaultDate?: Date;
+  defaultTime?: string;
+  scheduleStartTime?: string;
+  scheduleEndTime?: string;
 }
 
 const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
   onSuccess,
   onCancel,
   defaultRequestType = RequestType.CHECK_IN,
+  defaultDate,
+  defaultTime,
+  scheduleStartTime,
+  scheduleEndTime,
 }) => {
   const { handleCreateMyMissedCheckInRequest } = useMyMissedCheckInRequests();
   const { wrappedAction: handleSubmitAction, isLoading } = useLoadingAction(
@@ -41,12 +51,24 @@ const MissedCheckInForm: React.FC<MissedCheckInFormProps> = ({
     }
   );
 
+  // 計算預設時間
+  const getDefaultTime = () => {
+    if (defaultTime) return defaultTime;
+    if (defaultRequestType === RequestType.CHECK_IN) {
+      return scheduleStartTime ? formatTimeString(scheduleStartTime) : '09:30';
+    } else {
+      return scheduleEndTime ? formatTimeString(scheduleEndTime) : '17:30';
+    }
+  };
+
   const form = useForm<MissedCheckInFormData>({
     resolver: zodResolver(missedCheckInSchema),
     defaultValues: {
-      request_date: dayjs().format('YYYY-MM-DD'),
+      request_date: defaultDate
+        ? dayjs(defaultDate).format('YYYY-MM-DD')
+        : dayjs().format('YYYY-MM-DD'),
       request_type: defaultRequestType,
-      checked_at: '',
+      checked_at: getDefaultTime(),
       reason: '',
     },
   });

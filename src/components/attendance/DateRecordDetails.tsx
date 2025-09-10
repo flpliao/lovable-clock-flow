@@ -9,11 +9,12 @@ import {
 } from '@/components/ui/dialog';
 import { Schedule } from '@/services/scheduleService';
 import { CheckInRecord } from '@/types';
+import { RequestType } from '@/constants/checkInTypes';
 import { format, isFuture } from 'date-fns';
 import { ChevronRight } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import MissedCheckinFormDialog from './MissedCheckinFormDialog';
+import MissedCheckInDialog from '@/components/check-in/MissedCheckInDialog';
 import dayjs from 'dayjs';
 
 interface DateRecordDetailsProps {
@@ -54,7 +55,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   const [openDialog, setOpenDialog] = useState<null | 'checkin' | 'checkout'>(null);
   const navigate = useNavigate();
   const [showMissedFormDialog, setShowMissedFormDialog] = useState(false);
-  const [missedType, setMissedType] = useState<'check_in' | 'check_out'>('check_in');
+  const [missedType, setMissedType] = useState<RequestType>(RequestType.CHECK_IN);
 
   // 提取時間判斷邏輯
   const timeValidation = useMemo(() => {
@@ -274,7 +275,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   }, [isFutureDay, hasSchedule, checkStatus, timeValidation, checkInRecord, checkOutRecord]);
 
   // 處理忘打卡申請
-  const handleMissedCheckinRequest = (type: 'check_in' | 'check_out') => {
+  const handleMissedCheckinRequest = (type: RequestType) => {
     setMissedType(type);
     setShowMissedFormDialog(true);
   };
@@ -317,7 +318,8 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
               onClick={() => {
                 setOpenDialog(null);
                 // 根據當前的 openDialog 狀態傳遞對應的類型
-                const missedType = openDialog === 'checkin' ? 'check_in' : 'check_out';
+                const missedType =
+                  openDialog === 'checkin' ? RequestType.CHECK_IN : RequestType.CHECK_OUT;
                 handleMissedCheckinRequest(missedType);
               }}
               type="button"
@@ -336,14 +338,18 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
       </Dialog>
 
       {/* 忘打卡申請表單彈窗 */}
-      <MissedCheckinFormDialog
-        open={showMissedFormDialog}
-        onOpenChange={setShowMissedFormDialog}
-        date={date}
-        missedType={missedType}
+      <MissedCheckInDialog
+        type={missedType}
+        defaultDate={date}
         scheduleStartTime={schedule?.start_time}
         scheduleEndTime={schedule?.end_time}
-        onSuccess={onDataRefresh}
+        open={showMissedFormDialog}
+        onOpenChange={setShowMissedFormDialog}
+        showTrigger={false}
+        onSubmit={() => {
+          setShowMissedFormDialog(false);
+          onDataRefresh();
+        }}
       />
     </div>
   );

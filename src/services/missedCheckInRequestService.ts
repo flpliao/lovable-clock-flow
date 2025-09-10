@@ -9,8 +9,7 @@ import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 export const createMissedCheckInRequest = async (requestData: {
   request_date: string;
   request_type: string;
-  check_in_time?: string;
-  check_out_time?: string;
+  checked_at: string;
   reason: string;
 }): Promise<MissedCheckInRequest> => {
   const { data, status, message } = await callApiAndDecode(

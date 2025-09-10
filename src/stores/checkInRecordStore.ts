@@ -1,4 +1,5 @@
 import { CheckInRecord } from '@/types/checkIn';
+import { AttendanceRecord } from '@/types/attendance';
 import dayjs from 'dayjs';
 import { create } from 'zustand';
 
@@ -76,7 +77,7 @@ export const useCheckInRecordStore = create<CheckInRecordState>((set, get) => ({
   getRecordsByDate: date => {
     const { records } = get();
     return records.filter(record => {
-      const recordDate = new Date(record.created_at || '').toISOString().split('T')[0];
+      const recordDate = dayjs(record.checked_at).format('YYYY-MM-DD');
       return recordDate === date;
     });
   },
@@ -84,16 +85,16 @@ export const useCheckInRecordStore = create<CheckInRecordState>((set, get) => ({
   getRecordsByDateRange: (startDate, endDate) => {
     const { records } = get();
     return records.filter(record => {
-      const recordDate = new Date(record.created_at || '').toISOString().split('T')[0];
+      const recordDate = dayjs(record.checked_at).format('YYYY-MM-DD');
       return recordDate >= startDate && recordDate <= endDate;
     });
   },
 
   getTodayRecords: () => {
     const { records } = get();
-    const today = new Date().toISOString().split('T')[0];
+    const today = dayjs().format('YYYY-MM-DD');
     return records.filter(record => {
-      const recordDate = new Date(record.created_at || '').toISOString().split('T')[0];
+      const recordDate = dayjs(record.checked_at).format('YYYY-MM-DD');
       return recordDate === today;
     });
   },
@@ -103,8 +104,8 @@ export const useCheckInRecordStore = create<CheckInRecordState>((set, get) => ({
     if (records.length === 0) return undefined;
 
     return records.reduce((latest, current) => {
-      const latestTime = new Date(latest.created_at || '').getTime();
-      const currentTime = new Date(current.created_at || '').getTime();
+      const latestTime = dayjs(latest.checked_at).valueOf();
+      const currentTime = dayjs(current.checked_at).valueOf();
       return currentTime > latestTime ? current : latest;
     });
   },
@@ -136,11 +137,23 @@ interface MyCheckInRecordsState {
   isLoading: boolean;
   error: string | null;
 
+  // 月曆出勤資料
+  monthlyData: Record<string, Record<string, AttendanceRecord>>; // key: "year-month", value: 該月的出勤資料
+  monthlyLoading: boolean;
+  monthlyError: string | null;
+
   // 狀態管理
   setRecords: (records: CheckInRecord[]) => void;
   addRecord: (record: CheckInRecord) => void;
   updateRecord: (id: string, updates: Partial<CheckInRecord>) => void;
   removeRecord: (id: string) => void;
+
+  // 月曆資料管理
+  setMonthlyData: (year: number, month: number, data: Record<string, AttendanceRecord>) => void;
+  getMonthlyData: (year: number, month: number) => Record<string, AttendanceRecord> | null;
+  hasMonthlyData: (year: number, month: number) => boolean;
+  setMonthlyLoading: (loading: boolean) => void;
+  setMonthlyError: (error: string | null) => void;
 
   // 查詢方法
   getRecordById: (id: string) => CheckInRecord | undefined;
@@ -162,6 +175,9 @@ export const useMyCheckInRecordsStore = create<MyCheckInRecordsState>((set, get)
   records: [],
   isLoading: false,
   error: null,
+  monthlyData: {},
+  monthlyLoading: false,
+  monthlyError: null,
 
   // 狀態管理
   setRecords: records => set({ records }),
@@ -262,10 +278,45 @@ export const useMyCheckInRecordsStore = create<MyCheckInRecordsState>((set, get)
     return hasCheckIn && hasCheckOut;
   },
 
+  // 月曆資料管理
+  setMonthlyData: (year, month, data) => {
+    const key = `${year}-${month}`;
+    set(state => ({
+      monthlyData: {
+        ...state.monthlyData,
+        [key]: data,
+      },
+    }));
+  },
+
+  getMonthlyData: (year, month) => {
+    const key = `${year}-${month}`;
+    const { monthlyData } = get();
+    return monthlyData[key] || null;
+  },
+
+  hasMonthlyData: (year, month) => {
+    const key = `${year}-${month}`;
+    const { monthlyData } = get();
+    return key in monthlyData;
+  },
+
+  setMonthlyLoading: loading => set({ monthlyLoading: loading }),
+
+  setMonthlyError: error => set({ monthlyError: error }),
+
   // 狀態控制
   setLoading: loading => set({ isLoading: loading }),
 
   setError: error => set({ error }),
 
-  reset: () => set({ records: [], isLoading: false, error: null }),
+  reset: () =>
+    set({
+      records: [],
+      isLoading: false,
+      error: null,
+      monthlyData: {},
+      monthlyLoading: false,
+      monthlyError: null,
+    }),
 }));

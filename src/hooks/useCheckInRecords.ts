@@ -1,8 +1,5 @@
-import {
-  getCheckInRecords,
-  fetchMonthlyAttendance,
-  AttendanceRecord,
-} from '@/services/checkInService';
+import { getCheckInRecords, fetchMonthlyAttendance } from '@/services/checkInService';
+import { AttendanceRecord } from '@/types/attendance';
 import { useMyCheckInRecordsStore } from '@/stores/checkInRecordStore';
 import { CheckInRecord } from '@/types/checkIn';
 import { showError } from '@/utils/toast';
@@ -30,15 +27,20 @@ export const useCheckInRecords = () => {
     setError,
     setLoading,
     error,
+    // 月曆資料相關
+    monthlyLoading,
+    monthlyError,
+    setMonthlyData,
+    getMonthlyData,
+    hasMonthlyData,
+    setMonthlyLoading,
+    setMonthlyError,
   } = useMyCheckInRecordsStore();
 
   // 月曆出勤資料相關狀態
-  const [monthlyData, setMonthlyData] = useState<Record<string, AttendanceRecord> | null>(null);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [monthlyLoading, setMonthlyLoading] = useState(false);
-  const [monthlyError, setMonthlyError] = useState<string | null>(null);
 
   // 使用 ref 來避免依賴問題
   const monthlyLoadingRef = useRef(false);
@@ -87,24 +89,33 @@ export const useCheckInRecords = () => {
   };
 
   // 載入月曆出勤資料
-  const loadMonthlyData = useCallback(async (year: number, month: number) => {
-    if (monthlyLoadingRef.current) return;
+  const loadMonthlyData = useCallback(
+    async (year: number, month: number) => {
+      if (monthlyLoadingRef.current) return;
 
-    monthlyLoadingRef.current = true;
-    setMonthlyLoading(true);
-    setMonthlyError(null);
+      // 檢查 store 中是否已有該月份的資料
+      if (hasMonthlyData(year, month)) {
+        console.log('使用 store 中的月曆資料');
+        return;
+      }
 
-    try {
-      const response = await fetchMonthlyAttendance(year, month);
-      setMonthlyData(response.attendance_records);
-    } catch (error) {
-      console.error('載入月曆資料失敗:', error);
-      setMonthlyError(error instanceof Error ? error.message : '載入月曆資料失敗');
-    } finally {
-      monthlyLoadingRef.current = false;
-      setMonthlyLoading(false);
-    }
-  }, []);
+      monthlyLoadingRef.current = true;
+      setMonthlyLoading(true);
+      setMonthlyError(null);
+
+      try {
+        const response = await fetchMonthlyAttendance(year, month);
+        setMonthlyData(year, month, response.attendance_records);
+      } catch (error) {
+        console.error('載入月曆資料失敗:', error);
+        setMonthlyError(error instanceof Error ? error.message : '載入月曆資料失敗');
+      } finally {
+        monthlyLoadingRef.current = false;
+        setMonthlyLoading(false);
+      }
+    },
+    [hasMonthlyData, setMonthlyData, setMonthlyLoading, setMonthlyError]
+  );
 
   // 切換月份
   const changeMonth = useCallback(
@@ -119,12 +130,13 @@ export const useCheckInRecords = () => {
   // 取得特定日期的出勤記錄
   const getAttendanceForDate = useCallback(
     (date: Date): AttendanceRecord | null => {
-      if (!monthlyData) return null;
+      const currentMonthData = getMonthlyData(currentYear, currentMonth);
+      if (!currentMonthData) return null;
 
       const dateStr = format(date, 'yyyy-MM-dd');
-      return monthlyData[dateStr] || null;
+      return currentMonthData[dateStr] || null;
     },
-    [monthlyData]
+    [currentYear, currentMonth, getMonthlyData]
   );
 
   // 取得選中日期的出勤記錄
@@ -135,12 +147,13 @@ export const useCheckInRecords = () => {
 
   // 取得需要高亮的日期（有異常的日期，只對今天和過去日期）
   const getHighlightedDates = useCallback(() => {
-    if (!monthlyData) return [];
+    const currentMonthData = getMonthlyData(currentYear, currentMonth);
+    if (!currentMonthData) return [];
 
     const highlightedDates: Date[] = [];
     const today = new Date();
 
-    Object.entries(monthlyData).forEach(([dateStr, record]) => {
+    Object.entries(currentMonthData).forEach(([dateStr, record]) => {
       const recordDate = new Date(dateStr);
       // 只對今天和過去日期顯示異常狀態
       if (
@@ -153,14 +166,15 @@ export const useCheckInRecords = () => {
     });
 
     return highlightedDates;
-  }, [monthlyData]);
+  }, [currentYear, currentMonth, getMonthlyData]);
 
   // 取得未打卡的狀態
   const getMissedCheckInStatus = useCallback(() => {
-    if (!monthlyData) return { missedCheckIn: false, missedCheckOut: false };
+    const currentMonthData = getMonthlyData(currentYear, currentMonth);
+    if (!currentMonthData) return { missedCheckIn: false, missedCheckOut: false };
 
     const today = format(new Date(), 'yyyy-MM-dd');
-    const todayRecord = monthlyData[today];
+    const todayRecord = currentMonthData[today];
 
     if (!todayRecord || !todayRecord.is_workday) {
       return { missedCheckIn: false, missedCheckOut: false };
@@ -170,7 +184,7 @@ export const useCheckInRecords = () => {
       missedCheckIn: !todayRecord.check_in_time,
       missedCheckOut: !todayRecord.check_out_time,
     };
-  }, [monthlyData]);
+  }, [currentYear, currentMonth, getMonthlyData]);
 
   // 初始化載入月曆資料
   useEffect(() => {
@@ -179,12 +193,13 @@ export const useCheckInRecords = () => {
 
   // 今天的即時狀態更新
   useEffect(() => {
-    if (!monthlyData) return;
+    const currentMonthData = getMonthlyData(currentYear, currentMonth);
+    if (!currentMonthData) return;
 
     // 檢查是否有今天的記錄需要即時更新
     const today = new Date();
     const todayStr = format(today, 'yyyy-MM-dd');
-    const todayRecord = monthlyData[todayStr];
+    const todayRecord = currentMonthData[todayStr];
 
     if (todayRecord && realtimeStatuses.includes(todayRecord.attendance_status)) {
       // 每分鐘檢查今天的狀態
@@ -195,7 +210,7 @@ export const useCheckInRecords = () => {
 
       return () => clearInterval(interval);
     }
-  }, [monthlyData, currentYear, currentMonth, loadMonthlyData]);
+  }, [currentYear, currentMonth, getMonthlyData, loadMonthlyData]);
 
   return {
     // 打卡記錄狀態
@@ -204,7 +219,7 @@ export const useCheckInRecords = () => {
     error,
 
     // 月曆出勤資料狀態
-    monthlyData,
+    monthlyData: getMonthlyData(currentYear, currentMonth),
     currentYear,
     currentMonth,
     selectedDate,

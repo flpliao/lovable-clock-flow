@@ -1,5 +1,5 @@
 import React from 'react';
-import { AttendanceRecord } from '@/services/checkInService';
+import { AttendanceRecord } from '@/types/attendance';
 import { attendanceStatusConfig } from '@/constants/attendanceStatus';
 import { format } from 'date-fns';
 import { zhTW } from 'date-fns/locale';

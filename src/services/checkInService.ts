@@ -3,50 +3,11 @@ import { ApiResponseStatus } from '@/constants/api';
 import { CheckInMethod, CheckInSource, RequestType } from '@/constants/checkInTypes';
 import { apiRoutes } from '@/routes/api';
 import { CheckInRecord, CreateCheckInPayload } from '@/types/checkIn';
+import { MonthlyAttendanceResponse } from '@/types/attendance';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 import { getCurrentIp, getCurrentPosition } from '@/utils/location';
 import dayjs from 'dayjs';
-
-// 出勤記錄介面
-export interface AttendanceRecord {
-  date: string;
-  is_workday: boolean;
-  work_schedule: {
-    id: number;
-    shift: {
-      code: string;
-      name: string;
-      color: string;
-    };
-    clock_in_time: string;
-    clock_out_time: string;
-  } | null;
-  attendance_status:
-    | 'normal'
-    | 'late'
-    | 'early_leave'
-    | 'absent'
-    | 'incomplete'
-    | 'abnormal'
-    | 'off'
-    | 'scheduled'
-    | 'pending'
-    | 'in_progress';
-  check_in_records: CheckInRecord[];
-  check_in_time: string | null;
-  check_out_time: string | null;
-  is_late: boolean;
-  is_early_leave: boolean;
-  work_hours: number;
-  overtime_hours: number;
-}
-
-export interface MonthlyAttendanceResponse {
-  year: number;
-  month: number;
-  attendance_records: Record<string, AttendanceRecord>;
-}
 
 // 打卡參數介面
 export interface CheckInParams {

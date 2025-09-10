@@ -91,6 +91,7 @@ export const useMissedCheckInRequests = () => {
         status: RequestStatus.REJECTED,
         rejection_reason: request.rejection_reason,
       });
+      // removeRecord(missedCheckInRequest.check_in_record.id);
 
       showSuccess('拒絕成功');
       return true;

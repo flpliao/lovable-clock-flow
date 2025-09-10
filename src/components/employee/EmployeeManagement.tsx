@@ -6,6 +6,7 @@ import { useEmployees } from '@/hooks/useEmployees';
 import { Employee } from '@/types/employee';
 import { Plus, Search, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import ChangePasswordForm from './ChangePasswordForm';
 import CreateEmployeeForm from './CreateEmployeeForm';
 import EditEmployeeForm from './EditEmployeeForm';
 import { EmployeeList } from './EmployeeList';
@@ -17,8 +18,10 @@ const EmployeeManagement = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] = useState(false);
   const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
   const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
+  const [employeeToChangePassword, setEmployeeToChangePassword] = useState<Employee | null>(null);
 
   // 使用操作 hook
   const {
@@ -28,6 +31,7 @@ const EmployeeManagement = () => {
     handleCreateEmployee,
     handleUpdateEmployee,
     handleDeleteEmployee,
+    handleChangePassword,
   } = useEmployees();
 
   useEffect(() => {
@@ -54,6 +58,12 @@ const EmployeeManagement = () => {
   const handleDeleteClick = (employee: Employee) => {
     setEmployeeToDelete(employee);
     setIsDeleteDialogOpen(true);
+  };
+
+  // 處理變更密碼點擊
+  const handleChangePasswordClick = (employee: Employee) => {
+    setEmployeeToChangePassword(employee);
+    setIsChangePasswordDialogOpen(true);
   };
 
   return (
@@ -101,6 +111,7 @@ const EmployeeManagement = () => {
             loading={isLoading}
             onEditEmployee={handleEditEmployee}
             onDeleteEmployee={handleDeleteClick}
+            onChangePassword={handleChangePasswordClick}
           />
         </CardContent>
       </Card>
@@ -118,6 +129,14 @@ const EmployeeManagement = () => {
         employee={currentEmployee}
         setEmployee={setCurrentEmployee}
       />
+      {/* 密碼變更對話框 */}
+      <ChangePasswordForm
+        open={isChangePasswordDialogOpen}
+        onOpenChange={setIsChangePasswordDialogOpen}
+        onSubmit={handleChangePassword}
+        employee={employeeToChangePassword}
+      />
+
       {/* 刪除確認對話框 */}
       <DeleteConfirmDialog
         open={isDeleteDialogOpen}

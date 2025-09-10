@@ -1,13 +1,17 @@
-import { Role } from '@/services/roleService';
+import { Role } from '@/types/role';
 import { create } from 'zustand';
 
 interface RoleState {
   roles: Role[];
+  loading: boolean;
 }
 
 interface RoleActions {
   // 設定角色列表
   setRoles: (roles: Role[]) => void;
+
+  // 設定載入狀態
+  setLoading: (loading: boolean) => void;
 
   // 新增角色
   addRole: (role: Role) => void;
@@ -16,7 +20,7 @@ interface RoleActions {
   updateRole: (role: Role) => void;
 
   // 刪除角色
-  removeRole: (id: string) => void;
+  removeRole: (id: number) => void;
 }
 
 type RoleStore = RoleState & RoleActions;
@@ -24,10 +28,16 @@ type RoleStore = RoleState & RoleActions;
 export const useRoleStore = create<RoleStore>(set => ({
   // 初始狀態
   roles: [],
+  loading: false,
 
   // 設定角色列表
   setRoles: (roles: Role[]) => {
     set({ roles });
+  },
+
+  // 設定載入狀態
+  setLoading: (loading: boolean) => {
+    set({ loading });
   },
 
   // 新增角色
@@ -45,7 +55,7 @@ export const useRoleStore = create<RoleStore>(set => ({
   },
 
   // 刪除角色
-  removeRole: (id: string) => {
+  removeRole: (id: number) => {
     set(state => ({
       roles: state.roles.filter(role => role.id !== id),
     }));

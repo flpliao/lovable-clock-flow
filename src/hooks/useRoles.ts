@@ -1,65 +1,52 @@
-import { roleService } from '@/services/roleService';
+import { createRole, getAllRoles, updateRole } from '@/services/roleService';
 import { useRoleStore } from '@/stores/roleStore';
 import { NewRole, Role } from '@/types/role';
-import { useState } from 'react';
+import { showError } from '@/utils/toast';
 
 export const useRoles = () => {
-  const [loading, setLoading] = useState(false);
-  const { roles: data, setRoles, removeRole: removeFromStore } = useRoleStore();
+  const { roles, setRoles, loading, setLoading } = useRoleStore();
 
   const loadRoles = async () => {
-    if (data.length > 0) return;
+    if (roles.length > 0 || loading) return;
 
     setLoading(true);
     try {
-      const roles = await roleService.getRoles();
+      const roles = await getAllRoles();
       setRoles(roles);
     } catch (error) {
-      console.error('載入職位失敗:', error);
+      showError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const addRole = async (roleData: NewRole) => {
+  const handleCreateRole = async (roleData: Omit<NewRole, 'id'>) => {
     try {
-      const newRole = await roleService.addRole(roleData);
-      setRoles([...data, newRole]);
+      const newRole = await createRole(roleData);
+      setRoles([...roles, newRole]);
       return newRole;
     } catch (error) {
-      console.error('新增職位失敗:', error);
-      throw error;
+      showError(error.message);
+      return false;
     }
   };
 
-  const updateRole = async (roleData: Role) => {
+  const handleUpdateRole = async (slug: string, roleData: Partial<Omit<Role, 'id'>>) => {
     try {
-      const updatedRole = await roleService.updateRole(roleData);
-      setRoles(data.map(r => (r.id === updatedRole.id ? updatedRole : r)));
+      const updatedRole = await updateRole(slug, roleData);
+      setRoles(roles.map(r => (r.id === updatedRole.id ? updatedRole : r)));
       return updatedRole;
     } catch (error) {
-      console.error('更新職位失敗:', error);
-      throw error;
-    }
-  };
-
-  const deleteRole = async (id: string) => {
-    try {
-      await roleService.deleteRole(id);
-      removeFromStore(id);
-    } catch (error) {
-      console.error('刪除職位失敗:', error);
-      throw error;
+      showError(error.message);
+      return false;
     }
   };
 
   return {
-    data,
+    roles,
     loading,
     loadRoles,
-    refresh: loadRoles,
-    addRole,
-    updateRole,
-    deleteRole,
+    handleCreateRole,
+    handleUpdateRole,
   };
 };

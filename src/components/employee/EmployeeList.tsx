@@ -8,7 +8,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Employee } from '@/types/employee';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Key, Trash2 } from 'lucide-react';
 import React from 'react';
 
 interface EmployeeListProps {
@@ -16,6 +16,7 @@ interface EmployeeListProps {
   loading: boolean;
   onEditEmployee: (employee: Employee) => void;
   onDeleteEmployee: (employee: Employee) => void;
+  onChangePassword: (employee: Employee) => void;
 }
 
 export const EmployeeList: React.FC<EmployeeListProps> = ({
@@ -23,6 +24,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
   loading,
   onEditEmployee,
   onDeleteEmployee,
+  onChangePassword,
 }) => {
   if (loading) {
     return (
@@ -50,6 +52,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
             <TableHead>Email</TableHead>
             <TableHead>職位</TableHead>
             <TableHead>角色</TableHead>
+            <TableHead>直屬主管</TableHead>
             <TableHead className="text-right">操作</TableHead>
           </TableRow>
         </TableHeader>
@@ -61,6 +64,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
               <TableCell>{employee.email || '未設定'}</TableCell>
               <TableCell>{employee.position || '未設定'}</TableCell>
               <TableCell>{employee.roles?.map(role => role.name).join(', ') || '未設定'}</TableCell>
+              <TableCell>{employee.direct_manager?.name || '未設定'}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end space-x-2">
                   <Button
@@ -68,13 +72,24 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
                     size="sm"
                     onClick={() => onEditEmployee(employee)}
                     className="bg-white/60 border-white/40 hover:bg-white/80 text-gray-700"
+                    title="編輯員工"
                   >
                     <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onChangePassword(employee)}
+                    className="bg-white/60 border-white/40 hover:bg-white/80 text-gray-700"
+                    title="變更密碼"
+                  >
+                    <Key className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
                     onClick={() => onDeleteEmployee(employee)}
+                    title="刪除員工"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

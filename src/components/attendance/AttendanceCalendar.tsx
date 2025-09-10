@@ -9,7 +9,7 @@ interface AttendanceCalendarProps {
   currentMonth: number;
   currentYear: number;
   onMonthChange: (year: number, month: number) => void;
-  highlightedDates: Date[];
+  highlightedDates: { danger: Date[]; warning: Date[] };
   monthlyData?: Record<string, { is_workday: boolean; attendance_status: string }>;
   loading?: boolean;
 }
@@ -37,16 +37,18 @@ const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
         className="mx-auto"
         classNames={{
           day: 'relative h-10 w-10 p-0 font-normal rounded-full transition-colors hover:bg-gray-100 text-gray-800 font-medium cursor-pointer',
-          day_selected: 'bg-blue-500 text-white hover:bg-blue-600 hover:text-white',
+          day_selected: '!bg-blue-500 text-white hover:bg-blue-600 hover:text-white',
           day_today: 'bg-blue-100 text-blue-800 font-semibold',
           day_disabled: 'text-gray-400 cursor-not-allowed hover:bg-transparent',
         }}
         modifiers={{
-          highlighted: highlightedDates,
+          highlighted: highlightedDates.danger,
+          warning: highlightedDates.warning,
           today: [new Date()],
         }}
         modifiersClassNames={{
           highlighted: 'bg-red-500/80 text-white hover:bg-red-600/80 hover:text-white',
+          warning: 'bg-yellow-500/80 text-white hover:bg-yellow-600/80 hover:text-white',
         }}
         formatters={{
           formatCaption: date => {

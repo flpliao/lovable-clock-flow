@@ -1,3 +1,4 @@
+import { EmptyState } from '@/components/common/EmptyState';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -142,6 +143,7 @@ export function LeaveTypeTable({ leaveTypes, onEdit, onDelete }: LeaveTypeTableP
           </Table>
         </div>
       </div>
+      <EmptyState data={leaveTypes} message="沒有找到相關的假別記錄" />
     </>
   );
 }

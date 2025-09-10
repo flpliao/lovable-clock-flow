@@ -1,10 +1,10 @@
+import { AddButton } from '@/components/common/buttons';
 import DeleteConfirmDialog from '@/components/common/dialogs/DeleteConfirmDialog';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useEmployees } from '@/hooks/useEmployees';
 import { Employee } from '@/types/employee';
-import { Plus, Search, Users } from 'lucide-react';
+import { Search, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import ChangePasswordForm from './ChangePasswordForm';
 import CreateEmployeeForm from './CreateEmployeeForm';
@@ -78,13 +78,11 @@ const EmployeeManagement = () => {
               </div>
               員工管理
             </CardTitle>
-            <Button
+            <AddButton
               onClick={() => setIsAddDialogOpen(true)}
               className="bg-green-500/90 hover:bg-green-600/90 text-white shadow-md"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              新增員工
-            </Button>
+              buttonText="新增員工"
+            />
           </div>
         </CardHeader>
 

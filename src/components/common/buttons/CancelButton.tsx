@@ -6,7 +6,7 @@ import { ClickableButtonProps } from '@/types/button';
 const CancelButton = ({
   type = 'button',
   onClick,
-  children,
+  children = '取消',
   className,
   size = 'default',
   disabled = false,
@@ -20,7 +20,7 @@ const CancelButton = ({
       disabled={disabled}
       className={cn('text-sm', className)}
     >
-      <ButtonLoader>{children || '取消'}</ButtonLoader>
+      <ButtonLoader>{children}</ButtonLoader>
     </Button>
   );
 };

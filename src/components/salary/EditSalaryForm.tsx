@@ -1,5 +1,5 @@
 import CustomFormLabel from '@/components/common/CustomFormLabel';
-import { CancelButton, SaveButton } from '@/components/common/buttons';
+import { CancelButton, UpdateButton } from '@/components/common/buttons';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -11,26 +11,26 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import useLoadingAction from '@/hooks/useLoadingAction';
-import { salaryFormSchema, type CreateSalaryFormData } from '@/schemas/salary';
-import { SALARY_TYPE_LABELS, SalaryType } from '@/types/salary';
+import { salaryFormSchema, type EditSalaryFormData } from '@/schemas/salary';
+import { Salary, SALARY_TYPE_LABELS, SalaryStatus, SalaryType } from '@/types/salary';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
-interface CreateSalaryFormProps {
+interface EditSalaryFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: CreateSalaryFormData) => Promise<unknown>;
-  yearMonth?: string;
+  onSubmit: (data: EditSalaryFormData) => Promise<unknown>;
+  salary: Salary;
 }
 
-const CreateSalaryForm: React.FC<CreateSalaryFormProps> = ({
+const EditSalaryForm: React.FC<EditSalaryFormProps> = ({
   open,
   onOpenChange,
   onSubmit,
-  yearMonth,
+  salary,
 }) => {
-  const form = useForm<CreateSalaryFormData>({
+  const form = useForm<EditSalaryFormData>({
     resolver: zodResolver(salaryFormSchema),
     defaultValues: {
       salary_month: '',
@@ -71,32 +71,66 @@ const CreateSalaryForm: React.FC<CreateSalaryFormProps> = ({
       occupational_insurance_employer: 0,
       health_insurance_employer: 0,
       labor_pension_employer: 0,
+      status: SalaryStatus.DRAFT,
     },
   });
 
-  // 根據 yearMonth 設置薪資年月和所得年月
   useEffect(() => {
-    if (open && yearMonth) {
-      form.setValue('salary_month', yearMonth);
-
-      // 所得年月 = 薪資年月 - 1個月
-      const [year, month] = yearMonth.split('-');
-      const yearNum = parseInt(year);
-      const monthNum = parseInt(month);
-
-      // 計算上一個月
-      const prevMonth = monthNum === 1 ? 12 : monthNum - 1;
-      const prevYear = monthNum === 1 ? yearNum - 1 : yearNum;
-
-      // 格式化為 YYYY-MM
-      const incomeMonth = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
-      form.setValue('income_month', incomeMonth);
+    if (salary) {
+      // 重置表單為初始資料
+      form.reset({
+        salary_month: salary.salary_month || '',
+        income_month: salary.income_month || '',
+        employee_slug: salary.employee.slug || '',
+        employee_name: salary.employee_name || '',
+        department: salary.department || '',
+        position: salary.position || '',
+        salary_type: salary.salary_type || SalaryType.MONTHLY,
+        basic_salary: salary.basic_salary || 0,
+        meal_allowance: salary.meal_allowance || 0,
+        attendance_bonus: salary.attendance_bonus || 0,
+        supervisor_allowance: salary.supervisor_allowance || 0,
+        transportation_allowance: salary.transportation_allowance || 0,
+        position_allowance: salary.position_allowance || 0,
+        professional_allowance: salary.professional_allowance || 0,
+        holiday_bonus: salary.holiday_bonus || 0,
+        birthday_bonus: salary.birthday_bonus || 0,
+        year_end_bonus: salary.year_end_bonus || 0,
+        tax_free_overtime: salary.tax_free_overtime || 0,
+        taxable_overtime: salary.taxable_overtime || 0,
+        unused_leave_compensation_special: salary.unused_leave_compensation_special || 0,
+        unused_leave_compensation_compensatory: salary.unused_leave_compensation_compensatory || 0,
+        tax_free_unused_leave_compensatory: salary.tax_free_unused_leave_compensatory || 0,
+        taxable_unused_leave_compensatory: salary.taxable_unused_leave_compensatory || 0,
+        unused_leave_compensation_monthly: salary.unused_leave_compensation_monthly || 0,
+        unused_leave_compensation_other: salary.unused_leave_compensation_other || 0,
+        severance_pay: salary.severance_pay || 0,
+        labor_insurance_personal: salary.labor_insurance_personal || 0,
+        labor_pension_personal: salary.labor_pension_personal || 0,
+        health_insurance_personal: salary.health_insurance_personal || 0,
+        leave_deduction: salary.leave_deduction || 0,
+        late_deduction: salary.late_deduction || 0,
+        early_leave_deduction: salary.early_leave_deduction || 0,
+        overtime_break_deduction: salary.overtime_break_deduction || 0,
+        absenteeism_deduction: salary.absenteeism_deduction || 0,
+        labor_insurance_employer: salary.labor_insurance_employer || 0,
+        occupational_insurance_employer: salary.occupational_insurance_employer || 0,
+        health_insurance_employer: salary.health_insurance_employer || 0,
+        labor_pension_employer: salary.labor_pension_employer || 0,
+        status: salary.status,
+      });
     }
-  }, [open, yearMonth, form]);
+  }, [salary, form]);
 
   const { wrappedAction: handleSubmitAction, isLoading } = useLoadingAction(
-    async (data: CreateSalaryFormData) => {
-      const result = await onSubmit(data);
+    async (data: EditSalaryFormData) => {
+      const submitData = {
+        ...data,
+        slug: salary.slug, // 保留原有的 slug
+        created_at: salary.created_at, // 保留原有的創建時間
+        updated_at: new Date().toISOString(), // 更新修改時間
+      };
+      const result = await onSubmit(submitData);
       if (result) {
         handleClose();
       }
@@ -112,7 +146,7 @@ const CreateSalaryForm: React.FC<CreateSalaryFormProps> = ({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>新增薪資記錄</DialogTitle>
+          <DialogTitle>編輯薪資記錄</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -132,13 +166,11 @@ const CreateSalaryForm: React.FC<CreateSalaryFormProps> = ({
                         <Input
                           type="month"
                           {...field}
-                          readOnly={!!yearMonth}
-                          className={yearMonth ? 'bg-gray-100 cursor-not-allowed' : ''}
+                          readOnly
+                          className="bg-gray-100 cursor-not-allowed"
                         />
                       </FormControl>
-                      {yearMonth && (
-                        <p className="text-sm text-gray-500 mt-1">薪資年月已固定為當前選中的月份</p>
-                      )}
+                      <p className="text-sm text-gray-500 mt-1">薪資年月不可編輯</p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -154,15 +186,11 @@ const CreateSalaryForm: React.FC<CreateSalaryFormProps> = ({
                         <Input
                           type="month"
                           {...field}
-                          readOnly={!!yearMonth}
-                          className={yearMonth ? 'bg-gray-100 cursor-not-allowed' : ''}
+                          readOnly
+                          className="bg-gray-100 cursor-not-allowed"
                         />
                       </FormControl>
-                      {yearMonth && (
-                        <p className="text-sm text-gray-500 mt-1">
-                          所得年月已自動設置為薪資年月的前一個月
-                        </p>
-                      )}
+                      <p className="text-sm text-gray-500 mt-1">所得年月不可編輯</p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -729,7 +757,7 @@ const CreateSalaryForm: React.FC<CreateSalaryFormProps> = ({
 
             <div className="flex justify-end gap-2 pt-4">
               <CancelButton onClick={handleClose} disabled={isLoading} />
-              <SaveButton isLoading={isLoading} />
+              <UpdateButton isLoading={isLoading} />
             </div>
           </form>
         </Form>
@@ -738,4 +766,4 @@ const CreateSalaryForm: React.FC<CreateSalaryFormProps> = ({
   );
 };
 
-export default CreateSalaryForm;
+export default EditSalaryForm;

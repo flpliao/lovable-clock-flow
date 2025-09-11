@@ -1,9 +1,29 @@
+import { Employee } from './employee';
+
 // 薪資狀態枚舉
 export enum SalaryStatus {
   DRAFT = 'draft',
   PUBLISHED = 'published',
   PAID = 'paid',
 }
+
+// 薪資類別枚舉
+export enum SalaryType {
+  MONTHLY = 'monthly',
+  HOURLY = 'hourly',
+  DAILY = 'daily',
+  PIECEWORK = 'piecework',
+  OTHER = 'other',
+}
+
+// 薪資類別顯示名稱對應
+export const SALARY_TYPE_LABELS: Record<SalaryType, string> = {
+  [SalaryType.MONTHLY]: '月薪',
+  [SalaryType.HOURLY]: '時薪',
+  [SalaryType.DAILY]: '日薪',
+  [SalaryType.PIECEWORK]: '計件',
+  [SalaryType.OTHER]: '其他',
+};
 
 // 薪資記錄類型定義
 export interface Salary {
@@ -12,11 +32,12 @@ export interface Salary {
   employee_id: string;
   salary_month: string;
   income_month: string;
-  employee_number: string;
+  employee_slug: string;
+  employee?: Employee;
   employee_name: string;
   department: string;
   position: string;
-  salary_type: string;
+  salary_type: SalaryType;
   basic_salary: number;
   meal_allowance: number;
   attendance_bonus: number;
@@ -63,7 +84,7 @@ export interface SalaryStatistics {
   total_personal_deductions: number;
   total_employer_costs: number;
   salary_by_type: Array<{
-    salary_type: string;
+    salary_type: SalaryType;
     count: number;
   }>;
   salary_by_department: Array<{

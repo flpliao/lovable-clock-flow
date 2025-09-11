@@ -12,7 +12,7 @@ import { CheckInRecord } from '@/types';
 import { RequestType } from '@/constants/checkInTypes';
 import { format, isFuture } from 'date-fns';
 import { ChevronRight } from 'lucide-react';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MissedCheckInDialog from '@/components/check-in/MissedCheckInDialog';
 import dayjs from 'dayjs';
@@ -274,11 +274,33 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
       : [createCard('no-records', createStatusCard('無相關記錄'))];
   }, [isFutureDay, hasSchedule, checkStatus, timeValidation, checkInRecord, checkOutRecord]);
 
-  // 處理忘打卡申請
-  const handleMissedCheckinRequest = (type: RequestType) => {
+  // 優化：使用 useCallback 包裝處理函數
+  const handleMissedCheckinRequest = useCallback((type: RequestType) => {
     setMissedType(type);
     setShowMissedFormDialog(true);
-  };
+  }, []);
+
+  const handleDialogClose = useCallback((open: boolean) => {
+    if (!open) {
+      setOpenDialog(null);
+    }
+  }, []);
+
+  const handleLeaveRequest = useCallback(() => {
+    navigate('/leave-request');
+    setOpenDialog(null);
+  }, [navigate]);
+
+  const handleMissedCheckInRequest = useCallback(() => {
+    setOpenDialog(null);
+    const missedType = openDialog === 'checkin' ? RequestType.CHECK_IN : RequestType.CHECK_OUT;
+    handleMissedCheckinRequest(missedType);
+  }, [openDialog, handleMissedCheckinRequest]);
+
+  const handleMissedFormSubmit = useCallback(() => {
+    setShowMissedFormDialog(false);
+    onDataRefresh?.();
+  }, [onDataRefresh]);
 
   return (
     <div className="space-y-3">
@@ -287,14 +309,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
       ))}
 
       {/* 忘打卡申請彈窗 */}
-      <Dialog
-        open={!!openDialog}
-        onOpenChange={v => {
-          if (!v) {
-            setOpenDialog(null);
-          }
-        }}
-      >
+      <Dialog open={!!openDialog} onOpenChange={handleDialogClose}>
         <DialogContent className="max-w-md w-full rounded-t-2xl rounded-2xl p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold px-6 pt-6 pb-2">
@@ -305,23 +320,14 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
           <div className="flex flex-col divide-y divide-gray-100">
             <button
               className="w-full text-left px-6 py-4 bg-transparent hover:bg-gray-100 focus:bg-gray-100 text-base"
-              onClick={() => {
-                navigate('/leave-request');
-                setOpenDialog(null);
-              }}
+              onClick={handleLeaveRequest}
               type="button"
             >
               請假
             </button>
             <button
               className="w-full text-left px-6 py-4 bg-transparent hover:bg-gray-100 focus:bg-gray-100 text-base"
-              onClick={() => {
-                setOpenDialog(null);
-                // 根據當前的 openDialog 狀態傳遞對應的類型
-                const missedType =
-                  openDialog === 'checkin' ? RequestType.CHECK_IN : RequestType.CHECK_OUT;
-                handleMissedCheckinRequest(missedType);
-              }}
+              onClick={handleMissedCheckInRequest}
               type="button"
             >
               忘打卡申請
@@ -346,10 +352,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
         open={showMissedFormDialog}
         onOpenChange={setShowMissedFormDialog}
         showTrigger={false}
-        onSubmit={() => {
-          setShowMissedFormDialog(false);
-          onDataRefresh();
-        }}
+        onSubmit={handleMissedFormSubmit}
       />
     </div>
   );

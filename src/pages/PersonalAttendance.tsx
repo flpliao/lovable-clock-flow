@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Calendar } from 'lucide-react';
 import PageLayout from '@/components/layouts/PageLayout';
 import AttendanceCalendar from '@/components/attendance/AttendanceCalendar';
@@ -20,6 +20,53 @@ const PersonalAttendance: React.FC = () => {
     loadMonthlyData,
   } = useCheckInRecords();
 
+  // 優化：使用 useMemo 計算選中日期的記錄
+  const selectedDateRecords = useMemo(() => {
+    if (!selectedDateAttendance) {
+      return { checkIn: undefined, checkOut: undefined };
+    }
+
+    return {
+      checkIn: selectedDateAttendance.check_in_records.find(
+        record => record.type === 'check_in' && record.status === 'success'
+      ),
+      checkOut: selectedDateAttendance.check_in_records.find(
+        record => record.type === 'check_out' && record.status === 'success'
+      ),
+    };
+  }, [selectedDateAttendance]);
+
+  // 優化：使用 useCallback 包裝回調函數
+  const hasScheduleForDate = useCallback(
+    (_dateStr: string) => {
+      return selectedDateAttendance?.is_workday || false;
+    },
+    [selectedDateAttendance]
+  );
+
+  const getScheduleForDate = useCallback(
+    (dateStr: string) => {
+      if (!selectedDateAttendance?.work_schedule) return undefined;
+
+      return {
+        id: selectedDateAttendance.work_schedule.id.toString(),
+        user_id: '',
+        work_date: dateStr,
+        start_time: selectedDateAttendance.work_schedule.clock_in_time,
+        end_time: selectedDateAttendance.work_schedule.clock_out_time,
+        time_slot: '',
+        created_by: '',
+        created_at: '',
+        updated_at: '',
+      };
+    },
+    [selectedDateAttendance]
+  );
+
+  const handleDataRefresh = useCallback(async () => {
+    await loadMonthlyData(currentYear, currentMonth);
+  }, [loadMonthlyData, currentYear, currentMonth]);
+
   return (
     <PageLayout>
       <div className="space-y-6">
@@ -34,7 +81,7 @@ const PersonalAttendance: React.FC = () => {
         {/* 主要內容區域 */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {/* 月曆區域 */}
-          <div className="flex justify-center ">
+          <div className="flex justify-center">
             <AttendanceCalendar
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
@@ -53,39 +100,11 @@ const PersonalAttendance: React.FC = () => {
             {selectedDate && (
               <DateRecordDetails
                 date={selectedDate}
-                selectedDateRecords={{
-                  checkIn: selectedDateAttendance?.check_in_records.find(
-                    record => record.type === 'check_in' && record.status === 'success'
-                  ),
-                  checkOut: selectedDateAttendance?.check_in_records.find(
-                    record => record.type === 'check_out' && record.status === 'success'
-                  ),
-                }}
+                selectedDateRecords={selectedDateRecords}
                 recordsCount={selectedDateAttendance ? 1 : 0}
-                hasScheduleForDate={(_dateStr: string) => {
-                  // 檢查是否有排班
-                  return selectedDateAttendance?.is_workday || false;
-                }}
-                getScheduleForDate={(_dateStr: string) => {
-                  // 返回排班資訊
-                  return selectedDateAttendance?.work_schedule
-                    ? {
-                        id: selectedDateAttendance.work_schedule.id.toString(),
-                        user_id: '',
-                        work_date: _dateStr,
-                        start_time: selectedDateAttendance.work_schedule.clock_in_time,
-                        end_time: selectedDateAttendance.work_schedule.clock_out_time,
-                        time_slot: '',
-                        created_by: '',
-                        created_at: '',
-                        updated_at: '',
-                      }
-                    : undefined;
-                }}
-                onDataRefresh={async () => {
-                  // 重新載入資料
-                  await loadMonthlyData(currentYear, currentMonth);
-                }}
+                hasScheduleForDate={hasScheduleForDate}
+                getScheduleForDate={getScheduleForDate}
+                onDataRefresh={handleDataRefresh}
               />
             )}
 

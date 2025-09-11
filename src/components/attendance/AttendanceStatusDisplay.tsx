@@ -1,4 +1,5 @@
-import React from 'react';
+/* eslint-disable react/prop-types */
+import React, { memo, useMemo } from 'react';
 import { AttendanceRecord } from '@/types/attendance';
 import { attendanceStatusConfig } from '@/constants/attendanceStatus';
 import { format } from 'date-fns';
@@ -19,27 +20,24 @@ interface AttendanceStatusDisplayProps {
   date: Date;
 }
 
-const AttendanceStatusDisplay: React.FC<AttendanceStatusDisplayProps> = ({ record, date }) => {
-  if (!record) {
+const AttendanceStatusDisplay: React.FC<AttendanceStatusDisplayProps> = memo(({ record, date }) => {
+  // 優化：使用 useMemo 計算格式化的日期
+  const formattedDate = useMemo(() => {
+    return format(date, 'yyyy年MM月dd日 EEEE', { locale: zhTW });
+  }, [date]);
+
+  // 優化：使用 useMemo 計算狀態配置
+  const statusConfig = useMemo(() => {
     return (
-      <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-4">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">
-          {format(date, 'yyyy年MM月dd日 EEEE', { locale: zhTW })}
-        </h3>
-        <div className="space-y-2 text-sm text-gray-600">
-          <p>選擇日期查看詳細出勤資訊</p>
-        </div>
-      </div>
+      attendanceStatusConfig[record?.attendance_status || 'off'] || attendanceStatusConfig['off']
     );
-  }
+  }, [record?.attendance_status]);
 
-  const statusConfig =
-    attendanceStatusConfig[record.attendance_status] || attendanceStatusConfig['off'];
-
-  const getStatusIcon = () => {
+  // 優化：使用 useMemo 計算狀態圖標
+  const statusIcon = useMemo(() => {
     const iconProps = { className: 'h-5 w-5' };
 
-    switch (record.attendance_status) {
+    switch (record?.attendance_status) {
       case 'scheduled':
         return <Calendar {...iconProps} />;
       case 'pending':
@@ -59,13 +57,22 @@ const AttendanceStatusDisplay: React.FC<AttendanceStatusDisplayProps> = ({ recor
       default:
         return <Clock {...iconProps} />;
     }
-  };
+  }, [record?.attendance_status]);
+
+  if (!record) {
+    return (
+      <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-4">
+        <h3 className="text-lg font-semibold text-gray-800 mb-3">{formattedDate}</h3>
+        <div className="space-y-2 text-sm text-gray-600">
+          <p>選擇日期查看詳細出勤資訊</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-4">
-      <h3 className="text-lg font-semibold text-gray-800 mb-3">
-        {format(date, 'yyyy年MM月dd日 EEEE', { locale: zhTW })}
-      </h3>
+      <h3 className="text-lg font-semibold text-gray-800 mb-3">{formattedDate}</h3>
 
       {/* 狀態顯示 */}
       <div
@@ -76,7 +83,7 @@ const AttendanceStatusDisplay: React.FC<AttendanceStatusDisplayProps> = ({ recor
         }}
       >
         <div className="flex items-center gap-2 mb-2">
-          <div style={{ color: statusConfig.color }}>{getStatusIcon()}</div>
+          <div style={{ color: statusConfig.color }}>{statusIcon}</div>
           <span className="font-medium" style={{ color: statusConfig.color }}>
             {statusConfig.text}
           </span>
@@ -129,6 +136,8 @@ const AttendanceStatusDisplay: React.FC<AttendanceStatusDisplayProps> = ({ recor
       )}
     </div>
   );
-};
+});
+
+AttendanceStatusDisplay.displayName = 'AttendanceStatusDisplay';
 
 export default AttendanceStatusDisplay;

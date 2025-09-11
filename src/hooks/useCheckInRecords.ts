@@ -153,7 +153,10 @@ export const useCheckInRecords = () => {
     Object.entries(currentMonthData).forEach(([dateStr, record]) => {
       const recordDate = new Date(dateStr);
       if (recordDate <= today && record.is_workday && isAbnormalRecord(record)) {
-        if (record.check_in_records.some(r => r.approval_status === 'pending')) {
+        const hasPendingApproval = record.check_in_records.some(
+          r => r.approval_status === 'pending'
+        );
+        if (hasPendingApproval) {
           highlightedDates.warning.push(recordDate);
         } else {
           highlightedDates.danger.push(recordDate);

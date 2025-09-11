@@ -19,25 +19,24 @@ export const getAllEmployeeWorkSchedules = async (): Promise<Employee[]> => {
 
 // 取得員工工作排程列表（分頁）
 export const getEmployeeWithWorkSchedules = async ({
-  page,
-  per_page,
-  search,
-  employee_id,
-  department_slug,
+  filter,
   start_date,
   end_date,
 }: {
-  page?: number;
-  per_page?: number;
-  search?: string;
-  employee_id?: number;
-  department_slug?: string;
+  filter?: {
+    all?: boolean;
+    page?: number;
+    per_page?: number;
+    search?: string;
+    employee_id?: number;
+    department_slug?: string;
+  };
   start_date?: string;
   end_date?: string;
 }): Promise<Employee[]> => {
   const { data, status, message } = await callApiAndDecode(
     axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.index, {
-      params: { page, per_page, search, employee_id, department_slug, start_date, end_date },
+      params: { filter, start_date, end_date },
     })
   );
 

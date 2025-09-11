@@ -16,6 +16,9 @@ interface SalaryTableProps {
   onDelete: (slug: string) => void;
   yearMonth?: string;
   onAdd?: () => void;
+  isBatchMode?: boolean;
+  selectedSalaries?: Set<string>;
+  onToggleSelect?: (slug: string) => void;
 }
 
 const SalaryTable: React.FC<SalaryTableProps> = ({
@@ -25,6 +28,9 @@ const SalaryTable: React.FC<SalaryTableProps> = ({
   onDelete,
   yearMonth,
   onAdd,
+  isBatchMode = false,
+  selectedSalaries = new Set(),
+  onToggleSelect,
 }) => {
   const isMobile = useIsMobile();
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; salary: Salary | null }>({
@@ -73,9 +79,23 @@ const SalaryTable: React.FC<SalaryTableProps> = ({
         </CardHeader>
         <CardContent className="p-0">
           {isMobile ? (
-            <SalaryTableMobile salaries={salaries} onEdit={onEdit} onDelete={onDelete} />
+            <SalaryTableMobile
+              salaries={salaries}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              isBatchMode={isBatchMode}
+              selectedSalaries={selectedSalaries}
+              onToggleSelect={onToggleSelect}
+            />
           ) : (
-            <SalaryTableDesktop salaries={salaries} onEdit={onEdit} onDelete={onDelete} />
+            <SalaryTableDesktop
+              salaries={salaries}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              isBatchMode={isBatchMode}
+              selectedSalaries={selectedSalaries}
+              onToggleSelect={onToggleSelect}
+            />
           )}
         </CardContent>
       </Card>

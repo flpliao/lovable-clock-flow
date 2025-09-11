@@ -2,9 +2,9 @@ import DeleteDialog from '@/components/common/dialogs/DeleteConfirmDialog';
 import PageLayout from '@/components/layouts/PageLayout';
 import { useSalary } from '@/hooks/useSalary';
 import useSalaryStore from '@/stores/salaryStore';
-import { Salary } from '@/types/salary';
+import { Salary, SalaryStatus } from '@/types/salary';
 import { formatYearMonth } from '@/utils/dateUtils';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CheckSquare, Square } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CreateSalaryForm from './CreateSalaryForm';
@@ -19,13 +19,22 @@ const SalaryList: React.FC = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
   const [salaryToDelete, setSalaryToDelete] = useState<string | null>(null);
 
+  // 批量發布相關狀態
+  const [isBatchMode, setIsBatchMode] = useState(false);
+  const [selectedSalaries, setSelectedSalaries] = useState<Set<string>>(new Set());
+
   // 直接從 store 取用需要的狀態
   const salaries = useSalaryStore(state => state.salaries);
   const salariesLoading = useSalaryStore(state => state.salariesLoading);
 
   // 只取用需要的函數
-  const { loadSalariesByMonth, handleCreateSalary, handleUpdateSalary, handleDeleteSalary } =
-    useSalary();
+  const {
+    loadSalariesByMonth,
+    handleCreateSalary,
+    handleUpdateSalary,
+    handleDeleteSalary,
+    handleBatchPublishSalaries,
+  } = useSalary();
 
   // 載入特定月份的薪資資料
   useEffect(() => {
@@ -75,23 +84,110 @@ const SalaryList: React.FC = () => {
     return true; // 返回成功標記
   };
 
+  // 批量發布功能
+  const handleBatchPublish = async () => {
+    if (selectedSalaries.size === 0) return;
+
+    const salarySlugs = Array.from(selectedSalaries);
+    await handleBatchPublishSalaries(salarySlugs);
+
+    // 清除選擇狀態
+    setSelectedSalaries(new Set());
+    setIsBatchMode(false);
+
+    // 重新載入當前月份的薪資資料
+    if (yearMonth) {
+      loadSalariesByMonth(yearMonth);
+    }
+  };
+
+  // 切換批量模式
+  const toggleBatchMode = () => {
+    setIsBatchMode(!isBatchMode);
+    setSelectedSalaries(new Set());
+  };
+
+  // 全選/取消全選
+  const toggleSelectAll = () => {
+    const draftSalaries = salaries.filter(salary => salary.status === SalaryStatus.DRAFT);
+    if (selectedSalaries.size === draftSalaries.length) {
+      setSelectedSalaries(new Set());
+    } else {
+      setSelectedSalaries(new Set(draftSalaries.map(salary => salary.slug)));
+    }
+  };
+
+  // 切換單個選擇
+  const toggleSelectSalary = (slug: string) => {
+    const newSelected = new Set(selectedSalaries);
+    if (newSelected.has(slug)) {
+      newSelected.delete(slug);
+    } else {
+      newSelected.add(slug);
+    }
+    setSelectedSalaries(newSelected);
+  };
+
   return (
     <PageLayout>
       <div className="backdrop-blur-xl border border-white/30 rounded-2xl shadow-lg p-6">
         <div className="space-y-6">
           {/* 薪資記錄列表視圖 */}
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleBackToSalaryManagement}
-                className="p-1 hover:bg-white/20 rounded-lg transition-colors"
-                title="返回薪資管理"
-              >
-                <ArrowLeft className="h-5 w-5 text-white" />
-              </button>
-              <h3 className="text-lg font-semibold text-white drop-shadow-md">
-                薪資記錄列表 - {yearMonth ? formatYearMonth(yearMonth) : ''}
-              </h3>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleBackToSalaryManagement}
+                  className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+                  title="返回薪資管理"
+                >
+                  <ArrowLeft className="h-5 w-5 text-white" />
+                </button>
+                <h3 className="text-lg font-semibold text-white drop-shadow-md">
+                  薪資記錄列表 - {yearMonth ? formatYearMonth(yearMonth) : ''}
+                </h3>
+              </div>
+
+              {/* 批量發布按鈕區域 */}
+              <div className="flex items-center gap-3">
+                {isBatchMode ? (
+                  <>
+                    <button
+                      onClick={toggleSelectAll}
+                      className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm"
+                    >
+                      {selectedSalaries.size ===
+                      salaries.filter(s => s.status === SalaryStatus.DRAFT).length ? (
+                        <CheckSquare className="h-4 w-4" />
+                      ) : (
+                        <Square className="h-4 w-4" />
+                      )}
+                      全選草稿
+                    </button>
+                    <button
+                      onClick={handleBatchPublish}
+                      disabled={selectedSalaries.size === 0}
+                      className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium"
+                    >
+                      發布選中 ({selectedSalaries.size})
+                    </button>
+                    <button
+                      onClick={toggleBatchMode}
+                      className="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors text-sm"
+                    >
+                      取消
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={toggleBatchMode}
+                    className="flex items-center gap-2 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors text-sm"
+                  >
+                    <CheckSquare className="h-4 w-4" />
+                    批量發布
+                  </button>
+                )}
+              </div>
             </div>
 
             <SalaryTable
@@ -101,6 +197,9 @@ const SalaryList: React.FC = () => {
               onDelete={handleDeleteSalaryConfirm}
               yearMonth={yearMonth}
               onAdd={() => setShowCreateDialog(true)}
+              isBatchMode={isBatchMode}
+              selectedSalaries={selectedSalaries}
+              onToggleSelect={toggleSelectSalary}
             />
           </div>
 

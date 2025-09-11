@@ -1,6 +1,7 @@
 import { EmptyState } from '@/components/common/EmptyState';
 import SalaryTableActions from '@/components/salary/components/SalaryTableActions';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -44,15 +45,30 @@ interface SalaryTableDesktopProps {
   salaries: Salary[];
   onEdit: (salary: Salary) => void;
   onDelete: (slug: string) => void;
+  isBatchMode?: boolean;
+  selectedSalaries?: Set<string>;
+  onToggleSelect?: (slug: string) => void;
 }
 
-const SalaryTableDesktop: React.FC<SalaryTableDesktopProps> = ({ salaries, onEdit, onDelete }) => {
+const SalaryTableDesktop: React.FC<SalaryTableDesktopProps> = ({
+  salaries,
+  onEdit,
+  onDelete,
+  isBatchMode = false,
+  selectedSalaries = new Set(),
+  onToggleSelect,
+}) => {
   return (
     <div className="w-full overflow-x-auto">
       <div className="min-w-full">
         <Table>
           <TableHeader>
             <TableRow className="border-white/30 hover:bg-white/20 transition-colors">
+              {isBatchMode && (
+                <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[50px] whitespace-nowrap text-center">
+                  選擇
+                </TableHead>
+              )}
               <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[100px] whitespace-nowrap">
                 員工代碼
               </TableHead>
@@ -68,11 +84,8 @@ const SalaryTableDesktop: React.FC<SalaryTableDesktopProps> = ({ salaries, onEdi
               <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[100px] whitespace-nowrap">
                 薪資類型
               </TableHead>
-              <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[100px] whitespace-nowrap">
-                狀態
-              </TableHead>
-              <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[100px] whitespace-nowrap">
-                操作
+              <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[120px] whitespace-nowrap">
+                狀態/操作
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -80,8 +93,26 @@ const SalaryTableDesktop: React.FC<SalaryTableDesktopProps> = ({ salaries, onEdi
             {salaries.map(salary => (
               <TableRow
                 key={salary.slug}
-                className="border-white/30 hover:bg-white/40 transition-all duration-200"
+                className="border-white/30 hover:bg-white/40 transition-all duration-200 cursor-pointer"
+                onClick={() => {
+                  if (isBatchMode && salary.status === SalaryStatus.DRAFT) {
+                    onToggleSelect?.(salary.slug);
+                  }
+                }}
               >
+                {isBatchMode && (
+                  <TableCell className="py-3 px-4 whitespace-nowrap text-center [&:has([role=checkbox])]:pr-4">
+                    {salary.status === SalaryStatus.DRAFT ? (
+                      <Checkbox
+                        checked={selectedSalaries.has(salary.slug)}
+                        onCheckedChange={() => onToggleSelect?.(salary.slug)}
+                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      />
+                    ) : (
+                      <div className="w-4 h-4"></div>
+                    )}
+                  </TableCell>
+                )}
                 <TableCell className="py-3 px-4 whitespace-nowrap">
                   <div className="text-sm text-slate-800">{salary.employee.slug}</div>
                 </TableCell>
@@ -108,17 +139,23 @@ const SalaryTableDesktop: React.FC<SalaryTableDesktopProps> = ({ salaries, onEdi
                   </Badge>
                 </TableCell>
                 <TableCell className="py-3 px-4 whitespace-nowrap">
-                  <Badge
-                    className={cn(
-                      `font-medium px-2 py-1 rounded-lg`,
-                      getStatusDisplay(salary.status).className
-                    )}
-                  >
-                    {getStatusDisplay(salary.status).text}
-                  </Badge>
-                </TableCell>
-                <TableCell className="py-3 px-4 whitespace-nowrap">
-                  <SalaryTableActions salary={salary} onEdit={onEdit} onDelete={onDelete} />
+                  {salary.status === SalaryStatus.DRAFT ? (
+                    <SalaryTableActions
+                      salary={salary}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      disabled={isBatchMode}
+                    />
+                  ) : (
+                    <Badge
+                      className={cn(
+                        `font-medium px-2 py-1 rounded-lg`,
+                        getStatusDisplay(salary.status).className
+                      )}
+                    >
+                      {getStatusDisplay(salary.status).text}
+                    </Badge>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

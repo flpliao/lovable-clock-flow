@@ -25,7 +25,8 @@ export const routes = {
   personnelManagement: '/personnel-management',
   roleManagement: '/role-management',
   companyBranchManagement: '/company-branch-management',
-  hrManagement: '/hr-management',
+  salaryManagement: '/salary-management',
+  salaryByMonth: `/salary/edit/:yearMonth`,
   approvalCenter: '/approval-center',
   systemSettings: '/system-settings',
   holidayManagement: '/holiday-management',
@@ -198,5 +199,19 @@ export const apiRoutes = {
     update: (employeeSlug: string) =>
       `${API_URL}/employee/employee-schedules/${employeeSlug}/update`,
     destroy: (employeeSlug: string) => `${API_URL}/employee/employee-schedules/${employeeSlug}`,
+  },
+  // 薪資管理
+  salary: {
+    index: `${API_URL}/employee/salaries`,
+    getAll: `${API_URL}/employee/salaries/all`,
+    statistics: `${API_URL}/employee/salaries/statistics`,
+    getSalaryMonths: `${API_URL}/employee/salaries/salary-months`,
+    show: (salaryId: string) => `${API_URL}/employee/salaries/${salaryId}`,
+    store: `${API_URL}/employee/salaries`,
+    update: (salaryId: string) => `${API_URL}/employee/salaries/${salaryId}`,
+    destroy: (salaryId: string) => `${API_URL}/employee/salaries/${salaryId}`,
+    export: `${API_URL}/employee/salaries/export`,
+    import: `${API_URL}/employee/salaries/import`,
+    batchPublish: `${API_URL}/employee/salaries/batch-publish`,
   },
 };

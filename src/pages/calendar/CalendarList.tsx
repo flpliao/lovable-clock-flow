@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
@@ -11,7 +10,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { useHolidayManagement } from '@/hooks/useHolidayManagement';
 import { CalendarItem } from '@/types/calendar';
-import { Calendar, Edit3, RefreshCcw, Trash2 } from 'lucide-react';
+import { Calendar, Edit3, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -119,16 +118,11 @@ export function CalendarList() {
           <CardTitle className="text-white">行事曆列表</CardTitle>
           <div className="flex gap-2">
             <AddButton
-              className="bg-white/60"
               onClick={() => setCreateDialogOpen(true)}
               disabled={loading}
               isLoading={false}
-            >
-              新增行事曆
-            </AddButton>
-            <Button variant="ghost" className="text-white" onClick={load} disabled={loading}>
-              <RefreshCcw className="h-4 w-4" />
-            </Button>
+              buttonText="新增行事曆"
+            ></AddButton>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">

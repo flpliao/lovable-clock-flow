@@ -5,6 +5,7 @@ import {
   CalendarDays,
   CheckCircle,
   Clock,
+  DollarSign,
   FileText,
   Home,
   Megaphone,
@@ -27,4 +28,5 @@ export const iconMap = {
   megaphone: Megaphone,
   settings: Settings,
   building: Building,
+  dollarSign: DollarSign,
 };

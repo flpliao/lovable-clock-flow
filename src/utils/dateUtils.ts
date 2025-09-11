@@ -5,6 +5,11 @@ export const formatDate = (dateString: string) => {
   return dayjs(dateString).format('YYYY/MM/DD');
 };
 
+// 格式化年月的函數 - 將 "2025-09" 格式轉換為 "2025年9月"
+export const formatYearMonth = (yearMonth: string) => {
+  return dayjs(yearMonth).format('YYYY年M月');
+};
+
 // 格式化時間的函數 - 使用台灣時區 (UTC+8)
 export const formatTime = (dateString: string): string => {
   const date = new Date(dateString);

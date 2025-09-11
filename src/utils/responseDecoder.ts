@@ -115,7 +115,7 @@ export function decodeApiResponse<T = unknown>(
     throw new Error('API 回應為空');
   }
 
-  const { status, message, data } = response.data as ApiResponse<T>;
+  const { status, message, data, ...rest } = response.data as ApiResponse<T>;
 
   // 檢查狀態
   if (status !== ApiResponseStatus.SUCCESS) {
@@ -136,5 +136,6 @@ export function decodeApiResponse<T = unknown>(
     message,
     data: flattenData(data),
     ...extractPaginationData(response.data),
+    ...rest,
   };
 }

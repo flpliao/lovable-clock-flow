@@ -12,6 +12,10 @@ export const useMenuItems = () => {
       return true;
     }
 
+    if (route.isHidden) {
+      return false;
+    }
+
     // 檢查用戶是否有權限訪問此路由
     return canAccessRoute(route.roles);
   });

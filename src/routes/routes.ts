@@ -27,7 +27,8 @@ const ScheduleStatistics = LazyWithSuspense(() => import('@/pages/ScheduleStatis
 const PersonnelManagement = LazyWithSuspense(() => import('@/pages/PersonnelManagement'));
 const RoleManagement = LazyWithSuspense(() => import('@/pages/Role'));
 const CompanyBranchManagement = LazyWithSuspense(() => import('@/pages/CompanyBranchManagement'));
-const HrManagement = LazyWithSuspense(() => import('@/pages/HRManagement'));
+const SalaryManagement = LazyWithSuspense(() => import('@/pages/SalaryManagement'));
+const SalaryList = LazyWithSuspense(() => import('@/components/salary/SalaryList'));
 const ApprovalCenter = LazyWithSuspense(() => import('@/pages/ApprovalCenter'));
 const SystemSettings = LazyWithSuspense(() => import('@/pages/SystemSettings'));
 const HolidayManagement = LazyWithSuspense(() => import('@/pages/HolidayManagement'));
@@ -72,13 +73,6 @@ export const publicRoutes: RouteConfig[] = [
     path: routes.authCallback,
     name: '認證回調',
     component: AuthCallback,
-  },
-  {
-    path: `${routes.editCalendar}/:slug`,
-    name: '行事曆編輯',
-    component: CalendarEditor,
-    icon: 'calendar',
-    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
 ];
 
@@ -148,10 +142,33 @@ export const protectedRoutes: RouteConfig[] = [
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
   {
+    path: routes.salaryManagement,
+    name: '薪資管理',
+    component: SalaryManagement,
+    icon: 'dollarSign',
+    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
+  },
+  {
+    path: routes.salaryByMonth,
+    name: '薪資列表',
+    component: SalaryList,
+    icon: 'dollarSign',
+    isHidden: true,
+    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
+  },
+  {
     path: routes.holidayManagement,
     name: '假日管理',
     component: HolidayManagement,
     icon: 'calendarDays',
+    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
+  },
+  {
+    path: `${routes.editCalendar}/:slug`,
+    name: '行事曆編輯',
+    component: CalendarEditor,
+    icon: 'calendar',
+    isHidden: true,
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
 ];
@@ -205,13 +222,6 @@ export const unFinishedRoutes: RouteConfig[] = [
     component: CompanyBranchManagement,
     icon: 'building',
     roles: [EmployeeRole.ADMIN],
-  },
-  {
-    path: routes.hrManagement,
-    name: '人力資源管理',
-    component: HrManagement,
-    icon: 'users',
-    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
   {
     path: routes.systemSettings,

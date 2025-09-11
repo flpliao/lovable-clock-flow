@@ -1,23 +1,24 @@
-
-import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DollarSign } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Salary } from '@/types/salary';
 import { formatCurrency } from '@/utils/payrollUtils';
+import { DollarSign } from 'lucide-react';
+import React, { useState } from 'react';
 
-interface PayrollPaymentDialogProps {
+interface SalaryPaymentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  payroll: any;
+  salary: Salary | null;
   onConfirmPayment: (paymentData: {
     paymentMethod: string;
     paymentReference?: string;
@@ -25,11 +26,11 @@ interface PayrollPaymentDialogProps {
   }) => void;
 }
 
-const PayrollPaymentDialog: React.FC<PayrollPaymentDialogProps> = ({
+const SalaryPaymentDialog: React.FC<SalaryPaymentDialogProps> = ({
   open,
   onOpenChange,
-  payroll,
-  onConfirmPayment
+  salary,
+  onConfirmPayment,
 }) => {
   const [paymentMethod, setPaymentMethod] = useState('bank_transfer');
   const [paymentReference, setPaymentReference] = useState('');
@@ -42,9 +43,9 @@ const PayrollPaymentDialog: React.FC<PayrollPaymentDialogProps> = ({
       await onConfirmPayment({
         paymentMethod,
         paymentReference: paymentReference || undefined,
-        comment: comment || undefined
+        comment: comment || undefined,
       });
-      
+
       // 重置表單
       setPaymentMethod('bank_transfer');
       setPaymentReference('');
@@ -55,7 +56,7 @@ const PayrollPaymentDialog: React.FC<PayrollPaymentDialogProps> = ({
     }
   };
 
-  if (!payroll) return null;
+  if (!salary) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -70,15 +71,19 @@ const PayrollPaymentDialog: React.FC<PayrollPaymentDialogProps> = ({
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span>員工:</span>
-                <span>{payroll.staff?.name}</span>
+                <span>{salary.employee_name}</span>
               </div>
               <div className="flex justify-between">
-                <span>薪資期間:</span>
-                <span>{payroll.pay_period_start} ~ {payroll.pay_period_end}</span>
+                <span>薪資月份:</span>
+                <span>{salary.salary_month}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>薪資類型:</span>
+                <span>{salary.salary_type}</span>
               </div>
               <div className="flex justify-between font-medium text-lg">
                 <span>發放金額:</span>
-                <span className="text-green-600">{formatCurrency(payroll.net_salary)}</span>
+                <span className="text-green-600">{formatCurrency(salary.basic_salary)}</span>
               </div>
             </div>
           </div>
@@ -103,7 +108,7 @@ const PayrollPaymentDialog: React.FC<PayrollPaymentDialogProps> = ({
             <Input
               id="paymentReference"
               value={paymentReference}
-              onChange={(e) => setPaymentReference(e.target.value)}
+              onChange={e => setPaymentReference(e.target.value)}
               placeholder="轉帳序號或憑證編號..."
             />
           </div>
@@ -113,7 +118,7 @@ const PayrollPaymentDialog: React.FC<PayrollPaymentDialogProps> = ({
             <Textarea
               id="comment"
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={e => setComment(e.target.value)}
               placeholder="可選填發放相關備註..."
             />
           </div>
@@ -142,4 +147,4 @@ const PayrollPaymentDialog: React.FC<PayrollPaymentDialogProps> = ({
   );
 };
 
-export default PayrollPaymentDialog;
+export default SalaryPaymentDialog;

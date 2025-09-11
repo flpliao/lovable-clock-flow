@@ -1,9 +1,8 @@
-
-import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import React from 'react';
 
-const PayrollTableLoading: React.FC = () => {
+const SalaryTableLoading: React.FC = () => {
   return (
     <Card>
       <CardContent className="p-4">
@@ -23,4 +22,4 @@ const PayrollTableLoading: React.FC = () => {
   );
 };
 
-export default PayrollTableLoading;
+export default SalaryTableLoading;

@@ -7,7 +7,7 @@ import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 // 取得所有員工工作排程
 export const getAllEmployeeWorkSchedules = async (): Promise<Employee[]> => {
   const { data, status, message } = await callApiAndDecode(
-    axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.index)
+    axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.all)
   );
 
   if (status !== ApiResponseStatus.SUCCESS) {
@@ -19,24 +19,25 @@ export const getAllEmployeeWorkSchedules = async (): Promise<Employee[]> => {
 
 // 取得員工工作排程列表（分頁）
 export const getEmployeeWithWorkSchedules = async ({
-  filter,
+  page,
+  per_page,
+  search,
+  employee_id,
+  department_slug,
   start_date,
   end_date,
 }: {
-  filter?: {
-    all?: boolean;
-    page?: number;
-    per_page?: number;
-    search?: string;
-    employee_id?: number;
-    department_slug?: string;
-  };
+  page?: number;
+  per_page?: number;
+  search?: string;
+  employee_id?: number;
+  department_slug?: string;
   start_date?: string;
   end_date?: string;
 }): Promise<Employee[]> => {
   const { data, status, message } = await callApiAndDecode(
     axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.index, {
-      params: { filter, start_date, end_date },
+      params: { page, per_page, search, employee_id, department_slug, start_date, end_date },
     })
   );
 

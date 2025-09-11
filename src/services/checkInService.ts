@@ -139,7 +139,7 @@ export const getCurrentEmployeeWorkSchedules = async (startDate: string, endDate
     if (!employee?.slug) return {};
 
     const { data } = await callApiAndDecode(
-      axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.index, {
+      axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.all, {
         params: {
           filter: {
             all: true,

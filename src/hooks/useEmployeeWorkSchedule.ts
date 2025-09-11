@@ -37,7 +37,10 @@ export const useEmployeeWorkSchedule = () => {
 
     try {
       const employees = await getEmployeeWithWorkSchedules({
-        department_slug: departmentSlug,
+        filter: {
+          all: true,
+          department_slug: departmentSlug,
+        },
       });
       addEmployeesForDepartment({ employees });
     } catch (error) {
@@ -73,7 +76,10 @@ export const useEmployeeWorkSchedule = () => {
 
     try {
       const employees = await getEmployeeWithWorkSchedules({
-        department_slug: departmentSlug,
+        filter: {
+          all: true,
+          department_slug: departmentSlug,
+        },
         start_date: startDate,
         end_date: endDate,
       });
@@ -113,7 +119,10 @@ export const useEmployeeWorkSchedule = () => {
     // 載入該日期所在的整天資料（使用 start_date 和 end_date）
     try {
       const employees = await getEmployeeWithWorkSchedules({
-        department_slug: departmentSlug,
+        filter: {
+          all: true,
+          department_slug: departmentSlug,
+        },
         start_date: date,
         end_date: date,
       });
@@ -143,7 +152,10 @@ export const useEmployeeWorkSchedule = () => {
 
     try {
       const employees = await getEmployeeWithWorkSchedules({
-        department_slug: departmentSlug,
+        filter: {
+          all: true,
+          department_slug: departmentSlug,
+        },
         start_date: startDate,
         end_date: endDate,
       });

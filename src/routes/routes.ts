@@ -28,6 +28,7 @@ const PersonnelManagement = LazyWithSuspense(() => import('@/pages/PersonnelMana
 const RoleManagement = LazyWithSuspense(() => import('@/pages/Role'));
 const CompanyBranchManagement = LazyWithSuspense(() => import('@/pages/CompanyBranchManagement'));
 const SalaryManagement = LazyWithSuspense(() => import('@/pages/SalaryManagement'));
+const SalaryList = LazyWithSuspense(() => import('@/components/salary/SalaryList'));
 const ApprovalCenter = LazyWithSuspense(() => import('@/pages/ApprovalCenter'));
 const SystemSettings = LazyWithSuspense(() => import('@/pages/SystemSettings'));
 const HolidayManagement = LazyWithSuspense(() => import('@/pages/HolidayManagement'));
@@ -138,6 +139,14 @@ export const protectedRoutes: RouteConfig[] = [
     name: '薪資管理',
     component: SalaryManagement,
     icon: 'dollarSign',
+    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
+  },
+  {
+    path: routes.salaryByMonth,
+    name: '薪資列表',
+    component: SalaryList,
+    icon: 'dollarSign',
+    isHidden: true,
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
   {

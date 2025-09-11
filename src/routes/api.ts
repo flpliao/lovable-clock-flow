@@ -26,6 +26,7 @@ export const routes = {
   roleManagement: '/role-management',
   companyBranchManagement: '/company-branch-management',
   salaryManagement: '/salary-management',
+  salaryByMonth: `/salary/edit/:yearMonth`,
   approvalCenter: '/approval-center',
   systemSettings: '/system-settings',
   holidayManagement: '/holiday-management',

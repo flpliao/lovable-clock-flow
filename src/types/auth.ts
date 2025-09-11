@@ -32,6 +32,7 @@ export interface RouteConfig {
   icon?: string;
   roles?: EmployeeRole[]; // 可訪問的角色列表
   children?: RouteConfig[]; // 支援子路由
+  isHidden?: boolean; // 是否隱藏
 }
 
 // 角色守衛組件接口定義

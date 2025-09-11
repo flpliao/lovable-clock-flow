@@ -211,5 +211,6 @@ export const apiRoutes = {
     destroy: (salaryId: string) => `${API_URL}/employee/salaries/${salaryId}`,
     export: `${API_URL}/employee/salaries/export`,
     import: `${API_URL}/employee/salaries/import`,
+    batchPublish: `${API_URL}/employee/salaries/batch-publish`,
   },
 };

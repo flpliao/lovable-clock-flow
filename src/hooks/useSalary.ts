@@ -1,4 +1,5 @@
 import {
+  batchPublishSalaries,
   createSalary,
   deleteSalary,
   exportSalaries,
@@ -25,9 +26,6 @@ export const useSalary = () => {
     salaries,
     salariesLoading,
 
-    // 當前選中的月份
-    selectedMonth,
-
     // 月份相關操作
     setSalaryMonths,
     addSalaryMonths,
@@ -43,9 +41,6 @@ export const useSalary = () => {
     setSalariesLoading,
     isMonthLoaded,
     markMonthAsLoaded,
-
-    // 月份選擇
-    setSelectedMonth,
   } = useSalaryStore();
 
   // 載入薪資月份列表（帶快取）
@@ -207,6 +202,24 @@ export const useSalary = () => {
     }
   };
 
+  // 批量發布薪資記錄
+  const handleBatchPublishSalaries = async (salarySlugs: string[]) => {
+    try {
+      const updatedSalaries = await batchPublishSalaries(salarySlugs);
+
+      // 更新 store 中的薪資記錄
+      updatedSalaries.forEach(salary => {
+        updateSalaryInStore(salary.slug, salary);
+      });
+
+      showSuccess(`成功發布 ${updatedSalaries.length} 筆薪資記錄`);
+      return updatedSalaries;
+    } catch (error) {
+      showError(error.message);
+      return [];
+    }
+  };
+
   return {
     // 月份列表狀態
     salaryMonths,
@@ -216,9 +229,6 @@ export const useSalary = () => {
     // 薪資記錄狀態
     salaries,
     salariesLoading,
-
-    // 當前選中的月份
-    selectedMonth,
 
     // 載入方法
     loadSalaryMonths,
@@ -230,11 +240,9 @@ export const useSalary = () => {
     handleCreateSalary,
     handleUpdateSalary,
     handleDeleteSalary,
+    handleBatchPublishSalaries,
     handleExportSalary,
     handleImportSalary,
-
-    // 月份選擇
-    setSelectedMonth,
   };
 };
 

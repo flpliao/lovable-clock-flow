@@ -178,3 +178,18 @@ export const importSalaries = async (
     summary: { success_count: number; failed_count: number; errors: string[]; skip_count: number };
   };
 };
+
+// 批量發布薪資記錄
+export const batchPublishSalaries = async (salarySlugs: string[]): Promise<Salary[]> => {
+  const { data, status, message } = await callApiAndDecode(
+    axiosWithEmployeeAuth().post(apiRoutes.salary.batchPublish, {
+      salary_slugs: salarySlugs,
+    })
+  );
+
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`批量發布薪資記錄失敗: ${message}`);
+  }
+
+  return data as Salary[];
+};

@@ -12,9 +12,6 @@ interface SalaryState {
   salariesLoading: boolean;
   loadedMonths: Set<string>; // 已載入的月份集合
 
-  // 當前選中的月份
-  selectedMonth: string | null;
-
   // 月份相關操作
   setSalaryMonths: (months: SalaryMonth[]) => void;
   addSalaryMonths: (months: SalaryMonth[]) => void;
@@ -31,9 +28,6 @@ interface SalaryState {
   markMonthAsLoaded: (month: string | string[]) => void; // 標記月份為已載入（支援單筆或多筆）
   isMonthLoaded: (month: string) => boolean; // 檢查月份是否已載入
 
-  // 月份選擇
-  setSelectedMonth: (month: string | null) => void;
-
   // 重置
   reset: () => void;
 }
@@ -48,9 +42,6 @@ const useSalaryStore = create<SalaryState>((set, get) => ({
   salaries: [],
   salariesLoading: false,
   loadedMonths: new Set<string>(), // 已載入的月份集合
-
-  // 當前選中的月份
-  selectedMonth: null,
 
   // 月份相關操作
   setSalaryMonths: months => set({ salaryMonths: months }),
@@ -100,9 +91,6 @@ const useSalaryStore = create<SalaryState>((set, get) => ({
     return loadedMonths.has(month);
   },
 
-  // 月份選擇
-  setSelectedMonth: month => set({ selectedMonth: month }),
-
   // 重置
   reset: () =>
     set({
@@ -111,7 +99,6 @@ const useSalaryStore = create<SalaryState>((set, get) => ({
       monthsLoading: false,
       salariesLoading: false,
       monthsLoaded: false,
-      selectedMonth: null,
       loadedMonths: new Set<string>(),
     }),
 }));

@@ -47,12 +47,25 @@ export function CalendarList() {
 
   const load = useCallback(async () => {
     try {
+      const filter: { all?: boolean; year?: number; name?: string } = {};
+
+      if (year === 'all') {
+        filter.all = true;
+      } else {
+        filter.year = year;
+      }
+
+      // 名稱篩選只在結果中篩選，不發送 API 請求
+      if (keyword) {
+        filter.name = keyword;
+      }
+
       const params = {
         page: currentPage,
         per_page: pageSize,
-        ...(year === 'all' ? { filter: { all: true } } : { filter: { year } }),
-        ...(keyword && { filter: { ...(year === 'all' ? {} : { year }), name: keyword } }),
+        filter,
       };
+
       await loadCalendars(params);
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '讀取失敗';

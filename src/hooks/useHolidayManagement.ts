@@ -1,34 +1,125 @@
 import { useCallback } from 'react';
 import { useCalendarStore } from '@/stores/calendarStore';
 import { getCalendars, deleteCalendar, createCalendar } from '@/services/calendarService';
-import { CalendarIndexParams } from '@/types/calendar';
+import { CalendarIndexParams, CalendarItem } from '@/types/calendar';
 import { showError } from '@/utils/toast';
 
 export const useHolidayManagement = () => {
   const {
     calendars,
     pagination,
+    calendarsByYear,
     isLoading,
     error,
     setCalendars,
+    setCalendarsForYear,
     addCalendar,
     removeCalendar,
+    getCalendarsByYear,
+    isYearLoaded,
     setLoading,
     setError,
   } = useCalendarStore();
 
-  // 載入行事曆列表 - 優先從 store 取得，沒有才打 API
+  // 載入行事曆列表 - 按年份快取策略
   const loadCalendars = useCallback(
     async (params?: CalendarIndexParams & { forceReload?: boolean }) => {
-      // 如果 store 中已有資料且沒有強制重新載入，直接返回
-      if (calendars.length > 0 && !params?.forceReload) {
-        return calendars;
-      }
-
       setLoading(true);
       setError(null);
 
       try {
+        const { filter } = params || {};
+        const year = filter?.year
+          ? typeof filter.year === 'string'
+            ? parseInt(filter.year)
+            : filter.year
+          : null;
+        const hasNameFilter = !!filter?.name;
+        const currentCalendarsByYear = calendarsByYear;
+        const hasAllData = Object.keys(currentCalendarsByYear).length > 0;
+
+        // 載入全部資料（無篩選、篩選全部、或只有名稱篩選）
+        if (!filter || filter.all || (!year && !hasNameFilter)) {
+          // 如果已經有全部資料且不是強制重新載入，直接使用快取
+          if (hasAllData && !params?.forceReload) {
+            let result = Object.values(currentCalendarsByYear).flat();
+
+            // 如果有名稱篩選，在結果中篩選
+            if (hasNameFilter) {
+              result = result.filter(cal =>
+                cal.name.toLowerCase().includes(filter.name!.toLowerCase())
+              );
+            }
+
+            setCalendars(result);
+            return result;
+          }
+
+          // 載入全部資料
+          const result = await getCalendars({ ...params, filter: { all: true } });
+
+          // 按年份分類並快取
+          const calendarsByYear = result.items.reduce(
+            (acc, calendar) => {
+              const year = calendar.year;
+              acc[year] = acc[year] || [];
+              acc[year].push(calendar);
+              return acc;
+            },
+            {} as Record<number, CalendarItem[]>
+          );
+
+          // 儲存各年份資料
+          Object.entries(calendarsByYear).forEach(([year, calendars]) => {
+            setCalendarsForYear(parseInt(year), calendars);
+          });
+
+          // 如果有名稱篩選，在結果中篩選
+          let finalResult = result.items;
+          if (hasNameFilter) {
+            finalResult = result.items.filter(cal =>
+              cal.name.toLowerCase().includes(filter.name!.toLowerCase())
+            );
+          }
+
+          setCalendars(finalResult, result.pagination);
+          return finalResult;
+        }
+
+        // 年份篩選
+        if (year) {
+          // 已載入且非強制重新載入，使用快取
+          if (isYearLoaded(year) && !params?.forceReload) {
+            let filteredCalendars = getCalendarsByYear(year);
+
+            // 如果有名稱篩選，在結果中篩選
+            if (hasNameFilter) {
+              filteredCalendars = filteredCalendars.filter(cal =>
+                cal.name.toLowerCase().includes(filter.name!.toLowerCase())
+              );
+            }
+
+            setCalendars(filteredCalendars);
+            return filteredCalendars;
+          }
+
+          // 載入該年份資料
+          const result = await getCalendars({ ...params, filter: { year } });
+          setCalendarsForYear(year, result.items);
+
+          // 如果有名稱篩選，在結果中篩選
+          let finalResult = result.items;
+          if (hasNameFilter) {
+            finalResult = result.items.filter(cal =>
+              cal.name.toLowerCase().includes(filter.name!.toLowerCase())
+            );
+          }
+
+          setCalendars(finalResult, result.pagination);
+          return finalResult;
+        }
+
+        // 其他情況
         const result = await getCalendars(params);
         setCalendars(result.items, result.pagination);
         return result.items;
@@ -41,7 +132,15 @@ export const useHolidayManagement = () => {
         setLoading(false);
       }
     },
-    [calendars, setCalendars, setLoading, setError]
+    [
+      calendarsByYear,
+      setCalendars,
+      setCalendarsForYear,
+      getCalendarsByYear,
+      isYearLoaded,
+      setLoading,
+      setError,
+    ]
   );
 
   // 刪除行事曆

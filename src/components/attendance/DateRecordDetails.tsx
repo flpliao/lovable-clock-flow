@@ -1,5 +1,3 @@
-import type { MissedCheckinFormData } from '@/components/check-in/components/MissedCheckinFormFields';
-import MissedCheckinFormFields from '@/components/check-in/components/MissedCheckinFormFields';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -9,19 +7,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useCurrentUser } from '@/hooks/useStores';
-import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
-import { MissedCheckinValidationService } from '@/services/missedCheckinValidationService';
 import { Schedule } from '@/services/scheduleService';
 import { CheckInRecord } from '@/types';
-import { MissedCheckinRequest } from '@/types/missedCheckin';
-import { formatTime } from '@/utils/checkInUtils';
-import { formatTimeString } from '@/utils/dateTimeUtils';
+import { RequestType } from '@/constants/checkInTypes';
 import { format, isFuture } from 'date-fns';
 import { ChevronRight } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import MissedCheckInDialog from '@/components/check-in/MissedCheckInDialog';
+import dayjs from 'dayjs';
 
 interface DateRecordDetailsProps {
   date: Date;
@@ -30,7 +24,6 @@ interface DateRecordDetailsProps {
     checkOut?: CheckInRecord;
   };
   recordsCount: number;
-  missedCheckinRecords?: MissedCheckinRequest[];
   hasScheduleForDate: (date: string) => boolean;
   getScheduleForDate: (date: string) => Schedule | undefined;
   onDataRefresh?: () => Promise<void>;
@@ -47,425 +40,276 @@ const Dot = ({ color }: { color: string }) => (
 const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   date,
   selectedDateRecords,
-  missedCheckinRecords = [],
   hasScheduleForDate,
   getScheduleForDate,
   onDataRefresh,
 }) => {
-  const currentUser = useCurrentUser();
-  const { toast } = useToast();
   const isFutureDay = isFuture(date);
   const dateStr = format(date, 'yyyy-MM-dd');
   const hasSchedule = hasScheduleForDate(dateStr);
   const schedule = getScheduleForDate(dateStr);
-  const hasCheckIn = !!selectedDateRecords.checkIn;
-  const hasCheckOut = !!selectedDateRecords.checkOut;
-
-  const dayMissedRecords = missedCheckinRecords.filter(record => record.request_date === dateStr);
-  const pendingMissedRecords = dayMissedRecords.filter(record => record.status === 'pending');
-  const approvedMissedRecords = dayMissedRecords.filter(record => record.status === 'approved');
+  const { checkIn: checkInRecord, checkOut: checkOutRecord } = selectedDateRecords;
+  const hasCheckIn = !!checkInRecord;
+  const hasCheckOut = !!checkOutRecord;
 
   const [openDialog, setOpenDialog] = useState<null | 'checkin' | 'checkout'>(null);
   const navigate = useNavigate();
-  const [showMissedDialog, setShowMissedDialog] = useState(false);
-  const [missedFormData, setMissedFormData] = useState<MissedCheckinFormData>({
-    request_date: '',
-    missed_type: 'check_in',
-    requested_check_in_time: '',
-    requested_check_out_time: '',
-    reason: '',
-  });
-  const [missedLoading, setMissedLoading] = useState(false);
+  const [showMissedFormDialog, setShowMissedFormDialog] = useState(false);
+  const [missedType, setMissedType] = useState<RequestType>(RequestType.CHECK_IN);
 
-  // 卡片陣列
-  const cards: React.ReactNode[] = [];
+  // 提取時間判斷邏輯
+  const timeValidation = useMemo(() => {
+    const today = new Date();
+    const isToday = today.toDateString() === date.toDateString();
+    const now = new Date();
 
-  // 如果是未來日期
-  if (isFutureDay) {
-    cards.push(
-      <div
-        key="future"
-        className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6"
-      >
-        <span className="font-medium text-gray-900">未來日期</span>
-      </div>
-    );
-  }
-  // 如果沒有排班（休假）
-  else if (!hasSchedule) {
-    cards.push(
-      <div
-        key="holiday"
-        className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6"
-      >
-        <span className="font-medium text-gray-900">休假日（無排班）</span>
-      </div>
-    );
-  }
-  // 有排班的工作日
-  else {
-    // 上班未打卡
-    if (!hasCheckIn) {
-      const approvedCheckIn = approvedMissedRecords.find(r => r.missed_type === 'check_in');
-      if (!approvedCheckIn) {
-        // 重新設計異常判斷邏輯 - 檢查是否需要檢查上班記錄
-        const today = new Date();
-        const isToday = today.toDateString() === date.toDateString();
-        const now = new Date();
-
-        const shouldCheckIn = (() => {
-          if (isToday) {
-            // 當天：只有當前時間超過上班時間時才需要檢查
-            if (!schedule?.start_time) return false;
-            const [startHour, startMinute] = schedule.start_time.split(':').map(Number);
-            const workStartTime = new Date();
-            workStartTime.setHours(startHour, startMinute, 0, 0);
-            return now > workStartTime;
-          } else {
-            // 過去日期：一定要有上班記錄
-            return true;
-          }
-        })();
-
-        if (shouldCheckIn) {
-          cards.push(
-            <div
-              key="no-checkin"
-              className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6 cursor-pointer hover:bg-blue-100/40 transition"
-              onClick={() => setOpenDialog('checkin')}
-            >
-              <div className="flex items-center justify-between w-full">
-                <span className="flex items-center">
-                  <Dot color="#ef4444" />
-                  <span className="font-medium text-gray-900">上班未打卡</span>
-                </span>
-                <ChevronRight className="h-5 w-5 text-gray-900" />
-              </div>
-            </div>
-          );
-        }
+    const shouldCheckTime = (timeStr: string | undefined) => {
+      if (!timeStr) return false;
+      if (isToday) {
+        const [hour, minute] = timeStr.split(':').map(Number);
+        const workTime = new Date();
+        workTime.setHours(hour, minute, 0, 0);
+        return now > workTime;
       }
+      return true; // 過去日期一定要檢查
+    };
+
+    return {
+      shouldCheckIn: shouldCheckTime(schedule?.start_time),
+      shouldCheckOut: shouldCheckTime(schedule?.end_time),
+    };
+  }, [date, schedule]);
+
+  // 提取打卡狀態判斷邏輯
+  const checkStatus = useMemo(() => {
+    const isApprovedMissedCheckIn =
+      checkInRecord?.source === 'missed_check_in' && checkInRecord?.approval_status === 'approved';
+    const isApprovedMissedCheckOut =
+      checkOutRecord?.source === 'missed_check_in' &&
+      checkOutRecord?.approval_status === 'approved';
+    const isPendingMissedCheckIn =
+      checkInRecord?.source === 'missed_check_in' && checkInRecord?.approval_status === 'pending';
+    const isPendingMissedCheckOut =
+      checkOutRecord?.source === 'missed_check_in' && checkOutRecord?.approval_status === 'pending';
+
+    return {
+      isApprovedMissedCheckIn,
+      isApprovedMissedCheckOut,
+      isPendingMissedCheckIn,
+      isPendingMissedCheckOut,
+      hasValidCheckIn: hasCheckIn && checkInRecord?.status === 'success',
+      hasValidCheckOut: hasCheckOut && checkOutRecord?.status === 'success',
+    };
+  }, [checkInRecord, checkOutRecord, hasCheckIn, hasCheckOut]);
+
+  // 共用卡片生成函數
+  const createCard = (
+    key: string,
+    content: React.ReactNode,
+    onClick?: () => void,
+    className?: string
+  ) => (
+    <div
+      key={key}
+      className={`bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6 ${
+        onClick ? 'cursor-pointer hover:bg-blue-100/40 transition' : ''
+      } ${className || ''}`}
+      onClick={onClick}
+    >
+      {content}
+    </div>
+  );
+
+  const createStatusCard = (title: string, subtitle?: string, color = '#ef4444') => (
+    <div className="flex items-center">
+      <Dot color={color} />
+      <span className="font-medium text-gray-900">{title}</span>
+      {subtitle && <div className="text-xs text-gray-500 mt-1 ml-2">{subtitle}</div>}
+    </div>
+  );
+
+  const createCheckRecordCard = (
+    record: CheckInRecord,
+    type: 'checkin' | 'checkout',
+    isApprovedMissed: boolean
+  ) => (
+    <div className="flex items-center">
+      <Dot color="#2563eb" />
+      <span className="font-medium text-gray-900">
+        {isApprovedMissed
+          ? `${type === 'checkin' ? '上班' : '下班'}（忘打卡已核准）`
+          : type === 'checkin'
+            ? '上班'
+            : '下班'}
+      </span>
+      <span className="ml-auto text-gray-700 font-bold">
+        {dayjs(record.checked_at).format('HH:mm:ss')}
+      </span>
+    </div>
+  );
+
+  const createCheckRecordSubtitle = (record: CheckInRecord) => (
+    <div className="text-xs text-gray-500 mt-1">
+      {record.method === 'location'
+        ? `定位打卡-${record.location_name || '未知位置'}`
+        : `IP打卡 - ${record.ip_address}`}
+    </div>
+  );
+
+  // 生成卡片陣列
+  const cards = useMemo(() => {
+    const cardList: React.ReactNode[] = [];
+
+    // 未來日期
+    if (isFutureDay) {
+      cardList.push(createCard('future', createStatusCard('未來日期')));
+      return cardList;
     }
 
-    // 忘打卡申請（簽核中）卡片
-    if (pendingMissedRecords.length > 0) {
-      pendingMissedRecords.forEach((record, idx) => {
-        cards.push(
-          <div
-            key={`pending-missed-${idx}`}
-            className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6"
-          >
-            <Dot color="#ef4444" />
-            <div>
-              <div className="font-medium text-gray-900">簽核中</div>
-              <div className="text-xs text-gray-500 mt-1">
-                忘打卡申請（
-                {record.missed_type === 'check_in' ? '上班' : '下班'}）
-              </div>
-            </div>
-          </div>
-        );
-      });
+    // 休假日
+    if (!hasSchedule) {
+      cardList.push(createCard('holiday', createStatusCard('休假日（無排班）')));
+      return cardList;
+    }
+
+    // 有排班的工作日
+    const {
+      isApprovedMissedCheckIn,
+      isApprovedMissedCheckOut,
+      isPendingMissedCheckIn,
+      isPendingMissedCheckOut,
+      hasValidCheckIn,
+      hasValidCheckOut,
+    } = checkStatus;
+
+    // 上班未打卡
+    if (!hasValidCheckIn && !isApprovedMissedCheckIn && timeValidation.shouldCheckIn) {
+      cardList.push(
+        createCard(
+          'no-checkin',
+          <div className="flex items-center justify-between w-full">
+            {createStatusCard('上班未打卡')}
+            <ChevronRight className="h-5 w-5 text-gray-900" />
+          </div>,
+          () => setOpenDialog('checkin')
+        )
+      );
     }
 
     // 下班未打卡
-    if (!hasCheckOut) {
-      const approvedCheckOut = approvedMissedRecords.find(r => r.missed_type === 'check_out');
-      if (!approvedCheckOut) {
-        // 重新設計異常判斷邏輯 - 檢查是否需要檢查下班記錄
-        const today = new Date();
-        const isToday = today.toDateString() === date.toDateString();
-        const now = new Date();
-
-        const shouldCheckOut = (() => {
-          if (isToday) {
-            // 當天：只有當前時間超過下班時間時才需要檢查
-            if (!schedule?.end_time) return false;
-            const [endHour, endMinute] = schedule.end_time.split(':').map(Number);
-            const workEndTime = new Date();
-            workEndTime.setHours(endHour, endMinute, 0, 0);
-            return now > workEndTime;
-          } else {
-            // 過去日期：一定要有下班記錄
-            return true;
-          }
-        })();
-
-        if (shouldCheckOut) {
-          cards.push(
-            <div
-              key="no-checkout"
-              className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6 cursor-pointer hover:bg-blue-100/40 transition"
-              onClick={() => setOpenDialog('checkout')}
-            >
-              <div className="flex items-center justify-between w-full">
-                <span className="flex items-center">
-                  <Dot color="#ef4444" />
-                  <span className="font-medium text-gray-900">下班未打卡</span>
-                </span>
-                <ChevronRight className="h-5 w-5 text-gray-900" />
-              </div>
-            </div>
-          );
-        }
-      }
-    }
-
-    // 上班卡片
-    if (hasCheckIn) {
-      cards.push(
-        <div
-          key="checkin"
-          className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6"
-        >
-          <div className="flex items-center">
-            <Dot color="#2563eb" />
-            <span className="font-medium text-gray-900">上班</span>
-            <span className="ml-auto text-gray-700 font-bold">
-              {formatTime(selectedDateRecords.checkIn.timestamp)}
-            </span>
-          </div>
-          <div className="text-xs text-gray-500 mt-1">
-            {selectedDateRecords.checkIn.type === 'location'
-              ? `其他-${selectedDateRecords.checkIn.details.locationName}-定位打卡`
-              : `IP打卡 - ${selectedDateRecords.checkIn.details.ip}`}
-          </div>
-        </div>
+    if (!hasValidCheckOut && !isApprovedMissedCheckOut && timeValidation.shouldCheckOut) {
+      cardList.push(
+        createCard(
+          'no-checkout',
+          <div className="flex items-center justify-between w-full">
+            {createStatusCard('下班未打卡')}
+            <ChevronRight className="h-5 w-5 text-gray-900" />
+          </div>,
+          () => setOpenDialog('checkout')
+        )
       );
     }
 
-    // 下班卡片
-    if (hasCheckOut) {
-      cards.push(
-        <div
-          key="checkout"
-          className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6"
-        >
-          <div className="flex items-center">
-            <Dot color="#2563eb" />
-            <span className="font-medium text-gray-900">下班</span>
-            <span className="ml-auto text-gray-700 font-bold">
-              {formatTime(selectedDateRecords.checkOut.timestamp)}
-            </span>
+    // 忘打卡申請（簽核中）
+    if (isPendingMissedCheckIn) {
+      cardList.push(
+        createCard(
+          'pending-missed-checkin',
+          <div>
+            {createStatusCard('簽核中')}
+            <div className="text-xs text-gray-500 mt-1">忘打卡申請（上班）</div>
           </div>
-          <div className="text-xs text-gray-500 mt-1">
-            {selectedDateRecords.checkOut.type === 'location'
-              ? `其他-${selectedDateRecords.checkOut.details.locationName}-定位打卡`
-              : `IP打卡 - ${selectedDateRecords.checkOut.details.ip}`}
-          </div>
-        </div>
+        )
       );
     }
 
-    // 無下班卡片但有已核准的下班忘打卡
-    if (!hasCheckOut) {
-      const approvedCheckOut = approvedMissedRecords.find(r => r.missed_type === 'check_out');
-      if (approvedCheckOut) {
-        cards.push(
-          <div
-            key="approved-missed-checkout"
-            className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6"
-          >
-            <Dot color="#22d3ee" />
-            <span className="font-medium text-gray-900">下班（忘打卡已核准）</span>
+    if (isPendingMissedCheckOut) {
+      cardList.push(
+        createCard(
+          'pending-missed-checkout',
+          <div>
+            {createStatusCard('簽核中')}
+            <div className="text-xs text-gray-500 mt-1">忘打卡申請（下班）</div>
           </div>
-        );
-      }
-    }
-
-    // 無上班卡片但有已核准的上班忘打卡
-    if (!hasCheckIn) {
-      const approvedCheckIn = approvedMissedRecords.find(r => r.missed_type === 'check_in');
-      if (approvedCheckIn) {
-        cards.push(
-          <div
-            key="approved-missed-checkin"
-            className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6"
-          >
-            <Dot color="#22d3ee" />
-            <span className="font-medium text-gray-900">上班（忘打卡已核准）</span>
-          </div>
-        );
-      }
-    }
-  }
-
-  // 彈窗開啟時自動帶入日期與未打卡範圍
-  const handleOpenMissedDialog = (missedType?: 'check_in' | 'check_out') => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-
-    // 根據傳入的類型或當前狀態決定忘打卡類型
-    let missed_type: 'check_in' | 'check_out' = 'check_in';
-    let requested_check_in_time = '';
-    let requested_check_out_time = '';
-
-    if (missedType) {
-      // 如果指定了類型，使用指定的類型
-      missed_type = missedType;
-      if (missedType === 'check_in') {
-        requested_check_in_time = formatTimeString(schedule?.start_time || '09:30');
-      } else {
-        requested_check_out_time = formatTimeString(schedule?.end_time || '17:30');
-      }
-    } else {
-      // 原本的邏輯：根據現有記錄判斷
-      if (!selectedDateRecords.checkIn) {
-        missed_type = 'check_in';
-        requested_check_in_time = formatTimeString(schedule?.start_time || '09:30');
-      } else if (!selectedDateRecords.checkOut) {
-        missed_type = 'check_out';
-        requested_check_out_time = formatTimeString(schedule?.end_time || '17:30');
-      }
-    }
-
-    setMissedFormData({
-      request_date: dateStr,
-      missed_type,
-      requested_check_in_time,
-      requested_check_out_time,
-      reason: '',
-    });
-    setShowMissedDialog(true);
-  };
-
-  const handleSubmitMissedCheckin = async (formData: MissedCheckinFormData) => {
-    if (!currentUser?.id) {
-      console.error('無法獲取用戶ID');
-      toast({
-        title: '提交失敗',
-        description: '無法獲取用戶資訊，請重新登入',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // 驗證必填欄位
-    if (!formData.reason.trim()) {
-      toast({
-        title: '提交失敗',
-        description: '請填寫申請原因',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (formData.missed_type === 'check_in' && !formData.requested_check_in_time) {
-      toast({
-        title: '提交失敗',
-        description: '請選擇上班時間',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (formData.missed_type === 'check_out' && !formData.requested_check_out_time) {
-      toast({
-        title: '提交失敗',
-        description: '請選擇下班時間',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setMissedLoading(true);
-    try {
-      // 檢查是否已有重複申請
-      const validationResult = await MissedCheckinValidationService.checkDuplicateRequest(
-        currentUser.id,
-        formData.request_date,
-        formData.missed_type
+        )
       );
-
-      if (!validationResult.canSubmit) {
-        toast({
-          title: '無法提交申請',
-          description: validationResult.errorMessage,
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      // 驗證和格式化時間
-      let formattedCheckInTime = null;
-      let formattedCheckOutTime = null;
-
-      if (formData.requested_check_in_time) {
-        const checkInTimeStr = `${formData.request_date}T${formData.requested_check_in_time}:00`;
-        const checkInDate = new Date(checkInTimeStr);
-        if (isNaN(checkInDate.getTime())) {
-          throw new Error('上班時間格式不正確');
-        }
-        formattedCheckInTime = checkInDate.toISOString();
-      }
-
-      if (formData.requested_check_out_time) {
-        const checkOutTimeStr = `${formData.request_date}T${formData.requested_check_out_time}:00`;
-        const checkOutDate = new Date(checkOutTimeStr);
-        if (isNaN(checkOutDate.getTime())) {
-          throw new Error('下班時間格式不正確');
-        }
-        formattedCheckOutTime = checkOutDate.toISOString();
-      }
-
-      const { error } = await supabase.from('missed_checkin_requests').insert([
-        {
-          staff_id: currentUser.id,
-          request_date: formData.request_date,
-          missed_type: formData.missed_type,
-          requested_check_in_time: formattedCheckInTime,
-          requested_check_out_time: formattedCheckOutTime,
-          reason: formData.reason,
-        },
-      ]);
-
-      if (error) {
-        console.error('Supabase 錯誤:', error);
-        throw new Error(error.message || '資料庫操作失敗');
-      }
-
-      // 提交成功
-      toast({
-        title: '申請已提交',
-        description: `忘打卡申請已成功提交，等待主管審核`,
-      });
-
-      setShowMissedDialog(false);
-
-      // 重新載入資料
-      if (onDataRefresh) {
-        await onDataRefresh();
-      }
-    } catch (error) {
-      console.error('提交忘打卡申請失敗:', error);
-      toast({
-        title: '提交失敗',
-        description: error instanceof Error ? error.message : '未知錯誤，請稍後再試',
-        variant: 'destructive',
-      });
-    } finally {
-      setMissedLoading(false);
     }
-  };
+
+    // 上班記錄
+    if (
+      hasValidCheckIn &&
+      checkInRecord &&
+      (checkInRecord.source === 'normal' || isApprovedMissedCheckIn)
+    ) {
+      cardList.push(
+        createCard(
+          'checkin',
+          <div>
+            {createCheckRecordCard(checkInRecord, 'checkin', isApprovedMissedCheckIn)}
+            {createCheckRecordSubtitle(checkInRecord)}
+          </div>
+        )
+      );
+    }
+
+    // 下班記錄
+    if (
+      hasValidCheckOut &&
+      checkOutRecord &&
+      (checkOutRecord.source === 'normal' || isApprovedMissedCheckOut)
+    ) {
+      cardList.push(
+        createCard(
+          'checkout',
+          <div>
+            {createCheckRecordCard(checkOutRecord, 'checkout', isApprovedMissedCheckOut)}
+            {createCheckRecordSubtitle(checkOutRecord)}
+          </div>
+        )
+      );
+    }
+
+    return cardList.length > 0
+      ? cardList
+      : [createCard('no-records', createStatusCard('無相關記錄'))];
+  }, [isFutureDay, hasSchedule, checkStatus, timeValidation, checkInRecord, checkOutRecord]);
+
+  // 優化：使用 useCallback 包裝處理函數
+  const handleMissedCheckinRequest = useCallback((type: RequestType) => {
+    setMissedType(type);
+    setShowMissedFormDialog(true);
+  }, []);
+
+  const handleDialogClose = useCallback((open: boolean) => {
+    if (!open) {
+      setOpenDialog(null);
+    }
+  }, []);
+
+  const handleLeaveRequest = useCallback(() => {
+    navigate('/leave-request');
+    setOpenDialog(null);
+  }, [navigate]);
+
+  const handleMissedCheckInRequest = useCallback(() => {
+    setOpenDialog(null);
+    const missedType = openDialog === 'checkin' ? RequestType.CHECK_IN : RequestType.CHECK_OUT;
+    handleMissedCheckinRequest(missedType);
+  }, [openDialog, handleMissedCheckinRequest]);
+
+  const handleMissedFormSubmit = useCallback(() => {
+    setShowMissedFormDialog(false);
+    onDataRefresh?.();
+  }, [onDataRefresh]);
 
   return (
     <div className="space-y-3">
-      {cards.length > 0 ? (
-        cards.map((card, index) => <React.Fragment key={index}>{card}</React.Fragment>)
-      ) : (
-        <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6">
-          <span className="font-medium text-gray-900">無相關記錄</span>
-        </div>
-      )}
+      {cards.map((card, index) => (
+        <div key={index}>{card}</div>
+      ))}
 
       {/* 忘打卡申請彈窗 */}
-      <Dialog
-        open={!!openDialog}
-        onOpenChange={v => {
-          if (!v) {
-            setOpenDialog(null);
-          }
-        }}
-      >
+      <Dialog open={!!openDialog} onOpenChange={handleDialogClose}>
         <DialogContent className="max-w-md w-full rounded-t-2xl rounded-2xl p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold px-6 pt-6 pb-2">
@@ -476,22 +320,14 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
           <div className="flex flex-col divide-y divide-gray-100">
             <button
               className="w-full text-left px-6 py-4 bg-transparent hover:bg-gray-100 focus:bg-gray-100 text-base"
-              onClick={() => {
-                navigate('/leave-request');
-                setOpenDialog(null);
-              }}
+              onClick={handleLeaveRequest}
               type="button"
             >
               請假
             </button>
             <button
               className="w-full text-left px-6 py-4 bg-transparent hover:bg-gray-100 focus:bg-gray-100 text-base"
-              onClick={() => {
-                setOpenDialog(null);
-                // 根據當前的 openDialog 狀態傳遞對應的類型
-                const missedType = openDialog === 'checkin' ? 'check_in' : 'check_out';
-                handleOpenMissedDialog(missedType);
-              }}
+              onClick={handleMissedCheckInRequest}
               type="button"
             >
               忘打卡申請
@@ -507,48 +343,17 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
         </DialogContent>
       </Dialog>
 
-      {/* 忘打卡申請自訂 Dialog */}
-      <Dialog
-        open={showMissedDialog}
-        onOpenChange={v => {
-          if (!v) setShowMissedDialog(false);
-        }}
-      >
-        <DialogContent className="max-w-md w-full rounded-t-2xl rounded-2xl p-0 overflow-hidden">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold px-6 pt-6 pb-2">忘記打卡申請</DialogTitle>
-          </DialogHeader>
-          <form
-            className="space-y-4 px-6 pb-6 pt-2"
-            onSubmit={async e => {
-              e.preventDefault();
-              await handleSubmitMissedCheckin(missedFormData);
-            }}
-          >
-            <MissedCheckinFormFields
-              formData={missedFormData}
-              onFormDataChange={updates => setMissedFormData(prev => ({ ...prev, ...updates }))}
-              disabledFields={{
-                request_date: true, // 申請日期自動填入且不可修改
-                missed_type: true, // 申請類型自動填入且不可修改
-              }}
-            />
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowMissedDialog(false)}
-                disabled={missedLoading}
-              >
-                取消
-              </Button>
-              <Button type="submit" disabled={missedLoading}>
-                {missedLoading ? '提交中...' : '提交申請'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {/* 忘打卡申請表單彈窗 */}
+      <MissedCheckInDialog
+        type={missedType}
+        defaultDate={date}
+        scheduleStartTime={schedule?.start_time}
+        scheduleEndTime={schedule?.end_time}
+        open={showMissedFormDialog}
+        onOpenChange={setShowMissedFormDialog}
+        showTrigger={false}
+        onSubmit={handleMissedFormSubmit}
+      />
     </div>
   );
 };

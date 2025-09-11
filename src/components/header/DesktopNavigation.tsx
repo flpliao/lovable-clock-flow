@@ -8,7 +8,7 @@ import { Link, useLocation } from 'react-router-dom';
 // 導航項目
 const NAVIGATION_ITEMS = [
   routes.home,
-  // routes.personalAttendance,
+  routes.personalAttendance,
   routes.leaveRequest,
   routes.approvalCenter,
 ];

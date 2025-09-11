@@ -6,7 +6,7 @@ import {
 } from '@/services/missedCheckInRequestService';
 import { useMyCheckInRecordsStore } from '@/stores/checkInRecordStore';
 import useMissedCheckInRequestsStore from '@/stores/missedCheckInRequestStore';
-import { showError } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
 
 export const useMyMissedCheckInRequests = () => {
   const {
@@ -55,9 +55,11 @@ export const useMyMissedCheckInRequests = () => {
       const newRequest = await createMissedCheckInRequest(requestData);
       addRequest(newRequest);
       addRecord(newRequest.check_in_record);
+      showSuccess('忘記打卡申請新增成功');
       return true;
     } catch (error) {
-      showError(error.message);
+      const errorMessage = error instanceof Error ? error.message : '忘記打卡申請新增失敗';
+      showError(errorMessage);
       return false;
     }
   };
@@ -69,7 +71,8 @@ export const useMyMissedCheckInRequests = () => {
       updateRequest(slug, { status: RequestStatus.CANCELLED });
       removeRecord(missedCheckInRequest.check_in_record.id);
     } catch (error) {
-      showError(error.message);
+      const errorMessage = error instanceof Error ? error.message : '取消忘記打卡申請失敗';
+      showError(errorMessage);
     }
   };
 

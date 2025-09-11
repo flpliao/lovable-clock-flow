@@ -92,6 +92,13 @@ export const protectedRoutes: RouteConfig[] = [
     roles: [], // 所有角色都可訪問
   },
   {
+    path: routes.personalAttendance,
+    name: '個人考勤',
+    component: PersonalAttendance,
+    icon: 'clock',
+    roles: [],
+  },
+  {
     path: routes.leaveRequest,
     name: '請假申請',
     component: LeaveRequestManagement,
@@ -155,13 +162,6 @@ export const unFinishedRoutes: RouteConfig[] = [
     name: '員工儀表板',
     component: StaffDashboard,
     icon: 'dashboard',
-    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER, EmployeeRole.STAFF],
-  },
-  {
-    path: routes.personalAttendance,
-    name: '個人考勤',
-    component: PersonalAttendance,
-    icon: 'clock',
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER, EmployeeRole.STAFF],
   },
   {

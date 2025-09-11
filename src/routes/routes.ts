@@ -73,13 +73,6 @@ export const publicRoutes: RouteConfig[] = [
     name: '認證回調',
     component: AuthCallback,
   },
-  {
-    path: `${routes.editCalendar}/:slug`,
-    name: '行事曆編輯',
-    component: CalendarEditor,
-    icon: 'calendar',
-    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
-  },
 ];
 
 // 受保護的路由
@@ -152,6 +145,14 @@ export const protectedRoutes: RouteConfig[] = [
     name: '假日管理',
     component: HolidayManagement,
     icon: 'calendarDays',
+    roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
+  },
+  {
+    path: `${routes.editCalendar}/:slug`,
+    name: '行事曆編輯',
+    component: CalendarEditor,
+    icon: 'calendar',
+    isHidden: true,
     roles: [EmployeeRole.ADMIN, EmployeeRole.MANAGER],
   },
 ];

@@ -13,7 +13,9 @@ export interface LeaveNotificationData {
 }
 
 // 發送請假申請通知給主管
-export const sendLeaveApprovalNotification = async (data: LeaveNotificationData): Promise<boolean> => {
+export const sendLeaveApprovalNotification = async (
+  data: LeaveNotificationData
+): Promise<boolean> => {
   try {
     console.log('🔔 發送請假審核通知:', data);
 
@@ -37,22 +39,24 @@ export const sendLeaveApprovalNotification = async (data: LeaveNotificationData)
       data: {
         leaveRequestId: data.leaveRequestId,
         applicantName: data.applicantName,
-        actionRequired: true
-      }
+        actionRequired: true,
+      },
     });
 
     if (notificationId) {
       console.log('✅ 請假審核通知發送成功:', notificationId);
-      
+
       // 觸發通知更新事件
-      window.dispatchEvent(new CustomEvent('notificationUpdated', {
-        detail: { 
-          type: 'leave_approval',
-          userId: data.approverId,
-          leaveRequestId: data.leaveRequestId 
-        }
-      }));
-      
+      window.dispatchEvent(
+        new CustomEvent('notificationUpdated', {
+          detail: {
+            type: 'leave_approval',
+            userId: data.approverId,
+            leaveRequestId: data.leaveRequestId,
+          },
+        })
+      );
+
       return true;
     }
 
@@ -76,7 +80,7 @@ export const sendLeaveStatusNotification = async (
     console.log('🔔 發送請假狀態通知:', { applicantId, status, approverName });
 
     const statusText = status === 'approved' ? '已核准' : '已退回';
-    const message = comment 
+    const message = comment
       ? `您的請假申請${statusText}。審核人：${approverName}，備註：${comment}`
       : `您的請假申請${statusText}。審核人：${approverName}`;
 
@@ -85,22 +89,24 @@ export const sendLeaveStatusNotification = async (
       message,
       type: 'leave_status',
       data: {
-        leaveRequestId
-      }
+        leaveRequestId,
+      },
     });
 
     if (notificationId) {
       console.log('✅ 請假狀態通知發送成功:', notificationId);
-      
+
       // 觸發通知更新事件
-      window.dispatchEvent(new CustomEvent('notificationUpdated', {
-        detail: { 
-          type: 'leave_status',
-          userId: applicantId,
-          leaveRequestId 
-        }
-      }));
-      
+      window.dispatchEvent(
+        new CustomEvent('notificationUpdated', {
+          detail: {
+            type: 'leave_status',
+            userId: applicantId,
+            leaveRequestId,
+          },
+        })
+      );
+
       return true;
     }
 
@@ -114,18 +120,19 @@ export const sendLeaveStatusNotification = async (
 // 輔助函數：獲取請假類型文字
 const getLeaveTypeText = (leaveType: string): string => {
   const leaveTypeMap: Record<string, string> = {
-    'annual': '特休',
-    'sick': '病假',
-    'personal': '事假',
-    'marriage': '婚假',
-    'bereavement': '喪假',
-    'maternity': '產假',
-    'paternity': '陪產假',
-    'parental': '育嬰假',
-    'occupational': '公傷假',
-    'menstrual': '生理假',
-    'other': '其他'
+    annual: '特休',
+    sick: '病假',
+    personal: '事假',
+    marriage: '婚假',
+    bereavement: '喪假',
+    maternity: '產假',
+    paternity: '陪產假',
+    maternity_check: '產檢假',
+    parental: '育嬰假',
+    occupational: '公傷假',
+    menstrual: '生理假',
+    other: '其他',
   };
-  
+
   return leaveTypeMap[leaveType] || leaveType;
 };

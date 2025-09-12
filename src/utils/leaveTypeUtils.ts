@@ -41,6 +41,12 @@ export const LEAVE_TYPES_WITH_REFERENCE_DATE: LeaveTypeExtraField[] = [
     required: true,
   },
   {
+    code: LeaveTypeCode.MATERNITY_CHECK,
+    fieldLabel: '產檢日期',
+    fieldDescription: '請選擇產檢日期',
+    required: true,
+  },
+  {
     code: LeaveTypeCode.PATERNITY,
     fieldLabel: '預產日期/出生日期',
     fieldDescription: '請選擇預產日期或出生日期',

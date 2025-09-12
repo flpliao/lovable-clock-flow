@@ -50,7 +50,11 @@ export const leaveRequestFormSchema = z
         return false;
       }
       // 產假需要預產期
-      if (data.leave_type_code === LeaveTypeCode.MATERNITY && !data.reference_date) {
+      if (
+        (data.leave_type_code === LeaveTypeCode.MATERNITY ||
+          data.leave_type_code === LeaveTypeCode.MATERNITY_CHECK) &&
+        !data.reference_date
+      ) {
         return false;
       }
       return true;

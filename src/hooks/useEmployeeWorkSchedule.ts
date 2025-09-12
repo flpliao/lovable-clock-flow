@@ -37,6 +37,7 @@ export const useEmployeeWorkSchedule = () => {
 
     try {
       const employees = await getEmployeeWithWorkSchedules({
+        per_page: 1000,
         department_slug: departmentSlug,
       });
       addEmployeesForDepartment({ employees });

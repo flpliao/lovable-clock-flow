@@ -213,5 +213,6 @@ export const apiRoutes = {
     export: `${API_URL}/employee/salaries/export`,
     import: `${API_URL}/employee/salaries/import`,
     batchPublish: `${API_URL}/employee/salaries/batch-publish`,
+    template: `${API_URL}/employee/salaries/template`,
   },
 };

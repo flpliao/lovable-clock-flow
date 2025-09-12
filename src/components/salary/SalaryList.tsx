@@ -49,19 +49,6 @@ const SalaryList: React.FC = () => {
     navigate('/salary-management');
   };
 
-  const handleUpdateSalarySubmit = async (salaryData: Salary) => {
-    if (editingSalary) {
-      await handleUpdateSalary(editingSalary.slug, salaryData);
-      setEditingSalary(null);
-      // 重新載入當前月份的薪資資料
-      if (yearMonth) {
-        loadSalariesByMonth(yearMonth);
-      }
-      return true; // 返回成功標記
-    }
-    return false;
-  };
-
   const handleEditSalary = (salary: Salary) => {
     setEditingSalary(salary);
   };
@@ -69,19 +56,6 @@ const SalaryList: React.FC = () => {
   const handleDeleteSalaryConfirm = (slug: string) => {
     setSalaryToDelete(slug);
     setShowDeleteDialog(true);
-  };
-
-  // 新增薪資功能
-  const handleCreateSalarySubmit = async (
-    salaryData: Omit<Salary, 'slug' | 'created_at' | 'updated_at'>
-  ) => {
-    await handleCreateSalary(salaryData);
-    setShowCreateDialog(false);
-    // 重新載入當前月份的薪資資料
-    if (yearMonth) {
-      loadSalariesByMonth(yearMonth);
-    }
-    return true; // 返回成功標記
   };
 
   // 批量發布功能
@@ -207,7 +181,7 @@ const SalaryList: React.FC = () => {
           <CreateSalaryForm
             open={showCreateDialog}
             onOpenChange={setShowCreateDialog}
-            onSubmit={handleCreateSalarySubmit}
+            onSubmit={handleCreateSalary}
             yearMonth={yearMonth}
           />
 
@@ -216,7 +190,7 @@ const SalaryList: React.FC = () => {
             <EditSalaryForm
               open={!!editingSalary}
               onOpenChange={open => !open && setEditingSalary(null)}
-              onSubmit={handleUpdateSalarySubmit}
+              onSubmit={() => handleUpdateSalary(editingSalary.slug, editingSalary)}
               salary={editingSalary}
             />
           )}

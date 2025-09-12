@@ -142,6 +142,7 @@ export const getCurrentEmployeeWorkSchedules = async (startDate: string, endDate
       axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.all, {
         params: {
           all: true,
+          slug: employee.slug,
           date_from: startDate,
           date_to: endDate,
         },
@@ -209,7 +210,7 @@ export const fetchMonthlyAttendance = async (
 
   const { data } = checkInResponse;
   const attendanceRecords: Record<string, AttendanceRecord> = {};
-
+  console.log('workSchedules', workSchedules);
   // 初始化有排班的日期
   Object.entries(workSchedules).forEach(([date, schedule]) => {
     attendanceRecords[date] = {
@@ -226,7 +227,6 @@ export const fetchMonthlyAttendance = async (
       overtime_hours: 0,
     };
   });
-
   // 處理打卡記錄
   if (data.data && Array.isArray(data.data)) {
     data.data.forEach((record: CheckInRecord) => {

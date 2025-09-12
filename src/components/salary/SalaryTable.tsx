@@ -1,9 +1,8 @@
-import { AddButton } from '@/components/common/buttons';
+import { AddButton, EditButton } from '@/components/common/buttons';
+import DeleteButton from '@/components/common/buttons/DeleteButton';
 import { EmptyState } from '@/components/common/EmptyState';
 import BatchActionButtons from '@/components/salary/components/BatchActionButtons';
-import SalaryTableActions from '@/components/salary/components/SalaryTableActions';
 import SalaryTableLoading from '@/components/salary/components/SalaryTableLoading';
-import SalaryPaymentDialog from '@/components/salary/dialogs/SalaryPaymentDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,8 +19,8 @@ import { cn } from '@/lib/utils';
 import { Salary, SalaryStatus } from '@/types/salary';
 import { formatYearMonth } from '@/utils/dateUtils';
 import { formatCurrency } from '@/utils/payrollUtils';
-import { CheckSquare } from 'lucide-react';
-import React, { useState } from 'react';
+import { CheckSquare, Edit, Trash2 } from 'lucide-react';
+import React from 'react';
 
 interface SalaryTableProps {
   salaries: Salary[];
@@ -52,11 +51,6 @@ const SalaryTable: React.FC<SalaryTableProps> = ({
   onToggleSelectAll,
   onBatchPublish,
 }) => {
-  const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; salary: Salary | null }>({
-    open: false,
-    salary: null,
-  });
-
   // 狀態顯示函數
   const getStatusDisplay = (status: SalaryStatus) => {
     switch (status) {
@@ -81,19 +75,6 @@ const SalaryTable: React.FC<SalaryTableProps> = ({
           className: 'bg-gray-100 text-gray-800 border border-gray-200',
         };
     }
-  };
-
-  const handlePaymentDialogChange = (open: boolean) => {
-    setPaymentDialog({ open, salary: null });
-  };
-
-  const handleConfirmPayment = (paymentData: {
-    paymentMethod: string;
-    paymentReference?: string;
-    comment?: string;
-  }) => {
-    console.log('Payment confirmed:', paymentData);
-    setPaymentDialog({ open: false, salary: null });
   };
 
   if (isLoading) {
@@ -224,12 +205,23 @@ const SalaryTable: React.FC<SalaryTableProps> = ({
                       </TableCell>
                       <TableCell className="py-3 px-4 whitespace-nowrap">
                         {salary.status === SalaryStatus.DRAFT ? (
-                          <SalaryTableActions
-                            salary={salary}
-                            onEdit={onEdit}
-                            onDelete={onDelete}
-                            disabled={isBatchMode}
-                          />
+                          <div className="flex gap-2">
+                            <EditButton
+                              size="sm"
+                              onClick={() => onEdit(salary)}
+                              className="border border-input bg-background hover:bg-accent hover:text-accent-foreground text-black"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </EditButton>
+                            <DeleteButton
+                              size="sm"
+                              className="text-red-600"
+                              onClick={() => onDelete(salary.slug)}
+                              disabled={isBatchMode}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </DeleteButton>
+                          </div>
                         ) : (
                           <Badge
                             className={cn(
@@ -283,13 +275,6 @@ const SalaryTable: React.FC<SalaryTableProps> = ({
           </div>
         </div>
       </Card>
-
-      <SalaryPaymentDialog
-        open={paymentDialog.open}
-        onOpenChange={handlePaymentDialogChange}
-        salary={paymentDialog.salary}
-        onConfirmPayment={handleConfirmPayment}
-      />
     </>
   );
 };

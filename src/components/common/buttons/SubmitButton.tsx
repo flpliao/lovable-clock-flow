@@ -9,6 +9,7 @@ const SubmitButton = ({
   children,
   className,
   size = 'default',
+  variant = 'default',
   isLoading = false,
   loadingText = '提交中...',
   disabled = false,
@@ -17,7 +18,7 @@ const SubmitButton = ({
     <Button
       type={type}
       onClick={onClick}
-      variant="default"
+      variant={variant}
       size={size}
       disabled={disabled || isLoading}
       className={cn('text-sm', className)}

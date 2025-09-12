@@ -1,15 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ExportButtonProps } from '@/types/button';
 import { Download } from 'lucide-react';
 import React from 'react';
-
-interface ExportButtonProps {
-  onClick: () => void;
-  disabled?: boolean;
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-  className?: string;
-  children?: React.ReactNode;
-}
 
 const ExportButton: React.FC<ExportButtonProps> = ({
   onClick,

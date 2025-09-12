@@ -10,12 +10,13 @@ const EditButton = ({
   children,
   className,
   size = 'default',
+  variant = 'destructive',
   disabled = false,
 }: ClickableButtonProps) => {
   return (
     <Button
       type={type}
-      variant="destructive"
+      variant={variant}
       size={size}
       onClick={onClick}
       disabled={disabled}

@@ -8,6 +8,7 @@ const DuplicateButton = ({
   type = 'button',
   onClick,
   children,
+  variant = 'destructive',
   className,
   size = 'sm',
   disabled = false,
@@ -15,7 +16,7 @@ const DuplicateButton = ({
   return (
     <Button
       type={type}
-      variant="destructive"
+      variant={variant}
       size={size}
       onClick={onClick}
       disabled={disabled}

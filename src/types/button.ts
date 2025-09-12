@@ -82,6 +82,16 @@ export interface ApprovalButtonsProps {
   disabled?: boolean;
 }
 
+// 匯出按鈕屬性接口
+export interface ExportButtonProps extends ClickableButtonProps {
+  buttonText?: string;
+}
+
+// 匯入按鈕屬性接口
+export interface ImportButtonProps extends ClickableButtonProps {
+  buttonText?: string;
+}
+
 // 通用按鈕屬性接口 - 適用於所有按鈕
 
 // 按鈕變體類型

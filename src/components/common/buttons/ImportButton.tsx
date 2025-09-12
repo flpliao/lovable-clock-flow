@@ -1,26 +1,20 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ImportButtonProps } from '@/types/button';
 import { Upload } from 'lucide-react';
 import React from 'react';
-
-interface ImportButtonProps {
-  onClick: () => void;
-  disabled?: boolean;
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-  className?: string;
-  children?: React.ReactNode;
-}
 
 const ImportButton: React.FC<ImportButtonProps> = ({
   onClick,
   disabled = false,
   className = '',
+  variant = 'outline',
   size = 'default',
   children = '匯入',
 }) => {
   return (
     <Button
-      variant="outline"
+      variant={variant}
       size={size}
       onClick={onClick}
       disabled={disabled}

@@ -141,12 +141,9 @@ export const getCurrentEmployeeWorkSchedules = async (startDate: string, endDate
     const { data } = await callApiAndDecode(
       axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.all, {
         params: {
-          filter: {
-            all: true,
-            slug: employee.slug,
-            date_from: startDate,
-            date_to: endDate,
-          },
+          all: true,
+          date_from: startDate,
+          date_to: endDate,
         },
       })
     );
@@ -202,11 +199,9 @@ export const fetchMonthlyAttendance = async (
   const [checkInResponse, workSchedules] = await Promise.all([
     axiosWithEmployeeAuth().get(apiRoutes.checkin.index, {
       params: {
-        filter: {
-          all: true,
-          date_from: startDate,
-          date_to: endDate,
-        },
+        all: true,
+        date_from: startDate,
+        date_to: endDate,
       },
     }),
     getCurrentEmployeeWorkSchedules(startDate, endDate),

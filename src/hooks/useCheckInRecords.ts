@@ -1,12 +1,16 @@
-import { getCheckInRecords, fetchMonthlyAttendance } from '@/services/checkInService';
-import { AttendanceRecord } from '@/types/attendance';
+import { realtimeStatuses } from '@/constants/attendanceStatus';
+import { RequestType } from '@/constants/checkInTypes';
+import { getCheckInRecords, getCheckInRecordsByDateRange } from '@/services/checkInService';
+import { getEmployeeWithWorkSchedules } from '@/services/employeeWorkScheduleService';
 import { useMyCheckInRecordsStore } from '@/stores/checkInRecordStore';
+import useEmployeeStore from '@/stores/employeeStore';
+import { AttendanceRecord, MonthlyAttendanceResponse } from '@/types/attendance';
 import { CheckInRecord } from '@/types/checkIn';
 import { showError } from '@/utils/toast';
-import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import { convertWorkSchedulesToDateMap } from '@/utils/workScheduleUtils';
 import { format } from 'date-fns';
-import { realtimeStatuses } from '@/constants/attendanceStatus';
 import dayjs from 'dayjs';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export const useCheckInRecords = () => {
   const {
@@ -98,6 +102,118 @@ export const useCheckInRecords = () => {
   );
   const handleRemoveCheckInRecord = useCallback((id: string) => removeRecord(id), [removeRecord]);
 
+  // 取得特定月出勤紀錄（月曆格式）
+  const fetchMonthlyAttendance = useCallback(
+    async (year: number, month: number): Promise<MonthlyAttendanceResponse> => {
+      const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
+      const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+
+      const { employee } = useEmployeeStore.getState();
+      if (!employee?.slug) {
+        throw new Error('無法取得員工資訊');
+      }
+
+      const [checkInRecords, employees] = await Promise.all([
+        getCheckInRecordsByDateRange(startDate, endDate),
+        getEmployeeWithWorkSchedules({
+          slug: employee.slug,
+          start_date: startDate,
+          end_date: endDate,
+        }),
+      ]);
+
+      const workSchedules =
+        employees.length > 0 && employees[0]?.work_schedules ? employees[0].work_schedules : [];
+
+      const workSchedulesByDate = convertWorkSchedulesToDateMap(workSchedules);
+      const attendanceRecords: Record<string, AttendanceRecord> = {};
+      console.log('workSchedules', workSchedulesByDate);
+
+      // 初始化有排班的日期
+      Object.entries(workSchedulesByDate).forEach(([date, schedule]) => {
+        attendanceRecords[date] = {
+          date,
+          is_workday: true,
+          work_schedule: schedule,
+          attendance_status: 'normal',
+          check_in_records: [],
+          check_in_time: null,
+          check_out_time: null,
+          is_late: false,
+          is_early_leave: false,
+          work_hours: 0,
+          overtime_hours: 0,
+        };
+      });
+
+      // 處理打卡記錄
+      if (Array.isArray(checkInRecords)) {
+        checkInRecords.forEach((record: CheckInRecord) => {
+          const recordDate = record.checked_at
+            ? dayjs(record.checked_at).format('YYYY-MM-DD')
+            : dayjs().format('YYYY-MM-DD');
+
+          if (!attendanceRecords[recordDate]) {
+            attendanceRecords[recordDate] = {
+              date: recordDate,
+              is_workday: false,
+              work_schedule: null,
+              attendance_status: 'off',
+              check_in_records: [],
+              check_in_time: null,
+              check_out_time: null,
+              is_late: false,
+              is_early_leave: false,
+              work_hours: 0,
+              overtime_hours: 0,
+            };
+          }
+
+          attendanceRecords[recordDate].check_in_records.push(record);
+
+          if (record.type === RequestType.CHECK_IN) {
+            attendanceRecords[recordDate].check_in_time = record.checked_at;
+            attendanceRecords[recordDate].is_late = record.is_late || false;
+          } else if (record.type === RequestType.CHECK_OUT) {
+            attendanceRecords[recordDate].check_out_time = record.checked_at;
+            attendanceRecords[recordDate].is_early_leave = record.is_early_leave || false;
+          }
+        });
+
+        // 計算工時與加班時數
+        Object.values(attendanceRecords).forEach(record => {
+          const { check_in_time, check_out_time, work_schedule, date } = record;
+          if (!check_in_time || !check_out_time) return;
+
+          const checkIn = new Date(check_in_time);
+          const checkOut = new Date(check_out_time);
+          const workHours = (checkOut.getTime() - checkIn.getTime()) / 36e5; // 1000*60*60
+          record.work_hours = Math.max(0, workHours);
+
+          const standardHours = (() => {
+            if (work_schedule) {
+              const scheduleStart = new Date(`${date}T${work_schedule.clock_in_time}`);
+              const scheduleEnd = new Date(`${date}T${work_schedule.clock_out_time}`);
+              if (!isNaN(scheduleStart.getTime()) && !isNaN(scheduleEnd.getTime())) {
+                return (scheduleEnd.getTime() - scheduleStart.getTime()) / 36e5;
+              }
+            }
+            return 8; // 預設標準工時
+          })();
+
+          record.overtime_hours = Math.max(0, workHours - standardHours);
+        });
+      }
+
+      return {
+        year,
+        month,
+        attendance_records: attendanceRecords,
+      };
+    },
+    []
+  );
+
   const loadMonthlyData = useCallback(
     async (year: number, month: number) => {
       if (monthlyLoadingRef.current) return;
@@ -118,7 +234,7 @@ export const useCheckInRecords = () => {
         setMonthlyLoading(false);
       }
     },
-    [hasMonthlyData, setMonthlyData, setMonthlyLoading, setMonthlyError]
+    [hasMonthlyData, setMonthlyData, setMonthlyLoading, setMonthlyError, fetchMonthlyAttendance]
   );
 
   const changeMonth = useCallback(

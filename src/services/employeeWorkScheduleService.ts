@@ -22,7 +22,7 @@ export const getEmployeeWithWorkSchedules = async ({
   page,
   per_page,
   search,
-  employee_id,
+  slug,
   department_slug,
   start_date,
   end_date,
@@ -30,14 +30,14 @@ export const getEmployeeWithWorkSchedules = async ({
   page?: number;
   per_page?: number;
   search?: string;
-  employee_id?: number;
+  slug?: string;
   department_slug?: string;
   start_date?: string;
   end_date?: string;
 }): Promise<Employee[]> => {
   const { data, status, message } = await callApiAndDecode(
     axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.index, {
-      params: { page, per_page, search, employee_id, department_slug, start_date, end_date },
+      params: { page, per_page, search, slug, department_slug, start_date, end_date },
     })
   );
 

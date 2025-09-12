@@ -130,12 +130,6 @@ export const createLocationCheckInRecord = async (
     method: CheckInMethod.LOCATION,
   });
 
-// 取得員工打卡紀錄
-export const fetchCheckInRecords = async (): Promise<CheckInRecord[]> => {
-  const { data } = await axiosWithEmployeeAuth().get(apiRoutes.checkin.index);
-  return data.data;
-};
-
 // 取得指定日期範圍的打卡記錄
 export const getCheckInRecordsByDateRange = async (
   startDate: string,

@@ -7,7 +7,7 @@ import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 // 取得所有員工工作排程
 export const getAllEmployeeWorkSchedules = async (): Promise<Employee[]> => {
   const { data, status, message } = await callApiAndDecode(
-    axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.all)
+    axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.index)
   );
 
   if (status !== ApiResponseStatus.SUCCESS) {

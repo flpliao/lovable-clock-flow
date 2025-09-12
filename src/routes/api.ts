@@ -191,7 +191,6 @@ export const apiRoutes = {
   // 員工排班管理
   employeeWorkSchedule: {
     index: `${API_URL}/employee/employee-schedules`,
-    all: `${API_URL}/employee/employee-schedules/all`,
     show: (employeeSlug: string) => `${API_URL}/employee/employee-schedules/${employeeSlug}`,
     store: `${API_URL}/employee/employee-schedules`,
     bulkSync: `${API_URL}/employee/employee-schedules/bulk/sync`,

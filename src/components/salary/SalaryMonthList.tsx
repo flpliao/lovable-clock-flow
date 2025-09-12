@@ -1,12 +1,14 @@
-import { ExportButton, ImportButton } from '@/components/common/buttons';
+import { AddButton, ExportButton, ImportButton } from '@/components/common/buttons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSalary } from '@/hooks/useSalary';
 import { routes } from '@/routes/api';
+import useSalaryStore from '@/stores/salaryStore';
 import { formatYearMonth } from '@/utils/dateUtils';
 import { Calendar, Eye } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AddMonthDialog from './dialogs/AddMonthDialog';
 
 export default function SalaryMonthList() {
   const {
@@ -18,6 +20,8 @@ export default function SalaryMonthList() {
     handleDownloadTemplate,
   } = useSalary();
   const navigate = useNavigate();
+  const [showAddMonthDialog, setShowAddMonthDialog] = useState(false);
+  const { addSalaryMonths } = useSalaryStore();
 
   // 載入月份列表（只執行一次）
   useEffect(() => {
@@ -54,6 +58,17 @@ export default function SalaryMonthList() {
     });
   };
 
+  // 新增月份功能
+  const handleAddMonth = () => {
+    setShowAddMonthDialog(true);
+  };
+
+  // 確認新增月份
+  const handleConfirmAddMonth = (data: { month: string }) => {
+    navigate(`${routes.salaryByMonth.replace(':yearMonth', data.month)}`);
+    addSalaryMonths([data.month]);
+  };
+
   if (monthsLoading) {
     return (
       <div className="space-y-4">
@@ -78,6 +93,7 @@ export default function SalaryMonthList() {
     <div className="space-y-4">
       {/* 操作按鈕 */}
       <div className="flex justify-end gap-2">
+        <AddButton size="sm" onClick={handleAddMonth} buttonText="新增月份" />
         <ExportButton
           size="sm"
           onClick={handleDownloadTemplate}
@@ -136,6 +152,13 @@ export default function SalaryMonthList() {
           </div>
         ))
       )}
+
+      {/* 新增月份對話框 */}
+      <AddMonthDialog
+        open={showAddMonthDialog}
+        onOpenChange={setShowAddMonthDialog}
+        onSubmit={handleConfirmAddMonth}
+      />
     </div>
   );
 }

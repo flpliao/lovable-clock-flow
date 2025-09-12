@@ -143,8 +143,8 @@ export const getCurrentEmployeeWorkSchedules = async (startDate: string, endDate
         params: {
           all: true,
           slug: employee.slug,
-          date_from: startDate,
-          date_to: endDate,
+          start_date: startDate,
+          end_date: endDate,
         },
       })
     );
@@ -201,8 +201,8 @@ export const fetchMonthlyAttendance = async (
     axiosWithEmployeeAuth().get(apiRoutes.checkin.index, {
       params: {
         all: true,
-        date_from: startDate,
-        date_to: endDate,
+        start_date: startDate,
+        end_date: endDate,
       },
     }),
     getCurrentEmployeeWorkSchedules(startDate, endDate),

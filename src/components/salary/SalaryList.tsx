@@ -4,7 +4,7 @@ import { useSalary } from '@/hooks/useSalary';
 import useSalaryStore from '@/stores/salaryStore';
 import { Salary, SalaryStatus } from '@/types/salary';
 import { formatYearMonth } from '@/utils/dateUtils';
-import { ArrowLeft, CheckSquare, Square } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CreateSalaryForm from './CreateSalaryForm';
@@ -49,19 +49,6 @@ const SalaryList: React.FC = () => {
     navigate('/salary-management');
   };
 
-  const handleUpdateSalarySubmit = async (salaryData: Salary) => {
-    if (editingSalary) {
-      await handleUpdateSalary(editingSalary.slug, salaryData);
-      setEditingSalary(null);
-      // 重新載入當前月份的薪資資料
-      if (yearMonth) {
-        loadSalariesByMonth(yearMonth);
-      }
-      return true; // 返回成功標記
-    }
-    return false;
-  };
-
   const handleEditSalary = (salary: Salary) => {
     setEditingSalary(salary);
   };
@@ -69,19 +56,6 @@ const SalaryList: React.FC = () => {
   const handleDeleteSalaryConfirm = (slug: string) => {
     setSalaryToDelete(slug);
     setShowDeleteDialog(true);
-  };
-
-  // 新增薪資功能
-  const handleCreateSalarySubmit = async (
-    salaryData: Omit<Salary, 'slug' | 'created_at' | 'updated_at'>
-  ) => {
-    await handleCreateSalary(salaryData);
-    setShowCreateDialog(false);
-    // 重新載入當前月份的薪資資料
-    if (yearMonth) {
-      loadSalariesByMonth(yearMonth);
-    }
-    return true; // 返回成功標記
   };
 
   // 批量發布功能
@@ -134,60 +108,17 @@ const SalaryList: React.FC = () => {
         <div className="space-y-6">
           {/* 薪資記錄列表視圖 */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleBackToSalaryManagement}
-                  className="p-1 hover:bg-white/20 rounded-lg transition-colors"
-                  title="返回薪資管理"
-                >
-                  <ArrowLeft className="h-5 w-5 text-white" />
-                </button>
-                <h3 className="text-lg font-semibold text-white drop-shadow-md">
-                  薪資記錄列表 - {yearMonth ? formatYearMonth(yearMonth) : ''}
-                </h3>
-              </div>
-
-              {/* 批量發布按鈕區域 */}
-              <div className="flex items-center gap-3">
-                {isBatchMode ? (
-                  <>
-                    <button
-                      onClick={toggleSelectAll}
-                      className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm"
-                    >
-                      {selectedSalaries.size ===
-                      salaries.filter(s => s.status === SalaryStatus.DRAFT).length ? (
-                        <CheckSquare className="h-4 w-4" />
-                      ) : (
-                        <Square className="h-4 w-4" />
-                      )}
-                      全選草稿
-                    </button>
-                    <button
-                      onClick={handleBatchPublish}
-                      disabled={selectedSalaries.size === 0}
-                      className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium"
-                    >
-                      發布選中 ({selectedSalaries.size})
-                    </button>
-                    <button
-                      onClick={toggleBatchMode}
-                      className="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors text-sm"
-                    >
-                      取消
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={toggleBatchMode}
-                    className="flex items-center gap-2 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors text-sm"
-                  >
-                    <CheckSquare className="h-4 w-4" />
-                    批量發布
-                  </button>
-                )}
-              </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleBackToSalaryManagement}
+                className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+                title="返回薪資管理"
+              >
+                <ArrowLeft className="h-5 w-5 text-white" />
+              </button>
+              <h3 className="text-lg font-semibold text-white drop-shadow-md">
+                薪資記錄列表 - {yearMonth ? formatYearMonth(yearMonth) : ''}
+              </h3>
             </div>
 
             <SalaryTable
@@ -200,6 +131,9 @@ const SalaryList: React.FC = () => {
               isBatchMode={isBatchMode}
               selectedSalaries={selectedSalaries}
               onToggleSelect={toggleSelectSalary}
+              onToggleBatchMode={toggleBatchMode}
+              onToggleSelectAll={toggleSelectAll}
+              onBatchPublish={handleBatchPublish}
             />
           </div>
 
@@ -207,7 +141,7 @@ const SalaryList: React.FC = () => {
           <CreateSalaryForm
             open={showCreateDialog}
             onOpenChange={setShowCreateDialog}
-            onSubmit={handleCreateSalarySubmit}
+            onSubmit={handleCreateSalary}
             yearMonth={yearMonth}
           />
 
@@ -216,7 +150,7 @@ const SalaryList: React.FC = () => {
             <EditSalaryForm
               open={!!editingSalary}
               onOpenChange={open => !open && setEditingSalary(null)}
-              onSubmit={handleUpdateSalarySubmit}
+              onSubmit={() => handleUpdateSalary(editingSalary.slug, editingSalary)}
               salary={editingSalary}
             />
           )}

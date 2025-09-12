@@ -2,6 +2,7 @@ import {
   batchPublishSalaries,
   createSalary,
   deleteSalary,
+  downloadSalaryTemplate,
   exportSalaries,
   getAllSalaries,
   getSalariesByMonth,
@@ -130,7 +131,7 @@ export const useSalary = () => {
   const handleUpdateSalary = async (
     slug: string,
     salaryData: Partial<Omit<Salary, 'slug' | 'created_at' | 'updated_at'>>
-  ) => {
+  ): Promise<Salary> => {
     try {
       const updatedSalary = await updateSalary(slug, salaryData);
       updateSalaryInStore(slug, updatedSalary);
@@ -220,6 +221,25 @@ export const useSalary = () => {
     }
   };
 
+  // 下載薪資範本
+  const handleDownloadTemplate = async () => {
+    try {
+      const { download_url, file_name } = await downloadSalaryTemplate();
+
+      // 創建下載連結
+      const link = document.createElement('a');
+      link.href = download_url;
+      link.download = file_name;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      showSuccess('範本下載成功');
+    } catch (error) {
+      showError(error.message);
+    }
+  };
+
   return {
     // 月份列表狀態
     salaryMonths,
@@ -243,6 +263,7 @@ export const useSalary = () => {
     handleBatchPublishSalaries,
     handleExportSalary,
     handleImportSalary,
+    handleDownloadTemplate,
   };
 };
 

@@ -9,8 +9,14 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function SalaryMonthList() {
-  const { salaryMonths, monthsLoading, loadSalaryMonths, handleImportSalary, handleExportSalary } =
-    useSalary();
+  const {
+    salaryMonths,
+    monthsLoading,
+    loadSalaryMonths,
+    handleImportSalary,
+    handleExportSalary,
+    handleDownloadTemplate,
+  } = useSalary();
   const navigate = useNavigate();
 
   // 載入月份列表（只執行一次）
@@ -72,7 +78,14 @@ export default function SalaryMonthList() {
     <div className="space-y-4">
       {/* 操作按鈕 */}
       <div className="flex justify-end gap-2">
-        <ImportButton onClick={handleImport} />
+        <ExportButton
+          size="sm"
+          onClick={handleDownloadTemplate}
+          className="text-purple-600 bg-purple-100 hover:bg-purple-200 border border-purple-300 hover:border-purple-400 shadow-sm hover:shadow-md transition-all duration-200"
+        >
+          下載範本
+        </ExportButton>
+        <ImportButton size="sm" onClick={handleImport} />
       </div>
 
       {salaryMonths.length === 0 ? (

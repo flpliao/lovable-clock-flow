@@ -20,7 +20,7 @@ import { useForm } from 'react-hook-form';
 interface EditSalaryFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: EditSalaryFormData) => Promise<unknown>;
+  onSubmit: (data: EditSalaryFormData) => Promise<Salary>;
   salary: Salary;
 }
 

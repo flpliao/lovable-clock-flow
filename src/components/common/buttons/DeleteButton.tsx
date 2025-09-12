@@ -9,13 +9,14 @@ const DeleteButton = ({
   onClick,
   children,
   className,
+  variant = 'destructive',
   size = 'sm',
   disabled = false,
 }: ClickableButtonProps) => {
   return (
     <Button
       type={type}
-      variant="destructive"
+      variant={variant}
       size={size}
       onClick={onClick}
       disabled={disabled}

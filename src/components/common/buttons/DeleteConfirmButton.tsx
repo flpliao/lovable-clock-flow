@@ -9,6 +9,7 @@ const DeleteConfirmButton = ({
   onClick,
   children,
   className,
+  variant = 'destructive',
   size = 'default',
   disabled = false,
   isLoading = false,
@@ -16,7 +17,7 @@ const DeleteConfirmButton = ({
   return (
     <Button
       type={type}
-      variant="destructive"
+      variant={variant}
       size={size}
       onClick={onClick}
       disabled={disabled || isLoading}

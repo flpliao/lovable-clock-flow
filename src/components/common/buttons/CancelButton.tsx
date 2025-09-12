@@ -7,6 +7,7 @@ const CancelButton = ({
   type = 'button',
   onClick,
   children = '取消',
+  variant = 'outline',
   className,
   size = 'default',
   disabled = false,
@@ -14,7 +15,7 @@ const CancelButton = ({
   return (
     <Button
       type={type}
-      variant="outline"
+      variant={variant}
       size={size}
       onClick={onClick}
       disabled={disabled}

@@ -9,6 +9,7 @@ const AddButton = ({
   onClick,
   children,
   buttonText = '新增',
+  variant = 'default',
   className,
   size = 'default',
   disabled = false,
@@ -17,7 +18,7 @@ const AddButton = ({
   return (
     <Button
       type={type}
-      variant="default"
+      variant={variant}
       size={size}
       onClick={onClick}
       disabled={disabled || isLoading}

@@ -8,6 +8,7 @@ const SaveButton = ({
   onClick,
   children,
   className,
+  variant = 'default',
   size = 'default',
   isLoading = false,
   loadingText = '儲存中...',
@@ -16,7 +17,7 @@ const SaveButton = ({
   return (
     <Button
       type={type}
-      variant="default"
+      variant={variant}
       size={size}
       disabled={disabled || isLoading}
       className={cn('text-sm', className)}

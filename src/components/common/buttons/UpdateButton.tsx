@@ -9,6 +9,7 @@ const UpdateButton = ({
   children,
   className,
   size = 'default',
+  variant = 'default',
   isLoading = false,
   loadingText = '更新中...',
   disabled = false,
@@ -16,7 +17,7 @@ const UpdateButton = ({
   return (
     <Button
       type={type}
-      variant="default"
+      variant={variant}
       onClick={onClick}
       size={size}
       disabled={disabled || isLoading}

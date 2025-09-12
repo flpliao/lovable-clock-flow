@@ -4,10 +4,12 @@ import { CheckInMethod, CheckInSource, RequestType } from '@/constants/checkInTy
 import { apiRoutes } from '@/routes/api';
 import { CheckInRecord, CreateCheckInPayload } from '@/types/checkIn';
 import { MonthlyAttendanceResponse, AttendanceRecord } from '@/types/attendance';
+import { WorkSchedule } from '@/types/workSchedule';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 import { getCurrentIp, getCurrentPosition } from '@/utils/location';
 import useEmployeeStore from '@/stores/employeeStore';
+import { useEmployeeWorkScheduleStore } from '@/stores/employeeWorkScheduleStore';
 import dayjs from 'dayjs';
 
 export interface CheckInParams {
@@ -132,57 +134,87 @@ export const createLocationCheckInRecord = async (
     method: CheckInMethod.LOCATION,
   });
 
+// 轉換 WorkSchedule[] 為 checkInService 需要的格式
+const convertWorkSchedulesToCheckInFormat = (
+  workSchedules: WorkSchedule[]
+): Record<
+  string,
+  {
+    id: number;
+    shift: {
+      code: string;
+      name: string;
+      color: string;
+    } | null;
+    clock_in_time: string;
+    clock_out_time: string;
+  }
+> => {
+  const workSchedulesByDate: Record<
+    string,
+    {
+      id: number;
+      shift: {
+        code: string;
+        name: string;
+        color: string;
+      } | null;
+      clock_in_time: string;
+      clock_out_time: string;
+    }
+  > = {};
+
+  workSchedules.forEach(workSchedule => {
+    const date = workSchedule.pivot?.date;
+    if (!date) return;
+
+    workSchedulesByDate[date] = {
+      id: parseInt(workSchedule.slug) || 0,
+      shift: workSchedule.shift
+        ? {
+            code: workSchedule.shift.code || '',
+            name: workSchedule.shift.name || '',
+            color: workSchedule.shift.color || '#3B82F6',
+          }
+        : null,
+      clock_in_time: workSchedule.pivot?.clock_in_time || workSchedule.clock_in_time,
+      clock_out_time: workSchedule.pivot?.clock_out_time || workSchedule.clock_out_time,
+    };
+  });
+
+  return workSchedulesByDate;
+};
+
 // 取得當前員工的排班資料
 export const getCurrentEmployeeWorkSchedules = async (startDate: string, endDate: string) => {
   try {
     const { employee } = useEmployeeStore.getState();
     if (!employee?.slug) return {};
 
-    const { data } = await callApiAndDecode(
-      axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.index, {
-        params: {
-          all: true,
-          slug: employee.slug,
-          start_date: startDate,
-          end_date: endDate,
-        },
-      })
-    );
+    // 使用原本的 getEmployeeWorkSchedules 函數
+    const { getEmployeeWorkSchedules } = useEmployeeWorkScheduleStore.getState();
+    const workSchedules = getEmployeeWorkSchedules(employee.slug);
 
-    if (!Array.isArray(data)) return {};
+    // 如果 Store 中沒有資料，則從 API 取得
+    if (workSchedules.length === 0) {
+      const { data } = await callApiAndDecode(
+        axiosWithEmployeeAuth().get(apiRoutes.employeeWorkSchedule.index, {
+          params: {
+            slug: employee.slug,
+            start_date: startDate,
+            end_date: endDate,
+          },
+        })
+      );
 
-    const workSchedulesByDate: Record<
-      string,
-      {
-        id: number;
-        shift: {
-          code: string;
-          name: string;
-          color: string;
-        } | null;
-        clock_in_time: string;
-        clock_out_time: string;
-      }
-    > = {};
+      if (!Array.isArray(data) || !data[0]?.work_schedules) return {};
 
-    data?.[0]?.work_schedules?.forEach(workSchedule => {
-      const date = workSchedule.pivot?.date || workSchedule.date;
-      if (!date) return;
-      workSchedulesByDate[date] = {
-        id: parseInt(workSchedule.slug) || workSchedule.id || 0,
-        shift: workSchedule.shift
-          ? {
-              code: workSchedule.shift.code || '',
-              name: workSchedule.shift.name || '',
-              color: workSchedule.shift.color || '#3B82F6',
-            }
-          : null,
-        clock_in_time: workSchedule.pivot?.clock_in_time || workSchedule.clock_in_time,
-        clock_out_time: workSchedule.pivot?.clock_out_time || workSchedule.clock_out_time,
-      };
-    });
+      // 轉換 API 回傳的格式
+      return convertWorkSchedulesToCheckInFormat(data[0].work_schedules);
+    }
 
-    return workSchedulesByDate;
+    // 轉換 Store 中的資料
+    return convertWorkSchedulesToCheckInFormat(workSchedules);
   } catch (e) {
     console.warn('取得排班資料失敗:', e);
     return {};

@@ -63,34 +63,38 @@ export const useCheckInRecords = () => {
     return record.is_late || record.is_early_leave || !(hasValidCheckIn && hasValidCheckOut);
   }, []);
 
-  const loadCheckInRecords = useCallback(
-    async (checked_at?: string) => {
-      if (isLoading) return;
-      setLoading(true);
-      setError(null);
+  const loadCheckInRecords = async (checked_at?: string) => {
+    if (isLoading) return;
+    setLoading(true);
+    setError(null);
 
-      const targetDate = checked_at || dayjs().format('YYYY-MM-DD');
-      try {
-        const data = await getCheckInRecords(targetDate);
-        setRecords(data);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : '載入打卡記錄失敗';
-        setError(msg);
-        showError(msg);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [isLoading, setLoading, setError, setRecords]
-  );
-
-  const loadTodayCheckInRecords = useCallback(async () => {
+    const targetDate = checked_at || dayjs().format('YYYY-MM-DD');
     try {
-      await loadCheckInRecords(dayjs().format('YYYY-MM-DD'));
+      const data = await getCheckInRecords(targetDate);
+      setRecords(data);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '載入打卡記錄失敗';
+      setError(msg);
+      showError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const loadTodayCheckInRecords = async () => {
+    const today = dayjs().format('YYYY-MM-DD');
+
+    // 檢查今天是否已有打卡記錄
+    const todayRecords = getRecordsByDate(today);
+    if (todayRecords.length > 0) {
+      return;
+    }
+
+    try {
+      await loadCheckInRecords(today);
     } catch (e) {
       showError(e instanceof Error ? e.message : '載入今日打卡記錄失敗');
     }
-  }, [loadCheckInRecords]);
+  };
 
   const handleAddCheckInRecord = useCallback(
     (record: CheckInRecord) => addRecord(record),

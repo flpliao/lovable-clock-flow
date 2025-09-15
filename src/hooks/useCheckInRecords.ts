@@ -1,4 +1,3 @@
-import { realtimeStatuses } from '@/constants/attendanceStatus';
 import { RequestType } from '@/constants/checkInTypes';
 import { getCheckInRecords, getCheckInRecordsByDateRange } from '@/services/checkInService';
 import { getEmployeeWithWorkSchedules } from '@/services/employeeWorkScheduleService';
@@ -10,7 +9,7 @@ import { showError } from '@/utils/toast';
 import { convertWorkSchedulesToDateMap } from '@/utils/workScheduleUtils';
 import { format } from 'date-fns';
 import dayjs from 'dayjs';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 export const useCheckInRecords = () => {
   const {
@@ -35,6 +34,7 @@ export const useCheckInRecords = () => {
     monthlyError,
     setMonthlyData,
     getMonthlyData,
+    getAttendanceForDate: storeGetAttendanceForDate,
     hasMonthlyData,
     setMonthlyLoading,
     setMonthlyError,
@@ -241,25 +241,20 @@ export const useCheckInRecords = () => {
     [hasMonthlyData, setMonthlyData, setMonthlyLoading, setMonthlyError, fetchMonthlyAttendance]
   );
 
-  const changeMonth = useCallback(
-    async (year: number, month: number) => {
-      setCurrentYear(year);
-      setCurrentMonth(month);
-      await loadMonthlyData(year, month);
-    },
-    [loadMonthlyData]
-  );
+  const changeMonth = useCallback(async (year: number, month: number) => {
+    setCurrentYear(year);
+    setCurrentMonth(month);
+  }, []);
 
   const getAttendanceForDate = useCallback(
     (date: Date): AttendanceRecord | null => {
-      const currentMonthData = getMonthlyData(currentYear, currentMonth);
-      if (!currentMonthData) return null;
-      return currentMonthData[format(date, 'yyyy-MM-dd')] || null;
+      return storeGetAttendanceForDate(date);
     },
-    [currentYear, currentMonth, getMonthlyData]
+    [storeGetAttendanceForDate]
   );
 
   const selectedDateAttendance = useMemo(() => {
+    console.log('selectedDate', selectedDate);
     if (!selectedDate) return null;
     return getAttendanceForDate(selectedDate);
   }, [selectedDate, getAttendanceForDate]);
@@ -300,24 +295,6 @@ export const useCheckInRecords = () => {
       missedCheckOut: !todayRecord.check_out_time,
     };
   }, [currentYear, currentMonth, getMonthlyData, today]);
-
-  useEffect(() => {
-    loadMonthlyData(currentYear, currentMonth);
-  }, [currentYear, currentMonth, loadMonthlyData]);
-
-  useEffect(() => {
-    const currentMonthData = getMonthlyData(currentYear, currentMonth);
-    if (!currentMonthData) return;
-
-    const todayStr = format(today, 'yyyy-MM-dd');
-    const todayRecord = currentMonthData[todayStr];
-    if (todayRecord && realtimeStatuses.includes(todayRecord.attendance_status)) {
-      const interval = setInterval(() => {
-        loadMonthlyData(currentYear, currentMonth);
-      }, 60000);
-      return () => clearInterval(interval);
-    }
-  }, [currentYear, currentMonth, getMonthlyData, loadMonthlyData, today]);
 
   return {
     records,

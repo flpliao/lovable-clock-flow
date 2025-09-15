@@ -34,11 +34,11 @@ const AttendanceCalendar: React.FC<AttendanceCalendarProps> = memo(
     );
 
     const formatCaption = React.useCallback((date: Date) => {
-      return format(date, 'MMMM yyyy', { locale: zhTW });
+      return format(date, 'yyyy 年 MM 月', { locale: zhTW });
     }, []);
 
     return (
-      <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6 flex justify-center w-full">
+      <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6 w-full">
         {/* 月曆 */}
         <Calendar
           mode="single"
@@ -46,12 +46,20 @@ const AttendanceCalendar: React.FC<AttendanceCalendarProps> = memo(
           onSelect={onDateSelect}
           month={new Date(currentYear, currentMonth - 1)}
           onMonthChange={handleMonthChange}
-          className="mx-auto"
+          className="w-full"
           classNames={{
-            day: 'relative h-10 w-10 p-0 font-normal rounded-full transition-colors hover:bg-gray-100 text-gray-800 font-medium cursor-pointer',
+            months: 'w-full',
+            month: 'w-full',
+            table: 'w-full',
+            head_row: 'flex w-full justify-between mt-4',
+            row: 'flex w-full mt-3 justify-between',
+            cell: 'relative p-0 text-center text-sm rounded-full h-8 w-8 sm:h-10 sm:w-10 focus-within:relative focus-within:z-20 flex-1',
+            day: 'relative h-8 w-8 sm:h-10 sm:w-10 p-0 font-normal rounded-full transition-colors hover:bg-gray-100 text-gray-800 font-medium cursor-pointer text-xs sm:text-sm',
             day_selected: '!bg-blue-500 text-white hover:bg-blue-600 hover:text-white',
             day_today: 'bg-blue-100 text-blue-800 font-semibold',
             day_disabled: 'text-gray-400 cursor-not-allowed hover:bg-transparent',
+            head_cell:
+              'text-gray-800 font-semibold rounded-md text-[0.8rem] sm:text-[0.9rem] drop-shadow-sm flex-1 text-center',
           }}
           modifiers={{
             highlighted: highlightedDates.danger,

@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
 import PageLayout from '@/components/layouts/PageLayout';
 import AttendanceCalendar from '@/components/attendance/AttendanceCalendar';
@@ -19,6 +19,11 @@ const PersonalAttendance: React.FC = () => {
     monthlyError,
     loadMonthlyData,
   } = useCheckInRecords();
+
+  // 組件初始化時載入當月資料
+  useEffect(() => {
+    loadMonthlyData(currentYear, currentMonth);
+  }, [currentYear, currentMonth, loadMonthlyData]);
 
   // 優化：使用 useMemo 計算選中日期的記錄
   const selectedDateRecords = useMemo(() => {

@@ -137,8 +137,8 @@ interface MyCheckInRecordsState {
   isLoading: boolean;
   error: string | null;
 
-  // 月曆出勤資料
-  monthlyData: Record<string, Record<string, AttendanceRecord>>; // key: "year-month", value: 該月的出勤資料
+  // 月曆出勤資料 - 三層結構：年 -> 月 -> 日
+  monthlyData: Record<number, Record<number, Record<string, AttendanceRecord>>>; // year -> month -> date
   monthlyLoading: boolean;
   monthlyError: string | null;
 
@@ -151,6 +151,7 @@ interface MyCheckInRecordsState {
   // 月曆資料管理
   setMonthlyData: (year: number, month: number, data: Record<string, AttendanceRecord>) => void;
   getMonthlyData: (year: number, month: number) => Record<string, AttendanceRecord> | null;
+  getAttendanceForDate: (date: Date) => AttendanceRecord | null;
   hasMonthlyData: (year: number, month: number) => boolean;
   setMonthlyLoading: (loading: boolean) => void;
   setMonthlyError: (error: string | null) => void;
@@ -280,25 +281,34 @@ export const useMyCheckInRecordsStore = create<MyCheckInRecordsState>((set, get)
 
   // 月曆資料管理
   setMonthlyData: (year, month, data) => {
-    const key = `${year}-${month}`;
     set(state => ({
       monthlyData: {
         ...state.monthlyData,
-        [key]: data,
+        [year]: {
+          ...state.monthlyData[year],
+          [month]: data,
+        },
       },
     }));
   },
 
   getMonthlyData: (year, month) => {
-    const key = `${year}-${month}`;
     const { monthlyData } = get();
-    return monthlyData[key] || null;
+    return monthlyData[year]?.[month] || null;
+  },
+
+  getAttendanceForDate: date => {
+    const { monthlyData } = get();
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1; // JavaScript 月份從 0 開始
+    const dateStr = dayjs(date).format('YYYY-MM-DD');
+
+    return monthlyData[year]?.[month]?.[dateStr] || null;
   },
 
   hasMonthlyData: (year, month) => {
-    const key = `${year}-${month}`;
     const { monthlyData } = get();
-    return key in monthlyData;
+    return !!monthlyData[year]?.[month];
   },
 
   setMonthlyLoading: loading => set({ monthlyLoading: loading }),

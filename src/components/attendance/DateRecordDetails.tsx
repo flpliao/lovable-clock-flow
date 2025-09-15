@@ -196,6 +196,19 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
       );
     }
 
+    // 忘打卡申請（簽核中）
+    if (isPendingMissedCheckIn) {
+      cardList.push(
+        createCard(
+          'pending-missed-checkin',
+          <div>
+            {createStatusCard('簽核中')}
+            <div className="text-xs text-gray-500 mt-1">忘打卡申請（上班）</div>
+          </div>
+        )
+      );
+    }
+
     // 下班未打卡
     if (!hasValidCheckOut && !isApprovedMissedCheckOut && timeValidation.shouldCheckOut) {
       cardList.push(
@@ -206,19 +219,6 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
             <ChevronRight className="h-5 w-5 text-gray-900" />
           </div>,
           () => setOpenDialog('checkout')
-        )
-      );
-    }
-
-    // 忘打卡申請（簽核中）
-    if (isPendingMissedCheckIn) {
-      cardList.push(
-        createCard(
-          'pending-missed-checkin',
-          <div>
-            {createStatusCard('簽核中')}
-            <div className="text-xs text-gray-500 mt-1">忘打卡申請（上班）</div>
-          </div>
         )
       );
     }
@@ -304,6 +304,9 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
 
   return (
     <div className="space-y-3">
+      <div className="text-xl font-semibold text-white drop-shadow-md">
+        目前選取時間：{date.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }).split(' ')[0]}
+      </div>
       {cards.map((card, index) => (
         <div key={index}>{card}</div>
       ))}

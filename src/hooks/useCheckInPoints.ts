@@ -12,15 +12,14 @@ import { useState } from 'react';
 
 export function useCheckInPoints() {
   const [isLoading, setIsLoading] = useState(false);
-  const [currentPos, setCurrentPos] = useState<{ latitude: number; longitude: number } | null>(
-    null
-  );
   const {
     checkInPoints: data,
+    currentPos,
     setCheckInPoints,
     addCheckInPoint,
     setCheckInPoint,
     removeCheckInPoint,
+    setCurrentPos,
   } = useCheckInPointStore();
 
   const loadCheckInPoints = async () => {

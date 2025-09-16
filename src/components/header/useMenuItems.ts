@@ -7,13 +7,14 @@ export const useMenuItems = () => {
 
   // 根據用戶權限過濾路由項目
   const filteredRoutes = protectedRoutes.filter(route => {
+    // 如果路由被隱藏，則不顯示
+    if (route.isHidden) {
+      return false;
+    }
+
     // 如果路由沒有設定角色限制，則所有已登入用戶都可訪問
     if (!route.roles || route.roles.length === 0) {
       return true;
-    }
-
-    if (route.isHidden) {
-      return false;
     }
 
     // 檢查用戶是否有權限訪問此路由

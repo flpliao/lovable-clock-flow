@@ -4,7 +4,7 @@ import {
   createMissedCheckInRequest,
   getCompletedMyMissedCheckInRequests,
 } from '@/services/missedCheckInRequestService';
-import { useMyCheckInRecordsStore } from '@/stores/checkInRecordStore';
+import { useMyCheckInRecordsStore } from '@/stores/myCheckInRecordsStore';
 import useMissedCheckInRequestsStore from '@/stores/missedCheckInRequestStore';
 import { showError, showSuccess } from '@/utils/toast';
 

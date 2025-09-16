@@ -3,7 +3,7 @@ import { Calendar } from 'lucide-react';
 import PageLayout from '@/components/layouts/PageLayout';
 import AttendanceCalendar from '@/components/attendance/AttendanceCalendar';
 import DateRecordDetails from '@/components/attendance/DateRecordDetails';
-import { useCheckInRecords } from '@/hooks/useCheckInRecords';
+import { usePersonalAttendance } from '@/hooks/usePersonalAttendence';
 
 const PersonalAttendance: React.FC = () => {
   const {
@@ -18,7 +18,7 @@ const PersonalAttendance: React.FC = () => {
     monthlyLoading,
     monthlyError,
     loadMonthlyData,
-  } = useCheckInRecords();
+  } = usePersonalAttendance();
 
   // 組件初始化時載入當月資料
   useEffect(() => {
@@ -80,7 +80,7 @@ const PersonalAttendance: React.FC = () => {
           <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center shadow-lg">
             <Calendar className="h-5 w-5 text-white" />
           </div>
-          <h2 className="text-xl font-semibold text-white drop-shadow-md">打卡記錄</h2>
+          <h2 className="text-xl font-semibold text-white drop-shadow-md">個人出勤</h2>
         </div>
 
         {/* 主要內容區域 */}

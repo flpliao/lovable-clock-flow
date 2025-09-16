@@ -1,3 +1,4 @@
+import MissedCheckInDialog from '@/components/check-in/MissedCheckInDialog';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -7,15 +8,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { RequestType } from '@/constants/checkInTypes';
 import { Schedule } from '@/services/scheduleService';
 import { CheckInRecord } from '@/types';
-import { RequestType } from '@/constants/checkInTypes';
 import { format, isFuture } from 'date-fns';
-import { ChevronRight } from 'lucide-react';
-import React, { useState, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import MissedCheckInDialog from '@/components/check-in/MissedCheckInDialog';
 import dayjs from 'dayjs';
+import { ChevronRight } from 'lucide-react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface DateRecordDetailsProps {
   date: Date;
@@ -305,7 +305,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
   return (
     <div className="space-y-3">
       <div className="text-xl font-semibold text-white drop-shadow-md">
-        目前選取時間：{date.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }).split(' ')[0]}
+        目前選取時間：{date.toLocaleDateString('zh-TW')}
       </div>
       {cards.map((card, index) => (
         <div key={index}>{card}</div>

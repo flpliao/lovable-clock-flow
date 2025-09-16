@@ -27,6 +27,8 @@ export const routes = {
   companyBranchManagement: '/company-branch-management',
   salaryManagement: '/salary-management',
   salaryByMonth: `/salary/edit/:yearMonth`,
+  personalSalary: '/personal-salary',
+  personalSalaryDetail: '/personal-salary/:yearMonth',
   approvalCenter: '/approval-center',
   systemSettings: '/system-settings',
   holidayManagement: '/holiday-management',
@@ -212,5 +214,7 @@ export const apiRoutes = {
     import: `${API_URL}/employee/salaries/import`,
     batchPublish: `${API_URL}/employee/salaries/batch-publish`,
     template: `${API_URL}/employee/salaries/template`,
+    // 個人薪資相關
+    mySalaries: `${API_URL}/employee/salaries/my-salaries`,
   },
 };

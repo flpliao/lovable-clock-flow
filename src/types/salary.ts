@@ -70,6 +70,9 @@ export interface Salary {
   health_insurance_employer: number;
   labor_pension_employer: number;
   status?: SalaryStatus;
+  totalSalary?: number; // 計算後的實領薪資總額
+  allowances?: number; // 計算後的津貼總額
+  deductions?: number; // 計算後的扣除總額
   created_at: string;
   updated_at: string;
 }

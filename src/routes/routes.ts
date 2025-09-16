@@ -29,6 +29,8 @@ const RoleManagement = LazyWithSuspense(() => import('@/pages/Role'));
 const CompanyBranchManagement = LazyWithSuspense(() => import('@/pages/CompanyBranchManagement'));
 const SalaryManagement = LazyWithSuspense(() => import('@/pages/SalaryManagement'));
 const SalaryList = LazyWithSuspense(() => import('@/components/salary/SalaryList'));
+const PersonalSalary = LazyWithSuspense(() => import('@/pages/PersonalSalary'));
+const PersonalSalaryDetail = LazyWithSuspense(() => import('@/pages/PersonalSalaryDetail'));
 const ApprovalCenter = LazyWithSuspense(() => import('@/pages/ApprovalCenter'));
 const SystemSettings = LazyWithSuspense(() => import('@/pages/SystemSettings'));
 const HolidayManagement = LazyWithSuspense(() => import('@/pages/HolidayManagement'));
@@ -90,6 +92,21 @@ export const protectedRoutes: RouteConfig[] = [
     name: '個人出勤',
     component: PersonalAttendance,
     icon: 'clock',
+    roles: [],
+  },
+  {
+    path: routes.personalSalary,
+    name: '我的薪資',
+    component: PersonalSalary,
+    icon: 'dollarSign',
+    roles: [],
+  },
+  {
+    path: routes.personalSalaryDetail,
+    name: '薪資明細',
+    component: PersonalSalaryDetail,
+    icon: 'dollarSign',
+    isHidden: true,
     roles: [],
   },
   {

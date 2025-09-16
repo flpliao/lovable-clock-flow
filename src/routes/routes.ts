@@ -87,7 +87,7 @@ export const protectedRoutes: RouteConfig[] = [
   },
   {
     path: routes.personalAttendance,
-    name: '個人考勤',
+    name: '個人出勤',
     component: PersonalAttendance,
     icon: 'clock',
     roles: [],

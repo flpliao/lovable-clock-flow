@@ -17,6 +17,19 @@ export const getAllSalaries = async (): Promise<Salary[]> => {
   return data as Salary[];
 };
 
+// 獲取我的薪資記錄
+export const getMySalaries = async (): Promise<Salary[]> => {
+  const { data, status, message } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.salary.mySalaries)
+  );
+
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`載入我的薪資記錄失敗: ${message}`);
+  }
+
+  return data as Salary[];
+};
+
 // 取得薪資列表（分頁）
 export const getSalaries = async (params?: {
   page?: number;

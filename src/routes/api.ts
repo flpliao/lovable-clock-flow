@@ -142,24 +142,22 @@ export const apiRoutes = {
   },
   // 行事曆日期管理
   calendarDay: {
-    index: (calendarSlug: string) => `${API_URL}/employee/calendar-days/calendar/${calendarSlug}`,
-    statistics: (calendarSlug: string) =>
-      `${API_URL}/employee/calendar-days/calendar/${calendarSlug}/statistics`,
-    // 依月份取得日期
+    index: (calendarSlug: string) => `${API_URL}/employee/calendars/${calendarSlug}/days`,
     getMonthDays: (calendarSlug: string) =>
-      `${API_URL}/employee/calendar-days/calendar/${calendarSlug}/month`,
-    show: (calendarSlug: string) => `${API_URL}/employee/calendar-days/calendar/${calendarSlug}`,
-    store: (calendarSlug: string) => `${API_URL}/employee/calendar-days/calendar/${calendarSlug}`,
-    update: (calendarSlug: string) => `${API_URL}/employee/calendar-days/calendar/${calendarSlug}`,
-    destroy: (calendarSlug: string) => `${API_URL}/employee/calendar-days/calendar/${calendarSlug}`,
+      `${API_URL}/employee/calendars/${calendarSlug}/days/month`,
+    show: (calendarSlug: string, calendarDaySlug: string) =>
+      `${API_URL}/employee/calendars/${calendarSlug}/days/${calendarDaySlug}`,
+    store: (calendarSlug: string) => `${API_URL}/employee/calendars/${calendarSlug}/days`,
+    update: (calendarSlug: string, calendarDaySlug: string) =>
+      `${API_URL}/employee/calendars/${calendarSlug}/days/${calendarDaySlug}`,
+    destroy: (calendarSlug: string, calendarDaySlug: string) =>
+      `${API_URL}/employee/calendars/${calendarSlug}/days/${calendarDaySlug}`,
     batchUpdate: (calendarSlug: string) =>
-      `${API_URL}/employee/calendar-days/calendar/${calendarSlug}/batch-update`,
-    // 生成全年日期
+      `${API_URL}/employee/calendars/${calendarSlug}/days/batch-update`,
     generateYear: (calendarSlug: string) =>
-      `${API_URL}/employee/calendar-days/calendar/${calendarSlug}/generate-year`,
-    // 清除全部日期
+      `${API_URL}/employee/calendars/${calendarSlug}/days/generate-year`,
     clearAll: (calendarSlug: string) =>
-      `${API_URL}/employee/calendar-days/calendar/${calendarSlug}/clear-all`,
+      `${API_URL}/employee/calendars/${calendarSlug}/days/clear-all`,
   },
   // 班次管理
   shift: {

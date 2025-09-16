@@ -181,9 +181,7 @@ export async function saveMonthDays(
   // 批次刪除 workdays（需要逐一刪除，因為後端沒有批次刪除API）
   for (const slug of datesToDelete) {
     try {
-      await axiosWithEmployeeAuth().delete(
-        `${apiRoutes.calendarDay.destroy(calendarSlug)}/${slug}`
-      );
+      await axiosWithEmployeeAuth().delete(apiRoutes.calendarDay.destroy(calendarSlug, slug));
       results.deleted++;
     } catch (e) {
       console.warn('刪除日期失敗:', slug, e);

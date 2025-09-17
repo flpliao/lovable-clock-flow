@@ -15,7 +15,7 @@ export const useDepartment = () => {
   const { departments, setDepartments, addDepartment, updateDepartment, removeDepartment } =
     useDepartmentStore();
 
-  // 載入所有部門
+  // 載入所有單位
   const loadDepartments = async () => {
     if (departments.length > 0 || isLoading) return;
 
@@ -30,7 +30,7 @@ export const useDepartment = () => {
     }
   };
 
-  // 創建新部門
+  // 創建新單位
   const handleCreateDepartment = async (
     departmentData: Omit<Department, 'id' | 'slug' | 'created_at' | 'updated_at'>
   ): Promise<Department> => {
@@ -46,7 +46,7 @@ export const useDepartment = () => {
     }
   };
 
-  // 更新部門
+  // 更新單位
   const handleUpdateDepartment = async (
     slug: string,
     departmentData: Partial<Department>
@@ -63,7 +63,7 @@ export const useDepartment = () => {
     }
   };
 
-  // 刪除部門
+  // 刪除單位
   const handleDeleteDepartment = async (slug: string): Promise<boolean> => {
     setIsLoading(true);
     try {

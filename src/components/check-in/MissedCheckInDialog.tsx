@@ -140,6 +140,7 @@ const MissedCheckInDialog: React.FC<MissedCheckInDialogProps> = ({
                     <Input
                       type="date"
                       {...field}
+                      max={dayjs().format('YYYY-MM-DD')}
                       className="bg-background border-input text-foreground"
                     />
                   </FormControl>

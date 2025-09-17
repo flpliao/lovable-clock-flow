@@ -1,5 +1,5 @@
-import { ApprovalStatus } from '@/constants/approvalStatus';
 import { RequestStatus } from '@/constants/requestStatus';
+import { ApprovalHistory } from './approvalHistory';
 import { Employee } from './employee';
 import { LeaveType } from './leaveType';
 
@@ -20,19 +20,6 @@ export interface LeaveRequest {
   approvals?: ApprovalHistory[];
   leave_type?: LeaveType;
   employee?: Employee;
-  created_at: string;
-  updated_at: string;
-}
-
-// 審核記錄
-export interface ApprovalHistory {
-  slug: string;
-  application_id?: string;
-  approver_id?: string;
-  approver?: Employee;
-  status: ApprovalStatus;
-  level: number;
-  comment?: string;
   created_at: string;
   updated_at: string;
 }

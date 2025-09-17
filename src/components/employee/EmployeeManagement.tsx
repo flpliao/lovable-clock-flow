@@ -94,7 +94,7 @@ const EmployeeManagement = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  placeholder="搜尋姓名、信箱、角色、部門或職位..."
+                  placeholder="搜尋姓名、信箱、權限、單位或職位..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   className="pl-10 bg-white/70 border-white/40 backdrop-blur-sm"

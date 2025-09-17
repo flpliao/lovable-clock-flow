@@ -27,7 +27,7 @@ const EmployeeInfoCard = () => {
             <span className="text-white/90">{employee.name}</span>
           </div>
           <div className="flex justify-between items-center text-white">
-            <span className="font-medium">部門：</span>
+            <span className="font-medium">單位：</span>
             <span className="text-white/90">{employee.department?.name || '未設定'}</span>
           </div>
           <div className="flex justify-between items-center text-white">

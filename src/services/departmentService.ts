@@ -16,7 +16,7 @@ export const getAllDepartments = async (): Promise<Department[]> => {
   return data as Department[];
 };
 
-// 根據 slug 獲取部門
+// 根據 slug 獲取單位
 export const getDepartmentBySlug = async (slug: string): Promise<Department | null> => {
   const { data, status, message } = await callApiAndDecode(
     axiosWithEmployeeAuth().get(apiRoutes.department.show(slug))
@@ -29,7 +29,7 @@ export const getDepartmentBySlug = async (slug: string): Promise<Department | nu
   return data as Department;
 };
 
-// 創建新部門
+// 創建新單位
 export const createDepartment = async (
   departmentData: Omit<Department, 'id' | 'slug' | 'created_at' | 'updated_at'>
 ): Promise<Department | null> => {
@@ -44,7 +44,7 @@ export const createDepartment = async (
   return data as Department;
 };
 
-// 更新部門
+// 更新單位
 export const updateDepartment = async (
   slug: string,
   departmentData: Partial<Department>
@@ -60,7 +60,7 @@ export const updateDepartment = async (
   return data as Department;
 };
 
-// 刪除部門
+// 刪除單位
 export const deleteDepartment = async (slug: string): Promise<boolean> => {
   const { status, message } = await callApiAndDecode(
     axiosWithEmployeeAuth().delete(apiRoutes.department.destroy(slug))

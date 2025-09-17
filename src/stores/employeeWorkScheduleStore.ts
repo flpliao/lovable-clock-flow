@@ -116,7 +116,7 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
     set({ employeesBySlug, error: null });
   },
 
-  // 為特定部門新增員工（更新或新增）
+  // 為特定單位新增員工（更新或新增）
   addEmployeesForDepartment: ({
     employees,
     startDate,
@@ -277,7 +277,7 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
     }
   },
 
-  // 取得部門的員工列表
+  // 取得單位的員工列表
   getEmployeesByDepartment: (departmentSlug: string): Employee[] => {
     const { employeesBySlug } = get();
     const employeesByDepartment: Employee[] = [];
@@ -328,7 +328,7 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
     return workSchedules;
   },
 
-  // 檢查部門的特定時期是否已載入（基於員工範圍）
+  // 檢查單位的特定時期是否已載入（基於員工範圍）
   isDepartmentPeriodLoaded: ({
     departmentSlug,
     period,
@@ -336,7 +336,7 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
     departmentSlug: string;
     period: string;
   }) => {
-    // 檢查該部門的所有員工是否都已載入該時期
+    // 檢查該單位的所有員工是否都已載入該時期
     const employees = get().getEmployeesByDepartment(departmentSlug);
     if (employees.length === 0) return false;
 
@@ -350,7 +350,7 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
     });
   },
 
-  // 取得部門已載入的時期列表（基於員工範圍）
+  // 取得單位已載入的時期列表（基於員工範圍）
   getLoadedPeriodsForDepartment: (departmentSlug: string) => {
     const employees = get().getEmployeesByDepartment(departmentSlug);
     const allPeriods = new Set<string>();
@@ -376,9 +376,9 @@ export const useEmployeeWorkScheduleStore = create<EmployeeWorkScheduleState>()(
     return Array.from(allPeriods);
   },
 
-  // 檢查部門在指定日期是否已載入 (根據日期推斷期間)
+  // 檢查單位在指定日期是否已載入 (根據日期推斷期間)
   isDepartmentDateLoaded: ({ departmentSlug, date }: { departmentSlug: string; date: string }) => {
-    // 檢查該部門的所有員工是否都已載入該日期
+    // 檢查該單位的所有員工是否都已載入該日期
     const employees = get().getEmployeesByDepartment(departmentSlug);
     if (employees.length === 0) return false;
 

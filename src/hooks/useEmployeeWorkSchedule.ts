@@ -30,7 +30,7 @@ export const useEmployeeWorkSchedule = () => {
     getEmployeeLoadedRanges,
   } = useEmployeeWorkScheduleStore();
 
-  // 載入部門的所有員工資料（不指定時期）
+  // 載入單位的所有員工資料（不指定時期）
   const loadDepartmentAllEmployees = async ({ departmentSlug }: { departmentSlug: string }) => {
     setLoading(true);
     setError(null);
@@ -49,7 +49,7 @@ export const useEmployeeWorkSchedule = () => {
     }
   };
 
-  // 載入部門特定時期的員工資料
+  // 載入單位特定時期的員工資料
   const loadDepartmentByPeriod = async ({
     departmentSlug,
     period,
@@ -93,7 +93,7 @@ export const useEmployeeWorkSchedule = () => {
     }
   };
 
-  // 載入部門特定日期的員工資料
+  // 載入單位特定日期的員工資料
   const loadDepartmentByDate = async ({
     departmentSlug,
     date,
@@ -129,7 +129,7 @@ export const useEmployeeWorkSchedule = () => {
     }
   };
 
-  // 載入部門特定日期範圍的員工資料
+  // 載入單位特定日期範圍的員工資料
   const loadDepartmentByDateRange = async ({
     departmentSlug,
     startDate,
@@ -168,7 +168,7 @@ export const useEmployeeWorkSchedule = () => {
     }
   };
 
-  // 載入部門特定年月的員工資料
+  // 載入單位特定年月的員工資料
   const loadDepartmentByMonth = async ({
     departmentSlug,
     year,

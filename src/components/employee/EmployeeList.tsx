@@ -51,7 +51,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
             <TableHead>單位</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>職位</TableHead>
-            <TableHead>角色</TableHead>
+            <TableHead>權限</TableHead>
             <TableHead>直屬主管</TableHead>
             <TableHead className="text-right">操作</TableHead>
           </TableRow>

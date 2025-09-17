@@ -1,3 +1,4 @@
+import { ExportButton, ImportButton } from '@/components/common/buttons';
 import { FeatureIcon, FeatureNumber } from '@/components/common/cards';
 import PageHeader from '@/components/layouts/PageHeader';
 import PageLayout from '@/components/layouts/PageLayout';
@@ -14,7 +15,7 @@ import {
 } from '@/hooks/useMissedCheckInRequests';
 import { getStatusColors } from '@/utils/statusConfig';
 import { CheckCircle, FileText } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ApprovalStats from './approval/components/ApprovalStats';
 import LeaveApprovalTab from './approval/components/LeaveApprovalTab';
 import LeaveHistoryTable from './approval/components/LeaveHistoryTable';
@@ -23,12 +24,16 @@ import MissedCheckInHistoryTable from './approval/components/MissedCheckInHistor
 
 const ApprovalCenter = () => {
   const [activeTab, setActiveTab] = useState<string>('');
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     isLoading: isLeaveLoading,
     loadPendingLeaveRequests,
     loadCompletedLeaveRequests,
     handleLeaveRequestApprove,
     handleLeaveRequestReject,
+    handleDownloadSpecialLeaveTemplate,
+    handleImportSpecialLeave,
   } = useLeaveRequests();
   const {
     isLoading: isMissedCheckInLoading,
@@ -41,12 +46,37 @@ const ApprovalCenter = () => {
   useEffect(() => {
     loadPendingLeaveRequests();
     loadPendingMissedCheckInRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const pendingLeaveRequests = useLeavePendingRequests();
   const pendingMissedCheckInRequests = useMissedCheckInPendingRequests();
   const completedLeaveRequests = useLeaveCompletedRequests();
   const completedMissedCheckInRequests = useMissedCheckInCompletedRequests();
+
+  // 處理檔案選擇
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      await handleImportSpecialLeave(file);
+      // 匯入成功後重新載入資料
+      loadCompletedLeaveRequests();
+    } finally {
+      setIsImporting(false);
+      // 重置檔案輸入
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // 處理匯入按鈕點擊
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
 
   return (
     <PageLayout>
@@ -146,9 +176,35 @@ const ApprovalCenter = () => {
             </TabsContent>
 
             <TabsContent value="leave-history" className="mt-0">
-              <h2 className="text-xl font-semibold text-white drop-shadow-md mb-6">
-                請假申請歷史紀錄
-              </h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-white drop-shadow-md">
+                  請假申請歷史紀錄
+                </h2>
+                <div className="flex gap-3">
+                  <ExportButton
+                    size="sm"
+                    onClick={handleDownloadSpecialLeaveTemplate}
+                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                  >
+                    下載範本
+                  </ExportButton>
+                  <ImportButton
+                    size="sm"
+                    onClick={handleImportClick}
+                    disabled={isImporting}
+                    className="bg-white/10 border-white/20 text-white hover:bg-white/20 disabled:opacity-50"
+                  >
+                    {isImporting ? '匯入中...' : '匯入特休'}
+                  </ImportButton>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".xlsx,.xls,.csv"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                </div>
+              </div>
               <LeaveHistoryTable requests={completedLeaveRequests} isLoading={isLeaveLoading} />
             </TabsContent>
             <TabsContent value="missed-checkin-history" className="mt-0">

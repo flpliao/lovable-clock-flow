@@ -1,6 +1,7 @@
 import { RequestType } from '@/constants/checkInTypes';
 import { RequestStatus } from '@/constants/requestStatus';
 import { CheckInRecord } from '@/types/checkIn';
+import { ApprovalHistory } from './approvalHistory';
 import { Employee } from './employee';
 
 export interface MissedCheckInRequest {
@@ -21,4 +22,5 @@ export interface MissedCheckInRequest {
   check_in_record?: CheckInRecord;
   created_at: string;
   updated_at: string;
+  approvals?: ApprovalHistory[];
 }

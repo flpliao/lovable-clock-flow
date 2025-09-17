@@ -102,7 +102,7 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>新增假別</DialogTitle>
           <DialogDescription>新增一個假別類型</DialogDescription>

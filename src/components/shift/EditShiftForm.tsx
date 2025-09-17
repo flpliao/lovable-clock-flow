@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -73,7 +74,7 @@ const EditShiftForm = ({ open, onOpenChange, onSubmit, shift, setShift }: EditSh
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-base">編輯班次</DialogTitle>
           <DialogDescription className="text-xs">修改班次設定</DialogDescription>
@@ -159,10 +160,10 @@ const EditShiftForm = ({ open, onOpenChange, onSubmit, shift, setShift }: EditSh
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
+            <DialogFooter>
               <CancelButton onClick={handleClose} disabled={isLoading} />
               <UpdateButton isLoading={isLoading} />
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

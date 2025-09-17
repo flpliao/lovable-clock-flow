@@ -110,7 +110,7 @@ export function EditLeaveTypeDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>編輯假別</DialogTitle>
           <DialogDescription>修改假別設定</DialogDescription>

@@ -8,6 +8,7 @@ export interface Employee {
   name: string;
   no: string;
   email: string;
+  department_slug?: string;
   department?: Department;
   departments?: Department[];
   role_name?: string;

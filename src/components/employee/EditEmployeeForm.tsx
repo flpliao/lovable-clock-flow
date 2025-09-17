@@ -15,28 +15,11 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Input } from '@/components/ui/input';
 import { Gender } from '@/constants/gender';
 import useLoadingAction from '@/hooks/useLoadingAction';
+import { employeeFormSchema, type EmployeeFormData } from '@/schemas/employee';
 import { Employee } from '@/types/employee';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-
-// 員工表單 schema
-const employeeFormSchema = z.object({
-  no: z.string().min(1, '工號不能為空').max(50, '工號最多50個字元'),
-  gender: z.nativeEnum(Gender, {
-    required_error: '性別不能為空',
-  }),
-  name: z.string().min(1, '姓名不能為空').max(50, '姓名最多50個字元'),
-  email: z.string().email('請輸入有效的電子郵件').min(1, '電子郵件不能為空'),
-  department_slug: z.string().min(1, '請選擇部門'),
-  role_name: z.string().min(1, '請選擇權限'),
-  direct_manager_slug: z.string().optional().or(z.literal('')),
-  start_date: z.string().optional().or(z.literal('')),
-  phone: z.string().optional().or(z.literal('')),
-});
-
-type EmployeeFormData = z.infer<typeof employeeFormSchema>;
 
 interface EditEmployeeFormProps {
   open: boolean;
@@ -117,7 +100,7 @@ const EditEmployeeForm = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-base">編輯員工</DialogTitle>
           <DialogDescription className="text-xs">修改員工資料</DialogDescription>

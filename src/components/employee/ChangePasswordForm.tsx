@@ -10,23 +10,10 @@ import {
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import useLoadingAction from '@/hooks/useLoadingAction';
+import { passwordSchema, type PasswordFormData } from '@/schemas/employee';
 import { Employee } from '@/types/employee';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-
-// 密碼變更表單 schema
-const changePasswordSchema = z
-  .object({
-    password: z.string().min(8, '密碼至少8碼').max(50, '密碼最多50個字元'),
-    password_confirmation: z.string().min(8, '密碼至少8碼').max(50, '密碼最多50個字元'),
-  })
-  .refine(data => data.password === data.password_confirmation, {
-    message: '密碼確認不一致',
-    path: ['password_confirmation'],
-  });
-
-type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 
 interface ChangePasswordFormProps {
   open: boolean;
@@ -45,8 +32,8 @@ const ChangePasswordForm = ({
   onSubmit,
   employee,
 }: ChangePasswordFormProps) => {
-  const form = useForm<ChangePasswordFormData>({
-    resolver: zodResolver(changePasswordSchema),
+  const form = useForm<PasswordFormData>({
+    resolver: zodResolver(passwordSchema),
     defaultValues: {
       password: '',
       password_confirmation: '',
@@ -54,7 +41,7 @@ const ChangePasswordForm = ({
   });
 
   const { wrappedAction: handleSubmitAction, isLoading } = useLoadingAction(
-    async (data: ChangePasswordFormData) => {
+    async (data: PasswordFormData) => {
       const result = await onSubmit({
         slug: employee?.slug,
         password: data.password,
@@ -74,7 +61,7 @@ const ChangePasswordForm = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-base">變更密碼</DialogTitle>
           <DialogDescription className="text-xs">

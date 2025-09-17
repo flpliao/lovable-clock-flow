@@ -171,3 +171,47 @@ export const deleteLeaveRequest = async (slug: string): Promise<boolean> => {
 
   return true;
 };
+
+// 下載特殊假別範本
+export const downloadSpecialLeaveTemplate = async (): Promise<Blob> => {
+  const response = await axiosWithEmployeeAuth().get(
+    apiRoutes.leaveRequest.downloadSpecialLeaveTemplate,
+    {
+      responseType: 'blob',
+    }
+  );
+
+  return response.data;
+};
+
+// 匯入特殊假別
+export const importSpecialLeave = async (
+  file: File
+): Promise<{
+  message: string;
+  imported_count: number;
+  data?: LeaveRequest[];
+  summary?: { success_count: number; error_count: number; errors?: string[] };
+}> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const { data, status, message, summary } = await callApiAndDecode(
+    axiosWithEmployeeAuth().post(apiRoutes.leaveRequest.importSpecialLeave, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  );
+
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`匯入特殊假別失敗: ${message}`);
+  }
+
+  return { data, summary } as {
+    message: string;
+    imported_count: number;
+    data?: LeaveRequest[];
+    summary?: { success_count: number; error_count: number; errors?: string[] };
+  };
+};

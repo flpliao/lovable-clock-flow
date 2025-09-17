@@ -1,8 +1,10 @@
 import { RequestStatus } from '@/constants/requestStatus';
 import {
   approveLeaveRequest,
+  downloadSpecialLeaveTemplate,
   getCompletedLeaveRequests,
   getPendingLeaveRequests,
+  importSpecialLeave,
   rejectLeaveRequest,
 } from '@/services/leaveRequestService';
 import useEmployeeStore from '@/stores/employeeStore';
@@ -102,6 +104,48 @@ export const useLeaveRequests = () => {
     }
   };
 
+  // 下載特殊假別範本
+  const handleDownloadSpecialLeaveTemplate = async (): Promise<boolean> => {
+    try {
+      const blob = await downloadSpecialLeaveTemplate();
+
+      // 建立下載連結
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = '特殊假別範本.xlsx'; // 根據實際檔案格式調整
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      showSuccess('範本下載成功');
+      return true;
+    } catch (error) {
+      showError(`下載範本失敗: ${error.message}`);
+      return false;
+    }
+  };
+
+  // 匯入特殊假別
+  const handleImportSpecialLeave = async (file: File): Promise<boolean> => {
+    try {
+      const { data, summary } = await importSpecialLeave(file);
+
+      // 如果有返回的資料，則加入到 store 中
+      addRequests(data);
+
+      // 使用 summary 中的 success_count 或 imported_count 來顯示成功訊息
+      const successCount = summary?.success_count;
+      showSuccess(`匯入成功，共匯入 ${successCount} 筆特殊假別`);
+
+      return true;
+    } catch (error) {
+      showError(`匯入失敗: ${error.message}`);
+      return false;
+    }
+  };
+
   return {
     // 狀態
     requests,
@@ -112,6 +156,8 @@ export const useLeaveRequests = () => {
     loadCompletedLeaveRequests,
     handleLeaveRequestApprove,
     handleLeaveRequestReject,
+    handleDownloadSpecialLeaveTemplate,
+    handleImportSpecialLeave,
   };
 };
 
@@ -119,6 +165,7 @@ export const useLeavePendingRequests = () => {
   const { requestsBySlug: requests, getRequestsByStatus } = useLeaveRequestsStore();
   return useMemo(() => {
     return getRequestsByStatus([RequestStatus.PENDING]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requests]);
 };
 
@@ -130,5 +177,6 @@ export const useLeaveCompletedRequests = () => {
       RequestStatus.REJECTED,
       RequestStatus.CANCELLED,
     ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requests]);
 };

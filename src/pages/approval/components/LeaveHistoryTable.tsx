@@ -1,4 +1,5 @@
 import StatusBadge from '@/components/common/StatusBadge';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -8,10 +9,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { RequestStatus } from '@/constants/requestStatus';
+import { useLeaveRequests } from '@/hooks/useLeaveRequests';
 import { LeaveRequest } from '@/types/leaveRequest';
 import { formatDate, formatDateTimeSplit } from '@/utils/dateUtils';
-import { Calendar, Clock, FileText } from 'lucide-react';
-import React from 'react';
+import { Calendar, Clock, Download, FileText, Upload } from 'lucide-react';
+import React, { useRef, useState } from 'react';
 
 interface LeaveHistoryTableProps {
   requests: LeaveRequest[];
@@ -19,6 +21,10 @@ interface LeaveHistoryTableProps {
 }
 
 const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({ requests, isLoading }) => {
+  const { handleDownloadSpecialLeaveTemplate, handleImportSpecialLeave } = useLeaveRequests();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isImporting, setIsImporting] = useState(false);
+
   const getDateTime = (dateString: string) => {
     const { date, time } = formatDateTimeSplit(dateString);
 
@@ -28,6 +34,26 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({ requests, isLoadi
         <div className="text-white/60">{time}</div>
       </>
     );
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      await handleImportSpecialLeave(file);
+    } finally {
+      setIsImporting(false);
+      // 重置檔案輸入
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
   };
 
   if (isLoading) {
@@ -53,6 +79,36 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({ requests, isLoadi
 
   return (
     <div className="space-y-4">
+      {/* 操作按鈕 */}
+      <div className="flex justify-end gap-3 mb-4">
+        <Button
+          onClick={handleDownloadSpecialLeaveTemplate}
+          variant="outline"
+          size="sm"
+          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+        >
+          <Download className="h-4 w-4 mr-2" />
+          下載範本
+        </Button>
+        <Button
+          onClick={handleImportClick}
+          variant="outline"
+          size="sm"
+          disabled={isImporting}
+          className="bg-white/10 border-white/20 text-white hover:bg-white/20 disabled:opacity-50"
+        >
+          <Upload className="h-4 w-4 mr-2" />
+          {isImporting ? '匯入中...' : '匯入特休'}
+        </Button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".xlsx,.xls,.csv"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+      </div>
+
       {/* 統計資訊 */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white/10 rounded-lg p-4 border border-white/20">

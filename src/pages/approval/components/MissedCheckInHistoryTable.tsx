@@ -152,9 +152,9 @@ const MissedCheckInHistoryTable: React.FC<MissedCheckInHistoryTableProps> = ({
                     <div className="text-sm text-white/80">{getDateTime(request.updated_at)}</div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <button className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors duration-200">
-                      查看詳細
-                    </button>
+                    <div className="text-white font-medium">
+                      {request.approvals?.[0]?.approver?.name || '系統'}
+                    </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
                     <StatusBadge status={request.status} />

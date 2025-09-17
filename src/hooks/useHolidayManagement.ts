@@ -1,8 +1,13 @@
-import { useCallback } from 'react';
+import {
+  createCalendar,
+  deleteCalendar,
+  getCalendars,
+  updateCalendar,
+} from '@/services/calendarService';
 import { useCalendarStore } from '@/stores/calendarStore';
-import { getCalendars, deleteCalendar, createCalendar } from '@/services/calendarService';
 import { CalendarIndexParams, CalendarItem } from '@/types/calendar';
 import { showError } from '@/utils/toast';
+import { useCallback } from 'react';
 
 export const useHolidayManagement = () => {
   const {
@@ -14,6 +19,7 @@ export const useHolidayManagement = () => {
     setCalendars,
     setCalendarsForYear,
     addCalendar,
+    updateCalendar: updateCalendarInStore,
     removeCalendar,
     getCalendarsByYear,
     isYearLoaded,
@@ -186,6 +192,32 @@ export const useHolidayManagement = () => {
     [addCalendar, setLoading, setError]
   );
 
+  // 更新行事曆
+  const updateCalendarItem = async (
+    slug: string,
+    payload: Partial<{
+      year: number;
+      name: string;
+      description?: string | null;
+    }>
+  ) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const updatedCalendar = await updateCalendar(slug, payload);
+      updateCalendarInStore(slug, updatedCalendar);
+      return updatedCalendar;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '更新行事曆失敗';
+      setError(errorMessage);
+      showError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     // 狀態
     calendars,
@@ -196,6 +228,7 @@ export const useHolidayManagement = () => {
     // 操作方法
     loadCalendars,
     createCalendarItem,
+    updateCalendarItem,
     deleteCalendarItem,
   };
 };

@@ -1,5 +1,5 @@
 import StatusBadge from '@/components/common/StatusBadge';
-import { Button } from '@/components/ui/button';
+import { ExportButton, ImportButton } from '@/components/common/buttons';
 import {
   Table,
   TableBody,
@@ -12,7 +12,7 @@ import { RequestStatus } from '@/constants/requestStatus';
 import { useLeaveRequests } from '@/hooks/useLeaveRequests';
 import { LeaveRequest } from '@/types/leaveRequest';
 import { formatDate, formatDateTimeSplit } from '@/utils/dateUtils';
-import { Calendar, Clock, Download, FileText, Upload } from 'lucide-react';
+import { Calendar, Clock, FileText } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 
 interface LeaveHistoryTableProps {
@@ -81,25 +81,21 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({ requests, isLoadi
     <div className="space-y-4">
       {/* 操作按鈕 */}
       <div className="flex justify-end gap-3 mb-4">
-        <Button
-          onClick={handleDownloadSpecialLeaveTemplate}
-          variant="outline"
+        <ExportButton
           size="sm"
+          onClick={handleDownloadSpecialLeaveTemplate}
           className="bg-white/10 border-white/20 text-white hover:bg-white/20"
         >
-          <Download className="h-4 w-4 mr-2" />
           下載範本
-        </Button>
-        <Button
-          onClick={handleImportClick}
-          variant="outline"
+        </ExportButton>
+        <ImportButton
           size="sm"
+          onClick={handleImportClick}
           disabled={isImporting}
           className="bg-white/10 border-white/20 text-white hover:bg-white/20 disabled:opacity-50"
         >
-          <Upload className="h-4 w-4 mr-2" />
           {isImporting ? '匯入中...' : '匯入特休'}
-        </Button>
+        </ImportButton>
         <input
           ref={fileInputRef}
           type="file"

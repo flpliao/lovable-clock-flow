@@ -222,21 +222,25 @@ export const useSalary = () => {
   };
 
   // 下載薪資範本
-  const handleDownloadTemplate = async () => {
+  const handleDownloadTemplate = async (): Promise<boolean> => {
     try {
-      const { download_url, file_name } = await downloadSalaryTemplate();
+      const blob = await downloadSalaryTemplate();
 
-      // 創建下載連結
+      // 建立下載連結
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = download_url;
-      link.download = file_name;
+      link.href = url;
+      link.download = '薪資範本.xlsx'; // 根據實際檔案格式調整
       document.body.appendChild(link);
       link.click();
-      link.remove();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
 
       showSuccess('範本下載成功');
+      return true;
     } catch (error) {
-      showError(error.message);
+      showError(`下載範本失敗: ${error.message}`);
+      return false;
     }
   };
 

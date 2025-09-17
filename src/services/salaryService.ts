@@ -208,17 +208,10 @@ export const batchPublishSalaries = async (salarySlugs: string[]): Promise<Salar
 };
 
 // 下載薪資範本
-export const downloadSalaryTemplate = async (): Promise<{
-  download_url: string;
-  file_name: string;
-}> => {
-  const { data, status, message } = await callApiAndDecode(
-    axiosWithEmployeeAuth().get(apiRoutes.salary.template)
-  );
+export const downloadSalaryTemplate = async (): Promise<Blob> => {
+  const response = await axiosWithEmployeeAuth().get(apiRoutes.salary.template, {
+    responseType: 'blob',
+  });
 
-  if (status !== ApiResponseStatus.SUCCESS) {
-    throw new Error(`下載薪資範本失敗: ${message}`);
-  }
-
-  return data as { download_url: string; file_name: string };
+  return response.data;
 };

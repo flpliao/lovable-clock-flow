@@ -1,11 +1,11 @@
-import { useCallback, useRef, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { batchUpdateCalendarDays, getCalendar, getCalendars } from '@/services/calendarService';
 import { useCalendarStore } from '@/stores/calendarStore';
-import { getCalendar, getCalendars, batchUpdateCalendarDays } from '@/services/calendarService';
 import { CalendarDayItem, CalendarItem } from '@/types/calendar';
 import { formatDate } from '@/utils/dateUtils';
 import { showError, showSuccess } from '@/utils/toast';
 import dayjs from 'dayjs';
+import { useCallback, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface EditDialogState {
   open: boolean;
@@ -41,7 +41,6 @@ export const useHolidayEditor = () => {
   } = useCalendarStore();
 
   // 本地狀態
-  const [calendar, setCalendar] = useState<CalendarItem | null>(null);
   const [days, setDays] = useState<StagedCalendarDayItem[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoadingState] = useState(true);
@@ -78,8 +77,6 @@ export const useHolidayEditor = () => {
         // 重新從 store 取得資料
         calendarData = getCalendarFromStore(slug);
       }
-
-      setCalendar(calendarData);
 
       // 載入行事曆日期 - 優先從 store 取得，沒有才重新載入 calendar
       let allDays: CalendarDayItem[] = [];
@@ -131,8 +128,8 @@ export const useHolidayEditor = () => {
   ]);
 
   // 新增日期
-  const handleAddNew = useCallback(() => {
-    const currentYear = calendar?.year || dayjs().year();
+  const handleAddNew = useCallback((calendar: CalendarItem) => {
+    const currentYear = calendar.year || dayjs().year();
     setEditDialog({
       open: true,
       day: {
@@ -143,7 +140,7 @@ export const useHolidayEditor = () => {
       isNew: true,
       originalDate: undefined,
     });
-  }, [calendar?.year]);
+  }, []);
 
   // 編輯日期
   const handleEdit = useCallback((day: CalendarDayItem) => {
@@ -401,7 +398,6 @@ export const useHolidayEditor = () => {
   return {
     // 狀態
     slug,
-    calendar,
     days,
     saving,
     loading,

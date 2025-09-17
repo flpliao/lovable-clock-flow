@@ -1,6 +1,5 @@
 import { AddButton, DeleteButton, EditButton, SaveButton } from '@/components/common/buttons';
 import { ConfirmDialog } from '@/components/common/dialogs';
-import PageHeader from '@/components/layouts/PageHeader';
 import PageLayout from '@/components/layouts/PageLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,11 +28,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useHolidayEditor } from '@/hooks/useHolidayEditor';
+import { useHolidayManagement } from '@/hooks/useHolidayManagement';
 import { cn } from '@/lib/utils';
+import { useCalendarStore } from '@/stores/calendarStore';
 import { CalendarDayType } from '@/types/calendar';
 import { formatDate } from '@/utils/dateUtils';
-import { ArrowLeft, Calendar, Edit, Plus, Save, Trash2 } from 'lucide-react';
-import { useEffect } from 'react';
+import { ArrowLeft, Calendar, Edit, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 const DAY_TYPES: { value: CalendarDayType; label: string; className: string }[] = [
   { value: 'workday', label: '工作日', className: 'bg-green-100 text-green-800' },
@@ -43,7 +44,6 @@ const DAY_TYPES: { value: CalendarDayType; label: string; className: string }[] 
 function CalendarEditor() {
   const {
     slug,
-    calendar,
     days,
     saving,
     loading,
@@ -62,16 +62,74 @@ function CalendarEditor() {
     setConfirmDialog,
   } = useHolidayEditor();
 
+  const { updateCalendarItem } = useHolidayManagement();
+  const { getCalendar } = useCalendarStore();
+
+  // 從 store 獲取 calendar
+  const calendar = slug ? getCalendar(slug) : null;
+
+  // 編輯行事曆名稱的狀態
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editingName, setEditingName] = useState('');
+  const [isUpdatingName, setIsUpdatingName] = useState(false);
+
   useEffect(() => {
     loadCalendarData();
   }, [loadCalendarData]);
 
-  // 如果沒有 slug，直接返回錯誤
-  if (!slug) {
+  // 處理編輯行事曆名稱
+  const handleStartEditName = () => {
+    if (calendar) {
+      setIsEditingName(true);
+      setEditingName(calendar.name);
+    }
+  };
+
+  const handleSaveName = async () => {
+    if (!calendar || !editingName.trim()) return;
+
+    setIsUpdatingName(true);
+    try {
+      // 實際應該調用 API 更新行事曆名稱
+      await updateCalendarItem(calendar.slug, { name: editingName });
+
+      setIsEditingName(false);
+      setEditingName('');
+    } catch (error) {
+      console.error('更新行事曆名稱失敗:', error);
+    } finally {
+      setIsUpdatingName(false);
+    }
+  };
+
+  const handleCancelEditName = () => {
+    setIsEditingName(false);
+    setEditingName('');
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveName();
+    } else if (e.key === 'Escape') {
+      handleCancelEditName();
+    }
+  };
+
+  const handleBlur = () => {
+    // 失去焦點時自動儲存
+    if (editingName.trim() && editingName !== calendar?.name) {
+      handleSaveName();
+    } else {
+      handleCancelEditName();
+    }
+  };
+
+  // 如果沒有 calendar，直接返回錯誤
+  if (!calendar) {
     return (
       <PageLayout>
         <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-white text-xl">無效的行事曆 ID</div>
+          <div className="text-white text-xl">找不到行事曆</div>
         </div>
       </PageLayout>
     );
@@ -95,16 +153,6 @@ function CalendarEditor() {
     );
   }
 
-  if (!calendar) {
-    return (
-      <PageLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-white text-xl">找不到行事曆</div>
-        </div>
-      </PageLayout>
-    );
-  }
-
   return (
     <PageLayout>
       {/* 頁面標題區域 */}
@@ -118,12 +166,42 @@ function CalendarEditor() {
             <ArrowLeft className="h-5 w-5 mr-2" />
             返回
           </Button>
-          <PageHeader
-            icon={Calendar}
-            title={`編輯行事曆 - ${calendar.name}`}
-            description={`年份：${calendar.year} | 管理所有日期設定`}
-            iconBgColor="bg-white/20"
-          />
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-white flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                {isEditingName ? (
+                  <Input
+                    value={editingName}
+                    onChange={e => setEditingName(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    onBlur={handleBlur}
+                    className="bg-white/20 border-white/30 text-white placeholder:text-white/60 h-8 w-full sm:w-48 text-base sm:text-lg font-bold"
+                    placeholder="請輸入行事曆名稱"
+                    maxLength={50}
+                    autoFocus
+                    disabled={isUpdatingName}
+                  />
+                ) : (
+                  <h1 className="text-lg sm:text-2xl font-bold text-white break-words">
+                    <span className="hidden sm:inline">編輯行事曆 - </span>
+                    {calendar.name}
+                  </h1>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20 h-8 px-2 flex-shrink-0"
+                  onClick={isEditingName ? handleCancelEditName : handleStartEditName}
+                >
+                  {isEditingName ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+                </Button>
+              </div>
+              <p className="text-white/80 text-xs sm:text-sm mt-1">
+                年份：{calendar.year} | 管理所有日期設定
+              </p>
+            </div>
+          </div>
         </div>
         {hasChanges && (
           <div className="flex items-center space-x-2">
@@ -141,7 +219,11 @@ function CalendarEditor() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-white">行事曆日期列表</CardTitle>
           <div className="flex gap-2">
-            <AddButton className="bg-white/60" onClick={handleAddNew} disabled={saving}>
+            <AddButton
+              className="bg-white/60"
+              onClick={() => handleAddNew(calendar)}
+              disabled={saving}
+            >
               <Plus className="h-4 w-4 mr-2" />
               新增日期
             </AddButton>

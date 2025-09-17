@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -302,10 +303,10 @@ const CreateEmployeeForm = ({ open, onOpenChange, onSubmit }: CreateEmployeeForm
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
+            <DialogFooter>
               <CancelButton onClick={handleClose} disabled={isLoading} />
               <SaveButton isLoading={isLoading} />
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

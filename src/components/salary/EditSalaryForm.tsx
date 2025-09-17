@@ -1,6 +1,12 @@
 import CustomFormLabel from '@/components/common/CustomFormLabel';
 import { CancelButton, UpdateButton } from '@/components/common/buttons';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
@@ -755,10 +761,10 @@ const EditSalaryForm: React.FC<EditSalaryFormProps> = ({
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
+            <DialogFooter>
               <CancelButton onClick={handleClose} disabled={isLoading} />
               <UpdateButton isLoading={isLoading} />
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

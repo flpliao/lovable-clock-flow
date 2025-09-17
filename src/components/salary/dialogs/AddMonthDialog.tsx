@@ -1,5 +1,11 @@
 import { CancelButton, SubmitButton } from '@/components/common/buttons';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -76,10 +82,10 @@ const AddMonthDialog: React.FC<AddMonthDialogProps> = ({ open, onOpenChange, onS
                 </FormItem>
               )}
             />
-            <div className="flex justify-end gap-2">
+            <DialogFooter>
               <CancelButton onClick={handleCancel} />
               <SubmitButton />
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

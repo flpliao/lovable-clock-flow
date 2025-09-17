@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -327,11 +328,10 @@ const EditWorkScheduleForm = ({
               </div>
             )}
 
-            {/* 按鈕 */}
-            <div className="flex justify-end gap-2">
+            <DialogFooter>
               <CancelButton onClick={handleClose} disabled={isLoading} />
               <UpdateButton isLoading={isLoading} disabled={isLoading} />
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

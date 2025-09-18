@@ -40,12 +40,12 @@ const DeleteDialog = ({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 flex items-center justify-center">
               <AlertTriangle className="h-5 w-5 text-red-500" />
             </div>
             <div>
-              <DialogTitle className="text-base">{title}</DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground">
+              <DialogTitle className="text-base text-left">{title}</DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground text-left">
                 {description}
               </DialogDescription>
             </div>

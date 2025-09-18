@@ -4,7 +4,6 @@ import PageHeader from '@/components/layouts/PageHeader';
 import PageLayout from '@/components/layouts/PageLayout';
 import { CreateLeaveTypeDialog } from '@/components/leave/CreateLeaveTypeDialog';
 import { EditLeaveTypeDialog } from '@/components/leave/EditLeaveTypeDialog';
-import { LeaveTypeStatsCards } from '@/components/leave/LeaveTypeStatsCards';
 import { LeaveTypeTable } from '@/components/leave/LeaveTypeTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLeaveType } from '@/hooks/useLeaveType';
@@ -19,13 +18,6 @@ export default function LeaveTypeManagement() {
   const [selectedLeaveType, setSelectedLeaveType] = useState<LeaveType | null>(null);
   const [deleteLeaveType, setDeleteLeaveType] = useState<LeaveType | null>(null);
   const { leaveTypes, handleCreateLeaveType, handleUpdateLeaveType, handleDelete } = useLeaveType();
-
-  // 統計數據
-  const stats = {
-    total: leaveTypes.length,
-    active: leaveTypes.filter(type => type.is_active).length,
-    paid: leaveTypes.filter(type => type.paid_type === 'paid' && type.is_active).length,
-  };
 
   const handleAdd = () => {
     setCreateDialogOpen(true);
@@ -49,8 +41,6 @@ export default function LeaveTypeManagement() {
         description="管理系統中的請假類型設定"
         iconBgColor="bg-green-500"
       />
-
-      <LeaveTypeStatsCards stats={stats} />
 
       {/* 假別列表 */}
       <Card className="backdrop-blur-sm bg-white/80 border border-white/40 shadow-md rounded-xl overflow-hidden">

@@ -1,4 +1,4 @@
-import StatusBadge from '@/components/common/StatusBadge';
+import { ApprovalBadge } from '@/components/common/ApprovalBadge';
 import {
   Table,
   TableBody,
@@ -132,7 +132,7 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({ requests, isLoadi
                     </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <StatusBadge status={request.status} />
+                    <ApprovalBadge status={request.status} />
                   </TableCell>
                 </TableRow>
               ))}

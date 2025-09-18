@@ -1,4 +1,4 @@
-import StatusBadge from '@/components/common/StatusBadge';
+import { ApprovalBadge } from '@/components/common/ApprovalBadge';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -157,7 +157,7 @@ const MissedCheckInHistoryTable: React.FC<MissedCheckInHistoryTableProps> = ({
                     </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <StatusBadge status={request.status} />
+                    <ApprovalBadge status={request.status} />
                   </TableCell>
                 </TableRow>
               ))}

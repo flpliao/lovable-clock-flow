@@ -2,7 +2,7 @@ import { RequestStatus } from '@/constants/requestStatus';
 import { LeaveRequest } from '@/types/leaveRequest';
 import { formatDate } from '@/utils/dateUtils';
 import { AlertCircle, Calendar, CheckCircle, Clock, FileText, XCircle } from 'lucide-react';
-import StatusBadge from '../common/StatusBadge';
+import { ApprovalBadge } from '../common/ApprovalBadge';
 import { Button } from '../ui/button';
 
 // 狀態配置對象
@@ -62,7 +62,7 @@ export function LeaveRequestItem({ leaveRequest, onCancel }: LeaveRequestItemPro
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <StatusBadge status={leaveRequest.status} />
+          <ApprovalBadge status={leaveRequest.status} />
         </div>
       </div>
 

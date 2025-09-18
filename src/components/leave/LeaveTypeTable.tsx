@@ -1,7 +1,7 @@
-import { EmptyState } from '@/components/common/EmptyState';
 import DeleteButton from '@/components/common/buttons/DeleteButton';
 import EditButton from '@/components/common/buttons/EditButton';
-import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/common/EmptyState';
+import { PropertyBadge } from '@/components/common/PropertyBadge';
 import {
   Table,
   TableBody,
@@ -21,6 +21,17 @@ interface LeaveTypeTableProps {
 }
 
 export function LeaveTypeTable({ leaveTypes, onEdit, onDelete }: LeaveTypeTableProps) {
+  // 輔助函數：根據薪資類型獲取狀態和文字
+  const getPaidTypeInfo = (paidType: PaidType) => {
+    switch (paidType) {
+      case PaidType.PAID:
+        return { status: 'success' as const, text: '有薪' };
+      case PaidType.HALF:
+        return { status: 'warning' as const, text: '半薪' };
+      default:
+        return { status: 'neutral' as const, text: '無薪' };
+    }
+  };
   return (
     <>
       {/* 添加水平滾動容器 */}
@@ -67,57 +78,25 @@ export function LeaveTypeTable({ leaveTypes, onEdit, onDelete }: LeaveTypeTableP
                     {leaveType.max_per_year ? `${leaveType.max_per_year}天` : '無限制'}
                   </TableCell>
                   <TableCell className="py-3 px-4 whitespace-nowrap">
-                    <Badge
-                      className={
-                        leaveType.paid_type === PaidType.PAID
-                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium px-2 py-1 rounded-lg'
-                          : leaveType.paid_type === PaidType.HALF
-                            ? 'bg-yellow-100 text-yellow-800 border border-yellow-200 font-medium px-2 py-1 rounded-lg'
-                            : 'bg-slate-100 text-slate-700 border border-slate-200 font-medium px-2 py-1 rounded-lg'
-                      }
-                    >
-                      {leaveType.paid_type === PaidType.PAID
-                        ? '有薪'
-                        : leaveType.paid_type === PaidType.HALF
-                          ? '半薪'
-                          : '無薪'}
-                    </Badge>
+                    {(() => {
+                      const { status, text } = getPaidTypeInfo(leaveType.paid_type);
+                      return <PropertyBadge status={status}>{text}</PropertyBadge>;
+                    })()}
                   </TableCell>
                   <TableCell className="py-3 px-4 whitespace-nowrap">
-                    <Badge
-                      variant="outline"
-                      className={
-                        leaveType.annual_reset
-                          ? 'border-blue-300 text-blue-800 bg-blue-50 font-medium px-2 py-1 rounded-lg'
-                          : 'border-slate-300 text-slate-700 bg-slate-50 font-medium px-2 py-1 rounded-lg'
-                      }
-                    >
+                    <PropertyBadge status={leaveType.annual_reset ? 'success' : 'neutral'}>
                       {leaveType.annual_reset ? '是' : '否'}
-                    </Badge>
+                    </PropertyBadge>
                   </TableCell>
                   <TableCell className="py-3 px-4 whitespace-nowrap">
-                    <Badge
-                      variant="outline"
-                      className={
-                        leaveType.requires_attachment
-                          ? 'border-blue-300 text-blue-800 bg-blue-50 font-medium px-2 py-1 rounded-lg'
-                          : 'border-slate-300 text-slate-700 bg-slate-50 font-medium px-2 py-1 rounded-lg'
-                      }
-                    >
+                    <PropertyBadge status={leaveType.requires_attachment ? 'success' : 'neutral'}>
                       {leaveType.requires_attachment ? '是' : '否'}
-                    </Badge>
+                    </PropertyBadge>
                   </TableCell>
                   <TableCell className="py-3 px-4 whitespace-nowrap">
-                    <Badge
-                      variant="outline"
-                      className={
-                        leaveType.is_active
-                          ? 'border-blue-300 text-blue-800 bg-blue-50 font-medium px-2 py-1 rounded-lg'
-                          : 'border-slate-300 text-slate-700 bg-slate-50 font-medium px-2 py-1 rounded-lg'
-                      }
-                    >
+                    <PropertyBadge status={leaveType.is_active ? 'info' : 'error'}>
                       {leaveType.is_active ? '啟用' : '停用'}
-                    </Badge>
+                    </PropertyBadge>
                   </TableCell>
                   <TableCell className="py-3 px-4 whitespace-nowrap">
                     <div className="flex items-center gap-1 flex-nowrap">

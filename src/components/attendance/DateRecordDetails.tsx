@@ -162,7 +162,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
 
     // 未來日期
     if (isFutureDay) {
-      cardList.push(createCard('future', createStatusCard('未來日期')));
+      cardList.push();
       return cardList;
     }
 
@@ -307,10 +307,45 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
       <div className="text-xl font-semibold text-white drop-shadow-md">
         目前選取時間：{date.toLocaleDateString('zh-TW')}
       </div>
+
       {cards.map((card, index) => (
         <div key={index}>{card}</div>
       ))}
 
+      {/* 班次資訊卡片 */}
+      {hasSchedule && schedule && (
+        <div className="bg-white/20 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-lg p-6">
+          <div className="flex items-center mb-3">
+            <div
+              className="w-3 h-3 rounded-full mr-3"
+              style={{ backgroundColor: schedule.shift?.color || '#3B82F6' }}
+            ></div>
+            <span className="font-medium text-gray-900">班次資訊</span>
+          </div>
+          <div className="space-y-3">
+            {/* 班次名稱和代碼 */}
+            {schedule.shift && (
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-gray-600">班次：</span>
+                  <span className="font-medium text-gray-900">{schedule.shift.name}</span>
+                </div>
+              </div>
+            )}
+            {/* 工作時間 */}
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-600">上班時間：</span>
+                <span className="font-medium text-gray-900">{schedule.start_time}</span>
+              </div>
+              <div>
+                <span className="text-gray-600">下班時間：</span>
+                <span className="font-medium text-gray-900">{schedule.end_time}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* 忘打卡申請彈窗 */}
       <Dialog open={!!openDialog} onOpenChange={handleDialogClose}>
         <DialogContent className="max-w-md w-full p-0 overflow-hidden">

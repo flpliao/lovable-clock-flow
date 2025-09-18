@@ -63,6 +63,7 @@ const PersonalAttendance: React.FC = () => {
         created_by: '',
         created_at: '',
         updated_at: '',
+        shift: selectedDateAttendance.work_schedule.shift,
       };
     },
     [selectedDateAttendance]

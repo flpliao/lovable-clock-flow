@@ -11,6 +11,11 @@ export interface Schedule {
   created_by: string;
   created_at: string;
   updated_at: string;
+  shift?: {
+    code: string;
+    name: string;
+    color: string;
+  } | null;
 }
 
 export interface CreateSchedule {

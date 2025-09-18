@@ -70,13 +70,12 @@ export function EditLeaveTypeDialog({
   // 當 leaveType 或 open 狀態改變時重新設定表單值
   useEffect(() => {
     if (open && leaveType) {
-      console.log('編輯假別資料:', leaveType); // 除錯用
       form.reset({
         code: leaveType.code || LeaveTypeCode.OTHER,
         name: leaveType.name || '',
         paid_type: leaveType.paid_type || PaidType.UNPAID,
         annual_reset: leaveType.annual_reset !== undefined ? leaveType.annual_reset : true,
-        max_per_year: leaveType.max_per_year || undefined,
+        max_per_year: leaveType.max_per_year || null,
         requires_attachment:
           leaveType.requires_attachment !== undefined ? leaveType.requires_attachment : false,
         is_active: leaveType.is_active !== undefined ? leaveType.is_active : true,
@@ -95,7 +94,7 @@ export function EditLeaveTypeDialog({
         name: data.name,
         paid_type: data.paid_type,
         annual_reset: data.annual_reset, // 明確傳送布林值，包括 false
-        max_per_year: data.max_per_year || undefined,
+        max_per_year: data.max_per_year || null,
         requires_attachment: data.requires_attachment, // 明確傳送布林值，包括 false
         is_active: data.is_active, // 明確傳送布林值，包括 false
         description: data.description || undefined,

@@ -118,6 +118,8 @@ export const apiRoutes = {
     destroy: (slug: string) => `${API_URL}/employee/leave-types/${slug}`,
     syncFromDefaults: `${API_URL}/employee/leave-types/sync-from-defaults`,
     defaults: `${API_URL}/employee/leave-types/defaults`,
+    leaveBalance: (leaveType: string) =>
+      `${API_URL}/employee/leave-types/leave-balance/${leaveType}`,
   },
   schedule: {
     index: `${API_URL}/employee/schedules`,

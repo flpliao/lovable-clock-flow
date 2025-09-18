@@ -5,13 +5,17 @@ import * as z from 'zod';
  * 假別表單驗證 Schema
  */
 export const leaveTypeFormSchema = z.object({
-  code: z.nativeEnum(LeaveTypeCode),
+  code: z.nativeEnum(LeaveTypeCode, {
+    errorMap: () => ({ message: '請選擇有效的假別類型' }),
+  }),
   name: z.string().min(1, '名稱不能為空').max(50, '名稱最多50個字元'),
-  paid_type: z.nativeEnum(PaidType),
-  annual_reset: z.boolean(),
+  paid_type: z.nativeEnum(PaidType, {
+    errorMap: () => ({ message: '請選擇有效的薪資類型' }),
+  }),
+  annual_reset: z.boolean().default(false),
   max_per_year: z.coerce.number().nullable().optional(),
-  required_attachment: z.boolean(),
-  is_active: z.boolean(),
+  requires_attachment: z.boolean().default(false),
+  is_active: z.boolean().default(true),
   description: z.string().optional(),
 });
 
@@ -29,7 +33,7 @@ export const leaveTypeFormDefaultValues: LeaveTypeFormData = {
   paid_type: PaidType.UNPAID,
   annual_reset: true,
   max_per_year: undefined,
-  required_attachment: false,
+  requires_attachment: false,
   is_active: true,
   description: '',
 };

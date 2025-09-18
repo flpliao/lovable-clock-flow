@@ -8,7 +8,7 @@ export interface LeaveType {
   paid_type: PaidType;
   max_per_year?: number;
   annual_reset?: boolean;
-  required_attachment?: boolean;
+  requires_attachment?: boolean;
   description: string;
   created_at?: string;
   updated_at?: string;
@@ -26,5 +26,6 @@ export interface DefaultLeaveType {
   max_per_year?: number;
   description: string;
   annual_reset: boolean;
-  required_attachment: boolean;
+  requires_attachment: boolean;
+  is_active: boolean;
 }

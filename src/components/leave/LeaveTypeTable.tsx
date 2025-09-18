@@ -31,20 +31,20 @@ export function LeaveTypeTable({ leaveTypes, onEdit, onDelete }: LeaveTypeTableP
                 <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[120px] whitespace-nowrap">
                   名稱
                 </TableHead>
+                <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[100px] whitespace-nowrap">
+                  最大天數
+                </TableHead>
                 <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[80px] whitespace-nowrap">
-                  薪資
+                  是否給薪
                 </TableHead>
                 <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[100px] whitespace-nowrap">
                   年度重置
                 </TableHead>
                 <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[100px] whitespace-nowrap">
-                  最大天數
-                </TableHead>
-                <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[100px] whitespace-nowrap">
                   需要附件
                 </TableHead>
                 <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[120px] whitespace-nowrap">
-                  狀態
+                  啟用狀態
                 </TableHead>
                 <TableHead className="text-slate-700 font-semibold text-sm py-3 px-4 min-w-[100px] whitespace-nowrap">
                   操作
@@ -61,6 +61,9 @@ export function LeaveTypeTable({ leaveTypes, onEdit, onDelete }: LeaveTypeTableP
                     <span className="truncate block max-w-[120px]" title={leaveType.name}>
                       {leaveType.name}
                     </span>
+                  </TableCell>
+                  <TableCell className="text-slate-800 font-medium py-3 px-4 whitespace-nowrap">
+                    {leaveType.max_per_year ? `${leaveType.max_per_year}天` : '無限制'}
                   </TableCell>
                   <TableCell className="py-3 px-4 whitespace-nowrap">
                     <Badge
@@ -90,9 +93,6 @@ export function LeaveTypeTable({ leaveTypes, onEdit, onDelete }: LeaveTypeTableP
                     >
                       {leaveType.annual_reset ? '是' : '否'}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-slate-800 font-medium py-3 px-4 whitespace-nowrap">
-                    {leaveType.max_per_year ? `${leaveType.max_per_year}天` : '無限制'}
                   </TableCell>
                   <TableCell className="py-3 px-4 whitespace-nowrap">
                     <Badge

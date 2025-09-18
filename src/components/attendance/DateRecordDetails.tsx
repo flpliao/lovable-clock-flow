@@ -313,7 +313,7 @@ const DateRecordDetails: React.FC<DateRecordDetailsProps> = ({
 
       {/* 忘打卡申請彈窗 */}
       <Dialog open={!!openDialog} onOpenChange={handleDialogClose}>
-        <DialogContent className="max-w-md w-full rounded-t-2xl rounded-2xl p-0 overflow-hidden">
+        <DialogContent className="w-4/5 max-w-md sm:w-full rounded-t-2xl rounded-2xl p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold px-6 pt-6 pb-2">
               {openDialog === 'checkin' ? '上班未打卡' : '下班未打卡'}

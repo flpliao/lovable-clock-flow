@@ -23,7 +23,7 @@ import { showError, showSuccess } from '@/utils/toast';
 export function CalendarList() {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
-  const [year, setYear] = useState<number | 'all'>(currentYear);
+  const [year, setYear] = useState<number | 'all'>('all');
   const [keyword, setKeyword] = useState('');
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);

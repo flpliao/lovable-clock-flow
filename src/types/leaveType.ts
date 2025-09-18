@@ -25,7 +25,6 @@ export interface DefaultLeaveType {
   paid_type: PaidType;
   max_per_year?: number;
   description: string;
-  detailed_description: string;
   annual_reset: boolean;
   required_attachment: boolean;
 }

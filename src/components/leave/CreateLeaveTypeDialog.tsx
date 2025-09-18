@@ -71,7 +71,7 @@ export function CreateLeaveTypeDialog({ open, onOpenChange, onSave }: CreateLeav
       form.setValue('annual_reset', defaults.annual_reset);
       form.setValue('max_per_year', defaults.max_per_year);
       form.setValue('required_attachment', defaults.required_attachment);
-      form.setValue('description', defaults.detailed_description);
+      form.setValue('description', defaults.description);
     }
   };
 

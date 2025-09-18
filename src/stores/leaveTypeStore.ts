@@ -21,6 +21,7 @@ interface LeaveTypeState {
 
   // 查詢方法
   getLeaveTypeBySlug: (slug: string) => LeaveType | undefined;
+  getLeaveTypeByCode: (code: string) => LeaveType | undefined;
   getPaidLeaveTypes: () => LeaveType[];
   getLeaveTypesRequiringAttachment: () => LeaveType[];
   getLeaveTypeByName: (name: string) => LeaveType | undefined;
@@ -69,6 +70,11 @@ const useLeaveTypeStore = create<LeaveTypeState>()((set, get) => ({
     return leaveTypes.find(leaveType => leaveType.slug === slug);
   },
 
+  getLeaveTypeByCode: (code: string) => {
+    const { leaveTypes } = get();
+    return leaveTypes.find(leaveType => leaveType.code === code);
+  },
+
   getPaidLeaveTypes: () => {
     const { leaveTypes } = get();
     return leaveTypes.filter(
@@ -78,7 +84,7 @@ const useLeaveTypeStore = create<LeaveTypeState>()((set, get) => ({
 
   getLeaveTypesRequiringAttachment: () => {
     const { leaveTypes } = get();
-    return leaveTypes.filter(leaveType => leaveType.required_attachment);
+    return leaveTypes.filter(leaveType => leaveType.requires_attachment);
   },
 
   getLeaveTypeByName: (name: string) => {

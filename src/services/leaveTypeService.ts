@@ -1,7 +1,7 @@
 // leaveTypeService: 提供請假類型相關 API 操作
 import { ApiResponseStatus } from '@/constants/api';
 import { apiRoutes } from '@/routes/api';
-import { LeaveType, DefaultLeaveType } from '@/types/leaveType';
+import { DefaultLeaveType, LeaveType } from '@/types/leaveType';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 
@@ -98,4 +98,37 @@ export const getDefaultLeaveTypes = async (): Promise<DefaultLeaveType[]> => {
   }
 
   return data as DefaultLeaveType[];
+};
+
+// 獲取特定假別類型的剩餘時數
+export const getLeaveBalance = async (
+  leaveTypeSlug: string
+): Promise<{
+  leave_type: LeaveType;
+  remaining_hours: number;
+  used_hours: number;
+  max_hours_per_year: number;
+  max_days_per_year: number;
+  year: number;
+  suggestion: string | null;
+  seniority_years: number;
+}> => {
+  const { data, status, message } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.leaveType.leaveBalance(leaveTypeSlug))
+  );
+
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`載入假別餘額失敗: ${message}`);
+  }
+
+  return data as {
+    leave_type: LeaveType;
+    remaining_hours: number;
+    used_hours: number;
+    max_hours_per_year: number;
+    max_days_per_year: number;
+    year: number;
+    suggestion: string | null;
+    seniority_years: number;
+  };
 };

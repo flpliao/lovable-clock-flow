@@ -23,6 +23,7 @@ export const useLeaveType = () => {
     setLoading,
     setError,
     getLeaveTypeBySlug,
+    getLeaveTypeByCode,
     getPaidLeaveTypes,
     getLeaveTypesRequiringAttachment,
     getLeaveTypeByName,
@@ -117,6 +118,7 @@ export const useLeaveType = () => {
 
     // 查詢方法
     getLeaveTypeBySlug,
+    getLeaveTypeByCode,
     getPaidLeaveTypes,
     getLeaveTypesRequiringAttachment,
     getLeaveTypeByName,

@@ -2,6 +2,7 @@ import { ApiResponseStatus } from '@/constants/api';
 import { RequestStatus } from '@/constants/requestStatus';
 import { apiRoutes } from '@/routes/api';
 import { LeaveRequest } from '@/types';
+import { LeaveAvailabilityResponse } from '@/types/leaveBalance';
 import { callApiAndDecode } from '@/utils/apiHelper';
 import { axiosWithEmployeeAuth } from '@/utils/axiosWithEmployeeAuth';
 import dayjs from 'dayjs';
@@ -157,6 +158,25 @@ export const cancelLeaveRequest = async (slug: string): Promise<boolean> => {
   }
 
   return true;
+};
+
+// 檢查請假申請可用性
+export const checkLeaveAvailability = async (params: {
+  leave_type_slug?: string;
+  start_date?: string;
+  end_date?: string;
+}): Promise<LeaveAvailabilityResponse> => {
+  const { data, status, message } = await callApiAndDecode(
+    axiosWithEmployeeAuth().get(apiRoutes.leaveRequest.checkAvailability(params.leave_type_slug), {
+      params,
+    })
+  );
+
+  if (status !== ApiResponseStatus.SUCCESS) {
+    throw new Error(`檢查請假可用性失敗: ${message}`);
+  }
+
+  return data as LeaveAvailabilityResponse;
 };
 
 // 刪除請假申請

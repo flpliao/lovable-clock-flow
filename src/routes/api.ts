@@ -107,6 +107,8 @@ export const apiRoutes = {
     cancel: (slug: string) => `${API_URL}/employee/leave-requests/${slug}/cancel`,
     approve: (slug: string) => `${API_URL}/employee/leave-requests/${slug}/approve`,
     reject: (slug: string) => `${API_URL}/employee/leave-requests/${slug}/reject`,
+    checkAvailability: (slug: string) =>
+      `${API_URL}/employee/leave-requests/check-availability/${slug}`,
     downloadSpecialLeaveTemplate: `${API_URL}/employee/leave-requests/download-special-leave-template`,
     importSpecialLeave: `${API_URL}/employee/leave-requests/import-special-leave`,
   },

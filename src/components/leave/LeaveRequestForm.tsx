@@ -8,8 +8,10 @@ import { RequestStatus } from '@/constants/requestStatus';
 import { useLeaveType } from '@/hooks/useLeaveType';
 import { useMyLeaveRequest } from '@/hooks/useMyLeaveRequest';
 import { leaveRequestFormSchema, LeaveRequestFormValues } from '@/schemas/leaveRequest';
+import { checkLeaveAvailability } from '@/services/leaveRequestService';
 import useEmployeeStore from '@/stores/employeeStore';
 import useLeaveTypeStore from '@/stores/leaveTypeStore';
+import { LeaveAvailabilityResponse } from '@/types/leaveBalance';
 import { calculateHoursBetween } from '@/utils/dateTimeUtils';
 import { requiresReferenceDate } from '@/utils/leaveTypeUtils';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,6 +27,8 @@ interface LeaveRequestFormProps {
 
 const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availabilityData, setAvailabilityData] = useState<LeaveAvailabilityResponse | null>(null);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   const { leaveTypes, loadLeaveTypes } = useLeaveType();
   const getLeaveTypeBySlug = useLeaveTypeStore(state => state.getLeaveTypeBySlug);
   const { handleCreateMyLeaveRequest } = useMyLeaveRequest();
@@ -75,6 +79,33 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
     }
     return 0;
   }, [watchedStartDate, watchedEndDate]);
+
+  // 檢查請假可用性
+  useEffect(() => {
+    const checkAvailability = async () => {
+      if (!watchedLeaveType || !watchedStartDate || !watchedEndDate) {
+        setAvailabilityData(null);
+        return;
+      }
+
+      setIsCheckingAvailability(true);
+      try {
+        const data = await checkLeaveAvailability({
+          leave_type_slug: watchedLeaveType,
+          start_date: watchedStartDate.format('YYYY-MM-DD HH:mm:ss'),
+          end_date: watchedEndDate.format('YYYY-MM-DD HH:mm:ss'),
+        });
+        setAvailabilityData(data);
+      } catch (error) {
+        console.error('檢查請假可用性失敗:', error);
+        setAvailabilityData(null);
+      } finally {
+        setIsCheckingAvailability(false);
+      }
+    };
+
+    checkAvailability();
+  }, [watchedLeaveType, watchedStartDate, watchedEndDate]);
 
   const handleFormSubmit = async (data: LeaveRequestFormValues) => {
     // 檢查表單驗證
@@ -231,6 +262,92 @@ const LeaveRequestForm = ({ onSuccess }: LeaveRequestFormProps) => {
                 <span className="text-white">請假時數：</span>
                 <span className="text-blue-200 font-semibold">{calculatedHours} 小時</span>
               </div>
+            </div>
+          )}
+
+          {/* 顯示可用性檢查結果 */}
+          {isCheckingAvailability && (
+            <div className="mt-4 p-3 bg-yellow-500/20 border border-yellow-300/30 rounded-lg">
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-yellow-300 border-t-transparent"></div>
+                <span className="text-yellow-200">檢查請假可用性中...</span>
+              </div>
+            </div>
+          )}
+
+          {availabilityData && !isCheckingAvailability && (
+            <div className="mt-4 space-y-3">
+              {/* 可用性狀態 */}
+              <div
+                className={`p-3 rounded-lg border ${
+                  availabilityData.is_available
+                    ? 'bg-green-500/20 border-green-300/30'
+                    : 'bg-red-500/20 border-red-300/30'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-white">申請狀態：</span>
+                  <span
+                    className={`font-semibold ${
+                      availabilityData.is_available ? 'text-green-200' : 'text-red-200'
+                    }`}
+                  >
+                    {availabilityData.is_available ? '可以申請' : '無法申請'}
+                  </span>
+                </div>
+              </div>
+
+              {/* 餘額資訊 */}
+              <div className="p-3 bg-white/10 border border-white/30 rounded-lg">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-white/80">剩餘時數：</span>
+                    <span className="text-white font-medium">
+                      {availabilityData.remaining_hours} 小時
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/80">已用時數：</span>
+                    <span className="text-white font-medium">
+                      {availabilityData.used_hours} 小時
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/80">年度上限：</span>
+                    <span className="text-white font-medium">
+                      {availabilityData.max_hours_per_year} 小時
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/80">申請時數：</span>
+                    <span className="text-white font-medium">
+                      {availabilityData.requested_hours} 小時
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 建議資訊 */}
+              {availabilityData.suggestion && (
+                <div className="p-3 bg-blue-500/20 border border-blue-300/30 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <span className="text-blue-200 text-sm">💡</span>
+                    <span className="text-blue-200 text-sm">{availabilityData.suggestion}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* 特休年資資訊 */}
+              {availabilityData.seniority_years && (
+                <div className="p-3 bg-purple-500/20 border border-purple-300/30 rounded-lg">
+                  <div className="flex justify-between">
+                    <span className="text-white/80">年資：</span>
+                    <span className="text-purple-200 font-medium">
+                      {availabilityData.seniority_years} 年
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

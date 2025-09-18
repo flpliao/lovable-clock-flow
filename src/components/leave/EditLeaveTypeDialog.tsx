@@ -70,13 +70,15 @@ export function EditLeaveTypeDialog({
   // 當 leaveType 或 open 狀態改變時重新設定表單值
   useEffect(() => {
     if (open && leaveType) {
+      console.log('編輯假別資料:', leaveType); // 除錯用
       form.reset({
         code: leaveType.code || LeaveTypeCode.OTHER,
         name: leaveType.name || '',
         paid_type: leaveType.paid_type || PaidType.UNPAID,
         annual_reset: leaveType.annual_reset !== undefined ? leaveType.annual_reset : true,
         max_per_year: leaveType.max_per_year || undefined,
-        required_attachment: leaveType.required_attachment || false,
+        requires_attachment:
+          leaveType.requires_attachment !== undefined ? leaveType.requires_attachment : false,
         is_active: leaveType.is_active !== undefined ? leaveType.is_active : true,
         description: leaveType.description || '',
       });
@@ -87,10 +89,15 @@ export function EditLeaveTypeDialog({
     async (data: LeaveTypeFormData) => {
       if (!leaveType) return;
 
-      // 處理空值轉換
-      const processedData = {
-        ...data,
+      // 處理空值轉換，確保布林值 false 也會被傳送
+      const processedData: LeaveTypeFormData = {
+        code: data.code,
+        name: data.name,
+        paid_type: data.paid_type,
+        annual_reset: data.annual_reset, // 明確傳送布林值，包括 false
         max_per_year: data.max_per_year || undefined,
+        requires_attachment: data.requires_attachment, // 明確傳送布林值，包括 false
+        is_active: data.is_active, // 明確傳送布林值，包括 false
         description: data.description || undefined,
       };
 
@@ -174,7 +181,7 @@ export function EditLeaveTypeDialog({
               name="max_per_year"
               render={({ field }) => (
                 <FormItem>
-                  <CustomFormLabel required>每年最大天數</CustomFormLabel>
+                  <CustomFormLabel>每年最大天數</CustomFormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -226,7 +233,10 @@ export function EditLeaveTypeDialog({
                       <FormDescription>是否每年重新計算額度</FormDescription>
                     </div>
                     <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={checked => field.onChange(checked === true)}
+                      />
                     </FormControl>
                   </FormItem>
                 )}
@@ -234,7 +244,7 @@ export function EditLeaveTypeDialog({
 
               <FormField
                 control={form.control}
-                name="required_attachment"
+                name="requires_attachment"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
@@ -242,7 +252,10 @@ export function EditLeaveTypeDialog({
                       <FormDescription>申請此假別是否需要上傳附件</FormDescription>
                     </div>
                     <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={checked => field.onChange(checked === true)}
+                      />
                     </FormControl>
                   </FormItem>
                 )}
@@ -258,7 +271,10 @@ export function EditLeaveTypeDialog({
                       <FormDescription>是否啟用此假別</FormDescription>
                     </div>
                     <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={checked => field.onChange(checked === true)}
+                      />
                     </FormControl>
                   </FormItem>
                 )}

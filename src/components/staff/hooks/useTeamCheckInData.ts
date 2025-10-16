@@ -14,7 +14,7 @@ export interface TeamMemberCheckInData {
 
 export const useTeamCheckInData = () => {
   const isAdmin = useIsAdmin();
-  const { staffList } = useStaffStore();
+  const { staff: staffList } = useStaffStore();
   const [filter, setFilter] = useState<'today' | 'week' | 'month'>('today');
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [allRecords, setAllRecords] = useState<CheckInRecord[]>([]);
@@ -41,10 +41,10 @@ export const useTeamCheckInData = () => {
         return;
       }
 
-      const formattedRecords = (data || []).map((record: CheckInRecord) => ({
+      const formattedRecords = (data || []).map((record: any) => ({
         id: record.id,
         userId: record.user_id,
-        timestamp: record.timestamp,
+        timestamp: record.timestamp || record.created_at,
         type: record.type as 'location' | 'ip',
         status: record.status as 'success' | 'failed',
         action: record.action as 'check-in' | 'check-out',
@@ -53,7 +53,7 @@ export const useTeamCheckInData = () => {
           longitude: record.longitude,
           distance: record.distance,
           ip: record.ip_address,
-          locationName: record.location_name,
+          locationName: record.location_name || record.department_name,
         },
       }));
 

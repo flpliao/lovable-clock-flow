@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 // 安全地使用 StaffStore
 export const useStaffManagementSafe = () => {
-  const { staffList } = useStaffStore();
+  const { staff: staffList } = useStaffStore();
   const [loading, setLoading] = useState(true);
 
   // 直接使用 Supabase 載入員工資料的函數

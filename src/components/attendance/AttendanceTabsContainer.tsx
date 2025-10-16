@@ -64,6 +64,10 @@ const AttendanceTabsContainer: React.FC<AttendanceTabsContainerProps> = ({
             setDate={setDate}
             selectedDateRecords={selectedDateRecords}
             checkInRecords={checkInRecords}
+            missedCheckinRecords={[]}
+            userSchedules={[]}
+            hasScheduleForDate={() => false}
+            getScheduleForDate={() => undefined}
           />
         </TabsContent>
       </Tabs>

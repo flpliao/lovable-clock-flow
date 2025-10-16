@@ -91,7 +91,7 @@ const CheckInReminderSystem: React.FC = () => {
         }
 
         if (data) {
-          setReminderSettings(data);
+          setReminderSettings(data as unknown as ReminderSettings);
         } else {
           // 如果沒有設定，創建預設設定
           const defaultSettings: Omit<ReminderSettings, 'id'> = {
@@ -116,8 +116,8 @@ const CheckInReminderSystem: React.FC = () => {
 
           if (insertError) {
             console.error('創建預設提醒設定失敗:', insertError);
-          } else {
-            setReminderSettings(newSettings);
+          } else if (newSettings) {
+            setReminderSettings(newSettings as unknown as ReminderSettings);
           }
         }
       } catch (error) {

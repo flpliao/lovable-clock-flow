@@ -2,16 +2,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// 從環境變數讀取 Supabase 配置，如果沒有則使用預設值
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-
-// 檢查環境變數是否正確設置
-if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-  console.warn(
-    '⚠️  Supabase 環境變數未設置，使用預設值。請創建 .env.local 文件並設置 VITE_SUPABASE_URL 和 VITE_SUPABASE_ANON_KEY'
-  );
-}
+// Supabase 配置
+const SUPABASE_URL = 'https://skfdbxhlbqnoflbczlfu.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZmRieGhsYnFub2ZsYmN6bGZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzMzgzOTMsImV4cCI6MjA2MzkxNDM5M30.nHlFgWyHoGEpCRKXtWWHpoCRE2FjoD5XTESlae3zMhQ';
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
